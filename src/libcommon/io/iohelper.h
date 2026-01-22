@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "utility/types.h"
+#include "utility/utility.h"
+#include "log/log.h"
 
 #if defined(KD_WINDOWS)
 #include <AccCtrl.h>
@@ -318,6 +318,12 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
+        /**
+         * @brief Remove an item located under the specified path silently.
+         * @param path is the file system path of the item to remove.
+         * @return true if no unexpected error occurred, false otherwise.
+         */
+        static bool deleteItem(const SyncPath &path) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

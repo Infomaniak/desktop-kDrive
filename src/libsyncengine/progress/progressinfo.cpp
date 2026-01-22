@@ -85,7 +85,7 @@ bool ProgressInfo::initProgress(const SyncFileItem &item) {
 
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
@@ -99,7 +99,7 @@ bool ProgressInfo::initProgress(const SyncFileItem &item) {
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
@@ -114,7 +114,7 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
@@ -135,14 +135,14 @@ bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
 bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
+                  L"Item not found in ProgressInfo list (normal for ommited operation): " << CommonUtility::formatSyncPath(path));
         return true;
     }
 
@@ -174,13 +174,13 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 bool ProgressInfo::setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId) {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Item not found in ProgressInfo list (normal for omitted operation): " << Utility::formatSyncPath(path));
+                  L"Item not found in ProgressInfo list (normal for omitted operation): " << CommonUtility::formatSyncPath(path));
         return true;
     }
 

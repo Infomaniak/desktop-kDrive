@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,13 @@
 #include "test_utility/testhelpers.h"
 #include "testlog.h"
 
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/log.h"
+#include "libcommon/log/customrollingfileappender.h"
+#include "libcommon/io/iohelper.h"
 #include "utility/timerutility.h"
 
 #include <config.h>
-#include <log/customrollingfileappender.h>
 #include <log4cplus/loggingmacros.h>
 
 #include <iostream>
@@ -111,9 +110,7 @@ void TestLog::testExpiredLogFiles(void) {
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(3)) {
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
-        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(),
-                                      now.count(),
-                                      now.count(),
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.count(), now.count(),
                                       false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
         if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.
@@ -123,7 +120,7 @@ void TestLog::testExpiredLogFiles(void) {
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.

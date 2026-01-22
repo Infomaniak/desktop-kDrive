@@ -42,7 +42,7 @@ void TestIo::testIsFileAccessible() {
                          sourcePath, destPath);
     copyFile.detach();
 
-    Utility::msleep(10);
+    CommonUtility::msleep(10);
 
     IoError ioError = IoError::Unknown;
     bool res = IoHelper::isFileAccessible(destPath, ioError);
@@ -54,7 +54,7 @@ void TestIo::testIsFileAccessible() {
 #endif
 
     // File copy not finished yet.
-    Utility::msleep(1000);
+    CommonUtility::msleep(1000);
 
     // File copy is now finished.
     res = IoHelper::isFileAccessible(destPath, ioError);

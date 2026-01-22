@@ -172,7 +172,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         uint64_t fileSize = 0u;
@@ -244,7 +244,7 @@ void TestIo::testGetFileSizeAllBranches() {
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-        std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
+        (void) IoHelper::deleteItem(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         // Remark: the test CPPUNIT_ASSERT(fileSize == 0u) fails on MacOSX.
 #if defined(KD_WINDOWS)

@@ -17,7 +17,7 @@
  */
 
 #include "nodeinfo.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto nodeInfoNodeId = "nodeId";
 static const auto nodeInfoName = "name";

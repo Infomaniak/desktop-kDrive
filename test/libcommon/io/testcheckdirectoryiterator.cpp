@@ -308,7 +308,7 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
         CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT(!endOfDirectory);
 
-        std::filesystem::remove_all(path);
+        (void) IoHelper::deleteItem(path);
 
         CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);

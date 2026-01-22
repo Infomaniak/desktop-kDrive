@@ -34,7 +34,7 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"

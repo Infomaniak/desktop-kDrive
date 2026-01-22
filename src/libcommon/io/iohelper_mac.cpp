@@ -17,11 +17,11 @@
  */
 
 #include "permissionsholder.h"
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "filestat.h"
+#include "iohelper.h"
+#include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -42,7 +42,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrN
     value = "";
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << CommonUtility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
@@ -83,7 +83,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
                              IoError &ioError) noexcept {
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << CommonUtility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
@@ -173,7 +173,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 IoError IoHelper::lock(const SyncPath &path) noexcept {
     // Set uchg flag to lock the item.
     if (chflags(path.string().c_str(), UF_IMMUTABLE)) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set uchg flag for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set uchg flag for " << CommonUtility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;
@@ -184,7 +184,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
     bool found = false;
     IoHelper::getFileStat(path, &filestat, found);
     if (!found) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << CommonUtility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;
     }
 
@@ -192,7 +192,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
     u_int flags = filestat._flags;
     flags &= static_cast<u_int>(~UF_IMMUTABLE);
     if (chflags(path.string().c_str(), flags)) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to unset uchg flag for " << CommonUtility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;
@@ -203,7 +203,7 @@ IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
     bool found = false;
     IoHelper::getFileStat(path, &filestat, found);
     if (!found) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << CommonUtility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;
     }
 

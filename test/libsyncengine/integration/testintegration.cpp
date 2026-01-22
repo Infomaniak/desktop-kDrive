@@ -31,8 +31,8 @@
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
@@ -362,7 +362,7 @@ void TestIntegration::testBlacklist() {
     const TimerUtility timer;
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(10)) {
         if (_syncPal->isPaused()) break;
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
 
@@ -779,11 +779,11 @@ void TestIntegration::waitForSyncToBeIdle(
             const TimerUtility idleTimer;
             while (_syncPal->isIdle() && idleTimer.elapsed<milliseconds>() < minWaitTime) {
                 CPPUNIT_ASSERT_MESSAGE(srcLoc.toString(), timeoutTimer.elapsed<minutes>() < timeOutDuration);
-                Utility::msleep(5);
+                CommonUtility::msleep(5);
             }
             ended = idleTimer.elapsed<milliseconds>() >= minWaitTime;
         }
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
 }
 

@@ -28,7 +28,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-
 namespace {
 
 // https://stackoverflow.com/a/35717/4675396

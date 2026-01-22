@@ -238,7 +238,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         IoError aliasError;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
-        std::filesystem::remove_all(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
 
         IoError ioError = IoError::Unknown;
         bool isDirectory = true;

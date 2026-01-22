@@ -18,7 +18,7 @@
 
 #include "testio.h"
 
-#include "libcommonserver/io/filestat.h"
+#include "libcommon/io/filestat.h"
 
 #include <filesystem>
 
@@ -360,7 +360,7 @@ void TestIo::testGetFileStat() {
 
         IoError aliasError;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
@@ -382,9 +382,9 @@ void TestIo::testGetFileStat() {
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
-        IoError aliasError;
+        auto aliasError = IoError::Unknown;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        std::filesystem::remove_all(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;

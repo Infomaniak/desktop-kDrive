@@ -31,16 +31,9 @@ set(libcommonserver_SRCS
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
-    # Log
-    log/log.h log/log.cpp
-    log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Network
     network/proxy.h network/proxy.cpp
     network/proxyconfig.h network/proxyconfig.cpp
-    # Io
-    io/filestat.h
-    io/iohelper.h io/iohelper.cpp
-    io/permissionsholder.h io/permissionsholder.cpp
     # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h
@@ -48,16 +41,13 @@ set(libcommonserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
-    set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
-    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
+    list(APPEND libcommonserver_SRCS utility/utility_win.cpp)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
 else()
-    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS utility/utility_linux.cpp)
 endif()
 
 if(USE_OUR_OWN_SQLITE3)
@@ -96,8 +86,8 @@ set(PC_HEADER_FILES
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 

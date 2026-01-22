@@ -40,7 +40,7 @@ void FolderWatcher::start() {
     uint16_t counter = 0;
     while (!_ready && counter < 100) { // Wait max 1 sec
         LOG_DEBUG(_logger, "Waiting for folder watcher to be ready");
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         counter++;
     }
 #endif

@@ -339,9 +339,9 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
 
-        IoError aliasError;
+        auto aliasError = IoError::Unknown;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
 
         const auto result =
                 checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
@@ -356,9 +356,9 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
-        IoError aliasError = IoError::Success;
-        IoHelper::createAliasFromPath(targetPath, path, aliasError);
-        std::filesystem::remove_all(targetPath);
+        auto aliasError = IoError::Unknown;
+        (void) IoHelper::createAliasFromPath(targetPath, path, aliasError);
+        (void) IoHelper::deleteItem(targetPath);
 
         const auto result =
                 checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
@@ -521,7 +521,7 @@ void TestIo::testGetItemTypeAllBranches() {
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
-            std::filesystem::remove(path);
+            (void) IoHelper::deleteItem(path);
             return std::filesystem::read_symlink(path, ec);
         });
 
@@ -573,7 +573,7 @@ void TestIo::testGetItemTypeAllBranches() {
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
-            std::filesystem::remove(path);
+            (void) IoHelper::deleteItem(path);
             return std::filesystem::read_symlink(path, ec);
         });
 
@@ -591,8 +591,8 @@ void TestIo::testGetItemTypeAllBranches() {
         { std::ofstream ofs(targetPath); }
         std::filesystem::create_symlink(targetPath, path);
 
-        _testObj->setIsDirectoryFunction([](const SyncPath &path, std::error_code &ec) -> bool {
-            std::filesystem::remove(path);
+        _testObj->setIsDirectoryFunction([](const SyncPath &path, std::error_code &ec) {
+            (void) IoHelper::deleteItem(path);
             return std::filesystem::is_directory(path, ec);
         });
 
@@ -603,7 +603,7 @@ void TestIo::testGetItemTypeAllBranches() {
     }
 
 #if defined(KD_MACOS)
-    // Failing to read a regular MacOSX Finder alias link after `checkIfAlias` was called.
+    // Failing to read a regular macOS Finder alias link after `checkIfAlias` was called.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
@@ -653,7 +653,7 @@ void TestIo::testGetItemTypeAllBranches() {
         const auto result = checker.checkAccessIsDenied(path);
 
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-        std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
+        (void) IoHelper::deleteItem(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 

@@ -97,7 +97,7 @@ void TestIo::testOpenLockedFileRemovedBeforeTimedOut() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     std::function restoreRights = [filePath, &ioError]() {
-        Utility::msleep(900);
+        CommonUtility::msleep(900);
         IoHelper::setRights(filePath, true, true, true, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     };

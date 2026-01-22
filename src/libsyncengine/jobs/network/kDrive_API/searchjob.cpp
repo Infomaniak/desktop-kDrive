@@ -155,8 +155,8 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             SyncPath absolutePath = _syncRootPath / path;
             IoError ioError = IoError::Success;
             if (bool res = IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError); !res) {
-                LOGW_WARN(_logger,
-                          L"IoHelper::checkIfPathExists failed for " << Utility::formatSyncPath(path) << L", error: " << ioError);
+                LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << CommonUtility::formatSyncPath(path)
+                                                                              << L", error: " << ioError);
             }
         }
 

@@ -191,7 +191,7 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         NodeId nodeId;
@@ -212,7 +212,7 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        std::filesystem::remove_all(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         NodeId nodeId;

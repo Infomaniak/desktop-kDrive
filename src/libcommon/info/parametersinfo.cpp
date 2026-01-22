@@ -18,7 +18,7 @@
 
 #include "parametersinfo.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 namespace KDC {
 

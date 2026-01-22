@@ -36,11 +36,11 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     AccessRightsInfo accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        LOGW_ERROR(_logger, L"Failed to get rights - " << Utility::formatIoError(path, ioError));
+        LOGW_ERROR(_logger, L"Failed to get rights - " << CommonUtility::formatIoError(path, ioError));
         return;
     }
     if (const auto ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
-        LOGW_ERROR(_logger, L"Failed to check if file is locked - " << Utility::formatIoError(path, ioError));
+        LOGW_ERROR(_logger, L"Failed to check if file is locked - " << CommonUtility::formatIoError(path, ioError));
         return;
     }
 
@@ -52,11 +52,11 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     }
 
     if (const auto ioError = IoHelper::setFullAccess(_path); ioError != IoError::Success) {
-        LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+        LOGW_ERROR(_logger, L"Failed to set full access rights - " << CommonUtility::formatIoError(path, ioError));
     }
     (void) heldPermissions.try_emplace(_path, accessRights);
     heldPermissions[_path].count++;
-    LOGW_DEBUG(_logger, L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
+    LOGW_DEBUG(_logger, L"PermissionsHolder set full access rights: " << CommonUtility::formatSyncPath(_path) << L" / count:"
                                                                       << heldPermissions[_path].count);
 }
 
@@ -69,21 +69,22 @@ PermissionsHolder::~PermissionsHolder() {
         heldPermissions[_path].count--;
         accessRights = heldPermissions[_path];
     } catch (...) {
-        LOGW_ERROR(_logger, L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path));
+        LOGW_ERROR(_logger, L"PermissionsHolder failed to get value for: " << CommonUtility::formatSyncPath(_path));
         return;
     }
 
-    LOGW_DEBUG(_logger, L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << accessRights.count);
+    LOGW_DEBUG(_logger,
+               L"PermissionsHolder value: " << CommonUtility::formatSyncPath(_path) << L" / count:" << accessRights.count);
     if (accessRights.count > 0) return; // Do not put back read-only rights yet.
 
-    LOGW_DEBUG(_logger, L"PermissionsHolder setting back initial rights: " << Utility::formatSyncPath(_path));
+    LOGW_DEBUG(_logger, L"PermissionsHolder setting back initial rights: " << CommonUtility::formatSyncPath(_path));
     if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        LOGW_ERROR(_logger, L"Failed to set rights - " << Utility::formatIoError(_path, ioError));
+        LOGW_ERROR(_logger, L"Failed to set rights - " << CommonUtility::formatIoError(_path, ioError));
     }
     if (accessRights.locked) {
         if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
-            LOGW_ERROR(_logger, L"Failed to lock item - " << Utility::formatIoError(_path, ioError));
+            LOGW_ERROR(_logger, L"Failed to lock item - " << CommonUtility::formatIoError(_path, ioError));
         }
     }
     (void) heldPermissions.erase(_path);

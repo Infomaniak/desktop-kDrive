@@ -18,8 +18,10 @@
 
 #include "config.h"
 #include "testsentryhandler.h"
+
+#include "io/iohelper.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 #include "test_utility/testhelpers.h"
 
 #include <thread>
@@ -134,12 +136,12 @@ void TestSentryHandler::testWriteEvent() {
     // Test send event
     {
         const auto eventFilePath = sentry::Handler::getEventFilePath(AppType::Test);
-        std::error_code ec;
-        std::filesystem::remove(eventFilePath, ec);
+        (void) IoHelper::deleteItem(eventFilePath);
 
         std::string eventInStr("send event line 1\nsend event line 2\nsend event line 3");
         sentry::Handler::writeEvent(eventInStr);
 
+        std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
         std::ifstream is(eventFilePath);
@@ -148,18 +150,18 @@ void TestSentryHandler::testWriteEvent() {
 
         CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
 
-        std::filesystem::remove(eventFilePath, ec);
+        (void) IoHelper::deleteItem(eventFilePath);
     }
 
     // Test crash event
     {
         const auto eventFilePath = sentry::Handler::getCrashEventFilePath(AppType::Test);
-        std::error_code ec;
-        std::filesystem::remove(eventFilePath, ec);
+        (void) IoHelper::deleteItem(eventFilePath);
 
         std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
         sentry::Handler::writeCrashEvent(eventInStr);
 
+        std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
         std::ifstream is(eventFilePath);
@@ -168,7 +170,7 @@ void TestSentryHandler::testWriteEvent() {
 
         CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
 
-        std::filesystem::remove(eventFilePath, ec);
+        (void) IoHelper::deleteItem(eventFilePath);
     }
 }
 } // namespace KDC

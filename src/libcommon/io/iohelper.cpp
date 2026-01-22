@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h" // Path2WStr
+#include "log/sentry/handler.h"
+#include "filestat.h"
+#include "iohelper.h"
 
 #include "config.h" // APPLICATION
 
@@ -166,26 +165,26 @@ bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioEr
         if (!file.is_open()) {
             bool exists = false;
             if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
-                LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+                LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(path, ioError));
                 return isExpectedError(ioError);
             }
             if (ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(logger(), L"Access denied to " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(logger(), L"Access denied to " << CommonUtility::formatSyncPath(path));
                 return isExpectedError(ioError);
             }
             if (!exists) {
-                LOGW_DEBUG(logger(), L"Item does not exist anymore - " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(logger(), L"Item does not exist anymore - " << CommonUtility::formatSyncPath(path));
                 ioError = IoError::NoSuchFileOrDirectory;
                 return isExpectedError(ioError);
             }
-            LOGW_DEBUG(logger(), L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
+            LOGW_DEBUG(logger(), L"File is locked, retrying in one second " << CommonUtility::formatSyncPath(path));
 
-            if (count < timeOut) Utility::msleep(1000);
+            if (count < timeOut) CommonUtility::msleep(1000);
         }
     } while (++count < timeOut && !file.is_open());
 
     if (!file.is_open()) {
-        LOGW_DEBUG(logger(), L"Failed to open file - " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to open file - " << CommonUtility::formatSyncPath(path));
         ioError = IoError::AccessDenied;
         return isExpectedError(ioError);
     }
@@ -205,7 +204,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
         case IoError::NoSuchFileOrDirectory:
             return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
         default:
-            LOGW_WARN(logger(), L"Unexpected read error for " << Utility::formatIoError(path, ioError));
+            LOGW_WARN(logger(), L"Unexpected read error for " << CommonUtility::formatIoError(path, ioError));
             return ExitCode::SystemError;
     }
 }
@@ -213,10 +212,10 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
 bool IoHelper::isExpectedError(IoError ioError) noexcept {
     return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
 }
-//! Set the target type of a link item.
+//! Set the target type of link item.
 /*!
   \param targetPath is the file system path of the target of inspected link item.
-  \param itemType is the type of a link item whose targetPath is `targetPath`.
+  \param itemType is the type of link item whose targetPath is `targetPath`.
   \return true if no error occurred or if the error is expected, false otherwise.
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
@@ -234,7 +233,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         if (!expected) {
             itemType.ioError = ioError;
             LOGW_WARN(logger(),
-                      L"Failed to check if the item is a directory: " << Utility::formatStdError(itemType.targetPath, ec));
+                      L"Failed to check if the item is a directory: " << CommonUtility::formatStdError(itemType.targetPath, ec));
         }
         return expected;
     }
@@ -281,7 +280,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 
     FileStat filestat;
     if (!getFileStat(path, &filestat, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << CommonUtility::formatIoError(path, ioError));
         return false;
     }
 
@@ -308,7 +307,7 @@ IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool 
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     if (!success || itemType.ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError));
+        LOGW_WARN(logger(), L"Failed to get item type: " << CommonUtility::formatIoError(path, itemType.ioError));
         return itemType.ioError;
     }
 
@@ -322,7 +321,7 @@ IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool 
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
-        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
+        LOGW_WARN(logger(), L"Failed to get permissions: " << CommonUtility::formatStdError(path, ec));
         return ioError;
     }
 
@@ -330,7 +329,8 @@ IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool 
 #if defined(KD_MACOS)
     bool isLocked = false;
     if (const auto ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to check if file is locked for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(),
+                   L"Failed to check if file is locked for " << CommonUtility::formatSyncPath(path));
         return ioError;
     }
     write = isLocked ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
@@ -362,7 +362,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         if (isExpectedError(itemType.ioError)) {
             return true;
         }
-        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec));
+        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << CommonUtility::formatStdError(path, ec));
         return false;
     }
 
@@ -372,7 +372,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         if (itemType.ioError != IoError::Success) {
             const bool success = isExpectedError(itemType.ioError);
             if (!success) {
-                LOGW_WARN(logger(), L"Failed to read symlink: " << Utility::formatStdError(path, ec));
+                LOGW_WARN(logger(), L"Failed to read symlink: " << CommonUtility::formatStdError(path, ec));
             }
             return success;
         }
@@ -383,7 +383,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // Get target type
         FileStat filestat;
         if (!getFileStat(path, &filestat, itemType.ioError)) {
-            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec));
+            LOGW_WARN(logger(), L"Error in getFileStat: " << CommonUtility::formatStdError(path, ec));
             return false;
         }
 
@@ -399,7 +399,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
-        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError));
+        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << CommonUtility::formatIoError(path, itemType.ioError));
         return false;
     }
 
@@ -411,8 +411,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
         IoError aliasReadError = IoError::Success;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
-            LOGW_WARN(logger(),
-                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
+            LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
+                                        << CommonUtility::formatIoError(path, itemType.ioError));
             itemType.ioError = aliasReadError;
 
             return false;
@@ -434,7 +434,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (fsSupportsSymlinks) {
         bool isJunction = false;
         if (!checkIfIsJunction(path, isJunction, itemType.ioError)) {
-            LOGW_WARN(logger(), L"Failed to check if the item is a junction: " << Utility::formatIoError(path, itemType.ioError));
+            LOGW_WARN(logger(),
+                      L"Failed to check if the item is a junction: " << CommonUtility::formatIoError(path, itemType.ioError));
 
             return false;
         }
@@ -450,8 +451,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
-                LOGW_WARN(logger(),
-                          L"Failed to read an item identified as a junction: " << Utility::formatIoError(path, itemType.ioError));
+                LOGW_WARN(logger(), L"Failed to read an item identified as a junction: "
+                                            << CommonUtility::formatIoError(path, itemType.ioError));
                 return false;
             }
 
@@ -466,7 +467,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (itemType.ioError != IoError::Success) {
         const bool success = isExpectedError(itemType.ioError);
         if (!success) {
-            LOGW_WARN(logger(), L"Failed to check that item is a directory: " << Utility::formatStdError(path, ec));
+            LOGW_WARN(logger(), L"Failed to check that item is a directory: " << CommonUtility::formatStdError(path, ec));
         }
         return success;
     }
@@ -484,17 +485,17 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
     if (ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << CommonUtility::formatSyncPath(path));
         return isExpectedError(ioError);
     }
 
     if (itemType.nodeType == NodeType::Directory) {
-        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"Logic error for " << CommonUtility::formatSyncPath(path));
         ioError = IoError::IsADirectory;
         return false;
     }
@@ -510,7 +511,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
             break;
         default:
             if (itemType.nodeType != NodeType::File) {
-                LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
+                LOGW_WARN(logger(), L"Logic error for " << CommonUtility::formatSyncPath(path));
                 return false;
             }
 
@@ -519,7 +520,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
             ioError = stdError2ioError(ec);
 
             if (ioError != IoError::Success) {
-                LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(logger(), L"Failed to get item type for " << CommonUtility::formatSyncPath(path));
                 return isExpectedError(ioError);
             }
     }
@@ -533,17 +534,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
     if (ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << CommonUtility::formatSyncPath(path));
         return isExpectedError(ioError);
     }
 
     if (itemType.nodeType != NodeType::Directory) {
-        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"Logic error for " << CommonUtility::formatSyncPath(path));
         ioError = IoError::IsAFile;
         return false;
     }
@@ -551,7 +552,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << CommonUtility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
 
@@ -562,23 +563,24 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (!entry.is_symlink() && entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
-                                            << Utility::formatSyncPath(path));
+                                            << CommonUtility::formatSyncPath(path));
                 ioError = IoError::MaxDepthExceeded;
                 return isExpectedError(ioError);
             }
             uint64_t entrySize = 0;
             if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << Utility::formatSyncPath(entry.path()));
+                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << CommonUtility::formatSyncPath(entry.path()));
                 return false;
             }
 
             if (ioError != IoError::Success) {
                 if (isExpectedError(ioError)) {
                     // Ignore the directory
-                    LOGW_DEBUG(logger(), L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()));
+                    LOGW_DEBUG(logger(),
+                               L"Failed to get directory size, ignoring " << CommonUtility::formatSyncPath(entry.path()));
                     continue;
                 } else {
-                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()));
+                    LOGW_WARN(logger(), L"Failed to get directory size for " << CommonUtility::formatSyncPath(entry.path()));
                     return false;
                 }
             }
@@ -589,17 +591,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
         uint64_t entrySize = 0;
         if (!getFileSize(entry.path(), entrySize, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()));
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << CommonUtility::formatSyncPath(entry.path()));
             return false;
         }
 
         if (ioError != IoError::Success) {
             if (isExpectedError(ioError)) {
                 // Ignore the file
-                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()));
+                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << CommonUtility::formatSyncPath(entry.path()));
                 continue;
             } else {
-                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()));
+                LOGW_WARN(logger(), L"Failed to get file size for " << CommonUtility::formatSyncPath(entry.path()));
                 return false;
             }
         }
@@ -608,7 +610,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << CommonUtility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
 
@@ -812,7 +814,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     if (exists) {
         // Check nodeId
         if (!getNodeId(path, otherNodeId)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path));
+            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << CommonUtility::formatSyncPath(path));
         }
 
         existsWithSameId = (nodeId == otherNodeId);
@@ -841,7 +843,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
 
     FileStat fileStat;
     if (!getFileStat(path, &fileStat, ioError)) {
-        LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Failed to get file status: " << CommonUtility::formatIoError(path, ioError));
 
         return false;
     }
@@ -895,7 +897,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     ioError = itemType.ioError;
 
     if (!success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << CommonUtility::formatIoError(path, ioError));
         return false;
     }
 
@@ -932,9 +934,18 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
-    std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::deleteItem: " << CommonUtility::formatIoError(path, ioError));
+    }
     return ioError == IoError::Success;
+}
+
+bool IoHelper::deleteItem(const SyncPath &path) noexcept {
+    auto ioError = IoError::Unknown;
+    return IoHelper::deleteItem(path, ioError);
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
@@ -965,19 +976,19 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
-        LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << CommonUtility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
         return false;
     }
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                                  << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create directory symlink: target " << CommonUtility::formatSyncPath(targetPath) << L", "
+                                                                  << CommonUtility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                             << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << CommonUtility::formatSyncPath(targetPath) << L", "
+                                                             << CommonUtility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
@@ -1117,13 +1128,13 @@ IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = false;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to get rights for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to get rights for " << CommonUtility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
     // Remove the `write` right and force the `read` right. `exec` right is not modified.
     if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << CommonUtility::formatSyncPath(path));
         return ioError;
     }
 
@@ -1137,7 +1148,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = false;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << CommonUtility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
@@ -1148,7 +1159,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
 
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << CommonUtility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;

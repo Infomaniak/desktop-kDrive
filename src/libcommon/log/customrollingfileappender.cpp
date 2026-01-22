@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
 
 #include "config.h"
 #include "customrollingfileappender.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/utility/utility.h"
+#include "utility/utility.h"
+#include "io/iohelper.h"
+#include "io/filestat.h"
+#include "utility/utility.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/

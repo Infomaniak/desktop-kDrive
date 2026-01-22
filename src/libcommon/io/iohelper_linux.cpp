@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
+#include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <errno.h>
@@ -128,7 +128,7 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
-    if (!Utility::getLinuxDesktopType(desktopType)) {
+    if (!CommonUtility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
     }
 
@@ -142,17 +142,17 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    const SyncPath trashPath = Utility::getTrashPath();
+    const SyncPath trashPath = CommonUtility::getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << CommonUtility::formatStdError(ec));
             return false;
         }
 
         if (!std::filesystem::create_directories(trashPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << CommonUtility::formatSyncPath(trashPath));
             return false;
         }
     }

@@ -18,7 +18,7 @@
 
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
 
@@ -54,7 +54,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const 
     FileStat fileStat;
     auto ioError = IoError::Unknown;
     if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
+        LOGW_WARN(_logger,
+                  L"Failed to get FileStat for " << CommonUtility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;
 }
@@ -63,11 +64,13 @@ UploadJob::~UploadJob() {
     if (!_vfs || isAborted()) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
     if (const auto exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
+        LOGW_WARN(_logger,
+                  L"Error in vfsForceStatus - " << CommonUtility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 
     if (const auto exitInfo = _vfs->setPinState(_absoluteFilePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
+        LOGW_WARN(_logger,
+                  L"Error in vfsSetPinState - " << CommonUtility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 }
 
@@ -80,17 +83,17 @@ ExitInfo UploadJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteFilePath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_absoluteFilePath, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
-                                    << Utility::formatSyncPath(_absoluteFilePath));
+                                    << CommonUtility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -145,17 +148,17 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
 ExitInfo UploadJob::setData() {
     ItemType itemType;
     if (!IoHelper::getItemType(_absoluteFilePath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << CommonUtility::formatSyncPath(_absoluteFilePath));
         return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << CommonUtility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_DEBUG(_logger, L"Item misses search permission - " << CommonUtility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
@@ -196,7 +199,7 @@ ExitInfo UploadJob::readFile() {
     // "file not found" errors.
     std::ifstream file;
     if (ExitInfo exitInfo = IoHelper::openFile(_absoluteFilePath, file, 10); !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Failed to open file " << CommonUtility::formatSyncPath(_absoluteFilePath));
         return exitInfo;
     }
 
@@ -266,17 +269,17 @@ ExitInfo UploadJob::readLink() {
 #if defined(KD_WINDOWS)
         IoError ioError = IoError::Success;
         if (!IoHelper::readJunction(_absoluteFilePath, _data, _linkTarget, ioError)) {
-            LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_absoluteFilePath, ioError));
+            LOGW_WARN(_logger, L"Failed to read junction - " << CommonUtility::formatIoError(_absoluteFilePath, ioError));
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_absoluteFilePath));
+            LOGW_DEBUG(_logger, L"File doesn't exist - " << CommonUtility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_absoluteFilePath));
+            LOGW_DEBUG(_logger, L"File misses search permissions - " << CommonUtility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 #endif
