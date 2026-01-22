@@ -52,7 +52,6 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           cache: false
-          experimental: true
       - name: Checkout
         uses: actions/checkout@v4
       - name: SwiftLint
@@ -68,7 +67,6 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           cache: false
-          experimental: true
       - name: Checkout
         uses: actions/checkout@v4
       - name: SwiftFormat
