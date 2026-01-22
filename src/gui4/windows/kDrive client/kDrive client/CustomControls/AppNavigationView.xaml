@@ -70,7 +70,7 @@
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
                 <controls:SvgIcon Height="16"
-                                  UriString="{StaticResource Infomaniak.Custom.Icons.folder-circle-arrow-right}"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
                                   Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>

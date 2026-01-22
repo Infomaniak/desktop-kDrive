@@ -192,7 +192,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     if (auto exitInfo = editChangeShouldBePropagated(currentNode, propagateEdit); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
                                            << Utility::formatSyncPath(currentNode->getPath()) << L" " << exitInfo);
-        _syncPal->addError(Error(ERR_ID, exitInfo));
+        _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
     }
 
     if (!propagateEdit) {

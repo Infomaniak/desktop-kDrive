@@ -39,7 +39,13 @@
                                    Height="16" />
 
                     <TextBlock Grid.Column="2"
-                               Text="{x:Bind Node.Name}" />
+                               Text="{x:Bind Node.Name}"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="220">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Node.Name}" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <ProgressRing Grid.Column="3"
                                   Visibility="{x:Bind IsLoadingChildren, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                   IsIndeterminate="True"
@@ -49,7 +55,7 @@
                     <local:ContentLoader Grid.Column="4"
                                          HorizontalAlignment="Right"
                                          IsLoading="{x:Bind Node.IsLoadingSize, Mode=OneWay}"
-                                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                          MinWidth="60"
                                          Margin="{StaticResource Infomaniak.Style.Thickness.Right.M}"
                                          DataContextChanged="SizeContentLoader_DataContextChanged">
@@ -106,7 +112,7 @@
 
     <local:ContentLoader x:Name="TreeViewContentLoader"
                          IsLoading="{x:Bind IsLoading, Mode=OneWay}"
-                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                          LoaderMinHeight="200">
         <local:ContentLoader.LoaderContent>
             <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
