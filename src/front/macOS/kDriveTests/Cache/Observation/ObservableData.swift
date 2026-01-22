@@ -185,7 +185,7 @@ public enum ObservableData {
                                           targetNodeId: secondaryTargetNodeId,
                                           supportVfs: secondarySupportVFS,
                                           virtualFileMode: secondaryVirtualFileMode)
-    
+
     static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
