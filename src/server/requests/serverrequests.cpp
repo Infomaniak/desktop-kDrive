@@ -322,7 +322,9 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
 
     const QString qPath = QString::fromStdString(path.string());
     QString qError;
-    if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
+    ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError);
+    bool alreadyExists = exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::DirExists);
+    if (!exitInfo && !alreadyExists) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
         return ExitCode::Ok;
     }
@@ -330,25 +332,25 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
     // If the directory exists, check if it is empty
     bool isEmpty = true;
     std::error_code ec;
-    if (std::filesystem::exists(path, ec) && !ec) {
-        if (!std::filesystem::is_directory(path)) {
+    if (alreadyExists) {
+        if (!std::filesystem::is_directory(path, ec)) {
             LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
-            valid = false;
             return ExitCode::Ok;
+        }
+        if (ec) {
+            LOG_WARN(Log::instance()->getLogger(), "Error checking if path is a directory: " << ec.message());
+            return ExitCode::SystemError;
         }
 
         isEmpty = std::filesystem::is_empty(path, ec);
-    }
-
-    if (ec) {
-        LOG_WARN(Log::instance()->getLogger(), "Error checking if path exists/is empty: " << ec.message());
-        valid = false;
-        return ExitCode::SystemError;
+        if (ec) {
+            LOG_WARN(Log::instance()->getLogger(), "Error checking if path is empty: " << ec.message());
+            return ExitCode::SystemError;
+        }
     }
 
     if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
         LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << Utility::formatSyncPath(path));
-        valid = false;
         return ExitCode::Ok;
     }
 
@@ -2131,11 +2133,28 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         return exitCode;
     }
 
-    // check if the local directory isn't used yet in another sync
     Qt::CaseSensitivity cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
+    // Check if the local directory already exists
+    IoError ioError = IoError::Success;
+    bool found = false;
+    const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError);
+    if (!success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
+        error = QObject::tr("An error occurred while checking the local folder. Please try again.");
+        return ExitCode::SystemError;
+    }
+
+    if (found) {
+        error = QObject::tr("The local folder %1 already exists. Please pick another one!")
+                        .arg(QDir::toNativeSeparators(path));
+        return {ExitCode::SystemError, ExitCause::DirExists};
+    }
+
+    // check if the local directory isn't used yet in another sync
     QList<std::filesystem::path> existingSyncFolderList;
     for (const Sync &sync: syncList) {
         existingSyncFolderList << sync.localPath();
