@@ -28,7 +28,7 @@ public struct ErrorInfo: Identifiable, Hashable, Sendable {
 
     public let dbId: Int32
     public let synchroDbId: Int32
-    public let time: Int64
+    public let time: TimeInterval
     public let level: KDC.ErrorLevel
     public let functionName: String
     public let workerName: String

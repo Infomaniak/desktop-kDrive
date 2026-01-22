@@ -120,7 +120,7 @@ enum CacheData {
     static let expectedLoginErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
                                               synchroDbId: expectedSynchroDbId,
-                                              time: Int64(Date().timeIntervalSince1970),
+                                              time: Date().timeIntervalSince1970,
                                               level: KDC.ErrorLevel.SyncPal,
                                               functionName: "",
                                               workerName: "",
@@ -138,7 +138,7 @@ enum CacheData {
 
     static let updatedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
                                              synchroDbId: expectedSynchroDbId,
-                                             time: Int64(Date().timeIntervalSince1970),
+                                             time: Date().timeIntervalSince1970,
                                              level: KDC.ErrorLevel.SyncPal,
                                              functionName: "some update",
                                              workerName: "",
@@ -157,7 +157,7 @@ enum CacheData {
     static let expectedAsleepErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedAsleepError = ErrorInfo(dbId: expectedAsleepErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
-                                               time: Int64(Date().timeIntervalSince1970),
+                                               time: Date().timeIntervalSince1970,
                                                level: KDC.ErrorLevel.SyncPal,
                                                functionName: "",
                                                workerName: "",
@@ -176,7 +176,7 @@ enum CacheData {
     static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
-                                               time: Int64(Date().timeIntervalSince1970),
+                                               time: Date().timeIntervalSince1970,
                                                level: KDC.ErrorLevel.Server,
                                                functionName: "main.swift",
                                                workerName: "",
@@ -194,7 +194,7 @@ enum CacheData {
 
     static let updatedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
                                               synchroDbId: expectedSynchroDbId,
-                                              time: Int64(Date().timeIntervalSince1970),
+                                              time: Date().timeIntervalSince1970,
                                               level: KDC.ErrorLevel.Server,
                                               functionName: "main_updated.swift",
                                               workerName: "",
@@ -216,7 +216,7 @@ enum CacheData {
     static let expectedFileSyncErrorPath = "/dev/null"
     static let expectedFileSyncError = ErrorInfo(dbId: expectedFileSyncErrorDbId,
                                                  synchroDbId: expectedSynchroDbId,
-                                                 time: Int64(Date().timeIntervalSince1970 + 1),
+                                                 time: Date().timeIntervalSince1970 + 1,
                                                  level: KDC.ErrorLevel.Node,
                                                  functionName: "",
                                                  workerName: "",

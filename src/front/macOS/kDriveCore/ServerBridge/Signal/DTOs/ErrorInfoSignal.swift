@@ -29,7 +29,7 @@ struct ErrorInfoSignal: Codable, Sendable {
 struct ErrorInfoMetadata: Codable, Sendable {
     let dbId: Int32
     let syncDbId: Int32
-    let time: Int64
+    let time: TimeInterval
     let level: KDC.ErrorLevel
     @Base64CodedString var functionName: String
     @Base64CodedString var workerName: String

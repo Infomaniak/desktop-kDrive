@@ -189,7 +189,7 @@ public enum ObservableData {
     static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
-                                               time: Int64(Date().timeIntervalSince1970),
+                                               time: Date().timeIntervalSince1970,
                                                level: KDC.ErrorLevel.Server,
                                                functionName: "main.swift",
                                                workerName: "",
