@@ -122,13 +122,13 @@ public struct SyncJobs: Sendable {
         IKLogger.data.log("Query to addSync")
 
         switch identifier {
-        case let .transitive(userDbId, accountId, driveId):
+        case .transitive(let userDbId, let accountId, let driveId):
             let newSyncQuery = NewSyncQuery(userDbId: userDbId,
                                             accountId: accountId,
                                             driveId: driveId,
                                             metadata: metadata)
             return try await addSync(newSyncQuery)
-        case let .driveDbId(driveDbId):
+        case .driveDbId(let driveDbId):
             let newSyncQuery = NewSyncQueryAlternate(driveDbId: driveDbId, metadata: metadata)
             return try await addSync(newSyncQuery)
         }

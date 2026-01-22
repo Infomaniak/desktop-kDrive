@@ -36,7 +36,7 @@ public final class NetworkObserver: ObservableObject {
         monitor.cancel()
     }
 
-    nonisolated private func handlePathUpdate(_ path: NWPath) {
+    private nonisolated func handlePathUpdate(_ path: NWPath) {
         Task { @MainActor in
             switch path.status {
             case .satisfied:

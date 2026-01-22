@@ -16,9 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
-import kDriveResources
 import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
 extension HomeState {
     var greetingLabel: String {
