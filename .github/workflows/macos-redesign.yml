@@ -44,7 +44,7 @@ jobs:
 
   swiftlint:
     name: SwiftLint
-    runs-on: [ self-hosted, iOS]
+    runs-on: ubuntu-latest
     if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
@@ -60,7 +60,7 @@ jobs:
 
   swiftformat:
     name: SwiftFormat
-    runs-on: [ self-hosted, iOS ]
+    runs-on: ubuntu-latest
     if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
