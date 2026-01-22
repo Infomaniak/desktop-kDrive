@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.ViewModels
         private Account _account;
 
         // Gui infos
-        private bool _displayRemoteSpaceWarning = false;
+        private bool _displayRemoteSpaceWarning = true;
         public Drive(DbId dbId, Account account)
         {
             _dbId = dbId;

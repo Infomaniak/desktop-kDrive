@@ -300,6 +300,7 @@
                 
                 <errors:RemoteDiskFullBar Grid.Row="0"
                                           Visibility="Visible"
+                                          Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
                                           Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
             </StackPanel>
             <!-- State widget -->

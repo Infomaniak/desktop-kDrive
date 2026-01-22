@@ -15,7 +15,7 @@
     </UserControl.Resources>
     <InfoBar x:Uid="CC_RemoteDiskFullBar"
              Severity="Informational"
-             IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
+             IsOpen="{x:Bind Drive.DisplayRemoteSpaceWarning, Mode=OneWay}"
              IsClosable="True"
              Closed="InfoBar_Closed">
         <InfoBar.IconSource>

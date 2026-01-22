@@ -270,8 +270,11 @@ namespace Infomaniak.kDrive.ViewModels
                     if (SyncErrorState != SyncErrorStates.Undefined)
                     {
                         Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
-                        return;
                     }
+
+                    if (error.ExitCause == ExitCause.QuotaExceeded)
+                        Drive.DisplayRemoteSpaceWarning = true;
+
                 }
 
                 if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
