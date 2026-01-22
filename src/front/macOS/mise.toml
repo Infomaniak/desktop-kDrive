@@ -1,4 +1,4 @@
 [tools]
-swiftformat = { version = "0.57.2", os = ["macos", "linux"] }
-swiftlint = { version = "0.59.1", os = ["macos", "linux"] }
+swiftformat = { version = "0.58.7", os = ["macos", "linux"] }
+swiftlint = { version = "0.63.0", os = ["macos", "linux"] }
 swiftgen = { version = "6.6.3", os = ["macos"] }
