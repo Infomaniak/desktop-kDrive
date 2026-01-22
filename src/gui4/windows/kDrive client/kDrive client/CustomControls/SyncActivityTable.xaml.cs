@@ -195,25 +195,29 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
         {
+            const string loadingTextXuid = "CC_SyncActivityTable_FetchingLink/Text";
+            const string errorTextXuid = "CC_SyncActivityTable_LinkFaillure/Text";
+            const string successTextXuid = "CC_SyncActivityTable_LinkFetched/Text";
+
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
                 return;
             }
 
             // Find parrent button to anchor teaching tip
 
 
-            DisplayTeachingTip("Recuperation du lien de partage...", true);
+            DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
 
 
             var activity = element.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
                 return;
             }
 
@@ -226,12 +230,12 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip("Lien de partage copié", false);
+                DisplayTeachingTip(Utility.GetLocalizedString(successTextXuid), false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
             }
         }
 

@@ -24,7 +24,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Synchronisation terminée"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_Finished"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}" />
@@ -40,7 +40,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Synchronisation en cours"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_InProgress"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}" />
@@ -53,7 +53,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Synchronisation en pause"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_Paused"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}"
@@ -70,7 +70,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Erreurs de synchronisation"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_Error"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert}"
@@ -84,7 +84,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Hors ligne"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_Offline"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
@@ -98,7 +98,7 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Aucune activité récente"
+                    <TextBlock x:Uid="Page_ActivityPage_SyncState_NoActivity"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                 </StackPanel>
             </StackPanel>
@@ -120,8 +120,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="24"
-          RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -153,7 +152,7 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="Mon activité uniquement" />
+                        <TextBlock x:Uid="Page_ActivityPage_Filter_My" />
                     </StackPanel>
                 </ComboBoxItem>
                 <ComboBoxItem>
@@ -162,21 +161,22 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="Toutes les activités" />
+                        <TextBlock x:Uid="Page_ActivityPage_Filter_All"
+                                   Text="Toutes les activités" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox.Items>
         </ComboBox>
 
         <!-- Left main pane -->
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="1"
               Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <controlsErrors:ErrorBar Grid.Row="0" 
-                                     Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}"/>
+            <controlsErrors:ErrorBar Grid.Row="0"
+                                     Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}" />
             <controls:SyncActivityTable Grid.Row="1"
                                         ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
         </Grid>

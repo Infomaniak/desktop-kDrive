@@ -154,7 +154,7 @@
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="Erreur de synchronisation" />
+                                                 x:Uid="CC_SyncActivityTable_ItemErrorStatus_Tooltip" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
                             </DataTemplate>
@@ -165,7 +165,7 @@
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="Synchronisé" />
+                                                 x:Uid="CC_SyncActivityTable_ItemSyncedStatus_Tooltip" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
 
@@ -178,7 +178,7 @@
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="Synchronisation en cours" />
+                                                 x:Uid="CC_SyncActivityTable_ItemSyncingStatus_Tooltip" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
                             </DataTemplate>
@@ -200,27 +200,24 @@
                                     </Button.Content>
                                     <Button.Flyout>
                                         <MenuFlyout Placement="RightEdgeAlignedTop">
-                                            <MenuFlyoutItem Text="Open in Explorer"
-                                                            Click="OpenInExplorer_Click"
-                                                            Padding="4,2">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_OpenExplorer"
+                                                            Click="OpenInExplorer_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
                                                                       UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Open Online"
-                                                            Click="OpenOnline_Click"
-                                                            Padding="4,2">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_OpenOnline"
+                                                            Click="OpenOnline_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Copy Public Link"
-                                                            Click="CopyPublicLink_Click"
-                                                            Padding="4,2">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_CopyLink"
+                                                            Click="CopyPublicLink_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
@@ -250,9 +247,8 @@
                                     </Button.Content>
                                     <Button.Flyout>
                                         <MenuFlyout Placement="RightEdgeAlignedTop">
-                                            <MenuFlyoutItem Text="Corriger les erreurs"
-                                                            Click="NavigateToErrorPageButton_Click"
-                                                            Padding="4,2">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_FixErrors"
+                                                            Click="NavigateToErrorPageButton_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
@@ -379,7 +375,7 @@
         </ListView>
         <TeachingTip x:Name="NotificationTeachingTip"
                      IsLightDismissEnabled="True"
-                     PreferredPlacement="bottom"
+                     PreferredPlacement="Bottom"
                      ShouldConstrainToRootBounds="True">
 
             <StackPanel Orientation="Horizontal"
