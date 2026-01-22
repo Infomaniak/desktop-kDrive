@@ -306,7 +306,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         synchro.errors[error.dbId] = error
-        synchro.latestError = SynchroError(errorInfo: error)
+        if synchro.latestError == nil {
+            synchro.latestError = SynchroError(errorInfo: error)
+        }
 
         try updateSynchro(synchro)
     }
