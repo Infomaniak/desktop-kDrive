@@ -417,6 +417,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
     }
 
     path = folder;
+    error = "";
     return ExitCode::Ok;
 }
 
@@ -2133,7 +2134,7 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         return exitCode;
     }
 
-    Qt::CaseSensitivity cs = Qt::CaseSensitive;
+    auto cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
