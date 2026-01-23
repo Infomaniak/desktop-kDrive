@@ -1795,7 +1795,6 @@ ExitCode ServerRequests::deleteLiteSyncErrors() {
 
 ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;
-    quotaUpdated = false;
     accountUpdated = false; 
     quotaUpdated = false; // TODO: variable to be removed once migrated to the new UI
     // Get drive data
