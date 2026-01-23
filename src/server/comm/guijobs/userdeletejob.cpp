@@ -54,8 +54,8 @@ ExitInfo UserDeleteJob::serializeOutputParms() {
 ExitInfo UserDeleteJob::process() {
     // Get syncs do delete
     std::vector<int> syncDbIdList;
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    for (const auto &[syncDbId, syncPal]: AppServer::syncPalMap) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
         if (syncPal->userDbId() == _userDbId) {
             syncDbIdList.push_back(syncDbId);

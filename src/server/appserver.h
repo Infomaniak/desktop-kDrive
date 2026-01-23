@@ -57,11 +57,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
 
     public:
-        static SyncPalMap syncPalMap;
-        static std::recursive_mutex syncPalMapMutex;
+        SyncPalMap syncPalMap;
+        std::recursive_mutex syncPalMapMutex;
 
-        static VfsMap vfsMap;
-        static std::recursive_mutex vfsMapMutex;
+        VfsMap vfsMap;
+        std::recursive_mutex vfsMapMutex;
 
         struct SyncCache {
                 SyncStatus _status;
@@ -109,7 +109,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
         void addError(const Error &error) const;
-        static void updateSentryUser();
+        void updateSentryUser();
         void deleteDrive(int driveDbId);
         void deleteSync(int syncDbId);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
@@ -123,7 +123,7 @@ class AppServer : public SharedTools::QtSingleApplication {
           \return ExitCode::Ok if no unexpected error occurred.
         */
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
-        [[nodiscard]] static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
+        [[nodiscard]] ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
@@ -160,10 +160,10 @@ class AppServer : public SharedTools::QtSingleApplication {
 
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+        ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
         }
-        static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
+        ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
             return ServerRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
         }
 #endif
@@ -261,6 +261,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveRemoved(int driveDbId) const;
         void sendDriveDeletionFailed(int driveDbId) const;
         void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const;
+        void sendSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress) const;
         void sendSyncAdded(const SyncInfo &syncInfo) const;
         void sendSyncUpdated(const SyncInfo &syncInfo) const;
         void sendSyncRemoved(int syncDbId) const;
@@ -269,6 +270,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendErrorsCleared(int syncDbId) const;
         void sendQuit() const; // Ask client to quit
         void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
+        void sendNodeFixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) const;
 
         void deleteAccount(int accountDbId);
         void sendErrorAdded(const ErrorInfo &errorInfo) const;
@@ -295,7 +297,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void handleClientCrash(bool &quit);
 
 #if defined(KD_MACOS)
-        bool noMacVfsSync() const;
+        bool noMacVfsSync();
         bool areMacVfsAuthsOk() const;
 #endif
 

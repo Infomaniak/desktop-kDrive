@@ -45,9 +45,11 @@
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditemjob.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalnodefixconflictedfilescompletedjob.h"
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfojob.h"
+#include "server/comm/guijobs/signalsyncfileprogressinfojob.h"
 #include "server/comm/guijobs/signalupdatershowdialogjob.h"
 #include "server/comm/guijobs/signalupdaterstatechangedjob.h"
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
@@ -110,11 +112,6 @@
 #define START_SYNCPALS_TIME_GAP 5 // sec
 
 namespace KDC {
-
-SyncPalMap AppServer::syncPalMap;
-std::recursive_mutex AppServer::syncPalMapMutex;
-VfsMap AppServer::vfsMap;
-std::recursive_mutex AppServer::vfsMapMutex;
 
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
@@ -914,7 +911,7 @@ std::string AppServer::appUID() const {
 }
 
 #if defined(KD_MACOS)
-bool AppServer::noMacVfsSync() const {
+bool AppServer::noMacVfsSync() {
     const std::scoped_lock lock(vfsMapMutex);
     for (const auto &[_, vfs]: vfsMap) {
         if (vfs->mode() == VirtualFileMode::Mac) {
@@ -2448,6 +2445,21 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) c
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
         LOG_WARN(Log::instance()->getLogger(), AppStateKey::LogUploadPercent << " not found in appState table");
+    }
+}
+
+void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) const {
+    if (useOldCommServer()) {
+        int id = 0;
+
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        paramsStream << nbErrors;
+        OldCommServer::instance()->sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalNodeFixConflictedFilesCompletedJob>(syncDbId, nbErrors));
     }
 }
 
@@ -4563,6 +4575,12 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     }
     if (useCommManager()) {
         _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfoJob>(syncDbId, status, step, progress));
+    }
+}
+
+void AppServer::sendSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress) const {
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncFileProgressInfoJob>(syncDbId, itemInfo, progress));
     }
 }
 

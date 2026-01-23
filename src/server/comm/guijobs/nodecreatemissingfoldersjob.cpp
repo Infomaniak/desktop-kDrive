@@ -93,8 +93,8 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
     // Pause all syncs of the drive
     std::vector<int> pausedSyncs;
 
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    for (const auto &[syncPalId, syncPal]: AppServer::syncPalMap) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveDbId() != _driveDbId || syncPal->isPaused()) continue;
         syncPal->pause();
         pausedSyncs.push_back(syncPalId);
@@ -108,7 +108,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
     }
 
     // Add the first created node to the blacklist of every sync
-    for (const auto &[syncPalId, syncPal]: AppServer::syncPalMap) {
+    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveDbId() != _driveDbId) continue;
 
         // Get blacklist
@@ -132,7 +132,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
 
     // Resume all paused syncs
     for (const auto syncDbId: pausedSyncs) {
-        if (AppServer::syncPalMap.contains(syncDbId)) AppServer::syncPalMap[syncDbId]->unpause();
+        if (_commManager->appServer().syncPalMap.contains(syncDbId)) _commManager->appServer().syncPalMap[syncDbId]->unpause();
     }
 
     return ExitCode::Ok;
