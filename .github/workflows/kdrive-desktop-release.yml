@@ -371,5 +371,4 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.kDrive_version }}"
           echo "<h1>:package: kDrive Version: ${VERSION}</h1>" >> $GITHUB_STEP_SUMMARY
-          echo "Full version number including build: **${VERSION}**" >> $GITHUB_STEP_SUMMARY
         shell: bash
