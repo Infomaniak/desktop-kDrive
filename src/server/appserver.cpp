@@ -2215,7 +2215,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << QString::fromStdString(appStateValueStr);
             break;
         }
-        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
             const bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);

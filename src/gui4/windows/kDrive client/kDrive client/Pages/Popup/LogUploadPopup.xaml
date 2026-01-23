@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.Popup.LogUploadPopup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+        <TextBlock x:Uid="Pages_LogUploadPopup"
+                   TextWrapping="WrapWholeWords"/>
+        <CheckBox x:Name="CheckBox"
+                  x:Uid="Pages_LogUploadPopup_CheckBox"
+                  IsChecked="False"/>
+    </StackPanel>
+</Page>
