@@ -53,6 +53,7 @@
     <!-- Network -->
     <x:String x:Key="Infomaniak.DS.Icons.Network.globe">ms-appx:///Assets/DS/Icons/Network/globe.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Network.cloud-offline">ms-appx:///Assets/DS/Icons/Network/cloud-offline.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Network.hardware">ms-appx:///Assets/DS/Icons/Network/hardware.svg</x:String>
 
     <!-- Security -->
     <x:String x:Key="Infomaniak.DS.Icons.Security.lock">ms-appx:///Assets/DS/Icons/Security/lock.svg</x:String>

@@ -285,10 +285,19 @@
   <data name="CC_ErrorBar.Title" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_RemoteDiskFullBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_RemoteDiskFullBar.Title" xml:space="preserve">
+    <value />
+  </data>
   <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value />
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_RemoteDiskFullBar_Button.Content" xml:space="preserve">
     <value />
   </data>
   <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
