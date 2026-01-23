@@ -33,9 +33,9 @@ void TestGuiJobPriority::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     (void) IoHelper::deleteItem(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
 void TestGuiJobPriority::tearDown() {
@@ -45,15 +45,14 @@ void TestGuiJobPriority::tearDown() {
 void TestGuiJobPriority::testPriority() {
     GuiJobFactory guiJobFactory;
     JobManagerData jobManagerData;
-    auto testChannel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
     for (auto i = 0; i < 10; i++) {
-        auto job = guiJobFactory.make(RequestNum::NODE_FOLDER_SIZE, nullptr, i, {}, testChannel);
+        const auto job = guiJobFactory.make(RequestNum::NODE_FOLDER_SIZE, nullptr, i, {}, nullptr);
         jobManagerData.queue(job, job->jobPriority());
     }
-    auto setBlacklistJob = guiJobFactory.make(RequestNum::BLACKLISTED_NODE_SETLIST, nullptr, 10, {}, testChannel);
+    const auto setBlacklistJob = guiJobFactory.make(RequestNum::BLACKLISTED_NODE_SETLIST, nullptr, 10, {}, nullptr);
     jobManagerData.queue(setBlacklistJob, setBlacklistJob->jobPriority());
 
-    auto topJob = jobManagerData._queuedJobs.top().first;
+    const auto topJob = jobManagerData._queuedJobs.top().first;
     CPPUNIT_ASSERT_EQUAL(setBlacklistJob->jobId(), topJob->jobId());
 }
 } // namespace KDC
