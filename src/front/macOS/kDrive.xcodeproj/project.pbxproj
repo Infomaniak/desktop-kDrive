@@ -137,6 +137,8 @@
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/HexColorTests.swift,
+				Parsing/Jobs/JSON/NODE_PATH.json,
+				Parsing/Jobs/NodePathTest.swift,
 				Parsing/SignalMessageTests.swift,
 				Parsing/Signals/JSON/USER_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
