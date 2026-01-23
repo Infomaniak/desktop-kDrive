@@ -3910,7 +3910,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = [this]([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
             if (useCommManager()) {
                 _commManager->executeCommandDirect(command, broadcast);
@@ -4112,7 +4112,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
         ServerRequests::syncToSyncInfo(sync, syncInfo);
         sendSyncUpdated(syncInfo);
 
-        auto func = [newMode, vfs, sync, asyncResponse, startPostponed, syncDbId]() {
+        auto func = [this, newMode, vfs, sync, asyncResponse, startPostponed, syncDbId]() {
             if (newMode != VirtualFileMode::Off && vfs) {
                 // Clear file system
                 vfs->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
@@ -4435,7 +4435,6 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) const {
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
         paramsStream << driveInfo;
 
-    }
         OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
     }
     if (useCommManager()) {
