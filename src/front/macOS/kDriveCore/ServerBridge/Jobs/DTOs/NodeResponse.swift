@@ -26,3 +26,24 @@ struct NodePathQuery: Codable, Sendable {
 struct NodePathResponse: Codable, Sendable {
     @Base64CodedString var path: String
 }
+
+struct NodeInfoQuery: Codable, Sendable {
+    let userDbId: Int32
+    let driveId: Int32
+    @Base64CodedString var nodeId: String
+    let withPath: Bool
+}
+
+struct NodeInfoResponse: Codable, Sendable {
+    let nodeInfo: NodeInfoResponseMetadata
+}
+
+public struct NodeInfoResponseMetadata: Codable, Sendable {
+    let modtime: TimeInterval
+    @Base64CodedString var name: String
+    @Base64CodedString var nodeId: String
+    @Base64CodedString var parentNodeId: String
+    @Base64CodedString var path: String
+    let size: Int64
+    let accessDenied: Bool
+}

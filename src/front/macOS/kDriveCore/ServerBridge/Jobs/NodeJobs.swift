@@ -26,7 +26,6 @@ public struct NodeJobs: Sendable {
 
     public init() {}
 
-    @discardableResult
     public func getNodePath(syncDbId: Int32, nodeId: String) async throws -> String {
         IKLogger.data.log("Query to get a node path")
         let query = NodePathQuery(syncDbId: syncDbId, nodeId: nodeId)
@@ -38,5 +37,21 @@ public struct NodeJobs: Sendable {
 
         let path = decodedMessage.body.path
         return path
+    }
+
+    public func getNodeInfo(userDbId: Int32,
+                            driveId: Int32,
+                            nodeId: String,
+                            withPath: Bool = true) async throws -> NodeInfoResponseMetadata {
+        IKLogger.data.log("Query to get node info")
+        let query = NodeInfoQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
+        let request = await RequestMessage<NodeInfoQuery>(num: RequestNum.NODE_INFO, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeInfoResponse>.self)
+
+        try decodedMessage.validate()
+
+        let nodeInfo = decodedMessage.body.nodeInfo
+        return nodeInfo
     }
 }
