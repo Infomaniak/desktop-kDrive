@@ -32,6 +32,7 @@ UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType,
     _totalChunks(totalChunks),
     _uploadType(uploadType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
 }
 
 UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const NodeId &fileId,
