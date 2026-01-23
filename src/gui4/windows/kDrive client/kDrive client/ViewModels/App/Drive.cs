@@ -31,21 +31,23 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Drive : UISafeObservableObject, IDrive
     {
-        // Server infos
-        private DbId _dbId = -1;
+        // Drive properties
+        private DbId _dbId;
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
         private bool _isFreeOffer = true; // Indicates if the drive is a free offer
-        private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private readonly  ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
-        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
         private Account _account;
 
-        // Gui infos
-        private bool _displayRemoteSpaceWarning = true;
+        // Drive UI properties
+        private bool _displayRemoteSpaceWarning = false;
+        private readonly ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+
+
         public Drive(DbId dbId, Account account)
         {
             _dbId = dbId;
@@ -60,7 +62,7 @@ namespace Infomaniak.kDrive.ViewModels
             var advancedSyncs = Syncs.Where(s => s != MainSync);
             foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
             {
-                Sync? sync = _advancedSyncs.ElementAt(i);
+                Sync? sync = _advancedSyncs[i];
                 if (!advancedSyncs.Contains(sync))
                     _advancedSyncs.Remove(sync);
             }

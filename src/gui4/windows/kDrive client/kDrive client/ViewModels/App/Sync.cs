@@ -37,16 +37,17 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
         private bool _supportOnlineMode = true;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
-        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
-        private bool _syncTypeMigrationInProgress = false;
-        private SyncFileItem? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
+        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private bool _syncTypeMigrationInProgress = false;
+        private SyncFileItem? _lastActivity;
+
 
         public SyncStatus SyncStatus
         {
