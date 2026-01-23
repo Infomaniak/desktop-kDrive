@@ -198,3 +198,6 @@ cmake-build-debug*
 
 # Xcode
 DerivedData/
+
+# Misc
+PROXYAI.md

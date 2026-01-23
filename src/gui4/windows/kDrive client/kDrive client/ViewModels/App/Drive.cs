@@ -41,6 +41,9 @@ namespace Infomaniak.kDrive.ViewModels
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
+        private System.Int64 _size = 0;
+        private System.Int64 _usedSize = 0;
+
         private Account _account;
 
         // Drive UI properties
@@ -117,6 +120,18 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _isFreeOffer;
             set => SetPropertyInUIThread(ref _isFreeOffer, value);
+        }
+
+        public System.Int64 Size
+        {
+            get => _size;
+            set => SetPropertyInUIThread(ref _size, value);
+        }
+
+        public System.Int64 UsedSize
+        {
+            get => _usedSize;
+            set => SetPropertyInUIThread(ref _usedSize, value);
         }
 
         public ObservableCollection<Sync> Syncs

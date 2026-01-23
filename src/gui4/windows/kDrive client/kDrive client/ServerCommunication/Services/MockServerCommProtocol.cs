@@ -214,7 +214,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "notifications", true },
                     { "maintenance", false },
                     { "locked", false },
-                    { "accessDenied", false }
+                    { "accessDenied", false },
+                    { "size", 0 },
+                    { "usedSize", 0 }
                 };
                 if (!result.ContainsKey(JsonKeys.DriveInfoList))
                 {
