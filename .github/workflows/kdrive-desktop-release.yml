@@ -3,10 +3,6 @@ name: Release kDrive Desktop app
 on:
   workflow_dispatch:  
     inputs:
-      environment:
-        type: environment
-        description: Select the deployment environment
-        default: Internal beta
       build_windows:
         type: boolean
         description: Build Windows executables
@@ -357,3 +353,22 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-macos\kDrive_client.src.zip
         shell: powershell
+
+  display-version:
+    if: always()
+    needs: [build-Windows, build-Linux-amd, build-Linux-arm, build-MacOS]
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+
+      - name: Get kDrive version
+        id: get-version
+        uses: ./.github/actions/get_version
+
+      - name: Display version in workflow summary
+        run: |
+          VERSION="${{ steps.get-version.outputs.kDrive_version }}"
+          echo "<h1>:package: kDrive Version: ${VERSION}</h1>" >> $GITHUB_STEP_SUMMARY
+          echo "Full version number including build: **${VERSION}**" >> $GITHUB_STEP_SUMMARY
+        shell: bash
