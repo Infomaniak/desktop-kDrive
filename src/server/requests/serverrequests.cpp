@@ -1797,7 +1797,8 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     updated = false;
     accountUpdated = false; // TODO: variable to be removed once migrated to the new UI
     quotaUpdated = false;
-
+    accountUpdated = false; 
+quotaUpdated = false; // TODO: variable to be removed once migrated to the new UI
     // Get drive data
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
