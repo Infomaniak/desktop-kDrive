@@ -278,7 +278,7 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
     GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
-void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
+void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
 

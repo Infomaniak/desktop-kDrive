@@ -565,7 +565,12 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                     }
 
                     job->setAffectedFilePath(relativeLocalFilePath);
-                    job->setProgressPercentCallback([this](const UniqueId jobId, const int64_t progress) {});
+                    job->setProgressPercentCallback([this](const UniqueId jobId, const int64_t progress) {
+                        /*SyncFileItemInfo itemInfo;
+                        auto signalSyncFileProgressInfoJob =
+                                std::make_shared<SignalSyncFileProgressInfoJob>(_syncPal->syncDbId(), itemInfo, progress);
+                        _syncPal->sendGuiSignal(signalSyncFileProgressInfoJob);*/
+                    });
                 }
             }
         }

@@ -16,26 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsynccompleteditem.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/comm.h"
+#pragma once
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsItemInfo = "itemInfo";
+#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/syncfileiteminfo.h"
 
 namespace KDC {
 
-SignalSyncCompletedItem::SignalSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) :
-    _syncDbId(syncDbId),
-    _itemInfo(itemInfo) {
-    _signalNum = SignalNum::SYNC_COMPLETEDITEM;
-}
+class SignalSyncFileProgressInfoJob : public AbstractGuiJob {
+    public:
+        SignalSyncFileProgressInfoJob() = default;
+        explicit SignalSyncFileProgressInfoJob(int syncDbId, const SyncFileItemInfo &itemInfo, int progress);
 
-ExitInfo SignalSyncCompletedItem::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
-    return ExitCode::Ok;
-}
+    private:
+        // Output parameters
+        int _syncDbId = -1;
+        SyncFileItemInfo _itemInfo;
+        int _progress = 0;
+
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
+};
 
 } // namespace KDC

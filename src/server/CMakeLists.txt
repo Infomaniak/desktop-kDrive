@@ -104,10 +104,11 @@ set(server_SRCS
     comm/guijobs/signaldriveremovedjob.h comm/guijobs/signaldriveremovedjob.cpp
     comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
     comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
-    comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
-    comm/guijobs/signalsyncfileprogressinfo.h comm/guijobs/signalsyncfileprogressinfo.cpp
-    comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
+    comm/guijobs/signalsyncprogressinfojob.h comm/guijobs/signalsyncprogressinfojob.cpp
+    comm/guijobs/signalsyncfileprogressinfojob.h comm/guijobs/signalsyncfileprogressinfojob.cpp
+    comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalnodefixconflictedfilescompletedjob.h comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp

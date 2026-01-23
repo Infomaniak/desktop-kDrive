@@ -56,8 +56,6 @@ using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
 using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
-using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
-
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;

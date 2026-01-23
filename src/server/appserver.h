@@ -270,7 +270,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendErrorAdded(const ErrorInfo &errorInfo) const;
         void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
-        void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) const;
+        void sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const;
 
         void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);

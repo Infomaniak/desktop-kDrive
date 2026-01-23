@@ -132,13 +132,17 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
         }
 
-        inline void setSendSignalCallback(const std::function<void(SignalNum, int, const SigValueType &)> &sendSignal) {
-            _sendSignal = sendSignal;
+        /*inline void setSendGuiSignalCallback(const std::function<void(std::shared_ptr<AbstractGuiJob>)> &sendGuiSignal) {
+            _sendGuiSignal = sendGuiSignal;
         }
+        void sendGuiSignalCallback(std::shared_ptr<AbstractGuiJob> signalJob) {
+            if (_sendGuiSignal) _sendGuiSignal(signalJob);
+        }*/
 
         void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
@@ -324,7 +328,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Callbacks
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
-        std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
+        // std::function<void(std::shared_ptr<AbstractGuiJob> signalJob)> _sendGuiSignal;
         std::shared_ptr<Vfs> _vfs;
 
         // DB

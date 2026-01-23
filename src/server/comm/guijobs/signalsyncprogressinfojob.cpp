@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncprogressinfo.h"
+#include "signalsyncprogressinfojob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
@@ -28,8 +28,8 @@ static const auto outParamsSyncProgress = "SyncProgress";
 
 namespace KDC {
 
-SignalSyncProgressInfo::SignalSyncProgressInfo(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
-                                               const SyncProgress &syncProgress) :
+SignalSyncProgressInfoJob::SignalSyncProgressInfoJob(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
+                                                     const SyncProgress &syncProgress) :
     _syncDbId(syncDbId),
     _syncStatus(syncStatus),
     _syncStep(syncStep),
@@ -37,7 +37,7 @@ SignalSyncProgressInfo::SignalSyncProgressInfo(int syncDbId, SyncStatus syncStat
     _signalNum = SignalNum::SYNC_PROGRESSINFO;
 }
 
-ExitInfo SignalSyncProgressInfo::serializeOutputParms() {
+ExitInfo SignalSyncProgressInfoJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsSyncstatus, _syncStatus);
     writeParamValue(outParamsSyncStep, _syncStep);

@@ -39,11 +39,11 @@
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
-#include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsynccompleteditemjob.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
-#include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalsyncprogressinfojob.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -2543,18 +2543,9 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
     }
 }
 
-void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) const {
-    if (useOldCommServer()) {
-        int id = 0;
-
-        QByteArray params;
-        QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
-        paramsStream << QVariant::fromStdVariant(val);
-        OldCommServer::instance()->sendSignal(sigNum, params, id);
-    }
+void AppServer::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const {
     if (useCommManager()) {
-        // TODO
+        _commManager->sendGuiSignal(signal);
     }
 }
 
@@ -3685,7 +3676,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
-        syncPalMapIt->second->setSendSignalCallback(std::bind_front(&AppServer::sendSignal, this));
+        // syncPalMapIt->second->setSendGuiSignalCallback(std::bind_front(&AppServer::sendGuiSignal, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -4474,7 +4465,7 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
         OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfoJob>(syncDbId, status, step, progress));
     }
 }
 
@@ -4489,7 +4480,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
         OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItemJob>(syncDbId, itemInfo));
     }
 }
 

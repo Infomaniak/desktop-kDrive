@@ -16,27 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncfileprogressinfo.h"
+#include "signalnodefixconflictedfilescompletedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
+// Output parameters keys
 static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsItemInfo = "itemInfo";
-static const auto outParamsProgress = "progress";
+static const auto outParamsNbErrors = "nbErrors";
 
 namespace KDC {
 
-SignalSyncFileProgressInfo::SignalSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress) :
+SignalNodeFixConflictedFilesCompletedJob::SignalNodeFixConflictedFilesCompletedJob(int syncDbId, uint64_t nbErrors) :
     _syncDbId(syncDbId),
-    _itemInfo(itemInfo),
-    _progress(progress) {
-    _signalNum = SignalNum::SYNC_FILEPROGRESSINFO;
+    _nbErrors(nbErrors) {
+    _signalNum = SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED;
 }
 
-ExitInfo SignalSyncFileProgressInfo::serializeOutputParms() {
+ExitInfo SignalNodeFixConflictedFilesCompletedJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
-    writeParamValue(outParamsProgress, _progress);
+    writeParamValue(outParamsNbErrors, _nbErrors);
     return ExitCode::Ok;
 }
 

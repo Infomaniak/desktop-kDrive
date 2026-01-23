@@ -16,25 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "signalsynccompleteditemjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/syncfileiteminfo.h"
+// Output parameters keys
+static const auto outParamsSyncDbId = "syncDbId";
+static const auto outParamsItemInfo = "itemInfo";
 
 namespace KDC {
 
-class SignalSyncCompletedItem : public AbstractGuiJob {
-    public:
-        explicit SignalSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo);
+SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncFileItemInfo &itemInfo) :
+    _syncDbId(syncDbId),
+    _itemInfo(itemInfo) {
+    _signalNum = SignalNum::SYNC_COMPLETEDITEM;
+}
 
-    private:
-        // Output parameters
-        int _syncDbId = -1;
-        SyncFileItemInfo _itemInfo;
-
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override { return ExitCode::Ok; }
-};
+ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
+    writeParamValue(outParamsSyncDbId, _syncDbId);
+    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
+    return ExitCode::Ok;
+}
 
 } // namespace KDC
