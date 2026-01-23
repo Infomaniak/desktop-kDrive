@@ -214,6 +214,10 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
+
+            if (error.ExitCause == ExitCause.QuotaExceeded)
+                Drive.DisplayRemoteSpaceWarning = true;
+
             await RefreshErrorState();
         }
 
@@ -271,11 +275,8 @@ namespace Infomaniak.kDrive.ViewModels
                     if (SyncErrorState != SyncErrorStates.Undefined)
                     {
                         Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
-                    }
-
-                    if (error.ExitCause == ExitCause.QuotaExceeded)
-                        Drive.DisplayRemoteSpaceWarning = true;
-
+                        return;
+                    }                   
                 }
 
                 if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
