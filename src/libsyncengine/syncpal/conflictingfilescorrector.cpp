@@ -18,9 +18,9 @@
 
 #include "conflictingfilescorrector.h"
 
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
 
 #include <log4cplus/loggingmacros.h>
@@ -42,8 +42,8 @@ ExitInfo ConflictingFilesCorrector::runJob() {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(error.destinationPath(), ioError));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
+                                                            << CommonUtility::formatIoError(error.destinationPath(), ioError));
             _nbErrors++;
             continue;
         }
@@ -75,7 +75,7 @@ ExitInfo ConflictingFilesCorrector::runJob() {
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // Delete remote version locally
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
-    LocalDeleteJob deleteJob(originalAbsolutePath);
+    SyncLocalDeleteJob deleteJob(_syncPal, originalAbsolutePath);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
@@ -97,7 +97,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // Delete local version
-    LocalDeleteJob deleteJob(_syncPal->localPath() / error.destinationPath());
+    SyncLocalDeleteJob deleteJob(_syncPal, _syncPal->localPath() / error.destinationPath());
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;

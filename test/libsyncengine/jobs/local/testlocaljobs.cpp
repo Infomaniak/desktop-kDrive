@@ -20,21 +20,26 @@
 
 #include "config.h"
 #include "jobs/local/localcreatedirjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
+#include "keychainmanager/apitoken.h"
+#include "keychainmanager/keychainmanager.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "network/proxy.h"
 #include "requests/parameterscache.h"
+#include "test_classes/syncpaltest.h"
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class LocalDeleteJobMockingTrash : public LocalDeleteJob {
+class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
-        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) :
-            LocalDeleteJob(absolutePath) {};
+        explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -42,12 +47,12 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     protected:
         ExitInfo moveToTrash() final {
             if (_moveToTrashIsMocked) {
-                std::filesystem::remove_all(_absolutePath);
-                moveToTrashOrHardDeleteIfNeeded(_absolutePath);
+                (void) IoHelper::deleteItem(absolutePath());
+                moveToTrashOrHardDeleteIfNeeded(absolutePath());
                 return _moveToTrashFailed ? ExitCode::SystemError : ExitCode::Ok;
             }
 
-            return LocalDeleteJob::moveToTrash();
+            return SyncLocalDeleteJob::moveToTrash();
         };
 
     private:
@@ -57,50 +62,111 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
 
 void KDC::TestLocalJobs::setUp() {
     TestBase::start();
-    // Setup parameters cache in test mode
-    ParametersCache::instance(true);
+    const testhelpers::TestVariables testVariables;
+    // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+
+    const std::string keychainKey("123");
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+
+    // Create parmsDb
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+
+    // Insert user, account, drive & sync
+    int userId(12321);
+    User user(1, userId, keychainKey);
+    (void) ParmsDb::instance()->insertUser(user);
+
+    int accountId(atoi(testVariables.accountId.c_str()));
+    Account account(1, accountId, user.dbId());
+    (void) ParmsDb::instance()->insertAccount(account);
+
+    int driveId = atoi(testVariables.driveId.c_str());
+    Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
+    (void) ParmsDb::instance()->insertDrive(drive);
+
+    const auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    (void) ParmsDb::instance()->insertSync(sync);
+
+    // Setup proxy
+    Parameters parameters;
+    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
+        (void) Proxy::instance(parameters.proxyConfig());
+    }
+
+    _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers(std::chrono::seconds(0));
+    _syncPal->syncDb()->setAutoDelete(true);
 }
 
 void TestLocalJobs::tearDown() {
     ParametersCache::reset();
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
+
     TestBase::stop();
 }
 
 void KDC::TestLocalJobs::testLocalJobs() {
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalJobs");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
-
     // Create
-    LocalCreateDirJob createJob(localDirPath);
+    const SyncName testDirName = Str("testLocalJobs");
+    const SyncPath testDirPath = _localTempDir.path() / testDirName;
+    LocalCreateDirJob createJob(testDirPath);
     createJob.runSynchronously();
 
-    CPPUNIT_ASSERT(std::filesystem::exists(localDirPath));
+    CPPUNIT_ASSERT(std::filesystem::exists(testDirPath));
 
     // Add a file in `localDirPath`
     const SyncPath picturesPath = testhelpers::localTestDirPath() / SyncPath("test_pictures");
-    std::filesystem::copy(picturesPath / "picture-1.jpg", localDirPath / "tmp_picture.jpg");
+    std::filesystem::copy(picturesPath / "picture-1.jpg", testDirPath / "tmp_picture.jpg");
 
     // Copy
     const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
-    const SyncPath copyDirPath = temporaryDirectory.path() / (_localTempDirName + "_copy_" + suffix);
-    LocalCopyJob copyJob(localDirPath, copyDirPath);
+    const SyncPath copyDirPath = _localTempDir.path() / (testDirName + Str("_copy_") + Str2SyncName(suffix));
+    LocalCopyJob copyJob(testDirPath, copyDirPath);
     copyJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(localDirPath, copyDirPath / _localTempDirName);
+    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
     moveJob.runSynchronously();
 
-    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / _localTempDirName));
-    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / _localTempDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
+    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName / "tmp_picture.jpg"));
 
     // Delete
-    LocalDeleteJobMockingTrash deleteJob(copyDirPath);
+    LocalDeleteJobMockingTrash deleteJob(_syncPal, copyDirPath);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    testhelpers::createFileWithDehydratedStatus(copyDirPath / _localTempDirName / "dehydrated_placeholder.jpg");
+    const SyncName dehydratedPlaceholderName = Str("dehydrated_placeholder.jpg");
+    testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / dehydratedPlaceholderName);
     deleteJob.setLiteSyncEnabled(true);
+
+    DbNode copyDirDbNode(0, 1, Str2SyncName(copyDirPath.filename().string()), Str2SyncName(copyDirPath.filename().string()),
+                         "0123", "4567", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                         NodeType::Directory, testhelpers::defaultDirSize);
+    bool constraintError = false;
+    DbNodeId copyDirDbNodeId = 0;
+    (void) _syncPal->syncDb()->insertNode(copyDirDbNode, copyDirDbNodeId, constraintError);
+
+    DbNode testDirDbNode(0, copyDirDbNodeId, testDirName, testDirName, "8910", "1112", testhelpers::defaultTime,
+                         testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultDirSize);
+    DbNodeId testDirDbNodeId = 0;
+    (void) _syncPal->syncDb()->insertNode(testDirDbNode, testDirDbNodeId, constraintError);
+
+    DbNode dehydratedPlaceholderDbNode(0, testDirDbNodeId, dehydratedPlaceholderName, dehydratedPlaceholderName, "1314", "1516",
+                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                                       NodeType::File, testhelpers::defaultFileSize);
+    DbNodeId dehydratedPlaceholderDbNodeId = 0;
+    (void) _syncPal->syncDb()->insertNode(dehydratedPlaceholderDbNode, dehydratedPlaceholderDbNodeId, constraintError);
 #endif
     deleteJob.setMockMoveToTrash(false);
     deleteJob.runSynchronously();
@@ -108,12 +174,12 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(!std::filesystem::exists(copyDirPath));
 
     LOGW_INFO(Log::instance()->getLogger(),
-              L"copyDirPath in TestLocalJobs::testLocalJobs: " << Utility::formatSyncPath(copyDirPath));
+              L"copyDirPath in TestLocalJobs::testLocalJobs: " << CommonUtility::formatSyncPath(copyDirPath));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // testhelpers::isInTrash is not reliable on Linux if previous tests have failed and have left a polluted trash.
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename()));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "dehydrated_placeholder.jpg"));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());
@@ -124,7 +190,7 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     // Create two files with the same name but distinct encodings.
     {
@@ -133,13 +199,13 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     }
     // Delete the two files
     {
-        LocalDeleteJobMockingTrash nfcDeleteJob(temporaryDirectory.path() / testhelpers::makeNfcSyncName());
+        LocalDeleteJobMockingTrash nfcDeleteJob(_syncPal, temporaryDirectory.path() / testhelpers::makeNfcSyncName());
         nfcDeleteJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfcDeleteJob.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfcDeleteJob.exitInfo().cause());
     }
     {
-        LocalDeleteJobMockingTrash nfdDeleteJob(temporaryDirectory.path() / testhelpers::makeNfdSyncName());
+        LocalDeleteJobMockingTrash nfdDeleteJob(_syncPal, temporaryDirectory.path() / testhelpers::makeNfdSyncName());
         nfdDeleteJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfdDeleteJob.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfdDeleteJob.exitInfo().cause());
@@ -150,56 +216,60 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
 }
 
 void KDC::TestLocalJobs::testLocalDeleteJob() {
-    CPPUNIT_ASSERT(LocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("B") / "C"));
-    CPPUNIT_ASSERT(LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("A") / "B" / "C"));
-    CPPUNIT_ASSERT(LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C")
+    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith(SyncPath{}));
+    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("B") / "C"));
+    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("A") / "B" / "C"));
+    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C")
                            .endsWith(SyncPath("remote drive name") / "A" / "B" / "C"));
 
 
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name")).endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith("A"));
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith("D"));
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("E") / "C"));
-    CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("F") / "B" / "C"));
+    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name")).endsWith(SyncPath{}));
+    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath{}));
+    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith("A"));
+    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith("D"));
+    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("E") / "C"));
+    CPPUNIT_ASSERT(
+            !SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("F") / "B" / "C"));
 
+    SyncLocalDeleteJob dummyJob(nullptr, "");
     {
         const SyncPath targetPath = {};
         const SyncPath localRelativePath = SyncPath("Commons") / "me" / "secrets" / "nothing";
-        CPPUNIT_ASSERT(LocalDeleteJob::matchRelativePaths(targetPath, localRelativePath, SyncPath{localRelativePath}));
-        CPPUNIT_ASSERT(!LocalDeleteJob::matchRelativePaths(targetPath, localRelativePath, SyncPath{"different"}));
+        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, localRelativePath, SyncPath{localRelativePath}));
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath, SyncPath{"different"}));
     }
 
     {
         const SyncPath targetPath = SyncPath{"remote drive name"} / "dir" / "subdir" / "targetDir";
         const SyncPath localRelativePath = SyncPath("somewhere") / "deep" / "deeper";
-        CPPUNIT_ASSERT(LocalDeleteJob::matchRelativePaths(targetPath, localRelativePath,
-                                                          SyncPath("above") / "targetDir" / "somewhere" / "deep" / "deeper"));
-        CPPUNIT_ASSERT(!LocalDeleteJob::matchRelativePaths(
-                targetPath, localRelativePath, SyncPath("above") / "notTheTargetDir" / "somewhere" / "deep" / "deeper"));
-        CPPUNIT_ASSERT(!LocalDeleteJob::matchRelativePaths(targetPath, localRelativePath,
-                                                           SyncPath("above") / "targetDir" / "elsewhere" / "deep" / "deeper"));
+        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, localRelativePath,
+                                                   SyncPath("above") / "targetDir" / "somewhere" / "deep" / "deeper"));
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
+                                                    SyncPath("above") / "notTheTargetDir" / "somewhere" / "deep" / "deeper"));
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
+                                                    SyncPath("above") / "targetDir" / "elsewhere" / "deep" / "deeper"));
     }
 
     {
         const SyncPath targetPath = SyncPath{"/"};
-        CPPUNIT_ASSERT(LocalDeleteJob::matchRelativePaths(targetPath, {}, {}));
-        CPPUNIT_ASSERT(!LocalDeleteJob::matchRelativePaths(targetPath, SyncPath{"nonEmpty"}, {}));
-        CPPUNIT_ASSERT(!LocalDeleteJob::matchRelativePaths(targetPath, {}, SyncPath{"nonEmpty"}));
+        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, {}, {}));
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, SyncPath{"nonEmpty"}, {}));
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, {}, SyncPath{"nonEmpty"}));
     }
 
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
     std::filesystem::create_directories(localDirPath);
 
-    class LocalDeleteJobMock : public LocalDeleteJob {
+    class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
-            LocalDeleteJobMock(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
+            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {};
-            void setReturnedItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
+                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {
+
+                };
+            void setRemoteItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
 
         protected:
             virtual bool findRemoteItem(SyncPath &remoteItemPath) const {
@@ -209,53 +279,51 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
             SyncPath _remoteItemPath;
     };
 
+    _syncPal->setLocalPath(temporaryDirectory.path());
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{});
 
         CPPUNIT_ASSERT(!deleteJob.canRun()); // Empty node ID.
     }
 
     // Local and remote item paths are different: can run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
 
-        CPPUNIT_ASSERT(deleteJob.canRun());
+        CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
     }
+
     // Local and remote item paths are the same: cannot run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
-        deleteJob.setReturnedItemPath(SyncPath{_localTempDirName});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
+        deleteJob.setRemoteItemPath(_syncPal->syncInfo().targetPath / SyncPath{_localTempDir.path().filename()});
 
-        CPPUNIT_ASSERT(!deleteJob.canRun());
+        CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Advanced synchronisation, local and remote item paths are the same: cannot run
+    _syncPal->_syncInfo.targetPath = "/";
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path(), SyncPath{"/"});
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
-        deleteJob.setReturnedItemPath(SyncPath{_localTempDirName});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
+        deleteJob.setRemoteItemPath(SyncPath{_localTempDir.path().filename()});
 
-        CPPUNIT_ASSERT(!deleteJob.canRun());
+        CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Advanced synchronisation, local and remote item paths are different: cannot run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path(), SyncPath{"/"});
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
-        deleteJob.setReturnedItemPath(SyncPath{"tmp_dir_diff"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
+        deleteJob.setRemoteItemPath(SyncPath{"tmp_dir_diff"});
 
-        CPPUNIT_ASSERT(deleteJob.canRun());
+        CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
 
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDirName));
+        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDir.path().filename()));
     }
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    testhelpers::eraseFromTrash(_localTempDirName);
+    testhelpers::eraseFromTrash(_localTempDir.path().filename());
 #endif
 }
 

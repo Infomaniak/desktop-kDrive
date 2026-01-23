@@ -81,7 +81,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ERROR_INFOLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {

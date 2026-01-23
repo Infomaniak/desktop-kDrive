@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 @MainActor
 @propertyWrapper
@@ -112,7 +113,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         driveEventPublisher(userDbId: userDbId, accountDbId: accountDbId, driveDbId: driveDbId)
             .map { event -> Drive? in
                 switch event {
-                case let .update(drive): return drive
+                case .update(let drive): return drive
                 case .removed: return nil
                 }
             }
@@ -124,7 +125,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         driveEventPublisher(driveDbId: driveDbId)
             .map { event -> Drive? in
                 switch event {
-                case let .update(drive): return drive
+                case .update(let drive): return drive
                 case .removed: return nil
                 }
             }

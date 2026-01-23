@@ -19,7 +19,7 @@
 #include "theme.h"
 #include "config.h"
 #include "version.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 #include <QIcon>
 #include <QOperatingSystemVersion>

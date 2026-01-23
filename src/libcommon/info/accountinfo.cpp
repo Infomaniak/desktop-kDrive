@@ -17,7 +17,7 @@
  */
 
 #include "accountinfo.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto accountInfoDbId = "dbId";
 static const auto accountInfoUserDbId = "userDbId";
@@ -28,10 +28,6 @@ namespace KDC {
 AccountInfo::AccountInfo(int dbId, int userDbId) :
     _dbId(dbId),
     _userDbId(userDbId) {}
-
-AccountInfo::AccountInfo() :
-    _dbId(0),
-    _userDbId(0) {}
 
 void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include <Poco/Dynamic/Struct.h>
 

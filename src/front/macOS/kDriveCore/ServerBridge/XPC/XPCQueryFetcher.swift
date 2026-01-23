@@ -34,20 +34,22 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
         case unableToDecodeReply(parsingError: Error)
     }
 
-    public func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
+    func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
         let requestData = try encoder.encode(request)
 
         let guiConnection = try await xpcConnectionProvider.guiConnection
         guard let replyData = await guiConnection.sendQueryAsync(requestData) else {
+            IKLogger.data.error("[KD] no replyData on sendQueryAsync woops")
             throw QueryError.noReplyData
         }
 
         do {
-            //IKLogger.data.log("recv raw: \(String(data: replyData, encoding: .utf8))")
+            // IKLogger.data.log("[KD] recv raw: \(String(data: replyData, encoding: .utf8))")
             let decodedMessage = try decoder.decode(Response.self, from: replyData)
-            IKLogger.data.log("recv callback: \(String(describing: decodedMessage))")
+            IKLogger.data.log("[KD] recv callback: \(String(describing: decodedMessage))")
             return decodedMessage
         } catch {
+            IKLogger.data.error("[KD] recv decoding woops \(error)")
             throw QueryError.unableToDecodeReply(parsingError: error)
         }
     }

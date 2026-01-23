@@ -23,13 +23,11 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
 using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 
 namespace Infomaniak.kDrive
@@ -53,18 +51,9 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new ProductionConstants();
+        internal static IAppConstants Constants => new ProductionAppConstants();
         internal App()
         {
-            SentrySdk.Init(options =>
-            {
-                options.Dsn = Constants.SentryDSN;
-                options.Debug = true;
-                options.SendDefaultPii = true;
-                options.AutoSessionTracking = true;
-                options.IsGlobalModeEnabled = true;
-                options.Environment = "production";
-            });
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
@@ -73,6 +62,29 @@ namespace Infomaniak.kDrive
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();
             Logger.Log(Logger.Level.Info, "Application started");
+        }
+
+        private IDisposable? _sentryHandler;
+        public void StartSentry()
+        {
+            StopSentry();
+            _sentryHandler = SentrySdk.Init(options =>
+                    {
+                        options.Dsn = Constants.Sentry.Dsn;
+                        options.SendDefaultPii = true;
+                        options.AutoSessionTracking = true;
+                        options.IsGlobalModeEnabled = true;
+                        options.Environment = Constants.Sentry.Environment;
+                    });
+        }
+
+        public void StopSentry()
+        {
+            if (_sentryHandler is not null)
+            {
+                _sentryHandler.Dispose();
+                _sentryHandler = null;
+            }
         }
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)

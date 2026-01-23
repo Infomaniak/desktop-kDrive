@@ -18,9 +18,9 @@
 
 #include "localcreatedirjob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/permissionsholder.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -40,16 +40,16 @@ ExitInfo LocalCreateDirJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (exists) {
-        LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" already exist.");
+        LOGW_DEBUG(_logger, L"Directory: " << CommonUtility::formatSyncPath(_destFilePath) << L" already exist.");
         return {ExitCode::DataError, ExitCause::FileExists};
     }
 
@@ -67,35 +67,35 @@ ExitInfo LocalCreateDirJob::runJob() {
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
-            LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
+            LOGW_DEBUG(_logger, L"Directory: " << CommonUtility::formatSyncPath(_destFilePath) << L" created");
         }
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath));
+        LOGW_WARN(_logger, L"Search permission missing: =" << CommonUtility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     if (ioError != IoError::Success) { // Unexpected error
-        LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError));
+        LOGW_WARN(_logger, L"Failed to create directory: " << CommonUtility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
     }
 
     FileStat filestat;
     if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << CommonUtility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << CommonUtility::formatSyncPath(_destFilePath));
         return {ExitCode::DataError, ExitCause::InvalidSize};
     } else if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
+        LOGW_WARN(_logger, L"Item misses search permission: " << CommonUtility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (_readOnly) {
         if (IoHelper::setReadOnly(_destFilePath) != IoError::Success) {
-            LOGW_WARN(_logger, L"Failed to set read-only rights: " << Utility::formatSyncPath(_destFilePath));
+            LOGW_WARN(_logger, L"Failed to set read-only rights: " << CommonUtility::formatSyncPath(_destFilePath));
         }
     }
 

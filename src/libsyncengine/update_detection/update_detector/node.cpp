@@ -21,7 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 namespace KDC {
 
@@ -72,7 +72,7 @@ bool Node::operator==(const Node &n) const {
 const SyncName &Node::normalizedName() {
     if (!_normalizedName.empty()) return _normalizedName;
     if (!Utility::normalizedSyncName(_name, _normalizedName)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(_name));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(_name));
         return _name;
     }
     return _normalizedName;
@@ -101,7 +101,7 @@ std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const
     for (auto &[_, child]: this->children()) {
         SyncName normalizedChildName;
         if (!Utility::normalizedSyncName(child->name(), normalizedChildName)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(child->name()));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(child->name()));
             return nullptr;
         }
 
@@ -126,10 +126,11 @@ void Node::insertChangeEvent(const OperationType op) {
 }
 
 bool Node::hasInvalidEvents() const {
-    using enum OperationType;
-    const bool res = (hasChangeEvent(Create) && _changeEvents != Create) || (hasChangeEvent(Delete) && _changeEvents != Delete) ||
-                     ((hasChangeEvent(Move) || hasChangeEvent(Edit)) && _changeEvents != Move && _changeEvents != Edit &&
-                      _changeEvents != MoveEdit);
+    const bool res = (hasChangeEvent(OperationType::Create) && _changeEvents != OperationType::Create) ||
+                     (hasChangeEvent(OperationType::Delete) && _changeEvents != OperationType::Delete) ||
+                     ((hasChangeEvent(OperationType::Move) || hasChangeEvent(OperationType::Edit)) &&
+                      _changeEvents != OperationType::Move && _changeEvents != OperationType::Edit &&
+                      _changeEvents != OperationType::MoveEdit);
     return res;
 }
 
@@ -248,6 +249,10 @@ SyncPath Node::getPath() const {
     return path;
 }
 
+bool Node::isTmp() const {
+    return _isTmp;
+}
+
 bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     if (!potentialChild) return false; // `parentNode` is the root node,
     if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
@@ -264,6 +269,10 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     return false;
 }
 
+bool Node::isValid() const {
+    return _id.has_value() && !_id.value().empty() && !_isTmp;
+}
+
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
 }
@@ -277,7 +286,8 @@ Node::MoveOriginInfos::MoveOriginInfos(const SyncPath &path, const NodeId &paren
     _path(path),
     _parentNodeId(parentNodeId) {
     if (!Utility::normalizedSyncPath(_path, _normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_path));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(_path));
         _normalizedPath = _path;
     }
 }

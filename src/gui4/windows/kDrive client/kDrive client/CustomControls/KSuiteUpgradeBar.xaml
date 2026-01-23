@@ -8,7 +8,7 @@
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              mc:Ignorable="d">
     
-    <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+    <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
             BorderThickness="1"
             Height="58">
         <Border.BorderBrush>

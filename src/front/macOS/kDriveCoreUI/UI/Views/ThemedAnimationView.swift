@@ -16,32 +16,32 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
 import kDriveResources
 import Lottie
+import SwiftUI
 
-public final class ThemedAnimationView: LottieAnimationView {
-    private var themedAnimation: ThemedAnimation?
+public struct ThemedLottieView: View {
+    @Environment(\.colorScheme) private var colorScheme
 
-    override public func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
+    let animation: ThemedAnimation
+    let loopMode: Lottie.LottieLoopMode
 
-        guard let themedAnimation else { return }
-
-        Task {
-            let oldLoopMode = loopMode
-            try await loadAnimation(themedAnimation: themedAnimation)
-            loopMode = oldLoopMode
-            play()
-        }
+    public init(
+        animation: ThemedAnimation,
+        loopMode: Lottie.LottieLoopMode = .autoReverse
+    ) {
+        self.animation = animation
+        self.loopMode = loopMode
     }
 
-    public func loadAnimation(themedAnimation: ThemedAnimation) async throws {
-        self.themedAnimation = themedAnimation
-
-        let animationName = themedAnimation.animation(forAppearance: effectiveAppearance)
-
-        let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: animationName)
-        loadAnimation(from: dotLottieFile)
+    public var body: some View {
+        LottieView {
+            try await LottieAnimationSource.dotLottieFile(.named(
+                animation.animation(forColorScheme: colorScheme),
+                bundle: KDriveResourcesBundle.bundle
+            ))
+        }
+        .playing(loopMode: loopMode)
+        .id("\(colorScheme.hashValue)_\(animation.hashValue)")
     }
 }

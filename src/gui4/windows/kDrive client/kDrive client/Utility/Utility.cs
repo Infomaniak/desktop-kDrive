@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -14,6 +15,9 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
+using Windows.Storage;
+using Windows.System;
+using WinRT.Interop;
 
 namespace Infomaniak.kDrive
 {
@@ -44,8 +48,21 @@ namespace Infomaniak.kDrive
                 await taskCompletionSource.Task;
             }
         }
+        public static async Task OpenFileAsync(string filePath)
+        {
+            try
+            {
+                filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+                StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+                await Launcher.LaunchFileAsync(file);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to open file {filePath}: {ex.Message}");
+            }
+        }
 
-        public static bool OpenFolderSecurely(string folderPath)
+        public static async Task<bool> OpenFolderSecurely(string folderPath)
         {
             // Validate input
             if (string.IsNullOrWhiteSpace(folderPath))
@@ -72,188 +89,21 @@ namespace Infomaniak.kDrive
                 return false;
             }
 
+            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
+            {
+                Logger.Log(Logger.Level.Warning, $"The parent directory does not exist for the specified folder: {fullPath}");
+                return false;
+            }
+
             if (!Directory.Exists(fullPath))
             {
-                Logger.Log(Logger.Level.Warning, $"The specified folder does not exist: {fullPath}");
+                await Launcher.LaunchFolderPathAsync(Path.GetDirectoryName(fullPath));
                 return false;
             }
 
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"\"{fullPath}\"",
-                UseShellExecute = true,
-                CreateNoWindow = true
-            };
-
-            Process.Start(startInfo);
+            await Launcher.LaunchFolderPathAsync(fullPath);
             return true;
         }
-
-        public static string DefaultSyncPath(string DriveName, List<string>? reservedPaths = null)
-        {
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string defaultPath = Path.Combine(userProfile, $"kDrive {DriveName}");
-
-            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage, reservedPaths))
-            {
-                Logger.Log(Logger.Level.Warning, $"Default sync path '{defaultPath}' is not valid: {errorMessage}. Falling back to numbered paths.");
-                int number = 1;
-                do
-                {
-                    defaultPath = Path.Combine(userProfile, number > 0 ? $"kDrive ({number})" : "kDrive");
-                    number++;
-                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage, reservedPaths) && number < 500);
-
-                if (number >= 500)
-                {
-                    Logger.Log(Logger.Level.Error, "Unable to find a valid default sync path after 500 attempts.");
-                    throw new Exception("Unable to find a valid default sync path after 500 attempts.");
-                }
-                Logger.Log(Logger.Level.Info, $"Using fallback sync path: {defaultPath}");
-            }
-            return defaultPath;
-        }
-
-        public static bool CheckSyncPathValidity(string path, out string errorMessage, List<string>? reservedPaths = null)
-        {
-            if (reservedPaths?.Contains(path) ?? false)
-            {
-                errorMessage = "The path is already in use by another sync.";
-                return false;
-            }
-
-            errorMessage = string.Empty;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                errorMessage = "The path cannot be empty.";
-                return false;
-            }
-            // Check for invalid characters
-            char[] invalidChars = Path.GetInvalidPathChars();
-            if (path.IndexOfAny(invalidChars) >= 0)
-            {
-                errorMessage = "The path contains invalid characters.";
-                return false;
-            }
-            // Check for reserved names (Windows specific)
-            string[] reservedNames = new string[]
-            {
-                "CON", "PRN", "AUX", "NUL",
-                "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-                "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-            };
-            string directoryName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-            if (reservedNames.Contains(directoryName, StringComparer.OrdinalIgnoreCase))
-            {
-                errorMessage = $"The path contains a reserved name: {directoryName}.";
-                return false;
-            }
-
-            // Check if the path is a folder (not a file)
-            DirectoryInfo dirInfo = new DirectoryInfo(path);
-            if (!dirInfo.Exists)
-            {
-                return true;
-            }
-
-            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.Directory) == 0)
-            {
-                errorMessage = "The specified path is not a directory.";
-                return false;
-            }
-
-            // Check if the directory is writable
-            try
-            {
-                string testFilePath = Path.Combine(path, Path.GetRandomFileName());
-                using (FileStream fs = File.Create(testFilePath, 1, FileOptions.DeleteOnClose))
-                {
-                    // Successfully created a file, so the directory is writable
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                errorMessage = "The application does not have permission to write to this directory.";
-                return false;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // The directory does not exist, which is normal for a new sync folder
-            }
-            catch (IOException ioEx)
-            {
-                errorMessage = $"An I/O error occurred while accessing the directory: {ioEx.Message}";
-                return false;
-            }
-            catch (SecurityException)
-            {
-                errorMessage = "The application does not have the required security permissions for this directory.";
-                return false;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"An unexpected error occurred: {ex.Message}";
-                return false;
-            }
-
-            // Check if the directory is not a system or hidden folder
-            if (dirInfo.Exists && (dirInfo.Attributes.HasFlag(FileAttributes.System) || dirInfo.Attributes.HasFlag(FileAttributes.Hidden)))
-            {
-                errorMessage = "The specified directory is a system or hidden folder.";
-                return false;
-            }
-
-            // Check if the directory is a reparse point (e.g., symbolic link or mount point)
-            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
-            {
-                errorMessage = "The specified directory is a reparse point (e.g., symbolic link or mount point), which is not allowed.";
-                return false;
-            }
-
-            // Check if the directory is empty
-            if (dirInfo.Exists && dirInfo.EnumerateFileSystemInfos().Any())
-            {
-                errorMessage = "The specified directory is not empty.";
-                return false;
-            }
-
-            // Additional checks can be added here as needed
-            return true;
-        }
-
-        public static bool SupportOnlineSync(string path)
-        {
-            // Check if the path is on an NTFS volume
-            var root = Path.GetPathRoot(path);
-            if (root == null)
-                return false;
-
-            if (path == root)
-                return false;
-
-            DriveInfo driveInfo = new DriveInfo(root);
-            try
-            {
-                return driveInfo.DriveFormat.Equals("NTFS", StringComparison.OrdinalIgnoreCase);
-            }
-            catch (IOException)
-            {
-                Logger.Log(Logger.Level.Warning, $"IO Exception when accessing drive info for path: {path}");
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                Logger.Log(Logger.Level.Warning, $"Unauthorized Access when accessing drive info for path: {path}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(Logger.Level.Warning, $"Unexpected error when accessing drive info for path: {path}. Error: {ex.Message}");
-                return false;
-            }
-        }
-
 
         public static class DpiHelper
         {
@@ -297,10 +147,9 @@ namespace Infomaniak.kDrive
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             string? localizedString = resourceLoader.GetString(key);
 
-            if(localizedString is null || localizedString.Length == 0)
+            if (localizedString is null || localizedString.Length == 0)
             {
-                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-                localizedString = key; // Fallback to the key itself if not found
+                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
             }
 
             // Replace literal \r\n with real newlines
@@ -333,7 +182,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -341,12 +190,16 @@ namespace Infomaniak.kDrive
             dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
             dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
-            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.DefaultButton = contentDialogButton;
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
-            var result = await dialog.ShowAsync();
-            return result;
+            return dialog;
         }
 
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        {
+            var result = await GetContentDialog(xamlRoot, xuid, contentDialogButton).ShowAsync();
+            return result;
+        }
 
         public static string? ToBase64String(string? data)
         {
@@ -378,6 +231,53 @@ namespace Infomaniak.kDrive
                 parent = VisualTreeHelper.GetParent(parent);
             }
             return null;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        public static void BringCurrentWindowToFront()
+        {
+            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+
+            App? app = Application.Current as App;
+
+            if (app?.CurrentWindow is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
+                return;
+            }
+            app.CurrentWindow.Show();
+            app.CurrentWindow.Activate();
+            var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
+            if (hWnd == IntPtr.Zero)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                return;
+            }
+
+            SetForegroundWindow(hWnd);
+        }
+        public static string ObfuscateEmail(string? email)
+        {
+            // if > 5 characters before @, keep first 2 and last 2, else keep first and last
+            if (email is null)
+                return "";
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex <= 0)
+                return email; // invalid email
+
+            var localPart = email.Substring(0, atIndex);
+            var domainPart = email.Substring(atIndex);
+
+            if (localPart.Length > 5)
+                return localPart.Substring(0, 2) + new string('*', localPart.Length - 4) + localPart.Substring(localPart.Length - 2) + domainPart;
+            else if (localPart.Length > 2)
+                return localPart.Substring(0, 1) + new string('*', localPart.Length - 2) + localPart.Substring(localPart.Length - 1) + domainPart;
+            else
+                return new string('*', localPart.Length) + domainPart;
         }
     }
 }

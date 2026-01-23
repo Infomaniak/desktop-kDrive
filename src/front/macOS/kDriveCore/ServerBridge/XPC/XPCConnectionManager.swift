@@ -27,7 +27,7 @@ import InfomaniakDI
     var loginItemAgentConnection: NSXPCConnection?
     var appConnection: NSXPCConnection?
 
-    public enum XPCError: Error {
+    enum XPCError: Error {
         case noAppConnectionAvailable
         case noLoginItemAgentConnection
         case serverGUIEndpointWasNil
@@ -96,15 +96,15 @@ import InfomaniakDI
         connection.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
             guard let self else { return }
-            self.loginItemAgentConnection = nil
-            self.scheduleRetryToConnectToLoginAgent()
+            loginItemAgentConnection = nil
+            scheduleRetryToConnectToLoginAgent()
         }
 
         connection.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with login item agent invalidated (no server running)")
             guard let self else { return }
-            self.loginItemAgentConnection = nil
-            self.scheduleRetryToConnectToLoginAgent()
+            loginItemAgentConnection = nil
+            scheduleRetryToConnectToLoginAgent()
         }
 
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
@@ -114,6 +114,15 @@ import InfomaniakDI
     }
 
     func fetchServerEndpointFromLoginItemAgentAndConnect() async throws {
+        let endpoint = try await getServerEndpoint()
+        try connectToServer(endpoint: endpoint)
+    }
+
+    func fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded() async throws {
+        guard appConnection == nil else {
+            return
+        }
+
         let endpoint = try await getServerEndpoint()
         try connectToServer(endpoint: endpoint)
     }
@@ -129,7 +138,7 @@ import InfomaniakDI
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NSXPCListenerEndpoint, Error>) in
             loginItemProxy.serverGuiEndpoint { endpoint in
                 IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
-                if let endpoint = endpoint {
+                if let endpoint {
                     continuation.resume(returning: endpoint)
                 } else {
                     IKLogger.xpc.error("[KD] endpoint nil")
@@ -159,17 +168,17 @@ import InfomaniakDI
         appConnection?.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
             guard let self else { return }
-            self.appConnection?.invalidate()
-            self.appConnection = nil
-            self.scheduleRetryToConnectToServer()
+            appConnection?.invalidate()
+            appConnection = nil
+            scheduleRetryToConnectToServer()
         }
 
         appConnection?.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
             guard let self else { return }
-            self.appConnection?.invalidate()
-            self.appConnection = nil
-            self.scheduleRetryToConnectToServer()
+            appConnection?.invalidate()
+            appConnection = nil
+            scheduleRetryToConnectToServer()
         }
 
         appConnection?.resume()
@@ -177,12 +186,12 @@ import InfomaniakDI
 }
 
 extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
-    public func processType(_ callback: @escaping (ProcessType) -> Void) {
+    func processType(_ callback: @escaping (ProcessType) -> Void) {
         IKLogger.xpc.log("[KD] query processType")
         callback(ProcessType.client)
     }
 
-    public func serverIsRunning(_ endPoint: NSXPCListenerEndpoint?) {
+    func serverIsRunning(_ endPoint: NSXPCListenerEndpoint?) {
         IKLogger.xpc.log("[KD] serverIsRunning")
         guard let endPoint else {
             IKLogger.xpc.error("[KD] server sent a nil endpoint")
@@ -193,7 +202,7 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 }
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
-    public func processSignal(_ msg: Data) {
+    func processSignal(_ msg: Data) {
         signalHandler.handleServerSignal(msg)
     }
 }

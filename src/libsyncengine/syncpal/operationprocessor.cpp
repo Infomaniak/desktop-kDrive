@@ -84,8 +84,8 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
     bool isEqual = false;
     if (!Utility::checkIfSameNormalization(node->name(), correspondingNode->name(), isEqual)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
-                                                        << Utility::formatSyncName(node->name()) << L" / "
-                                                        << Utility::formatSyncName(correspondingNode->name()));
+                                                        << CommonUtility::formatSyncName(node->name()) << L" / "
+                                                        << CommonUtility::formatSyncName(correspondingNode->name()));
         return false;
     }
 
@@ -129,6 +129,9 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
 }
 
 std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std::shared_ptr<Node> node) {
+    LOG_IF_FAIL(node)
+    if (!node) return nullptr;
+
     std::optional<DbNodeId> dbNodeId = node->idb();
     if (!dbNodeId && node->id()) {
         // Find node in DB

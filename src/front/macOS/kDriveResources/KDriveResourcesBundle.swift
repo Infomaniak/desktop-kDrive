@@ -19,7 +19,5 @@
 import Foundation
 
 public final class KDriveResourcesBundle {
-  public static let bundle: Bundle = {
-    return Bundle(for: KDriveResourcesBundle.self)
-  }()
+    public static let bundle = Bundle(for: KDriveResourcesBundle.self)
 }

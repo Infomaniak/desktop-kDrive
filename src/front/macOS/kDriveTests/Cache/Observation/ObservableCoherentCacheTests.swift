@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import kDriveCore
+import OrderedCollections
 import XCTest
 
 final class ObservableCoherentCacheTests: XCTestCase {
@@ -40,7 +41,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
         )
 
         let cache = ServerCoherentCache()
-        let expectation = self.expectation(description: "User updates observed")
+        let expectation = expectation(description: "User updates observed")
         var receivedUsers: IndexedUsers?
         var cancellables = Set<AnyCancellable>()
 
@@ -64,16 +65,16 @@ final class ObservableCoherentCacheTests: XCTestCase {
 
         // THEN
         waitForExpectations(timeout: 10.0) { error in
-            if let error = error {
+            if let error {
                 XCTFail("Expectation failed with error: \(error)")
             }
         }
 
         XCTAssertEqual(receivedUsers!.count, 1, "Should have received one user update")
 
-        if let receivedUser = receivedUsers?.first {
-            XCTAssertEqual(receivedUser.value.dbId, Self.expectedUserDbId, "Received user ID should match expected")
-            XCTAssertEqual(receivedUser.value.name, "appleseed", "Received user name should match expected")
+        if let receivedUser = receivedUsers?.values.first {
+            XCTAssertEqual(receivedUser.dbId, Self.expectedUserDbId, "Received user ID should match expected")
+            XCTAssertEqual(receivedUser.name, "appleseed", "Received user name should match expected")
         } else {
             XCTFail("Expected to find a user in the combine event")
         }

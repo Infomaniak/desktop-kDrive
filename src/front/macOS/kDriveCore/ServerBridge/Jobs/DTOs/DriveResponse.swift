@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct DriveListQuery: Codable, Sendable {
     let userDbId: Int32
@@ -107,7 +108,7 @@ public extension AvailableDriveResponse {
     }
 }
 
-public extension Collection where Element == AvailableDriveResponse {
+public extension Collection<AvailableDriveResponse> {
     var asAvailableDrives: [AvailableDrive] {
         return map { $0.asAvailableDrive }
     }

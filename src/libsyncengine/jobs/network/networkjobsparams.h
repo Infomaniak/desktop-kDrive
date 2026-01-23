@@ -97,6 +97,7 @@ static const std::string driveNameKey = "drive_name";
 static const std::string accountAdminKey = "account_admin";
 static const std::string capabilitiesKey = "capabilities";
 static const std::string canWriteKey = "can_write";
+static const std::string canShowKey = "can_show";
 static const std::string redirectUriKey = "redirect_uri";
 static const std::string symbolicLinkKey = "symbolic_link";
 
@@ -111,8 +112,6 @@ static const std::string inMaintenanceKey = "in_maintenance";
 static const std::string maintenanceAtKey = "maintenance_at";
 static const std::string maintenanceReasonKey = "maintenance_reason";
 static const std::string maintenanceTypesKey = "maintenance_types";
-static const std::string isLockedKey = "is_locked";
-static const std::string usedSizeKey = "used_size";
 
 static const std::string colorKey = "color";
 

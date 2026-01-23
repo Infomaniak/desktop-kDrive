@@ -32,6 +32,7 @@ namespace Infomaniak.kDrive.Types
         DRIVE_DELETE,
         DRIVE_SEARCH,
         SYNC_INFOLIST,
+        SYNC_OFFLINE_FILES_SIZE,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
@@ -41,9 +42,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_DELETE,
         SYNC_GETPUBLICLINKURL,
         SYNC_GETPRIVATELINKURL,
-        SYNC_ASKFORSTATUS,
+        SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
-        SYNC_SETROOTPINSTATE,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -66,10 +66,10 @@ namespace Infomaniak.kDrive.Types
         EXCLTEMPL_PROPAGATE_CHANGE,
         PARAMETERS_INFO,
         PARAMETERS_UPDATE,
-        UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_BESTVFSAVAILABLEMODE,
-        UTILITY_SHOWSHORTCUT,
-        UTILITY_SETSHOWSHORTCUT,
+        UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
+        UTILITY_FINDGOODPATHFORNEWSYNC,
+        UTILITY_ISPATHVALIDFORNEWSYNC,
         UTILITY_ACTIVATELOADINFO,
         UTILITY_CHECKCOMMSTATUS,
         UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -82,7 +82,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_GET_LOG_ESTIMATED_SIZE,
         UTILITY_CRASH,
         UTILITY_QUIT,
-        UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+        UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
         UPDATER_CHANGE_CHANNEL,
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
@@ -199,7 +199,7 @@ namespace Infomaniak.kDrive.Types
         OperationCanceled,
         UpdateRequired,
         LogUploadFailed,
-        UpdateFailed,
+        UpdateFailed
     };
 
 
@@ -232,12 +232,13 @@ namespace Infomaniak.kDrive.Types
         InconsistentPinState,
         FileSizeMismatch,
         UploadNotTerminated,
-        UnableToCreateVfs,
+        UnableToStartVfs,
         NotEnoughMemory,
         FileTooBig,
         MoveToTrashFailed,
         InvalidName,
         LiteSyncNotAllowed,
+        LiteSyncExtNotRunning,
         NotPlaceHolder,
         NetworkTimeout,
         SocketsDefuncted, // macOS: sockets defuncted by kernel
@@ -254,7 +255,8 @@ namespace Infomaniak.kDrive.Types
         NotEnoughINotifyWatches,
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
-        UpdateTreeIntegrityCheckFailed
+        UpdateTreeIntegrityCheckFailed,
+        MissingReplyData
     };
 
     public enum ConflictType
@@ -300,5 +302,13 @@ namespace Infomaniak.kDrive.Types
         DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+    
+    public enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
     };
 }

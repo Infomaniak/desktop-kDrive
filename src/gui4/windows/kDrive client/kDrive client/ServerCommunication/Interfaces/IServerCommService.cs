@@ -1,15 +1,15 @@
-﻿using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Animation;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
-    internal interface IServerCommService
+    public interface IServerCommService
     {
 
         // User-related requests
@@ -58,6 +58,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
+        Task<bool> SetSyncType(DbId syncDbId, SyncType mode, CancellationToken cancellationToken);
+
+        Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
+
+        public struct GetGoodPathResult
+        {
+            public string? GoodPath { get; set; }
+            public string? ErrorMessage { get; set; }
+        }    
+        
+        // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
+        Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
+        Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
+        Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken);
+        Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
         Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);
@@ -65,6 +80,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+        Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task RefreshSettings(CancellationToken cancellationToken);

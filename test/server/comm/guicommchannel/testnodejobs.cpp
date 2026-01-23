@@ -62,9 +62,8 @@ void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_LIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto listJob = std::dynamic_pointer_cast<BlacklistedNodeListJob>(job);
@@ -73,6 +72,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -108,10 +108,8 @@ void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_SETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         // Nothing to serialize back for set job
@@ -125,6 +123,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -157,9 +156,8 @@ void TestGuiCommChannel::testNodePathJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_PATH));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodePathJob = std::dynamic_pointer_cast<NodePathJob>(job);
@@ -172,6 +170,7 @@ void TestGuiCommChannel::testNodePathJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -205,6 +204,7 @@ void TestGuiCommChannel::testNodeInfoJob() {
     (void) nodeInfoObj.set("parentNodeId", toBase64(Str("n2")));
     (void) nodeInfoObj.set("path", toBase64(Str("/root/FileA")));
     (void) nodeInfoObj.set("size", 123);
+    (void) nodeInfoObj.set("accessDenied", false);
 
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("nodeInfo", nodeInfoObj);
@@ -214,9 +214,8 @@ void TestGuiCommChannel::testNodeInfoJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeInfoJob = std::dynamic_pointer_cast<NodeInfoJob>(job);
@@ -226,10 +225,12 @@ void TestGuiCommChannel::testNodeInfoJob() {
         CPPUNIT_ASSERT(nodeInfoJob->_withPath);
 
         nodeInfoJob->_nodeInfo = NodeInfo("n1", "FileA", 123, "n2", 55, "/root/FileA");
+        nodeInfoJob->_nodeInfo.setAccessDenied(false);
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -263,6 +264,7 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
     (void) nodeInfoObj1.set("parentNodeId", toBase64(Str("123")));
     (void) nodeInfoObj1.set("path", toBase64(Str("/root/FolderA")));
     (void) nodeInfoObj1.set("size", 0);
+    (void) nodeInfoObj1.set("accessDenied", false);
 
     Poco::JSON::Object nodeInfoObj2;
     (void) nodeInfoObj2.set("modtime", 20);
@@ -271,6 +273,7 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
     (void) nodeInfoObj2.set("parentNodeId", toBase64(Str("123")));
     (void) nodeInfoObj2.set("path", toBase64(Str("/root/FolderB")));
     (void) nodeInfoObj2.set("size", 0);
+    (void) nodeInfoObj2.set("accessDenied", false);
 
     Poco::JSON::Array nodeSubFolderInfoListObj;
     (void) nodeSubFolderInfoListObj.add(nodeInfoObj1);
@@ -284,9 +287,8 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeSubFoldersJob = std::dynamic_pointer_cast<NodeSubFoldersJob>(job);
@@ -296,13 +298,14 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
         CPPUNIT_ASSERT_EQUAL(NodeId{"123"}, nodeSubFoldersJob->_nodeId);
         CPPUNIT_ASSERT(nodeSubFoldersJob->_withPath);
 
-        NodeInfo n1("A", "FolderA", 0, "123", 10, "/root/FolderA");
-        NodeInfo n2("B", "FolderB", 0, "123", 20, "/root/FolderB");
+        const NodeInfo n1("A", "FolderA", 0, "123", 10, "/root/FolderA");
+        const NodeInfo n2("B", "FolderB", 0, "123", 20, "/root/FolderB");
         nodeSubFoldersJob->_nodeSubFolderInfoList = {n1, n2};
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -335,6 +338,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
     (void) nodeInfoObj1.set("parentNodeId", toBase64(Str("0000")));
     (void) nodeInfoObj1.set("path", toBase64(Str("documents/pending1")));
     (void) nodeInfoObj1.set("size", 1024);
+    (void) nodeInfoObj1.set("accessDenied", false);
 
     Poco::JSON::Object nodeInfoObj2;
     (void) nodeInfoObj2.set("modtime", 0);
@@ -343,6 +347,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
     (void) nodeInfoObj2.set("parentNodeId", toBase64(Str("0000")));
     (void) nodeInfoObj2.set("path", toBase64(Str("documents/pending2")));
     (void) nodeInfoObj2.set("size", 1024);
+    (void) nodeInfoObj2.set("accessDenied", false);
 
     Poco::JSON::Array nodeSubFolderInfoListObj;
     (void) nodeSubFolderInfoListObj.add(nodeInfoObj1);
@@ -356,9 +361,8 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS2));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeSubFolders2Job = std::dynamic_pointer_cast<NodeSubFolders2Job>(job);
@@ -376,6 +380,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -409,9 +414,8 @@ void TestGuiCommChannel::testNodeFolderSizeJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_FOLDER_SIZE));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto folderSizeJob = std::dynamic_pointer_cast<NodeFolderSizeJob>(job);
@@ -424,6 +428,7 @@ void TestGuiCommChannel::testNodeFolderSizeJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -468,9 +473,8 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_CREATEMISSINGFOLDERS));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeCreateMissingFoldersJob = std::dynamic_pointer_cast<NodeCreateMissingFoldersJob>(job);
@@ -487,6 +491,7 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

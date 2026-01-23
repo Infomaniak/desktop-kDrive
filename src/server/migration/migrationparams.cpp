@@ -34,7 +34,7 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -130,9 +130,7 @@ LogLevel MigrationParams::intToLogLevel(int log) {
 }
 
 VirtualFileMode MigrationParams::modeFromString(const QString &str) {
-    if (str == "suffix") {
-        return VirtualFileMode::Suffix;
-    } else if (str == "wincfapi") {
+    if (str == "wincfapi") {
         return VirtualFileMode::Win;
     } else if (str == "mac") {
         return VirtualFileMode::Mac;

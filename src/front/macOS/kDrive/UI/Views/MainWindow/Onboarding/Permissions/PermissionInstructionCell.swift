@@ -24,11 +24,11 @@ extension MacOSPermissionState {
     var color: NSColor {
         switch self {
         case .neutral:
-            return NSColor.Tokens.Status.Medium.security
+            return ColorToken.Status.Medium.security.asNSColor
         case .warning:
-            return NSColor.Tokens.Status.Medium.warning
+            return ColorToken.Status.Medium.warning.asNSColor
         case .done:
-            return NSColor.Tokens.Status.Medium.success
+            return ColorToken.Status.Medium.success.asNSColor
         }
     }
 }
@@ -85,7 +85,7 @@ class PermissionInstructionCell: NSView {
         let textField = NSTextField(labelWithString: hint ?? "")
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.usesSingleLineMode = false
-        textField.textColor = NSColor.Tokens.Text.tertiary
+        textField.textColor = ColorToken.Text.tertiary.asNSColor
         textField.font = NSFont.Tokens.subheadline
         textField.isHidden = hint == nil
         return textField

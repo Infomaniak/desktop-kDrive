@@ -34,9 +34,6 @@ open class TargetAssembly {
 
     open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
-            Factory(type: ServerBridgeable.self) { _, _ in
-                ServerBridge()
-            },
             Factory(type: CoherentCache.self) { _, _ in
                 ServerCoherentCache()
             },

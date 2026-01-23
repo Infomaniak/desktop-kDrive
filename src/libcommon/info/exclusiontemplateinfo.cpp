@@ -18,7 +18,7 @@
 
 #include "exclusiontemplateinfo.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto exclusionTemplateInfoString = "template";
 static const auto exclusionTemplateInfoWarning = "warning";

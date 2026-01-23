@@ -127,11 +127,12 @@
   </data>
   <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
+  </data>
+  <data name="CC_SyncExclusionSelector_ToolTip_AccessDenied.Content" xml:space="preserve">
+    <value>Accès non autorisé</value>
   </data>
   <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value>Accueil</value>
@@ -144,9 +145,6 @@
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans mon drive</value>
-  </data>
-  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
-    <value>Synchronisation en pause</value>
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
     <value>Démarrage de la synchronisation...</value>
@@ -166,8 +164,35 @@
   <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
   </data>
-  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
-    <value>Statut</value>
+  <data name="CC_SyncActivityTable_ItemErrorStatus_Tooltip.Content" xml:space="preserve">
+    <value>Erreur de synchronisation</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncingStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="CC_SyncActivityTable_FetchingLink.Text" xml:space="preserve">
+    <value>Création du lien de partage…</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFetched.Text" xml:space="preserve">
+    <value>Lien copié dans le presse-papiers</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFaillure.Text" xml:space="preserve">
+    <value>La création du lien de partage a échoué</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenExplorer.Text" xml:space="preserve">
+    <value>Ouvrir dans l'explorateur</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenOnline.Text" xml:space="preserve">
+    <value>Ouvrir dans kDrive en ligne</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_FixErrors.Text" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_CopyLink.Text" xml:space="preserve">
+    <value>Copier le lien de partage</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncedStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisé</value>
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
     <value>Synchronisé depuis votre ordinateur</value>
@@ -180,6 +205,9 @@
   </data>
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
+  </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value>Statut</value>
   </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value>Dernier emplacement</value>
@@ -201,13 +229,13 @@
     <value>sec</value>
   </data>
   <data name="Global_Day" xml:space="preserve">
-    <value>jour</value>
+    <value>j</value>
   </data>
   <data name="Global_JustNow" xml:space="preserve">
     <value>À l'instant</value>
   </data>
   <data name="Global_Hour" xml:space="preserve">
-    <value>heure</value>
+    <value>heure(s)</value>
   </data>
   <data name="Global_Minute" xml:space="preserve">
     <value>min</value>
@@ -280,6 +308,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Fichier inaccessible</value>
   </data>
   <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Vous avez {0} erreurs de synchronisation</value>
+  </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
@@ -400,19 +431,23 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value>Calcul...</value>
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value>Ce PC</value>
   </data>
   <data name="Page_StoragePage_Used.Text" xml:space="preserve">
-    <value>utilisé(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>utilisés</value>
   </data>
   <data name="Page_StoragePage_Free.Text" xml:space="preserve">
-    <value>libre(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>libres</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre de l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
-    <value>Fichiers kDrive accessibles hors ligne</value>
+    <value>Fichiers kDrive stocker sur l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
@@ -422,6 +457,33 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_HomePage_Hello.Text" xml:space="preserve">
     <value>Bonjour</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
+    <value>Accès refusé au kDrive</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Title.Text" xml:space="preserve">
+    <value>Maintenance en cours</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive a expiré</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
+    <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.  Veuillez vérifier vos droits ou contacter votre administrateur.</value>
+  </data>
+  <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Le Drive est temporairement indisponible pour maintenance.  Réessayez dans quelques minutes.</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Contactez votre administrateur pour réactiver le service.</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Renouvelez votre abonnement pour réactiver le service.</value>
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
@@ -434,9 +496,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Global_KiloBytes" xml:space="preserve">
     <value>Ko</value>
-  </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
-    <value>Disque indisponible</value>
   </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
     <value>, vos fichiers sont à jour</value>
@@ -494,7 +553,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Mise à jour</value>
   </data>
   <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
-    <value>kDrive build {0} disponible</value>
+    <value>kDrive {0} disponible</value>
     <comment>{0} version tag (ie 3.7.6)</comment>
   </data>
   <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
@@ -512,7 +571,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Général</value>
   </data>
   <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
-    <value>Mettre à jour kDrive automatiquement</value>
+    <value>Mises à jour automatiques</value>
   </data>
   <data name="Page_SettingsPage_AutoStart.Header" xml:space="preserve">
     <value>Ouvrir kDrive au démarrage de l’ordinateur</value>
@@ -566,7 +625,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Stockés en ligne</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+    <value>Changer le mode de synchronisation ?</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" xml:space="preserve">
     <value>Supprimer la synchronisation ?</value>
@@ -578,21 +637,17 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Votre nouveau mode de synchronisation est en cours d’application...</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" xml:space="preserve">
-    <value>Cette opération peut prendre un certain temps selon la taille de vos données.
-Elle peut également échouer et rendre la synchronisation définitivement indisponible, nécessitant une nouvelle synchronisation complète de votre drive.
+    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.
 
-Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.
+Avant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.
 
 Ne fermez pas l’application pendant le processus.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" xml:space="preserve">
-    <value>Annuler</value>
-  </data>
-  <data name="SecondaryButtonText" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+    <value>Continuer</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Modifier quand même</value>
+    <value>Annuler</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" xml:space="preserve">
     <value>Vos fichiers sont copiés sur votre ordinateur. 
@@ -866,5 +921,98 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Button.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" xml:space="preserve">
+    <value>Une erreur est survenue</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" xml:space="preserve">
+    <value>Le changement de mode de synchronisation a été annulé.
+
+La synchronisation actuelle reste inchangée. Toutefois, en cas de comportement anormal, il peut être nécessaire de supprimer puis de recréer la synchronisation afin de rétablir un fonctionnement correct.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_MainButton.Content" xml:space="preserve">
+    <value>Mettre à jour l’abonnement</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+    <value>Ce compte ne correspond pas</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
+    <value>Le compte utilisé pour cette connexion ne correspond pas à celui de ce kDrive.  Veuillez vous reconnecter avec la bonne adresse e-mail  {0}</value>
+    <comment>{0} = stripped expected email</comment>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value>Vous avez été déconnecté</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive est en veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Votre kDrive n’a pas été utilisé depuis longtemps et a été mis en veille afin d’économiser des ressources</value>
+  </data>
+  <data name="Page_AsleepErrorPage_PrimaryButton.Content" xml:space="preserve">
+    <value>Sortir de veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
+    <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
+  </data>
+  <data name="Page_ActivityPage_Filter_All.Text" xml:space="preserve">
+    <value>Toutes les activités</value>
+  </data>
+  <data name="Page_ActivityPage_Filter_My.Text" xml:space="preserve">
+    <value>Mon activité uniquement</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Finished.Text" xml:space="preserve">
+    <value>Synchronisation terminée</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_InProgress.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Paused.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_NoActivity.Text" xml:space="preserve">
+    <value>Aucune activité récente</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Error.Text" xml:space="preserve">
+    <value>Erreurs de synchronisation</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
+    <value>Hors ligne</value>
   </data>
 </root>

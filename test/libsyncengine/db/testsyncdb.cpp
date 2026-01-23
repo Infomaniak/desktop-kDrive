@@ -20,7 +20,7 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -87,7 +87,7 @@ void TestSyncDb::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    (void) std::filesystem::remove(syncDbPath);
+    (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
     _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);

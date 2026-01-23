@@ -18,7 +18,7 @@
 
 #include "parametersinfo.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -33,7 +33,6 @@ static const auto parametersInfoExtendedLog = "extendedLog";
 static const auto parametersInfoPurgeOldLogs = "purgeOldLogs";
 static const auto parametersInfoProxyConfigInfo = "proxyConfigInfo";
 static const auto parametersInfoDarkTheme = "darkTheme";
-static const auto parametersInfoShowShortcuts = "showShortcuts";
 static const auto parametersInfoDialogGeometry = "dialogGeometry";
 static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
@@ -42,8 +41,7 @@ static const auto parametersInfoMatomoEnabled = "matomoEnabled";
 
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                               bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry,
-                               int maxAllowedCpu) :
+                               bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu) :
     _language(language),
     _monoIcons(monoIcons),
     _autoStart(autoStart),
@@ -54,7 +52,6 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
     _extendedLog(extendedLog),
     _purgeOldLogs(purgeOldLogs),
     _darkTheme(darkTheme),
-    _showShortcuts(showShortcuts),
     _dialogGeometry(std::move(dialogGeometry)),
     _maxAllowedCpu(maxAllowedCpu) {}
 
@@ -72,7 +69,6 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 #ifdef KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
     const std::function<Poco::Dynamic::Var(const DialogGeometry &)> dialogGeometry2DynamicVar = [](const DialogGeometry &value) {
         Poco::DynamicStruct structValue;
@@ -112,8 +108,6 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
 
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
-
     if (dstruct.contains(parametersInfoDialogGeometry)) // Not used by the new clients
     {
         const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
@@ -146,8 +140,8 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
-            parametersInfo._showShortcuts >> parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >>
-            parametersInfo._proxyConfigInfo >> parametersInfo._distributionChannel;
+            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
+            parametersInfo._distributionChannel;
     return in;
 }
 
@@ -155,8 +149,8 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
     out << parametersInfo._language << parametersInfo._monoIcons << parametersInfo._autoStart << parametersInfo._moveToTrash
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
-        << parametersInfo._showShortcuts << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu
-        << parametersInfo._proxyConfigInfo << parametersInfo._distributionChannel;
+        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
+        << parametersInfo._distributionChannel;
     return out;
 }
 

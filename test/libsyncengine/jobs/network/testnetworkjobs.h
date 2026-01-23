@@ -23,7 +23,7 @@
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 using namespace CppUnit;
 
 namespace KDC {
@@ -64,6 +64,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
+        CPPUNIT_TEST(testExists);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -105,6 +106,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDownloadHasEnoughSpace();
         void testSearch();
         void testGetInfoUserTrialsOn401Error();
+        void testExists();
 
     private:
         bool createTestFiles();

@@ -23,7 +23,7 @@
 #include "comm/guijobs/exclappsetlistjob.h"
 #include "comm/guijobs/exclappgetfetchingapplistjob.h"
 #include "libcommon/comm.h"
-#include "log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 
 namespace KDC {
 
@@ -102,7 +102,7 @@ void TestGuiCommChannel::testExclAppGetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
@@ -177,7 +177,7 @@ void TestGuiCommChannel::testExclAppGetFetchingAppListJob() {
     // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
     (void) queryObj.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
-    Poco::JSON::Object queryParamsObj;
+    const Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);

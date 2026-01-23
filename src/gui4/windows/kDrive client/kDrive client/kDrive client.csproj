@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>3.8.7.100</AssemblyVersion>
+    <AssemblyVersion>3.8.2.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -54,6 +54,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
     <PackageReference Include="Sentry" Version="6.0.0" />
+    <PackageReference Include="Sentry.Profiling" Version="6.0.0" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
   <!--
@@ -122,6 +125,12 @@
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\DriveStatusIndicator.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\StatusBadge.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\SplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -150,6 +159,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Pages\Settings\DriveManagementPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\SpecialErrorsPages\AsleepErrorPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Styles\Custom\InfomaniakStylesDark.xaml">

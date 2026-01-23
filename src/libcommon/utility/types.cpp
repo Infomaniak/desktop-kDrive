@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
+
 #include "types.h"
+
+#include "utility/utility.h"
+#include "utility.h"
+
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -226,6 +230,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::MissingReplyData:
+            return "MissingReplyData";
         default:
             return noConversionStr;
     }
@@ -582,8 +588,6 @@ std::string toString(const VirtualFileMode e) {
             return "Win";
         case VirtualFileMode::Mac:
             return "Mac";
-        case VirtualFileMode::Suffix:
-            return "Suffix";
         default:
             return noConversionStr;
     }
@@ -889,6 +893,28 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
     const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
     const long index = it - exitCodeList.begin();
     return index;
+}
+
+const std::string VersionInfo::versionInfoChannel = "channel";
+const std::string VersionInfo::versionInfoTag = "tag";
+const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
+const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
+const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
+
+void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+}
+
+void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
 }
 
 } // namespace KDC

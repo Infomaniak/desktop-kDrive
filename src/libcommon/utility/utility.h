@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #endif
 
-#include "libcommon/libcommon.h"
+#include "libcommon.h"
 #include "types.h"
 
 #include <string>
@@ -450,6 +450,11 @@ struct COMMON_EXPORT CommonUtility {
             CommonUtility::writeValuesToStruct(dstruct, key, values, t2DynamicVar);
         }
 
+        static void msleep(int msec);
+
+        static bool getLinuxDesktopType(std::string &currentDesktop);
+        static SyncPath getTrashPath();
+
         // Base64 conversion
         static void convertFromBase64Str(const std::string &base64Str, std::string &value);
         static void convertFromBase64Str(const std::string &base64Str, std::wstring &value);
@@ -464,6 +469,20 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_MACOS)
         static void convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str);
 #endif
+
+        // Format utility functions
+        static std::wstring formatStdError(const std::error_code &ec);
+        static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
+        static std::wstring formatIoError(IoError ioError);
+        static std::wstring formatIoError(const SyncPath &path, IoError ioError);
+        static std::wstring formatIoError(const QString &path, IoError ioError);
+        static std::wstring formatErrno(const SyncPath &path, long cError);
+        static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring quotedSyncName(const SyncName &name);
+        static std::wstring formatSyncName(const SyncName &name);
+        static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
 
     private:
         static std::mutex _generateRandomStringMutex;

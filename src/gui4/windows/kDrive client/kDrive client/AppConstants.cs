@@ -1,21 +1,87 @@
-﻿
-using System;
+﻿using System;
 
 namespace Infomaniak.kDrive
 {
     internal interface IAppConstants
     {
-        public abstract string SentryDSN { get; }
-        public abstract Uri StorageUrl { get; }
-        public abstract Uri GitHubRepoUrl { get; }
-        public abstract Uri GitHubLicenseUrl { get; }
+        ISentryConstants Sentry { get; }
+        IGitHubConstants GitHub { get; }
+        IDriveConstants Drive { get; }
+        IStorageConstants Storage { get; }
     }
 
-    class ProductionConstants : IAppConstants
+    internal interface ISentryConstants
     {
-        public string SentryDSN { get; } = "https://c6ee7ba768d4f7fcd3a6f787f8cc569e@sentry-desktop.infomaniak.com/5";
-        public Uri StorageUrl { get; } = new Uri("https://download.storage.infomaniak.com/drive/desktopclient");
-        public Uri GitHubRepoUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive");
-        public Uri GitHubLicenseUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file");
+        string Dsn { get; }
+        string Environment { get; }
     }
+
+    internal interface IGitHubConstants
+    {
+        Uri RepoUrl { get; }
+        Uri LicenseUrl { get; }
+    }
+
+    internal interface IStorageConstants
+    {
+        Uri DownloadUrl { get; }
+        Uri ReleaseNoteUrl(string versionTag, string languageCode) =>
+            new($"{DownloadUrl}/kDrive-{versionTag}-win-{languageCode}.html");
+    }
+
+
+    internal interface IDriveConstants
+    {
+        Uri RenewUrl(DriveId? driveId);
+        Uri kSuiteHomeUrl(DriveId? driveId);
+        Uri kDriveHomeUrl(DriveId? driveId);
+        Uri TrashUrl(DriveId? driveId);
+        Uri FavoriteUrl(DriveId? driveId);
+        Uri SharedUrl(DriveId? driveId);
+        Uri itemUri(DriveId? driveId, NodeId nodeId);
+    }
+
+    internal sealed class ProductionAppConstants : IAppConstants
+    {
+        public ISentryConstants Sentry { get; } = new ProductionSentry();
+        public IGitHubConstants GitHub { get; } = new ProductionGitHub();
+        public IDriveConstants Drive { get; } = new ProductionDrive();
+        public IStorageConstants Storage { get; } = new ProductionStorage();
+
+        private sealed class ProductionSentry : ISentryConstants
+        {
+            public string Dsn { get; } =
+                "https://c6ee7ba768d4f7fcd3a6f787f8cc569e@sentry-desktop.infomaniak.com/5";
+
+            public string Environment { get; } = "production";
+        }
+
+        private sealed class ProductionGitHub : IGitHubConstants
+        {
+            private const string Repo = "https://github.com/Infomaniak/desktop-kDrive";
+
+            public Uri RepoUrl { get; } = new(Repo);
+            public Uri LicenseUrl { get; } = new($"{Repo}?tab=GPL-3.0-1-ov-file");
+        }
+
+        private sealed class ProductionDrive : IDriveConstants
+        {
+            public Uri RenewUrl(DriveId? id) =>
+                new($"https://shop.infomaniak.com/order/drive/{id}");
+            public Uri kSuiteHomeUrl(DriveId? id) =>
+                new($"https://ksuite.infomaniak.com/kdrive/app/drive/{id}");
+            public Uri kDriveHomeUrl(DriveId? id) =>
+                new($"https://kdrive.infomaniak.com/app/drive/{id}");
+            public Uri TrashUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/trash");
+            public Uri FavoriteUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/favorites");
+            public Uri SharedUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/shared-with-me");
+            public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
+        }
+        private sealed class ProductionStorage : IStorageConstants
+        {
+            public Uri DownloadUrl { get; } =
+                new("https://download.storage.infomaniak.com/drive/desktopclient");
+        }
+    }
+
 }

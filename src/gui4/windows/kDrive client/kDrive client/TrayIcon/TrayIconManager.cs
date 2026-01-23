@@ -115,19 +115,8 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            // Bring to front
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-            if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.Minimize();
-                presenter.Restore();
-            }
-
-            (Application.Current as App)?.CurrentWindow?.Show();
-            (Application.Current as App)?.CurrentWindow?.Activate();
+            Utility.BringCurrentWindowToFront();
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
 
             SetIcon_neutral();

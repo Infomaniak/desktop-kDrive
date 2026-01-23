@@ -63,18 +63,21 @@ set(server_SRCS
     comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
     comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
     comm/guijobs/syncinfolistjob.h comm/guijobs/syncinfolistjob.cpp
+    comm/guijobs/syncofflinefilessizejob.h comm/guijobs/syncofflinefilessizejob.cpp
     comm/guijobs/syncstartjob.h comm/guijobs/syncstartjob.cpp
     comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
     comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
     comm/guijobs/abstractsyncaddjob.h comm/guijobs/abstractsyncaddjob.cpp
+
     comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
     comm/guijobs/syncadd2job.h comm/guijobs/syncadd2job.cpp
     comm/guijobs/syncstartafterloginjob.h comm/guijobs/syncstartafterloginjob.cpp
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
+    comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
+
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
@@ -82,25 +85,44 @@ set(server_SRCS
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+
     comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    
     comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
     comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
     comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
+    
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
+
+    comm/guijobs/utilitybestvfsavailablemodejob.h comm/guijobs/utilitybestvfsavailablemodejob.cpp
+    comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
+    comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitycheckcommstatusjob.h comm/guijobs/utilitycheckcommstatusjob.cpp
+    comm/guijobs/utilityhassystemlaunchonstartupjob.h comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
+    comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
+    
+    comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
+    comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
+    comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
+    comm/guijobs/updaterskipversionjob.h comm/guijobs/updaterskipversionjob.cpp
+    
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signalaccountupdatedjob.h comm/guijobs/signalaccountupdatedjob.cpp
     comm/guijobs/signalaccountremovedjob.h comm/guijobs/signalaccountremovedjob.cpp
     comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
+    comm/guijobs/signaldriveupdatedjob.h comm/guijobs/signaldriveupdatedjob.cpp
     comm/guijobs/signaldriveremovedjob.h comm/guijobs/signaldriveremovedjob.cpp
     comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
     comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
@@ -111,6 +133,14 @@ set(server_SRCS
     comm/guijobs/signalnodefixconflictedfilescompletedjob.h comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
+    comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
+    comm/guijobs/signalupdaterstatechangedjob.h comm/guijobs/signalupdaterstatechangedjob.cpp
+    comm/guijobs/signalutilityshownotificationjob.h comm/guijobs/signalutilityshownotificationjob.cpp
+    comm/guijobs/signalutilityshowsettingsjob.h comm/guijobs/signalutilityshowsettingsjob.cpp
+    comm/guijobs/signalutilityshowsynthesisjob.h comm/guijobs/signalutilityshowsynthesisjob.cpp
+    comm/guijobs/signalutilityloguploadstatejob.h comm/guijobs/signalutilityloguploadstatejob.cpp
+    comm/guijobs/signalutilityquitjob.h comm/guijobs/signalutilityquitjob.cpp
+
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -260,7 +290,7 @@ list(APPEND PC_HEADER_FILES
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 

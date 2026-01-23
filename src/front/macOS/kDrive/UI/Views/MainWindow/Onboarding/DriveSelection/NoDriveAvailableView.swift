@@ -35,12 +35,12 @@ final class NoDriveAvailableView: NSView {
         let titleLabel = NSTextField(labelWithString: KDriveLocalizable.onboardingDriveSelectionNoDriveTitle)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = NSFont.Tokens.headline
-        titleLabel.textColor = NSColor.Tokens.Text.secondary
+        titleLabel.textColor = ColorToken.Text.secondary.asNSColor
 
         let descriptionLabel = NSTextField(labelWithString: KDriveLocalizable.onboardingDriveSelectionNoDriveDescription)
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.font = NSFont.Tokens.body
-        descriptionLabel.textColor = NSColor.Tokens.Text.secondary
+        descriptionLabel.textColor = ColorToken.Text.secondary.asNSColor
 
         let stackView = NSStackView(views: [titleLabel, descriptionLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false

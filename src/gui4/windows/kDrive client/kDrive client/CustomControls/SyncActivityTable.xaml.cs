@@ -1,16 +1,21 @@
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -148,6 +153,120 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
         }
+
+        private async void OpenInExplorer_Click(object sender, RoutedEventArgs e)
+        {
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                return;
+            }
+
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+
+            await Utility.OpenFolderSecurely(activity.LocalPath);
+        }
+
+        private async void OpenOnline_Click(object sender, RoutedEventArgs e)
+        {
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                return;
+            }
+
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+
+            Uri uri = App.Constants.Drive.itemUri(activity.Sync.Drive.DriveId, activity.RemoteNodeId);
+            await Windows.System.Launcher.LaunchUriAsync(uri);
+        }
+
+        private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
+        {
+            const string loadingTextXuid = "CC_SyncActivityTable_FetchingLink/Text";
+            const string errorTextXuid = "CC_SyncActivityTable_LinkFaillure/Text";
+            const string successTextXuid = "CC_SyncActivityTable_LinkFetched/Text";
+
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                return;
+            }
+
+            // Find parrent button to anchor teaching tip
+
+
+            DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
+
+
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                return;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+
+            Uri? publicLink = await commService.GetPublicLink(activity.Sync.Drive.DbId, activity.RemoteNodeId, CancellationToken.None);
+            if (publicLink is not null)
+            {
+                DataPackage dataPackage = new();
+                dataPackage.RequestedOperation = DataPackageOperation.Copy;
+                dataPackage.SetText(publicLink.ToString());
+                Clipboard.SetContent(dataPackage);
+                DisplayTeachingTip(Utility.GetLocalizedString(successTextXuid), false);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Could not retrieve public link");
+                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+            }
+        }
+
+        private void NavigateToErrorPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame? frame = Utility.GetFrame(this);
+            if (frame is not null)
+            {
+                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                frame.Navigate(typeof(Pages.ErrorPage));
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+            }
+        }
+
+        private void DisplayTeachingTip(string text, bool showSpinner)
+        {
+            NotificationText.Text = text;
+            NotificationRing.Visibility = showSpinner
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            NotificationTeachingTip.IsOpen = true;
+        }
+
+        private void ClosePopupClicked(object sender, RoutedEventArgs e)
+        {
+            NotificationTeachingTip.IsOpen = false;
+        }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
@@ -174,6 +293,42 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 Types.NodeType.Directory => DirectoryTemplate,
                 _ => FileTemplate,
+            };
+        }
+    }
+
+    public partial class ActivityStatusDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SynchronizedTemplate { get; set; }
+        public DataTemplate? SynchronizingTemplate { get; set; }
+        public DataTemplate? SynchronizationErrorTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item == null)
+                return null;
+
+            Types.SyncFileStatus syncFileStatus;
+            if (item is SyncFileItem syncActivity)
+            {
+                syncFileStatus = syncActivity.Status;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                return null;
+            }
+
+            return syncFileStatus switch
+            {
+                SyncFileStatus.Unknown => SynchronizationErrorTemplate,
+                SyncFileStatus.Error => SynchronizationErrorTemplate,
+                SyncFileStatus.Success => SynchronizedTemplate,
+                SyncFileStatus.Conflict => SynchronizationErrorTemplate,
+                SyncFileStatus.Inconsistency => SynchronizationErrorTemplate,
+                SyncFileStatus.Ignored => SynchronizationErrorTemplate,
+                SyncFileStatus.Syncing => SynchronizingTemplate,
+                _ => SynchronizationErrorTemplate,
             };
         }
     }

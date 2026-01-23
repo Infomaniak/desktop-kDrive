@@ -253,18 +253,18 @@ void TestSyncPal::testBlacklist() {
 void TestSyncPal::testAll() {
     // Start sync
     _syncPal->start();
-    Utility::msleep(1000);
+    CommonUtility::msleep(1000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of 1st sync
     while (!_syncPal->syncHasFullyCompleted()) {
-        Utility::msleep(1000);
+        CommonUtility::msleep(1000);
     }
-    Utility::msleep(60000);
+    CommonUtility::msleep(60000);
 
     // Pause sync
     _syncPal->pause();
-    Utility::msleep(5000);
+    CommonUtility::msleep(5000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Apply tests cases
@@ -273,12 +273,12 @@ void TestSyncPal::testAll() {
 
     // Unpause sync
     _syncPal->unpause();
-    Utility::msleep(10000);
+    CommonUtility::msleep(10000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
-        Utility::msleep(1000);
+        CommonUtility::msleep(1000);
     }
 
     // Check sync results

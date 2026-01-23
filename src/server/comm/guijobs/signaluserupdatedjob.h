@@ -34,6 +34,8 @@ class SignalUserUpdatedJob : public AbstractGuiJob {
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override { return ExitCode::Ok; }
+
+        friend class TestGuiCommChannel;
 };
 
 } // namespace KDC

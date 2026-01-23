@@ -18,6 +18,7 @@
 
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 public struct RequestMock: Codable, Sendable {
     public let id: Int32
@@ -92,10 +93,10 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
         await cache.addUser(newUser)
 
         let requestIdentifier = await requestCounter.nextID
-        let userInfo = SignalParams<UserInfoSignal>(body: newUser.asUserInfoSignal)
+        let userInfo = UserInfoSignal(userInfo: newUser.asUserInfoMetadata)
         let updateUserSignal = SignalMessage<UserInfoSignal>(id: requestIdentifier,
                                                              num: SignalNum.USER_UPDATED,
-                                                             params: userInfo)
+                                                             body: userInfo)
         let encodedSignal = try encoder.encode(updateUserSignal)
         signalHandler.handleServerSignal(encodedSignal)
     }

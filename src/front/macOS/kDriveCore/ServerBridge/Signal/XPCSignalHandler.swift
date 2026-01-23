@@ -18,27 +18,35 @@
 
 import Foundation
 import InfomaniakDI
+import Sentry
 
 public protocol XPCSignalHandlerProtocol {
     func handleServerSignal(_ signal: Data?)
 }
 
-struct XPCSignalHandler: XPCSignalHandlerProtocol {
-    let decoder = JSONDecoder()
-    @LazyInjectService var coherentCache: CoherentCache
+enum SignalError: Error {
+    case nilData
+    case unableToParseMetadata(_ signal: String)
+    case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
+    case unableToGetUserFromSignal
+    case unableToGetUserDbIdFromSignal
+    case unableToGetAccountFromSignal
+    case unableToGetAccountDbIdFromSignal
+    case unableToGetDriveFromSignal
+    case unableToGetDriveDbIdFromSignal
+    case unableToGetSyncFromSignal
+    case unableToGetSyncDbIdFromSignal
+    case unableToGetSyncProgressFromSignal
+    case unableToGetSyncFileItemFromSignal
+    case unsupported(_ num: SignalNum)
+}
 
-    enum SignalError: Error {
-        case nilData
-        case unableToParseMetadata(_ signal: String)
-        case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
-        case unableToGetUserFromSignal
-        case unableToGetAccountFromSignal
-        case unableToGetAccountDbIdFromSignal
-        case unableToGetDriveFromSignal
-        case unableToGetDriveDbIdFromSignal
-        case unableToGetSyncFromSignal
-        case unsupported(_ num: SignalNum)
-    }
+struct XPCSignalHandler: XPCSignalHandlerProtocol {
+    private let decoder = JSONDecoder()
+    private let userHandler = UserSignalHandler()
+    private let accountHandler = AccountSignalHandler()
+    private let driveHandler = DriveSignalHandler()
+    private let synchroHandler = SynchroSignalHandler()
 
     func handleServerSignal(_ signal: Data?) {
         Task {
@@ -46,7 +54,14 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
                 try await handleServerSignal(signal)
             } catch {
                 IKLogger.xpc.error("[KD] signal error :\(error)")
-                // TODO: Sentry
+
+                SentrySDK.capture(message: "Error processing Signal") { scope in
+                    scope.setLevel(.error)
+                    scope.setContext(
+                        value: ["error": error, "description": error.localizedDescription],
+                        key: "underlying error"
+                    )
+                }
             }
         }
     }
@@ -67,121 +82,50 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         let signalNum = signalMetadata.num
         IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
+        // IKLogger.xpc.log("[KD] recv signal raw: \(String(data: signal, encoding: .utf8))")
 
         switch signalNum {
-        case .USER_ADDED:
-            try await handleUserAdded(signal)
+        case .USER_ADDED, .USER_UPDATED:
+            try await userHandler.handleUser(signal)
 
-        case .USER_UPDATED:
-            IKLogger.xpc.error("[KD] TODO - USER_UPDATED not available")
-            throw SignalError.unsupported(signalNum)
+        case .USER_REMOVED:
+            try await userHandler.handleUserRemoved(signal)
 
         case .ACCOUNT_ADDED:
-            try await handleAccountAdded(signal)
+            try await accountHandler.handleAccountAdded(signal)
 
         case .ACCOUNT_UPDATED:
-            IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
-            throw SignalError.unsupported(signalNum)
+            try await accountHandler.handleAccountUpdated(signal)
 
         case .ACCOUNT_REMOVED:
-            try await handleAccountRemoved(signal)
+            try await accountHandler.handleAccountRemoved(signal)
 
         case .DRIVE_ADDED:
-            IKLogger.xpc.log("[KD] TODO - DRIVE_ADDED not available")
-            throw SignalError.unsupported(signalNum)
+            try await driveHandler.handleDrive(signal)
 
         case .DRIVE_UPDATED:
-            try await handleDriveUpdated(signal)
+            try await driveHandler.handleDrive(signal)
 
         case .DRIVE_REMOVED:
-            try await handleDriveRemoved(signal)
+            try await driveHandler.handleDriveRemoved(signal)
 
         case .SYNC_ADDED:
-            try await handleSyncAdded(signal)
+            try await synchroHandler.handleSync(signal)
+
+        case .SYNC_UPDATED:
+            try await synchroHandler.handleSync(signal)
+
+        case .SYNC_REMOVED:
+            try await synchroHandler.handleSyncRemoved(signal)
+
+        case .SYNC_PROGRESSINFO:
+            try await synchroHandler.handleSyncProgress(signal)
+
+        case .SYNC_COMPLETEDITEM:
+            try await synchroHandler.handleSyncCompleted(signal)
 
         default:
             throw SignalError.unsupported(signalNum)
         }
-    }
-
-    // MARK: - Specific signal handling
-
-    // MARK: User
-
-    private func handleUserAdded(_ signal: Data) async throws {
-        guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
-              let user = userInfoSignal.body?.asUser else {
-            throw SignalError.unableToGetUserFromSignal
-        }
-
-        await coherentCache.updateUser(user)
-    }
-
-    // MARK: Account
-
-    private func handleAccountAdded(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
-              let accountInfo = accountInfoSignal.body else {
-            throw SignalError.unableToGetAccountFromSignal
-        }
-
-        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
-    }
-
-    private func handleAccountRemoved(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal),
-              let accountDbId = accountInfoSignal.body?.accountDbId else {
-            throw SignalError.unableToGetAccountDbIdFromSignal
-        }
-
-        await coherentCache.removeAccount(accountDbId: accountDbId)
-    }
-
-    // MARK: Drive
-
-    private func handleDriveUpdated(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
-              let driveInfo = driveInfoSignal.body else {
-            throw SignalError.unableToGetDriveFromSignal
-        }
-
-        try await coherentCache.updateDriveSignal(driveInfo)
-    }
-
-    private func handleDriveRemoved(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal),
-              let driveDbId = driveInfoSignal.body?.driveDbId else {
-            throw SignalError.unableToGetDriveDbIdFromSignal
-        }
-
-        try await coherentCache.removeDrive(driveDbId: driveDbId)
-    }
-
-    // MARK: Synchro
-
-    private func handleSyncAdded(_ signal: Data) async throws {
-        guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal),
-              let syncInfo = syncInfoSignal.body else {
-            throw SignalError.unableToGetSyncFromSignal
-        }
-
-        try await coherentCache.addSynchro(syncInfo.asSynchro)
-    }
-}
-
-extension CoherentCache {
-    func updateDriveSignal(_ driveSignal: DriveInfoSignal) async throws {
-        let accountDbId = driveSignal.accountDbId
-        guard var account = await getAccount(accountDbId: accountDbId) else {
-            throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
-        }
-
-        let existingDrive = account.drives[driveSignal.dbId]
-        let updatedDrive = driveSignal.asDrive(accountId: account.id,
-                                               userDbId: account.userDbId,
-                                               synchros: existingDrive?.synchros ?? [:])
-        account.drives[driveSignal.dbId] = updatedDrive
-
-        try await updateAccount(account)
     }
 }

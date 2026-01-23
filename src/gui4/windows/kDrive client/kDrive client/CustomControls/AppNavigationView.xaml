@@ -56,9 +56,7 @@
         <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
                             Tag="StoragePage"
                             MinHeight="30"
-                            IsEnabled="false">
-                            <!--
-                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"> -->
+                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
                 <SymbolIcon Symbol="MapDrive" />
             </NavigationViewItem.Icon>
@@ -68,10 +66,12 @@
     <NavigationView.PaneFooter>
         <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
                             Tapped="NavigationViewItem_Tapped"
-                            MinHeight="30" 
+                            MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
-                <SymbolIcon Symbol="Folder" />
+                <controls:SvgIcon Height="16"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
+                                  Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
     </NavigationView.PaneFooter>

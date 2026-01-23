@@ -24,7 +24,7 @@ import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {
-    private var animationView = ThemedAnimationView()
+    private var animationView = NSThemedAnimationView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,7 +74,7 @@ extension PreloadingViewController {
 
     private func setupView() {
         view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
+        view.layer?.backgroundColor = ColorToken.Surface.secondary.asCGColor
 
         animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)

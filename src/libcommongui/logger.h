@@ -31,7 +31,7 @@
 
 namespace KDC {
 
-struct Log {
+struct GuiLog {
         QDateTime timeStamp;
         QString message;
 };
@@ -47,7 +47,7 @@ class Logger : public QObject {
         bool isNoop() const;
         bool isLoggingToFile() const;
 
-        void log(Log log);
+        void log(GuiLog log);
         void doLog(const QString &log);
 
         static void kdriveLog(const QString &message);

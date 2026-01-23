@@ -23,7 +23,7 @@
 #include "utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 
 #include <QOperatingSystemVersion>
 #include <QPluginLoader>
@@ -73,8 +73,6 @@ CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     switch (virtualFileMode) {
         case KDC::VirtualFileMode::Off:
             return Str("off");
-        case KDC::VirtualFileMode::Suffix:
-            return Str("suffix");
         case KDC::VirtualFileMode::Win:
             return Str("wincfapi");
         case KDC::VirtualFileMode::Mac:
@@ -91,8 +89,6 @@ KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     // Note: Strings are used for config and must be stable
     if (str == "off") {
         return KDC::VirtualFileMode::Off;
-    } else if (str == "suffix") {
-        return KDC::VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
         return KDC::VirtualFileMode::Win;
     } else if (str == "mac") {
@@ -135,19 +131,19 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError};
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
+        LOGW_WARN(logger(), L"File access error: " << CommonUtility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError, location};
     }
     if (exists != shouldExist) {
         if (shouldExist) {
-            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(itemPath));
+            LOGW_DEBUG(logger(), L"File doesn't exist: " << CommonUtility::formatSyncPath(itemPath));
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
-            LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
+            LOGW_DEBUG(logger(), L"File already exists: " << CommonUtility::formatSyncPath(itemPath));
             return {ExitCode::SystemError, ExitCause::FileExists, location};
         }
     }
@@ -243,10 +239,6 @@ static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
 bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
     if (virtualFileMode == VirtualFileMode::Off) return true;
 
-    if (virtualFileMode == VirtualFileMode::Suffix) {
-        return false;
-    }
-
     if (virtualFileMode == VirtualFileMode::Win) {
         if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
 
@@ -308,9 +300,8 @@ VirtualFileMode KDC::bestAvailableVfsMode() {
         return VirtualFileMode::Win;
     } else if (isVfsPluginAvailable(VirtualFileMode::Mac, error)) {
         return VirtualFileMode::Mac;
-    } else if (isVfsPluginAvailable(VirtualFileMode::Suffix, error)) {
-        return VirtualFileMode::Suffix;
     }
+
     return VirtualFileMode::Off;
 }
 

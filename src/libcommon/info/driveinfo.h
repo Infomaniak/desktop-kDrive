@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "libparms/db/drive.h"
+
+
 #include <QDataStream>
 #include <QString>
 #include <QList>
@@ -29,8 +32,6 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        DriveInfo();
-
         void setDbId(const int driveDbId) { _dbId = driveDbId; }
         int dbId() const { return _dbId; }
         void setId(const int driveId) { _id = driveId; }
@@ -39,6 +40,8 @@ class DriveInfo {
         int accountDbId() const { return _accountDbId; }
         void setName(const QString &name) { _name = name; }
         const QString &name() const { return _name; }
+        void setSize(const int64_t size) { _size = size; }
+        [[nodiscard]] int64_t size() const { return _size; }
         void setColor(const QColor &color) { _color = color; }
         const QColor &color() const { return _color; }
         bool notifications() const { return _notifications; }
@@ -50,17 +53,31 @@ class DriveInfo {
         void setMaintenance(const bool maintenance) { _maintenance = maintenance; }
         bool locked() const { return _locked; }
         void setLocked(const bool newLocked) { _locked = newLocked; }
+        void setUsedSize(const int64_t size) { _usedSize = size; }
+        [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
+        [[nodiscard]] bool packIsFree() const { return _packIsFree; }
+        void setPackIsFree(const bool pack_is_free) { _packIsFree = pack_is_free; }
+
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        friend bool operator==(const DriveInfo &lhs, const DriveInfo &rhs) {
+            return lhs.dbId() == rhs.dbId() && lhs.id() == rhs.id() && lhs.accountDbId() == rhs.accountDbId() &&
+                   lhs.name() == rhs.name() && lhs.size() == rhs.size() && lhs.color() == rhs.color() &&
+                   lhs.notifications() == rhs.notifications() && lhs.admin() == rhs.admin() &&
+                   lhs.maintenance() == rhs.maintenance() && lhs.locked() == rhs.locked() && lhs.usedSize() == rhs.usedSize() &&
+                   lhs.accessDenied() == rhs.accessDenied();
+        }
 
     protected:
         int _dbId{0};
         int _id{0};
         int _accountDbId{0};
         QString _name;
+        int64_t _size{0};
         QColor _color;
         bool _notifications{false};
         bool _admin{false};
@@ -68,7 +85,10 @@ class DriveInfo {
         // Non DB attributes
         bool _maintenance{false};
         bool _locked{false};
+        int64_t _usedSize{0};
         bool _accessDenied{false};
+
+        bool _packIsFree{false};
 };
 
 void operator>>(QDataStream &in, DriveInfo &info);
@@ -76,5 +96,6 @@ QDataStream &operator<<(QDataStream &out, const DriveInfo &info);
 
 void operator>>(QDataStream &in, QList<DriveInfo> &list);
 QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
+
 
 } // namespace KDC

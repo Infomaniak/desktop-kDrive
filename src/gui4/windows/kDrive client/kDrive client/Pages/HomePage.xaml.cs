@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -35,13 +36,86 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
+            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+        }
+
+        private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
+        {
+            if (e.OldValue is not null)
+                e.OldValue.PropertyChanged -= OnSelectedSyncPropertyChanged;
+
+            if (e.NewValue is not null)
+                e.NewValue.PropertyChanged += OnSelectedSyncPropertyChanged;
+
+            RedirectToErrorPageIfNeeded();
+        }
+
+        private void OnSelectedSyncPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Sync.SyncErrorState))
+            {
+                RedirectToErrorPageIfNeeded();
+            }
+        }
+
+        private void RedirectToErrorPageIfNeeded()
+        {
+            switch (ViewModel.SelectedSync?.SyncErrorState)
+            {
+                case SyncErrorStates.Undefined:
+                    // No error, stay on the HomePage
+                    break;
+                case SyncErrorStates.AccessDenied:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
+                    break;
+                case SyncErrorStates.LoggingError:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LoggingErrorPage)));
+                    break;
+                case SyncErrorStates.NotRenew:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));
+                    break;
+                case SyncErrorStates.Maintenance:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(MaintenanceErrorPage)));
+                    break;
+                case SyncErrorStates.Asleep:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(AsleepErrorPage)));
+                    break;
+                default:
+                    Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
+                    break;
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (ViewModel.SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));        
+            if (ViewModel.SelectedSync is null)
+            {
+                AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                {
+                    DetachHandlers();
+                    Frame.Navigate(typeof(SettingsPage));
+                });
+                return;
+            }
+            ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
+            OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
+            RedirectToErrorPageIfNeeded();
         }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DetachHandlers();
+        }
+
+        private void DetachHandlers()
+        {
+            ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+
+            if (ViewModel.SelectedSync is not null)
+                ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
+        }
+
         private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
             ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
@@ -49,6 +123,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
+            DetachHandlers();
             Frame.Navigate(typeof(ActivityPage));
         }
 

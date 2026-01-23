@@ -39,7 +39,7 @@ namespace Infomaniak.kDrive.Converters
                     => "Infomaniak.DS.Icons.Documents.file-chart",
 
                 // Code / dev files
-                ".c" or ".cpp" or ".h" or ".hpp" or ".cs" or ".xaml" or ".java" or ".py" or ".js" or ".ts" or ".jsx" or ".tsx" or ".html" or ".css" or ".scss" or ".json" or ".xml" or ".yml" or ".yaml" or ".php" or ".rb" or ".go" or ".rs" or ".swift" or ".kt" or ".sql" or ".sh" or ".bat" or ".ps1"
+                ".pdg" or ".dbg" or ".c" or ".cpp" or ".h" or ".hpp" or ".cs" or ".xaml" or ".java" or ".py" or ".js" or ".ts" or ".jsx" or ".tsx" or ".html" or ".css" or ".scss" or ".json" or ".xml" or ".yml" or ".yaml" or ".php" or ".rb" or ".go" or ".rs" or ".swift" or ".kt" or ".sql" or ".sh" or ".bat" or ".ps1"
                     => "Infomaniak.DS.Icons.Documents.file-code",
 
                 // Diagram / design files
@@ -82,12 +82,17 @@ namespace Infomaniak.kDrive.Converters
                 ".ppt" or ".pptx" or ".odp" or ".key"
                     => "Infomaniak.DS.Icons.Documents.file-diagram",
 
-                // Default / unknown
-                _ => "Infomaniak.DS.Icons.Documents.file"
+                // Default
+                "" or ".exe" or ".appimage" or ".msi" or ".dmg" or ".pkg"
+                    => "Infomaniak.DS.Icons.Documents.file",
+
+                // Unknown
+                _ => ""
             };
-            if (iconResourceKey.EndsWith("file"))
+            if (iconResourceKey == "")
             {
                 Logger.Log(Logger.Level.Warning, $"FilePathToIconConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
+                iconResourceKey = "Infomaniak.DS.Icons.Documents.file";
                 // This is not an error, just a warning for tracking purposes.
                 // The above warning will lead to a Sentry allowing us to add more extensions in the future.
             }

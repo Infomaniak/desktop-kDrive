@@ -28,29 +28,29 @@ final class NonInteractiveButton: NSButton {
 
 final class DriveCellView: NSView {
     enum Tokens {
-        static let backgroundColor = NSColor.Tokens.Surface.secondary
-        static let activatedBackgroundColor = NSColor.Tokens.Surface.tertiary
+        static let backgroundColor = ColorToken.Surface.secondary.asNSColor
+        static let activatedBackgroundColor = ColorToken.Surface.tertiary.asNSColor
     }
 
     let drive: UIAvailableDrive
     var toggleDrive: ((UIAvailableDrive) -> Void)?
 
-    public var state: NSControl.StateValue {
+    var state: NSControl.StateValue {
         get { checkbox.state }
         set { checkbox.state = newValue }
     }
 
-    public var isEnabled = true {
+    var isEnabled = true {
         didSet {
             checkbox.isEnabled = isEnabled
         }
     }
 
     private var color: NSColor {
-        return drive.color ?? NSColor.Tokens.Drive.defaultColor
+        return drive.nsColor ?? ColorToken.Drive.defaultColor.asNSColor
     }
 
-    private var isActivated: Bool = false
+    private var isActivated = false
 
     private var backgroundColor: NSColor {
         isActivated ? Tokens.activatedBackgroundColor : Tokens.backgroundColor
@@ -73,7 +73,7 @@ final class DriveCellView: NSView {
         let textField = NSTextField(labelWithString: drive.name)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.body
-        textField.textColor = NSColor.Tokens.Text.secondary
+        textField.textColor = ColorToken.Text.secondary.asNSColor
         return textField
     }()
 

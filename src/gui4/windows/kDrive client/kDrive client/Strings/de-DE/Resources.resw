@@ -126,6 +126,9 @@
   <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_SyncExclusionSelector_ToolTip_AccessDenied.Content" xml:space="preserve">
+    <value />
+  </data>
   <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
@@ -139,9 +142,6 @@
     <value />
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
-    <value />
-  </data>
-  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
@@ -162,7 +162,34 @@
   <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_ItemErrorStatus_Tooltip.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncingStatus_Tooltip.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_FetchingLink.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_LinkFetched.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_LinkFaillure.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenExplorer.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenOnline.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_FixErrors.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_CopyLink.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncedStatus_Tooltip.Content" xml:space="preserve">
     <value />
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
@@ -175,6 +202,9 @@
     <value />
   </data>
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
@@ -253,6 +283,9 @@
     <value />
   </data>
   <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value />
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
@@ -366,6 +399,9 @@
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value />
   </data>
@@ -373,6 +409,9 @@
     <value />
   </data>
   <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
@@ -387,6 +426,33 @@
   <data name="Page_HomePage_Hello.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_MaintenanceErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_MaintenanceErrorPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value />
   </data>
@@ -397,9 +463,6 @@
     <value />
   </data>
   <data name="Global_KiloBytes" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
     <value />
   </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
@@ -542,9 +605,6 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
-  <data name="SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -800,6 +860,57 @@
     <value />
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_MaintenanceErrorPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_MainButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_AsleepErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_AsleepErrorPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_AsleepErrorPage_PrimaryButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value />
   </data>
 </root>

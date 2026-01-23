@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "libcommon/info/proxyconfiginfo.h"
-#include "libcommon/utility/types.h"
+#include "info/proxyconfiginfo.h"
+#include "utility/types.h"
 
 #include <Poco/Dynamic/Struct.h>
 
@@ -35,7 +35,7 @@ class ParametersInfo {
         using DialogGeometry = QMap<QString, QByteArray>;
         ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                        NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                       bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry, int maxAllowedCpu);
+                       bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu);
         ParametersInfo() = default;
 
         inline void setLanguage(Language language) { _language = language; }
@@ -62,8 +62,6 @@ class ParametersInfo {
         inline void setProxyConfigInfo(const ProxyConfigInfo &proxyConfigInfo) { _proxyConfigInfo = proxyConfigInfo; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
         inline bool darkTheme() const { return _darkTheme; }
-        inline void setShowShortcuts(bool showShortcuts) { _showShortcuts = showShortcuts; }
-        inline bool showShortcuts() const { return _showShortcuts; }
         inline void setDialogGeometry(const QString &objectName, const QByteArray &saveGeometry) {
             _dialogGeometry[objectName] = saveGeometry;
         }
@@ -84,9 +82,9 @@ class ParametersInfo {
                    (lhs.notificationsDisabled() == rhs.notificationsDisabled()) && (lhs.useLog() == rhs.useLog()) &&
                    (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
                    (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
-                   (lhs.showShortcuts() == rhs.showShortcuts()) && (lhs.dialogGeometry() == rhs.dialogGeometry()) &&
-                   (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) && (lhs.distributionChannel() == rhs.distributionChannel()) &&
-                   (lhs.sentryEnabled() == rhs.sentryEnabled()) && (lhs.matomoEnabled() == rhs.matomoEnabled());
+                   (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
+                   (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
+                   (lhs.matomoEnabled() == rhs.matomoEnabled());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -107,7 +105,6 @@ class ParametersInfo {
         bool _purgeOldLogs{true};
         ProxyConfigInfo _proxyConfigInfo;
         bool _darkTheme{false};
-        bool _showShortcuts{true};
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};
         VersionChannel _distributionChannel{VersionChannel::Prod};

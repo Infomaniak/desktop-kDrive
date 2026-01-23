@@ -17,8 +17,9 @@
  */
 
 import Foundation
+import OrderedCollections
 
-public typealias IndexedUsers = [Int32: User]
+public typealias IndexedUsers = OrderedDictionary<Int32, User>
 
 public struct User: Identifiable, Hashable, Sendable {
     public var id: Int32 {
@@ -56,17 +57,29 @@ public struct User: Identifiable, Hashable, Sendable {
         self.isConnected = isConnected
         self.isStaff = isStaff
     }
+
+    init(userInfoMetadata: UserInfoMetadata) {
+        dbId = userInfoMetadata.dbId
+        userId = userInfoMetadata.userId
+        name = userInfoMetadata.name
+        email = userInfoMetadata.email
+        accounts = [:]
+        availableDrives = [:]
+        avatar = userInfoMetadata.avatar
+        isConnected = userInfoMetadata.isConnected
+        isStaff = userInfoMetadata.isStaff
+    }
 }
 
 extension User {
-    var asUserInfoSignal: UserInfoSignal {
-        UserInfoSignal(dbId: dbId,
-                       userId: userId,
-                       name: name,
-                       email: email,
-                       avatar: avatar ?? Data(),
-                       isConnected: isConnected,
-                       isStaff: isStaff)
+    var asUserInfoMetadata: UserInfoMetadata {
+        UserInfoMetadata(dbId: dbId,
+                         userId: userId,
+                         name: name,
+                         email: email,
+                         avatar: avatar ?? Data(),
+                         isConnected: isConnected,
+                         isStaff: isStaff)
     }
 }
 

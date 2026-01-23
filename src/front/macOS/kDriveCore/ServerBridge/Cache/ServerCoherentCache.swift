@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import OrderedCollections
 
 public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
@@ -55,7 +56,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func getFirstAvailableUser() -> User? {
-        users.first?.value
+        users.values.first
     }
 
     public func addUser(_ user: User) {
@@ -254,6 +255,23 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         try updateDrive(drive: drive)
+    }
+
+    public func removeSynchro(synchroDbId: Int32) throws {
+        for user in users.values {
+            for account in user.accounts.values {
+                for var drive in account.drives.values {
+                    guard drive.synchros.removeValue(forKey: synchroDbId) != nil else {
+                        continue
+                    }
+
+                    try updateDrive(drive: drive)
+                    return
+                }
+            }
+        }
+
+        throw CacheError.synchroNotFound(synchroDbId)
     }
 
     public func updateSynchro(_ synchro: Synchro) throws {

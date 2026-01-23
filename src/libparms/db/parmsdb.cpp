@@ -22,7 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -609,7 +609,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, true)); // showShortcuts : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
@@ -675,7 +675,7 @@ bool ParmsDb::updateExclusionTemplates() {
     std::vector<std::string> fileDefaultExclusionTemplates;
     if (const auto &excludeListFileName = Utility::getExcludedTemplateFilePath(_test);
         !getDefaultExclusionTemplatesFromFile(excludeListFileName.c_str(), fileDefaultExclusionTemplates)) {
-        LOGW_WARN(_logger, L"Cannot open exclusion templates file " << Utility::formatSyncName(excludeListFileName));
+        LOGW_WARN(_logger, L"Cannot open exclusion templates file " << CommonUtility::formatSyncName(excludeListFileName));
         return false;
     }
 
@@ -828,8 +828,8 @@ bool ParmsDb::updateExclusionApps() {
             (void) exclusionAppFileList.emplace_back(std::make_pair(appId, description));
         }
     } else {
-        LOGW_WARN(_logger,
-                  L"Cannot open exclusion app file with " << Utility::formatSyncPath(Utility::getExcludedAppFilePath(_test)));
+        LOGW_WARN(_logger, L"Cannot open exclusion app file with "
+                                   << CommonUtility::formatSyncPath(Utility::getExcludedAppFilePath(_test)));
         return false;
     }
 
@@ -1233,7 +1233,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, true)); // showShortcuts : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
@@ -1323,8 +1323,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
     parameters.setDarkTheme(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 18, intResult));
-    parameters.setShowShortcuts(intResult);
+    // 18: showShortcuts : not used anymore
 
     std::string strResult;
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 19, strResult));
@@ -3212,16 +3211,16 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         SyncPath longPathName;
         auto ioError = IoError::Success;
         if (!IoHelper::getLongPathName(sync.dbPath(), longPathName, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getLongPathName: " << Utility::formatIoError(sync.dbPath(), ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::getLongPathName: " << CommonUtility::formatIoError(sync.dbPath(), ioError));
             continue;
         }
         bool exists = false;
         if (!IoHelper::checkIfPathExists(longPathName, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(sync.dbPath(), ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(sync.dbPath(), ioError));
             continue;
         } else if (!exists) {
             LOGW_DEBUG(_logger, L"The sync DB item indicated by the computed long path does not exist: "
-                                        << Utility::formatSyncPath(longPathName));
+                                        << CommonUtility::formatSyncPath(longPathName));
             continue;
         }
         sync.setDbPath(longPathName);

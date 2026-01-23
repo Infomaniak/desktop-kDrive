@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/io/iohelper.h"
+#include "../../../src/libcommon/log/log.h"
 
 #include <Poco/URI.h>
 
@@ -75,7 +75,7 @@ void TestUtility::testIsCreationDateValid(void) {
 
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
-    Utility::msleep(1000);
+    CommonUtility::msleep(1000);
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
@@ -129,11 +129,11 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(CommonUtility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
-    CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!CommonUtility::getLinuxDesktopType(currentDesktop));
 }
 
 void TestUtility::testStr2HexStr() {
@@ -338,13 +338,13 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
 
 void TestUtility::testFormatStdError() {
     const std::error_code ec;
-    std::wstring result = Utility::formatStdError(ec);
+    std::wstring result = CommonUtility::formatStdError(ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
     const SyncPath path = "A/AA";
-    result = Utility::formatStdError(path, ec);
+    result = CommonUtility::formatStdError(path, ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
@@ -356,7 +356,7 @@ void TestUtility::testFormatIoError() {
     {
         const IoError ioError = IoError::Success;
         const SyncPath path = "A/AA";
-        const std::wstring result = Utility::formatIoError(path, ioError);
+        const std::wstring result = CommonUtility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
@@ -368,7 +368,7 @@ void TestUtility::testFormatIoError() {
     {
         const IoError ioError = IoError::Success;
         const QString path = "A/AA";
-        const std::wstring result = Utility::formatIoError(path, ioError);
+        const std::wstring result = CommonUtility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
@@ -380,17 +380,17 @@ void TestUtility::testFormatIoError() {
 
 void TestUtility::testFormatSyncName() {
     const SyncName name = Str("FileA.txt");
-    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
+    CPPUNIT_ASSERT(CommonUtility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
 }
 
 void TestUtility::testFormatPath() {
     const QString path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
+    CPPUNIT_ASSERT(CommonUtility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(CommonUtility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {
@@ -465,7 +465,7 @@ void TestUtility::testUserName() {
     const char *value = std::getenv("USERPROFILE");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << CommonUtility::formatSyncPath(homeDir));
 
     if (homeDir.filename().native() == std::wstring(L"systemprofile")) {
         // CI execution
@@ -477,14 +477,39 @@ void TestUtility::testUserName() {
     const char *value = std::getenv("HOME");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << CommonUtility::formatSyncPath(homeDir));
     CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
 #endif
 }
 
 void TestUtility::testTryCreateTmpDir() {
+    SyncPath tmpDirPath;
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
+
+    // Make sure the item are correctly removed from the tmp dir
+    IoHelper::DirectoryIterator dir;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    auto counter = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
+    }
+    CPPUNIT_ASSERT_EQUAL(0, counter);
+
+    // Try to create a tmp dir but a directory already exist with the same name
+    SyncName testDirName = Str("testDir");
+    CPPUNIT_ASSERT(IoHelper::createDirectory(tmpDirPath / testDirName, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(testDirName));
+
+    // Delete the tmp directory and make sure it is re-created
+    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
 
 #if defined(KD_MACOS)
     {
@@ -512,8 +537,32 @@ void TestUtility::testTryCreateTmpDir() {
 }
 
 void TestUtility::testTryCreateTmpFile() {
+    SyncPath tmpDirPath;
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+
+    // Make sure the item are correctly removed from the tmp dir
+    IoHelper::DirectoryIterator dir;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    auto counter = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
+    }
+    CPPUNIT_ASSERT_EQUAL(0, counter);
+
+    // Try to create a tmp file but a file already exist with the same name but different capitalization.
+    testhelpers::generateTestFile(tmpDirPath / Str("TestFile"));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("testFile")));
+
+    // Delete the tmp directory and make sure it is re-created
+    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
 
     {
         // Saves the current value of "KDRIVE_TMP_PATH".

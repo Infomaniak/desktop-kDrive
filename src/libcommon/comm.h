@@ -57,6 +57,7 @@ enum class RequestNum {
     DRIVE_DELETE,
     DRIVE_SEARCH,
     SYNC_INFOLIST,
+    SYNC_OFFLINE_FILES_SIZE,
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
@@ -66,9 +67,8 @@ enum class RequestNum {
     SYNC_DELETE,
     SYNC_GETPUBLICLINKURL,
     SYNC_GETPRIVATELINKURL,
-    SYNC_ASKFORSTATUS,
+    SYNC_TRIGGER_PROGRESS_UPDATE,
     SYNC_SETSUPPORTSVIRTUALFILES,
-    SYNC_SETROOTPINSTATE,
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
@@ -96,12 +96,10 @@ enum class RequestNum {
 #endif
     PARAMETERS_INFO,
     PARAMETERS_UPDATE,
-    UTILITY_FINDGOODPATHFORNEWSYNC,
     UTILITY_BESTVFSAVAILABLEMODE,
-#if defined(KD_WINDOWS)
-    UTILITY_SHOWSHORTCUT,
-    UTILITY_SETSHOWSHORTCUT,
-#endif
+    UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
+    UTILITY_FINDGOODPATHFORNEWSYNC,
+    UTILITY_ISPATHVALIDFORNEWSYNC,
     UTILITY_ACTIVATELOADINFO,
     UTILITY_CHECKCOMMSTATUS,
     UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -114,7 +112,7 @@ enum class RequestNum {
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UTILITY_CRASH,
     UTILITY_QUIT,
-    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+    UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
@@ -163,12 +161,10 @@ inline std::string toString(RequestNum e) {
             return "SYNC_GETPUBLICLINKURL";
         case RequestNum::SYNC_GETPRIVATELINKURL:
             return "SYNC_GETPRIVATELINKURL";
-        case RequestNum::SYNC_ASKFORSTATUS:
-            return "SYNC_ASKFORSTATUS";
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE:
+            return "SYNC_TRIGGER_PROGRESS_UPDATE";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
-        case RequestNum::SYNC_SETROOTPINSTATE:
-            return "SYNC_SETROOTPINSTATE";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
@@ -221,16 +217,14 @@ inline std::string toString(RequestNum e) {
             return "PARAMETERS_INFO";
         case RequestNum::PARAMETERS_UPDATE:
             return "PARAMETERS_UPDATE";
-        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC:
-            return "UTILITY_FINDGOODPATHFORNEWSYNC";
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE:
             return "UTILITY_BESTVFSAVAILABLEMODE";
-#if defined(KD_WINDOWS)
-        case RequestNum::UTILITY_SHOWSHORTCUT:
-            return "UTILITY_SHOWSHORTCUT";
-        case RequestNum::UTILITY_SETSHOWSHORTCUT:
-            return "UTILITY_SETSHOWSHORTCUT";
-#endif
+        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY:
+            return "UTILITY_BESTVFSAVAILABLEMODE_LEGACY";
+        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC:
+            return "UTILITY_FINDGOODPATHFORNEWSYNC";
+        case RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC:
+            return "UTILITY_ISPATHVALIDFORNEWSYNC";
         case RequestNum::UTILITY_ACTIVATELOADINFO:
             return "UTILITY_ACTIVATELOADINFO";
         case RequestNum::UTILITY_CHECKCOMMSTATUS:
@@ -255,8 +249,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
-            return "UTILITY_DISPLAY_CLIENT_REPORT";
+        case RequestNum::UTILITY_SEND_APP_START_TRACE:
+            return "UTILITY_SEND_APP_START_TRACE";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:

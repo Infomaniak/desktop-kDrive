@@ -39,6 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _supportOnlineMode = true;
         private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
+        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
         private bool _syncTypeMigrationInProgress = false;
@@ -55,6 +56,8 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     return SyncStatus.Offline;
                 }
+                if (_syncStatus == SyncStatus.Error)
+                    return SyncStatus.Paused;
                 return _syncStatus;
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
@@ -154,6 +157,12 @@ namespace Infomaniak.kDrive.ViewModels
         // The list of sync and node errors
         public ObservableCollection<Error> SyncErrors = new();
 
+        public SyncErrorStates SyncErrorState
+        {
+            get => _syncErrorState;
+            private set => SetPropertyInUIThread(ref _syncErrorState, value);
+        }
+
         public Drive Drive
         {
             get => _drive;
@@ -173,23 +182,25 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task Start()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.StartSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.StartSync(DbId, CancellationToken.None);
         }
 
         public async Task Pause()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.PauseSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.PauseSync(DbId, CancellationToken.None);
         }
 
-        public async Task ChangeSyncType(SyncType newType)
+        public async Task<bool> ChangeSyncType(SyncType newType)
         {
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
-            Logger.Log(Logger.Level.Error, "Changing sync type is not yet implemented.");
-            await Task.Delay(5000); // TODO: Replace with actual implementation
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
+
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
+            return result;
         }
 
         public async Task AddErrorAsync(Error error)
@@ -202,28 +213,72 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
+            await RefreshErrorState();
         }
 
-        public async Task RemoveErrorAsync(Error error)
+        public async Task RemoveErrorAsync(Error error, bool refreshErrorState = true)
         {
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() =>
             {
-                // TODO: Check special errors and update related viewmodels if needed
                 if (!SyncErrors.Remove(error))
                     Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
             });
+
+            if (refreshErrorState)
+                await RefreshErrorState();
         }
 
         public async Task ClearAllErrorsAsync()
         {
-            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-            foreach (var error in SyncErrors)
+            await Utility.RunOnUIThread(async () =>
             {
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                await RemoveErrorAsync(error);
-            }
+                // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+                foreach (var error in SyncErrors)
+                {
+                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                    await RemoveErrorAsync(error, false);
+                }
+            });
+            await RefreshErrorState();
         }
 
+        public async Task RefreshErrorState()
+        {
+            await Utility.RunOnUIThread(async () =>
+            {
+
+                SyncErrorState = SyncErrorStates.Undefined;
+
+                foreach (var error in SyncErrors)
+                {
+                    SyncErrorState = error.ExitCause switch
+                    {
+                        Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
+                        Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
+                        Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
+                        Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
+                        Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
+                        Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
+                        _ => SyncErrorStates.Undefined
+                    };
+                    if (error.ExitCode == ExitCode.InvalidToken)
+                    {
+                        SyncErrorState = SyncErrorStates.LoggingError;
+                    }
+
+                    if (SyncErrorState != SyncErrorStates.Undefined)
+                    {
+                        Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
+                        return;
+                    }
+                }
+
+                if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
+                {
+                    //SyncErrorState = SyncErrorStates.LoggedOut;
+                }
+            });
+        }
     }
 }
