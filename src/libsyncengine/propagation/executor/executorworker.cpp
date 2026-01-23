@@ -155,7 +155,7 @@ void ExecutorWorker::execute() {
 
             if (job) {
                 job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
-                SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+                SyncJobManagerSingleton::instance()->queueAsyncJob(job);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {

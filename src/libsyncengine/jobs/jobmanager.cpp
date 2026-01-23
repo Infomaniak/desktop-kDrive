@@ -65,6 +65,10 @@ void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
     _data.queue(job, priority);
 }
 
+void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job) noexcept {
+    queueAsyncJob(job, job->jobPriority());
+}
+
 bool JobManager::isJobFinished(const UniqueId jobId) const {
     return !_data.isManaged(jobId);
 }
