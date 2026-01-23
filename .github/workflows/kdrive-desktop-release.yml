@@ -356,7 +356,6 @@ jobs:
 
   display-version:
     if: always()
-    needs: [build-Windows, build-Linux-amd, build-Linux-arm, build-MacOS]
     runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Checkout the PR
