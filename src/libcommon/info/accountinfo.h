@@ -29,15 +29,17 @@ namespace KDC {
 
 class AccountInfo {
     public:
-        AccountInfo(int dbId, int userDbId);
         AccountInfo() = default;
+        AccountInfo(int dbId, int userDbId);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserDbId(int userDbId) { _userDbId = userDbId; }
-        inline int userDbId() const { return _userDbId; }
-        inline void setAccountId(const int accountId) { _accountId = accountId; }
-        inline int accountId() const { return _accountId; }
+        [[nodiscard]] int dbId() const { return _dbId; }
+        void setDbId(int dbId) { _dbId = dbId; }
+        [[nodiscard]] int userDbId() const { return _userDbId; }
+        void setUserDbId(int userDbId) { _userDbId = userDbId; }
+        [[nodiscard]] int accountId() const { return _accountId; }
+        void setAccountId(int accountId) { _accountId = accountId; }
+        [[nodiscard]] QString name() const { return _name; }
+        void setName(const QString &name) { _name = name; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -56,6 +58,7 @@ class AccountInfo {
         int _dbId{0};
         int _userDbId{0};
         int _accountId{-1};
+        QString _name;
 };
 
 } // namespace KDC

@@ -73,7 +73,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAccount(int dbId, Account &account, bool &found);
         bool selectAllAccounts(std::vector<Account> &accountList);
         bool selectAllAccounts(int userDbId, std::vector<Account> &accountList);
-        bool accountDbId(int userDbId, int accountId, int &dbId);
+        bool accountFromUserDbIdAndAccountId(int userDbId, int accountId, Account &account, bool &found);
         bool getNewAccountDbId(int &dbId);
 
         bool insertDrive(const Drive &drive);
