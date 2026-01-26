@@ -59,13 +59,8 @@ class SentryNativeConan(ConanFile):
             # c-ares is required explicitly because Crashpad (Sentry's backend) uses it directly
             self.requires("c-ares/[>=1.27 <2]")
             self.requires("libcurl/8.10.1", options={"with_c_ares": True}) # Provide Curl with AsynchDNS (needed on linux)
-
-    @property
-    def forced_build_type(self):
-        return "Release" # Force the build type to Release since we don't need to debug symbols
-
-    def package_id(self):
-        self.info.settings.rm_safe("build_type") # Since we force the build type to Release, we can remove it from the package ID to avoid creating multiple packages for the same configuration
+            # zlib is required explicitly because Crashpad uses it for compression
+            self.requires("zlib/[>=1.2.11 <2]", options={"shared": True})
 
     def source(self):
         git = Git(self)
@@ -93,8 +88,6 @@ class SentryNativeConan(ConanFile):
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
         }
-        if self.settings.os != "Windows":
-            cache_variables["CMAKE_BUILD_TYPE"] = self.forced_build_type
         if self.settings.os == "Linux":
             cache_variables["SENTRY_TRANSPORT"] = "curl"
         return cache_variables
@@ -171,12 +164,12 @@ endif()
             comp_sentry.system_libs = ["pthread", "dl"]
 
             if self._is_linux_arm:
-                # On ARM: use system libraries (curl and cares)
+                # On ARM: use system libraries (curl, cares, and zlib)
                 comp_sentry.requires = []
-                comp_sentry.system_libs.extend(["curl", "cares"])
+                comp_sentry.system_libs.extend(["curl", "cares", "z"])
             else:
                 # On non-ARM: use Conan packages
-                comp_sentry.requires = ["libcurl::curl", "c-ares::cares"]
+                comp_sentry.requires = ["libcurl::curl", "c-ares::cares", "zlib::zlib"]
         else:
             comp_sentry.requires = []
 
