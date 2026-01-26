@@ -116,6 +116,9 @@ class KDriveDesktop(ConanFile):
 
         tc.generate()
 
+        # Post-process: Append normalization code to the generated toolchain
+        self._append_conan_vars_normalization()
+
     def layout(self):
         cmake_layout(self)
 
@@ -156,6 +159,45 @@ class KDriveDesktop(ConanFile):
 
         self.requires("sentry/0.7.10")
         self.requires("poco/1.13.3", options={ "shared": True })
+
+    def _append_conan_vars_normalization(self):
+        """
+        Append normalization code to the generated CMake toolchain file.
+        This makes Conan variables build-type agnostic by creating generic variables.
+        """
+        toolchain_file = os.path.join(self.generators_folder, "conan_toolchain.cmake")
+        normalization_code = textwrap.dedent("""\
+
+            # Normalize Conan variables to be build-type agnostic
+            string(TOUPPER ${CMAKE_BUILD_TYPE} _CONAN_BUILD_TYPE_UPPER)
+
+            # List of packages to normalize
+            set(_CONAN_PACKAGES log4cplus xxhash openssl sentry poco)
+
+            foreach(_pkg ${_CONAN_PACKAGES})
+                # Check if the build-type specific variable exists
+                if(DEFINED ${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER})
+                    set(${_pkg}_LIB_DIRS "${${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER}}")
+                    message(STATUS "Normalized ${_pkg}_LIB_DIRS from ${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER}")
+                # Fallback to RELEASE if current build type not found
+                elseif(DEFINED ${_pkg}_LIB_DIRS_RELEASE)
+                    set(${_pkg}_LIB_DIRS "${${_pkg}_LIB_DIRS_RELEASE}")
+                    message(STATUS "Normalized ${_pkg}_LIB_DIRS from ${_pkg}_LIB_DIRS_RELEASE (fallback)")
+                # Fallback to DEBUG if RELEASE not found
+                elseif(DEFINED ${_pkg}_LIB_DIRS_DEBUG)
+                    set(${_pkg}_LIB_DIRS "${${_pkg}_LIB_DIRS_DEBUG}")
+                    message(STATUS "Normalized ${_pkg}_LIB_DIRS from ${_pkg}_LIB_DIRS_DEBUG (fallback)")
+                else()
+                    message(WARNING "Could not find LIB_DIRS variable for package ${_pkg}")
+                endif()
+            endforeach()
+
+            unset(_CONAN_BUILD_TYPE_UPPER)
+            unset(_CONAN_PACKAGES)
+            """)
+
+        with open(toolchain_file, "a") as f:
+            f.write(normalization_code)
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
