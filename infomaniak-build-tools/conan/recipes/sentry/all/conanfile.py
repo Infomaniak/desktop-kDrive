@@ -62,13 +62,6 @@ class SentryNativeConan(ConanFile):
             # zlib is required explicitly because Crashpad uses it for compression
             self.requires("zlib/[>=1.2.11 <2]", options={"shared": True})
 
-    @property
-    def forced_build_type(self):
-        return "Release" # Force the build type to Release since we don't need to debug symbols
-
-    def package_id(self):
-        self.info.settings.rm_safe("build_type") # Since we force the build type to Release, we can remove it from the package ID to avoid creating multiple packages for the same configuration
-
     def source(self):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", str(self.version), "--recurse-submodules"])
@@ -95,8 +88,6 @@ class SentryNativeConan(ConanFile):
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
         }
-        if self.settings.os != "Windows":
-            cache_variables["CMAKE_BUILD_TYPE"] = self.forced_build_type
         if self.settings.os == "Linux":
             cache_variables["SENTRY_TRANSPORT"] = "curl"
         return cache_variables
