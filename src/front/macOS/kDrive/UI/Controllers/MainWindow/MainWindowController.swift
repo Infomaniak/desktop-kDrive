@@ -20,6 +20,7 @@ import Cocoa
 import InfomaniakDI
 
 final class MainWindowController: NSWindowController {
+    // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
 
     private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
