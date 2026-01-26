@@ -64,7 +64,7 @@ void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job, const Poc
     _data.queue(job, priority);
 }
 
-void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job) noexcept {
+void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job) noexcept {
     queueAsyncJob(job, job->jobPriority());
 }
 
@@ -135,7 +135,7 @@ void JobManager::run() noexcept {
     }
 }
 
-void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
+void JobManager::startJob(const std::shared_ptr<AbstractJob> job, const Poco::Thread::Priority priority) {
     try {
         if (job->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " has been canceled");
@@ -169,7 +169,7 @@ void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const 
 
 int JobManager::availableThreadsInPool() const {
     try {
-        return static_cast<int>(_threadPool.available());
+        return _threadPool.available();
     } catch (Poco::Exception &) {
         return 0;
     }
