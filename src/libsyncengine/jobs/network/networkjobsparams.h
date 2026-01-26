@@ -91,6 +91,7 @@ static const std::string nameKey = "name";
 static const std::string typeKey = "type";
 static const std::string sizeKey = "size";
 static const std::string visibilityKey = "visibility";
+static const std::string accountKey = "account";
 static const std::string accountIdKey = "account_id";
 static const std::string driveIdKey = "drive_id";
 static const std::string driveNameKey = "drive_name";
