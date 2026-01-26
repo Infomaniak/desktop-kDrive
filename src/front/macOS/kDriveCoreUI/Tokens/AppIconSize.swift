@@ -25,6 +25,6 @@ public enum AppIconSize {
 
 public extension View {
     func frame(size: CGSize) -> some View {
-        self.frame(width: size.width, height: size.height)
+        frame(width: size.width, height: size.height)
     }
 }
