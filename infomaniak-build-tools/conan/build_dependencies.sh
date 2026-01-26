@@ -232,7 +232,6 @@ log "- Output directory: '$output_dir'"
 echo
 
 log "Installing dependencies..."
-# Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 
