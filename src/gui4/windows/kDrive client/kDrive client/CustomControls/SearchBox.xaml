@@ -14,6 +14,7 @@
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
 
         <!-- File template -->
         <DataTemplate x:Key="FileTemplate"
@@ -204,7 +205,8 @@
                     ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"
                     UpdateTextOnSelect="False"
                     SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
-                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted">
+                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted"
+                    Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
     </AutoSuggestBox>
 
 </UserControl>

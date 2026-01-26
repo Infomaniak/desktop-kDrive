@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
     public sealed partial class SearchBox : UserControl
     {
         private CancellationTokenSource? _searchCts;
-        private AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
         private const string _privateFolderName = "Private/";
         private const string _sharedFolderName = "Shared/";
         public SearchBox()
@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
-            if (_appModel.SelectedSync is null)
+            if (ViewModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "SearchItem called but no sync is selected.");
                 sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
@@ -80,7 +80,7 @@ namespace Infomaniak.kDrive.CustomControls
             try
             {
                 var result = await commService.SearchItem(
-                    _appModel.SelectedSync.DbId,
+                    ViewModel.SelectedSync.DbId,
                     sender.Text,
                     token);
 
@@ -143,7 +143,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            if (_appModel.SelectedSync is null)
+            if (ViewModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
                 sender.IsSuggestionListOpen = false;
@@ -153,7 +153,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (!resultItem.SearchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.itemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 sender.IsSuggestionListOpen = false;
                 return;
@@ -175,7 +175,7 @@ namespace Infomaniak.kDrive.CustomControls
                     itemRelativePath = itemRelativePath[_sharedFolderName.Length..];
                 }
 
-                string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
+                string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
 
                 if (!Directory.Exists(path))
                 {
@@ -219,7 +219,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            if (_appModel.SelectedSync is null)
+            if (ViewModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
                 return;
@@ -228,7 +228,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (!resultItem.SearchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.itemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 return;
             }
@@ -248,7 +248,7 @@ namespace Infomaniak.kDrive.CustomControls
                     itemRelativePath = itemRelativePath["Shared/".Length..];
                 }
 
-                string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
+                string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
                 await Utility.OpenFolderSecurely(path);
             }
         }
