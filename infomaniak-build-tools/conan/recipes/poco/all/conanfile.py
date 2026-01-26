@@ -97,6 +97,10 @@ class PocoConan(ConanFile):
             del self.options.enable_netssl_win
         if self.settings.build_type != "Debug":
             del self.options.comp_foundation_sharedlibrary_debug_suffix
+        
+        # Enable debug logging when building in Debug mode
+        if self.settings.build_type == "Debug":
+            self.options.log_debug = True
 
     def configure(self):
         if self.options.enable_active_record != "deprecated":
@@ -131,7 +135,6 @@ class PocoConan(ConanFile):
 
     def package_id(self):
         del self.info.options.enable_active_record
-        del self.info.options.log_debug
 
     def validate_build(self):
         check_min_cppstd(self, 17)

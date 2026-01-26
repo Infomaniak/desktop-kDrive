@@ -193,6 +193,11 @@ class QtConan(ConanFile):
         it will try to fall back to 'envvars' login type and if that is not possible, it will set the login type to 'cli'.
         :return: None
         """
+        # Automatically enable debug symbols when building in Debug mode
+        if self.settings.build_type == "Debug":
+            self.options.debug_symbols = True
+            self.output.info("Debug build detected: automatically enabling debug_symbols=True")
+
         if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
             self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
             if self._check_envvars_login_type(check_option=False, raise_error=False):
