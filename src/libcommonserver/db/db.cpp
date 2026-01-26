@@ -19,10 +19,10 @@
 #include "db.h"
 #include "utility/utility.h"
 #include "utility/logiffail.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "db/sqlitedb.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 
 #include <sqlite3.h>
 
@@ -147,13 +147,14 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
+                  L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(dbPath, ioError));
         return {};
     }
 
     if (!exists) {
         if (!IoHelper::createDirectory(dbPath, false, ioError)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Failed to create directory: " << CommonUtility::formatIoError(dbPath, ioError));
             return {};
         }
     }
@@ -168,7 +169,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     // If it exists already, the path is clearly usable
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
+                  L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(dbPath, ioError));
         return {};
     }
 
@@ -178,7 +179,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
         if (dbFileStream.is_open()) {
             // Ok, all good.
             dbFileStream.close();
-            std::filesystem::remove(dbPath);
+            (void) IoHelper::deleteItem(dbPath, ioError);
 
             alreadyExist = false;
             return dbPath;
@@ -200,7 +201,7 @@ bool Db::exists() {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_dbPath, ioError));
             return false;
         }
 
@@ -455,7 +456,7 @@ bool Db::checkConnect(const std::string &version) {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_dbPath, ioError));
             close();
             return false;
         }
@@ -484,7 +485,7 @@ bool Db::checkConnect(const std::string &version) {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << CommonUtility::formatIoError(_dbPath, ioError));
         return false;
     }
 

@@ -17,7 +17,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock Text="{Binding LocalPath}" />
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                   Height="16" />
                 <TextBlock Text="{Binding Drive.Name}"
@@ -33,7 +33,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock Text="{Binding LocalPath}" />
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                   Height="16" 
                                   VerticalAlignment="Center"/>

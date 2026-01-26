@@ -37,7 +37,7 @@ extension XPCConnectionManager: XPCConnectionProvider {
         get async throws {
             try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
-            let connection = try self.connection
+            let connection = try connection
             let proxy = try connection.proxy(from: connection, type: XPCGuiProtocol.self)
 
             return proxy

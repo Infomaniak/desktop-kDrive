@@ -56,7 +56,10 @@ struct ObservedAccountTests_dbIdOnly {
         #expect(lastReceivedObject == ObservableData.expectedAccount)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -79,7 +82,10 @@ struct ObservedAccountTests_dbIdOnly {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -90,7 +96,10 @@ struct ObservedAccountTests_dbIdOnly {
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
-        let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let latestAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
         #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
         #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
@@ -111,7 +120,10 @@ struct ObservedAccountTests_dbIdOnly {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -123,7 +135,10 @@ struct ObservedAccountTests_dbIdOnly {
         // THEN
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
 
-        let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let latestAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
         #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
         #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
@@ -144,7 +159,10 @@ struct ObservedAccountTests_dbIdOnly {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -182,7 +200,10 @@ struct ObservedAccountTests_allIds {
         #expect(lastReceivedObject == ObservableData.expectedAccount)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
         #expect(observedAccount == ObservableData.expectedAccount, "The observed object should have been updated")
@@ -205,7 +226,10 @@ struct ObservedAccountTests_allIds {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -216,7 +240,10 @@ struct ObservedAccountTests_allIds {
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
-        let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let latestAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
         #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
         #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
@@ -238,7 +265,10 @@ struct ObservedAccountTests_allIds {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
@@ -250,7 +280,10 @@ struct ObservedAccountTests_allIds {
         // THEN
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
 
-        let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let latestAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
         #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
         #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
@@ -272,7 +305,10 @@ struct ObservedAccountTests_allIds {
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(
+            accountDbId: ObservableData.expectedAccountDbId,
+            userDbId: ObservableData.expectedUserDbId
+        )
 
         #expect(cachedUser == expectedUser, "The cache user should have been updated")
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")

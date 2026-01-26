@@ -17,7 +17,7 @@
  */
 
 #include "syncjob.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 

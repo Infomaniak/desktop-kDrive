@@ -18,8 +18,8 @@
 
 #include "localmovejob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/permissionsholder.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -35,7 +35,8 @@ ExitInfo LocalMoveJob::canRun() {
         return ExitCode::Ok;
     }
 
-    LOGW_DEBUG(_logger, L"Move from: " << Utility::formatSyncPath(_source) << L" to: " << Utility::formatSyncPath(_dest));
+    LOGW_DEBUG(_logger,
+               L"Move from: " << CommonUtility::formatSyncPath(_source) << L" to: " << CommonUtility::formatSyncPath(_dest));
 
     // If the paths are not identical except for case and encoding, check that the destination doesn't already exist
     bool isEqual = false;
@@ -49,16 +50,16 @@ ExitInfo LocalMoveJob::canRun() {
         // Check that we can move the file in destination
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_dest, ioError));
             return ExitCode::SystemError;
         }
         if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_dest));
+            LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(_dest));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         if (exists) {
-            LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
+            LOGW_DEBUG(_logger, L"Item already exists: " << CommonUtility::formatSyncPath(_dest));
             return {ExitCode::DataError, ExitCause::FileExists};
         }
     }
@@ -66,12 +67,12 @@ ExitInfo LocalMoveJob::canRun() {
     // Check that the source file still exists.
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_source, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << CommonUtility::formatSyncPath(_source));
         return {ExitCode::DataError, ExitCause::InvalidDestination};
     }
 
@@ -90,12 +91,14 @@ ExitInfo LocalMoveJob::runJob() {
     std::filesystem::rename(_source, _dest, ec);
 
     if (ec.value() != 0) { // We consider this as a permission denied error
-        LOGW_WARN(_logger, L"Failed to rename " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
-                                                << L": " << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+        LOGW_WARN(_logger, L"Failed to rename " << CommonUtility::formatSyncPath(_source) << L" to "
+                                                << CommonUtility::formatSyncPath(_dest) << L": "
+                                                << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    LOGW_INFO(_logger, L"Item with " << Utility::formatSyncPath(_source) << L" moved to " << Utility::formatSyncPath(_dest));
+    LOGW_INFO(_logger,
+              L"Item with " << CommonUtility::formatSyncPath(_source) << L" moved to " << CommonUtility::formatSyncPath(_dest));
     return ExitCode::Ok;
 }
 

@@ -18,11 +18,10 @@
 
 import Cocoa
 import Combine
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
-
-import InfomaniakDI
 
 final class LoginViewController: OnboardingStepViewController {
     private let viewModel: LoginViewModel

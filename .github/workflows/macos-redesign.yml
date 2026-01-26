@@ -1,0 +1,75 @@
+name: macOS Redesigned GUI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: src/front/macOS
+
+jobs:
+  run-tests:
+    name: Run tests
+    runs-on: [ self-hosted, iOS ]
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+
+    # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
+    # More info here: https://github.com/orgs/community/discussions/175498
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          xcodebuild \
+            -scheme kDrive \
+            -destination "platform=macOS,arch=arm64" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_HARDENED_RUNTIME=NO \
+            build-for-testing
+      - name: Run tests
+        run: |
+          xcodebuild \
+            -scheme kDrive \
+            -destination "platform=macOS,arch=arm64" \
+            test-without-building
+
+  swiftlint:
+    name: SwiftLint
+    runs-on: ubuntu-latest
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
+        with:
+          working_directory: src/front/macOS
+          cache: false
+      - name: SwiftLint
+        run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
+
+  swiftformat:
+    name: SwiftFormat
+    runs-on: ubuntu-latest
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
+        with:
+          working_directory: src/front/macOS
+          cache: false
+      - name: SwiftFormat
+        run: swiftformat --lint . --reporter github-actions-log

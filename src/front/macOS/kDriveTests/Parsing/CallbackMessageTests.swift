@@ -24,7 +24,7 @@ struct TestUser: Codable {
 }
 
 struct CallbackMessageTests {
-    @Test func testDecodingCallbackMessageWithUser() async throws {
+    @Test func decodingCallbackMessageWithUser() async throws {
         // GIVEN
         let sourceJson = #"{"cause":0,"code":0,"id":1,"params":{"name":"QmFzZTY0"}}"# // "QmFzZTY0" is "Base64"
 
@@ -36,7 +36,7 @@ struct CallbackMessageTests {
         #expect(message.body.name == "Base64")
     }
 
-    @Test func testEncodingCallbackMessageWithUser() async throws {
+    @Test func encodingCallbackMessageWithUser() async throws {
         // GIVEN
         let expectedCause = KDC.ExitCause.ApiErr
         let expectedCode = KDC.ExitCode.DbError

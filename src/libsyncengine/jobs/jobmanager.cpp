@@ -19,7 +19,7 @@
 #include "jobmanager.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "network/kDrive_API/downloadjob.h"
 #include "network/kDrive_API/upload/upload_session/driveuploadsession.h"
@@ -128,7 +128,7 @@ void JobManager::run() noexcept {
 
         managePendingJobs();
 
-        Utility::msleep(100); // Sleep for 0.1 s
+        CommonUtility::msleep(100); // Sleep for 0.1 s
     }
 }
 

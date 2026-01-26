@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
-#include "libcommon/log/sentry/handler.h"
-#include "libcommon/log/sentry/ptracedescriptor.h"
+#include "log/sentry/handler.h"
+#include "log/sentry/ptracedescriptor.h"
 
 namespace KDC::sentry {
 class AbstractPTrace;

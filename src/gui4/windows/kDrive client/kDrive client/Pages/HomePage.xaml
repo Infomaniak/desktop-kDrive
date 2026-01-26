@@ -26,6 +26,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
@@ -219,7 +220,7 @@
 
                 <controls:ContentLoader Grid.Row="0"
                                         IsLoading="True"
-                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                                         Height="130"
                                         Width="180" />
 
@@ -227,19 +228,19 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="150" />
 
                     <!-- Description -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="300" />
 
                     <!-- Link -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="100" />
                 </StackPanel>
@@ -287,19 +288,25 @@
             <!-- Sync Status Bar -->
             <StackPanel Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Grid.Row="0"
-                        Orientation="Horizontal">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
+                        Grid.Row="0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
                     <Run x:Uid="Page_HomePage_Hello" />
                     <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" />
-                </TextBlock>
-                <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
-                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                    </TextBlock>
+                    <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
+                                    Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                </StackPanel>
+                
+                <errors:RemoteDiskFullBar Grid.Row="0"
+                                          Visibility="Visible"
+                                          Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
+                                          Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
             </StackPanel>
             <!-- State widget -->
             <Border Grid.Column="0"
                     Grid.Row="1"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                     Padding="24">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"

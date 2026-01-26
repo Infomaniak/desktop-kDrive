@@ -34,7 +34,7 @@ open class TargetAssembly {
 
     open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
-           Factory(type: CoherentCache.self) { _, _ in
+            Factory(type: CoherentCache.self) { _, _ in
                 ServerCoherentCache()
             },
             Factory(type: CoherentCacheObservable.self) { _, resolver in

@@ -18,7 +18,7 @@
 
 #include "abstractupdater.h"
 
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 #if defined(KD_MACOS)
 #include "sparkleupdater.h"
@@ -36,7 +36,7 @@ AbstractUpdater::AbstractUpdater() :
     _updateChecker->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker) :
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker) :
     _updateChecker(updateChecker) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);

@@ -110,6 +110,9 @@
     <Page Update="CustomControls\DynamicTextBlock.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\ErrorPresenter.xaml">
       <SubType>Designer</SubType>
     </Page>

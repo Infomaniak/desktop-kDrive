@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 
 #include <fstream>
 
@@ -152,8 +152,8 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
     std::filesystem::rename(tempDir.path() / filepath2.filename(), filepath2);
 
     std::filesystem::current_path(tempDir.path());
-    (void) std::filesystem::remove_all(filepath1.filename());
-    (void) std::filesystem::remove_all(filepath2.filename());
+    (void) IoHelper::deleteItem(filepath1.filename());
+    (void) IoHelper::deleteItem(filepath2.filename());
     std::error_code ec;
     std::filesystem::create_symlink(filepath2.filename(), filepath1.filename(), ec); // filepath1 -> filepath2
 

@@ -31,18 +31,26 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Drive : UISafeObservableObject, IDrive
     {
-        private DbId _dbId = -1;
+        // Drive properties
+        private DbId _dbId;
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
         private bool _isFreeOffer = true; // Indicates if the drive is a free offer
-        private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private readonly  ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
-        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+        private System.Int64 _size = 0;
+        private System.Int64 _usedSize = 0;
 
         private Account _account;
+
+        // Drive UI properties
+        private bool _displayRemoteSpaceWarning = false;
+        private readonly ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+
+
         public Drive(DbId dbId, Account account)
         {
             _dbId = dbId;
@@ -57,7 +65,7 @@ namespace Infomaniak.kDrive.ViewModels
             var advancedSyncs = Syncs.Where(s => s != MainSync);
             foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
             {
-                Sync? sync = _advancedSyncs.ElementAt(i);
+                Sync? sync = _advancedSyncs[i];
                 if (!advancedSyncs.Contains(sync))
                     _advancedSyncs.Remove(sync);
             }
@@ -114,6 +122,18 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _isFreeOffer, value);
         }
 
+        public System.Int64 Size
+        {
+            get => _size;
+            set => SetPropertyInUIThread(ref _size, value);
+        }
+
+        public System.Int64 UsedSize
+        {
+            get => _usedSize;
+            set => SetPropertyInUIThread(ref _usedSize, value);
+        }
+
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
@@ -140,9 +160,15 @@ namespace Infomaniak.kDrive.ViewModels
             get => _advancedSyncs;
         }
 
+        public bool DisplayRemoteSpaceWarning
+        {
+            get => _displayRemoteSpaceWarning;
+            set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
+        }
+
         public Uri GetWebUri()
         {
-            return App.Constants.Drive.HomeUrl(DriveId);
+            return App.Constants.Drive.kSuiteHomeUrl(DriveId);
         }
 
         public Uri GetWebTrashUri()
