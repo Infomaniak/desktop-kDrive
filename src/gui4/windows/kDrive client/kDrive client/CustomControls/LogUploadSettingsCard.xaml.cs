@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Info, "Log upload canceled");
         }
 
-        private static async void CancelButton_Click(object sender, RoutedEventArgs e)
+        private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             await LogUploadManager.CancelUpload();
         }
