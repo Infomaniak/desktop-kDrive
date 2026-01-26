@@ -1,0 +1,4 @@
+project: kDrive.xcodeproj
+retain_public: true
+schemes:
+  - kDrive
