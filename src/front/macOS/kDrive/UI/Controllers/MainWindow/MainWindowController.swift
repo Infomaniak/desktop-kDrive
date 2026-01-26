@@ -19,15 +19,8 @@
 import Cocoa
 import InfomaniakDI
 
-enum MainWindowState: Sendable {
-    case preloading
-    case login
-    case mainView
-}
-
 final class MainWindowController: NSWindowController {
     private var viewController: NSViewController?
-    private var windowState = MainWindowState.preloading
 
     private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
 

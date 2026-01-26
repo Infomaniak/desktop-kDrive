@@ -249,7 +249,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
         delegate?.sidebarViewController(self, didSelectItem: selectedItem)
     }
 
-    func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
+    func outlineView(_: NSOutlineView, didClick item: Any?) {
         guard let item = item as? SidebarItem, item.type == .action else {
             return
         }

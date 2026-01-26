@@ -27,12 +27,4 @@ public actor AutoIncrementIDGenerator {
         }
         return counter
     }
-
-    var currentID: Int32 {
-        return counter
-    }
-
-    func reset() {
-        counter = 0
-    }
 }
