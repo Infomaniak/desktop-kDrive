@@ -50,7 +50,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     // Replace the file with a directory on the local side (with the same id)
     _syncPal->pause();
     while (!_syncPal->isPaused()) {
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
     IoError ioError = IoError::Success;
     (void) IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
@@ -82,7 +82,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     // Replace the directory with a file on the local side with the same ID.
     _syncPal->pause();
     while (!_syncPal->isPaused()) {
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
     (void) IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -142,7 +142,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     // Expected behavior: new file on remote side
     _syncPal->pause();
     while (!_syncPal->isPaused()) {
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
 
     IoError ioError = IoError::Success;

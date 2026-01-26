@@ -18,7 +18,7 @@
 
 #include "utilityispathvalidfornewsyncjob.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/serverrequests.h"
 
 // Input parameters keys
@@ -57,7 +57,7 @@ ExitInfo UtilityIsPathValidForNewSyncJob::serializeOutputParms() {
 
 ExitInfo UtilityIsPathValidForNewSyncJob::process() {
     if (const auto exitInfo = ServerRequests::isPathValidForNewSync(_path, _isValid); !exitInfo) {
-        LOGW_WARN(_logger, L"isPathValidForNewSync failed: " << Utility::formatSyncPath(_path));
+        LOGW_WARN(_logger, L"isPathValidForNewSync failed: " << CommonUtility::formatSyncPath(_path));
         return exitInfo;
     }
     return ExitCode::Ok;

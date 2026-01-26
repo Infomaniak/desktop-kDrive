@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Infomaniak.kDrive.ViewModels;
+using System;
 
 namespace Infomaniak.kDrive
 {
@@ -33,10 +34,13 @@ namespace Infomaniak.kDrive
     internal interface IDriveConstants
     {
         Uri RenewUrl(DriveId? driveId);
-        Uri HomeUrl(DriveId? driveId);
+        Uri kSuiteHomeUrl(DriveId? driveId);
+        Uri kDriveHomeUrl(DriveId? driveId);
         Uri TrashUrl(DriveId? driveId);
         Uri FavoriteUrl(DriveId? driveId);
         Uri SharedUrl(DriveId? driveId);
+        Uri itemUri(DriveId? driveId, NodeId nodeId);
+        Uri ChangeOfferUri(DriveId? driveId);
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
@@ -64,17 +68,19 @@ namespace Infomaniak.kDrive
 
         private sealed class ProductionDrive : IDriveConstants
         {
-            public Uri RenewUrl(DriveId? id) =>
-                new($"https://shop.infomaniak.com/order/drive/{id}");
-
-            public Uri HomeUrl(DriveId? id) =>
-                new($"https://ksuite.infomaniak.com/kdrive/app/drive/{id}");
-
-            public Uri TrashUrl(DriveId? id) => new($"{HomeUrl(id)}/trash");
-            public Uri FavoriteUrl(DriveId? id) => new($"{HomeUrl(id)}/favorites");
-            public Uri SharedUrl(DriveId? id) => new($"{HomeUrl(id)}/shared-with-me");
+            public Uri RenewUrl(DriveId? driveId) =>
+                new($"https://shop.infomaniak.com/order/drive/{driveId}");
+            public Uri kSuiteHomeUrl(DriveId? driveId) =>
+                new($"https://ksuite.infomaniak.com/kdrive/app/drive/{driveId}");
+            public Uri kDriveHomeUrl(DriveId? driveId) =>
+                new($"https://kdrive.infomaniak.com/app/drive/{driveId}");
+            public Uri TrashUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/trash");
+            public Uri FavoriteUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/favorites");
+            public Uri SharedUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/shared-with-me");
+            public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
+            public Uri ChangeOfferUri(DriveId? driveId) =>
+                new($"https://shop.infomaniak.com/order/drive/{driveId}");
         }
-
         private sealed class ProductionStorage : IStorageConstants
         {
             public Uri DownloadUrl { get; } =

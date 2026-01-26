@@ -129,6 +129,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
 
         public bool? Admin { get; set; }
+
+        public System.Int64 Size { get; set; }
+        public System.Int64 UsedSize { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -140,6 +143,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
             copyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
             copyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
+            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            copyProperty(source, target, nameof(source.UsedSize), nameof(target.UsedSize));
         }
     }
 
@@ -396,5 +401,16 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             copyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
         }
+    }
+
+    public class SearchInfo
+    {
+        public NodeId? Id { get; set; }
+        public string? Name { get; set; }
+        public NodeType? Type { get; set; }
+        public string? Path { get; set; }
+        public DateTime? ModifiedTime { get; set; }
+        public Int64? Size { get; set; }
+        public bool? IsAvailableLocally { get; set; }
     }
 }

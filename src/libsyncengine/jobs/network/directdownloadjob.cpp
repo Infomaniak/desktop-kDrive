@@ -17,7 +17,7 @@
  */
 
 #include "directdownloadjob.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "io/iohelper.h"
 #include "utility/utility.h"
 
@@ -44,7 +44,7 @@ ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
     if (_httpMethod == Poco::Net::HTTPRequest::HTTP_HEAD) return ExitCode::Ok;
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
-        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
+        LOGW_WARN(_logger, L"Failed to create file: " << CommonUtility::formatSyncPath(_destinationFile));
         return {ExitCode::SystemError,
                 Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
     }

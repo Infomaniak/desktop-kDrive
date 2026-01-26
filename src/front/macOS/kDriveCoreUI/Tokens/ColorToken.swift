@@ -74,6 +74,7 @@ public struct ColorToken {
         public static let defaultColor = ColorToken(light: KDriveColors.infomaniak, dark: KDriveColors.infomaniak)
     }
 }
+
 // swiftlint:enable nesting
 
 // MARK: - Helpers

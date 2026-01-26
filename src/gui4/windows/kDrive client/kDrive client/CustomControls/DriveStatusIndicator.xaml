@@ -15,12 +15,12 @@
         <Border BorderBrush="{ThemeResource CardStrokeColorDefault}"
                 Background="{ThemeResource LayerFillColorDefault}"
                 BorderThickness="1"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                 Padding="24,8,24,8">
 
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <local:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                Foreground="{x:Bind Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                Height="16" />
 

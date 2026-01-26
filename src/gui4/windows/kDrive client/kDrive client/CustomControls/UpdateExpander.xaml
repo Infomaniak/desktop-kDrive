@@ -50,11 +50,16 @@
                              NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                              IsEnabled="False"
                               Background="{ThemeResource LayerFillColorDefault}">
+            <toolKit:SettingsCard.HeaderIcon>
+                <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
+                               Height="32"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            </toolKit:SettingsCard.HeaderIcon>
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
-                          Toggled="AutoUpdateToggleSwitch_Toggled" />
+                          Toggled="AutoUpdateToggleSwitch_Toggled"
+                          IsEnabled="False" />
         </toolKit:SettingsCard>
 
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander"

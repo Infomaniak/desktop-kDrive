@@ -283,7 +283,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit driveUpdated(driveInfo);
             break;
         }
-        case SignalNum::DRIVE_QUOTAUPDATED: {
+        case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
             int driveDbId;
             qint64 total;
             qint64 used;

@@ -18,7 +18,7 @@
 
 #include "loguploadsession.h"
 #include "libparms/db/parmsdb.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 
 namespace KDC {
 
@@ -53,7 +53,7 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-ExitInfo LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+ExitInfo LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> startJob,
                                                 const std::string &uploadToken) {
     (void) startJob;
 
@@ -88,7 +88,7 @@ ExitInfo LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSess
     return ExitCode::Ok;
 }
 
-ExitInfo LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+ExitInfo LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> finishJob) {
     (void) finishJob;
 
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
@@ -97,7 +97,7 @@ ExitInfo LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSes
     return ExitCode::Ok;
 }
 
-ExitInfo LogUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+ExitInfo LogUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) {
     if (const auto exitInfo = AbstractUploadSession::handleCancelJobResult(cancelJob); !exitInfo) {
         return exitInfo;
     }

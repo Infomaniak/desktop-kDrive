@@ -40,7 +40,7 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
         self.authorizationCheckers = authorizationCheckers ?? [
             .endpointSecurityExtension: EndpointSecurityExtensionChecker(),
-            .fullDiskAccess: FullDiskChecker(),
+            .fullDiskAccess: FullDiskChecker()
         ]
     }
 

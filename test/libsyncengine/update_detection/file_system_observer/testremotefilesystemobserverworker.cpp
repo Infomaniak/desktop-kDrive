@@ -175,7 +175,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         SyncTime prevCreationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId);
         SyncTime prevModificationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);
 
-        Utility::msleep(1000);
+        CommonUtility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         UploadJob job(nullptr, _driveDbId, testFilePath, _testFileId, time);

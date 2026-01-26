@@ -35,12 +35,12 @@ class SyncOperation {
         void setType(const OperationType newType) { _type = newType; }
 
         // The node on which the original file system operation was performed.
-        [[nodiscard]] const std::shared_ptr<Node> &affectedNode() const { return _affectedNode; }
-        void setAffectedNode(const std::shared_ptr<Node> &node) { _affectedNode = node; }
+        [[nodiscard]] std::shared_ptr<Node> affectedNode() const { return _affectedNode; }
+        void setAffectedNode(const std::shared_ptr<Node> node) { _affectedNode = node; }
 
         // The node on which we will apply the operation. Left as `nullptr` for Create operations.
-        [[nodiscard]] const std::shared_ptr<Node> &correspondingNode() const { return _correspondingNode; }
-        void setCorrespondingNode(const std::shared_ptr<Node> &node) { _correspondingNode = node; }
+        [[nodiscard]] std::shared_ptr<Node> correspondingNode() const { return _correspondingNode; }
+        void setCorrespondingNode(const std::shared_ptr<Node> node) { _correspondingNode = node; }
 
         // The side on which we will apply the operation
         [[nodiscard]] ReplicaSide targetSide() const { return _targetSide; }
@@ -59,8 +59,8 @@ class SyncOperation {
             assert(_type == OperationType::Create && _targetSide == ReplicaSide::Local);
             _localCreationTargetPath = localCreationTargetPath;
         }
-        [[nodiscard]] const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
-        void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
+        [[nodiscard]] std::shared_ptr<Node> newParentNode() const { return _newParentNode; }
+        void setNewParentNode(const std::shared_ptr<Node> newParentNode) { _newParentNode = newParentNode; }
         [[nodiscard]] bool hasConflict() const { return _conflict.type() != ConflictType::None; }
         [[nodiscard]] const Conflict &conflict() const { return _conflict; }
         void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
@@ -68,10 +68,10 @@ class SyncOperation {
         [[nodiscard]] SyncName nodeName(ReplicaSide side) const;
         [[nodiscard]] SyncPath nodePath(ReplicaSide side) const;
         [[nodiscard]] NodeType nodeType() const noexcept;
-        [[nodiscard]] const std::shared_ptr<Node> &localNode() const {
+        [[nodiscard]] std::shared_ptr<Node> localNode() const {
             return _affectedNode->side() == ReplicaSide::Local ? _affectedNode : _correspondingNode;
         }
-        [[nodiscard]] const std::shared_ptr<Node> &remoteNode() const {
+        [[nodiscard]] std::shared_ptr<Node> remoteNode() const {
             return _affectedNode->side() == ReplicaSide::Remote ? _affectedNode : _correspondingNode;
         }
 

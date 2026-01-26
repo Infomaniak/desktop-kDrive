@@ -22,7 +22,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 #include "user.h"
 #include "ptrace.h"
 #include "ptracedescriptor.h"

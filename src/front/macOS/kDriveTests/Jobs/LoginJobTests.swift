@@ -21,7 +21,7 @@ import kDriveCore
 import Testing
 
 struct LoginJobTests {
-    @Test func testLoginJobSuccess() async throws {
+    @Test func loginJobSuccess() async throws {
         // WHEN
         let userDbId = try await LoginJob().login(code: "123", verifier: "456")
 
