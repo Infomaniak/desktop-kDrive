@@ -152,7 +152,6 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncTypeMigrationInProgress;
             set
             {
-                Console.WriteLine($"Sync {DbId}: Setting SyncTypeMigrationInProgress to {value}");
                 SetPropertyInUIThread(ref _syncTypeMigrationInProgress, value);
             }
         }

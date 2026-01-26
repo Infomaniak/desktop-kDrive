@@ -152,14 +152,6 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty CanShowSaveMenuProperty =
             DependencyProperty.Register(nameof(CanShowSaveMenu), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
 
-        public bool AllowFolderCreation // TODO: Implement associated logic
-        {
-            get => (bool)GetValue(AllowFolderCreationProperty);
-            set => SetValue(AllowFolderCreationProperty, value);
-        }
-        public static readonly DependencyProperty AllowFolderCreationProperty =
-            DependencyProperty.Register(nameof(AllowFolderCreation), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
-
         // Internal root item
         private TreeItem RootTreeItem
         {

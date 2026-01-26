@@ -125,7 +125,6 @@
                             <controls:SyncExclusionSelector Grid.Row="1"
                                                             Sync="{x:Bind Mode=OneWay}"
                                                             CanShowSaveMenu="True"
-                                                            AllowFolderCreation="False"
                                                             HorizontalAlignment="Stretch" />
                         </Grid>
                     </toolKit:SettingsCard>

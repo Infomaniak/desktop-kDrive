@@ -96,23 +96,41 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private async void RemoveSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Button? button = sender as Button;
-        if (button is null)
+        Control? control = sender as Control;
+        if (control is null)
         {
             Logger.Log(Logger.Level.Error, "Remove sync button is null when clicking on remove sync button");
             return;
         }
-        button.IsEnabled = false;
-        Sync? sync = button.DataContext as Sync;
+
+        Sync? sync = control.DataContext as Sync;
         if (sync is null)
         {
             Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on remove sync button");
-            button.IsEnabled = true;
+            control.IsEnabled = true;
             return;
         }
 
-        await sync.Drive.RemoveSync(sync, CancellationToken.None);
-        button.IsEnabled = true;
+        if (_managedDrive is not null)
+        {
+            control.IsEnabled = false;
+            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+            if (dialogResult == ContentDialogResult.Primary)
+            {
+                Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
+                await sync.Drive.RemoveSync(sync, CancellationToken.None);
+
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Info, "User canceled sync removal");
+            }
+            control.IsEnabled = true;
+        }
+        else
+        {
+            Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or sync is null");
+        }
     }
 
     private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
