@@ -185,6 +185,10 @@ if [[ $use_release_profile == true ]]; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
 
+    if [[ "$build_type" == "Debug" ]]; then
+      error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
+    fi
+
     conan_profile="$release_profile"
   else
     error "Profile '$release_profile' does not exist. Please create it."
@@ -228,8 +232,7 @@ log "- Output directory: '$output_dir'"
 echo
 
 log "Installing dependencies..."
-# Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 
 if [ $? -ne 0 ]; then
