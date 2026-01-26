@@ -32,6 +32,7 @@ class SyncAddJob : public AbstractSyncAddJob {
         // Input parameters
         int _userDbId = 0;
         int _accountId = 0;
+        QString _accountName;
         int _driveId = 0;
 
         ExitInfo deserializeInputParms() override;

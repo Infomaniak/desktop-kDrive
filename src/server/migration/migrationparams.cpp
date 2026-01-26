@@ -258,7 +258,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
 }
 
 ExitCode MigrationParams::loadAccount(QSettings &settings) {
-    bool found;
+    bool found = false;
     User user;
     int userId = settings.value(QString(userIdC)).toInt();
 
@@ -287,7 +287,8 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     }
 
     Account account;
-    int accountDbId;
+    int accountDbId = 0;
+    std::string accountName;
 
     // Drive
     Drive drive;
@@ -305,7 +306,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewAccountDbId");
             return ExitCode::DbError;
         }
-        account = Account(accountDbId, 0, user.dbId());
+        account = Account(accountDbId, 0, user.dbId(), accountName);
         if (!ParmsDb::instance()->insertAccount(account)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
             return ExitCode::DbError;
@@ -322,7 +323,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             return ExitCode::DbError;
         }
     } else {
-        // get existing accound
+        // get existing account
         if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
             return ExitCode::DbError;

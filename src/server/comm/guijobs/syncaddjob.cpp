@@ -59,16 +59,17 @@ ExitInfo SyncAddJob::process() {
     SyncInfo syncInfo;
     AccountInfo accountInfo;
     DriveInfo driveInfo;
-    if (const auto exitCode = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                                      serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitInfo =
+                ServerRequests::addSync(_userDbId, _accountId, _accountName, _driveId, localFolderPath(), serverFolderPath(),
+                                        serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
+        !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
-                                   << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
-                                   << CommonUtility::formatSyncPath(localFolderPath()) << L" server "
-                                   << CommonUtility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
+                                   << _userDbId << L" accountId=" << _accountId << L" accountName=" << QStr2WStr(_accountName)
+                                   << L" driveId=" << _driveId << L" local " << CommonUtility::formatSyncPath(localFolderPath())
+                                   << L" server " << CommonUtility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
-        addError(Error(ERR_ID, exitCode));
-        return exitCode;
+        AppServer::addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     if (accountInfo.dbId() != 0) {
