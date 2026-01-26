@@ -71,18 +71,8 @@
                     <controls:SyncStartPauseButton />
 
                     <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
-                    <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
-                                    x:Name="W_MainWindow_TitleBar_SearchBox"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="3"
-                                    QueryIcon="Find"
-                                    Width="319"
-                                    Height="32"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
-                                    BorderThickness="1"
-                                    IsEnabled="False"/>
+                    <controls:SearchBox MinWidth="319"
+                                        Height="32" />
                 </StackPanel>
             </Grid>
         </Border>

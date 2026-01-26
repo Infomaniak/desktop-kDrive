@@ -201,3 +201,5 @@ DerivedData/
 
 # Opencode folder containing agents / configuration
 .opencode/
+# Misc
+PROXYAI.md

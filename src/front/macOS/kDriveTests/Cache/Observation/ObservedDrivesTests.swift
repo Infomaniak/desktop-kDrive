@@ -98,7 +98,8 @@ struct ObservedDrivesTests {
         #expect(secondaryCachedDrive == secondaryDrive, "The cache should have been updated with another Drive")
         #expect(observedDrives.count == 2, "We should have two Drives in the array")
 
-        guard let firstObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.expectedDriveDbId }) else {
+        guard let firstObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.expectedDriveDbId })
+        else {
             Issue.record("Failed to unwrap the first Drive")
             return
         }
@@ -107,7 +108,8 @@ struct ObservedDrivesTests {
         #expect(firstObservedDrive.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
         #expect(firstObservedDrive.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
 
-        guard let secondaryObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.secondaryDriveDbId }) else {
+        guard let secondaryObservedDrive = observedDrives
+            .first(where: { $0.drive.driveDbId == ObservableData.secondaryDriveDbId }) else {
             Issue.record("Failed to unwrap the secondary Drive")
             return
         }
@@ -223,7 +225,8 @@ struct ObservedDrivesTests {
 
         #expect(observedDrives.count == 1, "We should have one Drive after the deletion of a drive")
 
-        guard let firstObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.expectedDriveDbId }) else {
+        guard let firstObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.expectedDriveDbId })
+        else {
             Issue.record("Failed to unwrap the first Drive")
             return
         }

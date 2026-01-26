@@ -17,7 +17,7 @@
  */
 
 #include "testguicommchannel.h"
-#include "log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 
 namespace KDC {
 

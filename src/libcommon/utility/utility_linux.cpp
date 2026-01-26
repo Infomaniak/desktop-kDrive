@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
@@ -66,6 +66,20 @@ SyncPath CommonUtility::getAppDir() {
 
 bool CommonUtility::hasDarkSystray() {
     return true;
+}
+
+SyncPath CommonUtility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return {};
+    }
+
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
+    }
+
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
 } // namespace KDC

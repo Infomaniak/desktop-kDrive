@@ -35,7 +35,9 @@ struct CoherentCacheAccountTests {
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
 
         // THEN
-        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        #expect(await cache
+            .getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData
+            .expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
     }
 

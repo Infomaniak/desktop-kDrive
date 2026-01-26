@@ -56,7 +56,7 @@ ExitInfo FileRescuer::createRescueFolderIfNeeded() const {
     if (ioError != IoError::Success) {
         // Failed to check directory existence
         LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Failed to check rescue directory existence. Error: " << Utility::formatIoError(ioError));
+                  L"Failed to check rescue directory existence. Error: " << CommonUtility::formatIoError(ioError));
         return ExitCode::SystemError;
     }
     if (exists) {

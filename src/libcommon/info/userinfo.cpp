@@ -17,8 +17,8 @@
  */
 
 #include "userinfo.h"
-#include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
+#include "utility/types.h"
+#include "utility/utility.h"
 
 #include <QImageWriter>
 #include <QBuffer>

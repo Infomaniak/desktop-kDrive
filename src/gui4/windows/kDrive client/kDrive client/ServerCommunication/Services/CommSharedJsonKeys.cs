@@ -65,6 +65,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string LiteSync = "liteSync";
         static public string BlackList = "blackList";
 
+        static public string SearchString = "searchString";
+        static public string SearchInfoList = "searchInfoList";
+
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";
         static public string WithPath = "withPath";
@@ -78,6 +81,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string BestMode = "bestMode";
         static public string Value = "value";
         static public string Size= "size";
+
+        static public string LinkUrl = "linkUrl";
 
         static public string VersionInfo = "versionInfo";
         static public string DriveAvailableInfoList = "driveAvailableInfoList";

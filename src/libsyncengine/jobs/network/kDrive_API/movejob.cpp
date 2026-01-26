@@ -18,14 +18,14 @@
 
 #include "movejob.h"
 
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-MoveJob::MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
                  const NodeId &destDirId, const SyncName &name /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _destFilepath(destFilepath),
@@ -41,14 +41,14 @@ MoveJob::~MoveJob() {
 
     VfsStatus vfsStatus;
     if (const ExitInfo exitInfo = _vfs->status(_destFilepath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsStatus for " << CommonUtility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
 
     vfsStatus.isSyncing = false;
     vfsStatus.progress = 100;
     if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, vfsStatus);
         !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << CommonUtility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
 }
 
@@ -61,11 +61,11 @@ ExitInfo MoveJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_destFilepath, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(_destFilepath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 

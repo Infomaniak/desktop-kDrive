@@ -10,10 +10,6 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Settings : UISafeObservableObject
     {
-        public Settings()
-        {
-            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = 1 }; // TODO: Remove hardcoded version once loaded from the app.
-        }
         private Language _language = Language.SystemDefault;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
@@ -25,8 +21,6 @@ namespace Infomaniak.kDrive.ViewModels
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _matomoEnabled;
         private bool _sentryEnabled;
-
-        private AppVersion? _appVersion;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public Language Language
         {
@@ -72,11 +66,8 @@ namespace Infomaniak.kDrive.ViewModels
             get => _proxyConfig;
             set => SetPropertyInUIThread(ref _proxyConfig, value);
         }
-        public AppVersion? AppVersion
-        {
-            get => _appVersion;
-            set => SetPropertyInUIThread(ref _appVersion, value);
-        }
+        public AppVersion AppVersion { get; } = AppVersion.Current();
+        
         public bool MatomoEnabled
         {
             get => _matomoEnabled;

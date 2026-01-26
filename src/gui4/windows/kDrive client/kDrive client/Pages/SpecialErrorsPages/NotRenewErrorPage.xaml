@@ -33,7 +33,7 @@
             BorderThickness="1"
             BorderBrush="{ThemeResource CardStrokeColorDefault}"
             Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
-            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}">
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
 
         <RelativePanel HorizontalAlignment="Center"
                        VerticalAlignment="Center">

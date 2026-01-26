@@ -17,7 +17,7 @@
  */
 
 #include "searchinfo.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto searchInfoId = "id";
 static const auto searchInfoName = "name";

@@ -41,10 +41,11 @@ void WindowsUpdater::onUpdateFound() {
     uint64_t localSize = 0;
     auto ioError = IoError::Success;
     if (!IoHelper::getFileSize(filepath, localSize, ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(filepath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getFileSize for " << CommonUtility::formatSyncPath(filepath));
     }
     if (ioError == IoError::Success && localSize == static_cast<uint64_t>(expectedSize)) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
+        LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << CommonUtility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
         if (!verifyDigitalSignature(filepath)) {
@@ -66,7 +67,7 @@ void WindowsUpdater::startInstaller() {
         return;
     }
     if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << CommonUtility::formatStdError(filepath, ec));
         if (_autoUpdate) {
             LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
             setState(UpdateState::UpdateError);
@@ -78,7 +79,7 @@ void WindowsUpdater::startInstaller() {
     }
     _autoUpdate = false;
 
-    LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << CommonUtility::formatSyncPath(filepath));
     const auto cmd = filepath.wstring() + L" /S /launch";
     (void) Utility::runDetachedProcess(cmd);
 }
@@ -94,7 +95,8 @@ void WindowsUpdater::downloadUpdate() noexcept {
     auto ioError = IoError::Success;
     (void) IoHelper::deleteItem(filepath, ioError);
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to to remove existing installer " << CommonUtility::formatSyncPath(filepath));
     }
 
     const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
@@ -133,7 +135,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     }
 
     if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << CommonUtility::formatStdError(filepath, ec));
         downloadUpdate();
         return;
     }
@@ -144,7 +146,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     }
 
     LOGW_INFO(Log::instance()->getLogger(),
-              L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
+              L"Installer downloaded at: " << CommonUtility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
     if (_autoUpdate) {
         // Start the installer automatically.
@@ -175,8 +177,8 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
     if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        const auto error =
-                L"The digital signature of installer " + Utility::formatSyncPath(filepath) + L" is invalid. Aborting update.";
+        const auto error = L"The digital signature of installer " + CommonUtility::formatSyncPath(filepath) +
+                           L" is invalid. Aborting update.";
         sentry::Handler::captureMessage(sentry::Level::Error, "Invalid signature", CommonUtility::ws2s(error));
         LOGW_ERROR(Log::instance()->getLogger(), error);
         auto ioError = IoError::Success;

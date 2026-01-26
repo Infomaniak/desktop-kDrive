@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "libcommon/info/proxyconfiginfo.h"
-#include "libcommon/utility/types.h"
+#include "info/proxyconfiginfo.h"
+#include "utility/types.h"
 
 #include <Poco/Dynamic/Struct.h>
 

@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/info/proxyconfiginfo.h"
+#include "info/proxyconfiginfo.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 namespace KDC {
 

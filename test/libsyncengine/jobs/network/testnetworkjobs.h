@@ -23,7 +23,7 @@
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 using namespace CppUnit;
 
 namespace KDC {

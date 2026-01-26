@@ -100,7 +100,7 @@ void ContentChecksumWorker::execute() {
             }
         }
 
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
     }
 
     LOG_DEBUG(_logger, "Worker stopped: name=" << name());

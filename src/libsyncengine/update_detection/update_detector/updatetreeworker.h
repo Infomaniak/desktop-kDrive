@@ -141,7 +141,7 @@ class UpdateTreeWorker : public ISyncWorker {
         [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
                                                        bool existingBranchOnly = true);
         [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
-                                             const std::shared_ptr<Node> &parentNode);
+                                             const std::shared_ptr<Node> parentNode);
         [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
             return getOrCreateNodeFromPath(path, node, true);
         }

@@ -17,7 +17,7 @@
  */
 
 #include "driveinfo.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto driveInfoDbId = "dbId";
 static const auto driveInfoId = "id";

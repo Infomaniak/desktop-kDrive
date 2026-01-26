@@ -27,7 +27,7 @@
 #endif
 
 #include "libcommon/utility/utility.h"
-#include "log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 
 namespace KDC {

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,13 +141,4 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
-SyncPath Utility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
-        return {};
-    }
-
-    return SyncPath(homePathEnv) / ".Trash";
-}
 } // namespace KDC
