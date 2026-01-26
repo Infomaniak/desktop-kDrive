@@ -5,7 +5,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, rm, rmdir
+from conan.tools.files import copy, rm, rmdir, replace_in_file
 from conan.tools.microsoft import is_msvc, is_msvc_static_runtime, msvc_runtime_flag
 from conan.tools.scm import Git
 
@@ -32,7 +32,7 @@ class PocoConan(ConanFile):
         "enable_active_record": [True, False, "deprecated"],
         "log_debug": [True, False],
         "with_sql_parser": [True, False],
-        "comp_foundation_sharedlibrary_debug_suffix": [True, False],
+        "sharedlibrary_debug_suffix": [True, False],
     }
     default_options = {
         "shared": True,
@@ -41,7 +41,7 @@ class PocoConan(ConanFile):
         "enable_active_record": "deprecated",
         "log_debug": False,
         "with_sql_parser": False,
-        "comp_foundation_sharedlibrary_debug_suffix": True,
+        "sharedlibrary_debug_suffix": False,
     }
 
     _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))
@@ -96,7 +96,7 @@ class PocoConan(ConanFile):
         else:
             del self.options.enable_netssl_win
         if self.settings.build_type != "Debug":
-            del self.options.comp_foundation_sharedlibrary_debug_suffix
+            del self.options.sharedlibrary_debug_suffix
         
         # Enable debug logging when building in Debug mode
         if self.settings.build_type == "Debug":
@@ -179,7 +179,7 @@ class PocoConan(ConanFile):
         # Picked up from conan v1 CMake wrapper, don't know the rationale
         tc.preprocessor_definitions["XML_DTD"] = "1"
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
-        if not self.options.get_safe("comp_foundation_sharedlibrary_debug_suffix", True):
+        if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
         tc.generate()
 
@@ -191,6 +191,18 @@ class PocoConan(ConanFile):
         deps.generate()
 
     def build(self):
+        # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
+        if not self.options.get_safe("sharedlibrary_debug_suffix", True):
+            platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")
+            # Replace "d" suffix with empty string for shared libs
+            replace_in_file(self, platform_specific_cmake,
+                'set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set Debug library postfix" FORCE)',
+                'set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Set Debug library postfix" FORCE)')
+            # Replace "${STATIC_POSTFIX}d" suffix with just "${STATIC_POSTFIX}" for static libs
+            replace_in_file(self, platform_specific_cmake,
+                'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}d" CACHE STRING "Set Debug library postfix" FORCE)',
+                'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}" CACHE STRING "Set Debug library postfix" FORCE)')
+
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
@@ -207,9 +219,12 @@ class PocoConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "Poco")
         self.cpp_info.set_property("cmake_target_name", "Poco::Poco")
 
-        suffix = msvc_runtime_flag(self).lower() \
-            if is_msvc(self) and not self.options.shared \
-            else ("d" if self.settings.build_type == "Debug" else "")
+        if is_msvc(self) and not self.options.shared:
+            suffix = msvc_runtime_flag(self).lower()
+        elif self.settings.build_type == "Debug" and self.options.get_safe("sharedlibrary_debug_suffix", True):
+            suffix = "d"
+        else:
+            suffix = ""
 
         for compname, comp in self._poco_component_tree.items():
             if comp.option is None or self.options.get_safe(comp.option):
