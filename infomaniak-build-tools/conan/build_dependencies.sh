@@ -232,7 +232,7 @@ log "- Output directory: '$output_dir'"
 echo
 
 log "Installing dependencies..."
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 
 if [ $? -ne 0 ]; then
