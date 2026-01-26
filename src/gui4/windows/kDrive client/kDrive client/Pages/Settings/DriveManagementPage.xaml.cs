@@ -49,6 +49,13 @@ namespace Infomaniak.kDrive.Pages.Settings
 
                 ManagedDrive = drive;
             }
+            else if (ViewModel.AllDrives.FirstOrDefault(d => (d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId), null) is not null)
+            {
+                // Can happen if a user uses the back button after setting up a new drive.
+                Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
+                AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
+                return;
+            }
         }
 
         private void SetupNavBar(string driveName)

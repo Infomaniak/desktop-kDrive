@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Linq;
 using System.Threading;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -16,7 +17,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 {
     private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     private IDrive? _baseDrive;
-    private Drive? _managedDrive { get; set; }
+    private Drive? ManagedDrive { get; set; }
 
 
     public DriveAdvancedSyncsPage()
@@ -46,7 +47,14 @@ public sealed partial class DriveAdvancedSyncsPage : Page
                 return;
             }
 
-            _managedDrive = drive;
+            ManagedDrive = drive;
+        }
+        else if (_viewModel.AllDrives.FirstOrDefault(d => (d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId), null) is not null)
+        {
+            // Can happen if a user uses the back button after setting up a new drive.
+            Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
+            AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
+            return;
         }
     }
 
@@ -111,7 +119,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        if (_managedDrive is not null)
+        if (ManagedDrive is not null)
         {
             control.IsEnabled = false;
             var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");

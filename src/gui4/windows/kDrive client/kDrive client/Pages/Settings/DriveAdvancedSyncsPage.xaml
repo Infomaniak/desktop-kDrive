@@ -172,7 +172,7 @@
                     <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle_Caption"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
-                <ListView ItemsSource="{x:Bind _managedDrive.AdvancedSyncs, Mode=OneWay}"
+                <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"
                           ItemTemplate="{StaticResource AdvancedSyncItemTemplate}"
                           VerticalContentAlignment="Stretch"
                           HorizontalContentAlignment="Stretch"
