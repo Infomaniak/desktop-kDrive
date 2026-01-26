@@ -19,7 +19,7 @@
 #include "syncofflinefilessizejob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include <requests/offlinefilessizeestimator.h>
 #include <mutex>
 
@@ -32,7 +32,8 @@ static const auto outParamsSize = "size";
 namespace KDC {
 
 SyncOfflineFilesSizeJob::SyncOfflineFilesSizeJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+                                                 const Poco::DynamicStruct &inParams,
+                                                 std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::SYNC_OFFLINE_FILES_SIZE;
 }
@@ -74,8 +75,7 @@ ExitInfo SyncOfflineFilesSizeJob::process() {
     OfflineFilesSizeEstimator estimator(syncPals);
 
     if (const ExitInfo exitInfo = estimator.runSynchronously(); !exitInfo) {
-        LOG_WARN(_logger,
-                 "Failed to estimate offline files size for syncDbId=" << _syncDbId << " - exitInfo=" << exitInfo);
+        LOG_WARN(_logger, "Failed to estimate offline files size for syncDbId=" << _syncDbId << " - exitInfo=" << exitInfo);
         return exitInfo;
     }
 

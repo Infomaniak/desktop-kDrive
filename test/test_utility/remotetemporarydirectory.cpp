@@ -74,7 +74,7 @@ void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId
         Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
         CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id (2).", dataObj);
         _dirId = dataObj->get(idKey).toString();
-        LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
+        LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << CommonUtility::formatSyncName(_dirName)
                                                                                       << L" with ID: "
                                                                                       << CommonUtility::s2ws(_dirId));
         break;

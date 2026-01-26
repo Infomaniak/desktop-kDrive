@@ -25,7 +25,7 @@ public final class IconCircleView: NSView {
     public var color = ColorToken.Status.Medium.security.asNSColor {
         didSet {
             if #available(macOS 26.0, *) {
-                let backgroundView = self.backgroundView as? NSGlassEffectView
+                let backgroundView = backgroundView as? NSGlassEffectView
                 backgroundView?.tintColor = color
             } else {
                 needsDisplay = true

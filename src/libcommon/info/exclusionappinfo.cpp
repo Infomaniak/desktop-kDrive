@@ -18,7 +18,7 @@
 
 #include "exclusionappinfo.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto appInfoId = "appId";
 static const auto appInfoDescription = "description";

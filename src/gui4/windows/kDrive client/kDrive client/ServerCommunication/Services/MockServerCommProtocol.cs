@@ -214,7 +214,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "notifications", true },
                     { "maintenance", false },
                     { "locked", false },
-                    { "accessDenied", false }
+                    { "accessDenied", false },
+                    { "size", 0 },
+                    { "usedSize", 0 }
                 };
                 if (!result.ContainsKey(JsonKeys.DriveInfoList))
                 {
@@ -416,19 +418,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task SimulateSignals()
         {
-            long updaterStateChangeCounter = 0;
-            while (true)
-            {
-                updaterStateChangeCounter++;
-                await Task.Delay(100);
-                if (updaterStateChangeCounter % 600 == 0)
-                {
-                    if (!_mockData.VersionsByChannel.ContainsKey(VersionChannel.Internal)) continue;
-                    string oldTag = _mockData.VersionsByChannel[VersionChannel.Internal]?.Tag ?? "0.0.0";
-                    _mockData.VersionsByChannel[VersionChannel.Internal]!.Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
-                    EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
-                }
-            }
         }
     }
 

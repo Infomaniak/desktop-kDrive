@@ -19,7 +19,7 @@
 #include "utilitycancellogtosupportjob.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 
 namespace KDC {
 

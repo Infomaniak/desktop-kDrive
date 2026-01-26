@@ -17,7 +17,7 @@
  */
 #pragma once
 
-#include "libcommon/log/sentry/abstractscopedptrace.h"
+#include "log/sentry/abstractscopedptrace.h"
 
 namespace KDC::sentry {
 

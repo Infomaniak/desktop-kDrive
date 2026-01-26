@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
+UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, const UploadSessionType uploadType,
                                                const int driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,
@@ -51,7 +51,8 @@ UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
     if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
+        LOGW_WARN(_logger,
+                  L"Error in vfsForceStatus for " << CommonUtility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 }
 

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "vfs.h"
 
 #include <QObject>

@@ -278,7 +278,7 @@ enum class SignalNum {
     // Drive
     DRIVE_ADDED,
     DRIVE_UPDATED,
-    DRIVE_QUOTAUPDATED,
+    DRIVE_QUOTAUPDATED_LEGACY,
     DRIVE_REMOVED,
     DRIVE_DELETE_FAILED,
     // Sync
@@ -328,7 +328,7 @@ inline std::string toString(SignalNum e) {
             return "DRIVE_ADDED";
         case SignalNum::DRIVE_UPDATED:
             return "DRIVE_UPDATED";
-        case SignalNum::DRIVE_QUOTAUPDATED:
+        case SignalNum::DRIVE_QUOTAUPDATED_LEGACY:
             return "DRIVE_QUOTAUPDATED";
         case SignalNum::DRIVE_REMOVED:
             return "DRIVE_REMOVED";

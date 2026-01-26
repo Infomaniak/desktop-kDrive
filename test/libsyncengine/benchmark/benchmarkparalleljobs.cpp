@@ -258,7 +258,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
 
     // Wait for all uploads to finish
     while (!jobIds.empty()) {
-        Utility::msleep(10); // Wait 10ms
+        CommonUtility::msleep(10); // Wait 10ms
         while (!jobIds.empty() && SyncJobManagerSingleton::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }

@@ -83,6 +83,8 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XS">0,8</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.S">0,12</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.M">0,16</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.L">0,24</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XL">0,32</Thickness>
     
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XXS">0,4,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XS">0,8,0,0</Thickness>
@@ -107,9 +109,12 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.L">0,0,24,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.XL">0,0,32,0</Thickness>
     <!-- Corner Radius -->
-    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.XS">2</CornerRadius>
-    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.S">4</CornerRadius>
-    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.M">8</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XS">2</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.S">4</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.M">8</CornerRadius>
+
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Top.S">4,4,0,0</CornerRadius>
+
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Circle">1000</CornerRadius>
 
     <!-- Elements styles -->
@@ -189,7 +194,7 @@
     <Style x:Key="Infomaniak.Style.Button.Base"
            TargetType="Button">
         <Setter Property="CornerRadius"
-                Value="{StaticResource Infomaniak.Style.CornerRadius.S}" />
+                Value="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}" />
         <Setter Property="Padding"
                 Value="12,5,12,7" />
         <Setter Property="MinWidth"
@@ -243,7 +248,7 @@
         <Setter Property="BorderThickness"
                 Value="1" />
         <Setter Property="CornerRadius"
-                Value="{StaticResource Infomaniak.Style.CornerRadius.M}" />
+                Value="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}" />
         <Setter Property="BorderBrush"
                 Value="{ThemeResource SystemControlBackgroundBaseLowRevealBorderBrush}" />
     </Style>

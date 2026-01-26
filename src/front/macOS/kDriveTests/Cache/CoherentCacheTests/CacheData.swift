@@ -64,7 +64,7 @@ enum CacheData {
 
     static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
     static let expectedDriveId = Int32.random(in: 0 ... 10000)
-    static let expectedDriveName: String = "My Drive"
+    static let expectedDriveName = "My Drive"
     static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
     static var expectedDrive = Drive.some(
         driveDbId: expectedDriveDbId,
@@ -79,7 +79,7 @@ enum CacheData {
     )
 
     static let updatedDriveId = Int32.random(in: 0 ... 10000)
-    static let updatedDriveName: String = "My Drive Pro Max"
+    static let updatedDriveName = "My Drive Pro Max"
     static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
     static var updatedDrive = Drive.some(
         driveDbId: expectedDriveDbId,

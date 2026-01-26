@@ -35,10 +35,10 @@ class LogUploadSession : public AbstractUploadSession {
         std::shared_ptr<UploadSessionFinishJob> createFinishJob() override;
         std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
 
-        ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+        ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> startJob,
                                       const std::string &uploadToken) override;
-        ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
-        ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
+        ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> finishJob) override;
+        ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) override;
 };
 
 } // namespace KDC
