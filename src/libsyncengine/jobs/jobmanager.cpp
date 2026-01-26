@@ -57,8 +57,7 @@ void JobManager::clear() {
     _stop = false;
 }
 
-void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
-                               const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
+void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job, const Poco::Thread::Priority priority) noexcept {
     startMainThreadIfNeeded();
     const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager::eraseJob, this);
     job->setMainCallback(callback);
