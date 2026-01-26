@@ -185,6 +185,10 @@ if [[ $use_release_profile == true ]]; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
 
+    if [[ "$build_type" == "Debug" ]]; then
+      error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
+    fi
+
     conan_profile="$release_profile"
   else
     error "Profile '$release_profile' does not exist. Please create it."
