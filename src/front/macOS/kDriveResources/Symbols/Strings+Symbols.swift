@@ -12,6 +12,8 @@ import Foundation
 public enum KDriveLocalizable {
   /// loco:691deb2291b20ac7fd045012
   public static let buttonAdvancedParameters = KDriveLocalizable.tr("Localizable", "buttonAdvancedParameters", fallback: "Advanced settings")
+  /// loco:696a343b72b6dc32e00557a4
+  public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
   /// loco:691deb0be15255c13908ba42
   public static let buttonContinue = KDriveLocalizable.tr("Localizable", "buttonContinue", fallback: "Continue")
   /// loco:68e673c48af12c42e80027c8

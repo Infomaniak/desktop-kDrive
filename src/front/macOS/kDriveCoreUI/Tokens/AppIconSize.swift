@@ -17,10 +17,14 @@
  */
 
 import Foundation
+import SwiftUI
 
-public enum AppRadius {
-    public static let radius16: CGFloat = 16
-    public static let radius12: CGFloat = 12
-    public static let radius8: CGFloat = 8
-    public static let radius4: CGFloat = 4
+public enum AppIconSize {
+    public static let iconSize12 = CGSize(width: 12, height: 12)
+}
+
+public extension View {
+    func frame(size: CGSize) -> some View {
+        frame(width: size.width, height: size.height)
+    }
 }
