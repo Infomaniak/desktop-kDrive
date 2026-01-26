@@ -36,6 +36,7 @@
 #include "comm/testpipecomm.h"
 #endif
 #include "comm/guijobs/testabstractguijob.h"
+#include "comm/testguijobpriority.h"
 
 namespace KDC {
 
@@ -57,6 +58,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
 
 } // namespace KDC
 

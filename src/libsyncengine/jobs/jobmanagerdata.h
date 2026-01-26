@@ -138,5 +138,6 @@ class JobManagerData {
         mutable std::mutex _mutex;
 
         friend class TestSyncJobManagerSingleton;
+        friend class TestGuiJobPriority;
 };
 } // namespace KDC
