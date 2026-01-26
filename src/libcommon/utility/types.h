@@ -268,17 +268,6 @@ enum class LinkType {
     EnumEnd
 };
 
-enum class LogUploadState {
-    None,
-    Archiving,
-    Uploading,
-    Success,
-    Failed,
-    CancelRequested,
-    Canceled,
-    EnumEnd
-};
-
 enum class NodeStatus {
     Unknown = 0,
     Unprocessed,

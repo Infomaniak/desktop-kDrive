@@ -368,39 +368,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             if (control is not null)
                 control.IsEnabled = true;
-        }
-
-        bool _logUploadCancelled = false;
-        private async void SendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await SendLogDialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
-
-            // !!! Simulate log upload progress
-            // TODO: Implement actual log upload once linked with the server side
-
-            _logUploadCancelled = false;
-            SendLogsProgressRing.Value = 0;
-            SendLogsProgressRing.Visibility = Visibility.Visible;
-            SendLogButton.IsEnabled = false;
-            CancelSendLogButton.Visibility = Visibility.Visible;
-            while (SendLogsProgressRing.Value < 100 && !_logUploadCancelled)
-            {
-                await Task.Delay(Random.Shared.Next(200, 800));
-                SendLogsProgressRing.Value += Random.Shared.Next(1, 20);
-            }
-            SendLogsProgressRing.Value = 100;
-            await Task.Delay(500);
-            SendLogsProgressRing.Visibility = Visibility.Collapsed;
-            SendLogButton.IsEnabled = true;
-            CancelSendLogButton.Visibility = Visibility.Collapsed;
-            _logUploadCancelled = false;
-        }
-
-        private void CancelSendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            _logUploadCancelled = true;
-        }
+        }      
     }
 
     // templateSelector for the drives listview
@@ -420,8 +388,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             return base.SelectTemplateCore(item);
         }
-
-
     }
 
 }

@@ -802,6 +802,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { [JsonKeys.UpdateChannel] = (int)newChannel }, cancellationToken);
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
+        public async Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.IncludeArchivedLogs] = includeArchivedLogs
+            };
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_SEND_LOG_TO_SUPPORT, parms, cancellationToken);
+
+            var generateArgs = (LogUploadState state, int progress) =>
+            {
+                return new SignalEventArgs(SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED,
+                 new JsonObject
+                 {
+                     [JsonKeys.State] = (int)state,
+                     [JsonKeys.Percentage] = progress
+                 }
+                );
+            };
+        }
+
+        public async Task CancelLogUpload(CancellationToken cancellationToken)
+        {
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
+        }
 
         public async Task RefreshSettings(CancellationToken cancellationToken)
         {
@@ -938,6 +962,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.UTILITY_ERRORS_REMOVED:
                     await HandleErrorRemovedAsync(sender, args);
+                    break;
+                case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
+                    await HandleLogUploadProgressAsync(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -1216,6 +1243,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
         {
             await RefreshUpdaterVersionInfo(new CancellationToken());
+        }
+
+        public async Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.State) || !signalData.ContainsKey(JsonKeys.Percentage))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.State} or {JsonKeys.Percentage} not found in parameters ${signalData}.");
+                return;
+            }
+            LogUploadState? state = signalData[JsonKeys.State]?.Deserialize<LogUploadState>();
+            int? percentage = signalData[JsonKeys.Percentage]?.GetValue<int>();
+            if (state is null)
+            {
+                Logger.Log(Logger.Level.Error, "state is null.");
+                return;
+            }
+            if (percentage is null)
+            {
+                Logger.Log(Logger.Level.Error, "percentage is null.");
+                return;
+            }
+            _viewModel.Settings.LogUploadManager.State = state ?? LogUploadState.Failed;
+            _viewModel.Settings.LogUploadManager.PercentComplete = percentage ?? 0;
         }
 
         public async Task HandleUserRemovedAsync(object? sender, SignalEventArgs args)

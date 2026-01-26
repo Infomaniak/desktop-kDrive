@@ -474,65 +474,7 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Advanced - Send log -->
-                    <toolKit:SettingsCard Header="Support infomaniak"
-                                          IsEnabled="False">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}"
-                                              Height="16"
-                                              Foreground="{ThemeResource SystemFillColorSuccess}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Votre dossier de logs a été partagé avec succés le xxxxxx à xxhxx et xxs." />
-                                    <!-- TODO: Replace with actual values once linked to the server -->
-                                </ToolTipService.ToolTip>
-                            </controls:SvgIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert}"
-                                              Height="16"
-                                              Foreground="{ThemeResource SystemErrorTextColor}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="L'envoi de votre dossier de logs a échoué. Veuillez réessayer." />
-                                </ToolTipService.ToolTip>
-                            </controls:SvgIcon>
-                            <ProgressRing x:Name="SendLogsProgressRing"
-                                          Height="16"
-                                          Width="Auto"
-                                          IsIndeterminate="False"
-                                          Visibility="Collapsed" />
-                            <Button x:Name="SendLogButton"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Click="SendLogButton_Click">
-                                <Grid>
-                                    <TextBlock Text="Envoyer le dossier de débogage" />
-                                </Grid>
-                            </Button>
-                            <Button x:Name="CancelSendLogButton"
-                                    Content="Annuler"
-                                    Click="CancelSendLogButton_Click" />
-                            <ContentDialog x:Name="SendLogDialog"
-                                           Title="Envoyer le dossier de débogage au support Infomaniak"
-                                           PrimaryButtonText="Envoyer"
-                                           CloseButtonText="Annuler"
-                                           DefaultButton="Primary">
-
-                                <ContentDialog.Content>
-                                    <StackPanel Spacing="12">
-                                        <TextBlock Text="Le dossier complet est volumineux.Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive."
-                                                   TextWrapping="WrapWholeWords"
-                                                   TextAlignment="Justify"
-                                                   Margin="0,0,0,8" />
-                                        <CheckBox Content="Envoyer uniquement la dernière session"
-                                                  IsChecked="True" />
-                                    </StackPanel>
-                                </ContentDialog.Content>
-                            </ContentDialog>
-                        </StackPanel>
-
-                    </toolKit:SettingsCard>
+                    <controls:LogUploadSettingsCard LogUploadManager="{x:Bind ViewModel.Settings.LogUploadManager}" />
 
                     <!-- About - Privacy -->
                     <toolKit:SettingsExpander Header="À propos de kDrive">

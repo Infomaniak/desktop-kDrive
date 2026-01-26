@@ -1024,4 +1024,41 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
     <value>Hors ligne</value>
   </data>
+  <data name="CC_LogUploadSettingsCard_Header.Text" xml:space="preserve">
+    <value>Support infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_SendButton.Content" xml:space="preserve">
+    <value>Envoyer le dossier de débogage</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Canceled_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a été annulé</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Archiving.Text" xml:space="preserve">
+    <value>Compression des logs en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Uploading.Text" xml:space="preserve">
+    <value>Transfert des logs vers le support en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Error_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a échoué. Vérifiez votre connexion Internet et assurez-vous qu’au moins un utilisateur kDrive est connecté. Les transferts sont limités à 10 par jour.</value>
+  </data>
+  <data name="Pages_LogUploadPopup.Text" xml:space="preserve">
+    <value>Le dossier complet est volumineux. Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.</value>
+  </data>
+  <data name="Pages_LogUploadPopup_CheckBox.Content" xml:space="preserve">
+    <value>Envoyer uniquement la dernière session</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.Title" xml:space="preserve">
+    <value>Envoyer le dossier de débogage au support
+Infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.PrimaryButtonText" xml:space="preserve">
+    <value>Envoyer</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
 </root>

@@ -66,8 +66,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         {
             public string? GoodPath { get; set; }
             public string? ErrorMessage { get; set; }
-        }    
-        
+        }
+
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
@@ -92,6 +92,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
+
+        // Log-related requests
+        Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
+        Task CancelLogUpload(CancellationToken cancellationToken);
+
 
         // App-related requests
         Task ActivateLoadInfo(CancellationToken cancellationToken);
@@ -123,6 +128,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for Update-related signals
         Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for log-related signals
+        Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args);
 
         // Event handlers for error-related signals
         Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);
