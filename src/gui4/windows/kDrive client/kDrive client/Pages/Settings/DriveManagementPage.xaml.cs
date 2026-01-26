@@ -218,27 +218,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private async void SaveSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Control? control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
-            await ExclSelector.SaveChanges();
-            if (control is not null)
-                control.IsEnabled = true;
-
-        }
-
-        private async void CancelSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Control? control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
-            await ExclSelector.CancelChanges();
-            if (control is not null)
-                control.IsEnabled = true;
-        }
-
         private void SetupMainSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
 

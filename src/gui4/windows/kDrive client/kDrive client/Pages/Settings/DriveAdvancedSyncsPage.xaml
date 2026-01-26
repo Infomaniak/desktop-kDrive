@@ -25,11 +25,11 @@
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
                 <toolKit:SettingsExpander.Items>
-                    <toolKit:SettingsCard Header="Emplacement sur mon PC">
+                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_LocalFolder">
                         <HyperlinkButton Content="{x:Bind LocalPath}"
                                          Click="LocalPathLink_Click" />
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard Header="Emplacement sur le drive">
+                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_RemoteFolder">
                         <HyperlinkButton Content="{x:Bind RemotePath}"
                                          Click="RemotePathLink_Click" />
                     </toolKit:SettingsCard>
@@ -56,8 +56,8 @@
                             <StackPanel Grid.Row="0"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="2">
-                                <TextBlock Text="Mode de synchronisation des fichiers" />
-                                <TextBlock Text="Définissez comment vos fichiers sont stockés et accessibles."
+                                <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_SyncModeHeader" />
+                                <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_SyncModeCaption"
                                            Style="{StaticResource CaptionTextBlockStyle}" />
 
                             </StackPanel>
@@ -100,7 +100,7 @@
                                          IsEnabled="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
                         </Grid>
                     </toolKit:SettingsCard>
-                    
+
                     <!--- Folder selection -->
                     <toolKit:SettingsCard HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Stretch"
@@ -122,18 +122,18 @@
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
-                            <controls:SyncExclusionSelector x:Name="ExclSelector"
-                                                            Grid.Row="1"
-                                                            DriveId="{x:Bind Drive.DriveId, Mode=OneWay}"
-                                                            UserDbId="{x:Bind Drive.Account.User.DbId}"
-                                                            SyncDbId="{x:Bind DbId, Mode=OneWay}"
+                            <controls:SyncExclusionSelector Grid.Row="1"
+                                                            Sync="{x:Bind Mode=OneWay}"
+                                                            CanShowSaveMenu="True"
+                                                            AllowFolderCreation="False"
                                                             HorizontalAlignment="Stretch" />
                         </Grid>
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard Header="Supprimer la synchronisation"
+                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_RemoveSyncButton"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
-                                          IsClickEnabled="True" />
+                                          IsClickEnabled="True"
+                                          Click="RemoveSyncButton_Click" />
                 </toolKit:SettingsExpander.Items>
             </toolKit:SettingsExpander>
         </DataTemplate>
@@ -143,9 +143,6 @@
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title & BreadCrumb bar -->
-            <RowDefinition Height="Auto" />
-
-            <!-- Subtitle -->
             <RowDefinition Height="Auto" />
 
             <!-- Advanced syncs management -->
@@ -161,40 +158,42 @@
             <BreadcrumbBar x:Name="NavBar"
                            ItemClicked="NavBar_ItemClicked" />
         </StackPanel>
+        <ScrollView Grid.Row="1">
 
-        <!-- Subtitle -->
-        <StackPanel Grid.Row="1">
-            <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Title"
-                       Style="{StaticResource BodyLargeStrongTextBlockStyle}"
-                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
+            <!-- Drive management -->
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <StackPanel>
+                    <!-- Subtitle -->
+                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Title"
+                               Style="{StaticResource BodyLargeStrongTextBlockStyle}"
+                               Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
-            <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle"
-                       Style="{StaticResource BodyTextBlockStyle}" />
-            <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle_Caption"
-                       Style="{StaticResource CaptionTextBlockStyle}" />
-        </StackPanel>
-
-        <!-- Drive management -->
-        <ScrollView Grid.Row="2">
-            <ListView ItemsSource="{x:Bind _managedDrive.AdvancedSyncs, Mode=OneWay}"
-                      ItemTemplate="{StaticResource AdvancedSyncItemTemplate}"
-                      VerticalContentAlignment="Stretch"
-                      HorizontalContentAlignment="Stretch"
-                      SelectionMode="None">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding"
-                                Value="0" />
-                        <Setter Property="Margin"
-                                Value="0" />
-                        <Setter Property="HorizontalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="Margin"
-                                Value="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
-
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
+                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle"
+                               Style="{StaticResource BodyTextBlockStyle}" />
+                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle_Caption"
+                               Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+                <ListView ItemsSource="{x:Bind _managedDrive.AdvancedSyncs, Mode=OneWay}"
+                          ItemTemplate="{StaticResource AdvancedSyncItemTemplate}"
+                          VerticalContentAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          SelectionMode="None">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding"
+                                    Value="0" />
+                            <Setter Property="Margin"
+                                    Value="0" />
+                            <Setter Property="HorizontalContentAlignment"
+                                    Value="Stretch" />
+                            <Setter Property="Margin"
+                                    Value="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+                <Button x:Uid="Page_DriveAdvancedSyncsPage_AddSyncButton" />
+                <!-- TODO: Bind the button logic once the UI/UX is ready -->
+            </StackPanel>
         </ScrollView>
     </Grid>
 </Page>

@@ -45,7 +45,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <controls:SvgIcon Height="20"
-                        UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{x:Bind BaseDrive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
                     <TextBlock Text="{x:Bind BaseDrive.Name, Mode=OneWay}"
                                Style="{StaticResource BodyLargeTextBlockStyle}" />
@@ -95,25 +95,12 @@
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <controls:SyncExclusionSelector x:Name="ExclSelector"
-                                                                    Grid.Row="1"
-                                                                    DriveId="{x:Bind ManagedDrive.DriveId, Mode=OneWay}"
-                                                                    UserDbId="{x:Bind ManagedDrive.Account.User.DbId}"
-                                                                    SyncDbId="{x:Bind ManagedDrive.MainSync.DbId, Mode=OneWay}"
+                                    <controls:SyncExclusionSelector Grid.Row="1"
+                                                                    Sync="{x:Bind ManagedDrive.MainSync, Mode=OneWay}"
+                                                                    CanShowSaveMenu="True"
+                                                                    AllowFolderCreation="False"
                                                                     HorizontalAlignment="Stretch" />
                                 </Grid>
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Visibility="{x:Bind ExclSelector.HasPendingChanges, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                                    <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_CancelButton"
-                                            Click="CancelSyncSelection_click"
-                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
-                                    <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_SaveButton"
-                                            Style="{ThemeResource AccentButtonStyle}"
-                                            Click="SaveSyncSelection_click"
-                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
-                                </StackPanel>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>

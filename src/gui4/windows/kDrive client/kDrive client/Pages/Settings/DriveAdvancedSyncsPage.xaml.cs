@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Threading;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -91,6 +92,27 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         Uri remoteFolderWebUri = App.Constants.Drive.itemUri(sync.Drive.DriveId, sync.RemoteNodeId);
         await Windows.System.Launcher.LaunchUriAsync(remoteFolderWebUri);
+    }
+
+    private async void RemoveSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Button? button = sender as Button;
+        if (button is null)
+        {
+            Logger.Log(Logger.Level.Error, "Remove sync button is null when clicking on remove sync button");
+            return;
+        }
+        button.IsEnabled = false;
+        Sync? sync = button.DataContext as Sync;
+        if (sync is null)
+        {
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on remove sync button");
+            button.IsEnabled = true;
+            return;
+        }
+
+        await sync.Drive.RemoveSync(sync, CancellationToken.None);
+        button.IsEnabled = true;
     }
 
     private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
