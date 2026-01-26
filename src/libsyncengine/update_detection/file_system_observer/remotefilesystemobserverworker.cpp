@@ -82,7 +82,7 @@ void RemoteFileSystemObserverWorker::execute() {
             break;
         }
         _initializing = false;
-        Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
+        CommonUtility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
@@ -282,7 +282,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         // Wait a little before checking again
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
@@ -367,7 +367,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                    << CommonUtility::quotedSyncName(item.name()) << L", inode:"
                                                     << CommonUtility::s2ws(item.id()) << L", parent inode:"
                                                     << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
                                                     << L", modtime:" << item.lastModified() << L", isDir:"
@@ -434,7 +434,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             }
 
             // Wait until job finished
-            Utility::msleep(100);
+            CommonUtility::msleep(100);
         }
 
         if (notifyJob->exitInfo().code() != ExitCode::Ok) {

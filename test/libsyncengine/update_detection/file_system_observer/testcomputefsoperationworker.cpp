@@ -23,7 +23,7 @@
 #include "requests/parameterscache.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 

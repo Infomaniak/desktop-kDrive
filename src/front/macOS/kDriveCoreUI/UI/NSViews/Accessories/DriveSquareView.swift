@@ -31,7 +31,7 @@ public final class DriveSquareView: NSView {
         return imageView
     }()
 
-    public override var intrinsicContentSize: NSSize {
+    override public var intrinsicContentSize: NSSize {
         return NSSize(width: 20, height: 20)
     }
 
@@ -46,7 +46,7 @@ public final class DriveSquareView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public override func draw(_ dirtyRect: NSRect) {
+    override public func draw(_ dirtyRect: NSRect) {
         if #unavailable(macOS 26.0) {
             let path = NSBezierPath(roundedRect: bounds, xRadius: AppRadius.radius4, yRadius: AppRadius.radius4)
             color.setFill()

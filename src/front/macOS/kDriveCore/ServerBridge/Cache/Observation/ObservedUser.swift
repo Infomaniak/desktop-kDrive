@@ -64,7 +64,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         userEventPublisher(userDbId: userDbId)
             .map { event -> User? in
                 switch event {
-                case let .update(user): return user
+                case .update(let user): return user
                 case .removed: return nil
                 }
             }

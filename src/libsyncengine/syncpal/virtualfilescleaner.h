@@ -19,7 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/vfs/vfs.h"
 
 #include <log4cplus/logger.h>
@@ -30,7 +30,7 @@ class SyncDb;
 
 class VirtualFilesCleaner {
     public:
-        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs);
+        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> vfs);
 
         explicit VirtualFilesCleaner(const SyncPath &path);
 

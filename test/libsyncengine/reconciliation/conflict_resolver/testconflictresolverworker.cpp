@@ -35,7 +35,7 @@ void TestConflictResolverWorker::setUp() {
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
-    (void) std::filesystem::remove(syncDbPath);
+    (void) IoHelper::deleteItem(syncDbPath);
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);

@@ -1,6 +1,5 @@
 <Project Sdk="WixToolset.Sdk/6.0.2">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DefineConstants>desktop-kDriveDir=$(SolutionDir)..\..\..</DefineConstants>
     <VerboseOutput>true</VerboseOutput>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <SuppressIces>ICE57;ICE61</SuppressIces>

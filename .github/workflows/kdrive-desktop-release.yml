@@ -3,10 +3,22 @@ name: Release kDrive Desktop app
 on:
   workflow_dispatch:  
     inputs:
-      environment:
-        type: environment
-        description: Select the deployment environment
-        default: Internal beta
+      build_windows:
+        type: boolean
+        description: Build Windows executables
+        default: true
+      build_macos:
+        type: boolean
+        description: Build macOS executables
+        default: true
+      build_linux:
+        type: boolean
+        description: Build Linux executables
+        default: true
+      upload_to_kdrive:
+        type: boolean
+        description: Upload builds to kDrive
+        default: true
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -109,6 +121,7 @@ jobs:
 
 # Build apps
   build-Windows:
+    if: ${{ inputs.build_windows }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
@@ -129,6 +142,7 @@ jobs:
           release_build: true
 
   build-Linux-amd:
+    if: ${{ inputs.build_linux }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -142,6 +156,7 @@ jobs:
           release_build: true
 
   build-Linux-arm:
+    if: ${{ inputs.build_linux }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
@@ -155,6 +170,7 @@ jobs:
           release_build: true
 
   build-MacOS:
+    if: ${{ inputs.build_macos }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
@@ -171,6 +187,7 @@ jobs:
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:
+    if: ${{ inputs.build_windows && inputs.upload_to_kdrive }}
     needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -212,6 +229,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
+    if: ${{ inputs.build_linux && inputs.upload_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -253,6 +271,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
+    if: ${{ inputs.build_linux && inputs.upload_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -294,6 +313,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:
+    if: ${{ inputs.build_macos && inputs.upload_to_kdrive }}
     needs: [build-MacOS]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -333,3 +353,22 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-macos\kDrive_client.src.zip
         shell: powershell
+
+  display-version:
+    if: always()
+    runs-on: [self-hosted, Linux, X64]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+
+      - name: Get kDrive version
+        id: get-version
+        uses: ./.github/actions/get_version
+
+      - name: Display version in workflow summary
+        run: |
+          VERSION="${{ steps.get-version.outputs.kDrive_version }}"
+          echo "<h1>:package: kDrive Version: ${VERSION}</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash

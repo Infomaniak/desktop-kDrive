@@ -93,9 +93,10 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
         await cache.addUser(newUser)
 
         let requestIdentifier = await requestCounter.nextID
+        let userInfo = UserInfoSignal(userInfo: newUser.asUserInfoMetadata)
         let updateUserSignal = SignalMessage<UserInfoSignal>(id: requestIdentifier,
                                                              num: SignalNum.USER_UPDATED,
-                                                             body: newUser.asUserInfoSignal)
+                                                             body: userInfo)
         let encodedSignal = try encoder.encode(updateUserSignal)
         signalHandler.handleServerSignal(encodedSignal)
     }

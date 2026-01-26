@@ -28,8 +28,8 @@ final class ColoredPopUpButtonCell: NSPopUpButtonCell {
 
     override func drawImage(_ image: NSImage, withFrame frame: NSRect, in controlView: NSView) {
         guard let selectedItem = menuItem as? ColoredMenuItem,
-            let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-            let cgContext = NSGraphicsContext.current?.cgContext
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
+              let cgContext = NSGraphicsContext.current?.cgContext
         else {
             super.drawImage(image, withFrame: frame, in: controlView)
             return

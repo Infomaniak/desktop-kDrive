@@ -68,8 +68,8 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
 
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/io/iohelper.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
@@ -223,7 +223,7 @@ void AppServer::init() {
     bool newDbExists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
 
@@ -231,7 +231,8 @@ void AppServer::init() {
             std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
     bool oldConfigExists;
     if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError));
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(pre334ConfigFilePath, ioError));
         throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
     }
 
@@ -2441,9 +2442,10 @@ ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
         }
         if (CommonUtility::isSubDir(sync.localPath(), sync_.localPath()) ||
             CommonUtility::isSubDir(sync_.localPath(), sync.localPath())) {
-            LOGW_WARN(_logger, L"Nested syncs - (1) dbId=" << sync.dbId() << L", " << Utility::formatSyncPath(sync.localPath())
-                                                           << L"; (2) dbId=" << sync_.dbId() << L", "
-                                                           << Utility::formatSyncPath(sync_.localPath()));
+            LOGW_WARN(_logger, L"Nested syncs - (1) dbId=" << sync.dbId() << L", "
+                                                           << CommonUtility::formatSyncPath(sync.localPath()) << L"; (2) dbId="
+                                                           << sync_.dbId() << L", "
+                                                           << CommonUtility::formatSyncPath(sync_.localPath()));
             return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
     }
@@ -2679,11 +2681,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3152,7 +3154,7 @@ void AppServer::logUsefulInformation() const {
     if (!IoHelper::cacheDirectoryPath(cachePath)) {
         LOGW_WARN(_logger, L"Error getting cache directory");
     }
-    LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+    LOGW_INFO(_logger, L"cache " << CommonUtility::formatSyncPath(cachePath));
     LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
@@ -3771,12 +3773,12 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << CommonUtility::formatIoError(sync.localPath(), ioError));
         return ExitCode::SystemError;
     }
 
     if (!exists) {
-        LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
+        LOGW_WARN(_logger, L"Sync localpath " << CommonUtility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -4338,7 +4340,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
     paramsStream << total;
     paramsStream << used;
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED, params, id);
+    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED_LEGACY, params, id);
 }
 
 void AppServer::sendDriveRemoved(int driveDbId) {

@@ -46,7 +46,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(true);
         testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
@@ -56,7 +56,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(false);
         testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }

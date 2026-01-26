@@ -30,7 +30,7 @@
 #include "comm/guijobs/driveupdatejob.h"
 
 #include "libcommon/comm.h"
-#include "log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
@@ -43,7 +43,7 @@ using namespace testcommhelpers;
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -69,7 +69,7 @@ void TestGuiCommChannel::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
+    (void) IoHelper::deleteItem(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 

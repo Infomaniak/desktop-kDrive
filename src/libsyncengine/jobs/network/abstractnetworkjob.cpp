@@ -153,7 +153,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            Utility::msleep(500); // Sleep for 0.5s
+            CommonUtility::msleep(500); // Sleep for 0.5s
         }
 
         uri = Poco::URI(url);

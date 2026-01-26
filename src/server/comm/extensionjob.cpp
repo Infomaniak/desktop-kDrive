@@ -23,7 +23,7 @@
 #include "libcommon/utility/utility_base.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
 
 #include <QApplication>
@@ -96,27 +96,26 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {
-        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
-        {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
-        {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
-        {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
-        {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
-        {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
-        {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
-        {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
-        {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
-        {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
+    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+                 {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
+                 {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
+                 {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
+                 {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
+                 {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
+                 {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
+                 {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
+                 {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
+                 {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
 #if defined(KD_WINDOWS)
-        {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
-        {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+                 {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
+                 {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
 #endif
 #if defined(KD_MACOS)
-        {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
-        {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
-        {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
-        {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
-        {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
+                 {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
+                 {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
+                 {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
+                 {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
+                 {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
 #endif
     };
 }
@@ -245,7 +244,8 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
     NodeId nodeId;
     ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(fileData.relativePath));
         return;
     }
 
@@ -254,7 +254,7 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
     exitCode = AppServer::getPublicLinkUrl(fileData.driveDbId, nodeId, linkUrl);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in getPublicLinkUrl - " << Utility::formatSyncPath(fileData.relativePath));
+                  L"Error in getPublicLinkUrl - " << CommonUtility::formatSyncPath(fileData.relativePath));
         return;
     }
 
@@ -292,12 +292,12 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 #endif
         auto fileData = FileData::get(filePath);
         if (!fileData.isValid()) {
-            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't hydrate symlinks - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
@@ -306,18 +306,19 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         VfsStatus vfsStatus;
         if (!syncFileStatus(fileData, status, vfsStatus)) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::syncFileStatus - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
         if (!vfsStatus.isPlaceholder) {
             // File is not a placeholder, this should never happen
-            LOGW_WARN(Log::instance()->getLogger(), L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"File is not a placeholder - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
         if (vfsStatus.isHydrated || status == SyncFileStatus::Syncing) {
-            LOGW_INFO(Log::instance()->getLogger(), L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"File is already hydrated/ing - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
@@ -326,14 +327,14 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         // Set pin state
         if (!setPinState(fileData, PinState::AlwaysLocal)) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::setPinState - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 #endif
 
         if (!addDownloadJob(fileData, parentFolder)) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::addDownloadJob - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
     }
@@ -426,7 +427,7 @@ void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::sh
     VfsStatus vfsStatus;
     if (!syncFileStatus(fileData, status, vfsStatus)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(fileData.localPath));
+                   L"Error in ExtensionJob::syncFileStatus - " << CommonUtility::formatSyncPath(fileData.localPath));
         return;
     }
 
@@ -471,7 +472,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
                 ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(Log::instance()->getLogger(),
-                              L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+                              L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(fileData.relativePath));
                     channel->sendMessage(response);
                     return;
                 }
@@ -531,14 +532,14 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     // File path
     SyncPath filePath(argumentList[2]);
     if (!QFileInfo(CommonUtility::commString2QStr(filePath)).isFile()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << CommonUtility::formatSyncPath(filePath));
         return;
     }
 
     FileData fileData = FileData::get(filePath);
     if (!fileData.isValid()) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"The file is not in a synchonized folder - " << Utility::formatSyncPath(filePath));
+                  L"The file is not in a synchonized folder - " << CommonUtility::formatSyncPath(filePath));
         return;
     }
 
@@ -550,7 +551,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     NodeId nodeId;
     ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(filePath));
         return;
     }
 
@@ -558,14 +559,14 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     std::string thumbnail;
     exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << CommonUtility::formatSyncPath(filePath));
         return;
     }
 
     QByteArray thumbnailArr(thumbnail.c_str(), thumbnail.length());
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << CommonUtility::formatSyncPath(filePath));
         return;
     }
 
@@ -615,26 +616,26 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
 
         const auto fileData = FileData::get(filePath);
         if (!fileData.syncDbId) {
-            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
         if (fileData.isLink) {
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't dehydrate symlinks - " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't dehydrate symlinks - " << CommonUtility::formatSyncPath(filePath));
             continue;
         }
 
         // Set pin state
         if (ExitInfo exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::setPinState - " << CommonUtility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
         // Dehydrate placeholder
         if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
+                      L"Error in ExtensionJob::dehydratePlaceholder - " << CommonUtility::formatSyncPath(filePath) << exitInfo);
             continue;
         }
     }
@@ -664,7 +665,7 @@ void ExtensionJob::commandCancelHydrationDirect(const CommString &argument, std:
 
     Sync sync;
     if (!syncForPath(fileList[0], sync)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(fileList[0]));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << CommonUtility::formatSyncPath(fileList[0]));
         return;
     }
 
@@ -681,14 +682,14 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
     }
 
     if (!QFileInfo(SyncName2QStr(argument)).isFile()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 
     FileData fileData = FileData::get(argument);
     if (!fileData.syncDbId) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"The file is not in a synchronized folder - " << Utility::formatSyncPath(argument));
+                  L"The file is not in a synchronized folder - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 
@@ -704,7 +705,7 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
     NodeId nodeId;
     ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 
@@ -712,14 +713,14 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
     std::string thumbnail;
     exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 
     QByteArray thumbnailArr(thumbnail.c_str(), static_cast<qsizetype>(thumbnail.length()));
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in QPixmap::loadFromData - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 
@@ -727,7 +728,7 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 
     // Set thumbnail
     if (!vfsMapIt->second->setThumbnail(fileData.localPath, pixmap)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatSyncPath(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in setThumbnail - " << CommonUtility::formatSyncPath(argument));
         return;
     }
 }
@@ -771,7 +772,8 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
     NodeId nodeId;
     ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
     if (exitCode != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(fileData.relativePath));
         return;
     }
     bool isOnTheServer = !nodeId.empty();
@@ -794,7 +796,7 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     // Find the common sync
     Sync sync;
     if (!syncForPath(localFile, sync)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(localFile));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << CommonUtility::formatSyncPath(localFile));
         return;
     }
 
@@ -819,7 +821,7 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
 
     NodeId itemId;
     if (syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, itemId) != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << CommonUtility::formatSyncPath(localFile));
         return;
     }
 
@@ -842,7 +844,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     bool exists = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << CommonUtility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return false;
     }
@@ -856,7 +858,8 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
 
     if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
         if (!vfsMapIt->second->status(fileData.localPath, vfsStatus)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(fileData.localPath));
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Vfs::status - " << CommonUtility::formatSyncPath(fileData.localPath));
             return false;
         }
 
@@ -918,7 +921,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
     const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
+                  L"Error in SyncPal::addDownloadJob - " << CommonUtility::formatSyncPath(fileData.relativePath));
         return false;
     }
 
@@ -1015,7 +1018,7 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << CommonUtility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
@@ -1023,7 +1026,7 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
     bool canShare = false;
     if (!syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatSyncPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfCanShareItem: " << CommonUtility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
@@ -1062,7 +1065,7 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfExistsOnServer: " << CommonUtility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
@@ -1070,7 +1073,7 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     bool canShare = false;
     if (!syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatSyncPath(fileData.relativePath));
+                   L"Error in SyncPal::checkIfCanShareItem: " << CommonUtility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
         return;
     }
@@ -1138,7 +1141,7 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                         LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(tmpPath));
+                                  L"Error in ExtensionJob::syncFileStatus - " << CommonUtility::formatSyncPath(tmpPath));
                         continue;
                     }
 
@@ -1232,9 +1235,9 @@ FileData FileData::get(const SyncPath &path) {
     bool notFound = false;
     if (!Utility::longPath(path, tmpPath, notFound)) {
         if (notFound) {
-            LOGW_WARN(Log::instance()->getLogger(), L"File not found - " << Utility::formatSyncPath(path));
+            LOGW_WARN(Log::instance()->getLogger(), L"File not found - " << CommonUtility::formatSyncPath(path));
         } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::longpath - " << CommonUtility::formatSyncPath(path));
         }
         return {};
     }
@@ -1244,7 +1247,7 @@ FileData FileData::get(const SyncPath &path) {
 
     Sync sync;
     if (!syncForPath(tmpPath, sync)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << CommonUtility::formatSyncPath(tmpPath));
         return {};
     }
 
@@ -1258,12 +1261,12 @@ FileData FileData::get(const SyncPath &path) {
     ItemType itemType;
     if (!IoHelper::getItemType(tmpPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Utility::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
+                  L"Error in Utility::getItemType: " << CommonUtility::formatIoError(tmpPath, itemType.ioError));
         return {};
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << CommonUtility::formatSyncPath(tmpPath));
         return {};
     }
 
@@ -1278,11 +1281,12 @@ FileData FileData::get(const SyncPath &path) {
                         !utility_base::isLikeFileNotFoundError(ec) || utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
                 !exists) {
                 // Item does not exist anymore.
-                LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist - " << Utility::formatSyncPath(data.localPath));
+                LOGW_DEBUG(Log::instance()->getLogger(),
+                           L"Item does not exist - " << CommonUtility::formatSyncPath(data.localPath));
             } else {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                << Utility::formatSyncPath(data.localPath) << L", "
-                                                                << Utility::formatStdError(ec));
+                                                                << CommonUtility::formatSyncPath(data.localPath) << L", "
+                                                                << CommonUtility::formatStdError(ec));
             }
             return {};
         }

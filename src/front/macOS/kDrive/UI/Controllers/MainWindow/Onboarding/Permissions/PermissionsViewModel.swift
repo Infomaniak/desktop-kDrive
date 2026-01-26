@@ -18,8 +18,8 @@
 
 import Combine
 import Foundation
-import kDriveCore
 import InfomaniakDI
+import kDriveCore
 
 enum MacOSPermissionState: Sendable {
     case neutral

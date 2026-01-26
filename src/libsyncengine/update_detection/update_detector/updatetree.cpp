@@ -18,7 +18,7 @@
 
 #include "updatetree.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -121,7 +121,8 @@ std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) 
         std::shared_ptr<Node> tmpChildNode = nullptr;
         SyncName normalizedSyncName;
         if (!Utility::normalizedSyncName(name, normalizedSyncName)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(name));
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(name));
             return nullptr;
         }
 
@@ -198,15 +199,15 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 
     if (!node->parentNode()->insertChildren(node)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node "
-                                                        << Utility::formatSyncName(node->name()) << L" parent node "
-                                                        << Utility::formatSyncName(node->parentNode()->name()));
+                                                        << CommonUtility::formatSyncName(node->name()) << L" parent node "
+                                                        << CommonUtility::formatSyncName(node->parentNode()->name()));
         return false;
     }
 
     if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
         LOGW_DEBUG(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << CommonUtility::s2ws(oldId)
                                                        << L"' to '" << CommonUtility::s2ws(newId) << L"' for node "
-                                                       << Utility::formatSyncName(node->name()) << L".");
+                                                       << CommonUtility::formatSyncName(node->name()) << L".");
     }
 
     if (!oldId.empty() && _validNodes.contains(oldId)) {

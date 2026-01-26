@@ -46,8 +46,8 @@ extension Font.Weight {
 
 // MARK: - NSFont
 
-extension NSFont.Weight {
-    public static let emphasized = NSFont.Weight.semibold
+public extension NSFont.Weight {
+    static let emphasized = NSFont.Weight.semibold
 }
 
 public extension NSFont {
