@@ -205,6 +205,9 @@
     <None Update="Pages\Onboarding\NoDrivesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Pages\Settings\DriveAdvancedSyncsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">

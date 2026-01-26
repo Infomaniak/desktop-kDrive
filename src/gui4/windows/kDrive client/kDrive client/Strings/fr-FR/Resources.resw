@@ -1024,6 +1024,15 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
     <value>Hors ligne</value>
   </data>
+  <data name="Page_DriveAdvancedSyncsPage_Title.Text" xml:space="preserve">
+    <value>Synchronisation avancée</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle.Text" xml:space="preserve">
+    <value>Synchroniser un dossier avec kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle_Caption.Text" xml:space="preserve">
+    <value>Sélectionnez un dossier de votre ordinateur à synchroniser avec kDrive. Vous pourrez acceder a vos synchronisation avancée depuis le selecteur de drive sur la page d’accueil </value>
+  </data>
   <data name="CC_LogUploadSettingsCard_Header.Text" xml:space="preserve">
     <value>Support infomaniak</value>
   </data>

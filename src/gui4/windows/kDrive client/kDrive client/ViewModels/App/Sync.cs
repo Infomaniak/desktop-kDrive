@@ -36,6 +36,7 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
+        private NodeId _remoteNodeId = "";
         private bool _supportOnlineMode = true;
         private SyncStatus _syncStatus = SyncStatus.Paused;
         private SyncType _syncType = SyncType.Unknown;
@@ -124,6 +125,12 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
+        public NodeId RemoteNodeId
+        {
+            get => _remoteNodeId;
+            set => SetPropertyInUIThread(ref _remoteNodeId, value);
+        }
+
         public bool SupportOnlineMode
         {
             get => _supportOnlineMode;
@@ -143,6 +150,11 @@ namespace Infomaniak.kDrive.ViewModels
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
+            set
+            {
+                Console.WriteLine($"Sync {DbId}: Setting SyncTypeMigrationInProgress to {value}");
+                SetPropertyInUIThread(ref _syncTypeMigrationInProgress, value);
+            }
         }
 
         public bool IsTypeOnline
@@ -195,11 +207,10 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeSyncType(SyncType newType)
         {
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
+            SyncTypeMigrationInProgress = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
-
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
+            SyncTypeMigrationInProgress = false;
 
             return result;
         }
@@ -276,7 +287,7 @@ namespace Infomaniak.kDrive.ViewModels
                     {
                         Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
                         return;
-                    }                   
+                    }
                 }
 
                 if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)

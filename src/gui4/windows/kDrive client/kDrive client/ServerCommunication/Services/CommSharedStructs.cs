@@ -186,6 +186,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
+            copyProperty(source, target, nameof(source.TargetNodeId), nameof(target.RemoteNodeId));
             copyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
             copyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
 
