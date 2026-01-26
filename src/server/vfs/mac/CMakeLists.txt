@@ -1,5 +1,11 @@
 find_package(Qt6)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+
+# Normalize Conan variables to be build-type agnostic
+if(EXISTS "${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+    include("${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+endif()
+
 set(_OpenSSL_LIB_DIRS "${openssl_LIB_DIRS}")
 
 # Target

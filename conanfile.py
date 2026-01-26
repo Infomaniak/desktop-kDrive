@@ -162,13 +162,14 @@ class KDriveDesktop(ConanFile):
 
     def _append_conan_vars_normalization(self):
         """
-        Append normalization code to the generated CMake toolchain file.
-        This makes Conan variables build-type agnostic by creating generic variables.
+        Generate a separate CMake helper file for normalizing Conan variables.
+        This file must be included AFTER find_package() calls so the variables are defined.
         """
-        toolchain_file = os.path.join(self.generators_folder, "conan_toolchain.cmake")
+        helper_file = os.path.join(self.generators_folder, "ConanNormalizeVars.cmake")
         normalization_code = textwrap.dedent("""\
-
             # Normalize Conan variables to be build-type agnostic
+            # This file must be included AFTER find_package() calls
+
             string(TOUPPER ${CMAKE_BUILD_TYPE} _CONAN_BUILD_TYPE_UPPER)
 
             # List of packages to normalize
@@ -196,7 +197,7 @@ class KDriveDesktop(ConanFile):
             unset(_CONAN_PACKAGES)
             """)
 
-        with open(toolchain_file, "a") as f:
+        with open(helper_file, "w") as f:
             f.write(normalization_code)
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):

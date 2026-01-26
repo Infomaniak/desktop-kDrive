@@ -347,6 +347,13 @@ if(UNIX AND NOT APPLE)
         find_package(xxHash 0.8.2 REQUIRED)
         find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
         find_package(Poco 1.13.3 REQUIRED)
+        find_package(sentry REQUIRED)
+
+        # Normalize Conan variables to be build-type agnostic
+        if(EXISTS "${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+            include("${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+        endif()
+
         # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
         file(COPY
             # log4cplus
