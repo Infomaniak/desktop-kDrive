@@ -1703,8 +1703,9 @@ bool ParmsDb::updateAccount(const Account &account, bool &found) {
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_ACCOUNT_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 1, account.accountId()));
     LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 2, account.userDbId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.dbId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 4, account.name()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.name()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 4, account.dbId()));
+
     if (!queryExec(UPDATE_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ACCOUNT_REQUEST_ID);
         return false;
