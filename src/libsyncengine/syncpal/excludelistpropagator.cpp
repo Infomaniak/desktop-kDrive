@@ -36,9 +36,9 @@ ExcludeListPropagator::~ExcludeListPropagator() {
 ExitInfo ExcludeListPropagator::runJob() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator started " << jobId());
 
-    if (ExitCode exitCode = checkItems(); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = checkItems(); !exitInfo) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ExcludeListPropagator::checkItems");
-        return exitCode;
+        return exitInfo;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator ended");
