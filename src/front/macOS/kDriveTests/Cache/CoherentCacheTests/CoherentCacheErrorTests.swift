@@ -116,7 +116,8 @@ struct CoherentCacheErrorTests {
         }
 
         #expect(fetchedSynchro.dbId == CacheData.expectedSynchroDbId)
-        #expect(fetchedSynchro.latestError == .loggingError, "Expecting the remaining error to be set as the latest on resolution")
+        #expect(fetchedSynchro.latestError == .loggingError,
+                "Expecting the remaining error to be set as the latest on resolution")
         #expect(fetchedSynchro.errors.values.first == CacheData.expectedLoginError)
         #expect(fetchedSynchro.errors.count == 1)
         #expect(await cache.serverErrors.count == 0)
