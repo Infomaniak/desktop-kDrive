@@ -155,10 +155,18 @@
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
+		A795DC592F28EC4E00F86E5C /* Exceptions for "kDrive" folder in "kDriveCoreUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				UI/Views/MainWindow/Storage/StorageBlock/StorageBlockView.swift,
+			);
+			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
+		};
 		F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/Info.plist,
+				UI/Views/MainWindow/Storage/StorageBlock/StorageBlockView.swift,
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
 		};
@@ -169,6 +177,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */,
+				A795DC592F28EC4E00F86E5C /* Exceptions for "kDrive" folder in "kDriveCoreUI" target */,
 			);
 			path = kDrive;
 			sourceTree = "<group>";
