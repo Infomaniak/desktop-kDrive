@@ -60,7 +60,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
     DirectoryEntry entry;
 
     try {
-        if (!recursiveDirectoryIterator(parentPath, dirIt)) {
+        if (!IoHelper::recursiveDirectoryIterator(parentPath, dirIt)) {
             LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
@@ -183,18 +183,6 @@ bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEn
     return true;
 }
 
-bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
-    IoError ioError = IoError::Success;
-    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
-
-    if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << CommonUtility::formatIoError(path, ioError));
-        return false;
-    }
-
-    return true;
-}
-
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool directoryIterationException = false;
 
@@ -204,7 +192,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
     DirectoryEntry entry;
 
     try {
-        if (!recursiveDirectoryIterator(_rootPath, dirIt)) {
+        if (!IoHelper::recursiveDirectoryIterator(_rootPath, dirIt)) {
             LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
