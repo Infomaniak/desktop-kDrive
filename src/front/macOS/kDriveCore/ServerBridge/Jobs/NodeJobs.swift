@@ -35,8 +35,7 @@ public struct NodeJobs: Sendable {
 
         try decodedMessage.validate()
 
-        let path = decodedMessage.body.path
-        return path
+        return decodedMessage.body.path
     }
 
     public func getNodeInfo(userDbId: Int32,
@@ -46,12 +45,11 @@ public struct NodeJobs: Sendable {
         IKLogger.data.log("Query to get node info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
-        
+
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeInfoResponse>.self)
 
         try decodedMessage.validate()
 
-        let nodeInfo = decodedMessage.body.nodeInfo
-        return nodeInfo
+        return decodedMessage.body.nodeInfo
     }
 }
