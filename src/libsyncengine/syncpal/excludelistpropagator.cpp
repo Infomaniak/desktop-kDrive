@@ -49,17 +49,20 @@ int ExcludeListPropagator::syncDbId() const {
     return _syncPal->syncDbId();
 }
 
-ExitCode ExcludeListPropagator::checkItems() {
+ExitInfo ExcludeListPropagator::checkItems() {
+    bool directoryIterationException = false;
+    auto ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-                _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << CommonUtility::formatStdError(ec));
+        if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
+            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return ExitCode::SystemError;
         }
 
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
             if (isAborted()) {
                 LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
                 return ExitCode::Ok;
@@ -75,20 +78,21 @@ ExitCode ExcludeListPropagator::checkItems() {
             }
 #endif
 
-            if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(dirIt->path())
+            if (entry.path().native().length() > CommonUtility::maxPathLength()) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(entry.path())
                                                                            << L" because size > "
                                                                            << CommonUtility::maxPathLength());
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
             if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
                 if (isWarning) {
-                    NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
-                    NodeType localNodeType = localNodeId.empty() ? NodeType::Unknown
-                                                                 : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
+                    const NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
+                    const NodeType localNodeType = localNodeId.empty()
+                                                           ? NodeType::Unknown
+                                                           : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
                     Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
                                 InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);
@@ -125,9 +129,18 @@ ExitCode ExcludeListPropagator::checkItems() {
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in ExcludeListPropagator::checkItems: code=" << e.code() << " error=" << e.what());
-        return ExitCode::SystemError;
+        directoryIterationException = true;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in ExcludeListPropagator::checkItems");
+        directoryIterationException = true;
+    }
+
+    if (!endOfDir || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                   << CommonUtility::formatIoError(entry.path(), ioError));
+    }
+
+    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
         return ExitCode::SystemError;
     }
 
