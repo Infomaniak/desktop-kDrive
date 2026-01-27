@@ -44,9 +44,9 @@ public struct NodeJobs: Sendable {
                             nodeId: String,
                             withPath: Bool = true) async throws -> NodeInfoResponseMetadata {
         IKLogger.data.log("Query to get node info")
-        let query = NodeInfoQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
-        let request = await RequestMessage<NodeInfoQuery>(num: RequestNum.NODE_INFO, body: query)
-
+        let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
+        let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
+        
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeInfoResponse>.self)
 
         try decodedMessage.validate()

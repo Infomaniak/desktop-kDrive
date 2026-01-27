@@ -27,7 +27,7 @@ struct NodePathResponse: Codable, Sendable {
     @Base64CodedString var path: String
 }
 
-struct NodeInfoQuery: Codable, Sendable {
+struct NodeQuery: Codable, Sendable {
     let userDbId: Int32
     let driveId: Int32
     @Base64CodedString var nodeId: String
