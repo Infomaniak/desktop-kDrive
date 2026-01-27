@@ -37,6 +37,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<String, SynchroNode> = [:]
+    public var errors: IndexedErrors = [:]
+    public var latestError: SynchroError?
 
     private static let maxSynchNodesCount = 100
 
@@ -100,4 +102,32 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let inconsistency: KDC.InconsistencyType
     public let cancelType: KDC.CancelType
     public let error: String
+}
+
+public enum SynchroError: Error, Hashable, Sendable {
+    case asleep
+    case wakingUp
+    case notRenew // "drive locked"
+    case maintenance
+    case accessDenied
+    case loggingError
+
+    init?(errorInfo: ErrorInfo) {
+        switch errorInfo.exitCause {
+        case .DriveAsleep:
+            self = .asleep
+        case .DriveWakingUp:
+            self = .wakingUp
+        case .DriveNotRenew:
+            self = .notRenew
+        case .DriveMaintenance:
+            self = .maintenance
+        case .DriveAccessError:
+            self = .accessDenied
+        case .LoginError:
+            self = .loggingError
+        default:
+            return nil
+        }
+    }
 }

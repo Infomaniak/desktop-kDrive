@@ -98,7 +98,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
                                                              num: SignalNum.USER_UPDATED,
                                                              body: userInfo)
         let encodedSignal = try encoder.encode(updateUserSignal)
-        signalHandler.handleServerSignal(encodedSignal)
+        await signalHandler.handleServerSignal(encodedSignal)
     }
 
     func replyDummyError(callback: @escaping (Data) -> Void) async throws {

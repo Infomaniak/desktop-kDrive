@@ -16,21 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
-
-extension MsgType: Codable {}
-extension KDC.ExitCause: Codable {}
-extension KDC.ExitCode: Codable {}
-extension KDC.NodeType: Codable {}
-extension KDC.VirtualFileMode: Codable {}
-extension KDC.SyncFileStatus: Codable {}
-extension KDC.SyncDirection: Codable {}
-extension KDC.SyncFileInstruction: Codable {}
-extension KDC.ConflictType: Codable {}
-extension KDC.InconsistencyType: Codable {}
-extension KDC.CancelType: Codable {}
-extension KDC.SyncStatus: Codable {}
-extension KDC.SyncStep: Codable {}
-extension KDC.ErrorLevel: Codable {}
-extension SignalNum: Codable {}
-extension RequestNum: Codable {}
+extension KDC.NodeType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .Unknown:
+            return "Unknown"
+        case .File:
+            return "File"
+        case .Directory:
+            return "Directory"
+        case .EnumEnd:
+            return "EnumEnd"
+        @unknown default:
+            return "NodeType(rawValue: \(rawValue))"
+        }
+    }
+}

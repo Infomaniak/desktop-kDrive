@@ -1,0 +1,25 @@
+{
+  "id": 10,
+  "num": 26,
+  "params": {
+    "errorInfo": {
+      "autoResolved": true,
+      "cancelType": 0,
+      "conflictType": 0,
+      "dbId": 2,
+      "destinationPath": "",
+      "exitCause": 0,
+      "exitCode": 1,
+      "functionName": "",
+      "inconsistencyType": 1,
+      "level": 3,
+      "localNodeId": "",
+      "nodeType": 2,
+      "path": "L2Rldi9udWxs",
+      "remoteNodeId": "MTIzNDU2",
+      "syncDbId": 1,
+      "time": 1768922467,
+      "workerName": ""
+    }
+  }
+}
