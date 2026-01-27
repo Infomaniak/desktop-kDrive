@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class NewSync : UISafeObservableObject
+    public class NewSync : UISafeObservableObject, ISync
     {
         // Sync properties
         private string _localPath = "";

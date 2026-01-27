@@ -12,17 +12,17 @@ using System.Linq;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
-    public sealed partial class SyncSetupPage : Page
+    public sealed partial class SyncExclusionPage : Page
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
         private DriveSetupContentDialogVM? DriveSetupContentDialogVM { get; set; }
-        public SyncSetupPage()
+        public SyncExclusionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.SyncSetupPage - Initializing DriveSetupContentDialog.SyncSetupPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.SyncExclusionPage - Initializing DriveSetupContentDialog.SyncExclusionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.SyncSetupPage components initialized");
+            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.SyncExclusionPage components initialized");
         }
 
         // Navigation method
@@ -36,7 +36,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncSetupPage");
+                Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncExclusionPage");
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
@@ -46,22 +46,16 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             DriveSetupContentDialogVM!.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
         }
 
-        private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
+        private async void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
                 return;
             }
+            await ExclusionSelector.SaveChanges();
 
-            if (DriveSetupContentDialogVM.IsMultipleDrivesSetup())
-            {
-                Frame.Navigate(typeof(DriveSelectionPage), DriveSetupContentDialogVM);
-            }
-            else
-            {
-                DriveSetupContentDialogVM.FinishSetup();
-            }
+            Frame.Navigate(typeof(SyncSetupPage), DriveSetupContentDialogVM);
         }
 
         private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
@@ -72,14 +66,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 return;
             }
 
-            if (DriveSetupContentDialogVM!.IsMultipleDrivesSetup())
-            {
-                Frame.Navigate(typeof(DriveSelectionPage), DriveSetupContentDialogVM);
-            }
-            else
-            {
-                DriveSetupContentDialogVM.FinishSetup();
-            }
+            Frame.Navigate(typeof(SyncSetupPage), DriveSetupContentDialogVM);
         }
 
         private async void ChangeFolder_Click(object sender, RoutedEventArgs e)
@@ -140,11 +127,6 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             await newSync.SelectBestVfsMode();
             Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
             control.IsEnabled = true;
-        }
-
-        private void Exclusionbutton_click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(SyncExclusionPage), DriveSetupContentDialogVM);
         }
     }
 }
