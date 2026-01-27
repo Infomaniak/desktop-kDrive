@@ -22,7 +22,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include "../log/sentry/handler.h"
-#include "../log/customlogstreams.h"
+#include "../../libcommon/log/customlogstreams.h"
 #include "../utility/types.h"
 #include "../utility/utility.h"
 

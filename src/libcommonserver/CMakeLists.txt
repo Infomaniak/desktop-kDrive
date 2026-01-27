@@ -38,16 +38,26 @@ set(libcommonserver_SRCS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h
     vfs/plugin.h vfs/plugin.cpp
+    # Io
+    io/filestat.h
+    io/iohelper.h io/iohelper.cpp
+    io/permissionsholder.h io/permissionsholder.cpp
+    # Log
+    log/log.h log/log.cpp
+    log/customrollingfileappender.h log/customrollingfileappender.cpp
 )
 
 if(APPLE)
+    list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
+    set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
-    list(APPEND libcommonserver_SRCS utility/utility_win.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
 else()
-    list(APPEND libcommonserver_SRCS utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
 endif()
 
 if(USE_OUR_OWN_SQLITE3)
