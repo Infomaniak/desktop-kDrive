@@ -107,6 +107,9 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\DriveSetupContentDialog\SyncSetupPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\DynamicTextBlock.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -198,6 +201,7 @@
   <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
+    <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
     <Folder Include="CustomControls\Errors\Templates\Server\" />
     <Folder Include="CustomControls\Errors\Templates\SyncPal\" />
   </ItemGroup>

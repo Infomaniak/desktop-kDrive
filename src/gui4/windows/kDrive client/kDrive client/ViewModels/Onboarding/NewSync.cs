@@ -29,8 +29,18 @@ namespace Infomaniak.kDrive.ViewModels
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
         private IDrive? drive;
-
         private ObservableCollection<NodeId> _excludedNodeIds = new ObservableCollection<NodeId>();
+
+        public NewSync() { }
+        public NewSync(NewSync other)
+        {
+            LocalPath = other.LocalPath;
+            RemotePath = other.RemotePath;
+            RemoteNodeId = other.RemoteNodeId;
+            SyncType = other.SyncType;
+            Drive = other.Drive;
+            ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
+        }
 
         public string LocalPath
         {

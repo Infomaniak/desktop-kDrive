@@ -119,7 +119,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void AdvancedSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            await AdvancedSettingsDialog.ShowAsync();
+            // await AdvancedSettingsDialog.ShowAsync();
+            var driveSetupDialog = new CustomControls.DriveSetupContentDialog(this.XamlRoot, _onBoardingViewModel!.NewSyncs);
+            await driveSetupDialog.ShowAsync();
         }
 
         private async void ChangeSyncPathButton_Click(object sender, RoutedEventArgs e)
