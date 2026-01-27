@@ -350,8 +350,14 @@ if(UNIX AND NOT APPLE)
         find_package(sentry REQUIRED)
 
         # Normalize Conan variables to be build-type agnostic
-        if(EXISTS "${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
-            include("${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+        # Determine the correct path for ConanNormalizeVars.cmake
+        if(DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+            get_filename_component(CONAN_GEN_DIR "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)
+        else()
+            set(CONAN_GEN_DIR "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
+        endif()
+        if(EXISTS "${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
+            include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
         endif()
 
         # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
