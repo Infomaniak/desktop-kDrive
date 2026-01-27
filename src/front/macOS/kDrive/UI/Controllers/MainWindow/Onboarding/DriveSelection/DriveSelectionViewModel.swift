@@ -25,7 +25,6 @@ import kDriveCore
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
-    @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var syncCreator: SyncCreator
 
     private let flowCoordinator: OnboardingFlowCoordinator

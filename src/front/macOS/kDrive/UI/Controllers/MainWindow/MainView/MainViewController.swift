@@ -68,7 +68,7 @@ final class MainViewController: IKSplitViewController {
 // MARK: - NavigableSidebarViewControllerDelegate
 
 extension MainViewController: NavigableSidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {
+    func sidebarViewController(_: NSViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
         case .home:
