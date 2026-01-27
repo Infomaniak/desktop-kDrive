@@ -38,6 +38,10 @@ struct NodeInfoResponse: Codable, Sendable {
     let nodeInfo: NodeInfoResponseMetadata
 }
 
+struct NodeSubfoldersResponse: Codable, Sendable {
+    let nodeSubFolderInfoList: [NodeInfoResponseMetadata]
+}
+
 public struct NodeInfoResponseMetadata: Codable, Sendable {
     let modtime: TimeInterval
     @Base64CodedString var name: String
