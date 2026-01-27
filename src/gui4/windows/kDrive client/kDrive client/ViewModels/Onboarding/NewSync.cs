@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -73,6 +77,16 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _excludedNodeIds;
             set => SetPropertyInUIThread(ref _excludedNodeIds, value);
+        }
+
+        public async Task SelectBestVfsMode()
+        {
+            var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
+            if (CanSupportOnlineMode is null)
+                Logger.Log(Logger.Level.Warning, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
+
+            SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
     }
 }

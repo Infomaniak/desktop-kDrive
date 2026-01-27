@@ -36,131 +36,168 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="Configurer la synchronisation de ce kDrive :"
-                   Style="{StaticResource TitleTextBlockStyle}" />
+                   Text="Configurer la synchronisation de ce kDrive"
+                   TextWrapping="WrapWholeWords"
+                   Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <!-- Drive -->
         <Border Grid.Row="1"
                 Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <controls:SvgIcon Height="16"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                HorizontalAlignment="Left">
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <controls:SvgIcon Grid.Column="0"
+                                  Height="16"
                                   UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                   VerticalAlignment="Center" />
 
-                <TextBlock Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Name}"
-                           Style="{StaticResource BodyTextBlockStyle}"
+                <TextBlock Grid.Column="1"
+                           Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Name}"
+                           Style="{StaticResource BodyLargeTextBlockStyle}"
                            VerticalAlignment="Center" />
-            </StackPanel>
+            </Grid>
         </Border>
 
-        <ListView Grid.Row="2"
-                  ItemsSource="{x:Bind DriveSetupContentDialogVM.NewSyncs, Mode=OneWay}"
-                  SelectionMode="None">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Padding"
-                            Value="0" />
-                    <Setter Property="HorizontalContentAlignment"
-                            Value="Stretch" />
-                    <Setter Property="Margin"
-                            Value="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:NewSync">
-                    <Border Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
-                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
-                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+        <!-- Local folder -->
+        <Border Grid.Row="2"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                            <controls:SvgIcon Grid.Column="0"
-                                              Grid.Row="0"
-                                              Height="16"
-                                              UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                              Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                              VerticalAlignment="Center" />
+                <Grid Grid.Row="0"
+                      RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="Emplacement"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
 
-                            <!-- Drive name -->
-                            <TextBlock Grid.Column="1"
-                                       Grid.Row="0"
-                                       Text="{x:Bind Drive.Name}"
-                                       Style="{StaticResource BodyTextBlockStyle}"
-                                       VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="1"
+                               Text="Personnalisez l'emplacement du dossier kDrive sur votre ordinateur :"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </Grid>
 
-                            <Grid Grid.Column="1"
-                                  Grid.Row="1">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <!-- Local path -->
-                                <Grid Grid.Row="0"
-                                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="Emplacement :"
-                                               FontSize="12"
-                                               FontWeight="Normal"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{x:Bind LocalPath, Mode=OneWay}"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
-                                </ToolTipService.ToolTip>
-                                    </TextBlock>
-                                </Grid>
+                <Grid Grid.Row="1"
+                      RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                                <!-- Exclusions -->
-                                <Grid Grid.Row="1"
-                                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="Contenu synchronisé :"
-                                               FontSize="12"
-                                               FontWeight="Normal"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="Tout le kDrive"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="WordEllipsis" />
-                                </Grid>
-                            </Grid>
-                            <!-- Edit button -->
-                            <HyperlinkButton Grid.Column="2"
-                                             Grid.RowSpan="2"
-                                             Content="Configurer"
-                                             Click="EditButton_Click" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
+                    <Button Grid.Column="0"
+                            Grid.Row="0"
+                            Content="Modifier l'emplacement" 
+                            Click="ChangeFolder_Click"/>
 
-        </ListView>
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="0"
+                               Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"/>
 
+                    <TextBlock Grid.ColumnSpan="2"
+                               Grid.Row="1"
+                               Text="Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement."
+                               TextWrapping="WrapWholeWords"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!--Exclusions -->
+        <Border Grid.Row="3"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0"
+                      RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="Dossiers synchronisés"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="1"
+                               Text="Choisissez les dossiers à synchronisés sur cet ordinateur :"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <Grid Grid.Row="1"
+                      RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Column="0"
+                            Grid.Row="0"
+                            Content="Sélectionner des dossiers" />
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+                                          Height="12"
+                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                          VerticalAlignment="Center" />
+
+                        <TextBlock Text="Tous les dossiers du kDrive"
+                                   Style="{StaticResource BodyTextBlockStyle}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Grid.ColumnSpan="2"
+                               Grid.Row="1"
+                               Text="Les dossiers non sélectionnés resteront accessibles en ligne."
+                               TextWrapping="WrapWholeWords"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

@@ -1,10 +1,14 @@
 using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Storage.Pickers;
 using System;
+using System.Threading;
+using System.Linq;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
@@ -36,10 +40,21 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DriveSetupContentDialogVM!.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
+            DriveSetupContentDialogVM!.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+        }
 
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
-            if (DriveSetupContentDialogVM!.IsMultipleDrivesSetup())
+            if (DriveSetupContentDialogVM is null)
+            {
+                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                return;
+            }
+
+            if (DriveSetupContentDialogVM.IsMultipleDrivesSetup())
             {
                 Frame.Navigate(typeof(DriveSelectionPage), DriveSetupContentDialogVM);
             }
@@ -51,6 +66,12 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
+            if (DriveSetupContentDialogVM is null)
+            {
+                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                return;
+            }
+
             if (DriveSetupContentDialogVM!.IsMultipleDrivesSetup())
             {
                 Frame.Navigate(typeof(DriveSelectionPage), DriveSetupContentDialogVM);
@@ -61,24 +82,64 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        private async void ChangeFolder_Click(object sender, RoutedEventArgs e)
         {
-        }
+            Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
 
-        private void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Control control && control.DataContext is NewSync sync)
+            if (DriveSetupContentDialogVM?.CurrentSync is null)
             {
-                GoToSyncConfigurationPage(sync);
+                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM?.CurrentSync is null");
+                return;
             }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Unable to retrieve NewSync from DataContext");
-            }
-        }
+            var newSync = DriveSetupContentDialogVM.CurrentSync;
 
-        private void GoToSyncConfigurationPage(NewSync sync)
-        {
+            //disable the button to avoid double-clicking
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sender is not a Control");
+                return;
+            }
+
+            control.IsEnabled = false;
+
+            // Create a folder picker
+            FolderPicker openPicker = new();
+            var window = ((App)Application.Current)?.CurrentWindow;
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
+            openPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+            Windows.Storage.StorageFolder folder = await openPicker.PickSingleFolderAsync();
+
+            if (folder is null)
+            {
+                Logger.Log(Logger.Level.Info, "No folder was picked");
+                control.IsEnabled = true;
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
+
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            {
+                Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                control.IsEnabled = true;
+                return;
+            }
+
+            var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
+            if (result is null || result == false)
+            {
+                Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing");
+                control.IsEnabled = true;
+                return;
+            }
+
+            newSync.LocalPath = folder.Path;
+            await newSync.SelectBestVfsMode();
+            Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
+            control.IsEnabled = true;
         }
     }
 }
