@@ -387,17 +387,6 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
         }
 
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-#if defined(KD_WINDOWS)
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
-
             const SyncPath &absolutePath = entry.path();
 
             // Check if the directory entry is managed

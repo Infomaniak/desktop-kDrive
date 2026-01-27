@@ -149,23 +149,9 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             }
 
             while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-                if (isAborted()) {
-                    return ExitCode::Ok;
-                }
-
-#if defined(KD_WINDOWS)
-                // skip_permission_denied doesn't work on Windows
-                try {
-                    bool dummy = dirIt->exists();
-                    (void) (dummy);
-                } catch (std::filesystem::filesystem_error &) {
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-#endif
+                if (isAborted()) return ExitCode::Ok;
 
                 const SyncPath &absoluteLocalPath_ = entry.path();
-
                 // Check if the directory entry is managed
                 bool isManaged = true;
                 auto managedDirEntryError = IoError::Success;

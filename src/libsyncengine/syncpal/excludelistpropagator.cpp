@@ -67,16 +67,6 @@ ExitInfo ExcludeListPropagator::checkItems() {
                 LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
                 return ExitCode::Ok;
             }
-#if defined(KD_WINDOWS)
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
 
             if (entry.path().native().length() > CommonUtility::maxPathLength()) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(entry.path())
