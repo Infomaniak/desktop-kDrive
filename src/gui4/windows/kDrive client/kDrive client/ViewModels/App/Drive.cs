@@ -62,6 +62,8 @@ namespace Infomaniak.kDrive.ViewModels
 
         private void RefreshAdvancedSyncsMap()
         {
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
+
             var advancedSyncs = Syncs.Where(s => s != MainSync);
             foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
             {
@@ -73,8 +75,6 @@ namespace Infomaniak.kDrive.ViewModels
             foreach (var sync in advancedSyncs)
                 if (!_advancedSyncs.Contains(sync))
                     _advancedSyncs.Add(sync);
-
-            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
         }
 
         public DbId DbId

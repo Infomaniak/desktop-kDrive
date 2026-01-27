@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
             if (item is Sync sync)
             {
-                if(sync.RemotePath == "")
+                if(sync.Drive.MainSync == sync)
                 {
                     return MainSyncTemplate;
                 }

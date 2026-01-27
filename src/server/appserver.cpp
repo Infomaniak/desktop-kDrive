@@ -2861,7 +2861,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                sendDriveUpdated(driveInfo);
                 if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 

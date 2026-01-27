@@ -907,7 +907,7 @@ Le code source de cette application peut être vérifié, les informations réco
     <value>Gestion du kDrive</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
-    <value>Synchronisation avancée</value>
+    <value>Synchronisations avancées</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" xml:space="preserve">
     <value>Supprimer la synchronisation</value>
@@ -1023,6 +1023,33 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   </data>
   <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
     <value>Hors ligne</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Title.Text" xml:space="preserve">
+    <value>Synchronisations avancées</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_AddSyncButton.Content" xml:space="preserve">
+    <value>Synchroniser un dossier</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeCaption.Text" xml:space="preserve">
+    <value>Définissez comment vos fichiers sont stockés et accessibles.</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeHeader.Text" xml:space="preserve">
+    <value>Mode de synchronisation des fichiers</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle.Text" xml:space="preserve">
+    <value>Synchroniser un dossier avec kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoteFolder.Header" xml:space="preserve">
+    <value>Emplacement sur kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_LocalFolder.Header" xml:space="preserve">
+    <value>Emplacement sur mon PC</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle_Caption.Text" xml:space="preserve">
+    <value>Sélectionnez un dossier de votre ordinateur à synchroniser avec kDrive. Vous pourrez acceder a vos synchronisations avancées depuis le selecteur de drive sur la page d’accueil </value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoveSyncButton.Header" xml:space="preserve">
+    <value>Supprimer la synchronisation</value>
   </data>
   <data name="CC_LogUploadSettingsCard_Header.Text" xml:space="preserve">
     <value>Support infomaniak</value>
