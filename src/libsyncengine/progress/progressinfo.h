@@ -42,7 +42,7 @@ class ProgressInfo {
         [[nodiscard]] bool update() const { return _update; }
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &path, int64_t completed);
+        [[nodiscard]] bool setProgress(const SyncPath &path, int progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
         [[nodiscard]] bool setSyncFileItemRemoteId(const SyncPath &path, const NodeId& remoteId);
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);

@@ -21,32 +21,43 @@
 
 #include <log4cplus/loggingmacros.h>
 
+static const auto progressThresholdSizePercent = 0.1; // 10%
+static const auto progressThresholdTime = std::chrono::seconds(1); // 1 sec
+
 namespace KDC {
 
-void SyncJob::setProgress(const int64_t newProgress) {
-    _progress = newProgress;
+void SyncJob::setProgress(const int64_t newProgressSize) {
+    _progressSize = newProgressSize;
     if (_progressPercentCallback) {
         if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
             LOG_DEBUG(_logger,
                       "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
-                      "_progressPercentCallback is set by the caller).");
+                      "_progressSizeCallback is set by the caller).");
             _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
             _progressPercentCallback(jobId(), 100);
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
             _progressPercentCallback(jobId(), 100);
         } else {
-            _progressPercentCallback(jobId(), (_progress * 100) / _expectedFinishProgress);
+            static const auto progressThresholdSize =
+                    static_cast<int64_t>(_expectedFinishProgress * progressThresholdSizePercent);
+            const auto progressTimeStamp = std::chrono::system_clock::now();
+            if (_progressSize > _lastProgressSize + progressThresholdSize ||
+                progressTimeStamp > _lastProgressTimeStamp + progressThresholdTime) {
+                _lastProgressSize = _progressSize;
+                _lastProgressTimeStamp = progressTimeStamp;
+                _progressPercentCallback(jobId(), static_cast<int>((_progressSize * 100) / _expectedFinishProgress));
+            }
         }
     }
 }
 
-void SyncJob::addProgress(const int64_t progressToAdd) {
-    setProgress(_progress + progressToAdd);
+void SyncJob::addProgress(const int64_t progressSizeToAdd) {
+    setProgress(_progressSize + progressSizeToAdd);
 }
 
 bool SyncJob::progressChanged() {
-    if (_progress > _lastProgress) {
-        _lastProgress = _progress;
+    if (_progressSize > _lastProgressSize) {
+        _lastProgressSize = _progressSize;
         return true;
     }
     return false;

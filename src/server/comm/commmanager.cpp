@@ -284,7 +284,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
 
     assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
 
-    LOG_DEBUG(Log::instance()->getLogger(), "Send signal: id=" << signal->id() << " num=" << signal->signalNum());
+    LOG_DEBUG(Log::instance()->getLogger(), "Send gui signal: id=" << signal->id() << " num=" << signal->signalNum());
 
     signal->setCommManager(shared_from_this());
     signal->setChannels(_guiCommServer->connections());

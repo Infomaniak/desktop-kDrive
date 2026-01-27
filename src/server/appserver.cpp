@@ -49,7 +49,6 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfojob.h"
-#include "server/comm/guijobs/signalsyncfileprogressinfojob.h"
 #include "server/comm/guijobs/signalupdatershowdialogjob.h"
 #include "server/comm/guijobs/signalupdaterstatechangedjob.h"
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
@@ -747,14 +746,14 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     const ExitCode exitCode = ServerRequests::updateParameters(newParametersInfo);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::updateParameters");
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
     }
 
     // Propagate extendedLog change
     if (oldParametersInfo.extendedLog() != newParametersInfo.extendedLog()) {
         logExtendedLogActivationMessage(newParametersInfo.extendedLog());
-        const std::scoped_lock lock(AppServer::vfsMapMutex);
-        for (const auto &[_, vfs]: AppServer::vfsMap) {
+        const std::scoped_lock lock(vfsMapMutex);
+        for (const auto &[_, vfs]: vfsMap) {
             vfs->setExtendedLog(newParametersInfo.extendedLog());
         }
     }
@@ -2401,7 +2400,7 @@ void AppServer::sendErrorsCleared(int syncDbId) const {
         OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
     }
     if (useCommManager()) {
-        // TODO
+        // N/A - See UTILITY_ERROR_REMOVED
     }
 }
 
@@ -2416,22 +2415,20 @@ void AppServer::sendQuit() const {
     }
 }
 
-void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) const {
+void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int progressPercent) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
         paramsStream << status;
-        paramsStream << percent;
+        paramsStream << progressPercent;
         OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
     }
     if (useCommManager()) {
-        // TODO
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalUtilityLogUploadStateJob>(status, static_cast<std::int32_t>(progressPercent)));
     }
-
-    if (_commManager)
-        _commManager->sendGuiSignal(std::make_shared<SignalUtilityLogUploadStateJob>(status, static_cast<std::int32_t>(percent)));
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -2440,7 +2437,8 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) c
         LOG_WARN(Log::instance()->getLogger(), AppStateKey::LogUploadState << " not found in appState table");
     }
 
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found)) {
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(progressPercent), found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
@@ -2467,13 +2465,13 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
-        sendLogUploadStatusUpdated(status, progress); // Send progress to the client
+    const std::function<void(LogUploadState, int)> progressStatusCallBack = [this](LogUploadState status, int progressPercent) {
+        sendLogUploadStatusUpdated(status, progressPercent); // Send progress to the client
     };
-    const auto logUploadJob =
-            std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, std::bind_front(&AppServer::addError, this));
+    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, progressStatusCallBack,
+                                                             std::bind_front(&AppServer::addError, this));
 
-    const std::function<void(UniqueId)> jobResultCallback = [logUploadJob]([[maybe_unused]] const UniqueId id) {
+    const std::function<void(UniqueId)> jobResultCallback = [logUploadJob]([[maybe_unused]] const UniqueId) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
             LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
             logUploadJob->addErrorCallback(Error(ERR_ID, ExitCode::LogUploadFailed, exitInfo.cause()));
@@ -3777,7 +3775,6 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
-        // syncPalMapIt->second->setSendGuiSignalCallback(std::bind_front(&AppServer::sendGuiSignal, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -4162,7 +4159,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
 }
 
 ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommString &path) {
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
+    const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
 
     if (syncPalMapIt == syncPalMap.end()) {
@@ -4578,24 +4575,29 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     }
 }
 
-void AppServer::sendSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress) const {
-    if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncFileProgressInfoJob>(syncDbId, itemInfo, progress));
-    }
-}
-
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) const {
     if (useOldCommServer()) {
-        int id = 0;
+        if (itemInfo.progress() == 100) { // 100%
+            int id = 0;
 
-        QByteArray params;
-        QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
-        paramsStream << itemInfo;
-        OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
+            QByteArray params;
+            QDataStream paramsStream(&params, QIODevice::WriteOnly);
+            paramsStream << syncDbId;
+            paramsStream << itemInfo;
+            OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_DEBUG(_logger, L"Send progress for path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
+                                                               << itemInfo.size() << L" progress=" << itemInfo.progress()
+                                                               << L"%");
+            }
+        }
     }
     if (useCommManager()) {
         _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItemJob>(syncDbId, itemInfo));
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(_logger, L"Send progress for path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
+                                                           << itemInfo.size() << L" progress=" << itemInfo.progress() << L"%");
+        }
     }
 }
 

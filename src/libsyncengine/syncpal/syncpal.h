@@ -137,13 +137,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _addCompletedItem = addCompletedItem;
         }
 
-        /*inline void setSendGuiSignalCallback(const std::function<void(std::shared_ptr<AbstractGuiJob>)> &sendGuiSignal) {
-            _sendGuiSignal = sendGuiSignal;
-        }
-        void sendGuiSignalCallback(std::shared_ptr<AbstractGuiJob> signalJob) {
-            if (_sendGuiSignal) _sendGuiSignal(signalJob);
-        }*/
-
         void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
@@ -328,7 +321,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Callbacks
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
-        // std::function<void(std::shared_ptr<AbstractGuiJob> signalJob)> _sendGuiSignal;
         std::shared_ptr<Vfs> _vfs;
 
         // DB
@@ -382,7 +374,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void stopEstimateUpdates();
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
+        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
                                                const NodeId &newRemoteNodeId = {});
 

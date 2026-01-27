@@ -261,7 +261,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveRemoved(int driveDbId) const;
         void sendDriveDeletionFailed(int driveDbId) const;
         void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const;
-        void sendSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress) const;
         void sendSyncAdded(const SyncInfo &syncInfo) const;
         void sendSyncUpdated(const SyncInfo &syncInfo) const;
         void sendSyncRemoved(int syncDbId) const;

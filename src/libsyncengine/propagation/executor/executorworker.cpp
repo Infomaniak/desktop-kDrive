@@ -79,8 +79,6 @@ void ExecutorWorker::execute() {
                 break;
             }
 
-            sendProgress();
-
             if (stopAsked()) {
                 cancelAllOngoingJobs();
                 break;
@@ -155,6 +153,17 @@ void ExecutorWorker::execute() {
 
             if (job) {
                 job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
+
+                const auto progressPercentCallback = [job, this](UniqueId,
+                                                                 int progress // %
+                                                     ) {
+                    if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
+                                                           << CommonUtility::formatSyncPath(job->affectedFilePath()));
+                    }
+                };
+                job->setProgressPercentCallback(progressPercentCallback);
+
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
@@ -568,12 +577,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                     }
 
                     job->setAffectedFilePath(relativeLocalFilePath);
-                    job->setProgressPercentCallback([this](const UniqueId jobId, const int64_t progress) {
-                        /*SyncFileItemInfo itemInfo;
-                        auto signalSyncFileProgressInfoJob =
-                                std::make_shared<SignalSyncFileProgressInfoJob>(_syncPal->syncDbId(), itemInfo, progress);
-                        _syncPal->sendGuiSignal(signalSyncFileProgressInfoJob);*/
-                    });
                 }
             }
         }
@@ -1279,8 +1282,6 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             cancelAllOngoingJobs();
             return exitInfo;
         }
-
-        sendProgress();
     }
     return ExitCode::Ok;
 }
@@ -1516,19 +1517,6 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         }
     }
     return exitInfo;
-}
-
-void ExecutorWorker::sendProgress() {
-    if (_timer.elapsed<DoubleSeconds>().count() > SEND_PROGRESS_DELAY) {
-        _timer.restart();
-
-        for (const auto &jobInfo: _ongoingJobs) {
-            if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
-                                                   << CommonUtility::formatSyncPath(jobInfo.second->affectedFilePath()));
-            }
-        }
-    }
 }
 
 ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange) {
