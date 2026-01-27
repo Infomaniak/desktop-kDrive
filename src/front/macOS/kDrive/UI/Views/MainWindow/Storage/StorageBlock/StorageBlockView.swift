@@ -39,11 +39,29 @@ struct StorageItem: Sendable, Identifiable {
 }
 
 struct StorageBlockView: View {
+    let title: String
+
+    let usedBytes: Int64
     let availableBytes: Int64
+
     let items: [StorageItem]
 
     var body: some View {
         Section {
+            VStack {
+                HStack {
+                    Text(title)
+                        .bold()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(usedBytes, format: .byteCount(style: .file))
+                        .foregroundStyle(.secondary)
+                }
+
+                RoundedRectangle(cornerRadius: AppRadius.radius4)
+                    .frame(height: 16)
+            }
+
             ForEach(items) { item in
                 HStack {
                     Circle()
@@ -64,6 +82,8 @@ struct StorageBlockView: View {
 #Preview {
     Form {
         StorageBlockView(
+            title: "Mac",
+            usedBytes: 63_000_000_000,
             availableBytes: 250_000_000_000,
             items: [
                 StorageItem(title: "Fichiers kDrive", color: .blue, usedBytes: 13_000_000_000),
