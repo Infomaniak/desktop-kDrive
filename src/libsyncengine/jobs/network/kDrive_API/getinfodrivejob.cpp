@@ -70,10 +70,6 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
     if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) { // Not mandatory
         (void) JsonParserUtility::extractValue(prefObj, colorKey, _colorHex, false);
     }

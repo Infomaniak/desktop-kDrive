@@ -99,6 +99,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public DbId? DbId { get; set; }
         public DbId? UserDbId { get; set; }
         public AccountId? AccountId { get; set; }
+        public string? AccountName { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -107,6 +108,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            copyProperty(source, target, nameof(source.AccountName), nameof(target.AccountName));
         }
     }
 

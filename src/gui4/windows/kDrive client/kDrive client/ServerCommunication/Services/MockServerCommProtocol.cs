@@ -179,7 +179,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "dbId", account.DbId },
                     { JsonKeys.UserDbId, account.User.DbId },
-                                    };
+                    { JsonKeys.AccountName, account.AccountName },
+                };
                 if (!result.ContainsKey("accountInfoList"))
                 {
                     result["accountInfoList"] = new JsonArray();

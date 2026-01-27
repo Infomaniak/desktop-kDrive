@@ -22,7 +22,7 @@
 static const auto accountInfoDbId = "dbId";
 static const auto accountInfoUserDbId = "userDbId";
 static const auto accountInfoAccountId = "accountId";
-static const auto accountInfoName = "name";
+static const auto accountInfoName = "accountName";
 
 namespace KDC {
 
@@ -34,7 +34,7 @@ void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _accountId);
-    CommonUtility::writeValueToStruct(dstruct, accountInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, accountInfoName, CommonUtility::str2CommString(_name));
 }
 
 void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -44,16 +44,18 @@ void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString name;
     CommonUtility::readValueFromStruct(dstruct, accountInfoName, name);
-    _name = CommonUtility::commString2QStr(name);
+    _name = CommonUtility::commString2Str(name);
 }
 
 QDataStream &operator>>(QDataStream &in, AccountInfo &accountInfo) {
-    in >> accountInfo._dbId >> accountInfo._userDbId >> accountInfo._name;
+    QString name;
+    in >> accountInfo._dbId >> accountInfo._userDbId >> name;
+    accountInfo._name = QStr2Str(name);
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const AccountInfo &accountInfo) {
-    out << accountInfo._dbId << accountInfo._userDbId << accountInfo._name;
+    out << accountInfo._dbId << accountInfo._userDbId << QString::fromStdString(accountInfo._name);
     return out;
 }
 

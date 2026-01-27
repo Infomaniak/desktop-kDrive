@@ -38,8 +38,8 @@ class AccountInfo {
         void setUserDbId(int userDbId) { _userDbId = userDbId; }
         [[nodiscard]] int accountId() const { return _accountId; }
         void setAccountId(int accountId) { _accountId = accountId; }
-        [[nodiscard]] QString name() const { return _name; }
-        void setName(const QString &name) { _name = name; }
+        [[nodiscard]] std::string name() const { return _name; }
+        void setName(const std::string &name) { _name = name; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -58,7 +58,7 @@ class AccountInfo {
         int _dbId{0};
         int _userDbId{0};
         int _accountId{-1};
-        QString _name;
+        std::string _name;
 };
 
 } // namespace KDC

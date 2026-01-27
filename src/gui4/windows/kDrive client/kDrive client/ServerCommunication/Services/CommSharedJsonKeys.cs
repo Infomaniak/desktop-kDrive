@@ -34,6 +34,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string AccountDbId = "accountDbId";
         static public string AccountId = "accountId";
+        static public string AccountName = "accountName";
         static public string AccountInfoList = "accountInfoList";
         static public string AccountInfo = "accountInfo";
 

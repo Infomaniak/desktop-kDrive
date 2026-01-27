@@ -2074,6 +2074,7 @@ void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &a
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
     accountInfo.setAccountId(account.accountId());
+    accountInfo.setName(account.name());
 }
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {

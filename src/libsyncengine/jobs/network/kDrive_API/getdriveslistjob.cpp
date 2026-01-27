@@ -99,18 +99,4 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
     return ExitCode::Ok;
 }
 
-
-// // Search user in DB
-// User user;
-// bool found = false;
-// if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
-//     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
-//     return ExitCode::DbError;
-// }
-// if (found) {
-//     driveInfo.setUserDbId(user.dbId());
-// }
-//
-// list.insert(driveId, driveInfo);
-
 } // namespace KDC
