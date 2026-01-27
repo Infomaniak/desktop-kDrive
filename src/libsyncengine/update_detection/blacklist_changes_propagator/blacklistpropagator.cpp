@@ -144,7 +144,7 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
         try {
             if (!IoHelper::recursiveDirectoryIterator(absoluteLocalPath, dirIt)) {
-                LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
+                LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
                 return ExitCode::SystemError;
             }
 

@@ -58,7 +58,7 @@ ExitInfo ExcludeListPropagator::checkItems() {
 
     try {
         if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
             return ExitCode::SystemError;
         }
 

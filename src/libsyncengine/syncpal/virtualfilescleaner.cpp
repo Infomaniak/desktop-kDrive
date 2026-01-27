@@ -61,7 +61,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
     try {
         if (!IoHelper::recursiveDirectoryIterator(parentPath, dirIt)) {
-            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
             return false;
         }
 
