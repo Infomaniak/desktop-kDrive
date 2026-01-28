@@ -82,7 +82,7 @@ public struct NodeJobs: Sendable {
         return decodedMessage.body.nodeSubFolderInfoList
     }
 
-    public func getNodeSize(userDbId: Int32, driveId: Int32, nodeId: String) async throws -> Int64 {
+    public func getFolderSize(userDbId: Int32, driveId: Int32, nodeId: String) async throws -> Int64 {
         IKLogger.data.log("Query to get a node size")
         let query = NodeSizeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId)
         let request = await RequestMessage<NodeSizeQuery>(num: RequestNum.NODE_FOLDER_SIZE, body: query)
