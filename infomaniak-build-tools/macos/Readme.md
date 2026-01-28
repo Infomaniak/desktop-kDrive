@@ -35,8 +35,14 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-We are migrating the dependency management from manually to using conan.
-Currently, only the dependency `xxHash` is managed by conan. See [Conan](#conan) for more information.
+We are migrating the dependency management from manually to using conan. See [Conan](#conan) for more information.
+
+## Rosetta
+If you are using an Apple Silicon Mac, make sure Rosetta 2 is installed.  
+To install it, run the following command in a terminal:
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
 
 ## SIP
 
