@@ -1762,7 +1762,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString firstCreatedNodeId;
             for (auto &folderElt: folderList) {
                 if (folderElt.second.isEmpty()) {
-                    ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, parentNodeId);
+                    QString newNodeId;
+                    const ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, newNodeId);
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << driveDbId << " parentNodeId="
                                                                                         << parentNodeId.toStdString());
@@ -1772,8 +1773,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         break;
                     }
                     if (firstCreatedNodeId.isEmpty()) {
-                        firstCreatedNodeId = parentNodeId;
+                        firstCreatedNodeId = newNodeId;
                     }
+                    parentNodeId = newNodeId;
                 } else {
                     parentNodeId = folderElt.second;
                 }
