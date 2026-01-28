@@ -30,7 +30,7 @@ UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int req
 }
 
 ExitInfo UtilityQuitJob::process() {
-    _commManager->appServer().quit();
+    AppServer::quit();
 
     return ExitCode::Ok;
 }

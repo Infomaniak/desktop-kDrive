@@ -1945,7 +1945,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QList<ExclusionTemplateInfo> list;
             (void) std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),
-                                 [&](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
+                                 [&list](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
 
             resultStream << toInt(ExitCode::Ok);
             resultStream << list;
@@ -1959,7 +1959,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> list;
 
             std::vector<ExclusionTemplateInfo> exclusionTemplateList;
-            (void) std::for_each(list.begin(), list.end(), [&](const ExclusionTemplateInfo &templateInfo) {
+            (void) std::for_each(list.begin(), list.end(), [&exclusionTemplateList](const ExclusionTemplateInfo &templateInfo) {
                 exclusionTemplateList.push_back(templateInfo);
             });
 
@@ -2385,7 +2385,7 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
     }
 
     if (exitCode == ExitCode::Ok) {
-        QTimer::singleShot(100, [=, this]() { sendErrorsCleared(syncDbId); });
+        QTimer::singleShot(100, [syncDbId, this]() { sendErrorsCleared(syncDbId); });
     }
 
     return exitCode;
@@ -2398,7 +2398,7 @@ void AppServer::sendErrorsCleared(int syncDbId) const {
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
         paramsStream << syncDbId;
-        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
+        (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
     }
     if (useCommManager()) {
         // N/A - See UTILITY_ERROR_REMOVED

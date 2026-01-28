@@ -43,7 +43,7 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
             const auto progressTimeStamp = std::chrono::system_clock::now();
             if (_progressSize > _lastProgressSize + progressThresholdSize && _progressSize < _expectedFinishProgress &&
                 progressTimeStamp > _lastProgressTimeStamp + progressThresholdTime) {
-                int progressPercent = static_cast<int>(
+                const auto progressPercent = static_cast<int>(
                         round(static_cast<float>(_progressSize) / static_cast<float>(_expectedFinishProgress) * 100));
                 _lastProgressSize = _progressSize;
                 _lastProgressTimeStamp = progressTimeStamp;
