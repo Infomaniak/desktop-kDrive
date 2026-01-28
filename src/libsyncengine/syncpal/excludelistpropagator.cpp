@@ -49,6 +49,53 @@ int ExcludeListPropagator::syncDbId() const {
     return _syncPal->syncDbId();
 }
 
+ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
+    const SyncPath &relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
+
+    bool isWarning = false;
+    const bool isExcluded = ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning);
+    if (!isExcluded) return ExitCode::Ok;
+
+    if (isWarning) {
+        const NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
+        const NodeType localNodeType =
+                localNodeId.empty() ? NodeType::Unknown : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
+        Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
+                    InconsistencyType::None, CancelType::ExcludedByTemplate);
+        _syncPal->addError(error);
+    }
+
+    // Find dbId from the entry path
+    DbNodeId dbNodeId = -1;
+    bool found = false;
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in SyncDb::dbId for path=" << CommonUtility::formatSyncPath(relativePath));
+        return ExitCode::DbError;
+    }
+
+    if (!found) return ExitCode::Ok;
+
+    // Remove node (and children by cascade) from DB
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node " << CommonUtility::formatSyncPath(relativePath)
+                                                                           << L" from DB because it is excluded from sync");
+    }
+
+    if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in SyncDb::deleteNode for " << CommonUtility::formatSyncPath(relativePath));
+        return ExitCode::DbError;
+    }
+
+    if (!found) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo ExcludeListPropagator::checkItems() {
     bool directoryIterationException = false;
     auto ioError = IoError::Success;
@@ -76,45 +123,7 @@ ExitInfo ExcludeListPropagator::checkItems() {
                 continue;
             }
 
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
-            if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
-                if (isWarning) {
-                    const NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
-                    const NodeType localNodeType = localNodeId.empty()
-                                                           ? NodeType::Unknown
-                                                           : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
-                    Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
-                                InconsistencyType::None, CancelType::ExcludedByTemplate);
-                    _syncPal->addError(error);
-                }
-                // Find dbId from the entry path
-                DbNodeId dbNodeId = -1;
-                bool found = false;
-                if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
-                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::dbId for path=" << CommonUtility::formatSyncPath(relativePath));
-                    return ExitCode::DbError;
-                }
-
-                if (!found) continue;
-
-                // Remove node (and children by cascade) from DB
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
-                                                                             << CommonUtility::formatSyncPath(relativePath)
-                                                                             << L" from DB because it is excluded from sync");
-                }
-
-                if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
-                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::deleteNode for " << CommonUtility::formatSyncPath(relativePath));
-                    return ExitCode::DbError;
-                }
-                if (!found) {
-                    LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
-                    return ExitCode::DataError;
-                }
-            }
+            if (const auto checkItemExitInfo = checkItem(entry); !checkItemExitInfo) return checkItemExitInfo;
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),

@@ -36,6 +36,7 @@ class ExcludeListPropagator : public AbstractPropagatorJob {
 
         int syncDbId() const;
         ExitInfo checkItems();
+        ExitInfo checkItem(const DirectoryEntry &entry);
 };
 
 } // namespace KDC
