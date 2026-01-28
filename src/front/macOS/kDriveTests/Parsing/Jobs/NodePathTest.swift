@@ -39,7 +39,7 @@ struct NodePathTest {
     // MARK: - Parsing Test
 
     @Test("Successfully parses a valid NODE_PATH.json")
-    func parseValidSignal() async throws {
+    func parseValidJobCallback() async throws {
         // GIVEN
         let callbackData = validJobCallbackData
 

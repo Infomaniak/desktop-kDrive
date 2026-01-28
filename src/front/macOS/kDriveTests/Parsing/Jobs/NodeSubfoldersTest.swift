@@ -39,7 +39,7 @@ struct NodeSubfoldersTest {
     // MARK: - Parsing Test
 
     @Test("Successfully parses a valid NODE_SUBFOLDERS.json")
-    func parseValidSignal() throws {
+    func parseValidJobCallback() throws {
         // GIVEN
         let signalData = validJobCallbackData
 
@@ -51,7 +51,9 @@ struct NodeSubfoldersTest {
         #expect(nodeInfoList.count == 2)
         guard let nodeInfo = nodeInfoList.first else {
             #expect(Bool(false), "we should be able to get one item in the list")
+            return
         }
+        
         #expect(nodeInfo.accessDenied == false)
         #expect(nodeInfo.modtime == 1337)
         #expect(nodeInfo.name == "The quick brown fox jumps over the lazy dog.")

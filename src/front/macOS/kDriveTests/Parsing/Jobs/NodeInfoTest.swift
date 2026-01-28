@@ -39,7 +39,7 @@ struct NodeInfoTest {
     // MARK: - Parsing Test
 
     @Test("Successfully parses a valid NODE_INFO.json")
-    func parseValidSignal() async throws {
+    func parseValidJobCallback() async throws {
         // GIVEN
         let signalData = validJobCallbackData
 
