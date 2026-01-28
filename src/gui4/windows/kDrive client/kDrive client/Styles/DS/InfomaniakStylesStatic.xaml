@@ -30,6 +30,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check-outline">ms-appx:///Assets/DS/Icons/Actions/circle-check-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-minus-outline">ms-appx:///Assets/DS/Icons/Actions/circle-minus-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-block">ms-appx:///Assets/DS/Icons/Actions/circle-block.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-maybe-check">ms-appx:///Assets/DS/Icons/Actions/circle-maybe-check.svg</x:String>
 
     <!-- Books -->
     <x:String x:Key="Infomaniak.DS.Icons.Books.book">ms-appx:///Assets/DS/Icons/Books/book.svg</x:String>

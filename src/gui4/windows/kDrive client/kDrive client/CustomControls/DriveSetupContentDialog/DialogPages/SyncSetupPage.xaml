@@ -60,7 +60,7 @@
                 <TextBlock Grid.Column="1"
                            Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Name}"
                            TextTrimming="CharacterEllipsis"
-                           Style="{StaticResource BodyLargeTextBlockStyle}"
+                           Style="{StaticResource BodyTextBlockStyle}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
                     <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Name}" />
@@ -104,30 +104,32 @@
                 <Grid Grid.Row="1"
                       RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <Button Grid.Column="0"
-                            Grid.Row="0"
-                            Content="Modifier l'emplacement"
-                            Click="ChangeFolder_Click" />
+                    <DropDownButton Grid.Row="0"
+                                    Content="Emplacement par défaut"
+                                    Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                    Click="ChangeFolder_Click">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}" />
+                        </ToolTipService.ToolTip>
+                    </DropDownButton>
 
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="0"
-                               Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}"
-                               Style="{StaticResource BodyTextBlockStyle}"
-                               TextTrimming="CharacterEllipsis"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Left" />
+                    <DropDownButton Grid.Row="0"
+                                    Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' , Mode=OneWay}"
+                                    Click="ChangeFolder_Click">
 
-                    <TextBlock Grid.ColumnSpan="2"
-                               Grid.Row="1"
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}" />
+                        </ToolTipService.ToolTip>
+                        <TextBlock Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DropDownButton>
+
+                    <TextBlock Grid.Row="1"
                                Text="Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement."
                                TextTrimming="CharacterEllipsis"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -187,7 +189,8 @@
 
                     <StackPanel Grid.Column="1"
                                 Orientation="Horizontal"
-                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                                Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' ,Mode=OneWay}">
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
                                           Height="12"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
@@ -197,6 +200,34 @@
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                                Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
+                                          Height="16"
+                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                          VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="1"
+                                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource BodyTextBlockStyle}"
+                                   TextTrimming="WordEllipsis">
+
+                        </TextBlock>
+
+                        <ToolTipService.ToolTip>
+                            <ToolTip>
+                                <TextBlock>
+                                    <Run Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Mode=OneWay}" />
+                                    <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
+                                </TextBlock>
+                            </ToolTip>
+                        </ToolTipService.ToolTip>
+                    </StackPanel>
+
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="1"
                                Text="Les dossiers non sélectionnés resteront accessibles en ligne."

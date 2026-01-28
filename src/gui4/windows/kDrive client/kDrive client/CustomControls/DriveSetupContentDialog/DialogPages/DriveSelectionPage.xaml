@@ -152,14 +152,14 @@
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                TextTrimming="WordEllipsis"
                                                Visibility="{x:Bind ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip>
-                                            <TextBlock>
-                                                <Run Text="{x:Bind ExcludedNodeIds.Count, Mode=OneWay}" />
-                                                <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
-                                            </TextBlock>
-                                        </ToolTip>
-                                    </ToolTipService.ToolTip>
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock>
+                                                    <Run Text="{x:Bind ExcludedNodeIds.Count, Mode=OneWay}" />
+                                                    <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
+                                                </TextBlock>
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
                                     </TextBlock>
                                 </Grid>
                             </Grid>

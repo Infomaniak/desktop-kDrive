@@ -375,7 +375,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.ServerFolderPath] = Utility.ToBase64String(newSync.RemotePath),
                 [JsonKeys.ServerFolderNodeId] = Utility.ToBase64String(newSync.RemoteNodeId),
                 [JsonKeys.LiteSync] = newSync.SyncType == SyncType.Online,
-                [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
+                [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfo))
