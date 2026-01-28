@@ -41,7 +41,7 @@ struct UtilitySignalHandler {
         try await coherentCache.removeError(errorDbId)
     }
 
-    func handleErrorCleared(_ signal: Data) async throws {
+    func handleErrorCleared() async throws {
         await coherentCache.clearErrors()
     }
 }
