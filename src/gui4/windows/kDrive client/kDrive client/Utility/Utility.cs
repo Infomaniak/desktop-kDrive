@@ -279,6 +279,51 @@ namespace Infomaniak.kDrive
             else
                 return new string('*', localPart.Length) + domainPart;
         }
+
+        public static void ShowTeachingTip(XamlRoot xamlRoot, string xuid, Control? target = null)
+        {
+            var teachingTip = new TeachingTip
+            {
+                XamlRoot = xamlRoot,
+                Title = GetLocalizedString($"{xuid}/Title"),
+                Subtitle = GetLocalizedString($"{xuid}/Subtitle"),
+                Content = new TextBlock
+                {
+                    Text = GetLocalizedString($"{xuid}/Content"),
+                    TextWrapping = TextWrapping.Wrap
+                },
+                PreferredPlacement = TeachingTipPlacementMode.Bottom,
+                IsLightDismissEnabled = true,
+            };
+
+            if (target != null)
+            {
+                teachingTip.Target = target;
+            }
+
+            // Attach to visual tree
+            var rootPanel = (xamlRoot.Content as FrameworkElement);
+            if (rootPanel is Panel panel)
+            {
+                panel.Children.Add(teachingTip);
+            }
+
+            teachingTip.IsOpen = true;
+            teachingTip.Closed += TeachingTip_Closed;
+        }
+
+        private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            // Detach from visual tree
+            var parent = VisualTreeHelper.GetParent(sender);
+            if (parent is Panel panel)
+            {
+                panel.Children.Remove(sender);
+            }
+
+            // Unsubscribe from event
+            sender.Closed -= TeachingTip_Closed;
+        }
     }
 }
 

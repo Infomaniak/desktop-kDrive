@@ -11,15 +11,11 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
-    <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
-        <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
-        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
-        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
-    </Page.Resources>
-
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition />
+        </TransitionCollection>
+    </Page.Transitions>
     <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
         <Grid.RowDefinitions>
             <!-- Title -->
@@ -33,13 +29,13 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="Choisissez les dossiers à synchroniser sur cet ordinateur"
+                   x:Uid="CC_DriveSetupContentDialog_SyncExclusionPage_Title"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <!-- Message -->
         <TextBlock Grid.Row="1"
-                   Text="Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque."
+                   x:Uid="CC_DriveSetupContentDialog_SyncExclusionPage_Message"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

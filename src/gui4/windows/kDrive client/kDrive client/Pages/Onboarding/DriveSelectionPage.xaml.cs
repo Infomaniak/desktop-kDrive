@@ -62,6 +62,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
+                cb.IsEnabled = false;
                 var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 string desiredFolderName = drive.Name.StartsWith("kDrive") ? drive.Name : $"kDrive {drive.Name}";
@@ -77,6 +78,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 await SetNewSyncLocalPathAndUpdateVfsMode(newSync, result.Value.GoodPath);
 
                 _onBoardingViewModel.NewSyncs.Add(newSync);
+                cb.IsEnabled = true;
             }
         }
 
@@ -84,6 +86,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
+                cb.IsEnabled = false;
                 var syncToRemove = _onBoardingViewModel.NewSyncs.FirstOrDefault(s => s.Drive == drive);
                 if (syncToRemove != null)
                 {
@@ -93,6 +96,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 {
                     Logger.Log(Logger.Level.Warning, "Drive to remove not found in NewSyncs list");
                 }
+                cb.IsEnabled = true;
             }
         }
 
@@ -119,105 +123,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void AdvancedSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            // await AdvancedSettingsDialog.ShowAsync();
             var driveSetupDialog = new CustomControls.DriveSetupContentDialog(this.XamlRoot, _onBoardingViewModel!.NewSyncs);
             await driveSetupDialog.ShowAsync();
-        }
-
-        private async void ChangeSyncPathButton_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
-
-            //disable the button to avoid double-clicking
-            var senderButton = sender as Button;
-            if (senderButton != null)
-                senderButton.IsEnabled = false;
-
-            NewSync? newSync = senderButton?.DataContext as NewSync;
-            if (newSync is null)
-            {
-                Logger.Log(Logger.Level.Error, "ChangeSyncPathButton_Click: DataContext is not a NewSync");
-                if (senderButton != null)
-                    senderButton.IsEnabled = true;
-                return;
-            }
-
-            // Create a folder picker
-            FolderPicker openPicker = new();
-            var window = ((App)Application.Current)?.CurrentWindow;
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
-            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            openPicker.FileTypeFilter.Add("*");
-            Windows.Storage.StorageFolder folder = await openPicker.PickSingleFolderAsync();
-            if (folder != null)
-            {
-                Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
-                if (_onBoardingViewModel is null)
-                {
-                    Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null in ChangeSyncPathButton_Click");
-                    if (senderButton != null)
-                        senderButton.IsEnabled = true;
-                    return;
-                }
-
-                if (_onBoardingViewModel.NewSyncs.Any(s => s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
-                {
-                    Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
-                    FolderSelectionError.IsOpen = true;
-                    if (senderButton != null)
-                        senderButton.IsEnabled = true;
-                    return;
-                }
-
-                var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
-                if (result is null || result == false)
-                {
-                    Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing");
-                    FolderSelectionError.IsOpen = true;
-                    if (senderButton != null)
-                        senderButton.IsEnabled = true;
-                    return;
-                }
-
-                await SetNewSyncLocalPathAndUpdateVfsMode(newSync, folder.Path);
-                Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync!.Drive?.Name ?? "unknown"}' updated to '{newSync!.LocalPath}' with sync type '{newSync.SyncType}'");
-                RefreshAdvancedSettingsConfirmButtonIsEnabled();
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Info, "Operation cancelled - No folder was picked");
-            }
-
-            if (senderButton != null)
-                senderButton.IsEnabled = true;
-        }
-
-        private void AdvancedSettingsDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            _previousSyncPaths.Clear();
-            if (_onBoardingViewModel == null)
-            {
-                Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null in AdvancedSettingsDialog_Opened");
-                return;
-            }
-            // Store the current paths to allow reverting if needed
-            foreach (var sync in _onBoardingViewModel.NewSyncs)
-            {
-                _previousSyncPaths[sync] = sync.LocalPath;
-            }
-        }
-
-        private void RefreshAdvancedSettingsConfirmButtonIsEnabled()
-        {
-            if (_onBoardingViewModel == null)
-            {
-                Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null");
-                return;
-            }
-            // Ensure at least one sync path has changed to enable the confirm button
-            AdvancedSettingsDialog.IsPrimaryButtonEnabled = _onBoardingViewModel.NewSyncs.Where(s => _previousSyncPaths.ContainsKey(s) && _previousSyncPaths[s] != s.LocalPath).Any();
         }
 
         private void Finish_Click(object sender, RoutedEventArgs e)

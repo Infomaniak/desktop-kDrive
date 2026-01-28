@@ -28,8 +28,8 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -41,7 +41,11 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind SearchItem.Name}" />
+                    </ToolTipService.ToolTip>
+                </TextBlock>
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
@@ -82,8 +86,8 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -94,7 +98,11 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind SearchItem.Name}" />
+                    </ToolTipService.ToolTip>
+                </TextBlock>
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
@@ -108,6 +116,7 @@
                                Grid.Row="0"
                                Width="16"
                                HorizontalAlignment="Right"
+                               Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"

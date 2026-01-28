@@ -19,7 +19,11 @@
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </Page.Resources>
-
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition />
+        </TransitionCollection>
+    </Page.Transitions>
     <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
         <Grid.RowDefinitions>
             <!-- Title -->
