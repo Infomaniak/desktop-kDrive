@@ -67,4 +67,18 @@ public struct NodeJobs: Sendable {
 
         return decodedMessage.body.nodeSubFolderInfoList
     }
+
+    public func getNodeSubfolders(driveDbId: Int32,
+                                  nodeId: String,
+                                  withPath: Bool = true) async throws -> [NodeInfoResponseMetadata] {
+        IKLogger.data.log("Query to get node subfolder info from driveDbId")
+        let query = NodeAlternateQuery(driveDbId: driveDbId, nodeId: nodeId, withPath: withPath)
+        let request = await RequestMessage<NodeAlternateQuery>(num: RequestNum.NODE_SUBFOLDERS2, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeSubfoldersResponse>.self)
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.nodeSubFolderInfoList
+    }
 }

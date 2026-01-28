@@ -34,6 +34,12 @@ struct NodeQuery: Codable, Sendable {
     let withPath: Bool
 }
 
+struct NodeAlternateQuery: Codable, Sendable {
+    let driveDbId: Int32
+    @Base64CodedString var nodeId: String
+    let withPath: Bool
+}
+
 struct NodeInfoResponse: Codable, Sendable {
     let nodeInfo: NodeInfoResponseMetadata
 }
