@@ -1,9 +1,7 @@
 using Infomaniak.kDrive.Pages.DriveSetupContentDialog;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using System.Collections.Generic;
 
 namespace Infomaniak.kDrive.CustomControls
@@ -24,8 +22,8 @@ namespace Infomaniak.kDrive.CustomControls
             _driveSetupContentDialogVM = new DriveSetupContentDialogVM(newSyncs);
             base.DataContext = _driveSetupContentDialogVM;
             base.XamlRoot = xamlRoot;
-            base.SecondaryButtonText = "Valider";
-            base.PrimaryButtonText = "Annuler";
+            base.SecondaryButtonText = Utility.GetLocalizedString("CC_DriveSetupContentDialog_ConfirmButton/Content");
+            base.PrimaryButtonText = Utility.GetLocalizedString("CC_DriveSetupContentDialog_CancelButton/Content");
             base.DefaultButton = ContentDialogButton.Secondary;
             var frame = new Frame();
             base.Content = frame;
