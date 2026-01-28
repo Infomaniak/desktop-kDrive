@@ -50,16 +50,18 @@ struct StorageView: View {
 
             Section {
                 InformationBlockContentView(
-                    title: "Synchronisation",
-                    subtitle: "Gérez les dossiers synchronisés pour libérer de l’espace sur votre ordinateur.",
-                    button: InformationBlockButton(title: "Gérer", action: didTapFreeUpSpace)
+                    title: KDriveLocalizable.storageSyncBlockTitle,
+                    subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
+                    button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
                 )
             }
         }
         .groupedFormatStyle()
     }
 
-    private func didTapFreeUpSpace() {}
+    private func didTapFreeUpSpace() {
+        // TODO: Redirect to Settings/Synchro
+    }
 }
 
 #Preview {
