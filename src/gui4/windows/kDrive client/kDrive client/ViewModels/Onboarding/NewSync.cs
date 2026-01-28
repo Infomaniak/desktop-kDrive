@@ -28,7 +28,9 @@ namespace Infomaniak.kDrive.ViewModels
     public class NewSync : UISafeObservableObject, ISync
     {
         // Sync properties
+        private string _defaultPath = "";
         private string _localPath = "";
+        private bool _isDefaultLocalPath = false;
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
@@ -38,6 +40,7 @@ namespace Infomaniak.kDrive.ViewModels
         public NewSync() { }
         public NewSync(NewSync other)
         {
+            DefaultPath = other.DefaultPath;
             LocalPath = other.LocalPath;
             RemotePath = other.RemotePath;
             RemoteNodeId = other.RemoteNodeId;
@@ -46,11 +49,27 @@ namespace Infomaniak.kDrive.ViewModels
             ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
         }
 
+        public string DefaultPath
+        {
+            get => _defaultPath;
+            init => SetPropertyInUIThread(ref _defaultPath, value);
+        }
+
         public string LocalPath
         {
             get => _localPath;
-            set => SetPropertyInUIThread(ref _localPath, value);
+            set { 
+                SetPropertyInUIThread(ref _localPath, value);
+                IsDefaultLocalPath = _localPath == _defaultPath;
+            }
         }
+
+        public bool IsDefaultLocalPath
+        {
+            get => _isDefaultLocalPath;
+            set => SetPropertyInUIThread(ref _isDefaultLocalPath, value);
+        }
+
         public string RemotePath
         {
             get => _remotePath;
