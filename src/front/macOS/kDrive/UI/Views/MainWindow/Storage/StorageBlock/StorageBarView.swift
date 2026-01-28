@@ -28,7 +28,7 @@ struct StorageBarView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            HStack(spacing: AppPadding.padding2) {
+            HStack(spacing: 1) {
                 ForEach(items) { item in
                     Rectangle()
                         .fill(item.color)

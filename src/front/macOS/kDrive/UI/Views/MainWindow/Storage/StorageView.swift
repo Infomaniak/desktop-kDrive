@@ -41,15 +41,25 @@ struct StorageView: View {
 
     var body: some View {
         Form {
-            StorageBlockView(
+            StorageSectionView(
                 title: "Macintosh",
                 usedBytes: 60_000_000_000,
                 availableBytes: 250_000_000_000,
                 items: macStorageItems
             )
+
+            Section {
+                InformationBlockContentView(
+                    title: "Synchronisation",
+                    subtitle: "Gérez les dossiers synchronisés pour libérer de l’espace sur votre ordinateur.",
+                    button: InformationBlockButton(title: "Gérer", action: didTapFreeUpSpace)
+                )
+            }
         }
         .groupedFormatStyle()
     }
+
+    private func didTapFreeUpSpace() {}
 }
 
 #Preview {
