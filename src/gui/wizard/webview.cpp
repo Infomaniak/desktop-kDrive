@@ -82,8 +82,8 @@ WebView::WebView(QWidget *parent) :
     _page = new WebEnginePage(_profile);
     _schemeHandler = new WebViewPageUrlSchemeHandler(this);
 
-#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
-    // On ARM Linux with QT 6.7.3, neither Chromium nor Qt automatically trigger a webview update.
+#if defined(Q_OS_LINUX)
+    // On Linux with QT 6.5.3 and more, neither Chromium nor Qt automatically trigger a webview update.
     // Only certain user actions can refresh the page.
     // Therefore, we use a timer to force the refresh.
     auto *redrawTimer = new QTimer(this);
