@@ -67,3 +67,27 @@ struct NodeSizeQuery: Codable, Sendable {
 struct NodeSizeResponse: Codable, Sendable {
     let folderSize: Int64
 }
+
+struct AddMissingFolderQuery: Codable, Sendable {
+    let driveDbId: Int32
+    let folderList: [MissingFolderQuery]
+}
+
+struct MissingFolderQuery: Codable, Sendable {
+    @Base64CodedString var name: String
+    @Base64CodedString var nodeId: String
+}
+
+public struct MissingFolder: Sendable {
+    let name: String
+    let nodeId: String
+
+    public init(name: String, nodeId: String) {
+        self.name = name
+        self.nodeId = nodeId
+    }
+}
+
+struct MissingFolderResponse: Codable, Sendable {
+    @Base64CodedString var parentNodeId: String
+}

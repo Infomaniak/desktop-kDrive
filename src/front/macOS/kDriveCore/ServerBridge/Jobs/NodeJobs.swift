@@ -93,4 +93,17 @@ public struct NodeJobs: Sendable {
 
         return decodedMessage.body.folderSize
     }
+
+    public func createMissingFolders(driveDbId: Int32, folders: [MissingFolder]) async throws -> String {
+        IKLogger.data.log("Query to create missing folders")
+        let folders = folders.map { MissingFolderQuery(name: $0.name, nodeId: $0.nodeId) }
+        let query = AddMissingFolderQuery(driveDbId: driveDbId, folderList: folders)
+        let request = await RequestMessage<AddMissingFolderQuery>(num: RequestNum.NODE_CREATEMISSINGFOLDERS, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<MissingFolderResponse>.self)
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.parentNodeId
+    }
 }
