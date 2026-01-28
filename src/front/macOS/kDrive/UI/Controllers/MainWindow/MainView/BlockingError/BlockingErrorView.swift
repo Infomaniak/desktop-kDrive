@@ -52,7 +52,7 @@ struct BlockingErrorView: View {
                     .font(.Tokens.titleEmphasized)
                 if let subtitle = blockingError.subtitle {
                     Text(subtitle)
-                        .font(.body)
+                        .font(.Tokens.body)
                 }
             }
             .multilineTextAlignment(.center)
