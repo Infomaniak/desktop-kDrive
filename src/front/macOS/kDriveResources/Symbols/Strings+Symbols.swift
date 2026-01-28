@@ -133,9 +133,9 @@ public enum KDriveLocalizable {
   /// loco:697a077ee16575000806de62
   public static let storageMacFreeSpace = KDriveLocalizable.tr("Localizable", "storageMacFreeSpace", fallback: "Free space")
   /// loco:697a0768c39a2189f5022564
-  public static let storageMacUsedByComputed = KDriveLocalizable.tr("Localizable", "storageMacUsedByComputed", fallback: "Other Mac files")
+  public static let storageMacUsedByComputer = KDriveLocalizable.tr("Localizable", "storageMacUsedByComputer", fallback: "Other Mac files")
   /// loco:697a07436d99d0c2c00449e2
-  public static let storageMacUsedByKDrive = KDriveLocalizable.tr("Localizable", "storageMacUsedByKDrive", fallback: "KDrive files stored on your Mac")
+  public static let storageMacUsedByKDrive = KDriveLocalizable.tr("Localizable", "storageMacUsedByKDrive", fallback: "kDrive files stored on your Mac")
   /// loco:6979e265a8419bb7510c8122
   public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")

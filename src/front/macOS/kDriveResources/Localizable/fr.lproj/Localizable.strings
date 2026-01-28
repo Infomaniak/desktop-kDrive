@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 28 Jan 2026 13:57:49 +0100
+ * Exported at: Wed, 28 Jan 2026 15:01:35 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -185,7 +185,7 @@
 "storageMacFreeSpace" = "Espace libre";
 
 /* loco:697a0768c39a2189f5022564 */
-"storageMacUsedByComputed" = "Autres fichiers du Mac";
+"storageMacUsedByComputer" = "Autres fichiers du Mac";
 
 /* loco:697a07436d99d0c2c00449e2 */
 "storageMacUsedByKDrive" = "Fichiers kDrive stockés sur votre Mac";
