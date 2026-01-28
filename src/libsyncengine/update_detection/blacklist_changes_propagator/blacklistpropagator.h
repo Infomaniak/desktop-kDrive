@@ -36,6 +36,7 @@ class BlacklistPropagator : public AbstractPropagatorJob {
     private:
         ExitInfo checkNodes();
         ExitInfo removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId);
+        ExitInfo cancelHydration(const SyncPath &absoluteLocalPath);
 
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
