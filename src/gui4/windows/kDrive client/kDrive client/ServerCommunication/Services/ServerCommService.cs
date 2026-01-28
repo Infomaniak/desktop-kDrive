@@ -959,7 +959,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.UTILITY_ERROR_ADDED:
                     await HandleErrorAddedAsync(sender, args);
                     break;
-                case SignalNum.UTILITY_ERRORS_REMOVED:
+                case SignalNum.UTILITY_ERROR_REMOVED:
                     await HandleErrorRemovedAsync(sender, args);
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:

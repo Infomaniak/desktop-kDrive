@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_GET_APPSTATE,
         UTILITY_SEND_LOG_TO_SUPPORT,
         UTILITY_CANCEL_LOG_TO_SUPPORT,
-        UTILITY_GET_LOG_ESTIMATED_SIZE,
+        UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
         UTILITY_CRASH,
         UTILITY_QUIT,
         UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -105,7 +105,7 @@ namespace Infomaniak.kDrive.Types
         // Drive
         DRIVE_ADDED,
         DRIVE_UPDATED,
-        DRIVE_QUOTAUPDATED,
+        DRIVE_QUOTAUPDATED_LEGACY,
         DRIVE_REMOVED,
         DRIVE_DELETE_FAILED,
         // Sync
@@ -126,7 +126,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_SHOW_NOTIFICATION,
         UTILITY_ERROR_ADDED_LEGACY,
         UTILITY_ERROR_ADDED,
-        UTILITY_ERRORS_REMOVED,
+        UTILITY_ERROR_REMOVED,
         UTILITY_ERRORS_CLEARED,
         UTILITY_SHOW_SETTINGS,
         UTILITY_SHOW_SYNTHESIS,
