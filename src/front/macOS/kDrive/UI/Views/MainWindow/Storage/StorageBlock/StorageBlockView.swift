@@ -16,7 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
+import kDriveResources
 
 extension View {
     func groupedFormatStyle() -> some View {
@@ -39,6 +41,8 @@ struct StorageItem: Sendable, Identifiable {
 }
 
 struct StorageBlockView: View {
+    static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
+
     let title: String
 
     let usedBytes: Int64
@@ -54,12 +58,15 @@ struct StorageBlockView: View {
                         .bold()
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text(usedBytes, format: .byteCount(style: .file))
-                        .foregroundStyle(.secondary)
+                    Text(KDriveLocalizable.storageUsageLabel(
+                        usedBytes.formatted(Self.sizeFormatter),
+                        availableBytes.formatted(Self.sizeFormatter)
+                    ))
+                    .foregroundStyle(.secondary)
+
                 }
 
-                RoundedRectangle(cornerRadius: AppRadius.radius4)
-                    .frame(height: 16)
+                StorageBarView(items: items)
             }
 
             ForEach(items) { item in
