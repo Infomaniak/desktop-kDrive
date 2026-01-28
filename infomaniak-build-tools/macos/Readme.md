@@ -179,7 +179,7 @@ Conan version 2.x.x
    ```ini
    [settings]
    os=Macos
-   arch=armv8
+   arch=armv8|x86_64
    compiler=apple-clang
    compiler.version=16
    compiler.cppstd=20
