@@ -67,13 +67,7 @@ public enum PreviewHelper {
         color: .red
     )
 
-    @available(macOS 12.0, *)
-    public static let blockingError = UIBlockingError(
-        title: "You have been disconnected",
-        subtitle: "Log back to use kDrive",
-        drive: Self.drive2,
-        badgeIcon: Image(systemName: "exclamationmark.triangle.fill"),
-        badgeBackgroundColor: ColorToken.Status.Light.warning.asColor,
-        badgeColor: ColorToken.Status.Medium.warning.asColor
-    )
+    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
+        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+    }
 }

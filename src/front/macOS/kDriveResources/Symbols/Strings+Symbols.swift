@@ -36,28 +36,46 @@ public enum KDriveLocalizable {
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
   /// loco:6931a5687031691272002314
   public static let buttonOpenKDrive = KDriveLocalizable.tr("Localizable", "buttonOpenKDrive", fallback: "Open kDrive")
+  /// loco:697b65a56840f9d35605a134
+  public static let buttonRefresh = KDriveLocalizable.tr("Localizable", "buttonRefresh", fallback: "Refresh")
   /// loco:6964e1fd78f375ec03073c88
   public static let buttonRestartSynchro = KDriveLocalizable.tr("Localizable", "buttonRestartSynchro", fallback: "Restart synchronization")
+  /// loco:697b6560c18f7ca128034f16
+  public static let buttonRetry = KDriveLocalizable.tr("Localizable", "buttonRetry", fallback: "Retry")
   /// loco:6964e1dfed4b6acb0107409a
   public static let buttonSeeActivities = KDriveLocalizable.tr("Localizable", "buttonSeeActivities", fallback: "See activities")
   /// loco:69240f7b15d05a975c07dc13
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
   public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
+  /// loco:697b6767849b0ee24c089f46
+  public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
+  /// loco:697b65886840f9d35605a132
+  public static let buttonWakeUp = KDriveLocalizable.tr("Localizable", "buttonWakeUp", fallback: "Wake-up")
   /// loco:696a260311ac2de6c6029683
   public static let driveAccessDeniedErrorDescription = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorDescription", fallback: "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.")
   /// loco:696a25f0bcde38f2b9018124
   public static let driveAccessDeniedErrorTitle = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorTitle", fallback: "Access denied to kDrive")
+  /// loco:6979e320c8fc8496d00b3a62
+  public static let driveAsleepErrorTitle = KDriveLocalizable.tr("Localizable", "driveAsleepErrorTitle", fallback: "Your kDrive is asleep")
   /// loco:696ddb204d9cd9e240095142
   public static let driveLockedAdminErrorDescription = KDriveLocalizable.tr("Localizable", "driveLockedAdminErrorDescription", fallback: "This kDrive has not been renewed. You can no longer access it.\nRenew your subscription to reactivate the service.")
   /// loco:696dda82726515a10a0772c2
   public static let driveLockedErrorDescription = KDriveLocalizable.tr("Localizable", "driveLockedErrorDescription", fallback: "This kDrive has not been renewed. You can no longer access it.\nContact your administrator to reactivate the service.")
   /// loco:696df7c300e7a6e07201ee53
   public static let driveLockedErrorTitle = KDriveLocalizable.tr("Localizable", "driveLockedErrorTitle", fallback: "Your kDrive has expired")
+  /// loco:6979e45003f623afa50f5592
+  public static let driveLoggingErrorDescription = KDriveLocalizable.tr("Localizable", "driveLoggingErrorDescription", fallback: "Please log in again to continue using kDrive.")
+  /// loco:6979e43e93193f40e100ebc2
+  public static let driveLoggingErrorTitle = KDriveLocalizable.tr("Localizable", "driveLoggingErrorTitle", fallback: "You have been disconnected")
   /// loco:696a29351c25c87abb045892
   public static let driveMaintenanceErrorDescription = KDriveLocalizable.tr("Localizable", "driveMaintenanceErrorDescription", fallback: "This kDrive is temporarily unavailable for maintenance.\nPlease try again in a few minutes.")
   /// loco:696a2779d558c16f7d0a7ff9
   public static let driveMaintenanceErrorTitle = KDriveLocalizable.tr("Localizable", "driveMaintenanceErrorTitle", fallback: "Maintenance in progress")
+  /// loco:6979e3dfba525501090fbfa8
+  public static let driveWakingUpErrorDescription = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorDescription", fallback: "kDrive is waking up… this may take a few moments.")
+  /// loco:6979e389195e90fdc909d252
+  public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive waking up")
   /// loco:695e57f549f806b5ef0a3ac2
   public static let folderFavorites = KDriveLocalizable.tr("Localizable", "folderFavorites", fallback: "Favorites")
   /// loco:695e584bbc7544361b08b832

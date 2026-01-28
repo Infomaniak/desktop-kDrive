@@ -21,7 +21,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-@available(macOS 12.0, *)
 struct DriveLabelBadge: View {
     let icon: Image
     let backgroundColor: Color
@@ -44,7 +43,6 @@ struct DriveLabelBadge: View {
     }
 }
 
-@available(macOS 12.0, *)
 struct DriveLabel: View {
     let drive: UIDrive
 
@@ -77,14 +75,16 @@ struct DriveLabel: View {
     }
 }
 
-@available(macOS 12.0, *)
 #Preview {
-    DriveLabel(
-        drive: PreviewHelper.blockingError.drive,
-        badgeIcon: PreviewHelper.blockingError.badgeIcon,
-        badgeBackgroundColor: PreviewHelper.blockingError.badgeBackgroundColor,
-        badgeColor: PreviewHelper.blockingError.badgeColor
-    )
-    .padding(32)
-    .background(Color.gray)
+    VStack {
+        let blockingError = PreviewHelper.blockingErrorFor(syncError: .asleep, isDriveAdmin: false)
+        DriveLabel(
+            drive: blockingError.drive,
+            badgeIcon: blockingError.badgeIcon,
+            badgeBackgroundColor: blockingError.badgeBackgroundColor,
+            badgeColor: blockingError.badgeColor
+        )
+        .padding(32)
+        .background(Color.gray)
+    }
 }

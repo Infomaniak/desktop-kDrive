@@ -80,9 +80,14 @@ struct BlockingErrorView: View {
 }
 
 #Preview {
-    BlockingErrorView(
-        blockingError: PreviewHelper.blockingError,
-        isLoading: true,
-        action: DriveErrorAction(title: "Refresh") {}
-    )
+    VStack {
+        ForEach(SynchroError.allCases, id: \.self) { error in
+            BlockingErrorView(
+                blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true),
+                isLoading: true,
+                action: DriveErrorAction(title: "Refresh") {}
+            )
+            .frame(minWidth: 512)
+        }
+    }
 }

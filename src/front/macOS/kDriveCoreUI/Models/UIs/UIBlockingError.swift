@@ -31,35 +31,23 @@ public struct UIBlockingError: Sendable {
     public let badgeBackgroundColor: Color
     public let badgeColor: Color
 
-    public init(
-        title: String,
-        subtitle: String?,
-        drive: UIDrive,
-        badgeIcon: Image,
-        badgeBackgroundColor: Color,
-        badgeColor: Color
-    ) {
-        self.title = title
-        self.subtitle = subtitle
-        self.drive = drive
-        self.badgeIcon = badgeIcon
-        self.badgeBackgroundColor = badgeBackgroundColor
-        self.badgeColor = badgeColor
-    }
-
-    public init?(drive: Drive, error: SynchroError?) {
-        guard let error else {
-            return nil
-        }
-
-        self.drive = UIDrive(drive: drive)
+    public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: SynchroError) {
+        drive = uiDrive
         switch error {
         case .asleep:
-            return nil // TODO: implement
+            title = KDriveLocalizable.driveAsleepErrorTitle
+            subtitle = ""
+            badgeIcon = KDriveResources.moonSleep.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.security.asColor
+            badgeColor = ColorToken.Status.Medium.security.asColor
         case .wakingUp:
-            return nil // TODO: implement
+            title = KDriveLocalizable.driveWakingUpErrorTitle
+            subtitle = KDriveLocalizable.driveWakingUpErrorDescription
+            badgeIcon = KDriveResources.sun.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.security.asColor
+            badgeColor = ColorToken.Status.Medium.security.asColor
         case .notRenew:
-            if drive.admin {
+            if isDriveAdmin {
                 subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
             } else {
                 subtitle = KDriveLocalizable.driveLockedErrorDescription
@@ -81,8 +69,20 @@ public struct UIBlockingError: Sendable {
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
         case .loggingError:
-            return nil // TODO: implement
+            title = KDriveLocalizable.driveLoggingErrorTitle
+            subtitle = KDriveLocalizable.driveLoggingErrorDescription
+            badgeIcon = KDriveResources.doorArrowRight.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.neutral.asColor
+            badgeColor = ColorToken.Status.Medium.neutral.asColor
         }
+    }
+
+    public init?(drive: Drive, error: SynchroError?) {
+        guard let error else {
+            return nil
+        }
+
+        self.init(uiDrive: UIDrive(drive: drive), isDriveAdmin: drive.admin, error: error)
     }
 }
 
