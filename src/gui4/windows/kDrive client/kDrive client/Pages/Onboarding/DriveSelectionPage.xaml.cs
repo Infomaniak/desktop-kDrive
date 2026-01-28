@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
 
-                NewSync newSync = new() { Drive = drive };
+                NewSync newSync = new() { Drive = drive, DefaultPath = result.Value.GoodPath };
                 await SetNewSyncLocalPathAndUpdateVfsMode(newSync, result.Value.GoodPath);
 
                 _onBoardingViewModel.NewSyncs.Add(newSync);

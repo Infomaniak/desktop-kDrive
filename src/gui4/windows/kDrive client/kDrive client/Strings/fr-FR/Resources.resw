@@ -1088,4 +1088,32 @@ Infomaniak</value>
   <data name="CC_LogUploadSettingsCard_Popup.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Configurer vos kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Configure.Content" xml:space="preserve">
+    <value>Configurer</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location.Text" xml:space="preserve">
+    <value>Emplacement:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion.Text" xml:space="preserve">
+    <value>Contenu synchronisé:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Default.Text" xml:space="preserve">
+    <value>Tout le kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content.Text" xml:space="preserve">
+    <value>Vous avez exclus certains dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location_Default.Text" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Message.Text" xml:space="preserve">
+    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip.Text" xml:space="preserve">
+    <value>dossier(s) exclu(s)</value>
+    <comment>x dossiers exclus</comment>
+  </data>
 </root>

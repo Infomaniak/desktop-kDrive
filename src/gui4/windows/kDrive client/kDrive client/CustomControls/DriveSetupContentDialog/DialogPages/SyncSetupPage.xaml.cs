@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else
             {
-                DriveSetupContentDialogVM.FinishSetup();
+                DriveSetupContentDialogVM.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Confirmed);
             }
         }
 
@@ -71,14 +71,15 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
                 return;
             }
+            DriveSetupContentDialogVM.RevertCurrentSyncChanges();
 
-            if (DriveSetupContentDialogVM!.IsMultipleDrivesSetup())
+            if (DriveSetupContentDialogVM.IsMultipleDrivesSetup())
             {
                 Frame.Navigate(typeof(DriveSelectionPage), DriveSetupContentDialogVM);
             }
             else
             {
-                DriveSetupContentDialogVM.FinishSetup();
+                DriveSetupContentDialogVM.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled);
             }
         }
 

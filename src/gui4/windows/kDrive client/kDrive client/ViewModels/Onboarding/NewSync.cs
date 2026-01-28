@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.ViewModels
         public IDrive? Drive
         {
             get => drive;
-            set => SetPropertyInUIThread(ref drive, value);
+            init => SetPropertyInUIThread(ref drive, value);
         }
 
         public SyncType SyncType

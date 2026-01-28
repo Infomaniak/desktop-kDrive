@@ -13,10 +13,6 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
-        <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
-        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </Page.Resources>
 
@@ -33,11 +29,11 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="Configurer vos kDrive"
+                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Title"
                    Style="{StaticResource TitleTextBlockStyle}" />
 
         <TextBlock Grid.Row="1"
-                   Text="Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser."
+                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Message"
                    TextTrimming="WordEllipsis"
                    Style="{StaticResource BodyTextBlockStyle}" />
 
@@ -99,18 +95,22 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
-                                               Text="Emplacement :"
+                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Location"
                                                FontSize="12"
                                                FontWeight="Normal"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
                                     <TextBlock Grid.Column="1"
-                                               Text="Par défaut"
+                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Location_Default"
                                                FontSize="12"
                                                FontWeight="Bold"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                TextTrimming="CharacterEllipsis"
-                                               Visibility="{x:Bind IsDefaultLocalPath, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                               Visibility="{x:Bind IsDefaultLocalPath, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
+                                        </ToolTipService.ToolTip>
+                                    </TextBlock>
 
                                     <TextBlock Grid.Column="1"
                                                Text="{x:Bind LocalPath, Mode=OneWay}"
@@ -133,22 +133,40 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
-                                               Text="Contenu synchronisé :"
+                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion"
                                                FontSize="12"
                                                FontWeight="Normal"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock Grid.Column="1"
-                                               Text="Tout le kDrive"
+                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Default"
                                                FontSize="12"
                                                FontWeight="Bold"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="WordEllipsis" />
+                                               TextTrimming="WordEllipsis"
+                                               Visibility="{x:Bind ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay }" />
+
+                                    <TextBlock Grid.Column="1"
+                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               TextTrimming="WordEllipsis"
+                                               Visibility="{x:Bind ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip>
+                                            <TextBlock>
+                                                <Run Text="{x:Bind ExcludedNodeIds.Count, Mode=OneWay}" />
+                                                <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
+                                            </TextBlock>
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                    </TextBlock>
                                 </Grid>
                             </Grid>
                             <!-- Edit button -->
                             <HyperlinkButton Grid.Column="2"
                                              Grid.RowSpan="2"
-                                             Content="Configurer"
+                                             x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Configure"
                                              Click="EditButton_Click" />
                         </Grid>
                     </Border>

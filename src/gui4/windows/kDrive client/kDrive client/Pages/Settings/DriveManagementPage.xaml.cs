@@ -1,9 +1,13 @@
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -225,8 +229,77 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private void SetupMainSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void SetupMainSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (BaseDrive is null)
+            {
+                Logger.Log(Logger.Level.Error, "Cannot setup main sync: BaseDrive is null");
+                return;
+            }
+
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string desiredFolderName = BaseDrive.Name.StartsWith("kDrive") ? BaseDrive.Name : $"kDrive {BaseDrive.Name}";
+            string desiredPath = Path.Combine(userProfile, desiredFolderName);
+            IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(BaseDrive, desiredPath, CancellationToken.None);
+            if (!result.HasValue || result.Value.GoodPath is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}': {result?.ErrorMessage ?? "Unknown error"}");
+                return;
+            }
+
+            NewSync newSync = new NewSync()
+            {
+                Drive = BaseDrive,
+                DefaultPath = result.Value.GoodPath,
+                LocalPath = result.Value.GoodPath
+            };
+            List<NewSync> newSyncs = new() { newSync };
+
+            CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
+            await dialog.ShowAsync();
+
+            if (dialog.Result == CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled)
+            {
+                Logger.Log(Logger.Level.Info, $"User canceled main sync setup for drive '{BaseDrive.Name}'");
+                if (control is not null)
+                    control.IsEnabled = true;
+                return;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+
+            Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
+            await commService.AddSync(newSync, CancellationToken.None);
+
+            if (ManagedDrive is null) // if the drive was not configured before, set it up now
+            {
+                Drive? drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                int count = 100;
+                while (drive is null && count > 0)
+                {
+                    await Task.Delay(100);
+                    drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                    count--;
+                }
+
+                if (drive is not null)
+                {
+                    ManagedDrive = drive;
+                    Bindings.Update();
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Drive '{BaseDrive.Name}' was not found in AllDrives after sync setup");
+                }
+            }
+
+            if (control is not null)
+                control.IsEnabled = true;
 
         }
 

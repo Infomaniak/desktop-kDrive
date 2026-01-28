@@ -10,7 +10,14 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public partial class DriveSetupContentDialog : ContentDialog
     {
+        public enum DriveSetupResult
+        {
+            Confirmed,
+            Cancelled
+        }
+
         private DriveSetupContentDialogVM _driveSetupContentDialogVM;
+        public DriveSetupResult Result { get; private set; }
 
         public DriveSetupContentDialog(XamlRoot xamlRoot, IList<NewSync> newSyncs)
         {
@@ -28,8 +35,9 @@ namespace Infomaniak.kDrive.CustomControls
             _driveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
         }
 
-        private void DriveSetupContentDialogVM_SetupFinished(object? sender, EventArgs e)
+        private void DriveSetupContentDialogVM_SetupFinished(object? sender, DriveSetupResult e)
         {
+            Result = e;
             base.Hide();
         }
 

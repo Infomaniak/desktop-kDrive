@@ -1,6 +1,4 @@
 using Infomaniak.kDrive.CustomControls;
-using Infomaniak.kDrive.OnBoarding;
-using Infomaniak.kDrive.Pages.Onboarding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -8,7 +6,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
@@ -32,11 +29,11 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             if (e.Parameter is DriveSetupContentDialogVM viewModel)
             {
                 DriveSetupContentDialogVM = viewModel;
-
+                DriveSetupContentDialogVM.CurrentSync = null;
                 if (!DriveSetupContentDialogVM.NewSyncs.Any())
                 {
                     Logger.Log(Logger.Level.Fatal, "No NewSyncs found in DriveSetupContentDialogVM when navigating to DriveSelectionPage");
-                    DriveSetupContentDialogVM.FinishSetup();
+                    DriveSetupContentDialogVM.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled);
                     return;
                 }
 
@@ -67,12 +64,13 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
-            DriveSetupContentDialogVM?.FinishSetup();
+            DriveSetupContentDialogVM?.RevertAllChanges();
+            DriveSetupContentDialogVM?.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled);
         }
 
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
-            DriveSetupContentDialogVM?.FinishSetup();
+            DriveSetupContentDialogVM?.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Confirmed);
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
