@@ -290,6 +290,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 if (drive is not null)
                 {
                     ManagedDrive = drive;
+                    BaseDrive = drive;
                     Bindings.Update();
                 }
                 else
