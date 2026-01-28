@@ -57,3 +57,13 @@ public struct NodeInfoResponseMetadata: Codable, Sendable {
     let size: Int64
     let accessDenied: Bool
 }
+
+struct NodeSizeQuery: Codable, Sendable {
+    let userDbId: Int32
+    let driveId: Int32
+    @Base64CodedString var nodeId: String
+}
+
+struct NodeSizeResponse: Codable, Sendable {
+    let folderSize: Int64
+}
