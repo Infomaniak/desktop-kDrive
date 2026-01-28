@@ -21,7 +21,6 @@ import InfomaniakConcurrency
 import InfomaniakDI
 
 public struct NodeJobs: Sendable {
-    @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}
