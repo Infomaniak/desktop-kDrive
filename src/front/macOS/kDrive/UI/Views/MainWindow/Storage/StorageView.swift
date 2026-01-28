@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct StorageItem: Sendable, Identifiable {
@@ -32,7 +33,9 @@ struct StorageItem: Sendable, Identifiable {
 struct StorageView: View {
     private var macStorageItems: [StorageItem] {
         return [
-            StorageItem(title: "Fichiers kDrive stockés sur l’ordinateur", color: .blue, usedBytes: 13_000_000_000)
+            StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: 13_000_000_000),
+            StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: 50_000_000_000),
+            StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: 187_000_000_000)
         ]
     }
 
