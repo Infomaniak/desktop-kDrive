@@ -90,8 +90,20 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             await Utility.OpenFolderSecurely(path);
         }
+        private void OnlineRadioButtonClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (OnlineRadioButton.IsChecked == true)
+            {
+                OnlineRadioButtonChecked();
+            }
+            else
+            {
+                OnlineRadioButtonUnchecked();
+            }
 
-        private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        }
+
+        private async void OnlineRadioButtonChecked()
         {
             if (!IsLoaded || !OnlineRadioButton.IsEnabled)
                 return;
@@ -139,7 +151,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             OfflineRadioButton.IsEnabled = true;
         }
 
-        private async void OnlineRadioButtonUnchecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void OnlineRadioButtonUnchecked()
         {
             if (!IsLoaded || !OnlineRadioButton.IsEnabled)
                 return;
@@ -257,6 +269,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 DefaultPath = result.Value.GoodPath,
                 LocalPath = result.Value.GoodPath
             };
+            await newSync.SelectBestVfsMode();
             List<NewSync> newSyncs = new() { newSync };
 
             CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);

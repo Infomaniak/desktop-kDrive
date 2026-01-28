@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.CustomControls
             SetupFinished?.Invoke(this, result);
         }
 
-        public void RevertAllChanges()
+        public async Task RevertAllChanges()
         {
             foreach (var sync in NewSyncs)
             {
@@ -83,6 +83,7 @@ namespace Infomaniak.kDrive.CustomControls
                     sync.RemoteNodeId = initialSync.RemoteNodeId;
                     sync.ExcludedNodeIds.Clear();
                     sync.ExcludedNodeIds.AddRange(initialSync.ExcludedNodeIds);
+                    await sync.SelectBestVfsMode();
                 }
                 else
                 {
@@ -91,7 +92,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        public void RevertCurrentSyncChanges()
+        public async Task RevertCurrentSyncChanges()
         {
             if (CurrentSync is not null && PreviousCurrentSyncState is not null)
             {
@@ -101,6 +102,7 @@ namespace Infomaniak.kDrive.CustomControls
                 CurrentSync.RemoteNodeId = PreviousCurrentSyncState.RemoteNodeId;
                 CurrentSync.ExcludedNodeIds.Clear();
                 CurrentSync.ExcludedNodeIds.AddRange(PreviousCurrentSyncState.ExcludedNodeIds);
+                await CurrentSync.SelectBestVfsMode();
             }
             else
             {

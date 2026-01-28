@@ -73,8 +73,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
 
-                NewSync newSync = new() { Drive = drive, DefaultPath = result.Value.GoodPath };
-                await SetNewSyncLocalPathAndUpdateVfsMode(newSync, result.Value.GoodPath);
+                NewSync newSync = new() { Drive = drive, DefaultPath = result.Value.GoodPath, LocalPath = result.Value.GoodPath };
+                await newSync.SelectBestVfsMode();
 
                 _onBoardingViewModel.NewSyncs.Add(newSync);
                 cb.IsEnabled = true;
@@ -99,27 +99,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        private async void AdvancedSettingsDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            Logger.Log(Logger.Level.Info, "Advanced settings dialog closed, reverting any unsaved changes.");
-            if (_onBoardingViewModel == null)
-            {
-                Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null in AdvancedSettingsDialog_CloseButtonClick");
-                return;
-            }
-
-            // Revert any changes
-            foreach (var sync in _onBoardingViewModel.NewSyncs)
-            {
-                if (_previousSyncPaths.TryGetValue(sync, out string? previousPath) && previousPath != sync.LocalPath)
-                {
-                    Logger.Log(Logger.Level.Info, $"Reverting sync path for drive '{sync.Drive?.Name ?? "unknown"}' from '{sync.LocalPath}' to '{previousPath}'");
-                    await SetNewSyncLocalPathAndUpdateVfsMode(sync, previousPath);
-                }
-            }
-            _previousSyncPaths.Clear();
-        }
-
         private async void AdvancedSettingsButton_Click(object sender, RoutedEventArgs e)
         {
             var driveSetupDialog = new CustomControls.DriveSetupContentDialog(this.XamlRoot, _onBoardingViewModel!.NewSyncs);
@@ -129,17 +108,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private void Finish_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
-        }
-
-        private static async Task SetNewSyncLocalPathAndUpdateVfsMode(NewSync sync, string newLocalPath)
-        {
-            var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(newLocalPath, CancellationToken.None);
-            if (CanSupportOnlineMode is null)
-                Logger.Log(Logger.Level.Warning, $"Could not determine if the path '{newLocalPath}' supports online mode. Defaulting to offline sync.");
-
-            sync.LocalPath = newLocalPath;
-            sync.SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
     }
 
