@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 16 Jan 2026 13:54:14 +0100
+ * Exported at: Wed, 28 Jan 2026 13:57:49 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -180,6 +180,18 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "kDrive-Ordner";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Freier Raum";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputed" = "Andere Dateien auf dem Mac";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "Auf Ihrem Mac gespeicherte kDrive-Dateien";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%@ auf %@ verwendet";
 
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "ihre Dateien werden synchronisiert";

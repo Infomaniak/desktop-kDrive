@@ -130,6 +130,16 @@ public enum KDriveLocalizable {
   public static let sidebarItemGeneral = KDriveLocalizable.tr("Localizable", "sidebarItemGeneral", fallback: "General")
   /// loco:68a70c92c32749426b06db02
   public static let sidebarItemKDriveTitle = KDriveLocalizable.tr("Localizable", "sidebarItemKDriveTitle", fallback: "kDrive folder")
+  /// loco:697a077ee16575000806de62
+  public static let storageMacFreeSpace = KDriveLocalizable.tr("Localizable", "storageMacFreeSpace", fallback: "Free space")
+  /// loco:697a0768c39a2189f5022564
+  public static let storageMacUsedByComputed = KDriveLocalizable.tr("Localizable", "storageMacUsedByComputed", fallback: "Other Mac files")
+  /// loco:697a07436d99d0c2c00449e2
+  public static let storageMacUsedByKDrive = KDriveLocalizable.tr("Localizable", "storageMacUsedByKDrive", fallback: "KDrive files stored on your Mac")
+  /// loco:6979e265a8419bb7510c8122
+  public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")
+  }
   /// loco:6960b7decf8ffcd3950d2706
   public static let synchroInProgress = KDriveLocalizable.tr("Localizable", "synchroInProgress", fallback: "your files are synchronizing")
   /// loco:6960b7fd4e868a099e022dc5
