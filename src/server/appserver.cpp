@@ -4461,7 +4461,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
         paramsStream << total;
         paramsStream << used;
 
-        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED_LEGACY, params, id);
     }
     if (useCommManager()) {
         // TODO
