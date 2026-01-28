@@ -134,16 +134,7 @@ ExitInfo ExcludeListPropagator::checkItems() {
         directoryIterationException = true;
     }
 
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << CommonUtility::formatIoError(entry.path(), ioError));
-    }
-
-    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
-        return ExitCode::SystemError;
-    }
-
-    return ExitCode::Ok;
+    return IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
 }
 
 } // namespace KDC

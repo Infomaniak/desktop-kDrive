@@ -178,13 +178,11 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
         directoryIterationException = true;
     }
 
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << CommonUtility::formatIoError(entry.path(), ioError));
-    }
 
-    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
-        return ExitCode::SystemError;
+    if (const auto interruptionExitInfo =
+                IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
+        !interruptionExitInfo) {
+        return interruptionExitInfo;
     }
 
     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),

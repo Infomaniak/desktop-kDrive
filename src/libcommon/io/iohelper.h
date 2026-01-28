@@ -81,6 +81,8 @@ struct IoHelper {
         };
 
         static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
+        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
+                                                           bool directoryIterationException = false);
 
         IoHelper() = default;
 
