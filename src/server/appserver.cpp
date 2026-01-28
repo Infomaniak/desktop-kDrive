@@ -2447,7 +2447,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int progressPe
     }
 }
 
-void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) const {
+void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const {
     if (useOldCommServer()) {
         int id = 0;
 

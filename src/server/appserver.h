@@ -269,7 +269,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendErrorsCleared(int syncDbId) const;
         void sendQuit() const; // Ask client to quit
         void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
-        void sendNodeFixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) const;
+        void sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const;
 
         void deleteAccount(int accountDbId);
         void sendErrorAdded(const ErrorInfo &errorInfo) const;
