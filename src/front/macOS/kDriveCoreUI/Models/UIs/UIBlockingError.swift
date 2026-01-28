@@ -47,15 +47,18 @@ public struct UIBlockingError: Sendable {
         self.badgeColor = badgeColor
     }
 
-    public init?(driveWithMaybeError drive: Drive) {
+    public init?(drive: Drive, error: SynchroError?) {
+        guard let error else {
+            return nil
+        }
+
         self.drive = UIDrive(drive: drive)
-        if drive.maintenance {
-            title = KDriveLocalizable.driveMaintenanceErrorTitle
-            subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
-            badgeIcon = KDriveResources.wrench.swiftUIImage
-            badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
-            badgeColor = ColorToken.Status.Medium.warning.asColor
-        } else if drive.locked {
+        switch error {
+        case .asleep:
+            return nil // TODO: implement
+        case .wakingUp:
+            return nil // TODO: implement
+        case .notRenew:
             if drive.admin {
                 subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
             } else {
@@ -65,14 +68,20 @@ public struct UIBlockingError: Sendable {
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
-        } else if drive.accessDenied {
+        case .maintenance:
+            title = KDriveLocalizable.driveMaintenanceErrorTitle
+            subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
+            badgeIcon = KDriveResources.wrench.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
+            badgeColor = ColorToken.Status.Medium.warning.asColor
+        case .accessDenied:
             title = KDriveLocalizable.driveAccessDeniedErrorTitle
             subtitle = KDriveLocalizable.driveAccessDeniedErrorDescription
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
-        } else {
-            return nil
+        case .loggingError:
+            return nil // TODO: implement
         }
     }
 }
