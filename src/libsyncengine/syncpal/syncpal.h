@@ -196,7 +196,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          \param startDelay represents the time (expressed in seconds) the SyncPalWorker must wait before starting.
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
-        void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+        void stop(bool pausedByUser = false, bool clear = false);
 
 
         /* The synchronization will be paused once the ongoing sync reach the Idle state.
@@ -231,7 +231,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
-        ExitCode cancelAllDlDirectJobs(bool quit);
+        ExitCode cancelAllDlDirectJobs();
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 

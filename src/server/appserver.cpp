@@ -586,7 +586,7 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, false, true, true); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -3689,7 +3689,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool clear) {
+ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool clear) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Stop SyncPal
@@ -3706,7 +3706,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     unregisterSync(syncPalMapIt->second);
-    syncPalMapIt->second->stop(pausedByUser, quit, clear);
+    syncPalMapIt->second->stop(pausedByUser, clear);
 
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId << " done");
 

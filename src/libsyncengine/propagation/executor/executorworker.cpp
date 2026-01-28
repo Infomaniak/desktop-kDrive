@@ -2085,7 +2085,6 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     for (const auto &job: _ongoingJobs) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
-            job.second->setAdditionalCallback(nullptr);
             job.second->abort();
         } else {
             remainingJobs.push_back(job.second);
@@ -2095,7 +2094,6 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     // Then cancel jobs that are currently running
     for (const auto &job: remainingJobs) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
-        job->setAdditionalCallback(nullptr);
         job->abort();
     }
     _ongoingJobs.clear();
