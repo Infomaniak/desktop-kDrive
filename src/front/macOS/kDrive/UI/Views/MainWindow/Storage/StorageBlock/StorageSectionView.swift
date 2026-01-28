@@ -20,7 +20,7 @@ import kDriveCoreUI
 import SwiftUI
 import kDriveResources
 
-struct StorageBlockView: View {
+struct StorageSectionView: View {
     static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
 
     let title: String
@@ -68,7 +68,7 @@ struct StorageBlockView: View {
 
 #Preview {
     Form {
-        StorageBlockView(
+        StorageSectionView(
             title: "Mac",
             usedBytes: 63_000_000_000,
             availableBytes: 250_000_000_000,
