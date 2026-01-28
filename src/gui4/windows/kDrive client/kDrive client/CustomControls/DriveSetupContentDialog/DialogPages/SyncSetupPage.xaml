@@ -36,7 +36,7 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="Configurer la synchronisation de ce kDrive"
+                   x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Title"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
@@ -87,13 +87,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               Text="Emplacement"
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Title"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               Text="Personnalisez l'emplacement du dossier kDrive sur votre ordinateur :"
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Message"
                                TextWrapping="WrapWholeWords"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -110,7 +110,7 @@
                     </Grid.RowDefinitions>
 
                     <DropDownButton Grid.Row="0"
-                                    Content="Emplacement par défaut"
+                                    x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_DropDown_Default"
                                     Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                     Click="ChangeFolder_Click">
                         <ToolTipService.ToolTip>
@@ -130,7 +130,7 @@
                     </DropDownButton>
 
                     <TextBlock Grid.Row="1"
-                               Text="Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement."
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Caption"
                                TextTrimming="CharacterEllipsis"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"
@@ -157,13 +157,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               Text="Dossiers synchronisés"
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Title"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               Text="Choisissez les dossiers à synchronisés sur cet ordinateur :"
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                FontWeight="SemiBold"
@@ -184,7 +184,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="0"
-                            Content="Sélectionner des dossiers"
+                            x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Button"
                             Click="Exclusionbutton_click" />
 
                     <StackPanel Grid.Column="1"
@@ -196,7 +196,7 @@
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                           VerticalAlignment="Center" />
 
-                        <TextBlock Text="Tous les dossiers du kDrive"
+                        <TextBlock x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -230,7 +230,7 @@
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="1"
-                               Text="Les dossiers non sélectionnés resteront accessibles en ligne."
+                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption"
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"

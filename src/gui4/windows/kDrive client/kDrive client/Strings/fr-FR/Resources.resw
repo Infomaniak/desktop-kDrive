@@ -1091,6 +1091,24 @@ Infomaniak</value>
   <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Title.Text" xml:space="preserve">
     <value>Configurer vos kDrive</value>
   </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Title.Text" xml:space="preserve">
+    <value>Configurer la synchronisation de ce kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_DropDown_Default.Content" xml:space="preserve">
+    <value>Emplacement par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Title.Text" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Title.Text" xml:space="preserve">
+    <value>Dossiers synchronisés</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Message.Text" xml:space="preserve">
+    <value>Personnalisez l'emplacement du dossier kDrive sur votre ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Caption.Text" xml:space="preserve">
+    <value>Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement.</value>
+  </data>
   <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Configure.Content" xml:space="preserve">
     <value>Configurer</value>
   </data>
@@ -1115,5 +1133,17 @@ Infomaniak</value>
   <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip.Text" xml:space="preserve">
     <value>dossier(s) exclu(s)</value>
     <comment>x dossiers exclus</comment>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message.Text" xml:space="preserve">
+    <value>Choisissez les dossiers à synchronisés sur cet ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption.Text" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront accessibles en ligne.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Button.Content" xml:space="preserve">
+    <value>Sélectionner des dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive.Text" xml:space="preserve">
+    <value>Tous les dossiers du kDrive</value>
   </data>
 </root>
