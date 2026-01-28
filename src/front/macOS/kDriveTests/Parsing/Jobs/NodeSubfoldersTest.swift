@@ -53,7 +53,7 @@ struct NodeSubfoldersTest {
             #expect(Bool(false), "we should be able to get one item in the list")
             return
         }
-        
+
         #expect(nodeInfo.accessDenied == false)
         #expect(nodeInfo.modtime == 1337)
         #expect(nodeInfo.name == "The quick brown fox jumps over the lazy dog.")
