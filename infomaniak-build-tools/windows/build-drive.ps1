@@ -109,7 +109,7 @@ function Set-Bullseye-Coverage {
         $cmd = Get-Command cov01.exe -ErrorAction Stop
         & $cmd $cov01Parameter
      } catch {
-         Write-Host "BullseyeCoverage cov01.exe command not found."
+         Write-Host "BullseyeCoverage cov01.exe command not found.  "
          if ($enable) {
             exit 1
          }
