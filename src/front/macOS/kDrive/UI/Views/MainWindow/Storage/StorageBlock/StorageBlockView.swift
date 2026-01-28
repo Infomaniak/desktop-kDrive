@@ -20,17 +20,6 @@ import kDriveCoreUI
 import SwiftUI
 import kDriveResources
 
-
-struct StorageItem: Sendable, Identifiable {
-    var id: String {
-        return "\(title)_\(color)"
-    }
-
-    let title: String
-    let color: Color
-    let usedBytes: Int64
-}
-
 struct StorageBlockView: View {
     static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
 
