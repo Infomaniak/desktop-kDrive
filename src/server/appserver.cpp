@@ -4586,17 +4586,18 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
             paramsStream << itemInfo;
             OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger, L"Send progress for path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
-                                                               << itemInfo.size() << L" progress=" << itemInfo.progress()
-                                                               << L"%");
+                LOGW_DEBUG(_logger, L"Send progress for syncDbId="
+                                            << syncDbId << L" path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
+                                            << itemInfo.size() << L" progress=" << itemInfo.progress() << L"% to gui");
             }
         }
     }
     if (useCommManager()) {
         _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItemJob>(syncDbId, itemInfo));
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(_logger, L"Send progress for path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
-                                                           << itemInfo.size() << L" progress=" << itemInfo.progress() << L"%");
+            LOGW_DEBUG(_logger, L"Send progress for syncDbId=" << syncDbId << L" path=" << Path2WStr(QStr2Path(itemInfo.path()))
+                                                               << L" size=" << itemInfo.size() << L" progress="
+                                                               << itemInfo.progress() << L"% to new gui");
         }
     }
 }

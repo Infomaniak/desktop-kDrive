@@ -21,7 +21,7 @@
 
 #include <log4cplus/loggingmacros.h>
 
-static const auto progressThresholdSizePercent = 0.1; // 10%
+static const auto progressThresholdSizePercent = 0.01; // 1%
 static const auto progressThresholdTime = std::chrono::seconds(1); // 1 sec
 
 namespace KDC {
@@ -41,11 +41,13 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
             static const auto progressThresholdSize =
                     static_cast<int64_t>(_expectedFinishProgress * progressThresholdSizePercent);
             const auto progressTimeStamp = std::chrono::system_clock::now();
-            if (_progressSize > _lastProgressSize + progressThresholdSize ||
+            if (_progressSize > _lastProgressSize + progressThresholdSize && _progressSize < _expectedFinishProgress &&
                 progressTimeStamp > _lastProgressTimeStamp + progressThresholdTime) {
+                int progressPercent = static_cast<int>(
+                        round(static_cast<float>(_progressSize) / static_cast<float>(_expectedFinishProgress) * 100));
                 _lastProgressSize = _progressSize;
                 _lastProgressTimeStamp = progressTimeStamp;
-                _progressPercentCallback(jobId(), static_cast<int>((_progressSize * 100) / _expectedFinishProgress));
+                _progressPercentCallback(jobId(), progressPercent);
             }
         }
     }
