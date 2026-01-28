@@ -67,53 +67,9 @@ public struct InformationBlockView: View {
     }
 
     public var body: some View {
-        HStack(spacing: AppPadding.padding16) {
-            HStack(alignment: .top, spacing: AppPadding.padding8) {
-                if let icon {
-                    RoundedRectangle(cornerRadius: AppRadius.radius4)
-                        .fill(ColorToken.Accent.secondary.asColor)
-                        .frame(width: 24, height: 24)
-                        .overlay {
-                            icon
-                                .resizable(at: AppIconSize.iconSize12)
-                                .foregroundStyle(.white)
-                        }
-                }
-
-                VStack(alignment: .leading, spacing: AppPadding.padding2) {
-                    Text(title)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-
-                    Text(subtitle)
-                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                }
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            HStack(spacing: AppPadding.padding8) {
-                if let button {
-                    Button(button.title, action: button.action)
-                        .buttonStyle(.borderedProminent)
-                }
-
-                if let dismissHandler {
-                    Button(action: dismissHandler) {
-                        Label { Text(KDriveLocalizable.buttonClose) } icon: { Image(systemName: "xmark") }
-                            .labelStyle(.iconOnly)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                            .padding(AppPadding.padding4)
-                            .frame(maxHeight: .infinity)
-                            .aspectRatio(1, contentMode: .fit)
-                            .background(ColorToken.Surface.tertiary.asColor, in: .circle)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .fixedSize(horizontal: true, vertical: true)
-        }
-        .padding(AppPadding.padding16)
-        .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius12))
+        InformationBlockContentView(icon: icon, title: title, subtitle: subtitle, button: button, dismissHandler: dismissHandler)
+            .padding(AppPadding.padding16)
+            .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius12))
     }
 }
 
