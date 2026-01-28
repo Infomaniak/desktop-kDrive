@@ -1,8 +1,6 @@
-﻿using Infomaniak.kDrive.ServerCommunication;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +20,8 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _matomoEnabled;
         private bool _sentryEnabled;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
+        public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
+
         public Language Language
         {
             get => _language;

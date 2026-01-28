@@ -164,7 +164,7 @@ void ExecutorWorker::execute() {
                 };
                 job->setProgressPercentCallback(progressPercentCallback);
 
-                SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+                SyncJobManagerSingleton::instance()->queueAsyncJob(job);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {

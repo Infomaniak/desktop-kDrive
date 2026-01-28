@@ -2237,7 +2237,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << QString::fromStdString(appStateValueStr);
             break;
         }
-        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
             const bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
@@ -2930,7 +2930,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                sendDriveUpdated(driveInfo);
                 if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 

@@ -41,8 +41,6 @@ extension SignalNum: CustomStringConvertible {
             return "DRIVE_ADDED"
         case .DRIVE_UPDATED:
             return "DRIVE_UPDATED"
-        case .DRIVE_QUOTAUPDATED:
-            return "DRIVE_QUOTAUPDATED"
         case .DRIVE_REMOVED:
             return "DRIVE_REMOVED"
         case .DRIVE_DELETE_FAILED:
@@ -89,7 +87,7 @@ extension SignalNum: CustomStringConvertible {
             return "UTILITY_QUIT"
         case .EnumEnd:
             return "EnumEnd"
-        default:
+        @unknown default:
             return "SignalNum(rawValue: \(rawValue))"
         }
     }

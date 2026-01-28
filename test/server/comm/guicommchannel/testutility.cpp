@@ -407,7 +407,7 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
-    (void) queryObj.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE));
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY));
 
     Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
@@ -424,7 +424,7 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer

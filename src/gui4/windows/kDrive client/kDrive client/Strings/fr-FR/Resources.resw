@@ -310,11 +310,20 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_ErrorBar.Title" xml:space="preserve">
     <value>Vous avez {0} erreurs de synchronisation</value>
   </data>
+  <data name="CC_RemoteDiskFullBar.Message" xml:space="preserve">
+    <value>Libérez de l’espace ou faites évoluer votre offre  pour continuer à synchroniser vos fichiers.</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar.Title" xml:space="preserve">
+    <value>Votre kDrive est plein</value>
+  </data>
   <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
     <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar_Button.Content" xml:space="preserve">
+    <value>Ajouter du stockage</value>
   </data>
   <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
     <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
@@ -898,7 +907,7 @@ Le code source de cette application peut être vérifié, les informations réco
     <value>Gestion du kDrive</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
-    <value>Synchronisation avancée</value>
+    <value>Synchronisations avancées</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" xml:space="preserve">
     <value>Supprimer la synchronisation</value>
@@ -1014,5 +1023,69 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   </data>
   <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
     <value>Hors ligne</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Title.Text" xml:space="preserve">
+    <value>Synchronisations avancées</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_AddSyncButton.Content" xml:space="preserve">
+    <value>Synchroniser un dossier</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeCaption.Text" xml:space="preserve">
+    <value>Définissez comment vos fichiers sont stockés et accessibles.</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeHeader.Text" xml:space="preserve">
+    <value>Mode de synchronisation des fichiers</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle.Text" xml:space="preserve">
+    <value>Synchroniser un dossier avec kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoteFolder.Header" xml:space="preserve">
+    <value>Emplacement sur kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_LocalFolder.Header" xml:space="preserve">
+    <value>Emplacement sur mon PC</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle_Caption.Text" xml:space="preserve">
+    <value>Sélectionnez un dossier de votre ordinateur à synchroniser avec kDrive. Vous pourrez acceder a vos synchronisations avancées depuis le selecteur de drive sur la page d’accueil </value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoveSyncButton.Header" xml:space="preserve">
+    <value>Supprimer la synchronisation</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Header.Text" xml:space="preserve">
+    <value>Support infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_SendButton.Content" xml:space="preserve">
+    <value>Envoyer le dossier de débogage</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Canceled_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a été annulé</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Archiving.Text" xml:space="preserve">
+    <value>Compression des logs en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Uploading.Text" xml:space="preserve">
+    <value>Transfert des logs vers le support en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Error_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a échoué. Vérifiez votre connexion Internet et assurez-vous qu’au moins un utilisateur kDrive est connecté. Les transferts sont limités à 10 par jour.</value>
+  </data>
+  <data name="Pages_LogUploadPopup.Text" xml:space="preserve">
+    <value>Le dossier complet est volumineux. Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.</value>
+  </data>
+  <data name="Pages_LogUploadPopup_CheckBox.Content" xml:space="preserve">
+    <value>Envoyer uniquement la dernière session</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.Title" xml:space="preserve">
+    <value>Envoyer le dossier de débogage au support
+Infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.PrimaryButtonText" xml:space="preserve">
+    <value>Envoyer</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
   </data>
 </root>

@@ -129,6 +129,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
 
         public bool? Admin { get; set; }
+
+        public System.Int64 Size { get; set; }
+        public System.Int64 UsedSize { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -140,6 +143,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
             copyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
             copyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
+            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            copyProperty(source, target, nameof(source.UsedSize), nameof(target.UsedSize));
         }
     }
 
@@ -181,6 +186,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
+            copyProperty(source, target, nameof(source.TargetNodeId), nameof(target.RemoteNodeId));
             copyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
             copyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
 

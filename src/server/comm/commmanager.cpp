@@ -275,7 +275,7 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
     }
 
     // Add job to JobManager pool
-    GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    GuiJobManagerSingleton::instance()->queueAsyncJob(job);
 }
 
 void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
@@ -290,7 +290,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     signal->setChannels(_guiCommServer->connections());
 
     // Add job to JobManager pool
-    GuiJobManagerSingleton::instance()->queueAsyncJob(signal, Poco::Thread::PRIO_NORMAL);
+    GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
 }
 
 void CommManager::onNewGuiConnection() {

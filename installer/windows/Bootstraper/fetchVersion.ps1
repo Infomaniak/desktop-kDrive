@@ -54,17 +54,19 @@ function Update-Define-Constants {
         # Update existing constant
         $constantIndex = [array]::IndexOf($defineConstants.Value, $existing)
         $defineConstants.Value[$constantIndex] = "$key=$value"
-        Write-Host "Existing $key constant found. Updating to $value."
+        Write-Host "Existing '$key' constant found. Updating to '$value'."
     } else {
         # Add new constant
         $defineConstants.Value += "$key=$value"
-        Write-Host "No existing $key constant found. Adding $key=$value"
+        Write-Host "No existing '$key' constant found. Adding '$key=$value'"
     }
 }
 
 
 $versionString = ""
 $RepositoryRootPath = $RepositoryRootPath.Trim('"')
+$RepositoryRootPath = Resolve-Path $RepositoryRootPath 
+
 . "$RepositoryRootPath\infomaniak-build-tools\version-helpers.ps1"
 $versionString = Get-VersionFromJson -RepositoryRootPath $RepositoryRootPath -IncludeBuildVersion $true
 if($versionString -eq "") {
@@ -80,16 +82,20 @@ if (-Not (Test-Path $WixProjPath)) {
 [xml]$wixProjXml = Get-Content $WixProjPath
 $propertyGroupNode = $wixProjXml.Project.PropertyGroup | Where-Object { $_.DefineConstants } | Select-Object -First 1
 
+$defineConstants = @()
 if (-not $propertyGroupNode) {
-    Write-Error "No <DefineConstants> found in wixproj. Expected exactly one."
-    exit 1
+    Write-Host "No <DefineConstants> found in wixproj. This is consistent with the default template."
+} else {
+    $defineConstants = $propertyGroupNode.DefineConstants -split ';'
 }
-
-$defineConstants = $propertyGroupNode.DefineConstants -split ';'
 
 # Version
 
 Update-Define-Constants -Key "version" -Value $versionString -DefineConstants ([ref]$defineConstants)
+
+# Repository root path
+
+Update-Define-Constants -Key "desktop-kDriveDir" -Value $RepositoryRootPath -DefineConstants ([ref]$defineConstants)
 
 # Overlay GUIDs 
 
@@ -105,8 +111,18 @@ Update-Define-Constants -Key "regKeySyncGUID" -Value $guid -DefineConstants ([re
 $guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_WARNING"
 Update-Define-Constants -Key "regKeyWarningGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
 
+# Edit
+
+if (-not $propertyGroupNode) {
+    $defineConstantsNode = $wixProjXml.CreateElement("DefineConstants")
+    $defineConstantsNode.InnerText = ($defineConstants -join ';')
+    $propertyGroupNode = $wixProjXml.Project.PropertyGroup | Select-Object -First 1
+    $propertyGroupNode.AppendChild($defineConstantsNode)
+} else {
+    $propertyGroupNode.DefineConstants = ($defineConstants -join ';')
+}
+
 # Save
 
-$propertyGroupNode.DefineConstants = ($defineConstants -join ';')
 Write-Host "Updated wixproj Version to $versionString"
 $wixProjXml.Save($WixProjPath)

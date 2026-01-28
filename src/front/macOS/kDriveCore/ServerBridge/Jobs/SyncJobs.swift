@@ -25,6 +25,7 @@ public enum NewSyncParentIdentifier: Sendable {
     case transitive(userDbId: Int32, accountId: Int32, driveId: Int32)
 }
 
+// periphery:ignore - We reproduce the exact structure of the XPC message
 public struct NewSyncMetadata: Sendable {
     let userDbId: Int32
     let accountId: Int32

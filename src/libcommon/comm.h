@@ -109,7 +109,7 @@ enum class RequestNum {
     UTILITY_GET_APPSTATE,
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
-    UTILITY_GET_LOG_ESTIMATED_SIZE,
+    UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -243,8 +243,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_SEND_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT:
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
-        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
-            return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
+            return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
@@ -278,7 +278,7 @@ enum class SignalNum {
     // Drive
     DRIVE_ADDED,
     DRIVE_UPDATED,
-    DRIVE_QUOTAUPDATED,
+    DRIVE_QUOTAUPDATED_LEGACY,
     DRIVE_REMOVED,
     DRIVE_DELETE_FAILED,
     // Sync
@@ -328,7 +328,7 @@ inline std::string toString(SignalNum e) {
             return "DRIVE_ADDED";
         case SignalNum::DRIVE_UPDATED:
             return "DRIVE_UPDATED";
-        case SignalNum::DRIVE_QUOTAUPDATED:
+        case SignalNum::DRIVE_QUOTAUPDATED_LEGACY:
             return "DRIVE_QUOTAUPDATED";
         case SignalNum::DRIVE_REMOVED:
             return "DRIVE_REMOVED";

@@ -26,12 +26,20 @@ public protocol CoherentCacheObservable: Sendable {
 
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
-    private var users: IndexedUsers = [:]
+    var users: IndexedUsers = [:]
+    var serverErrors: IndexedErrors = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
+    private nonisolated let serverErrorsSubject = PassthroughSubject<IndexedErrors, Never>()
 
     public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .eraseToAnyPublisher()
+    }
+
+    public nonisolated var serverErrorsPublisher: AnyPublisher<IndexedErrors, Never> {
+        serverErrorsSubject
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .eraseToAnyPublisher()
     }
@@ -41,6 +49,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         case accountNotFound(_ dbId: Int32)
         case driveNotFound(_ dbId: Int32)
         case synchroNotFound(_ dbId: Int32)
+        case errorNotFound(_ dbId: Int32)
+        case notAServerError
     }
 
     public init() {}
@@ -283,10 +293,101 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateDrive(drive: drive)
     }
 
+    // MARK: - Errors
+
+    public func addOrUpdateError(_ error: ErrorInfo) async throws {
+        if error.level == .Server {
+            try await addOrUpdateServerError(error)
+            return
+        }
+
+        guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(error.synchroDbId)
+        }
+
+        synchro.errors[error.dbId] = error
+        if synchro.latestError == nil {
+            synchro.latestError = SynchroError(errorInfo: error)
+        }
+
+        try updateSynchro(synchro)
+    }
+
+    private func addOrUpdateServerError(_ error: ErrorInfo) async throws {
+        guard error.level == .Server else {
+            throw CacheError.notAServerError
+        }
+
+        serverErrors[error.dbId] = error
+        notifyServerErrorsUpdate()
+    }
+
+    public func removeError(_ errorDbId: Int32) async throws {
+        guard try await removeServerError(errorDbId) == nil else {
+            return
+        }
+
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    for var synchro in drive.synchros.values {
+                        guard synchro.errors.removeValue(forKey: errorDbId) != nil else {
+                            continue
+                        }
+
+                        if let remainingError = synchro.errors.values.first {
+                            synchro.latestError = SynchroError(errorInfo: remainingError)
+                        } else {
+                            synchro.latestError = nil
+                        }
+
+                        try updateSynchro(synchro)
+                        return
+                    }
+                }
+            }
+        }
+
+        throw CacheError.errorNotFound(errorDbId)
+    }
+
+    @discardableResult
+    private func removeServerError(_ errorDbId: Int32) async throws -> ErrorInfo? {
+        guard let errorInfo = serverErrors.removeValue(forKey: errorDbId) else {
+            return nil
+        }
+
+        notifyServerErrorsUpdate()
+        return errorInfo
+    }
+
+    public func clearErrors() async {
+        if !serverErrors.isEmpty {
+            serverErrors.removeAll()
+            notifyServerErrorsUpdate()
+        }
+
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    for var synchro in drive.synchros.values {
+                        synchro.errors.removeAll()
+                        synchro.latestError = nil
+                        try? updateSynchro(synchro)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Observation
 
     private func notifyUpdate() {
         usersSubject.send(users)
+    }
+
+    private func notifyServerErrorsUpdate() {
+        serverErrorsSubject.send(serverErrors)
     }
 
     // MARK: - Management

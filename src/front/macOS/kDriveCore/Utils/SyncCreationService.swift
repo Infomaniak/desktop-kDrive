@@ -82,7 +82,7 @@ public final class SyncCreationService: SyncCreator {
         return syncInfo
     }
 
-    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> String {
+    public func preferredLocalPath(for _: SyncOrigin) async throws -> String {
         // TODO: The server cannot provide the preferred value yet. We have a dummy implementation for the moment.
 
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
@@ -119,7 +119,7 @@ public final class SyncCreationService: SyncCreator {
         return metadata
     }
 
-    private func shouldUseLightSync(for origin: SyncOrigin) -> Bool {
+    private func shouldUseLightSync(for _: SyncOrigin) -> Bool {
         guard useLightSyncIfPossible else {
             return false
         }

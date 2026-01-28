@@ -163,6 +163,7 @@ if ($os -eq "win") {
     Write-Host " - Windows Files - " # Windows
     $win_files = @(
         "$app.exe",
+        "$app.msi",
         "kDrive.pdb",
         "kDrive_client.pdb",
         "kDrive.src.zip",

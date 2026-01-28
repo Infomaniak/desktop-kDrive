@@ -33,7 +33,7 @@ UtilityGetLogEstimatedSizeJob::UtilityGetLogEstimatedSizeJob(std::shared_ptr<Com
                                                              const Poco::DynamicStruct &inParams,
                                                              std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE;
+    _requestNum = RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY;
 }
 
 ExitInfo UtilityGetLogEstimatedSizeJob::deserializeInputParms() {

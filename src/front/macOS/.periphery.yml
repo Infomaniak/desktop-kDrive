@@ -1,0 +1,6 @@
+project: kDrive.xcodeproj
+retain_public: true
+schemes:
+  - kDrive
+index_exclude:
+  - "kDriveTests/**"

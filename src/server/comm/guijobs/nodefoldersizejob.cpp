@@ -38,6 +38,7 @@ NodeFolderSizeJob::NodeFolderSizeJob(std::shared_ptr<CommManager> commManager, i
                                      std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::NODE_FOLDER_SIZE;
+    setJobPriority(Poco::Thread::PRIO_LOW);
 }
 
 ExitInfo NodeFolderSizeJob::deserializeInputParms() {

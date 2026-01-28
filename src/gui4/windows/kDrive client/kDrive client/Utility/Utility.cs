@@ -182,7 +182,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -190,14 +190,14 @@ namespace Infomaniak.kDrive
             dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
             dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
-            dialog.DefaultButton = contentDialogButton;
+            dialog.DefaultButton = defaultButton;
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
             return dialog;
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            var result = await GetContentDialog(xamlRoot, xuid, contentDialogButton).ShowAsync();
+            var result = await GetContentDialog(xamlRoot, xuid, defaultButton).ShowAsync();
             return result;
         }
 

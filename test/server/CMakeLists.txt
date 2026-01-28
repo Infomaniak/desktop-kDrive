@@ -204,6 +204,7 @@ set(testserver_SRCS
     comm/guicommchannel/testsignaljobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
+    comm/testguijobpriority.h comm/testguijobpriority.cpp
 )
 
 if(APPLE)

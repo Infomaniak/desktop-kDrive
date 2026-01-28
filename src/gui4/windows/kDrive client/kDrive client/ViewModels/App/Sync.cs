@@ -36,17 +36,19 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
+        private NodeId _remoteNodeId = "";
         private bool _supportOnlineMode = true;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
-        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
-        private bool _syncTypeMigrationInProgress = false;
-        private SyncFileItem? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
+        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private bool _syncTypeMigrationInProgress = false;
+        private SyncFileItem? _lastActivity;
+
 
         public SyncStatus SyncStatus
         {
@@ -123,6 +125,12 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
+        public NodeId RemoteNodeId
+        {
+            get => _remoteNodeId;
+            set => SetPropertyInUIThread(ref _remoteNodeId, value);
+        }
+
         public bool SupportOnlineMode
         {
             get => _supportOnlineMode;
@@ -142,6 +150,10 @@ namespace Infomaniak.kDrive.ViewModels
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
+            set
+            {
+                SetPropertyInUIThread(ref _syncTypeMigrationInProgress, value);
+            }
         }
 
         public bool IsTypeOnline
@@ -194,11 +206,10 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeSyncType(SyncType newType)
         {
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
+            SyncTypeMigrationInProgress = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
-
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
+            SyncTypeMigrationInProgress = false;
 
             return result;
         }
@@ -213,6 +224,10 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
+
+            if (error.ExitCause == ExitCause.QuotaExceeded)
+                Drive.DisplayRemoteSpaceWarning = true;
+
             await RefreshErrorState();
         }
 
