@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 28 Jan 2026 15:01:35 +0100
+ * Exported at: Wed, 28 Jan 2026 16:08:40 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -30,6 +30,9 @@
 
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Accedi";
+
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Gestire";
 
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Aprire nel browser";
@@ -189,6 +192,12 @@
 
 /* loco:697a07436d99d0c2c00449e2 */
 "storageMacUsedByKDrive" = "File kDrive archiviati sul Mac";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Gestite le cartelle sincronizzate per liberare spazio sul vostro Mac.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Sincronizzazione";
 
 /* loco:6979e265a8419bb7510c8122 */
 "storageUsageLabel" = "%@ su %@ utilizzato";

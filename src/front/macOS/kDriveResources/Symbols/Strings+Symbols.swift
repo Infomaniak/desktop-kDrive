@@ -26,6 +26,8 @@ public enum KDriveLocalizable {
   public static let buttonKDriveOnline = KDriveLocalizable.tr("Localizable", "buttonKDriveOnline", fallback: "kDrive Online")
   /// loco:68e673b2042a15d8470f9452
   public static let buttonLogin = KDriveLocalizable.tr("Localizable", "buttonLogin", fallback: "Login")
+  /// loco:697a2658a44fbad34f011962
+  public static let buttonManage = KDriveLocalizable.tr("Localizable", "buttonManage", fallback: "Manage")
   /// loco:68b04d823f2b735c170caea2
   public static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
   /// loco:68b04d5a63085b7ab90cea63
@@ -136,6 +138,10 @@ public enum KDriveLocalizable {
   public static let storageMacUsedByComputer = KDriveLocalizable.tr("Localizable", "storageMacUsedByComputer", fallback: "Other Mac files")
   /// loco:697a07436d99d0c2c00449e2
   public static let storageMacUsedByKDrive = KDriveLocalizable.tr("Localizable", "storageMacUsedByKDrive", fallback: "kDrive files stored on your Mac")
+  /// loco:697a2640c1c052cea305d2d6
+  public static let storageSyncBlockMacDescription = KDriveLocalizable.tr("Localizable", "storageSyncBlockMacDescription", fallback: "Manage synchronized folders to free up space on your Mac.")
+  /// loco:697a26183f570e1362040242
+  public static let storageSyncBlockTitle = KDriveLocalizable.tr("Localizable", "storageSyncBlockTitle", fallback: "Synchronization")
   /// loco:6979e265a8419bb7510c8122
   public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")
