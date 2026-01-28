@@ -53,7 +53,7 @@ namespace KDC {
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName, false) {}
 
-void ExecutorWorker::executorCallback(UniqueId jobId) {
+void ExecutorWorker::executorCallback(const UniqueId jobId) {
     _terminatedJobs.push(jobId);
 }
 
@@ -73,7 +73,7 @@ void ExecutorWorker::execute() {
         // Create all the jobs
         sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
         while (!_opList.empty()) {
-            if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
+            if (const auto exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
                 executorExitInfo = exitInfo;
                 cancelAllOngoingJobs();
                 break;
@@ -93,11 +93,9 @@ void ExecutorWorker::execute() {
                 _opList.pop_front();
             }
             _opListMutex.unlock();
-
             if (!opId) break;
 
             SyncOpPtr syncOp = _syncPal->_syncOps->getOp(opId);
-
             if (!syncOp) {
                 LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << opId);
                 continue;
@@ -146,18 +144,18 @@ void ExecutorWorker::execute() {
                     increaseErrorCount(syncOp, executorExitInfo);
                     cancelAllOngoingJobs();
                     break;
-                } else { // If the error is handled, continue the execution
-                    if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
-                    continue;
                 }
+
+                // If the error is handled, continue the execution
                 if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+                continue;
             }
 
             if (job) {
                 job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
-                _ongoingJobs.insert({job->jobId(), job});
-                _jobToSyncOpMap.insert({job->jobId(), syncOp});
+                (void) _ongoingJobs.try_emplace(job->jobId(), job);
+                (void) _jobToSyncOpMap.try_emplace(job->jobId(), syncOp);
             } else {
                 if (!bypassProgressComplete) {
                     if (ignored) {
@@ -173,7 +171,7 @@ void ExecutorWorker::execute() {
 
         perfMonitor.stop();
         sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
-        if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
+        if (const auto exitInfo = waitForAllJobsToFinish(); !exitInfo) {
             executorExitInfo = exitInfo;
             break;
         }
@@ -190,7 +188,7 @@ void ExecutorWorker::execute() {
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
     }
 
-    _syncPal->vfs()->cleanUpStatuses();
+    (void) _syncPal->vfs()->cleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
