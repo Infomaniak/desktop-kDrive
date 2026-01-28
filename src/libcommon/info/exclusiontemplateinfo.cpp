@@ -65,7 +65,7 @@ void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<Exclu
         if (uniqueTemplSet.emplace(normalizedTempl).second)
             ++it;
         else
-            templateList.erase(it);
+            (void) templateList.erase(it);
     }
 }
 
@@ -79,9 +79,9 @@ void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<Exclusio
     templateList = newTemplateList;
 }
 
-std::unordered_set<SyncName> ExclusionTemplateInfo::computeNormalizations(const SyncName &template_) {
+SyncNameSet ExclusionTemplateInfo::computeNormalizations(const SyncName &template_) {
     if (const auto normalizations = CommonUtility::computePathNormalizations(template_); !normalizations.empty()) {
-        std::unordered_set<SyncName> result;
+        SyncNameSet result;
         for (const SyncName &normalization: normalizations) (void) result.emplace(normalization);
         return result;
     }

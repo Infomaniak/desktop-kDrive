@@ -67,7 +67,7 @@ class ExclusionTemplateInfo {
           \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been
           successful. The returned set contains additionally the string exclusionTemplate in any case.
         */
-        static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
+        static SyncNameSet computeNormalizations(const SyncName &templateString);
 
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);

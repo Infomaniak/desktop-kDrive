@@ -1944,8 +1944,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(exclusionTemplateList);
 
             QList<ExclusionTemplateInfo> list;
-            std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),
-                          [&](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
+            (void) std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),
+                                 [&](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
 
             resultStream << toInt(ExitCode::Ok);
             resultStream << list;
@@ -1959,8 +1959,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> list;
 
             std::vector<ExclusionTemplateInfo> exclusionTemplateList;
-            std::for_each(list.begin(), list.end(),
-                          [&](const ExclusionTemplateInfo &templateInfo) { exclusionTemplateList.push_back(templateInfo); });
+            (void) std::for_each(list.begin(), list.end(), [&](const ExclusionTemplateInfo &templateInfo) {
+                exclusionTemplateList.push_back(templateInfo);
+            });
 
             if (!def) {
                 ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);

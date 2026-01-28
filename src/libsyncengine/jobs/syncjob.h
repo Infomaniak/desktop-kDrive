@@ -50,9 +50,6 @@ class SyncJob : public AbstractJob {
         bool progressChanged();
         [[nodiscard]] bool isProgressTracked() const { return _progressSize > -1; }
 
-    protected:
-        std::chrono::time_point<std::chrono::system_clock> _lastProgressTimeStamp = std::chrono::system_clock::now();
-
     private:
         int64_t _expectedFinishProgress =
                 expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
@@ -60,6 +57,7 @@ class SyncJob : public AbstractJob {
                 nullptr; // Used by the caller to be notified of job progress.
         int64_t _progressSize = -1; // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgressSize = -1; // Progress last time it was checked using progressChanged()
+        std::chrono::time_point<std::chrono::system_clock> _lastProgressTimeStamp = std::chrono::system_clock::now();
 
         SyncPath _affectedFilePath; // The file path associated to _progress
         bool _bypassCheck = false;
