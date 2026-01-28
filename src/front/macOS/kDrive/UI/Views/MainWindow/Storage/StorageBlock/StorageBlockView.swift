@@ -20,15 +20,6 @@ import kDriveCoreUI
 import SwiftUI
 import kDriveResources
 
-extension View {
-    func groupedFormatStyle() -> some View {
-        if #available(macOS 13.0, *) {
-            return formStyle(.grouped)
-        } else {
-            return self
-        }
-    }
-}
 
 struct StorageItem: Sendable, Identifiable {
     var id: String {
