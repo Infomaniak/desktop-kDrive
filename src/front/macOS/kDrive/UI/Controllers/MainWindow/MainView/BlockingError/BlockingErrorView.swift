@@ -48,7 +48,6 @@ struct BlockingErrorView: View {
                 if let subtitle = blockingError.subtitle {
                     Text(subtitle)
                         .font(.Tokens.body)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .multilineTextAlignment(.center)
@@ -101,6 +100,7 @@ struct BlockingErrorView: View {
                 blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true)
             )
             .frame(minWidth: 512)
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

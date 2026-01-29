@@ -23,10 +23,8 @@ public struct ResizableContainerView<Content: View>: View {
     let content: Content
 
     public var body: some View {
-        VStack {
-            content
-        }
-        .frame(minWidth: nil, maxWidth: .infinity, minHeight: nil, maxHeight: .infinity)
+        content
+            .frame(minWidth: nil, maxWidth: .infinity, minHeight: nil, maxHeight: .infinity)
     }
 }
 
