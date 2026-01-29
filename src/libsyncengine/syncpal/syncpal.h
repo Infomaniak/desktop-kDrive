@@ -137,6 +137,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _addCompletedItem = addCompletedItem;
         }
 
+        inline void setFixConflictedFilesCompletedCallback(
+                const std::function<void(int, uint64_t)> &fixConflictedFilesCompleted) {
+            _fixConflictedFilesCompleted = fixConflictedFilesCompleted;
+        }
+
         void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
@@ -215,6 +220,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void addError(const Error &error);
         void addCompletedItem(int syncDbId, const SyncFileItem &item);
+        void fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -321,6 +327,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Callbacks
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
+        std::function<void(int syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
         std::shared_ptr<Vfs> _vfs;
 
         // DB

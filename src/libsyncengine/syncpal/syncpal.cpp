@@ -346,11 +346,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            // TODO
-            //_sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, syncDbId(), _conflictingFilesCorrector->nbErrors());
-            /*auto signalNodeFixConflictedFilesCompletedJob = std::make_shared<SignalNodeFixConflictedFilesCompletedJob>(
-                    syncDbId(), _conflictingFilesCorrector->nbErrors());
-            _sendGuiSignal(signalNodeFixConflictedFilesCompletedJob);*/
+            fixConflictedFilesCompleted(syncDbId(), _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }
@@ -365,6 +361,12 @@ void SyncPal::addError(const Error &error) {
 void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
+    }
+}
+
+void SyncPal::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
+    if (_fixConflictedFilesCompleted) {
+        _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
 }
 
