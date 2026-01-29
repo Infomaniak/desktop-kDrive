@@ -35,7 +35,8 @@ class ExcludeListPropagator : public AbstractPropagatorJob {
         std::shared_ptr<SyncPal> _syncPal;
 
         int syncDbId() const;
-        ExitCode checkItems();
+        ExitInfo checkItems();
+        ExitInfo checkItem(const DirectoryEntry &entry);
 };
 
 } // namespace KDC

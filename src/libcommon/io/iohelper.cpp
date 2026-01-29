@@ -1075,6 +1075,32 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
 }
 
+bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
+    auto ioError = IoError::Success;
+    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << CommonUtility::formatIoError(path, ioError));
+        return false;
+    }
+
+    return true;
+}
+
+ExitInfo IoHelper::checkDirectoryIteratorInterruption(const bool endOfDir, const IoError ioError, const DirectoryEntry &entry,
+                                                      const bool directoryIterationException) {
+    if (!endOfDir || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                   << CommonUtility::formatIoError(entry.path(), ioError));
+    }
+
+    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
+}
+
 #ifndef KD_WINDOWS
 // See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {

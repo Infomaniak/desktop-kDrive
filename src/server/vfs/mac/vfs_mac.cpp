@@ -375,53 +375,45 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &absolutePath, const SyncFi
 }
 
 void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydratedIn) {
+    auto ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-                QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(logger(), L"Error in convertDirContentToPlaceholder: " << CommonUtility::formatStdError(ec));
+        if (!IoHelper::recursiveDirectoryIterator(QStr2Path(dirPath), dirIt)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::recursiveDirectoryIterator");
             return;
         }
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-#if defined(KD_WINDOWS)
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
 
-            const SyncPath absolutePath = dirIt->path();
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            const SyncPath &absolutePath = entry.path();
 
             // Check if the directory entry is managed
             bool isManaged = true;
-            IoError ioError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
+            auto managedEntryError = IoError::Success;
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedEntryError)) {
                 LOGW_WARN(logger(),
                           L"Error in Utility::checkIfDirEntryIsManaged : " << CommonUtility::formatSyncPath(absolutePath));
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
-            if (ioError == IoError::NoSuchFileOrDirectory) {
+            if (managedEntryError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(logger(), L"Directory entry does not exist anymore : " << CommonUtility::formatSyncPath(absolutePath));
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
-            if (ioError == IoError::AccessDenied) {
+            if (managedEntryError == IoError::AccessDenied) {
                 LOGW_DEBUG(logger(), L"Directory misses search permission : " << CommonUtility::formatSyncPath(absolutePath));
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
             if (!isManaged) {
                 LOGW_DEBUG(logger(), L"Directory entry is not managed : " << CommonUtility::formatSyncPath(absolutePath));
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
@@ -443,6 +435,11 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
         LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: code=" << e.code() << " error=" << e.what());
     } catch (...) {
         LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder");
+    }
+
+    if (!endOfDir || ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                    << CommonUtility::formatIoError(entry.path(), ioError));
     }
 }
 
