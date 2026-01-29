@@ -21,7 +21,7 @@ import kDriveCore
 import kDriveResources
 import SwiftUI
 
-public struct UIBlockingError: Sendable {
+public struct UIBlockingError: Sendable, Equatable {
     public let title: String
     public let subtitle: String?
     public let actionTitle: String?
@@ -102,21 +102,5 @@ public struct UIBlockingError: Sendable {
         }
 
         self.init(uiDrive: UIDrive(drive: drive), isDriveAdmin: drive.admin, error: error)
-    }
-}
-
-extension UIBlockingError: Equatable {
-    public static func == (lhs: UIBlockingError, rhs: UIBlockingError) -> Bool {
-        return lhs.title == rhs.title &&
-            lhs.subtitle == rhs.subtitle &&
-            lhs.drive.id == rhs.drive.id
-    }
-}
-
-extension UIBlockingError: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(title)
-        hasher.combine(subtitle)
-        hasher.combine(drive.id)
     }
 }
