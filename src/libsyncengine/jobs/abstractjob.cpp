@@ -82,7 +82,7 @@ void AbstractJob::callback(const UniqueId id) {
     }
 
     try {
-        if (_mainCallback && !_aborted) {
+        if (_mainCallback) {
             _mainCallback(id);
         }
     } catch (...) {
