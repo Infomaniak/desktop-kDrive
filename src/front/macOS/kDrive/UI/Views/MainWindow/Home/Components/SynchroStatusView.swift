@@ -38,7 +38,7 @@ extension HomeState {
     var animationLoopMode: Lottie.LottieLoopMode {
         switch self {
         case .synchroIsUpToDate:
-            return .repeatBackwards(1)
+            return .playOnce
         default:
             return .loop
         }
