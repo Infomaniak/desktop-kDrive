@@ -38,9 +38,8 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
             _progressPercentCallback(jobId(), 100);
         } else {
-            static const auto progressThresholdSize =
-                    static_cast<int64_t>(_expectedFinishProgress * progressThresholdSizePercent);
-            const auto progressTimeStamp = std::chrono::system_clock::now();
+            const auto progressThresholdSize = static_cast<int64_t>(_expectedFinishProgress * progressThresholdSizePercent);
+            const auto progressTimeStamp = std::chrono::steady_clock::now();
             if (_progressSize > _lastProgressSize + progressThresholdSize && _progressSize < _expectedFinishProgress &&
                 progressTimeStamp > _lastProgressTimeStamp + progressThresholdTime) {
                 const auto progressPercent = static_cast<int>(

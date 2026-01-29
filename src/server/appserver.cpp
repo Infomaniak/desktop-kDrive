@@ -2401,7 +2401,7 @@ void AppServer::sendErrorsCleared(int syncDbId) const {
         (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
     }
     if (useCommManager()) {
-        // N/A - See UTILITY_ERROR_REMOVED
+        // N/A - See SignalErrorRemovedJob
     }
 }
 
@@ -4467,7 +4467,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
         (void) OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED_LEGACY, params, id);
     }
     if (useCommManager()) {
-        // TODO
+        // N/A - See SignalDriveUpdatedJob
     }
 }
 
@@ -4554,7 +4554,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) c
         (void) OldCommServer::instance()->sendSignal(SignalNum::NODE_FOLDER_SIZE_COMPLETED, params, id);
     }
     if (useCommManager()) {
-        // TODO
+        // N/A - See NodeFolderSizeJob
     }
 }
 
@@ -4615,7 +4615,7 @@ void AppServer::sendVfsConversionCompleted(int syncDbId) const {
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_VFS_CONVERSION_COMPLETED, params, id);
     }
     if (useCommManager()) {
-        // TODO
+        // N/A - See SyncSetSupportsVirtualFilesJob
     }
 }
 
