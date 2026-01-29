@@ -132,7 +132,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await utilitySignalHandler.handleErrorRemoved(signal)
 
         case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
-            try await utilitySignalHandler.handleErrorCleared(signal)
+            try await utilitySignalHandler.handleErrorCleared()
 
         default:
             throw SignalError.unsupported(signalNum)
