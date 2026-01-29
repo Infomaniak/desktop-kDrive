@@ -28,13 +28,8 @@ struct DriveErrorAction {
 struct BlockingErrorView: View {
     let blockingError: UIBlockingError
 
-    let isLoading: Bool
-    let action: DriveErrorAction?
-
-    init(blockingError: UIBlockingError, isLoading: Bool = false, action: DriveErrorAction?) {
+    init(blockingError: UIBlockingError) {
         self.blockingError = blockingError
-        self.isLoading = isLoading
-        self.action = action
     }
 
     var body: some View {
@@ -59,14 +54,14 @@ struct BlockingErrorView: View {
             .multilineTextAlignment(.center)
             .padding(.bottom, AppPadding.padding24)
 
-            if isLoading {
+            if blockingError.isLoading {
                 ProgressView()
                     .controlSize(.small)
                     .padding(.bottom, AppPadding.padding24)
             }
 
-            if let action {
-                Button(action.title, action: action.action)
+            if let actionTitle = blockingError.actionTitle {
+                Button(actionTitle, action: handleAction)
                     .buttonStyle(.borderedProminent)
             }
         }
@@ -78,15 +73,32 @@ struct BlockingErrorView: View {
         )
         .padding(AppPadding.padding24)
     }
+
+    private func handleAction() {
+        /* TODO: Implement action handling
+         switch blockingError.error {
+         case .asleep:
+
+         case .wakingUp:
+
+         case .notRenew:
+
+         case .maintenance:
+
+         case .accessDenied:
+
+         case .loggingError:
+
+         }
+          */
+    }
 }
 
 #Preview {
     VStack {
         ForEach(SynchroError.allCases, id: \.self) { error in
             BlockingErrorView(
-                blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true),
-                isLoading: true,
-                action: DriveErrorAction(title: "Refresh") {}
+                blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true)
             )
             .frame(minWidth: 512)
         }

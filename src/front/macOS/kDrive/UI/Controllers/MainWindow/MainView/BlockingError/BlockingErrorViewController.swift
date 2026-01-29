@@ -25,7 +25,7 @@ final class BlockingErrorViewController: TitledViewController<BlockingErrorView>
     init(blockingError: UIBlockingError) {
         super.init(
             toolbarTitle: SidebarItem.home.title,
-            contentView: BlockingErrorView(blockingError: blockingError, action: nil)
+            contentView: BlockingErrorView(blockingError: blockingError)
         )
     }
 }

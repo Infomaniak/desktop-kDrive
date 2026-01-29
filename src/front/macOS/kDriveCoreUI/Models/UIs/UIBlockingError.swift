@@ -24,6 +24,8 @@ import SwiftUI
 public struct UIBlockingError: Sendable {
     public let title: String
     public let subtitle: String?
+    public let actionTitle: String?
+    public let isLoading: Bool
 
     public let drive: UIDrive
 
@@ -31,27 +33,38 @@ public struct UIBlockingError: Sendable {
     public let badgeBackgroundColor: Color
     public let badgeColor: Color
 
+    public let error: SynchroError
+
     public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: SynchroError) {
         drive = uiDrive
+        self.error = error
+
         switch error {
         case .asleep:
             title = KDriveLocalizable.driveAsleepErrorTitle
-            subtitle = ""
+            subtitle = nil
+            actionTitle = KDriveLocalizable.buttonWakeUp
+            isLoading = false
             badgeIcon = KDriveResources.moonSleep.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.security.asColor
             badgeColor = ColorToken.Status.Medium.security.asColor
         case .wakingUp:
             title = KDriveLocalizable.driveWakingUpErrorTitle
             subtitle = KDriveLocalizable.driveWakingUpErrorDescription
+            actionTitle = nil
+            isLoading = true
             badgeIcon = KDriveResources.sun.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.security.asColor
             badgeColor = ColorToken.Status.Medium.security.asColor
         case .notRenew:
             if isDriveAdmin {
                 subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
+                actionTitle = KDriveLocalizable.buttonUpdateSubscription
             } else {
                 subtitle = KDriveLocalizable.driveLockedErrorDescription
+                actionTitle = KDriveLocalizable.buttonRefresh
             }
+            isLoading = false
             title = KDriveLocalizable.driveLockedErrorTitle
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
@@ -59,18 +72,24 @@ public struct UIBlockingError: Sendable {
         case .maintenance:
             title = KDriveLocalizable.driveMaintenanceErrorTitle
             subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
+            actionTitle = KDriveLocalizable.buttonRefresh
+            isLoading = false
             badgeIcon = KDriveResources.wrench.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
         case .accessDenied:
             title = KDriveLocalizable.driveAccessDeniedErrorTitle
             subtitle = KDriveLocalizable.driveAccessDeniedErrorDescription
+            actionTitle = KDriveLocalizable.buttonRetry
+            isLoading = false
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
         case .loggingError:
             title = KDriveLocalizable.driveLoggingErrorTitle
             subtitle = KDriveLocalizable.driveLoggingErrorDescription
+            actionTitle = KDriveLocalizable.buttonLogin
+            isLoading = false
             badgeIcon = KDriveResources.doorArrowRight.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.neutral.asColor
             badgeColor = ColorToken.Status.Medium.neutral.asColor
