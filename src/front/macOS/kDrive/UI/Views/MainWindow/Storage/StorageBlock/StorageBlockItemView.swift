@@ -29,6 +29,10 @@ struct StorageBlockItemView: View {
     }
 
     private var width: CGFloat {
+        guard totalUsedBytes > 0 else {
+            return proxy.size.width * 0.1
+        }
+
         let sizeFraction = CGFloat(item.usedBytes) / CGFloat(totalUsedBytes)
         return proxy.size.width * max(0.1, sizeFraction)
     }
