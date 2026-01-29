@@ -20,11 +20,6 @@ import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
-struct DriveErrorAction {
-    let title: String
-    let action: () -> Void
-}
-
 struct BlockingErrorView: View {
     let blockingError: UIBlockingError
 
