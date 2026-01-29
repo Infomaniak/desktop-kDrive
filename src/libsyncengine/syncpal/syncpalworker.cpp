@@ -587,7 +587,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
     DirectoryEntry entry;
     try {
         if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-            LOGW_WARN(_logger, L"Error in resetVfsFilesStatus");
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator.");
             return;
         }
 
@@ -676,7 +676,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                 (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfs()->fileStatusChanged(entry.path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << CommonUtility::formatSyncPath(entry.path()));
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in fileStatusChanged: " << CommonUtility::formatSyncPath(entry.path()));
                     ok = false;
                     dirIt.disableRecursionPending();
                     continue;
