@@ -27,6 +27,7 @@
 
     _registeredFoldersMap = [[NSMutableDictionary alloc] init];
     _fetchThumbnailMap = [[NSMutableDictionary alloc] init];
+    _fetchThumbnailTimerMap = [[NSMutableDictionary alloc] init];
     _fetchMap = [[NSMutableDictionary alloc] init];
     _userBlackListMap = [[NSMutableDictionary alloc] init];
     _fetchingAppArray = [[NSMutableArray alloc] init];
@@ -261,25 +262,16 @@
         kill(pid, SIGSTOP);
         
         // Start cancel timer
-        NSLog(@"TEST_CK stating timer for path : %@", filePath);
-        [NSTimer scheduledTimerWithTimeInterval:60.0
-            target:self
-            selector:@selector(freeBlockedProcessForThumnail:)
-            userInfo: @{@"filePath": filePath}
-            repeats:NO];
-
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^{
+            if (self->_fetchMap[filePath] != nil) {
+                NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
+                [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+            }
+        });
     }
 
     return TRUE;
-}
-
-- (void)freeBlockedProcessForThumnail:(NSTimer *)timer {
-    NSLog(@"TEST_CK timer has timed out");
-    NSDictionary *userInfo = timer.userInfo;
-    NSString *filePath = userInfo[@"filePath"];
-    NSLog(@"TEST_CK filePath: %@", filePath);
-    NSLog(@"[KD] Cancelling fetch thumbnail for path: %@", filePath);
-    [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
 }
 
 // XPCServiceProxyDelegate protocol implementation
