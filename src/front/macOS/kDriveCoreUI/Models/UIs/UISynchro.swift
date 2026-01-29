@@ -17,7 +17,6 @@
  */
 
 import Foundation
-import kDriveCore
 
 public struct UISynchro: Sendable, Equatable, Hashable {
     public var id: Int {

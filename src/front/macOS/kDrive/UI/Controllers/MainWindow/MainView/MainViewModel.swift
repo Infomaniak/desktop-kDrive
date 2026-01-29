@@ -29,7 +29,6 @@ final class MainViewModel: ObservableObject {
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     var currentUser: UIUser? { currentSynchroContext?.user }
-    var currentAccount: UIAccount? { currentSynchroContext?.account }
     var currentDrive: UIDrive? { currentSynchroContext?.drive }
     var currentSynchro: UISynchro? { currentSynchroContext?.synchro }
     var currentBlockingError: UIBlockingError? { currentSynchroContext?.blockingError }
