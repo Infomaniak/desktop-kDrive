@@ -60,8 +60,8 @@ struct StorageSectionView: View {
             usedBytes: 63_000_000_000,
             availableBytes: 250_000_000_000,
             items: [
-                StorageItem(title: "Fichiers kDrive", color: .blue, usedBytes: 13_000_000_000),
-                StorageItem(title: "Autres fichiers", color: .purple, usedBytes: 50_000_000_000)
+                StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
+                StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000)
             ]
         )
     }

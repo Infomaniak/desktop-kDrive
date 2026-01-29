@@ -41,8 +41,8 @@ struct StorageBarView: View {
 
 #Preview {
     StorageBarView(items: [
-        StorageItem(title: "Fichiers kDrive", color: .blue, usedBytes: 13_000_000_000),
-        StorageItem(title: "Autres fichiers", color: .purple, usedBytes: 50_000_000_000),
-        StorageItem(title: "Espace libre", color: .gray, usedBytes: 50_000_000_000)
+        StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
+        StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000),
+        StorageItem(title: "Free Space", color: .gray, usedBytes: 50_000_000_000)
     ])
 }
