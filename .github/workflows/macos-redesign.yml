@@ -16,7 +16,7 @@ jobs:
   run-tests:
     name: Run tests
     runs-on: [ self-hosted, iOS ]
-    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
     # More info here: https://github.com/orgs/community/discussions/175498
@@ -45,7 +45,7 @@ jobs:
   swiftlint:
     name: SwiftLint
     runs-on: ubuntu-latest
-    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
@@ -60,7 +60,7 @@ jobs:
   swiftformat:
     name: SwiftFormat
     runs-on: ubuntu-latest
-    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
@@ -75,7 +75,7 @@ jobs:
   periphery:
     name: Periphery
     runs-on: [ self-hosted, iOS ]
-    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
