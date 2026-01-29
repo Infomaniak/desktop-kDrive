@@ -30,10 +30,7 @@ struct StorageBarView: View {
         GeometryReader { proxy in
             HStack(spacing: 1) {
                 ForEach(items) { item in
-                    Rectangle()
-                        .fill(item.color)
-                        .frame(width: proxy.size.width * CGFloat(item.usedBytes) / CGFloat(totalUsedBytes))
-                        .help("\(item.title): \(item.usedBytes.formatted(StorageSectionView.sizeFormatter))")
+                    StorageBlockItemView(item: item, totalUsedBytes: totalUsedBytes, proxy: proxy)
                 }
             }
         }
