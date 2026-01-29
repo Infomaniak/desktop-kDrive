@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 16 Jan 2026 13:54:14 +0100
+ * Exported at: Thu, 29 Jan 2026 11:35:39 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -30,6 +30,9 @@
 
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Se connecter";
+
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Gérer";
 
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Ouvrir dans le navigateur";
@@ -180,6 +183,27 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "Dossier kDrive";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Espace libre";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Autres fichiers du Mac";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "Fichiers kDrive stockés sur votre Mac";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Gérez les dossiers synchronisés pour libérer de l’espace sur votre Mac.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Synchronisation";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%@ sur %@ utilisés";
 
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "vos fichiers se synchronisent";
