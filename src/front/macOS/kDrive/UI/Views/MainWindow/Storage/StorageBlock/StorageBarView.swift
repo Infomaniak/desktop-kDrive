@@ -33,6 +33,7 @@ struct StorageBarView: View {
                     Rectangle()
                         .fill(item.color)
                         .frame(width: proxy.size.width * CGFloat(item.usedBytes) / CGFloat(totalUsedBytes))
+                        .help("\(item.title): \(item.usedBytes.formatted(StorageSectionView.sizeFormatter))")
                 }
             }
         }

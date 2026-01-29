@@ -39,8 +39,8 @@ struct StorageSectionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Text(KDriveLocalizable.storageUsageLabel(
-                        usedBytes.formatted(Self.sizeFormatter),
-                        availableBytes.formatted(Self.sizeFormatter)
+                        usedBytes.formatted(StorageSectionView.sizeFormatter),
+                        availableBytes.formatted(StorageSectionView.sizeFormatter)
                     ))
                     .foregroundStyle(.secondary)
 
