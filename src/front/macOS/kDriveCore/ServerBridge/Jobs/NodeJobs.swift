@@ -40,7 +40,7 @@ public struct NodeJobs: Sendable {
     public func getNodeInfo(userDbId: Int32,
                             driveId: Int32,
                             nodeId: String,
-                            withPath: Bool = true) async throws -> NodeInfoResponseMetadata {
+                            withPath: Bool = true) async throws -> NodeInfo {
         IKLogger.data.log("Query to get node info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
@@ -49,13 +49,13 @@ public struct NodeJobs: Sendable {
 
         try decodedMessage.validate()
 
-        return decodedMessage.body.nodeInfo
+        return NodeInfo(nodeInfoResponseMetadata: decodedMessage.body.nodeInfo)
     }
 
     public func getNodeSubfolders(userDbId: Int32,
                                   driveId: Int32,
                                   nodeId: String,
-                                  withPath: Bool = true) async throws -> [NodeInfoResponseMetadata] {
+                                  withPath: Bool = true) async throws -> [NodeInfo] {
         IKLogger.data.log("Query to get node subfolder info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_SUBFOLDERS, body: query)
@@ -64,12 +64,12 @@ public struct NodeJobs: Sendable {
 
         try decodedMessage.validate()
 
-        return decodedMessage.body.nodeSubFolderInfoList
+        return decodedMessage.body.nodeSubFolderInfoList.map { NodeInfo(nodeInfoResponseMetadata: $0) }
     }
 
     public func getNodeSubfolders(driveDbId: Int32,
                                   nodeId: String,
-                                  withPath: Bool = true) async throws -> [NodeInfoResponseMetadata] {
+                                  withPath: Bool = true) async throws -> [NodeInfo] {
         IKLogger.data.log("Query to get node subfolder info from driveDbId")
         let query = NodeAlternateQuery(driveDbId: driveDbId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeAlternateQuery>(num: RequestNum.NODE_SUBFOLDERS2, body: query)
@@ -78,7 +78,7 @@ public struct NodeJobs: Sendable {
 
         try decodedMessage.validate()
 
-        return decodedMessage.body.nodeSubFolderInfoList
+        return decodedMessage.body.nodeSubFolderInfoList.map { NodeInfo(nodeInfoResponseMetadata: $0) }
     }
 
     public func getFolderSize(userDbId: Int32, driveId: Int32, nodeId: String) async throws -> Int64 {

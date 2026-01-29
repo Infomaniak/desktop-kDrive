@@ -48,7 +48,7 @@ struct NodeSubfoldersResponse: Codable, Sendable {
     let nodeSubFolderInfoList: [NodeInfoResponseMetadata]
 }
 
-public struct NodeInfoResponseMetadata: Codable, Sendable {
+struct NodeInfoResponseMetadata: Codable, Sendable {
     let modtime: TimeInterval
     @Base64CodedString var name: String
     @Base64CodedString var nodeId: String
@@ -76,16 +76,6 @@ struct AddMissingFolderQuery: Codable, Sendable {
 struct MissingFolderQuery: Codable, Sendable {
     @Base64CodedString var name: String
     @Base64CodedString var nodeId: String
-}
-
-public struct MissingFolder: Sendable {
-    let name: String
-    let nodeId: String
-
-    public init(name: String, nodeId: String) {
-        self.name = name
-        self.nodeId = nodeId
-    }
 }
 
 struct MissingFolderResponse: Codable, Sendable {
