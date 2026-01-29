@@ -44,7 +44,7 @@ struct StorageView: View {
     var body: some View {
         Form {
             StorageSectionView(
-                title: "Macintosh",
+                title: Host().localizedName ?? KDriveLocalizable.storageDeviceNameMac,
                 usedBytes: 60_000_000_000,
                 availableBytes: 250_000_000_000,
                 items: macStorageItems

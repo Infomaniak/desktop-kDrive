@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 28 Jan 2026 16:08:40 +0100
+ * Exported at: Thu, 29 Jan 2026 11:35:39 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -183,6 +183,9 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "kDrive folder";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
 
 /* loco:697a077ee16575000806de62 */
 "storageMacFreeSpace" = "Free space";
