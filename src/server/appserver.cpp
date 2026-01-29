@@ -2643,21 +2643,6 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
     }
 }
 
-void AppServer::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
-    if (useOldCommServer()) {
-        int id = 0;
-
-        QByteArray params;
-        QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
-        paramsStream << nbErrors;
-        (void) OldCommServer::instance()->sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, params, id);
-    }
-    if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalNodeFixConflictedFilesCompletedJob>(syncDbId, nbErrors));
-    }
-}
-
 void AppServer::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const {
     if (useCommManager()) {
         _commManager->sendGuiSignal(signal);
@@ -3792,7 +3777,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
-                std::bind_front(&AppServer::fixConflictedFilesCompleted, this));
+                std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
