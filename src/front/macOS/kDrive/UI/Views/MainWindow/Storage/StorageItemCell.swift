@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct StorageItemCell: View {
@@ -28,11 +29,14 @@ struct StorageItemCell: View {
                 .frame(width: 8, height: 8)
                 .accessibilityHidden(true)
 
-            Text(item.title)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(item.title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(item.usedBytes, format: StorageView.sizeFormatter)
-                .foregroundStyle(.secondary)
+                Text(item.usedBytes, format: StorageView.sizeFormatter)
+                    .foregroundStyle(.secondary)
+            }
+            .accessibilityElement()
         }
     }
 }
