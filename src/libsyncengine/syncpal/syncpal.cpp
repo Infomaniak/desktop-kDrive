@@ -1195,12 +1195,12 @@ void SyncPal::stop(bool pausedByUser, bool clear) {
     }
 
     // Stop direct download jobs
-    cancelAllDlDirectJobs();
+    (void) cancelAllDlDirectJobs();
 
     if (pausedByUser) {
         // Set paused flag
-        ExitCode exitCode = setSyncPaused(true);
-        if (exitCode != ExitCode::Ok) {
+
+        if (const auto exitCode = setSyncPaused(true); exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
             addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         }
