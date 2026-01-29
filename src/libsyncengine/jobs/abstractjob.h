@@ -78,7 +78,7 @@ class AbstractJob : public Poco::Runnable {
 
         bool _isRunning = false;
         ExitInfo _exitInfo;
-        bool _abort = false;
+        bool _aborted = false;
         bool _isExtendedLog = false;
 };
 
