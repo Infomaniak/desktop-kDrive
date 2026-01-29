@@ -259,9 +259,27 @@
         // Stop the process
         NSLog(@"[KD] Stop process %@ opening thumbnail %@", [NSNumber numberWithInt:pid], filePath);
         kill(pid, SIGSTOP);
+        
+        // Start cancel timer
+        NSLog(@"TEST_CK stating timer for path : %@", filePath);
+        [NSTimer scheduledTimerWithTimeInterval:60.0
+            target:self
+            selector:@selector(freeBlockedProcessForThumnail:)
+            userInfo: @{@"filePath": filePath}
+            repeats:NO];
+
     }
 
     return TRUE;
+}
+
+- (void)freeBlockedProcessForThumnail:(NSTimer *)timer {
+    NSLog(@"TEST_CK timer has timed out");
+    NSDictionary *userInfo = timer.userInfo;
+    NSString *filePath = userInfo[@"filePath"];
+    NSLog(@"TEST_CK filePath: %@", filePath);
+    NSLog(@"[KD] Cancelling fetch thumbnail for path: %@", filePath);
+    [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
 }
 
 // XPCServiceProxyDelegate protocol implementation

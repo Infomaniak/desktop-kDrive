@@ -47,6 +47,7 @@
 - (void)sendMessage:(NSString *_Nullable)filePath query:(NSString *_Nullable)verb oneApp:(BOOL)one;
 - (BOOL)fetchFile:(NSString *_Nullable)filePath pid:(pid_t)pid;
 - (BOOL)fetchThumbnail:(NSString *_Nullable)filePath pid:(pid_t)pid;
+- (void)freeBlockedProcessForThumnail:(NSTimer *)timer;
 - (BOOL)isDirectory:(NSString *_Nullable)path error:(NSError *_Nullable *_Nullable)error;
 
 @end
