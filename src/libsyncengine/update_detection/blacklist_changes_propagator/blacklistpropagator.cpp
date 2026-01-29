@@ -119,7 +119,7 @@ ExitInfo BlacklistPropagator::checkNodes() {
 
 ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath) {
     bool directoryIterationException = false;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;
     DirectoryEntry entry;
@@ -177,7 +177,6 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in BlacklistPropagator::removeItem.");
         directoryIterationException = true;
     }
-
 
     if (const auto interruptionExitInfo =
                 IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);

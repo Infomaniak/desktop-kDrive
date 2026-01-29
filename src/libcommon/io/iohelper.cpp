@@ -1076,7 +1076,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 }
 
 bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     dirIt = IoHelper::DirectoryIterator(path, true, ioError);
 
     if (ioError != IoError::Success) {

@@ -639,7 +639,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
 
             VfsStatus vfsStatus;
-            if (ExitInfo exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
+            if (const auto exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in vfsStatus : " << CommonUtility::formatSyncPath(entry.path()) << L": " << exitInfo);
                 ok = false;
