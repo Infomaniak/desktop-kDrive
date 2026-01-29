@@ -31,6 +31,8 @@ struct StorageItem: Sendable, Identifiable {
 }
 
 struct StorageView: View {
+    static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
+    
     private var macStorageItems: [StorageItem] {
         return [
             StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: 13_000_000_000),

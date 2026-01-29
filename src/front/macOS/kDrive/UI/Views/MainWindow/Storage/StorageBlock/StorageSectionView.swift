@@ -17,12 +17,10 @@
  */
 
 import kDriveCoreUI
-import SwiftUI
 import kDriveResources
+import SwiftUI
 
 struct StorageSectionView: View {
-    static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
-
     let title: String
 
     let usedBytes: Int64
@@ -39,28 +37,17 @@ struct StorageSectionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Text(KDriveLocalizable.storageUsageLabel(
-                        usedBytes.formatted(StorageSectionView.sizeFormatter),
-                        availableBytes.formatted(StorageSectionView.sizeFormatter)
+                        usedBytes.formatted(StorageView.sizeFormatter),
+                        availableBytes.formatted(StorageView.sizeFormatter)
                     ))
                     .foregroundStyle(.secondary)
-
                 }
 
                 StorageBarView(items: items)
             }
 
             ForEach(items) { item in
-                HStack {
-                    Circle()
-                        .fill(item.color)
-                        .frame(width: 8, height: 8)
-
-                    Text(item.title)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text(item.usedBytes, format: .byteCount(style: .file))
-                        .foregroundStyle(.secondary)
-                }
+                StorageItemCell(item: item)
             }
         }
     }
