@@ -47,7 +47,6 @@ struct NodeInfoTest {
         let nodeInfo = try decoder.decode(CallbackMessage<NodeInfoResponse>.self, from: signalData).body.nodeInfo
 
         // THEN
-
         #expect(nodeInfo.accessDenied == false)
         #expect(nodeInfo.modtime == 1337)
         #expect(nodeInfo.name == "The quick brown fox jumps over the lazy dog.")

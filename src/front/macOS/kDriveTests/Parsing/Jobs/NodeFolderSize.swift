@@ -47,7 +47,6 @@ struct NodeFolderSize {
         let folderSize = try decoder.decode(CallbackMessage<NodeSizeResponse>.self, from: signalData).body.folderSize
 
         // THEN
-
         #expect(folderSize == 1337)
     }
 }
