@@ -130,7 +130,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
             return ExitCode::SystemError;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (isAborted()) return ExitCode::Ok;
 
             const SyncPath &absoluteLocalPath_ = entry.path();

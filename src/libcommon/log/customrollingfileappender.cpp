@@ -289,7 +289,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         FileStat fileStat;
         IoHelper::getFileStat(entry.path(), &fileStat, ioError);
         if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {

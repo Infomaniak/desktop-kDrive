@@ -591,7 +591,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             return;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (stopAsked()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
                 return;
