@@ -217,11 +217,6 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatPath(const QString &path);
         static std::wstring formatSystemError(const std::system_error &exception);
 
-        // Convenience OS detection methods
-        static bool isWindows();
-        static bool isMac();
-        static bool isLinux();
-
     private:
         static log4cplus::Logger _logger;
 

@@ -433,7 +433,7 @@ QColor GuiUtility::getShadowColor(bool dialog) {
 
 bool GuiUtility::isDarkTheme() {
     bool darkTheme = false;
-    if (Utility::isMac()) {
+    if (CommonUtility::isMac()) {
         darkTheme = CommonUtility::hasDarkSystray();
     } else {
         darkTheme = ParametersCache::instance()->parametersInfo().darkTheme();

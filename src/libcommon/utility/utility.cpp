@@ -1441,4 +1441,28 @@ void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64
     base64Str = ostr.str();
 }
 
+bool CommonUtility::isWindows() {
+#if defined(KD_WINDOWS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#if defined(KD_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(KD_LINUX)
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace KDC

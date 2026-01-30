@@ -459,6 +459,11 @@ struct COMMON_EXPORT CommonUtility {
         static void convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str);
 #endif
 
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
+
     private:
         static std::mutex _generateRandomStringMutex;
 

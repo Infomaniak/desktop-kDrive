@@ -20,9 +20,13 @@
 
 #include "utility/types.h"
 #include "requests/parameterscache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libsyncengine/jobs/syncjobmanager.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"

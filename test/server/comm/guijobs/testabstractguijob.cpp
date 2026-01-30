@@ -17,7 +17,7 @@
  */
 
 #include "testabstractguijob.h"
-#include "../../../../src/libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 #include "test_utility/testhelpers.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 

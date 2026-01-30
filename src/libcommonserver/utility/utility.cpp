@@ -792,28 +792,4 @@ std::wstring Utility::formatSystemError(const std::system_error &exception) {
     return ss.str();
 }
 
-bool Utility::isWindows() {
-#if defined(KD_WINDOWS)
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool Utility::isMac() {
-#if defined(KD_MACOS)
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool Utility::isLinux() {
-#if defined(KD_LINUX)
-    return true;
-#else
-    return false;
-#endif
-}
-
 } // namespace KDC

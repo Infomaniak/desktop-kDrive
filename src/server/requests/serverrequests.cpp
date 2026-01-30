@@ -2127,8 +2127,8 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     for (const Sync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath,
-                                    (Utility::isWindows() || Utility::isMac()) ? Qt::CaseInsensitive : Qt::CaseSensitive)) {
+        if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
+                                                                                                      : Qt::CaseSensitive)) {
             syncDbId = sync.dbId();
             break;
         }
