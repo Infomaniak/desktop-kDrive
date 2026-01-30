@@ -417,7 +417,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             return new ExclusionTemplate(
                 template: source.Template ?? string.Empty,
-                isActive: source.Warning ?? false,
+                warning: source.Warning ?? false,
                 isDefault: source.Default ?? false
             );
         }

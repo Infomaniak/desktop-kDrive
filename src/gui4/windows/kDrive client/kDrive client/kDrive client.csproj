@@ -164,6 +164,9 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Popup\AddExclusionRulePopup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\Popup\LogUploadPopup.xaml">
       <SubType>Designer</SubType>
     </Page>

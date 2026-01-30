@@ -12,12 +12,14 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _warning;
         private bool _default; // True if the template is a default one, false if it's user-defined
         private string _template;
+        private bool _isSelected;
 
-        public ExclusionTemplate(string template, bool isActive = true, bool isDefault = false)
+        public ExclusionTemplate(string template, bool warning = true, bool isDefault = false)
         {
             _template = template;
-            _warning = isActive;
+            _warning = warning;
             _default = isDefault;
+            _isSelected = false;
         }
 
         public bool Warning
@@ -36,6 +38,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _template;
             set => SetPropertyInUIThread(ref _template, value);
+        }
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetPropertyInUIThread(ref _isSelected, value);
         }
     }
 }

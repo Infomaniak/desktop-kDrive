@@ -4,19 +4,21 @@ using DynamicData.Kernel;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.VoiceCommands;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class ExclusionTemplateListModel : UISafeObservableObject, IDisposable
+    public partial class ExclusionTemplateListModel : UISafeObservableObject, IDisposable
     {
         // Collection of all the ExclusionTemplate objects
         private ObservableCollection<ExclusionTemplate> _templates = new();
         private ReadOnlyObservableCollection<ExclusionTemplate> _defaultTemplates;
         private ReadOnlyObservableCollection<ExclusionTemplate> _userDefinedTemplates;
+        private int _selectedCount;
+        private bool _hasSelectedTemplates;
 
         // Subscription handlers
         private IDisposable _defaultTemplatesSubscription;
@@ -43,6 +45,17 @@ namespace Infomaniak.kDrive.ViewModels
         public ReadOnlyObservableCollection<ExclusionTemplate> DefaultTemplates => _defaultTemplates;
         public ReadOnlyObservableCollection<ExclusionTemplate> UserDefinedTemplates => _userDefinedTemplates;
 
+        public int SelectedCount
+        {
+            get => _selectedCount;
+            set => SetPropertyInUIThread(ref _selectedCount, value);
+        }
+
+        public bool HasSelectedTemplates
+        {
+            get => _hasSelectedTemplates;
+            set => SetPropertyInUIThread(ref _hasSelectedTemplates, value);
+        }
 
         // Method to load/add/remove templates
         public async Task LoadTemplates()
@@ -72,7 +85,19 @@ namespace Infomaniak.kDrive.ViewModels
             await SaveUserTemplates();
         }
 
-        private async Task SaveUserTemplates()
+        public async Task RemoveTemplates(IEnumerable<ExclusionTemplate> templates)
+        {
+            _templates.RemoveMany(templates);
+            await SaveUserTemplates();
+        }
+
+        public void UpdateSelectedCount(int count)
+        {
+            SelectedCount = count;
+            HasSelectedTemplates = count > 0;
+        }
+
+        public async Task SaveUserTemplates()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             await commService.SetUserExclusionTemplates(UserDefinedTemplates.AsList(), CancellationToken.None);
