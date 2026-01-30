@@ -20,8 +20,8 @@
 
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
+#include "libcommonserver/log/log.h"
 
-#include "libcommon/log/log.h"
 #include "libcommon/utility/filename.h"
 #include "libcommon/utility/types.h"
 
@@ -35,6 +35,7 @@
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <log4cplus/logger.h>
 
 #if defined(KD_WINDOWS)
 #include <windows.h>
@@ -196,6 +197,30 @@ struct COMMONSERVER_EXPORT Utility {
          * @return IoError
          */
         static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
+
+        static void msleep(int msec);
+
+        static bool getLinuxDesktopType(std::string &currentDesktop);
+        static SyncPath getTrashPath();
+
+        // Format utility functions
+        static std::wstring formatStdError(const std::error_code &ec);
+        static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
+        static std::wstring formatIoError(IoError ioError);
+        static std::wstring formatIoError(const SyncPath &path, IoError ioError);
+        static std::wstring formatIoError(const QString &path, IoError ioError);
+        static std::wstring formatErrno(const SyncPath &path, long cError);
+        static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring quotedSyncName(const SyncName &name);
+        static std::wstring formatSyncName(const SyncName &name);
+        static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
+
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
 
     private:
         static log4cplus::Logger _logger;

@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include "libcommon/keychainmanager/apitoken.h"
+#include "libcommonserver/keychainmanager/apitoken.h"
+
 #include "libcommon/utility/types.h"
 
 #include <unordered_map>

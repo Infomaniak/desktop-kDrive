@@ -28,11 +28,8 @@ set(libcommon_SRCS
     utility/utility_base.h utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
-    utility/jsonparserutility.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
-    keychainmanager/apitoken.h keychainmanager/apitoken.cpp
-    keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp
     info/accountinfo.h info/accountinfo.cpp
     info/driveinfo.h info/driveinfo.cpp
@@ -91,8 +88,6 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<sentry.h$<ANGLE-R>>"
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/io/iohelper.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
 )
 
 target_precompile_headers(${libcommon_NAME} PRIVATE ${PC_HEADER_FILES})

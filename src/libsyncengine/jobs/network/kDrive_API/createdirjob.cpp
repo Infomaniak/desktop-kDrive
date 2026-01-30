@@ -18,7 +18,7 @@
 
 #include "createdirjob.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/jsonparserutility.h"
+#include "../../../../libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -41,15 +41,15 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const 
 CreateDirJob::~CreateDirJob() {
     if (_filePath.empty() || !_vfs) return;
     if (const ExitInfo exitInfo = _vfs->setPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << CommonUtility::formatSyncPath(_filePath) << L" : "
-                                                                         << exitInfo);
+        LOGW_WARN(_logger,
+                  L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
     }
 
     if (const ExitInfo exitInfo =
                 _vfs->forceStatus(_filePath, VfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0}));
         !exitInfo) {
-        LOGW_WARN(_logger, L"Error in CreateDirJob::vfsForceStatus for " << CommonUtility::formatSyncPath(_filePath) << L" : "
-                                                                         << exitInfo);
+        LOGW_WARN(_logger,
+                  L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
     }
 }
 std::string CreateDirJob::getSpecificUrl() {
@@ -91,8 +91,8 @@ ExitInfo CreateDirJob::handleResponse(std::istream &is) {
         if (!_filePath.empty() && _vfs) {
             constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
             if (const auto exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << CommonUtility::formatSyncPath(_filePath)
-                                                                                  << L" : " << exitInfo);
+                LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : "
+                                                                                  << exitInfo);
             }
         }
     }

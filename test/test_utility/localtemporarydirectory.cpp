@@ -15,11 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "localtemporarydirectory.h"
 
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
 #include "utility/utility.h"
+
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <sstream>
 
@@ -71,7 +75,7 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
 
     if (!IoHelper::deleteItem(_path, ioError)) {
         // Cannot remove directory
-        std::cout << CommonUtility::ws2s(CommonUtility::formatIoError(_path, ioError)) << std::endl;
+        std::cout << CommonUtility::ws2s(Utility::formatIoError(_path, ioError)) << std::endl;
         assert(false);
     }
 }

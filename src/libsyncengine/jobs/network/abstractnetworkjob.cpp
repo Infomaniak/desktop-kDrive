@@ -23,7 +23,7 @@
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
+#include "../../../libcommonserver/utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -153,7 +153,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            CommonUtility::msleep(500); // Sleep for 0.5s
+            Utility::msleep(500); // Sleep for 0.5s
         }
 
         uri = Poco::URI(url);

@@ -149,7 +149,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
                                  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(logger(), L"Error in CreateFileW: " << CommonUtility::formatSyncPath(path.parent_path()) << L", "
+        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
                                                       << utility_base::getLastErrorMessage());
         return false;
     }
@@ -172,7 +172,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     IoError ioError = IoError::Success;
     PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
     if (!pzwQueryDirectoryFile) {
-        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << CommonUtility::formatIoError(ioError));
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
         (void) CloseHandle(hParent);
         return false;
     }
@@ -214,13 +214,13 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
             ioError = dWordError2ioError(dwError, logger());
             if (counter && ioError != IoError::AccessDenied) {
                 retry = true;
-                CommonUtility::msleep(10);
-                LOGW_DEBUG(logger(), L"Retrying to get handle: " << CommonUtility::formatSyncPath(path.parent_path()));
+                Utility::msleep(10);
+                LOGW_DEBUG(logger(), L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()));
                 counter--;
                 continue;
             }
 
-            LOGW_WARN(logger(), L"Error in CreateFileW: " << CommonUtility::formatIoError(path.parent_path(), ioError));
+            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError));
 
             return isExpectedError(ioError);
         }
@@ -243,7 +243,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
 
     PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
     if (!pzwQueryDirectoryFile) {
-        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << CommonUtility::formatIoError(ioError));
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
         (void) CloseHandle(hParent);
         return false;
     }
@@ -261,7 +261,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
         } else if (dwError != 0) {
             ioError = dWordError2ioError(dwError, logger());
         }
-        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << CommonUtility::formatIoError(path, ioError));
+        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << Utility::formatIoError(path, ioError));
 
         return isExpectedError(ioError);
     }
@@ -440,7 +440,7 @@ void IoHelper::initRightsWindowsApi() {
     SyncPath tmpDir;
     IoError ioError = IoError::Success;
     if (!IoHelper::deviceTempDirectoryPath(tmpDir, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << CommonUtility::formatIoError(tmpDir, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
         return;
     }
 
@@ -451,7 +451,7 @@ void IoHelper::initRightsWindowsApi() {
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
         if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << CommonUtility::formatIoError(tmpDir, ioError));
+            LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1; // Fallback method
             return;
         }
@@ -509,8 +509,8 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << CommonUtility::formatSyncPath(path) << L", DWORD err='" << result
-                                                             << L"'");
+        LOGW_WARN(logger,
+                  L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -521,8 +521,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger,
-                  L"Error in SetEntriesInAcl: " << CommonUtility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
+        LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -531,7 +530,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     if (!IsValidAcl(pACLnew)) {
         ioError = IoError::Unknown;
-        LOGW_WARN(logger, L"Invalid new ACL: " << CommonUtility::formatSyncPath(path));
+        LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path));
 
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
@@ -543,8 +542,8 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << CommonUtility::formatSyncPath(path) << L", DWORD err='" << result
-                                                             << L"'");
+        LOGW_WARN(logger,
+                  L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -580,7 +579,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
             return true;
         }
         LOGW_INFO(logger,
-                  L"GetNamedSecurityInfo failed: " << CommonUtility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
+                  L"GetNamedSecurityInfo failed: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         return false;
     }
 
@@ -596,7 +595,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
      * described in the documentation and consider the file as not existing (we can't get the rights).
      */
     if (result == ERROR_INVALID_ACL) {
-        LOGW_INFO(logger, L"getRightsWindowsApi: " << CommonUtility::formatSyncPath(path)
+        LOGW_INFO(logger, L"getRightsWindowsApi: " << Utility::formatSyncPath(path)
                                                    << L", the specified ACL contains an inherited access - denied ACE. "
                                                       L"Considerring the file as not existing.");
         read = false;
@@ -610,8 +609,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     if (result != ERROR_SUCCESS) {
         LocalFree(psecDesc);
         if (!IoHelper::isExpectedError(ioError)) {
-            LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: " << CommonUtility::formatSyncPath(path) << L", DWORD err='"
-                                                                    << result << L"'");
+            LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatSyncPath(path) << L", DWORD err='" << result
+                                                                    << L"'");
             return false;
         }
         return true;
@@ -649,7 +648,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     ioError = itemType.ioError;
 
     if (!success) {
-        LOGW_WARN(logger(), L"Failed to get item type: " << CommonUtility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -663,7 +662,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                                            : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Failed to get permissions: " << CommonUtility::formatStdError(path, ec));
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
         return isExpectedError(ioError);
     }
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
@@ -983,7 +982,7 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     if (pathWStr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
         LOGW_WARN(logger(),
-                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << CommonUtility::formatSyncPath(path));
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
@@ -1010,7 +1009,7 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     if (pathWstr.size() > MAX_PATH_LENGTH_WIN_LONG) {
         ioError = IoError::FileNameTooLong;
         LOGW_WARN(logger(),
-                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << CommonUtility::formatSyncPath(path));
+                  L"Input file path length exceeds " << MAX_PATH_LENGTH_WIN_LONG << L", " << Utility::formatSyncPath(path));
         return false;
     };
 
@@ -1046,7 +1045,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
                                                         << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item with " << CommonUtility::formatSyncPath(itemPath)
+        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
                     << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr);
@@ -1142,12 +1141,11 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     hr = fileOperation->GetAnyOperationsAborted(&aborted);
     if (FAILED(hr)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
-                                                        << CommonUtility::formatSyncPath(itemPath) << L" err="
+                                                        << Utility::formatSyncPath(itemPath) << L" err="
                                                         << CommonUtility::s2ws(std::system_category().message(hr)));
         result = false;
     } else if (aborted) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Move to trash aborted for item with " << CommonUtility::formatSyncPath(itemPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
         result = false;
     } else {
         // MISRA Coding Guideline

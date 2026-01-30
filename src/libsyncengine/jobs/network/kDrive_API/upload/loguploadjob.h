@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "db/error.h"
 #include "jobs/syncjob.h"
 
 #include <chrono>

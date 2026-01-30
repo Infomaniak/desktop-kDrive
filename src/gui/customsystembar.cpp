@@ -19,6 +19,8 @@
 #include "customsystembar.h"
 #include "customtoolbutton.h"
 
+#include "libcommonserver/utility/utility.h"
+
 #include <QBoxLayout>
 #include <QApplication>
 #include <QIcon>
@@ -62,7 +64,7 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
 
         connect(exitButton, &CustomToolButton::clicked, this, &CustomSystemBar::onExit);
     } else {
-        if (CommonUtility::isMac()) {
+        if (Utility::isMac()) {
             setMinimumHeight(macDialogBarHeight);
             setMaximumHeight(macDialogBarHeight);
             hBox->setContentsMargins(macDialogBoxHMargin, macDialogBoxVMargin, macDialogBoxHMargin, macDialogBoxVMargin);

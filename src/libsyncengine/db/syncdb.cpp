@@ -19,9 +19,10 @@
 #include "syncdb.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommon/io/iohelper.h"
+
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/log/log.h"
 
 #include "libparms/db/sync.h"
 #include "libparms/db/parmsdb.h"
@@ -576,7 +577,7 @@ bool SyncDb::updateNames(const char *queryId, const SyncName &localName, const S
 
     SyncName remoteNormalizedName;
     if (!Utility::normalizedSyncName(remoteName, remoteNormalizedName)) {
-        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(remoteName));
+        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(remoteName));
         return false;
     }
     LOG_IF_FAIL(queryBindValue(queryId, 3, remoteNormalizedName))
@@ -644,7 +645,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
 
     SyncName remoteNormalizedName;
     if (!Utility::normalizedSyncName(node.nameRemote(), remoteNormalizedName)) {
-        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(node.nameRemote()));
+        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(node.nameRemote()));
         return false;
     }
 
@@ -1296,7 +1297,7 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
             if (!queryNext(id, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(id) << L" - parentNodeId="
                                                                    << std::to_wstring(dbNodeId) << L" and name="
-                                                                   << CommonUtility::formatSyncName(name));
+                                                                   << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -1359,8 +1360,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             LOG_IF_FAIL(queryBindValue(queryId, 2, name));
             if (!queryNext(queryId, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << CommonUtility::s2ws(queryId) << L" - parentNodeId="
-                                                                   << nodeDbId << L" and name="
-                                                                   << CommonUtility::formatSyncName(name));
+                                                                   << nodeDbId << L" and name=" << Utility::formatSyncName(name));
                 return false;
             }
             if (!found) {
@@ -2470,13 +2470,13 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
 
         SyncName nfcNormalizedName;
         if (!Utility::normalizedSyncName(nameLocal, nfcNormalizedName, UnicodeNormalization::NFC)) {
-            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(nameLocal));
+            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
 
         SyncName nfdNormalizedName;
         if (!Utility::normalizedSyncName(nameLocal, nfdNormalizedName, UnicodeNormalization::NFD)) {
-            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(nameLocal));
+            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
 
@@ -2509,7 +2509,7 @@ bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
         updateNodeLocalName(dbNodeId, fileName, found);
         if (!found) {
             LOGW_WARN(_logger,
-                      L"Node with DB id='" << dbNodeId << L"' and " << CommonUtility::formatSyncName(fileName) << L" not found.");
+                      L"Node with DB id='" << dbNodeId << L"' and " << Utility::formatSyncName(fileName) << L" not found.");
             queryFree(requestId);
 
             return false;
@@ -2556,7 +2556,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     bool found = false;
     ParmsDb::instance()->selectSync(_dbPath, sync, found);
     if (!found) {
-        LOGW_WARN(_logger, L"Sync DB with " << CommonUtility::formatSyncPath(_dbPath) << L" not found.");
+        LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
         return false;
     }
 
@@ -2566,11 +2566,11 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     IoError existenceCheckError = IoError::Success;
     if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError)) {
         LOGW_WARN(_logger,
-                  L"Error in IoHelper::checkIfPathExists" << CommonUtility::formatIoError(localDrivePath, existenceCheckError));
+                  L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localDrivePath, existenceCheckError));
         return false;
     }
     if (!exists) {
-        LOGW_INFO(_logger, L"The synchronisation folder " << CommonUtility::formatSyncPath(localDrivePath)
+        LOGW_INFO(_logger, L"The synchronisation folder " << Utility::formatSyncPath(localDrivePath)
                                                           << L" does not exist anymore. No Sync DB upgrade to do.");
         return true;
     }
@@ -2586,7 +2586,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     IoError ioError = IoError::Success;
     IoHelper::getDirectoryIterator(localDrivePath, true, ioError, dir);
     if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << CommonUtility::formatIoError(localDrivePath, ioError));
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(localDrivePath, ioError));
         return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
     }
 
@@ -2597,7 +2597,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         NodeId nodeId;
         if (!IoHelper::getNodeId(entry.path(), nodeId)) {
-            LOGW_WARN(_logger, L"Could not retrieve the node id of item with " << CommonUtility::formatSyncPath(entry.path()));
+            LOGW_WARN(_logger, L"Could not retrieve the node id of item with " << Utility::formatSyncPath(entry.path()));
             continue;
         }
 
@@ -2659,7 +2659,7 @@ bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
 
         if (!IoHelper::getNodeId(absoluteLocalPath, newLocalNodeId)) {
             LOGW_WARN(_logger, L"Unable to get new local node ID for "
-                                       << CommonUtility::formatSyncPath(absoluteLocalPath)
+                                       << Utility::formatSyncPath(absoluteLocalPath)
                                        << L". It might have been deleted or moved, the syncDb cannot be fixed.");
             dbCache.clear();
             return false;

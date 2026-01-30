@@ -34,10 +34,13 @@
 #include "enablestateholder.h"
 #include "libcommongui/logger.h"
 #include "guirequests.h"
+
 #include "libcommongui/matomoclient.h"
+
+#include "libcommonserver/utility/utility.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-
 #ifdef Q_OS_WIN
 #include "libcommon/info/parametersinfo.h"
 #endif
@@ -154,7 +157,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Dark theme activation
     CustomSwitch *darkThemeSwitch = nullptr;
-    if (!CommonUtility::isMac()) {
+    if (!Utility::isMac()) {
         QBoxLayout *darkThemeBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
         _darkThemeLabel = new QLabel();

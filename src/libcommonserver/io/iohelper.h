@@ -19,8 +19,8 @@
 #pragma once
 
 #include "utility/types.h"
-#include "utility/utility.h"
-#include "log/log.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
 
 #if defined(KD_WINDOWS)
 #include <AccCtrl.h>
@@ -535,8 +535,8 @@ struct IoHelper {
 
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
-                   (linkType == LinkType::FinderAlias && CommonUtility::isMac()) ||
-                   (linkType == LinkType::Junction && CommonUtility::isWindows());
+                   (linkType == LinkType::FinderAlias && Utility::isMac()) ||
+                   (linkType == LinkType::Junction && Utility::isWindows());
         }
 
         static inline bool isLinkFollowedByDefault(LinkType linkType) {

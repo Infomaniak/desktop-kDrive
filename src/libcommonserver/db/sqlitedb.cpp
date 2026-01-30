@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 #include "utility/utility.h"
 #include "utility/logiffail.h"
-#include "libcommon/log/log.h"
+#include "log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -79,7 +79,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath));
         close();
         if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(dbPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to remove db file " << CommonUtility::formatIoError(dbPath, ioError));
+            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(dbPath, ioError));
             close();
             return false;
         }
@@ -145,7 +145,7 @@ void SqliteDb::close() {
     if (_autoDelete) {
         // Delete DB
         if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to remove db file " << CommonUtility::formatIoError(_dbPath, ioError));
+            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
         }
     }
 }

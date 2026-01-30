@@ -68,7 +68,7 @@ bool CommonUtility::hasDarkSystray() {
     return true;
 }
 
-SyncPath CommonUtility::getTrashPath() {
+SyncPath Utility::getTrashPath() {
     const char *homePathEnv = std::getenv("HOME");
     if (!homePathEnv) {
         LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");

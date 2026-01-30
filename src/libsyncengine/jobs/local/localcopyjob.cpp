@@ -18,8 +18,8 @@
 
 #include "localcopyjob.h"
 
-#include "libcommon/io/permissionsholder.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/permissionsholder.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -39,7 +39,7 @@ ExitInfo LocalCopyJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_dest, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
@@ -54,7 +54,7 @@ ExitInfo LocalCopyJob::canRun() {
 
     // Check that source file still exists
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_source, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
@@ -64,7 +64,7 @@ ExitInfo LocalCopyJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. Item with "
-                                    << CommonUtility::formatSyncPath(_source));
+                                    << Utility::formatSyncPath(_source));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -92,8 +92,8 @@ ExitInfo LocalCopyJob::runJob() {
             exitInfo.setCause(ExitCause::FileAccessError);
         }
     } catch (...) {
-        LOGW_WARN(_logger, L"Failed to copy item " << CommonUtility::formatSyncPath(_source) << L" to "
-                                                   << CommonUtility::formatSyncPath(_dest) << L": Unknown error");
+        LOGW_WARN(_logger, L"Failed to copy item " << Utility::formatSyncPath(_source) << L" to "
+                                                   << Utility::formatSyncPath(_dest) << L": Unknown error");
         exitInfo = ExitCode::SystemError;
     }
     return exitInfo;

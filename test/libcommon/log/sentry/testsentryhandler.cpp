@@ -19,10 +19,12 @@
 #include "config.h"
 #include "testsentryhandler.h"
 
-#include "io/iohelper.h"
-#include "libcommon/log/sentry/handler.h"
-#include "../../../../src/libcommon/log/log.h"
 #include "test_utility/testhelpers.h"
+
+#include "io/iohelper.h"
+#include "log/log.h"
+
+#include "libcommon/log/sentry/handler.h"
 
 #include <thread>
 

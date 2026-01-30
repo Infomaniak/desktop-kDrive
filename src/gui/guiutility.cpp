@@ -20,8 +20,12 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libcommongui/utility/utility.h"
+
+#include "libcommonserver/utility/utility.h"
 
 #include <QApplication>
 #include <QBitmap>
@@ -429,7 +433,7 @@ QColor GuiUtility::getShadowColor(bool dialog) {
 
 bool GuiUtility::isDarkTheme() {
     bool darkTheme = false;
-    if (CommonUtility::isMac()) {
+    if (Utility::isMac()) {
         darkTheme = CommonUtility::hasDarkSystray();
     } else {
         darkTheme = ParametersCache::instance()->parametersInfo().darkTheme();

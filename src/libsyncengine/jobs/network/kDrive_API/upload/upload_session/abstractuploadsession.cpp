@@ -21,11 +21,12 @@
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjobmanager.h"
-#include "libcommon/log/log.h"
-#include "libcommon/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
 #include "utility/timerutility.h"
+
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -43,27 +44,26 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     _nbParallelThread(nbParallelThread) {
     auto ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
-        const std::wstring exceptionMessage =
-                L"Error in IoHelper::getFileSize for " + CommonUtility::formatIoError(_filePath, ioError);
+        const std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
         LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        const std::wstring exceptionMessage = L"File does not exist: " + CommonUtility::formatSyncPath(_filePath);
+        const std::wstring exceptionMessage = L"File does not exist: " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     if (ioError == IoError::AccessDenied) {
-        const std::wstring exceptionMessage = L"File search permission missing: " + CommonUtility::formatSyncPath(_filePath);
+        const std::wstring exceptionMessage = L"File search permission missing: " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
 
     assert(ioError == IoError::Success);
     if (ioError != IoError::Success) {
-        const std::wstring exceptionMessage = L"Unable to read file size for " + CommonUtility::formatSyncPath(_filePath);
+        const std::wstring exceptionMessage = L"Unable to read file size for " + Utility::formatSyncPath(_filePath);
         LOGW_WARN(_logger, exceptionMessage);
         throw std::runtime_error(CommonUtility::ws2s(exceptionMessage).c_str());
     }
@@ -144,7 +144,7 @@ void AbstractUploadSession::abort() {
 
 ExitInfo AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) {
     if (cancelJob->hasHttpError()) {
-        LOGW_WARN(_logger, L"Failed to cancel upload session for " << CommonUtility::formatSyncPath(_filePath.filename()));
+        LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()));
         return ExitCode::DataError;
     }
     return ExitCode::Ok;
@@ -164,17 +164,17 @@ ExitInfo AbstractUploadSession::canRun() {
     bool exists = false;
     auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_filePath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(_filePath));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
-                                    << CommonUtility::formatSyncPath(_filePath));
+        LOGW_DEBUG(_logger,
+                   L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -212,7 +212,7 @@ ExitInfo AbstractUploadSession::startSession() {
     }
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
-        LOGW_ERROR(_logger, L"Failed to start upload session for " << CommonUtility::formatSyncPath(_filePath.filename()));
+        LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()));
         return startJob->exitInfo();
     }
 
@@ -258,7 +258,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
     // "file not found" errors.
     std::ifstream file;
     if (const auto exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to open file " << CommonUtility::formatSyncPath(_filePath) << L" " << exitInfo);
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath) << L" " << exitInfo);
         return exitInfo;
     }
 
@@ -418,9 +418,8 @@ ExitInfo AbstractUploadSession::closeSession() {
     }
 
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
-        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: " << exitInfo << L" "
-                                                                                  << CommonUtility::formatSyncPath(_filePath)
-                                                                                  << L". Cancelling upload session.");
+        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
+                                   << exitInfo << L" " << Utility::formatSyncPath(_filePath) << L". Cancelling upload session.");
         // Cancelling the session is a backend requirement. Otherwise, subsequent upload attempts will fail.
         (void) cancelSession();
         return exitInfo;
@@ -486,7 +485,7 @@ void AbstractUploadSession::waitForJobsToComplete(const bool all) {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, (all ? "Wait for all jobs to complete" : "Wait for some jobs to complete"));
         }
-        CommonUtility::msleep(200); // Sleep for 0.2s
+        Utility::msleep(200); // Sleep for 0.2s
     }
 
     if (isAborted()) {

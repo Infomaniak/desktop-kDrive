@@ -29,9 +29,13 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
+
+#include "libcommonserver/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -409,12 +413,12 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                     .arg(err);
         }
         case ExitCause::UnableToStartVfs: {
-            if (CommonUtility::isWindows()) {
+            if (Utility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
                           "Please empty the history, restart and if the error persists, contact our support team.")
                         .arg(err);
-            } else if (CommonUtility::isMac()) {
+            } else if (Utility::isMac()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension has the correct permissions and is running.<br>"
                           "Please empty the history, restart and if the error persists, contact our support team.")

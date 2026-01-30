@@ -192,7 +192,7 @@ bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) con
     int count = 0;
     while (count++ < 100) {
         if (auto status = AppServer::syncPalMap[syncDbId]->status(); status == targetStatus) return true;
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
     return false;
 }

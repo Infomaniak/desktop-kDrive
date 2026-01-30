@@ -20,9 +20,10 @@
 #include "testlog.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/log/log.h"
-#include "libcommon/log/customrollingfileappender.h"
-#include "libcommon/io/iohelper.h"
+
+#include "log/log.h"
+#include "log/customrollingfileappender.h"
+#include "io/iohelper.h"
 #include "utility/timerutility.h"
 
 #include <config.h>
@@ -120,7 +121,7 @@ void TestLog::testExpiredLogFiles(void) {
         } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
             break;
         }
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.

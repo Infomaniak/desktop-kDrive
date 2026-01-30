@@ -17,7 +17,7 @@
  */
 
 #include "performancewatcher.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 #include <cmath>
@@ -83,7 +83,7 @@ void PerformanceWatcher::run() {
             _movingAverageValues.push_back(_cpuUsagePercent);
         }
 
-        CommonUtility::msleep(1000); // Sleep for 1s
+        Utility::msleep(1000); // Sleep for 1s
     }
 }
 

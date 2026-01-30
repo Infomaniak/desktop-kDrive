@@ -42,7 +42,7 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
             VfsStatus vfsStatus;
             if (const auto exitInfo = syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(),
-                          L"Failed to get VFS status for file " << CommonUtility::formatSyncPath(entry.path()));
+                          L"Failed to get VFS status for file " << Utility::formatSyncPath(entry.path()));
                 continue; // We simply ignore the file.
             }
             if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) continue;
@@ -50,8 +50,8 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
             uint64_t entrySize = 0;
             if (!IoHelper::getFileSize(entry.path(), entrySize, ioError) || ioError != IoError::Success) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for "
-                                                                     << CommonUtility::formatSyncPath(entry.path()) << L" - "
-                                                                     << CommonUtility::formatIoError(ioError));
+                                                                     << Utility::formatSyncPath(entry.path()) << L" - "
+                                                                     << Utility::formatIoError(ioError));
                 continue; // We simply ignore the file.
             }
 

@@ -31,7 +31,7 @@
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "utility/jsonparserutility.h"
+#include "../../../libcommonserver/utility/jsonparserutility.h"
 
 #if defined(KD_MACOS)
 #include "utility/utility.h"
@@ -82,7 +82,7 @@ void RemoteFileSystemObserverWorker::execute() {
             break;
         }
         _initializing = false;
-        CommonUtility::msleep(LOOP_EXEC_SLEEP_PERIOD);
+        Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
@@ -282,7 +282,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         // Wait a little before checking again
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
@@ -367,7 +367,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_liveSnapshot.updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << CommonUtility::quotedSyncName(item.name()) << L", inode:"
+                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
                                                     << CommonUtility::s2ws(item.id()) << L", parent inode:"
                                                     << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
                                                     << L", modtime:" << item.lastModified() << L", isDir:"
@@ -434,7 +434,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             }
 
             // Wait until job finished
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
 
         if (notifyJob->exitInfo().code() != ExitCode::Ok) {

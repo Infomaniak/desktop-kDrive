@@ -28,9 +28,12 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "reconciliation/conflict_finder/conflict.h"
 #include "reconciliation/syncoperation.h"
-#include "libcommon/log/log.h"
+
 #include "libcommon/utility/types.h"
+
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/vfs/vfs.h"
+
 #include "libparms/db/parmsdb.h"
 
 #include <memory>

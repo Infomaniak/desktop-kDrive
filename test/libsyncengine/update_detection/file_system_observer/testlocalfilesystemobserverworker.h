@@ -41,7 +41,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
             LocalFileSystemObserverWorker_win(syncPal, name, shortName) {}
 
         ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
-            CommonUtility::msleep(200);
+            Utility::msleep(200);
             return LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
@@ -56,7 +56,7 @@ class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWo
             LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
 
         ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) override {
-            CommonUtility::msleep(200);
+            Utility::msleep(200);
             return LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
         void waitForUpdate(SnapshotRevision previousRevision,

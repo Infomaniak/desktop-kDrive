@@ -34,7 +34,7 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -153,8 +153,8 @@ ProxyType intToProxyType(int pTypeInt) {
 }
 
 QDir MigrationParams::configDir() {
-    return QStandardPaths::writableLocation(CommonUtility::isWindows() ? QStandardPaths::AppDataLocation
-                                                                       : QStandardPaths::AppConfigLocation);
+    return QStandardPaths::writableLocation(Utility::isWindows() ? QStandardPaths::AppDataLocation
+                                                                 : QStandardPaths::AppConfigLocation);
 }
 
 QString MigrationParams::configFileName() {

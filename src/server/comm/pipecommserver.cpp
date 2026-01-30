@@ -19,7 +19,7 @@
 #include "pipecommserver.h"
 #include "requests/parameterscache.h"
 #include "libcommon/theme/theme.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -133,7 +133,7 @@ bool PipeCommServer::listen() {
     }
 
     LOGW_INFO(Log::instance()->getLogger(),
-              L"Starting " << CommonUtility::s2ws(name()) << L": " << CommonUtility::formatSyncPath(_pipePath));
+              L"Starting " << CommonUtility::s2ws(name()) << L": " << Utility::formatSyncPath(_pipePath));
 
     _stopAsked = false;
     _isRunning = true;
