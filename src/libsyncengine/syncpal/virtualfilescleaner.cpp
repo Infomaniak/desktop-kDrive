@@ -65,7 +65,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             return false;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (!folderCanBeProcessed(entry)) {
                 dirIt.disableRecursionPending();
                 continue;
@@ -197,7 +197,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             return false;
         }
 
-        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir && iterationIoError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir) {
             if (!folderCanBeProcessed(entry)) {
                 dirIt.disableRecursionPending();
                 continue;

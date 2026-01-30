@@ -36,7 +36,7 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
         IoHelper::DirectoryIterator dirIt(basePath, true, ioError);
         DirectoryEntry entry;
         bool endOfDir = false;
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (entry.is_symlink() || entry.is_directory()) continue;
 
             VfsStatus vfsStatus;

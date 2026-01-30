@@ -386,7 +386,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             return;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             const SyncPath &absolutePath = entry.path();
 
             // Check if the directory entry is managed
