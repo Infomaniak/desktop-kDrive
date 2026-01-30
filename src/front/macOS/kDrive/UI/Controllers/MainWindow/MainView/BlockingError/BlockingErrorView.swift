@@ -62,10 +62,8 @@ struct BlockingErrorView: View {
         }
         .padding(AppPadding.padding32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: AppRadius.radius16)
-                .fill(ColorToken.Surface.primary.asColor)
-        )
+        .background(ColorToken.Surface.primary.asColor,
+                    in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
     }
 
