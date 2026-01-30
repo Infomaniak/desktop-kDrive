@@ -391,7 +391,7 @@
 }
 
 - (void)freeAllStoppedProcesses {
-    
+    NSLog(@"[KD] TEST_CK Freeing all stoppend processes!");
 }
 
 - (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error {

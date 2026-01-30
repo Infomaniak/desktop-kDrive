@@ -84,7 +84,7 @@
 - (BOOL)updateThumbnailFetchStatus:(NSString *_Nonnull)path fileStatus:(NSString *_Nonnull)status;
 - (BOOL)getFetchingAppList:(NSMutableDictionary<NSString *, NSString *> *_Nonnull *_Nonnull)appMap;
 - (BOOL)setThumbnail:(NSString *_Nonnull)path image:(NSImage *_Nonnull)image;
-
+- (void)freeAllStoppedProcesses;
 @end
 
 namespace KDC {
@@ -111,8 +111,6 @@ class LiteSyncCommClientPrivate {
         log4cplus::Logger _logger;
         Connector *_connector = nullptr;
         ExecuteCommand _executeCommand = nullptr;
-
-        void freeAllStoppedProcesses();
 };
 
 } // namespace KDC
@@ -464,6 +462,12 @@ class LiteSyncCommClientPrivate {
     return true;
 }
 
+- (void)freeAllStoppedProcesses {
+    if (_connection) {
+        [[_connection remoteObjectProxy] freeAllStoppedProcesses];
+    }
+}
+
 // xpcLiteSyncExtensionRemoteProtocol protocol implementation
 - (void)getAppId:(void (^)(NSString *))callback {
     NSLog(@"[KD] getAppId called");
@@ -562,7 +566,7 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
         return false;
     }
 
-    freeAllStoppedProcesses();
+    [_connector freeAllStoppedProcesses];
 
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
     if (![_connector registerFolder:nsPath]) {
@@ -614,7 +618,7 @@ bool LiteSyncCommClientPrivate::vfsStop(const SyncPath &folderPath) {
         return false;
     }
 
-    freeAllStoppedProcesses();
+    [_connector freeAllStoppedProcesses];
 
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
     if (![_connector unregisterFolder:nsPath]) {
@@ -736,10 +740,6 @@ bool LiteSyncCommClientPrivate::getFetchingAppList(AppTable &appTable) {
     }
 
     return true;
-}
-
-void LiteSyncCommClientPrivate::freeAllStoppedProcesses() {
-
 }
 
 // LiteSyncCommClient implementation
@@ -1603,10 +1603,6 @@ void LiteSyncCommClient::resetConnector(log4cplus::Logger logger, ExecuteCommand
             throw std::runtime_error("Error in LiteSyncCommClientPrivate constructor!");
         }
     }
-}
-
-void LiteSyncCommClient::freeAllStoppedProcesses() {
-
 }
 
 } // namespace KDC
