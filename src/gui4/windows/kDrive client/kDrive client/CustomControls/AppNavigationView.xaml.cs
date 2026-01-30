@@ -34,15 +34,13 @@ namespace Infomaniak.kDrive.CustomControls
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
         };
 
-        public AppNavigationView()
-        {
-            InitializeComponent();
-            Loaded += AppNavigationView_Loaded;
-        }
-
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+        }
+        private void AppNavigationView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigated -= Frame_Navigated;
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)

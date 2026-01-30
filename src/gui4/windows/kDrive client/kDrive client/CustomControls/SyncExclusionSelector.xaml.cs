@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,13 +66,17 @@ namespace Infomaniak.kDrive.CustomControls
         public SyncExclusionSelector()
         {
             InitializeComponent();
-            Loaded += OnControlLoadedAsync;
         }
 
         // Initial load of data once control is displayed
-        private async void OnControlLoadedAsync(object sender, RoutedEventArgs e)
+        private async void SyncExclusionSelector_Loaded(object sender, RoutedEventArgs e)
         {
             await ReloadAsync();
+        }
+
+        private void SyncExclusionSelector_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ClearAllTreeItems();
         }
         #endregion
 
@@ -270,9 +275,25 @@ namespace Infomaniak.kDrive.CustomControls
         private async Task ReloadAsync()
         {
             IsLoading = true;
+            ClearAllTreeItems();
             await RefreshExcludedNodesAsync();
             await BuildRootLevelItemsAsync();
             IsLoading = false;
+        }
+
+        // Clear all tree items and dispose them
+        private void ClearAllTreeItems()
+        {
+            if (RootTreeItem is not null)
+            {
+                RootTreeItem.Dispose();
+                RootTreeItem = null;
+            }
+            foreach (var item in _rootLevelItems)
+            {
+                item.Dispose();
+            }
+            _rootLevelItems.Clear();
         }
 
         // (Re)build root level items under the logical root folder using current exclusion map
@@ -280,7 +301,10 @@ namespace Infomaniak.kDrive.CustomControls
         {
 
             if (RootTreeItem is not null)
-                RootTreeItem.Children.Clear();
+            {
+                RootTreeItem.Dispose();
+                RootTreeItem = null;
+            }
             _rootLevelItems.Clear();
 
             // Logical root node
@@ -526,7 +550,7 @@ namespace Infomaniak.kDrive.CustomControls
     /// <summary>
     /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
     /// </summary>
-    public class TreeItem : UISafeObservableObject
+    public class TreeItem : UISafeObservableObject, IDisposable
     {
         #region Private fields
         private readonly DbId _userDbId = 0;
@@ -535,6 +559,8 @@ namespace Infomaniak.kDrive.CustomControls
         private bool _childrenLoaded = false;
         private bool? _isSelected = true; // true=include, false=exclude, null=partial
         private readonly Dictionary<NodeId, string> _excludedNodes;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private bool _disposed = false;
         #endregion
 
         #region Public properties
@@ -573,6 +599,8 @@ namespace Infomaniak.kDrive.CustomControls
             _excludedNodes = excluded;
 
             Children.CollectionChanged += OnChildrenCollectionChanged;
+            _disposables.Add(Disposable.Create(() => Children.CollectionChanged -= OnChildrenCollectionChanged));
+
             RegisterSelectionCallbacks(Children);
 
             RecomputeSelectionFromExclusionMap();
@@ -611,6 +639,14 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (e.OldItems != null)
+            {
+                foreach (TreeItem item in e.OldItems.OfType<TreeItem>())
+                {
+                    item.Dispose();
+                }
+            }
+
             RegisterSelectionCallbacks(e.NewItems?.Cast<TreeItem>().ToList());
         }
 
@@ -619,10 +655,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (newItems != null)
                 foreach (var item in newItems)
                     if (item is TreeItem treeItem)
-                        treeItem.WhenAnyPropertyChanged(nameof(TreeItem.IsSelected)).Subscribe(changedItem =>
+                    {
+                        var subscription = treeItem.WhenAnyPropertyChanged(nameof(TreeItem.IsSelected)).Subscribe(changedItem =>
                         {
                             UpdateDirectoryTriStateFromChildren();
                         });
+                        _disposables.Add(subscription);
+                    }
         }
 
 
@@ -661,7 +700,24 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
             IsLoadingChildren = false;
         }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            foreach (var child in Children)
+            {
+                child.Dispose();
+            }
+            Children.Clear();
+
+            _disposables?.Dispose();
+        }
     }
+
     public partial class FolderTreeViewItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? DirectoryTemplate { get; set; }

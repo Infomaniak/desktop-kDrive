@@ -28,6 +28,7 @@ using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Windows.Foundation;
 
 
 namespace Infomaniak.kDrive
@@ -173,17 +174,36 @@ namespace Infomaniak.kDrive
                 }
                 CurrentWindow?.Close();
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
-                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+                TypedEventHandler<object, WindowEventArgs> closedEventHandler= (s, e) =>
                 {
                     if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
                     {
                         Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+                        // Detach the event handler to avoid multiple calls
+                        ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
+
                         CurrentWindow = new MainWindow();
                         CurrentWindow.Activate();
                     }
                 };
+
+                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += closedEventHandler;
                 CurrentWindow.Activate();
             });
+        }
+
+        private void OnOnboardingClosed(object sender, WindowEventArgs e)
+        {
+            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any())
+                return;
+
+            Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+
+            var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
+            onboardingWindow.Closed -= OnOnboardingClosed;
+
+            CurrentWindow = new MainWindow();
+            CurrentWindow.Activate();
         }
 
         public void StartOnboardingIfNeeded()

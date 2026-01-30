@@ -8,7 +8,9 @@
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
              mc:Ignorable="d"
-             HorizontalAlignment="Stretch">
+             HorizontalAlignment="Stretch"
+             Loaded="SyncExclusionSelector_Loaded"
+             >
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
