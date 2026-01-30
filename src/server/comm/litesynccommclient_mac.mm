@@ -84,7 +84,7 @@
 - (BOOL)updateThumbnailFetchStatus:(NSString *_Nonnull)path fileStatus:(NSString *_Nonnull)status;
 - (BOOL)getFetchingAppList:(NSMutableDictionary<NSString *, NSString *> *_Nonnull *_Nonnull)appMap;
 - (BOOL)setThumbnail:(NSString *_Nonnull)path image:(NSImage *_Nonnull)image;
-- (void)freeAllStoppedProcesses;
+- (void)freeAllStoppedProcesses:(NSString *_Nonnull)path;
 @end
 
 namespace KDC {
@@ -462,9 +462,9 @@ class LiteSyncCommClientPrivate {
     return true;
 }
 
-- (void)freeAllStoppedProcesses {
+- (void)freeAllStoppedProcesses:(NSString *_Nonnull)path {
     if (_connection) {
-        [[_connection remoteObjectProxy] freeAllStoppedProcesses];
+        [[_connection remoteObjectProxy] freeAllStoppedProcesses:path];
     }
 }
 
@@ -566,9 +566,9 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
         return false;
     }
 
-    [_connector freeAllStoppedProcesses];
-
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
+    [_connector freeAllStoppedProcesses:nsPath];
+
     if (![_connector registerFolder:nsPath]) {
         LOG_ERROR(_logger, "Cannot register folder!");
         return false;
@@ -618,9 +618,9 @@ bool LiteSyncCommClientPrivate::vfsStop(const SyncPath &folderPath) {
         return false;
     }
 
-    [_connector freeAllStoppedProcesses];
-
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
+    [_connector freeAllStoppedProcesses:nsPath];
+
     if (![_connector unregisterFolder:nsPath]) {
         LOG_ERROR(_logger, "Cannot unregister folder!");
         return false;

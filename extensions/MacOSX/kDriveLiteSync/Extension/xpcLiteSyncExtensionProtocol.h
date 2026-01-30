@@ -26,5 +26,5 @@
 - (void)updateFetchStatus:(NSString *)appId filePath:(NSString *)path fileStatus:(NSString *)status;
 - (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)path fileStatus:(NSString *)status;
 - (void)getFetchingAppList:(NSString *)appId callback:(void (^)(NSString *))callback;
-- (void)freeAllStoppedProcesses;
+- (void)freeAllStoppedProcesses:(NSString *)path;
 @end

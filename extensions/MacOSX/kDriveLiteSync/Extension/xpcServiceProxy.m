@@ -151,10 +151,10 @@
     callback([_delegate getFetchingAppList]);
 }
 
-- (void)freeAllStoppedProcesses
+- (void)freeAllStoppedProcesses:(NSString *)path
 {
     NSLog(@"[KD] freeAllStoppedProcesses called");
-    [_delegate freeAllStoppedProcesses];
+    [_delegate freeAllStoppedProcesses:path];
 }
 
 @end

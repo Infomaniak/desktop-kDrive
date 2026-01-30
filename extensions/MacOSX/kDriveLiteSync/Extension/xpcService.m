@@ -226,6 +226,8 @@
     @synchronized(_fetchMap) {
         if (_fetchMap[filePath] == nil) {
             [_fetchMap setObject:[[NSMutableSet alloc] init] forKey:filePath];
+            
+            NSLog(@"[KD] TEST_CK: file %@ is in fetch map", filePath);
 
             // Ask to the app to fetch the file
             [self sendMessage:filePath query:@"MAKE_AVAILABLE_LOCALLY_DIRECT" oneApp:TRUE];
@@ -390,8 +392,21 @@
     return appList;
 }
 
-- (void)freeAllStoppedProcesses {
-    NSLog(@"[KD] TEST_CK Freeing all stoppend processes!");
+- (void)freeAllStoppedProcesses:(NSString *)path {
+    NSLog(@"[KD] Freeing all stopped processes for path: %@", path);
+    
+    for (NSString *filePath in _fetchThumbnailMap) {
+        if ([filePath hasPrefix:path]) {
+            NSLog(@"[KD] Freeing fetch thumbnail processes for file: %@", path);
+            [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+        }
+    }
+    for (NSString *filePath in _fetchMap) {
+        if ([filePath hasPrefix:path]) {
+            NSLog(@"[KD] Freeing fetch processes for file: %@", path);
+            [self updateFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+        }
+    }
 }
 
 - (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error {
