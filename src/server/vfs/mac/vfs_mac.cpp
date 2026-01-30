@@ -134,19 +134,17 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
     return ExitCode::Ok;
 }
 
-void VfsMac::stopImpl(bool unregister) {
+void VfsMac::stopImpl() {
     LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams.syncDbId);
 
-    if (unregister) {
-        if (!_connector) {
-            LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
-            return;
-        }
+    if (!_connector) {
+        LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
+        return;
+    }
 
-        if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
-            LOG_WARN(logger(), "Error in vfsStop!");
-            return;
-        }
+    if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
+        LOG_WARN(logger(), "Error in vfsStop!");
+        return;
     }
 }
 

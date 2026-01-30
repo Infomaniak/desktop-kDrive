@@ -34,9 +34,7 @@ using namespace KDC;
 
 Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent),
-    _vfsSetupParams(vfsSetupParams),
-    _extendedLog(false),
-    _started(false) {}
+    _vfsSetupParams(vfsSetupParams) {}
 
 void Vfs::starVfsWorkers() {
     // Start hydration/dehydration workers
@@ -111,9 +109,9 @@ ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connecti
     return ExitCode::Ok;
 }
 
-void Vfs::stop(bool unregister) {
+void Vfs::stop() {
     if (_started) {
-        stopImpl(unregister);
+        stopImpl();
         _started = false;
     }
 }
