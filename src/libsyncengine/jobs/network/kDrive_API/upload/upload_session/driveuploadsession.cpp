@@ -80,7 +80,7 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   chunkContent, chunkNb, actualChunkSize, jobId());
+                                                   getSessionUrl(), chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {

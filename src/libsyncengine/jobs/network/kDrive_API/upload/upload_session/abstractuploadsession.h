@@ -70,6 +70,7 @@ class AbstractUploadSession : public SyncJob {
         uint64_t getFileSize() const { return _filesize; }
         SyncName getFileName() const { return _filename; }
         std::string getSessionToken() const { return _sessionToken; }
+        std::string getSessionUrl() const { return _sessionUrl; }
         bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
@@ -97,6 +98,7 @@ class AbstractUploadSession : public SyncJob {
         ExitInfo _chunkJobExitInfo;
 
         std::string _sessionToken;
+        std::string _sessionUrl;
 
         uint64_t _chunkSize = 0;
         uint64_t _totalChunks = 0;

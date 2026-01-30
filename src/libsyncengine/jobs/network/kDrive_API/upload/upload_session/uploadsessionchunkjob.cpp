@@ -26,9 +26,10 @@
 namespace KDC {
 
 UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
-                                             const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
-                                             uint64_t chunkSize, UniqueId sessionJobId) :
-    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
+                                             const std::string &sessionToken, const std::string &sessionUrl,
+                                             const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize,
+                                             UniqueId sessionJobId) :
+    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken, sessionUrl),
     _chunkNb(chunkNb),
     _chunkSize(chunkSize),
     _sessionJobId(sessionJobId) {
@@ -42,17 +43,24 @@ UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, int d
 }
 
 UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath,
-                                             const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
-                                             uint64_t chunkSize, UniqueId sessionJobId) :
-    UploadSessionChunkJob(uploadType, 0, filepath, sessionToken, chunkContent, chunkNb, chunkSize, sessionJobId) {}
+                                             const std::string &sessionToken, const std::string &sessionUrl,
+                                             const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize,
+                                             UniqueId sessionJobId) :
+    UploadSessionChunkJob(uploadType, 0, filepath, sessionToken, sessionUrl, chunkContent, chunkNb, chunkSize, sessionJobId) {}
 
 UploadSessionChunkJob::~UploadSessionChunkJob() {}
 
+std::string UploadSessionChunkJob::getUrl() {
+    return _sessionUrl + "/" + std::to_string(_apiVersion) + getSpecificUrl();
+}
+
 std::string UploadSessionChunkJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+
     str += "/upload/session/";
     str += _sessionToken;
     str += "/chunk";
+
     return str;
 }
 

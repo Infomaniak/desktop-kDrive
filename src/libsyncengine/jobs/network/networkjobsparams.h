@@ -69,6 +69,7 @@ static const std::string dataKey = "data";
 static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
+static const std::string uploadUrlKey = "upload_url";
 static const std::string preferenceKey = "preference";
 static const std::string preferencesKey = "preferences";
 
