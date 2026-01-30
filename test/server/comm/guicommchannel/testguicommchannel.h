@@ -86,7 +86,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
-        CPPUNIT_TEST(testExclTemplSetListJob);
+        CPPUNIT_TEST(testExclTemplSetUserListJob);
 
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
@@ -165,7 +165,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testErrorInfoListJob();
         void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();
-        void testExclTemplSetListJob();
+        void testExclTemplSetUserListJob();
 #if defined(KD_MACOS)
         void testExclAppGetListJob();
         void testExclAppSetListJob();

@@ -132,7 +132,7 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 #endif
 }
 
-void TestGuiCommChannel::testExclTemplSetListJob() {
+void TestGuiCommChannel::testExclTemplSetUserListJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
@@ -142,12 +142,10 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
     Poco::JSON::Object exclusionTemplateInfo1;
     (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
-    (void) exclusionTemplateInfo1.set("default", false);
 
     Poco::JSON::Object exclusionTemplateInfo2;
     (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
-    (void) exclusionTemplateInfo2.set("default", false);
 
     Poco::JSON::Array exclusionTemplateList;
     (void) exclusionTemplateList.add(exclusionTemplateInfo1);

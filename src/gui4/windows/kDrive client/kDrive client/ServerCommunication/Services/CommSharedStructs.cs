@@ -137,14 +137,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         static public void CopyToDrive(DriveInfo source, Drive target)
         {
-            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            copyProperty(source, target, nameof(source.Id), nameof(target.DriveId));
-            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
-            copyProperty(source, target, nameof(source.Color), nameof(target.Color));
-            copyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
-            copyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
-            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
-            copyProperty(source, target, nameof(source.UsedSize), nameof(target.UsedSize));
+            CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            CopyProperty(source, target, nameof(source.Id), nameof(target.DriveId));
+            CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.Color), nameof(target.Color));
+            CopyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
+            CopyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
+            CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            CopyProperty(source, target, nameof(source.UsedSize), nameof(target.UsedSize));
         }
     }
 
@@ -184,11 +184,11 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         static public void CopyToSync(SyncInfo source, Sync target)
         {
-            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
-            copyProperty(source, target, nameof(source.TargetNodeId), nameof(target.RemoteNodeId));
-            copyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
-            copyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
+            CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            CopyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
+            CopyProperty(source, target, nameof(source.TargetNodeId), nameof(target.RemoteNodeId));
+            CopyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
+            CopyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
 
             if (source.VirtualFileMode is not null)
                 if (source.VirtualFileMode.Value == VirtualFileMode.Win)
@@ -248,14 +248,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         static public void CopyToSettings(ParmsInfo source, Settings target)
         {
-            copyProperty(source, target, nameof(source.Language), nameof(target.Language));
-            copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
-            copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
-            copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
-            copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
-            copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
-            copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
+            CopyProperty(source, target, nameof(source.Language), nameof(target.Language));
+            CopyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
+            CopyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
+            CopyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
+            CopyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
+            CopyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
+            CopyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
+            CopyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
             if (source.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
                 CopyToProxyConfig(proxyConfigInfo, target.ProxyConfig);
@@ -272,14 +272,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
         static public void CopyToParmsInfo(Settings source, ParmsInfo target)
         {
-            copyProperty(source, target, nameof(source.Language), nameof(target.Language));
-            copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
-            copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
-            copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel));
-            copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
-            copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
-            copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
+            CopyProperty(source, target, nameof(source.Language), nameof(target.Language));
+            CopyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
+            CopyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
+            CopyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
+            CopyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel));
+            CopyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
+            CopyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
+            CopyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
             if (target.ProxyConfigInfo is null)
                 target.ProxyConfigInfo = new();
@@ -329,19 +329,19 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         static public void CopyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
         {
-            copyProperty(source, target, nameof(source.Type), nameof(target.Type));
-            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
-            copyProperty(source, target, nameof(source.NewPath), nameof(target.NewPath));
-            copyProperty(source, target, nameof(source.LocalNodeId), nameof(target.LocalNodeId));
-            copyProperty(source, target, nameof(source.RemoteNodeId), nameof(target.RemoteNodeId));
-            copyProperty(source, target, nameof(source.Direction), nameof(target.Direction));
-            copyProperty(source, target, nameof(source.Instruction), nameof(target.Instruction));
-            copyProperty(source, target, nameof(source.Status), nameof(target.Status));
-            copyProperty(source, target, nameof(source.Conflict), nameof(target.Conflict));
-            copyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
-            copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
-            copyProperty(source, target, nameof(source.Error), nameof(target.Error));
-            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
+            CopyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            CopyProperty(source, target, nameof(source.NewPath), nameof(target.NewPath));
+            CopyProperty(source, target, nameof(source.LocalNodeId), nameof(target.LocalNodeId));
+            CopyProperty(source, target, nameof(source.RemoteNodeId), nameof(target.RemoteNodeId));
+            CopyProperty(source, target, nameof(source.Direction), nameof(target.Direction));
+            CopyProperty(source, target, nameof(source.Instruction), nameof(target.Instruction));
+            CopyProperty(source, target, nameof(source.Status), nameof(target.Status));
+            CopyProperty(source, target, nameof(source.Conflict), nameof(target.Conflict));
+            CopyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
+            CopyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
+            CopyProperty(source, target, nameof(source.Error), nameof(target.Error));
+            CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
         }
     }
 
@@ -359,12 +359,12 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         static public void CopyToNode(NodeInfo source, Node target)
         {
-            copyProperty(source, target, nameof(source.NodeId), nameof(target.NodeId));
-            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
-            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
-            copyProperty(source, target, nameof(source.ParentNodeId), nameof(target.ParentNodeId));
-            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
-            copyProperty(source, target, nameof(source.AccessDenied), nameof(target.AccessDenied));
+            CopyProperty(source, target, nameof(source.NodeId), nameof(target.NodeId));
+            CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            CopyProperty(source, target, nameof(source.ParentNodeId), nameof(target.ParentNodeId));
+            CopyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            CopyProperty(source, target, nameof(source.AccessDenied), nameof(target.AccessDenied));
         }
     }
 
