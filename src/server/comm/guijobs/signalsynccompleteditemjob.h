@@ -19,34 +19,22 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/info/syncfileiteminfo.h"
 
 namespace KDC {
 
-class ExclTemplSetListJob : public AbstractGuiJob {
+class SignalSyncCompletedItemJob : public AbstractGuiJob {
     public:
-        ExclTemplSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                            std::shared_ptr<AbstractCommChannel> channel);
-
-        // Setters for compatibility with legacy comm layer
-        void setInParms(bool def, const std::vector<ExclusionTemplateInfo> &exclusionTemplateList) {
-            _default = def;
-            _exclusionTemplateList = exclusionTemplateList;
-        }
-        ExitInfo process() override;
+        explicit SignalSyncCompletedItemJob(int syncDbId, const SyncFileItemInfo &itemInfo);
 
     private:
-        // Input parameters
-        bool _default = false;
-
         // Output parameters
-        std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
+        int _syncDbId = -1;
+        SyncFileItemInfo _itemInfo;
 
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
-
-        friend class TestGuiCommChannel;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
 };
 
 } // namespace KDC

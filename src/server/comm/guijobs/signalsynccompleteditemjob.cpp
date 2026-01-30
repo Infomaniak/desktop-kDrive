@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsynccompleteditem.h"
+#include "signalsynccompleteditemjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
@@ -26,13 +26,13 @@ static const auto outParamsItemInfo = "itemInfo";
 
 namespace KDC {
 
-SignalSyncCompletedItem::SignalSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) :
+SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncFileItemInfo &itemInfo) :
     _syncDbId(syncDbId),
     _itemInfo(itemInfo) {
     _signalNum = SignalNum::SYNC_COMPLETEDITEM;
 }
 
-ExitInfo SignalSyncCompletedItem::serializeOutputParms() {
+ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
     return ExitCode::Ok;

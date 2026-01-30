@@ -16,32 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncprogressinfo.h"
+#include "signalnodefixconflictedfilescompletedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
 // Output parameters keys
 static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsSyncstatus = "syncStatus";
-static const auto outParamsSyncStep = "syncStep";
-static const auto outParamsSyncProgress = "SyncProgress";
+static const auto outParamsNbErrors = "nbErrors";
 
 namespace KDC {
 
-SignalSyncProgressInfo::SignalSyncProgressInfo(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
-                                               const SyncProgress &syncProgress) :
+SignalNodeFixConflictedFilesCompletedJob::SignalNodeFixConflictedFilesCompletedJob(int syncDbId, uint64_t nbErrors) :
     _syncDbId(syncDbId),
-    _syncStatus(syncStatus),
-    _syncStep(syncStep),
-    _syncProgress(syncProgress) {
-    _signalNum = SignalNum::SYNC_PROGRESSINFO;
+    _nbErrors(nbErrors) {
+    _signalNum = SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED;
 }
 
-ExitInfo SignalSyncProgressInfo::serializeOutputParms() {
+ExitInfo SignalNodeFixConflictedFilesCompletedJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsSyncstatus, _syncStatus);
-    writeParamValue(outParamsSyncStep, _syncStep);
-    writeParamValue(outParamsSyncProgress, _syncProgress, info2DynamicVar<SyncProgress>);
+    writeParamValue(outParamsNbErrors, _nbErrors);
     return ExitCode::Ok;
 }
 

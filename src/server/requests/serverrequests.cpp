@@ -1689,7 +1689,9 @@ ExitCode ServerRequests::deleteErrorsServer() {
     }
 
     for (const Error &error: errorList) {
-        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        if (AppServer::useCommManager()) {
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        }
     }
 
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
@@ -1762,7 +1764,9 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
-            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            if (AppServer::useCommManager()) {
+                AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            }
         }
     }
 
@@ -2232,6 +2236,7 @@ void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, Sy
     itemInfo.setCancelType(item.cancelType());
     itemInfo.setError(QString::fromStdString(item.error()));
     itemInfo.setSize(item.size());
+    itemInfo.setProgress(item.progress());
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {

@@ -51,6 +51,45 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
 }
 
+void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
+    SyncNameSet uniqueTemplSet; // Unique template names up to NFC-encoding.
+    for (auto it = templateList.begin(); it != templateList.end();) {
+        SyncName normalizedTempl;
+        if (const auto nfcSuccess =
+                    CommonUtility::normalizedSyncName(QStr2SyncName(it->templ()), normalizedTempl, UnicodeNormalization::NFC);
+            !nfcSuccess)
+            normalizedTempl = QStr2SyncName(it->templ());
+        else
+            it->setTempl(QString::fromStdString(SyncName2Str(normalizedTempl)));
+
+        if (uniqueTemplSet.emplace(normalizedTempl).second)
+            ++it;
+        else
+            (void) templateList.erase(it);
+    }
+}
+
+void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
+    std::vector<ExclusionTemplateInfo> newTemplateList;
+    for (const auto &templateInfo: templateList) {
+        const auto normalizations = computeNormalizations(QStr2SyncName(templateInfo.templ()));
+        for (const auto &normalization: normalizations)
+            newTemplateList.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization)),
+                                                            templateInfo.warning(), templateInfo.def(), templateInfo.deleted()});
+    }
+    templateList = newTemplateList;
+}
+
+SyncNameSet ExclusionTemplateInfo::computeNormalizations(const SyncName &template_) {
+    if (const auto normalizations = CommonUtility::computePathNormalizations(template_); !normalizations.empty()) {
+        SyncNameSet result;
+        for (const SyncName &normalization: normalizations) (void) result.emplace(normalization);
+        return result;
+    }
+
+    return {template_};
+}
+
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
             exclusionTemplateInfo._deleted;

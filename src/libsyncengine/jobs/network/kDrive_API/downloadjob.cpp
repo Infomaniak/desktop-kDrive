@@ -595,7 +595,10 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     std::streamsize expectedSize = 0;
     if (istr) {
         expectedSize = httpResponse().getContentLength();
+
+        setProgressExpectedFinalValue(expectedSize);
         setProgress(0);
+
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {
                 writeError = true;

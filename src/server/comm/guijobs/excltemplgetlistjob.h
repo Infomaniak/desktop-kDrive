@@ -43,8 +43,7 @@ class ExclTemplGetListJob : public AbstractGuiJob {
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
-        std::vector<ExclusionTemplateInfo> filterOutTemplatesWrtNfcNormalization(
-                const std::vector<ExclusionTemplateInfo> &templateList);
+
         friend class TestGuiCommChannel;
 };
 

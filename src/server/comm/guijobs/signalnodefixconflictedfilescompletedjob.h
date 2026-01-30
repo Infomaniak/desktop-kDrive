@@ -19,18 +19,17 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/syncfileiteminfo.h"
 
 namespace KDC {
 
-class SignalSyncCompletedItem : public AbstractGuiJob {
+class SignalNodeFixConflictedFilesCompletedJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo);
+        explicit SignalNodeFixConflictedFilesCompletedJob(int syncDbId, uint64_t nbErrors);
 
     private:
         // Output parameters
-        int _syncDbId = -1;
-        SyncFileItemInfo _itemInfo;
+        int _syncDbId;
+        uint64_t _nbErrors;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

@@ -61,7 +61,7 @@ ExitInfo DriveUpdateJob::process() {
     ExitCode exitCode = ServerRequests::updateDrive(_driveInfo);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::updateDrive: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
     }
 
     return exitCode;

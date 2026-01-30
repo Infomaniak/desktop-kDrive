@@ -17,8 +17,8 @@ ExclTemplPropagateChangeJob::ExclTemplPropagateChangeJob(std::shared_ptr<CommMan
 
 
 ExitInfo ExclTemplPropagateChangeJob::process() {
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    for (const auto &[_, syncPal]: AppServer::syncPalMap) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[_, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
 
         _commManager->appServer().unregisterSync(syncPal);

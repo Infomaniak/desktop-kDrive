@@ -180,7 +180,7 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT(_syncPal->setProgress(nfdPath, progress));
     CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfdPath, testItem));
 
-    CPPUNIT_ASSERT_EQUAL(progress, _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(progress * _syncPal->_progressInfo->totalSize() / 100, _syncPal->_progressInfo->completedSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedFiles());
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
