@@ -3,9 +3,12 @@
  * Project: kDrive Desktop
  * Locale: en, English
  * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Fri, 16 Jan 2026 13:54:14 +0100
+ * Exported by: Philippe Weidmann
+ * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
  */
+
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Add Storage";
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Advanced settings";
@@ -31,6 +34,9 @@
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Login";
 
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Manage";
+
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Open in browser";
 
@@ -40,8 +46,14 @@
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "Open kDrive";
 
+/* loco:697b65a56840f9d35605a134 */
+"buttonRefresh" = "Refresh";
+
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Restart synchronization";
+
+/* loco:697b6560c18f7ca128034f16 */
+"buttonRetry" = "Retry";
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "See activities";
@@ -51,6 +63,48 @@
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Get started for free";
+
+/* loco:697b6767849b0ee24c089f46 */
+"buttonUpdateSubscription" = "Update subscription";
+
+/* loco:697b65886840f9d35605a132 */
+"buttonWakeUp" = "Wake-up";
+
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Access denied to kDrive";
+
+/* loco:6979e320c8fc8496d00b3a62 */
+"driveAsleepErrorTitle" = "Your kDrive is asleep";
+
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "This kDrive has not been renewed. You can no longer access it.\nRenew your subscription to reactivate the service.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "This kDrive has not been renewed. You can no longer access it.\nContact your administrator to reactivate the service.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Your kDrive has expired";
+
+/* loco:6979e45003f623afa50f5592 */
+"driveLoggingErrorDescription" = "Please log in again to continue using kDrive.";
+
+/* loco:6979e43e93193f40e100ebc2 */
+"driveLoggingErrorTitle" = "You have been disconnected";
+
+/* loco:696a29351c25c87abb045892 */
+"driveMaintenanceErrorDescription" = "This kDrive is temporarily unavailable for maintenance.\nPlease try again in a few minutes.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"driveMaintenanceErrorTitle" = "Maintenance in progress";
+
+/* loco:6979e3dfba525501090fbfa8 */
+"driveWakingUpErrorDescription" = "kDrive is waking up… this may take a few moments.";
+
+/* loco:6979e389195e90fdc909d252 */
+"driveWakingUpErrorTitle" = "kDrive waking up";
 
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favorites";
@@ -66,6 +120,18 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %s";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Free up space or upgrade your plan to continue syncing your files.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Your kDrive is full";
+
+/* loco:696a4fcf3932da71d1075552 */
+"informationBlockSynchroErrorTitle" = "You have %s synchronization error";
+
+/* loco:696a4fdd3932da71d1075554 */
+"informationBlockSynchroErrorTitle-plural" = "You have %s synchronization errors";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activate kDrive.app";
@@ -180,6 +246,27 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "kDrive folder";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Free space";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Other Mac files";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "kDrive files stored on your Mac";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Manage synchronized folders to free up space on your Mac.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Synchronization";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%@ on %@ used";
 
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "your files are synchronizing";

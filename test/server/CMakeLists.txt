@@ -98,9 +98,10 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.h ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
-    ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.cpp
-    ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalnodefixconflictedfilescompletedjob.h ${server_srcs_path}/comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.h ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.cpp

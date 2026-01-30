@@ -137,7 +137,7 @@ DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, boo
 
 DLL_EXP int __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced) {
     if (!Placeholders::getStatus(filePath, isPlaceholder, isDehydrated, isSynced)) {
-        TRACE_ERROR(L"Error in Placeholders::getPlaceholderStatus : %ls", filePath);
+        TRACE_ERROR(L"Error in Placeholders::getPlaceholderStatus: path='%ls'", filePath);
         return E_ABORT;
     }
 
@@ -146,7 +146,7 @@ DLL_EXP int __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPla
 
 DLL_EXP int __cdecl vfsSetPlaceHolderStatus(const wchar_t *path, bool syncOngoing) {
     if (!Placeholders::setStatus(path, syncOngoing)) {
-        TRACE_ERROR(L"Error in Placeholders::setStatus : %ls, %d", path, syncOngoing);
+        TRACE_ERROR(L"Error in Placeholders::setStatus: path='%ls', %d", path, syncOngoing);
         return E_ABORT;
     }
 
@@ -156,7 +156,7 @@ DLL_EXP int __cdecl vfsSetPlaceHolderStatus(const wchar_t *path, bool syncOngoin
 DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *relativePath, const wchar_t *destPath,
                                          const WIN32_FIND_DATA *findData) {
     if (!Placeholders::create(fileId, relativePath, destPath, findData)) {
-        TRACE_ERROR(L"Error in Placeholders::create : %ls, %ls", relativePath, destPath);
+        TRACE_ERROR(L"Error in Placeholders::create: path='%ls', destination path='%ls'", relativePath, destPath);
         return E_ABORT;
     }
 
@@ -165,7 +165,7 @@ DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *r
 
 DLL_EXP int __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath) {
     if (!Placeholders::convert(fileId, filePath)) {
-        TRACE_ERROR(L"Error in Placeholders::convert : %ls, %ls", fileId, filePath);
+        TRACE_ERROR(L"Error in Placeholders::convert: id='%ls', path='%ls'", fileId, filePath);
         return E_ABORT;
     }
 
@@ -174,7 +174,7 @@ DLL_EXP int __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t
 
 DLL_EXP int __cdecl vfsRevertPlaceHolder(const wchar_t *filePath) {
     if (!Placeholders::revert(filePath)) {
-        TRACE_ERROR(L"Error in Placeholders::revert : %ls", filePath);
+        TRACE_ERROR(L"Error in Placeholders::revert: path='%ls'", filePath);
         return E_ABORT;
     }
 
@@ -183,7 +183,7 @@ DLL_EXP int __cdecl vfsRevertPlaceHolder(const wchar_t *filePath) {
 
 DLL_EXP int __cdecl vfsUpdatePlaceHolder(const wchar_t *filePath, const WIN32_FIND_DATA *findData) {
     if (!Placeholders::update(filePath, findData)) {
-        TRACE_ERROR(L"Error in Placeholders::update : %ls", filePath);
+        TRACE_ERROR(L"Error in Placeholders::update: path='%ls'", filePath);
         return E_ABORT;
     }
 
@@ -192,7 +192,7 @@ DLL_EXP int __cdecl vfsUpdatePlaceHolder(const wchar_t *filePath, const WIN32_FI
 
 DLL_EXP int __cdecl vfsDehydratePlaceHolder(const wchar_t *path) {
     if (!CloudProvider::dehydrate(path)) {
-        TRACE_ERROR(L"Error in CloudProvider::dehydrate : %ls", path);
+        TRACE_ERROR(L"Error in CloudProvider::dehydrate: path='%ls'", path);
         return E_ABORT;
     }
 
@@ -203,11 +203,11 @@ DLL_EXP int __cdecl vfsHydratePlaceHolder(const wchar_t *driveId, const wchar_t 
     CloudProvider *cloudProvider = s_cloudProviders[PROVIDERID(driveId, folderId)];
     if (cloudProvider) {
         if (!cloudProvider->hydrate(path)) {
-            TRACE_ERROR(L"Error in CloudProvider::hydrate : %ls", path);
+            TRACE_ERROR(L"Error in CloudProvider::hydrate: path='%ls'", path);
             return E_ABORT;
         }
     } else {
-        TRACE_ERROR(L"Provider not found : %ls", PROVIDERID_CSTR(driveId, folderId));
+        TRACE_ERROR(L"Provider not found: %ls", PROVIDERID_CSTR(driveId, folderId));
         return E_ABORT;
     }
 
@@ -223,7 +223,7 @@ DLL_EXP int __cdecl vfsUpdateFetchStatus(const wchar_t *driveId, const wchar_t *
             return E_ABORT;
         }
     } else {
-        TRACE_ERROR(L"Provider not found : %ls", PROVIDERID_CSTR(driveId, folderId));
+        TRACE_ERROR(L"Provider not found: %ls", PROVIDERID_CSTR(driveId, folderId));
         return E_ABORT;
     }
 
@@ -238,7 +238,7 @@ DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folder
             return E_ABORT;
         }
     } else {
-        TRACE_ERROR(L"Provider not found : %ls", PROVIDERID_CSTR(driveId, folderId));
+        TRACE_ERROR(L"Provider not found: %ls", PROVIDERID_CSTR(driveId, folderId));
         return E_ABORT;
     }
 
@@ -249,7 +249,7 @@ DLL_EXP int __cdecl vfsGetPinState(const wchar_t *path, VfsPinState *state) {
     CF_PLACEHOLDER_STANDARD_INFO info{};
 
     if (!Placeholders::getInfo(path, info)) {
-        TRACE_ERROR(L"Error in Placeholders::getInfo : %ls", path);
+        TRACE_ERROR(L"Error in Placeholders::getInfo: path='%ls'", path);
         return E_ABORT;
     }
 
@@ -260,7 +260,7 @@ DLL_EXP int __cdecl vfsGetPinState(const wchar_t *path, VfsPinState *state) {
 
 DLL_EXP int __cdecl vfsSetPinState(const wchar_t *path, VfsPinState state) {
     if (!Placeholders::setPinState(path, static_cast<CF_PIN_STATE>(state))) {
-        TRACE_ERROR(L"Error in Placeholders::setPinState : %ls", path);
+        TRACE_ERROR(L"Error in Placeholders::setPinState: path='%ls'", path);
         return E_ABORT;
     }
 

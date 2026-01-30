@@ -43,7 +43,6 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const 
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
-    setProgress(0);
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
@@ -141,6 +140,9 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
         auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
         uri.addQueryParameter(symbolicLinkKey, str2HtmlStr(Path2Str(_linkTarget)));
     }
+
+    setProgressExpectedFinalValue(static_cast<int64_t>(_data.size()));
+    setProgress(0);
 }
 
 ExitInfo UploadJob::setData() {

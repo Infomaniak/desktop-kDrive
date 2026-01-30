@@ -81,6 +81,11 @@ struct IoHelper {
                 SyncPath _directoryPath;
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
+
+        static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
+        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
+                                                           bool directoryIterationException = false);
+
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }

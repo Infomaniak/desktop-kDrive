@@ -950,7 +950,7 @@ bool LiteSyncCommClient::vfsSetPinState(const SyncPath &path, const SyncPath &lo
     bool endOfDir = false;
     DirectoryEntry entry;
     bool foundChild = false;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         std::string tmpPinState;
         if (!vfsGetPinState(entry.path(), tmpPinState)) {
             continue;
@@ -1472,7 +1472,7 @@ bool LiteSyncCommClient::vfsProcessDirStatus(const SyncPath &path, const SyncPat
     IoHelper::DirectoryIterator dirIt(path, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         if (!vfsGetPinState(entry.path(), pinState)) {
             continue;
         }
@@ -1534,7 +1534,7 @@ bool LiteSyncCommClient::checkFilesAttributes(const SyncPath &path, const SyncPa
     DirectoryEntry entry;
     bool foundChild = false;
     bool atLeastOneChanged = false;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         std::string pinState;
         if (!vfsGetPinState(entry.path(), pinState)) {
             continue;

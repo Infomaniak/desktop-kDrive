@@ -310,10 +310,10 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
 
         (void) IoHelper::deleteItem(path);
 
-        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
+        CPPUNIT_ASSERT(!it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 
-        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
+        CPPUNIT_ASSERT(!it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidDirectoryIterator, ioError);
     }
 }

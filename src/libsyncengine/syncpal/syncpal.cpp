@@ -346,7 +346,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            _sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, syncDbId(), _conflictingFilesCorrector->nbErrors());
+            fixConflictedFilesCompleted(syncDbId(), _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }
@@ -361,6 +361,12 @@ void SyncPal::addError(const Error &error) {
 void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
+    }
+}
+
+void SyncPal::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
+    if (_fixConflictedFilesCompleted) {
+        _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
 }
 
@@ -568,8 +574,8 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
     return _progressInfo->initProgress(item);
 }
 
-bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
-    if (!_progressInfo->setProgress(relativePath, current)) {
+bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
+    if (!_progressInfo->setProgress(relativePath, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
         return false;
     }
@@ -716,16 +722,28 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
         }
-        job->setAffectedFilePath(absoluteLocalPath);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), ERR_ID, ExitCode::Unknown, ExitCause::Unknown));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    // Queue job
+    job->setAffectedFilePath(relativePath);
+
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
+
+    const auto progressPercentCallback = [job, this](UniqueId,
+                                                     int progress // %
+                                         ) {
+        if (!setProgress(job->affectedFilePath(), progress)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+        }
+    };
+
+    job->setProgressPercentCallback(progressPercentCallback);
+
+    // Queue job
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     const std::scoped_lock lock(_directDownloadJobsMapMutex);

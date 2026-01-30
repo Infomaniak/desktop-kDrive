@@ -608,7 +608,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
-        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
             auto entryIoError = IoError::Success;
             perfMonitor.start();
 

@@ -17,7 +17,8 @@
  */
 
 #include "abstractguijob.h"
-#include "../../../libcommonserver/utility/jsonparserutility.h"
+#include "utility/jsonparserutility.h"
+#include "appserver.h"
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>
@@ -133,6 +134,10 @@ bool AbstractGuiJob::serializeGenericOutputParms(const ExitInfo &exitInfo) {
     }
 
     return true;
+}
+
+void AbstractGuiJob::addError(const Error &error) {
+    if (_commManager) _commManager->appServer().addError(error);
 }
 
 } // namespace KDC

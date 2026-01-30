@@ -888,7 +888,7 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return {};

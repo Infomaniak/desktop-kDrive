@@ -19,6 +19,7 @@
 import Cocoa
 import Foundation
 import kDriveCore
+import SwiftUI
 
 private final class PreviewBundle {
     /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
@@ -65,4 +66,8 @@ public enum PreviewHelper {
         name: "Drive Pro Max",
         color: .red
     )
+
+    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
+        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+    }
 }

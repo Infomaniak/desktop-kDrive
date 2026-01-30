@@ -19,11 +19,13 @@
 #include "virtualfilescleaner.h"
 
 #include "db/syncdb.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
+
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -60,12 +62,12 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
     DirectoryEntry entry;
 
     try {
-        if (!recursiveDirectoryIterator(parentPath, dirIt)) {
-            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
+        if (!IoHelper::recursiveDirectoryIterator(parentPath, dirIt)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
             return false;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (!folderCanBeProcessed(entry)) {
                 dirIt.disableRecursionPending();
                 continue;
@@ -182,18 +184,6 @@ bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEn
     return true;
 }
 
-bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
-    IoError ioError = IoError::Success;
-    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
-
-    if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
-        return false;
-    }
-
-    return true;
-}
-
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool directoryIterationException = false;
 
@@ -203,12 +193,12 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
     DirectoryEntry entry;
 
     try {
-        if (!recursiveDirectoryIterator(_rootPath, dirIt)) {
+        if (!IoHelper::recursiveDirectoryIterator(_rootPath, dirIt)) {
             LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
 
-        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir && iterationIoError == IoError::Success) {
+        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir) {
             if (!folderCanBeProcessed(entry)) {
                 dirIt.disableRecursionPending();
                 continue;

@@ -79,7 +79,7 @@ ExitInfo NodeCreateMissingFoldersJob::getMissingFoldersInfo(const FolderItem &fo
     if (const auto exitCode = ServerRequests::createDir(_driveDbId, info.parentNodeId, folderItem.name, info.parentNodeId);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << _driveDbId << " parentNodeId=" << info.parentNodeId);
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
 
         return exitCode;
     }
@@ -93,8 +93,8 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
     // Pause all syncs of the drive
     std::vector<int> pausedSyncs;
 
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    for (const auto &[syncPalId, syncPal]: AppServer::syncPalMap) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveDbId() != _driveDbId || syncPal->isPaused()) continue;
         syncPal->pause();
         pausedSyncs.push_back(syncPalId);
@@ -108,14 +108,14 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
     }
 
     // Add the first created node to the blacklist of every sync
-    for (const auto &[syncPalId, syncPal]: AppServer::syncPalMap) {
+    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveDbId() != _driveDbId) continue;
 
         // Get blacklist
         NodeSet nodeIdSet;
         if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalId);
-            AppServer::addError(Error(ERR_ID, exitCode));
+            addError(Error(ERR_ID, exitCode));
 
             return exitCode;
         }
@@ -124,7 +124,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
         (void) nodeIdSet.insert(foldersInfo.firstCreatedNodeId);
         if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
-            AppServer::addError(Error(ERR_ID, exitCode));
+            addError(Error(ERR_ID, exitCode));
 
             return exitCode;
         }
@@ -132,7 +132,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
 
     // Resume all paused syncs
     for (const auto syncDbId: pausedSyncs) {
-        if (AppServer::syncPalMap.contains(syncDbId)) AppServer::syncPalMap[syncDbId]->unpause();
+        if (_commManager->appServer().syncPalMap.contains(syncDbId)) _commManager->appServer().syncPalMap[syncDbId]->unpause();
     }
 
     return ExitCode::Ok;

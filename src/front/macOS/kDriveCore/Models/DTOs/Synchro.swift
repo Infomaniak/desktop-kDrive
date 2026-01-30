@@ -104,7 +104,7 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let error: String
 }
 
-public enum SynchroError: Error, Hashable, Sendable {
+public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
     case asleep
     case wakingUp
     case notRenew // "drive locked"

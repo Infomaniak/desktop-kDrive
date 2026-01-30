@@ -42,7 +42,6 @@ class VirtualFilesCleaner {
 
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
-        bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
         bool folderCanBeProcessed(const DirectoryEntry &directoryEntry);
 
         log4cplus::Logger _logger;

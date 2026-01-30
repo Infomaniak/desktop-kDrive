@@ -3,9 +3,12 @@
  * Project: kDrive Desktop
  * Locale: de, German
  * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Fri, 16 Jan 2026 13:54:14 +0100
+ * Exported by: Philippe Weidmann
+ * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
  */
+
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Speicher hinzufügen";
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Erweiterte Einstellungen";
@@ -31,6 +34,9 @@
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Sich anmelden";
 
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Verwalten";
+
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Im Browser öffnen";
 
@@ -40,8 +46,14 @@
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "KDrive öffnen";
 
+/* loco:697b65a56840f9d35605a134 */
+"buttonRefresh" = "Auffrischen";
+
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Synchronisierung neu starten";
+
+/* loco:697b6560c18f7ca128034f16 */
+"buttonRetry" = "Wiederholung";
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Siehe Aktivitäten";
@@ -51,6 +63,48 @@
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Kostenlos anfangen";
+
+/* loco:697b6767849b0ee24c089f46 */
+"buttonUpdateSubscription" = "Abonnement aktualisieren";
+
+/* loco:697b65886840f9d35605a132 */
+"buttonWakeUp" = "Aufwachen";
+
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "Sie haben keine Berechtigung, auf dieses kDrive zuzugreifen.\nBitte überprüfen Sie Ihre Berechtigungen oder kontaktieren Sie Ihren Administrator.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Zugriff auf kDrive verweigert";
+
+/* loco:6979e320c8fc8496d00b3a62 */
+"driveAsleepErrorTitle" = "Ihr kDrive ist im Standby-Modus";
+
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "Dieses kDrive wurde nicht erneuert. Sie können nicht mehr darauf zugreifen.\nErneuern Sie Ihr Abonnement, um den Dienst zu reaktivieren.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "Dieses kDrive wurde nicht erneuert. Sie können nicht mehr darauf zugreifen.\nWenden Sie sich an Ihren Administrator, um den Dienst zu reaktivieren.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Ihr kDrive ist abgelaufen";
+
+/* loco:6979e45003f623afa50f5592 */
+"driveLoggingErrorDescription" = "Melden Sie sich erneut an, um kDrive weiter zu nutzen.";
+
+/* loco:6979e43e93193f40e100ebc2 */
+"driveLoggingErrorTitle" = "Sie wurden abgemeldet";
+
+/* loco:696a29351c25c87abb045892 */
+"driveMaintenanceErrorDescription" = "Dieses kDrive ist wegen Wartungsarbeiten vorübergehend nicht verfügbar.\nBitte versuchen Sie es in ein paar Minuten erneut.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"driveMaintenanceErrorTitle" = "Instandhaltung in Arbeit";
+
+/* loco:6979e3dfba525501090fbfa8 */
+"driveWakingUpErrorDescription" = "Das kDrive wird gerade aufgeweckt... das kann einen Moment dauern.";
+
+/* loco:6979e389195e90fdc909d252 */
+"driveWakingUpErrorTitle" = "Aufwecken des kDrive läuft";
 
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoriten";
@@ -66,6 +120,18 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %s";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Geben Sie Speicherplatz frei oder aktualisieren Sie Ihren Tarif, um Ihre Dateien weiterhin zu synchronisieren.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Ihr kDrive ist voll";
+
+/* loco:696a4fcf3932da71d1075552 */
+"informationBlockSynchroErrorTitle" = "";
+
+/* loco:696a4fdd3932da71d1075554 */
+"informationBlockSynchroErrorTitle-plural" = "";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivieren Sie kDrive.app";
@@ -180,6 +246,27 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "kDrive-Ordner";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Freier Raum";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Andere Dateien auf dem Mac";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "Auf Ihrem Mac gespeicherte kDrive-Dateien";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Verwalten Sie synchronisierte Ordner, um Speicherplatz auf Ihrem Mac freizugeben.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Synchronisation";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%@ auf %@ verwendet";
 
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "ihre Dateien werden synchronisiert";

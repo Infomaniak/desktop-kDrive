@@ -152,7 +152,7 @@ void TestLog::clearLogDirectory(void) const {
 
     bool endOfDirectory = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.path().filename().string() == Log::instance()->getLogFilePath().filename().string()) {
             continue;
         }

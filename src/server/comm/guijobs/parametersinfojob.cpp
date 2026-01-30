@@ -45,7 +45,7 @@ ExitInfo ParametersInfoJob::serializeOutputParms() {
 ExitInfo ParametersInfoJob::process() {
     if (const auto exitCode = ServerRequests::getParameters(_parametersInfo); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getParameters");
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
 
         return exitCode;
     }

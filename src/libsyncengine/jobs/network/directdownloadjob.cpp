@@ -76,6 +76,7 @@ ExitInfo DirectDownloadJob::readFromStream(std::istream &is, std::ofstream &outp
         return ExitCode::Ok;
     }
 
+    setProgressExpectedFinalValue(expectedSize);
     setProgress(0);
 
     const std::unique_ptr<char[]> buffer(new char[bufferSize]);

@@ -69,8 +69,9 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     }
 
     _isAsynchronous = _nbParallelThread > 1;
-    setProgress(0);
+
     setProgressExpectedFinalValue(static_cast<int64_t>(_filesize));
+    setProgress(0);
 }
 
 ExitInfo AbstractUploadSession::runJob() {

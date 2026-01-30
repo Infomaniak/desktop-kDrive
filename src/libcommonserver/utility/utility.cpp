@@ -589,7 +589,7 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     SyncPath tmpPath = tmpDirPath / name;
     std::error_code ec;
-    auto retries = 0;
+    uint64_t retries = 0;
     bool directoryCreated = false;
     do {
         directoryCreated = std::filesystem::create_directory(tmpPath, ec);
@@ -621,7 +621,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     }
 
     SyncPath tmpPath = tmpDirPath / name;
-    auto retries = 0;
+    uint64_t retries = 0;
     bool ok = false;
     do {
         bool exists = false;

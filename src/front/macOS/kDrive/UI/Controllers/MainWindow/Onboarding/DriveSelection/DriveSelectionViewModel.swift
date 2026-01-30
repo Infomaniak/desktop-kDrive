@@ -22,6 +22,7 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {

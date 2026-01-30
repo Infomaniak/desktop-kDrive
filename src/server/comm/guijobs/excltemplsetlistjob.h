@@ -43,13 +43,9 @@ class ExclTemplSetListJob : public AbstractGuiJob {
         // Output parameters
         std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
 
-
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
 
-        std::vector<ExclusionTemplateInfo> computeNormalizations(const std::vector<ExclusionTemplateInfo> &templateList);
-        static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
-        static bool canNormalize(const SyncName &template_);
         friend class TestGuiCommChannel;
 };
 

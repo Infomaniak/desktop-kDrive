@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive.CustomControls
         #endregion
 
         #region Dependency Properties
-        public DbId UserDbId
+        private DbId UserDbId
         {
             get => (DbId)GetValue(UserDbIdProperty);
             set => SetValue(UserDbIdProperty, value);
@@ -84,7 +84,7 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty UserDbIdProperty =
             DependencyProperty.Register(nameof(UserDbId), typeof(DbId), typeof(SyncExclusionSelector), new PropertyMetadata(null));
 
-        public DriveId DriveId
+        private DriveId DriveId
         {
             get => (DriveId)GetValue(DriveIdProperty);
             set => SetValue(DriveIdProperty, value);
@@ -92,7 +92,7 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty DriveIdProperty =
             DependencyProperty.Register(nameof(DriveId), typeof(DriveId), typeof(SyncExclusionSelector), new PropertyMetadata(null));
 
-        public NodeId RemoteRootNodeId
+        private NodeId RemoteRootNodeId
         {
             get => (NodeId)GetValue(RemoteNodeIdProperty);
             set => SetValue(RemoteNodeIdProperty, value);
@@ -100,9 +100,9 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty RemoteNodeIdProperty =
             DependencyProperty.Register(nameof(RemoteRootNodeId), typeof(NodeId), typeof(SyncExclusionSelector), new PropertyMetadata(""));
 
-        public Sync? Sync
+        public ISync? Sync
         {
-            get => (Sync?)GetValue(SyncProperty);
+            get => (ISync?)GetValue(SyncProperty);
             set
             {
                 SetValue(SyncProperty, value);
@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
         public static readonly DependencyProperty SyncProperty =
-            DependencyProperty.Register(nameof(Sync), typeof(Sync), typeof(SyncExclusionSelector), new PropertyMetadata(null, OnSyncChanged));
+            DependencyProperty.Register(nameof(Sync), typeof(ISync), typeof(SyncExclusionSelector), new PropertyMetadata(null, OnSyncChanged));
 
         public bool HasPendingChanges
         {
@@ -184,11 +184,23 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            IsLoading = true;
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.SetBlacklistedNodeIdList(Sync.DbId, GetExcludedNodeIds(), CancellationToken.None);
-            await ReloadAsync();
-            IsLoading = false;
+            if (Sync is ViewModels.Sync dbSync)
+            {
+                IsLoading = true;
+                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None);
+                await ReloadAsync();
+                IsLoading = false;
+            }
+            else if (Sync is NewSync tmpSync)
+            {
+                tmpSync.ExcludedNodeIds.Clear();
+                tmpSync.ExcludedNodeIds.AddRange(GetExcludedNodeIds());
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Unsupported Sync type.");
+            }
         }
 
         public async Task CancelChanges()
@@ -290,18 +302,31 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh exclusion map from server
         private async Task RefreshExcludedNodesAsync()
         {
-            DbId syncDbId = Sync?.DbId ?? -1;
-            _excludedNodeIds.Clear();
-
-            if (syncDbId != -1) // Existing sync -> load exclusions
+            if (Sync is ViewModels.Sync dbSync)
             {
-                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                DbId syncDbId = dbSync.DbId;
+                _excludedNodeIds.Clear();
+
+                if (syncDbId != -1) // Existing sync -> load exclusions
+                {
+                    var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                    _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                    await RefreshExcludedNodePathsAsync();
+                }
+                else // New sync -> no exclusions
+                {
+                    _excludedNodePathsMap.Clear();
+                }
+            }
+            else if (Sync is NewSync tmpSync)
+            {
+                _excludedNodeIds.Clear();
+                _excludedNodeIds = tmpSync.ExcludedNodeIds.ToList();
                 await RefreshExcludedNodePathsAsync();
             }
-            else // New sync -> no exclusions
+            else
             {
-                _excludedNodePathsMap.Clear();
+                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
             }
         }
 

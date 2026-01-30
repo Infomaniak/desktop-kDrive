@@ -64,7 +64,7 @@ ExitInfo NodeInfoJob::serializeOutputParms() {
 ExitInfo NodeInfoJob::process() {
     if (ExitInfo exitInfo = ServerRequests::getNodeInfo(_userDbId, _driveId, _nodeId, _nodeInfo, _withPath); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::getNodeInfo");
-        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
     return ExitCode::Ok;

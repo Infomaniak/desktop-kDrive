@@ -1,0 +1,27 @@
+{
+  "cause": 38,
+  "code": 6,
+  "id": 42,
+  "params": {
+    "nodeSubFolderInfoList": [
+      {
+        "accessDenied": false,
+        "modtime": 1337,
+        "name": "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=",
+        "nodeId": "QThBQjQ0MjEtNjk3Qi00OTZCLTk0N0ItRUQ5RTJEMTFFMDQx",
+        "parentNodeId": "Q0RFOUFFN0MtRTJGRS00QjBDLTlDQkItQkFFQjI2ODQ5NjE2",
+        "path": "L2Rldi9udWxs",
+        "size": 1234
+      },
+      {
+        "accessDenied": true,
+        "modtime": 2468,
+        "name": "",
+        "nodeId": "",
+        "parentNodeId": "QThBQjQ0MjEtNjk3Qi00OTZCLTk0N0ItRUQ5RTJEMTFFMDQx",
+        "path": "",
+        "size": 7777
+      }
+    ]
+  }
+}
