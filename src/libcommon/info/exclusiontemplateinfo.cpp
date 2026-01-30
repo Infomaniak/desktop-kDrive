@@ -74,7 +74,8 @@ void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<Exclusio
     for (const auto &templateInfo: templateList) {
         const auto normalizations = computeNormalizations(QStr2SyncName(templateInfo.templ()));
         for (const auto &normalization: normalizations)
-            newTemplateList.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization))});
+            newTemplateList.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization)),
+                                                            templateInfo.warning(), templateInfo.def(), templateInfo.deleted()});
     }
     templateList = newTemplateList;
 }
