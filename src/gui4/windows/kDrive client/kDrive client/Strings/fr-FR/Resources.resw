@@ -883,12 +883,6 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
     <value>Personnaliser</value>
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value>Ce dossier ne peut pas être sélectionné</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
-  </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
@@ -1087,5 +1081,83 @@ Infomaniak</value>
   </data>
   <data name="CC_LogUploadSettingsCard_Popup.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Configurer vos kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Title.Text" xml:space="preserve">
+    <value>Configurer la synchronisation de ce kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_ConfirmButton.Content" xml:space="preserve">
+    <value>Valider</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Content" xml:space="preserve">
+    <value>Veuillez sélectionner un dossier vide qui ne se trouve pas à la racine d’un lecteur.
+
+Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et ne doit pas contenir de sous-dossier de synchronisation.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncExclusionPage_Title.Text" xml:space="preserve">
+    <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncExclusionPage_Message.Text" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_DropDown_Default.Content" xml:space="preserve">
+    <value>Emplacement par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Title.Text" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Title.Text" xml:space="preserve">
+    <value>Dossiers synchronisés</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Message.Text" xml:space="preserve">
+    <value>Personnalisez l'emplacement du dossier kDrive sur votre ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Caption.Text" xml:space="preserve">
+    <value>Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Configure.Content" xml:space="preserve">
+    <value>Configurer</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location.Text" xml:space="preserve">
+    <value>Emplacement:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion.Text" xml:space="preserve">
+    <value>Contenu synchronisé:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Default.Text" xml:space="preserve">
+    <value>Tout le kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content.Text" xml:space="preserve">
+    <value>Vous avez exclus certains dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location_Default.Text" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Message.Text" xml:space="preserve">
+    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip.Text" xml:space="preserve">
+    <value>dossier(s) exclu(s)</value>
+    <comment>x dossiers exclus</comment>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message.Text" xml:space="preserve">
+    <value>Choisissez les dossiers à synchronisés sur cet ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption.Text" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront accessibles en ligne.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Button.Content" xml:space="preserve">
+    <value>Sélectionner des dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive.Text" xml:space="preserve">
+    <value>Tous les dossiers du kDrive</value>
   </data>
 </root>

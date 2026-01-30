@@ -138,8 +138,7 @@
                                                  MinWidth="0"
                                                  HorizontalAlignment="Stretch"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
-                                                 Checked="OnlineRadioButtonChecked"
-                                                 Unchecked="OnlineRadioButtonUnchecked" />
+                                                 Click="OnlineRadioButtonClicked" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
@@ -166,7 +165,8 @@
                                                  GroupName="SyncModeRadioGroup"
                                                  MinWidth="0"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
-                                                 HorizontalAlignment="Stretch" />
+                                                 HorizontalAlignment="Stretch"
+                                                 Click="OnlineRadioButtonClicked" />
                                 </Grid>
                             </toolKit:SettingsCard>
 

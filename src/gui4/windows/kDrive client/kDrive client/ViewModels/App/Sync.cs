@@ -28,12 +28,11 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Sync : UISafeObservableObject
+    public class Sync : UISafeObservableObject, ISync
     {
         // Sync properties
         private DbId _dbId;
         private readonly Drive _drive;
-        private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
         private NodeId _remoteNodeId = "";
@@ -96,12 +95,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _dbId;
             set => SetPropertyInUIThread(ref _dbId, value);
-        }
-
-        public SyncId Id
-        {
-            get => _id;
-            set => SetPropertyInUIThread(ref _id, value);
         }
 
         public SyncPath LocalPath
@@ -179,6 +172,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _drive;
         }
+        IDrive ISync.Drive => _drive;
 
         public SyncFileItem? LastActivity
         {

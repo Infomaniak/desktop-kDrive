@@ -1,11 +1,11 @@
-﻿global using UserId = System.Int64;
-global using AccountId = System.Int64;
-global using DriveId = System.Int64;
-global using SyncId = System.Int64;
-global using NodeId = System.String;
-
+﻿global using AccountId = System.Int64;
 global using DbId = System.Int64;
+global using DriveId = System.Int64;
+global using NodeId = System.String;
 global using SyncPath = System.String;
+global using UserId = System.Int64;
+using Infomaniak.kDrive.ViewModels;
+using System.Collections.ObjectModel;
 
 
 namespace Infomaniak.kDrive.Types
@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Types
         Ignored,
         Syncing
     };
-  
+
     public enum SyncDirection
     {
         Unknown,
@@ -127,6 +127,15 @@ namespace Infomaniak.kDrive.Types
         public string Name { get; set; } = "";
         public System.Drawing.Color Color { get; set; } = System.Drawing.Color.White;
         public bool IsConfigured { get; } = false;
+    }
+
+    public interface ISync
+    {
+        public IDrive Drive { get; }
+        public SyncPath LocalPath { get; }
+        public SyncPath RemotePath { get; }
+        public NodeId RemoteNodeId { get; }
+        public SyncType SyncType { get; }
     }
 }
 

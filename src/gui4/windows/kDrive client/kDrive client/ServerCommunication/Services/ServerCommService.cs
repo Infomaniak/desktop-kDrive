@@ -5,7 +5,6 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -375,7 +374,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.ServerFolderPath] = Utility.ToBase64String(newSync.RemotePath),
                 [JsonKeys.ServerFolderNodeId] = Utility.ToBase64String(newSync.RemoteNodeId),
                 [JsonKeys.LiteSync] = newSync.SyncType == SyncType.Online,
-                [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
+                [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfo))
@@ -960,7 +959,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.UTILITY_ERROR_ADDED:
                     await HandleErrorAddedAsync(sender, args);
                     break;
-                case SignalNum.UTILITY_ERRORS_REMOVED:
+                case SignalNum.UTILITY_ERROR_REMOVED:
                     await HandleErrorRemovedAsync(sender, args);
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:

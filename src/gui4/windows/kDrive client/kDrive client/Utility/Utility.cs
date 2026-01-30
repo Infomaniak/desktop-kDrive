@@ -7,12 +7,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Storage;
@@ -278,6 +274,51 @@ namespace Infomaniak.kDrive
                 return localPart.Substring(0, 1) + new string('*', localPart.Length - 2) + localPart.Substring(localPart.Length - 1) + domainPart;
             else
                 return new string('*', localPart.Length) + domainPart;
+        }
+
+        public static void ShowTeachingTip(XamlRoot xamlRoot, string xuid, Control? target = null)
+        {
+            var teachingTip = new TeachingTip
+            {
+                XamlRoot = xamlRoot,
+                Title = GetLocalizedString($"{xuid}/Title"),
+                Subtitle = GetLocalizedString($"{xuid}/Subtitle"),
+                Content = new TextBlock
+                {
+                    Text = GetLocalizedString($"{xuid}/Content"),
+                    TextWrapping = TextWrapping.Wrap
+                },
+                PreferredPlacement = TeachingTipPlacementMode.Bottom,
+                IsLightDismissEnabled = true,
+            };
+
+            if (target != null)
+            {
+                teachingTip.Target = target;
+            }
+
+            // Attach to visual tree
+            var rootPanel = (xamlRoot.Content as FrameworkElement);
+            if (rootPanel is Panel panel)
+            {
+                panel.Children.Add(teachingTip);
+            }
+
+            teachingTip.IsOpen = true;
+            teachingTip.Closed += TeachingTip_Closed;
+        }
+
+        private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            // Detach from visual tree
+            var parent = VisualTreeHelper.GetParent(sender);
+            if (parent is Panel panel)
+            {
+                panel.Children.Remove(sender);
+            }
+
+            // Unsubscribe from event
+            sender.Closed -= TeachingTip_Closed;
         }
     }
 }
