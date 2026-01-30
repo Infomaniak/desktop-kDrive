@@ -226,8 +226,6 @@
     @synchronized(_fetchMap) {
         if (_fetchMap[filePath] == nil) {
             [_fetchMap setObject:[[NSMutableSet alloc] init] forKey:filePath];
-            
-            NSLog(@"[KD] TEST_CK: file %@ is in fetch map", filePath);
 
             // Ask to the app to fetch the file
             [self sendMessage:filePath query:@"MAKE_AVAILABLE_LOCALLY_DIRECT" oneApp:TRUE];
