@@ -46,6 +46,7 @@ struct BlockingErrorView: View {
                 }
             }
             .multilineTextAlignment(.center)
+            .foregroundStyle(ColorToken.Text.primary.asColor)
             .padding(.bottom, AppPadding.padding24)
 
             if blockingError.isLoading {

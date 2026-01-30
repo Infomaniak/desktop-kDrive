@@ -54,6 +54,7 @@ struct DriveLabel: View {
         Label {
             Text(drive.name)
                 .font(.Tokens.title3)
+                .foregroundStyle(ColorToken.Text.secondary.asColor)
         } icon: {
             KDriveResources.kdriveFoldersStacked.swiftUIImage
                 .foregroundStyle(drive.color ?? .accentColor)
