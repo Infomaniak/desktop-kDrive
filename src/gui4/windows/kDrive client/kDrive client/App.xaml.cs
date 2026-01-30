@@ -24,10 +24,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
+using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 
 
@@ -59,7 +61,6 @@ namespace Infomaniak.kDrive
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
-            //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();
             Logger.Log(Logger.Level.Info, "Application started");
@@ -109,11 +110,29 @@ namespace Infomaniak.kDrive
                     current.Kill();
                     return;
                 }
-                LegacyCommPort = Int32.Parse(arguments[1]);
+                try
+                {
+                    LegacyCommPort = Int32.Parse(arguments[1]);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
+                }
             }
+            StartSentry();
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
+
+            CurrentWindow = new MainWindow();
+            var currentWindowContent = CurrentWindow.Content;
+
+            // Display splash screen
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+            TrayIcoManager.Initialize();
+
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
+
 
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
@@ -121,15 +140,18 @@ namespace Infomaniak.kDrive
                 // Force the initialization of singleton services
                 ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
             }
+            ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
+            {
+                Logger.Log(Logger.Level.Fatal, "Connection to server lost, attempting to restart application.");
+                SentrySdk.Flush(new TimeSpan(0, 0, 5));
+                AppRestartFailureReason restartError = AppInstance.Restart(LegacyCommPort.ToString());
+                if (restartError != AppRestartFailureReason.Other)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to restart application after connection lost: {restartError}");
+                }
+            };
 
-            CurrentWindow = new MainWindow();
-            var currentWindowContent = CurrentWindow.Content;
 
-            // Affiche le spinning wheel
-            CurrentWindow.Content = new CustomControls.SplashScreen();
-
-            TrayIcoManager.Initialize();
-            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             await appModel.InitializeAsync();
             CurrentWindow.Content = currentWindowContent;
             (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
@@ -174,7 +196,7 @@ namespace Infomaniak.kDrive
                 }
                 CurrentWindow?.Close();
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
-                TypedEventHandler<object, WindowEventArgs> closedEventHandler= (s, e) =>
+                TypedEventHandler<object, WindowEventArgs> closedEventHandler = (s, e) =>
                 {
                     if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
                     {

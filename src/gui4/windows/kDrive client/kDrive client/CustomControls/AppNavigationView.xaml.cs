@@ -34,6 +34,11 @@ namespace Infomaniak.kDrive.CustomControls
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
         };
 
+        public AppNavigationView()
+        {
+            InitializeComponent();
+        }
+
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
@@ -93,9 +98,9 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
+            await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
         }
     }
 }
