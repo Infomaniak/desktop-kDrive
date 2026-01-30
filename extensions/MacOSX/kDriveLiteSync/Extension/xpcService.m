@@ -393,16 +393,20 @@
 - (void)freeAllStoppedProcesses:(NSString *)path {
     NSLog(@"[KD] Freeing all stopped processes for path: %@", path);
     
-    for (NSString *filePath in _fetchThumbnailMap) {
-        if ([filePath hasPrefix:path]) {
-            NSLog(@"[KD] Freeing fetch thumbnail processes for file: %@", filePath);
-            [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+    @synchronized (_fetchThumbnailMap) {
+        for (NSString *filePath in _fetchThumbnailMap) {
+            if ([filePath hasPrefix:path]) {
+                NSLog(@"[KD] Freeing fetch thumbnail processes for file: %@", filePath);
+                [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+            }
         }
     }
-    for (NSString *filePath in _fetchMap) {
-        if ([filePath hasPrefix:path]) {
-            NSLog(@"[KD] Freeing fetch processes for file: %@", filePath);
-            [self updateFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+    @synchronized (_fetchThumbnailMap) {
+        for (NSString *filePath in _fetchMap) {
+            if ([filePath hasPrefix:path]) {
+                NSLog(@"[KD] Freeing fetch processes for file: %@", filePath);
+                [self updateFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+            }
         }
     }
 }
