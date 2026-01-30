@@ -28,6 +28,7 @@
 - (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus;
 - (void)connectionEnded:(NSString *)appId;
 - (NSMutableString *)getFetchingAppList;
+- (void)freeAllStoppedProcesses;
 @end
 
 @interface XPCServiceProxy : NSObject <XPCLiteSyncExtensionProtocol, NSXPCListenerDelegate>

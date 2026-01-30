@@ -27,7 +27,6 @@
 
     _registeredFoldersMap = [[NSMutableDictionary alloc] init];
     _fetchThumbnailMap = [[NSMutableDictionary alloc] init];
-    _fetchThumbnailTimerMap = [[NSMutableDictionary alloc] init];
     _fetchMap = [[NSMutableDictionary alloc] init];
     _userBlackListMap = [[NSMutableDictionary alloc] init];
     _fetchingAppArray = [[NSMutableArray alloc] init];
@@ -262,8 +261,8 @@
         kill(pid, SIGSTOP);
         
         // Start cancel timer
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
-        dispatch_after(popTime, dispatch_get_main_queue(), ^{
+        dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
+        dispatch_after(time, dispatch_get_main_queue(), ^{
             if (self->_fetchMap[filePath] != nil) {
                 NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
                 [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
@@ -389,6 +388,10 @@
     }
 
     return appList;
+}
+
+- (void)freeAllStoppedProcesses {
+    
 }
 
 - (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error {

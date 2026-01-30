@@ -151,5 +151,11 @@
     callback([_delegate getFetchingAppList]);
 }
 
+- (void)freeAllStoppedProcesses
+{
+    NSLog(@"[KD] freeAllStoppedProcesses called");
+    [_delegate freeAllStoppedProcesses];
+}
+
 @end
 

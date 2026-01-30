@@ -111,6 +111,8 @@ class LiteSyncCommClientPrivate {
         log4cplus::Logger _logger;
         Connector *_connector = nullptr;
         ExecuteCommand _executeCommand = nullptr;
+
+        void freeAllStoppedProcesses();
 };
 
 } // namespace KDC
@@ -560,6 +562,8 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
         return false;
     }
 
+    freeAllStoppedProcesses();
+
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
     if (![_connector registerFolder:nsPath]) {
         LOG_ERROR(_logger, "Cannot register folder!");
@@ -609,6 +613,8 @@ bool LiteSyncCommClientPrivate::vfsStop(const SyncPath &folderPath) {
         LOG_ERROR(_logger, "Connector not initialized!");
         return false;
     }
+
+    freeAllStoppedProcesses();
 
     NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
     if (![_connector unregisterFolder:nsPath]) {
@@ -730,6 +736,10 @@ bool LiteSyncCommClientPrivate::getFetchingAppList(AppTable &appTable) {
     }
 
     return true;
+}
+
+void LiteSyncCommClientPrivate::freeAllStoppedProcesses() {
+
 }
 
 // LiteSyncCommClient implementation
@@ -1593,6 +1603,10 @@ void LiteSyncCommClient::resetConnector(log4cplus::Logger logger, ExecuteCommand
             throw std::runtime_error("Error in LiteSyncCommClientPrivate constructor!");
         }
     }
+}
+
+void LiteSyncCommClient::freeAllStoppedProcesses() {
+
 }
 
 } // namespace KDC
