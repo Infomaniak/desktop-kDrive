@@ -263,7 +263,7 @@
         // Start cancel timer
         dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
         dispatch_after(time, dispatch_get_main_queue(), ^{
-            if (self->_fetchMap[filePath] != nil) {
+            if (self->_fetchThumbnailMap[filePath] != nil) {
                 NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
                 [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
             }
