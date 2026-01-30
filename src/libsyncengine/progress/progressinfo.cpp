@@ -132,7 +132,7 @@ bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
         return true;
     }
 
-    it->second.front().progress().setCompleted((progress * it->second.front().progress().total()) / 100);
+    it->second.front().progress().setCompleted(progress * it->second.front().progress().total() / 100);
     recomputeCompletedSize();
     return true;
 }
