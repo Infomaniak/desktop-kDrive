@@ -17,7 +17,6 @@
  */
 
 import Cocoa
-import kDriveCore
 import kDriveCoreUI
 
 final class NonInteractiveButton: NSButton {

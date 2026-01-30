@@ -22,6 +22,7 @@ import Foundation
 import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class LoginViewModel: ObservableObject {

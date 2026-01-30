@@ -17,12 +17,14 @@
  */
 
 import Foundation
+import kDriveCore
 
 public struct UISynchroContext: Sendable, Equatable {
     public let synchro: UISynchro
     public let drive: UIDrive
     public let account: UIAccount
     public let user: UIUser
+    public let blockingError: UIBlockingError?
 }
 
 public extension UISynchroContext {
@@ -31,5 +33,6 @@ public extension UISynchroContext {
         drive = .init(drive: synchroContext.drive)
         synchro = .init(synchro: synchroContext.synchro)
         user = .init(user: synchroContext.user)
+        blockingError = .init(drive: synchroContext.drive, error: synchroContext.synchro.latestError)
     }
 }

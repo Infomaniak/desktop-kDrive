@@ -46,9 +46,12 @@ public final class SidebarTableCellView: NSTableCellView {
         layoutBadge()
     }
 
-    public func setupForItem(_ sidebarItem: SidebarItem) {
+    public func setupForItem(_ sidebarItem: SidebarItem, enabled: Bool = true) {
         imageView?.image = sidebarItem.icon
         textField?.stringValue = sidebarItem.title
+
+        imageView?.contentTintColor = enabled ? nil : ColorToken.Action.Disabled.dimQuaternary.asNSColor
+        textField?.textColor = enabled ? nil : ColorToken.Action.Disabled.dimQuaternary.asNSColor
     }
 
     private func setupCell() {

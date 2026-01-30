@@ -25,6 +25,8 @@ public extension Font {
     enum Tokens {
         public static let largeTitleEmphasized: Font = .largeTitle.weight(.emphasized)
 
+        public static let titleEmphasized: Font = .title.weight(.emphasized)
+
         public static let title2: Font = .title2
         public static let title2Emphasized: Font = .title2.weight(.emphasized)
 

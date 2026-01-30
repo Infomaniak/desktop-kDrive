@@ -25,6 +25,8 @@ public extension NSToolbarItem.Identifier {
 open class IKSplitViewController: NSSplitViewController {
     public var toolbar = NSToolbar()
 
+    public var currentContentViewController: NSViewController?
+
     override open func viewDidAppear() {
         super.viewDidAppear()
         setupToolbar()
@@ -45,6 +47,7 @@ public extension IKSplitViewController {
     func switchContentViewController(destination viewController: NSViewController) {
         removeSplitViewItem(splitViewItems[1])
         addSplitViewItem(NSSplitViewItem(viewController: viewController))
+        currentContentViewController = viewController
     }
 }
 

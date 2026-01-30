@@ -19,6 +19,7 @@
 
 import Cocoa
 import Foundation
+import kDriveCore
 import SwiftUI
 
 public struct UIUser: Sendable, Equatable, Hashable {
