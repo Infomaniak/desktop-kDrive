@@ -262,7 +262,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the status was retrieved.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item or the item is locked.
          */
         virtual ExitInfo status(const SyncPath &filePath, VfsStatus &vfsStatus) = 0;
 
