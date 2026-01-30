@@ -246,30 +246,41 @@
     assert(_fetchThumbnailMap);
 
     @synchronized(_fetchThumbnailMap) {
-        if (_fetchThumbnailMap[filePath] == nil) {
-            [_fetchThumbnailMap setObject:[[NSMutableSet alloc] init] forKey:filePath];
-
-            // Ask to the app to fetch the thumbnail
+        NSMutableDictionary *fetchData = _fetchThumbnailMap[filePath];
+        
+        if (fetchData == nil) {
+            // Create new entry with pids and timeout block
+            fetchData = [NSMutableDictionary dictionary];
+            fetchData[@"pids"] = [[NSMutableSet alloc] init];
+            
+            // Create cancelable timeout block
+            dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
+                @synchronized (self->_fetchThumbnailMap) {
+                    NSMutableDictionary *data = self->_fetchThumbnailMap[filePath];
+                    if (data != nil) {
+                        NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
+                        [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
+                    }
+                }
+            });
+            fetchData[@"timeoutBlock"] = timeoutBlock;
+            
+            [_fetchThumbnailMap setObject:fetchData forKey:filePath];
+            
+            // Schedule the timeout
+            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
+            dispatch_after(time, dispatch_get_main_queue(), timeoutBlock);
+            
+            // Ask the app to fetch the thumbnail
             [self sendMessage:filePath query:@"SET_THUMBNAIL" oneApp:TRUE];
         }
 
         // Store the pid
-        [[_fetchThumbnailMap objectForKey:filePath] addObject:[NSNumber numberWithInt:pid]];
+        [fetchData[@"pids"] addObject:[NSNumber numberWithInt:pid]];
 
         // Stop the process
         NSLog(@"[KD] Stop process %@ opening thumbnail %@", [NSNumber numberWithInt:pid], filePath);
         kill(pid, SIGSTOP);
-        
-        // Start cancel timer
-        dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
-        dispatch_after(time, dispatch_get_main_queue(), ^{
-            @synchronized (self->_fetchThumbnailMap) {
-                if (self->_fetchThumbnailMap[filePath] != nil) {
-                    NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
-                    [self updateThumbnailFetchStatus:NULL filePath:filePath fileStatus:@"Cancelled"];
-                }
-            }
-        });
     }
 
     return TRUE;
@@ -342,13 +353,20 @@
 
     NSLog(@"[KD] updateThumbnailFetchStatus %@ %@", filePath, fileStatus);
     @synchronized(_fetchThumbnailMap) {
-        if (_fetchThumbnailMap[filePath] == nil) {
+        NSMutableDictionary *fetchData = _fetchThumbnailMap[filePath];
+        if (fetchData == nil) {
             NSLog(@"[KD] Warning: File not registered %@", filePath);
             return;
         }
 
+        // Cancel the pending timeout block if it exists
+        dispatch_block_t timeoutBlock = fetchData[@"timeoutBlock"];
+        if (timeoutBlock) {
+            dispatch_block_cancel(timeoutBlock);
+        }
+
         // Resume the stopped processes
-        for (NSNumber *pidNumber in _fetchThumbnailMap[filePath]) {
+        for (NSNumber *pidNumber in fetchData[@"pids"]) {
             NSLog(@"[KD] Resume process %@ opening thumbnail %@", pidNumber, filePath);
             kill([pidNumber intValue], SIGCONT);
         }
@@ -403,7 +421,7 @@
             }
         }
     }
-    @synchronized (_fetchThumbnailMap) {
+    @synchronized (_fetchMap) {
         for (NSString *filePath in _fetchMap) {
             if ([filePath hasPrefix:path]) {
                 NSLog(@"[KD] Freeing fetch processes for file: %@", filePath);
