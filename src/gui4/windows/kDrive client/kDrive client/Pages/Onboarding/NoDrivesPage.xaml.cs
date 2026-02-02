@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (_driveAvailableWatcherTask is not null)
             {
                 Logger.Log(Logger.Level.Info, "Cancelling drive availability watcher task");
-                _driveAvailableWatcherCts.Cancel();
+                await _driveAvailableWatcherCts.CancelAsync();
                 try
                 {
                     await _driveAvailableWatcherTask;
