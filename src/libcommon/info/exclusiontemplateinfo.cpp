@@ -44,7 +44,12 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     _templ = CommonUtility::commString2QStr(templateCommStr);
 
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
-    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
+    try {
+        CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
+    }
+    catch (Poco::NotFoundException) {
+        _def = false;
+    }
 }
 
 void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
