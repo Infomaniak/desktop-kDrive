@@ -26,3 +26,13 @@ struct UtilityBestVFSQuery: Codable, Sendable {
 struct UtilityBestVFSResponse: Codable, Sendable {
     let bestMode: KDC.VirtualFileMode
 }
+
+struct UtilityGoodPathNewSyncQuery: Codable, Sendable {
+    @Base64CodedString var basePath: String
+    let driveDbId: Int32
+}
+
+struct UtilityGoodPathNewSyncResponse: Codable, Sendable {
+    @Base64CodedString var goodPath: String
+    @Base64CodedString var errorMessage: String
+}

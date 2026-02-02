@@ -25,7 +25,7 @@ public struct UtilityJobs: Sendable {
     enum UtilityError: Error {
         case noGoodNewSynchPath(message: String)
     }
-    
+
     public init() {}
 
     public func getBestVirtualFileSystemMode(path: String, driveDbId: Int32) async throws -> KDC.VirtualFileMode {
@@ -39,5 +39,27 @@ public struct UtilityJobs: Sendable {
         try decodedMessage.validate()
 
         return decodedMessage.body.bestMode
+    }
+
+    public func getGoodPathForNewSynchro(basePath: String, driveDbId: Int32) async throws -> String {
+        IKLogger.data.log("Query for good Path for new Synchro")
+        let query = UtilityGoodPathNewSyncQuery(basePath: basePath, driveDbId: driveDbId)
+        let request = await RequestMessage<UtilityGoodPathNewSyncQuery>(
+            num: RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC,
+            body: query
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UtilityGoodPathNewSyncResponse>.self
+        )
+
+        try decodedMessage.validate()
+
+        guard !decodedMessage.body.errorMessage.isEmpty else {
+            throw UtilityError.noGoodNewSynchPath(message: decodedMessage.body.errorMessage)
+        }
+
+        return decodedMessage.body.goodPath
     }
 }
