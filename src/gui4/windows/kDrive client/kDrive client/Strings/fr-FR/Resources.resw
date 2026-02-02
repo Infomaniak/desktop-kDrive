@@ -958,11 +958,20 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
-  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_Remove.Text" xml:space="preserve">
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_Remove.Content" xml:space="preserve">
     <value>Supprimer</value>
   </data>
   <data name="Page_Settings_ExclusionManagementPage_UserExclusion_RemoveMany.Text" xml:space="preserve">
     <value>Supprimer ({0} éléments)</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_CheckBox.Content" xml:space="preserve">
+    <value>Supprimer ({0} éléments)</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_Notification.Text" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Notification_Tooltip.Content" xml:space="preserve">
+    <value>Une notification vous informe lorsqu’un fichier est exclu par cette règle.</value>
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>

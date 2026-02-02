@@ -114,13 +114,13 @@
                                     </Grid.ColumnDefinitions>
                                     <CheckBox Grid.Column="0"
                                               x:Name="SelectAllCheckBox"
-                                              Content="Règles"
+                                              x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_CheckBox"
                                               HorizontalAlignment="Stretch"
                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               Click="SelectAllCheckBox_Click" />
 
                                     <TextBlock  Grid.Column="1"
-                                                Text="Notification"
+                                                x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_Notification"
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -148,14 +148,18 @@
                                                 <ToggleSwitch Grid.Column="2"
                                                               IsOn="{x:Bind Warning, Mode=OneWay}"
                                                               Toggled="WarningToggleSwitch_Toggled"
-                                                              HorizontalAlignment="Right" />
+                                                              HorizontalAlignment="Right">
+                                                    <ToolTipService.ToolTip>
+                                                        <ToolTip x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_List_Notification_Tooltip"/>
+                                                    </ToolTipService.ToolTip>
+                                                </ToggleSwitch>
                                             </Grid>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
                                 <HyperlinkButton Grid.Row="2"
                                                  x:Name="DeleteButton"
-                                                 Content="Supprimer"
+                                                 x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_Remove"
                                                  Foreground="{ThemeResource SystemErrorTextColor}"
                                                  Visibility="{x:Bind _templateListModel.HasSelectedTemplates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                  Click="DeleteButton_Click" />
