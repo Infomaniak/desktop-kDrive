@@ -65,7 +65,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 var template = popupPage.ExclusionRuleTextBox.Text;
                 if (string.IsNullOrEmpty(template))
                 {
-                    Logger.Log(Logger.Level.Warning, "Template name is empty. Aborting addition of new exclusion template.");
+                    Logger.Log(Logger.Level.Info, "Template name is empty. Aborting addition of new exclusion template.");
                     return;
                 }
                 if (_templateListModel is not null)
