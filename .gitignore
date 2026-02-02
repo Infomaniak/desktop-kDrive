@@ -201,3 +201,4 @@ DerivedData/
 
 # Misc
 PROXYAI.md
+/src/server/vfs/win/vfs.h
