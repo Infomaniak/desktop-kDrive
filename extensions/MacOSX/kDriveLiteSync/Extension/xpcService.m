@@ -265,11 +265,11 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
                     return;
                 }
                 
-                @synchronized (self->_fetchThumbnailMap) {
-                    NSMutableDictionary *data = self->_fetchThumbnailMap[filePath];
+                @synchronized (strongSelf->_fetchThumbnailMap) {
+                    NSMutableDictionary *data = strongSelf->_fetchThumbnailMap[filePath];
                     if (data != nil) {
                         NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
-                        [self updateThumbnailFetchStatus:nil filePath:filePath fileStatus:@"Cancelled"];
+                        [strongSelf updateThumbnailFetchStatus:nil filePath:filePath fileStatus:@"Cancelled"];
                     }
                 }
             });
