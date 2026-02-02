@@ -61,10 +61,13 @@ param(
     [switch]$MakeRelease,
 
     [Parameter(Mandatory = $false, HelpMessage = "Update environment variables after installation.")]
-    [switch]$UpdateEnvironment
+    [switch]$UpdateEnvironment,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Clean the Conan cache after installation to save disk space.")]
+    [switch]$CleanCache
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -249,6 +252,12 @@ if ($UpdateEnvironment) {
    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
    Log "New user Path set to: $newUserPath"
    Log "User Path environment variable updated. Please restart your programs to apply the changes."
+}
+
+if ($CleanCache) {
+    Log "Cleaning Conan cache to save disk space..."
+    & $ConanExe cache clean --source --build --temp "*"
+    Log "Conan cache cleaned."
 }
 
 if ($CI)  {
