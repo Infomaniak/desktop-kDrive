@@ -190,7 +190,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Error, "Request operation was canceled.");
+                Logger.Log(Logger.Level.Info, "Request operation was canceled.");
                 return new CommData();
             }
             catch (Exception ex)

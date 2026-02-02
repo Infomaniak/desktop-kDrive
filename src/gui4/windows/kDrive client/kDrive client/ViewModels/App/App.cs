@@ -234,21 +234,37 @@ namespace Infomaniak.kDrive.ViewModels
             SelectedSync = null;
 
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-
-            if (!await serverCommService.RefreshUsers(CancellationToken.None))
+            try
             {
-                Logger.Log(Logger.Level.Error, "Failed to refresh users during AppModel initialization.");
+                // Allow up to 5 minutes for the initial load as it happen at computer startup wich can be slow
+                using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
+                {
+                    if (!await serverCommService.RefreshUsers(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh users during AppModel initialization.");
+                        return false;
+                    }
+
+                    await serverCommService.RefreshAccounts(CancellationToken.None);
+                    await serverCommService.RefreshDrives(CancellationToken.None);
+                    await serverCommService.RefreshSyncs(CancellationToken.None);
+                    await serverCommService.RefreshSettings(CancellationToken.None);
+                    await serverCommService.RefreshErrors(CancellationToken.None);
+                    Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
+                    IsInitialized = true;
+                    return true;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Error, "Operation canceled during AppModel initialization.");
                 return false;
             }
-
-            await serverCommService.RefreshAccounts(CancellationToken.None);
-            await serverCommService.RefreshDrives(CancellationToken.None);
-            await serverCommService.RefreshSyncs(CancellationToken.None);
-            await serverCommService.RefreshSettings(CancellationToken.None);
-            await serverCommService.RefreshErrors(CancellationToken.None);
-            Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
-            IsInitialized = true;
-            return true;
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Exception during AppModel initialization: {ex}");
+                return false;
+            }
         }
 
         public async Task DisconnectUserAsync(DbId userDbId)

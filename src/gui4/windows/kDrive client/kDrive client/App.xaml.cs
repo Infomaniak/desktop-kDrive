@@ -152,7 +152,17 @@ namespace Infomaniak.kDrive
             };
 
 
-            await appModel.InitializeAsync();
+            // Affiche le spinning wheel
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+
+            TrayIcoManager.Initialize();
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
+            if (!await appModel.InitializeAsync())
+            {
+                Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");
+                ExitApplication();
+                return;
+            }
             CurrentWindow.Content = currentWindowContent;
             (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();

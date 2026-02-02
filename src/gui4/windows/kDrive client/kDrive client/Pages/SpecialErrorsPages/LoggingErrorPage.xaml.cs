@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages
                     }
                     else
                     {
-                        Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+                        Utility.ShowUnexpectedErrorTeachingTip();
                     }
                 }
                 else
@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.Pages
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
-                Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
             finally
             {

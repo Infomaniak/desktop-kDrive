@@ -316,6 +316,10 @@ namespace Infomaniak.kDrive
                 return new string('*', localPart.Length) + domainPart;
         }
 
+        public static void ShowUnexpectedErrorTeachingTip()
+        {
+            Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+        }
         public static void ShowTeachingTipFromxUid(string xuid, Control? target = null)
         {
             if (App.Current as App is not App app || app.CurrentWindow is null)

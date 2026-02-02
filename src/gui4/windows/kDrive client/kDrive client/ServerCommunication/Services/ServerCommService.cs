@@ -117,6 +117,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!CheckJobResultAndLogIfError(data, new JsonObject()))
                 return false;
