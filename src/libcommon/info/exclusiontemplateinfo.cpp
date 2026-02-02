@@ -46,8 +46,7 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     try {
         CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    }
-    catch (Poco::NotFoundException) {
+    } catch (Poco::NotFoundException) {
         _def = false;
     }
 }
