@@ -37,12 +37,15 @@ namespace Infomaniak.kDrive.CustomControls
         public AppNavigationView()
         {
             InitializeComponent();
-            Loaded += AppNavigationView_Loaded;
         }
 
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+        }
+        private void AppNavigationView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigated -= Frame_Navigated;
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -95,9 +98,9 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
+            await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
         }
     }
 }

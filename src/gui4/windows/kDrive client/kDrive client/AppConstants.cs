@@ -1,5 +1,4 @@
-﻿using Infomaniak.kDrive.ViewModels;
-using System;
+﻿using System;
 
 namespace Infomaniak.kDrive
 {

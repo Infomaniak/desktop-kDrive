@@ -2269,6 +2269,8 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     }
     parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
+    parametersInfo.setSentryEnabled(parameters.sentryEnabled());
+    parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2301,6 +2303,8 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
+    parameters.setSentryEnabled(parametersInfo.sentryEnabled());
+    parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {

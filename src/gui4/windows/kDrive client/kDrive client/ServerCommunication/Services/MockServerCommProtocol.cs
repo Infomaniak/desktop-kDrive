@@ -44,6 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public event EventHandler<SignalEventArgs>? SignalReceived;
+        public event EventHandler? ConnectionLost;
         private Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
