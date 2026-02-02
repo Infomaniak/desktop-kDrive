@@ -337,15 +337,15 @@
     "CREATE TABLE IF NOT EXISTS exclusion_template(" \
     "template TEXT PRIMARY KEY,"                     \
     "warning INTEGER,"                               \
-    "def INTEGER");"
+    "def INTEGER);"
 
 #define INSERT_EXCLUSION_TEMPLATE_REQUEST_ID "insert_exclusion_template"
-#define INSERT_EXCLUSION_TEMPLATE_REQUEST                               \
+#define INSERT_EXCLUSION_TEMPLATE_REQUEST                      \
     "INSERT INTO exclusion_template (template, warning, def) " \
     "VALUES (?1, ?2, ?3);"
 
 #define UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID "update_exclusion_template"
-#define UPDATE_EXCLUSION_TEMPLATE_REQUEST                           \
+#define UPDATE_EXCLUSION_TEMPLATE_REQUEST              \
     "UPDATE exclusion_template SET warning=?1, def=?2" \
     "WHERE template=?3;"
 
@@ -363,7 +363,7 @@
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST "SELECT template, warning, def FROM exclusion_template;"
 
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID "select_exclusion_templates_by_def"
-#define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST             \
+#define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST    \
     "SELECT template, warning FROM exclusion_template " \
     "WHERE def=?1;"
 
