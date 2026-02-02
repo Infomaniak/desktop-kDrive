@@ -35,19 +35,23 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _defaultTemplatesSubscription.Dispose();
             _userDefinedTemplatesSubscription.Dispose();
+            bool hasPendingSave;
+
             lock (_saveDebounceLock)
             {
+                hasPendingSave = _saveDebounceCts is not null;
                 _saveDebounceCts?.Cancel();
                 _saveDebounceCts?.Dispose();
                 _saveDebounceCts = null;
             }
-            _ = SaveUserTemplatesImmediateAsync().ContinueWith(task =>
-            {
-                if (task.Exception is not null)
+            if (hasPendingSave)
+                _ = SaveUserTemplatesImmediateAsync().ContinueWith(task =>
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to save exclusion templates on dispose: {task.Exception}");
-                }
-            }, TaskScheduler.Default);
+                    if (task.Exception is not null)
+                    {
+                        Logger.Log(Logger.Level.Error, $"Failed to save exclusion templates on dispose: {task.Exception}");
+                    }
+                }, TaskScheduler.Default);
         }
 
         // Public property to access the collection
@@ -132,6 +136,11 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
 
+            lock (_saveDebounceLock)
+            {
+                _saveDebounceCts?.Dispose();
+                _saveDebounceCts = null;
+            }
             await SaveUserTemplatesImmediateAsync();
         }
 
