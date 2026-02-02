@@ -156,6 +156,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public UserId? UserId { get; set; }
         public DbId? UserDbId { get; set; }
         public AccountId? AccountId { get; set; }
+        public string? AccountName { get; set; }
         public string? Name { get; set; }
         public System.Drawing.Color? Color { get; set; }
     }
@@ -166,6 +167,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
             copyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
             copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            copyProperty(source, target, nameof(source.AccountName), nameof(target.AccountName));
             copyProperty(source, target, nameof(source.Name), nameof(target.Name));
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
             copyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));

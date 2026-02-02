@@ -68,7 +68,7 @@ ExitInfo SyncAddJob::process() {
                                    << L" driveId=" << _driveId << L" local " << CommonUtility::formatSyncPath(localFolderPath())
                                    << L" server " << CommonUtility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
-        AppServer::addError(Error(ERR_ID, exitInfo));
+        addError(Error(ERR_ID, exitInfo));
         return exitInfo;
     }
 

@@ -24,6 +24,8 @@
 
 namespace KDC {
 
+const std::string driveKey = "drive";
+
 GetDrivesListJob::GetDrivesListJob(int userDbId) :
     AbstractTokenNetworkJob(ApiType::DriveByUser, userDbId, 0, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -32,7 +34,7 @@ GetDrivesListJob::GetDrivesListJob(int userDbId) :
 void GetDrivesListJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("roles[]", "admin");
     uri.addQueryParameter("roles[]", "user");
-    uri.addQueryParameter("with", "account");
+    uri.addQueryParameter("with", "drive,drive.account");
 }
 
 std::string GetDrivesListJob::getSpecificUrl() {
@@ -55,20 +57,26 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
     }
 
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
-        const auto driveObj = it->extract<Poco::JSON::Object::Ptr>();
+        const auto dataObj = it->extract<Poco::JSON::Object::Ptr>();
 
         int driveId = -1;
-        if (!JsonParserUtility::extractValue(driveObj, driveIdKey, driveId)) {
+        if (!JsonParserUtility::extractValue(dataObj, driveIdKey, driveId)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         int userId = -1;
-        if (!JsonParserUtility::extractValue(driveObj, idKey, userId)) {
+        if (!JsonParserUtility::extractValue(dataObj, idKey, userId)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         int accountId = -1;
         std::string accountName;
+        const auto driveObj = dataObj->getObject(driveKey);
+        if (!driveObj) {
+            LOG_ERROR(Log::instance()->getLogger(), "Missing drive info!");
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
         const auto accountObj = driveObj->getObject(accountKey);
         if (!accountObj) {
             LOG_ERROR(Log::instance()->getLogger(), "Missing account info!");
@@ -82,12 +90,12 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
         }
 
         std::string driveName;
-        if (!JsonParserUtility::extractValue(driveObj, driveNameKey, driveName)) {
+        if (!JsonParserUtility::extractValue(dataObj, driveNameKey, driveName)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         std::string colorHex;
-        if (Poco::JSON::Object::Ptr prefObj = driveObj->getObject(preferenceKey)) {
+        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferenceKey)) {
             if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
             }

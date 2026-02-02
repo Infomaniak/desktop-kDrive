@@ -123,7 +123,7 @@ namespace Infomaniak.kDrive.Types
         public UserId UserId { get; set; } = 0;
         public DbId UserDbId { get; set; } = 0;
         public AccountId AccountId { get; set; } = 0;
-        public string AccountName { get; set; } = "Account Name"; // TODO: set properly
+        public string AccountName { get; set; } = "";
         public string Name { get; set; } = "";
         public System.Drawing.Color Color { get; set; } = System.Drawing.Color.White;
         public bool IsConfigured { get; } = false;
