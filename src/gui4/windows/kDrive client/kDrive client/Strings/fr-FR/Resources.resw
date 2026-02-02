@@ -965,7 +965,7 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
     <value>Supprimer ({0} éléments)</value>
   </data>
   <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_CheckBox.Content" xml:space="preserve">
-    <value>Supprimer ({0} éléments)</value>
+    <value>Règles</value>
   </data>
   <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_Notification.Text" xml:space="preserve">
     <value>Notification</value>

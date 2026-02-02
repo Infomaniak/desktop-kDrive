@@ -19,6 +19,8 @@ namespace Infomaniak.kDrive.ViewModels
         private ReadOnlyObservableCollection<ExclusionTemplate> _userDefinedTemplates;
         private int _selectedCount;
         private bool _hasSelectedTemplates;
+        private CancellationTokenSource? _saveDebounceCts;
+        private readonly object _saveDebounceLock = new();
 
         // Subscription handlers
         private IDisposable _defaultTemplatesSubscription;
@@ -33,6 +35,19 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _defaultTemplatesSubscription.Dispose();
             _userDefinedTemplatesSubscription.Dispose();
+            lock (_saveDebounceLock)
+            {
+                _saveDebounceCts?.Cancel();
+                _saveDebounceCts?.Dispose();
+                _saveDebounceCts = null;
+            }
+            _ = SaveUserTemplatesImmediateAsync().ContinueWith(task =>
+            {
+                if (task.Exception is not null)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to save exclusion templates on dispose: {task.Exception}");
+                }
+            }, TaskScheduler.Default);
         }
 
         // Public property to access the collection
@@ -98,6 +113,29 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         public async Task SaveUserTemplates()
+        {
+            CancellationToken token;
+            lock (_saveDebounceLock)
+            {
+                _saveDebounceCts?.Cancel();
+                _saveDebounceCts?.Dispose();
+                _saveDebounceCts = new CancellationTokenSource();
+                token = _saveDebounceCts.Token;
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+
+            await SaveUserTemplatesImmediateAsync();
+        }
+
+        private async Task SaveUserTemplatesImmediateAsync()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             await commService.SetUserExclusionTemplates(UserDefinedTemplates.AsList(), CancellationToken.None);
