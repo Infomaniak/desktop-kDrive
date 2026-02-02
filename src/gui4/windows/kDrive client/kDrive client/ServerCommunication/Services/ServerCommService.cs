@@ -123,7 +123,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
 
             if (!CheckJobResultAndLogIfError(data, new JsonObject()))
                 return false;
@@ -160,7 +159,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 var usersToRemove = _viewModel.Users.Where(u => !userDbIds.Contains(u.DbId)).ToList();
                 _viewModel.Users.RemoveMany(usersToRemove);
-                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed.");
+                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed from the application.");
             }).ConfigureAwait(false);
             return true;
         }
