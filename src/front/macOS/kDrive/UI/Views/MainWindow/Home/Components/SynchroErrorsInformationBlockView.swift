@@ -39,15 +39,19 @@ struct SynchroErrorsInformationBlockView: View {
         InformationBlockView(
             title: title,
             subtitle: AttributedString(KDriveLocalizable.informationBlockSynchroErrorSubtitle),
-            button: .init(title: KDriveLocalizable.buttonFixErrors, action: {})
+            button: .init(title: KDriveLocalizable.buttonFixErrors) {
+                // TODO: Connect to MainViewState implementation
+            }
         )
     }
 }
 
 #Preview("One error") {
     SynchroErrorsInformationBlockView(errorCount: 1)
+        .padding(AppPadding.padding32)
 }
 
 #Preview("Multiple errors") {
     SynchroErrorsInformationBlockView(errorCount: 5)
+        .padding(AppPadding.padding32)
 }
