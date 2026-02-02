@@ -346,7 +346,7 @@
 
 #define UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID "update_exclusion_template"
 #define UPDATE_EXCLUSION_TEMPLATE_REQUEST              \
-    "UPDATE exclusion_template SET warning=?1, def=?2" \
+    "UPDATE exclusion_template SET warning=?1, def=?2 " \
     "WHERE template=?3;"
 
 #define DELETE_EXCLUSION_TEMPLATE_REQUEST_ID "delete_exclusion_template"
