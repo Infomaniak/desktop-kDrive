@@ -283,8 +283,18 @@ namespace Infomaniak.kDrive
                 return new string('*', localPart.Length) + domainPart;
         }
 
-        public static void ShowTeachingTip(XamlRoot xamlRoot, string xuid, Control? target = null)
+        public static void ShowTeachingTip(string xuid, XamlRoot? xamlRoot = null, Control? target = null)
         {
+            if (xamlRoot is null)
+            {
+                if (App.Current as App is not App app || app.CurrentWindow is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
+                    return;
+                }
+                xamlRoot = app.CurrentWindow.Content.XamlRoot;
+            }
+
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,

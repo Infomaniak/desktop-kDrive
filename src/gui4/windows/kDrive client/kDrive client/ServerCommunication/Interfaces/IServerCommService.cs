@@ -1,5 +1,4 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
