@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
@@ -113,20 +114,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return _viewModel.Users.FirstOrDefault(u => u?.DbId == userDbId, null);
         }
 
-        public async Task RefreshUsers(CancellationToken cancellationToken)
+        public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfoList} not found in response.");
-                return;
-            }
+
+            if (!CheckJobResultAndLogIfError(data, new JsonObject()))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.UserInfoList))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<UserInfo> userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
+            List<UserInfo>? userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options);
+            if (userInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to deserialize UserInfoList.");
+                return false;
+            }
 
             // Add/update users
             foreach (var userInfo in userInfos)
@@ -144,12 +152,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() =>
             {
                 var usersToRemove = _viewModel.Users.Where(u => !userDbIds.Contains(u.DbId)).ToList();
-                foreach (var user in usersToRemove)
-                {
-                    _viewModel.Users.Remove(user);
-                    Logger.Log(Logger.Level.Info, $"User with DbId {user.DbId} removed from the application.");
-                }
+                _viewModel.Users.RemoveMany(usersToRemove);
+                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed from the application.");
             });
+            return true;
         }
 
         public async Task RemoveUser(DbId userDbId, CancellationToken cancellationToken)
@@ -1431,22 +1437,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Helpers
         private async Task AddOrUpdateUserInModel(UserInfo userInfo)
         {
-            if (_viewModel.Users.Any(u => u.DbId == userInfo.DbId))
+
+            if (!userInfo.DbId.HasValue)
             {
-                Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} already exists in the application.");
-                var user = _viewModel.Users.FirstOrDefault(u => u.DbId == userInfo.DbId);
-                if (user == null)
-                {
-                    Logger.Log(Logger.Level.Error, $"Unexpected error, user with DbId {userInfo.DbId} not found after existence check.");
-                    return;
-                }
-                ConversionHelper.CopyToUser(userInfo, user);
-                Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} updated.");
+                Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                return;
+            }
+            DbId dbId = userInfo.DbId.Value;
+
+            User? user = _viewModel.Users.FirstOrDefault(u => u?.DbId == dbId, null);
+            if (user is not null)
+            {
+                Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
+                ConversionHelper.copyToUser(userInfo, user);
+                Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
             }
             else
             {
-                User newUser = new User(userInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."));
-                ConversionHelper.CopyToUser(userInfo, newUser);
+                User newUser = new User(dbId);
+                ConversionHelper.copyToUser(userInfo, newUser);
                 await Utility.RunOnUIThread(() =>
                 {
                     _viewModel.Users.Add(newUser);

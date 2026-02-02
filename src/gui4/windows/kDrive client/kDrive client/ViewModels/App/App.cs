@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             }
         }
-       
+
         public AppModel()
         {
             // Create a read-only observable collection of active drives across all users
@@ -226,7 +226,7 @@ namespace Infomaniak.kDrive.ViewModels
          *  This method is asynchronous and should be awaited.
          *  It loads the list of users and their properties/drives from the server.
          */
-        public async Task InitializeAsync()
+        public async Task<bool> InitializeAsync()
         {
 
             Logger.Log(Logger.Level.Info, "Initializing AppModel...");
@@ -234,14 +234,21 @@ namespace Infomaniak.kDrive.ViewModels
             SelectedSync = null;
 
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverCommService.RefreshUsers(new CancellationToken());
-            await serverCommService.RefreshAccounts(new CancellationToken());
-            await serverCommService.RefreshDrives(new CancellationToken());
-            await serverCommService.RefreshSyncs(new CancellationToken());
-            await serverCommService.RefreshSettings(new CancellationToken());
-            await serverCommService.RefreshErrors(new CancellationToken());
+
+            if (!await serverCommService.RefreshUsers(CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to refresh users during AppModel initialization.");
+                return false;
+            }
+
+            await serverCommService.RefreshAccounts(CancellationToken.None);
+            await serverCommService.RefreshDrives(CancellationToken.None);
+            await serverCommService.RefreshSyncs(CancellationToken.None);
+            await serverCommService.RefreshSettings(CancellationToken.None);
+            await serverCommService.RefreshErrors(CancellationToken.None);
             Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
             IsInitialized = true;
+            return true;
         }
 
         public async Task DisconnectUserAsync(DbId userDbId)
