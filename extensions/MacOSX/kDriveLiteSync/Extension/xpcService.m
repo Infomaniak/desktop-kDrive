@@ -258,7 +258,13 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
             fetchData[pidKey] = [[NSMutableSet alloc] init];
             
             // Create cancelable timeout block
+            __weak typeof(self) weakSelf = self;
             dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
                 @synchronized (self->_fetchThumbnailMap) {
                     NSMutableDictionary *data = self->_fetchThumbnailMap[filePath];
                     if (data != nil) {
