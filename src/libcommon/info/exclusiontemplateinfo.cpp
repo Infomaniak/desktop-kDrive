@@ -26,7 +26,7 @@ static const auto exclusionTemplateInfoDefault = "default";
 
 namespace KDC {
 
-ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def) :
+ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, const bool warning, const bool def) :
     _templ(templ),
     _warning(warning),
     _def(def) {}
@@ -46,7 +46,7 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     try {
         CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    } catch (Poco::NotFoundException) {
+    } catch (Poco::NotFoundException&) {
         _def = false;
     }
 }
