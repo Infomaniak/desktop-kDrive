@@ -32,7 +32,7 @@ class ExclTemplSetUserListJob : public AbstractGuiJob {
         ExitInfo process() override;
 
     private:
-        // Output parameters
+        // Input parameters
         std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
 
         ExitInfo deserializeInputParms() override;
