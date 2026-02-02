@@ -20,6 +20,10 @@
 
 #define CSV_SEPARATOR @";"
 
+const int64_t fetchThumbnailTimeout = 10; // 10 seconds
+const NSString *pidKey = @"pids";
+const NSString *timeoutBlockKey = @"timeoutBlock";
+
 @implementation XPCService
 
 - (instancetype)init {
@@ -251,7 +255,7 @@
         if (fetchData == nil) {
             // Create new entry with pids and timeout block
             fetchData = [NSMutableDictionary dictionary];
-            fetchData[@"pids"] = [[NSMutableSet alloc] init];
+            fetchData[pidKey] = [[NSMutableSet alloc] init];
             
             // Create cancelable timeout block
             dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
@@ -263,12 +267,12 @@
                     }
                 }
             });
-            fetchData[@"timeoutBlock"] = timeoutBlock;
+            fetchData[timeoutBlockKey] = timeoutBlock;
             
             [_fetchThumbnailMap setObject:fetchData forKey:filePath];
             
             // Schedule the timeout
-            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60.0 * NSEC_PER_SEC));
+            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fetchThumbnailTimeout * NSEC_PER_SEC));
             dispatch_after(time, dispatch_get_main_queue(), timeoutBlock);
             
             // Ask the app to fetch the thumbnail
@@ -276,7 +280,7 @@
         }
 
         // Store the pid
-        [fetchData[@"pids"] addObject:[NSNumber numberWithInt:pid]];
+        [fetchData[pidKey] addObject:[NSNumber numberWithInt:pid]];
 
         // Stop the process
         NSLog(@"[KD] Stop process %@ opening thumbnail %@", [NSNumber numberWithInt:pid], filePath);
@@ -360,13 +364,13 @@
         }
 
         // Cancel the pending timeout block if it exists
-        dispatch_block_t timeoutBlock = fetchData[@"timeoutBlock"];
+        dispatch_block_t timeoutBlock = fetchData[timeoutBlockKey];
         if (timeoutBlock) {
             dispatch_block_cancel(timeoutBlock);
         }
 
         // Resume the stopped processes
-        for (NSNumber *pidNumber in fetchData[@"pids"]) {
+        for (NSNumber *pidNumber in fetchData[pidKey]) {
             NSLog(@"[KD] Resume process %@ opening thumbnail %@", pidNumber, filePath);
             kill([pidNumber intValue], SIGCONT);
         }
