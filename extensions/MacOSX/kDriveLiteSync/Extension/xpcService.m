@@ -273,7 +273,7 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
             
             // Schedule the timeout
             dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fetchThumbnailTimeout * NSEC_PER_SEC));
-            dispatch_after(time, dispatch_get_main_queue(), timeoutBlock);
+            dispatch_after(time, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), timeoutBlock);
             
             // Ask the app to fetch the thumbnail
             [self sendMessage:filePath query:@"SET_THUMBNAIL" oneApp:TRUE];
