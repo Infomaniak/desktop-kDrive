@@ -153,7 +153,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private async void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (_templateListModel is null)
             {
@@ -175,11 +175,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            toggleSwitch.IsEnabled = false;
             exclusionTemplate.Warning = toggleSwitch.IsOn;
-            await _templateListModel.SaveUserTemplates();
-            if (toggleSwitch is not null)
-                toggleSwitch.IsEnabled = true;
+            _ = _templateListModel.SaveUserTemplates();
         }
     }
 }

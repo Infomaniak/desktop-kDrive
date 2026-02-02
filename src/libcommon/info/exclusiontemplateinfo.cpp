@@ -46,7 +46,7 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     try {
         CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    } catch (Poco::NotFoundException&) {
+    } catch (Poco::NotFoundException &) {
         _def = false;
     }
 }
@@ -65,7 +65,7 @@ void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<Exclu
         if (uniqueTemplSet.emplace(normalizedTempl).second)
             ++it;
         else
-            (void) templateList.erase(it);
+            it = templateList.erase(it);
     }
 }
 
