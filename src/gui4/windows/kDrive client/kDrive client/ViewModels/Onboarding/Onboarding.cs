@@ -8,17 +8,20 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Onboarding : UISafeObservableObject
+    public class Onboarding : UISafeObservableObject, IDisposable
     {
         private readonly IServerCommService _serverCommService;
         private OAuth2State _currentOAuth2State = OAuth2State.None;
         private User? _selectedUser = null;
-
+        private Task? _driveAvailableWatcherTask;
+        private CancellationTokenSource? _driveAvailableWatcherCts;
 
         internal Onboarding(IServerCommService serverCommService)
         {
             _serverCommService = serverCommService;
         }
+
+        public event EventHandler? DrivesAvailable;
 
         public ObservableCollection<NewSync> NewSyncs { get; } = new();
 
@@ -32,6 +35,88 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _selectedUser;
             set => SetPropertyInUIThread(ref _selectedUser, value);
+        }
+
+        public void Dispose()
+        {
+            _ = StopDriveAvailabilityWatcherAsync();
+        }
+
+        public void StartDriveAvailabilityWatcher()
+        {
+            if (_driveAvailableWatcherTask is not null && !_driveAvailableWatcherTask.IsCompleted)
+                return;
+
+            Logger.Log(Logger.Level.Info, "Starting drive availability watcher task");
+            _driveAvailableWatcherCts = new CancellationTokenSource();
+            _driveAvailableWatcherTask = WatchAvailableDrives(_driveAvailableWatcherCts.Token);
+        }
+
+        public async Task StopDriveAvailabilityWatcherAsync()
+        {
+            if (_driveAvailableWatcherTask is null)
+                return;
+
+            Logger.Log(Logger.Level.Info, "Cancelling drive availability watcher task");
+            if (_driveAvailableWatcherCts is not null)
+            {
+                await _driveAvailableWatcherCts.CancelAsync();
+            }
+
+            try
+            {
+                await _driveAvailableWatcherTask;
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Drive availability watcher task cancelled successfully");
+            }
+            finally
+            {
+                _driveAvailableWatcherTask = null;
+                _driveAvailableWatcherCts?.Dispose();
+                _driveAvailableWatcherCts = null;
+            }
+        }
+
+        private async Task WatchAvailableDrives(CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var drivesFound = await CheckAvailableDrives(cancellationToken);
+                    if (drivesFound)
+                    {
+                        return;
+                    }
+
+                    await Task.Delay(5000, cancellationToken); // Check every 5 seconds
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Drive availability watcher task cancelled");
+            }
+        }
+
+        private async Task<bool> CheckAvailableDrives(CancellationToken cancellationToken)
+        {
+            if (SelectedUser is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SelectedUser is null - Cannot check available drives");
+                return false;
+            }
+
+            await SelectedUser.RefreshAvailableDrives(cancellationToken);
+            if (!cancellationToken.IsCancellationRequested && SelectedUser.AllDrives.Any())
+            {
+                Logger.Log(Logger.Level.Info, "Drives found for user");
+                DrivesAvailable?.Invoke(this, EventArgs.Empty);
+                return true;
+            }
+
+            return false;
         }
 
         public async Task ConnectUser(CancellationToken cancelationToken)
