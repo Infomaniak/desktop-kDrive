@@ -28,11 +28,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _commClient.SignalReceived += OnSignalReceived;
         }
 
+        // Utility methods
+        private static bool HasRequiredParam(CommData data, string key, [CallerMemberName] string callerName = "")
+        {
+            if (data.Params is null || !data.Params.ContainsKey(key))
+            {
+                Logger.Log(Logger.Level.Error, $"{callerName}: {key} not found in response.");
+                return false;
+            }
+            return true;
+        }
+
+        private static bool CheckJobResultAndLogIfError(CommData data, JsonObject jobInput, [CallerMemberName] string callerName = "")
+        {
+            if (data?.Params is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, Params is null.");
+                return false;
+            }
+
+            if (data.Code != ExitCode.Ok)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, exit code: {data.Code}, exit cause: {data.Cause}.");
+                return false;
+            }
+            return true;
+        }
+
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
+            if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
                 return null;
@@ -42,33 +69,47 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, new JsonObject
+            JsonObject parms = new()
             {
                 [JsonKeys.OAuthCode] = Utility.ToBase64String(oAuthCode),
                 [JsonKeys.OAuthCodeVerifier] = Utility.ToBase64String(oAuthCodeVerifier)
-            }, cancellationToken);
+            };
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbId) || data.Params[JsonKeys.UserDbId] == null)
+            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, parms, cancellationToken);
+
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.UserDbId))
+                return null;
+
+            DbId userDbId = -1;
+            try
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbId} not found in response.");
+                userDbId = data.Params[JsonKeys.UserDbId]!.GetValue<DbId>();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse UserDbId from response: {ex.Message}");
                 return null;
             }
 
-            DbId userDbId = data.Params[JsonKeys.UserDbId]?.GetValue<DbId>() ?? -1;
-
-            await Utility.RunOnUIThread(() =>
+            await Utility.RunOnUIThread(async () =>
             {
-                if (_viewModel.Users.Any(u => u.DbId == userDbId))
+                // The server should send a signal user_added that will add the user to the model, we wait here for max 10s for that to happen
+                int maxRetries = 100;
+                do
                 {
-                    Logger.Log(Logger.Level.Info, $"User with DbId {userDbId} already exists in the application.");
-                }
-                else
-                {
-                    User newUser = new User(userDbId);
-                    _viewModel.Users.Add(newUser);
-                    Logger.Log(Logger.Level.Info, $"AddOrRelogUser: New user added with DbId {userDbId}.");
-                }
-            });
+                    if (_viewModel.Users.Any(u => u.DbId == userDbId))
+                    {
+                        Logger.Log(Logger.Level.Info, $"AddOrRelogUser: User with DbId {userDbId} already exists in the application.");
+                        return;
+                    }
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    --maxRetries;
+                } while (!cancellationToken.IsCancellationRequested && maxRetries > 0);
+                Logger.Log(Logger.Level.Error, $"AddOrRelogUser: Timeout waiting for user with DbId {userDbId} to be added to the application.");
+            }).ConfigureAwait(false);
             return _viewModel.Users.FirstOrDefault(u => u?.DbId == userDbId, null);
         }
 

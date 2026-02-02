@@ -291,7 +291,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonString}");
             var messageObj = JsonSerializer.Deserialize<CommData>(jsonString, options);
-            if (messageObj == null)
+            if (messageObj is null)
             {
                 Logger.Log(Logger.Level.Warning, "Invalid message format.");
                 return;
