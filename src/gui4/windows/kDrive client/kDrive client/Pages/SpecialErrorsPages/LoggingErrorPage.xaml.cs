@@ -50,27 +50,38 @@ namespace Infomaniak.kDrive.Pages
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
                 var OAutCodes = await OAuthHelper.GetCode(cts.Token);
-                if (OAutCodes.Code != "")
+                if (OAutCodes.Code == "")
                 {
-                    Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
-                    User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
-                    if (user is not null && user.DbId == ViewModel.SelectedSync?.Drive.Account.User.DbId)
+                    Logger.Log(Logger.Level.Warning, "Failed to obtain user code.");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
+                User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
+                if (user is null || ViewModel.SelectedSync is null)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                else if (user.DbId != ViewModel.SelectedSync.Drive.Account.User.DbId)
+                {
+                    DisplayUserMismatchContent();
+                }
+                else if (user.DbId == ViewModel.SelectedSync.Drive.Account.User.DbId)
+                {
+                    if (!await ViewModel.SelectedSync.Start())
                     {
-                        ViewModel.SelectedSync?.Start();
-                    }
-                    else if (user is not null)
-                    {
-                        DisplayUserMismatchContent();
-                    }
-                    else
-                    {
+                        Logger.Log(Logger.Level.Error, "Failed to start sync.");
                         Utility.ShowUnexpectedErrorTeachingTip();
                     }
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, "Authentication process failed");
+                    Utility.ShowUnexpectedErrorTeachingTip();
                 }
+
+
             }
             catch (OperationCanceledException)
             {

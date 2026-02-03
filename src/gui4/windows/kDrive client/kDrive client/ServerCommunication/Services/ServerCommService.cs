@@ -546,37 +546,40 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task StartSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> StartSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
-                return;
+                return false;
             }
+            var previousStatus = sync.SyncStatus;
             sync.SyncStatus = SyncStatus.Starting;
 
             var parms = new JsonObject
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
-            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            if (!CheckJobResultAndLogIfError(data, parms))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to start sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
-                return;
+                sync.SyncStatus = previousStatus;
+                return false;
             }
+
+            return true;
         }
 
-        public async Task PauseSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> PauseSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
-                return;
+                return false;
             }
+            var previousStatus = sync.SyncStatus;
             sync.SyncStatus = SyncStatus.StopAsked;
 
             var parms = new JsonObject
@@ -584,11 +587,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken);
-            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            if(!CheckJobResultAndLogIfError(data, parms))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to pause sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
-                return;
+                sync.SyncStatus = previousStatus;
+                return false;
             }
+            return true;
         }
 
         public async Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
