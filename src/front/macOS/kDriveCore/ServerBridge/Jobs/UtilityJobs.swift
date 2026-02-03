@@ -164,4 +164,22 @@ public struct UtilityJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func getAppState(key: Int32) async throws -> Int32 {
+        IKLogger.data.log("Query for getting app state")
+        let query = UtilityGetAppStateQuery(key: key)
+        let request = await RequestMessage<UtilityGetAppStateQuery>(
+            num: RequestNum.UTILITY_GET_APPSTATE,
+            body: query
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UtilityGetAppStateResponse>.self
+        )
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.value
+    }
 }

@@ -61,3 +61,11 @@ struct UtilitySetAppStateQuery: Codable, Sendable {
     let key: Int32
     let value: Int32
 }
+
+struct UtilityGetAppStateQuery: Codable, Sendable {
+    let key: Int32
+}
+
+struct UtilityGetAppStateResponse: Codable, Sendable {
+    let value: Int32
+}
