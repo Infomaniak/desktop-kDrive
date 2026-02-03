@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
          * Returns a Task that completes when the operation is done.
          * Note: This does not refresh drives within accounts, only the accounts themselves.
          */
-        Task RefreshAccounts(CancellationToken cancellationToken);
+        Task<bool> RefreshAccounts(CancellationToken cancellationToken);
 
 
         // Drive-related requests

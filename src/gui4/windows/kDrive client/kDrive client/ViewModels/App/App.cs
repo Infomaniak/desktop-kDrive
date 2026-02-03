@@ -245,7 +245,11 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    await serverCommService.RefreshAccounts(CancellationToken.None);
+                    if (!await serverCommService.RefreshAccounts(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh accounts during AppModel initialization.");
+                        return false;
+                    }
                     await serverCommService.RefreshDrives(CancellationToken.None);
                     await serverCommService.RefreshSyncs(CancellationToken.None);
                     await serverCommService.RefreshSettings(CancellationToken.None);
@@ -270,7 +274,7 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            if(!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
+            if (!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
             {
                 Logger.Log(Logger.Level.Error, $"Failed to disconnect user {userDbId}");
                 Utility.ShowUnexpectedErrorTeachingTip();
