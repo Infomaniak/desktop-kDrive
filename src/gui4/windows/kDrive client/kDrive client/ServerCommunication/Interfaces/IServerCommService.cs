@@ -107,7 +107,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
         // Error-related requests
-        Task RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> RefreshErrors(CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);

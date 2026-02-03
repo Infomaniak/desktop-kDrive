@@ -268,7 +268,13 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.Log(Logger.Level.Error, "Failed to refresh settings during AppModel initialization.");
                         return false;
                     }
-                    await serverCommService.RefreshErrors(CancellationToken.None);
+
+                    if (!await serverCommService.RefreshErrors(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh errors during AppModel initialization.");
+                        return false;
+                    }
+
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
                     IsInitialized = true;
                     return true;
@@ -317,7 +323,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
-            if (appError != null)
+            if (appError is not null)
             {
                 await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
                 return;

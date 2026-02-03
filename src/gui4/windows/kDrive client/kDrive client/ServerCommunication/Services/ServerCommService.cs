@@ -1022,18 +1022,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task RefreshErrors(CancellationToken cancellationToken)
+        public async Task<bool> RefreshErrors(CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.Limit] = 1000
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ErrorInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorInfoList} not found in response.");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
+            if(!CheckJobResultAndLogIfError(data, parms))
+                return false;
+
+            if(!HasRequiredParam(data, JsonKeys.ErrorInfoList))
+                return false;
 
             var options = new JsonSerializerOptions
             {
@@ -1045,17 +1045,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (errorInfos is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
-                return;
+                return false;
             }
 
-            await _viewModel.ClearAllErrorsAsync();
+            await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
                 Error error = new();
                 CommStruct.ConversionHelper.CopyToError(errorInfo, error);
                 error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-                await _viewModel.AddErrorAsync(error);
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
+            return true;
         }
 
         // Signals
