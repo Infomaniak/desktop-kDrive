@@ -12,6 +12,14 @@ import Foundation
 public enum KDriveLocalizable {
   /// loco:698053a65bddc8df790d0212
   public static let informationBlockSynchroErrorSubtitle = KDriveLocalizable.tr("Localizable", " informationBlockSynchroErrorSubtitle", fallback: "Some files could not be synchronized.")
+  /// loco:6981b68c6d1056609e079525
+  public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
+  /// loco:6981b68b50a70d64050197e2
+  public static let activityTitleInProgress = KDriveLocalizable.tr("Localizable", "activityTitleInProgress", fallback: "Synchronization in progress")
+  /// loco:6981b68a251c4a36c1078274
+  public static let activityTypeAllActivities = KDriveLocalizable.tr("Localizable", "activityTypeAllActivities", fallback: "All activities")
+  /// loco:6981b68a1e51fbe933040213
+  public static let activityTypeMyActivity = KDriveLocalizable.tr("Localizable", "activityTypeMyActivity", fallback: "My activity only")
   /// loco:696a483470f3b70399021c12
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012

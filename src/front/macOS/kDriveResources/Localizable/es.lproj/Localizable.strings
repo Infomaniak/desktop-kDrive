@@ -3,12 +3,24 @@
  * Project: kDrive Desktop
  * Locale: es, Spanish
  * Tagged: macOS
- * Exported by: Philippe Weidmann
- * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 03 Feb 2026 10:19:22 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "No se han podido sincronizar algunos archivos.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Actividades visibles";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activityTitleInProgress" = "Sincronización en curso";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activityTypeAllActivities" = "Todas las actividades";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activityTypeMyActivity" = "Solo mi actividad";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Añadir almacenamiento";
