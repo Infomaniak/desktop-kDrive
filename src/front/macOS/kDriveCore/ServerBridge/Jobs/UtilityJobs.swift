@@ -213,4 +213,13 @@ public struct UtilityJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func crash() async throws {
+        IKLogger.data.log("Query for crashing the application")
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CRASH, body: EmptyQuery())
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
