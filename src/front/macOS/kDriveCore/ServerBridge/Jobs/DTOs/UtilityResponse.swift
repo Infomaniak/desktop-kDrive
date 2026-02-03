@@ -44,3 +44,7 @@ struct UtilityIsPathValidForNewSyncQuery: Codable, Sendable {
 struct UtilityIsPathValidForNewSyncResponse: Codable, Sendable {
     let isValid: Bool
 }
+
+struct UtilityHasSystemLaunchOnStartupResponse: Codable, Sendable {
+    let enabled: Bool
+}
