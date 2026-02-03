@@ -81,4 +81,12 @@ public struct UtilityJobs: Sendable {
         return decodedMessage.body.isValid
     }
 
+    public func activateLoadInfo() async throws {
+        IKLogger.data.log("Query for activating load info display")
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_ACTIVATELOADINFO, body: EmptyQuery())
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
