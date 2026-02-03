@@ -936,7 +936,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
                 return false;
             }
-            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
+            CommStruct.ConversionHelper.CopyToSettings(parametersInfo, _viewModel.Settings);
             return true;
         }
 
