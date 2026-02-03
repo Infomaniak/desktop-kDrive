@@ -115,4 +115,21 @@ public struct UtilityJobs: Sendable {
 
         return decodedMessage.body.enabled
     }
+
+    public func hasLaunchOnStartup() async throws -> Bool {
+        IKLogger.data.log("Query for launch on startup status")
+        let request = await RequestMessage<EmptyQuery>(
+            num: RequestNum.UTILITY_HASLAUNCHONSTARTUP,
+            body: EmptyQuery()
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UtilityHasLaunchOnStartupResponse>.self
+        )
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.enabled
+    }
 }
