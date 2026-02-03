@@ -30,7 +30,7 @@ namespace KDC {
 class AccountInfo {
     public:
         AccountInfo(int dbId, int userDbId);
-        AccountInfo();
+        AccountInfo() = default;
 
         inline void setDbId(int dbId) { _dbId = dbId; }
         inline int dbId() const { return _dbId; }
@@ -49,9 +49,9 @@ class AccountInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list);
 
     private:
-        int _dbId;
-        int _userDbId;
-        int _accountId{-1};
+        int _dbId{0};
+        int _userDbId{0};
+        int _accountId{-1}; // Ignored by the old client-server communication
 };
 
 } // namespace KDC
