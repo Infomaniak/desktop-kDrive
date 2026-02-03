@@ -547,7 +547,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, QList<DriveAvailab
             availableDriveInfo.setUserDbId(user.dbId());
         }
 
-        list.push_back(availableDriveInfo);
+        (void) list.push_back(availableDriveInfo);
     }
 
     return ExitCode::Ok;

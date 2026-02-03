@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-Account::Account(int dbId, int accountId, int userDbId, const std::string &name) :
+Account::Account(const int dbId, const int accountId, const int userDbId, const std::string &name) :
     _dbId(dbId),
     _accountId(accountId),
     _userDbId(userDbId),

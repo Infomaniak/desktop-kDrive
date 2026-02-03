@@ -34,11 +34,11 @@ class DriveAvailableInfo {
                            const QString &color);
 
         [[nodiscard]] int driveId() const { return _driveId; }
-        void setDriveId(int driveId) { _driveId = driveId; }
+        void setDriveId(const int driveId) { _driveId = driveId; }
         [[nodiscard]] int userId() const { return _userId; }
-        void setUserId(int userId) { _userId = userId; }
+        void setUserId(const int userId) { _userId = userId; }
         [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(int accountId) { _accountId = accountId; }
+        void setAccountId(const int accountId) { _accountId = accountId; }
         [[nodiscard]] const QString &accountName() const { return _accountName; }
         void setAccountName(const QString &accountName) { _accountName = accountName; }
         [[nodiscard]] const QString &name() const { return _name; }
@@ -46,7 +46,7 @@ class DriveAvailableInfo {
         [[nodiscard]] const QColor &color() const { return _color; }
         void setColor(const QColor &color) { _color = color; }
         [[nodiscard]] int userDbId() const { return _userDbId; }
-        void setUserDbId(int userDbId) { _userDbId = userDbId; }
+        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);

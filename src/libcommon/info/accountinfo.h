@@ -33,11 +33,11 @@ class AccountInfo {
         AccountInfo(int dbId, int userDbId);
 
         [[nodiscard]] int dbId() const { return _dbId; }
-        void setDbId(int dbId) { _dbId = dbId; }
+        void setDbId(const int dbId) { _dbId = dbId; }
         [[nodiscard]] int userDbId() const { return _userDbId; }
-        void setUserDbId(int userDbId) { _userDbId = userDbId; }
+        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
         [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(int accountId) { _accountId = accountId; }
+        void setAccountId(const int accountId) { _accountId = accountId; }
         [[nodiscard]] std::string name() const { return _name; }
         void setName(const std::string &name) { _name = name; }
 

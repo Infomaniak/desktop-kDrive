@@ -29,8 +29,8 @@ static const auto driveAvailableInfoUserDbId = "userDbId";
 
 namespace KDC {
 
-DriveAvailableInfo::DriveAvailableInfo(int driveId, int userId, int accountId, const QString &accountName, const QString &name,
-                                       const QString &color) :
+DriveAvailableInfo::DriveAvailableInfo(const int driveId, const int userId, const int accountId, const QString &accountName,
+                                       const QString &name, const QString &color) :
     _driveId(driveId),
     _userId(userId),
     _accountId(accountId),
