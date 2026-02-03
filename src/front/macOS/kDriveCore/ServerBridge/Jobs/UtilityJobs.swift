@@ -222,4 +222,13 @@ public struct UtilityJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func quit() async throws {
+        IKLogger.data.log("Query for quitting")
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_QUIT, body: EmptyQuery())
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
