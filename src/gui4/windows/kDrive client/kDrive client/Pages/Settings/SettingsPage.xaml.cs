@@ -27,6 +27,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Settings
@@ -99,25 +100,28 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
             User? user = (sender as FrameworkElement)?.DataContext as User;
-            if (user is not null)
+            if (user is null)
             {
-                await user.RefreshAvailableDrives();
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
             }
-            else
+
+            if (!await user.RefreshAvailableDrives(CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Warning, "Unable to find the user from DataContext. Refreshing for all users.");
-                await RefreshAvailableDrivesForAllUsers();
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+                Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
         }
 
         private async Task RefreshAvailableDrivesForAllUsers()
         {
-            List<Task> loadAvailableDrivesTasks = new List<Task>();
+            List<Task<bool>> loadAvailableDrivesTasks = new List<Task<bool>>();
             foreach (var user in ViewModel.Users)
             {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
+                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
+            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)

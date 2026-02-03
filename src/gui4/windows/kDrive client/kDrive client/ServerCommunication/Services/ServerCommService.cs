@@ -306,30 +306,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken)
+        public async Task<bool> RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.UserDbId] = userDbId
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_AVAILABLEDRIVES, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.DriveAvailableInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveAvailableInfoList} not found in response.");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_AVAILABLEDRIVES, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.DriveAvailableInfoList))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new ColorJsonConverter());
-            List<DriveAvailableInfo> driveAvailableInfoList = data.Params[JsonKeys.DriveAvailableInfoList].Deserialize<List<DriveAvailableInfo>>(options) ?? new List<DriveAvailableInfo>();
+            List<DriveAvailableInfo>? driveAvailableInfoList = data.Params[JsonKeys.DriveAvailableInfoList].Deserialize<List<DriveAvailableInfo>>(options);
+            if (driveAvailableInfoList is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to deserialize DriveAvailableInfoList.");
+                return false;
+            }
+
+
             User? user = _viewModel.Users.FirstOrDefault<User>(u => u.DbId == userDbId);
             if (user is null)
             {
-                Logger.Log(Logger.Level.Error, $"User not found for DriveAvailable with dbID {userDbId}.");
-                return;
+                Logger.Log(Logger.Level.Error, $"User not found with dbID {userDbId}.");
+                return false;
             }
 
             // We don't clear and re-add all items to avoid UI flickering
@@ -344,7 +352,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     var drive = new DriveAvailable();
                     CommStruct.ConversionHelper.CopyToDriveAvailable(info, drive);
-                    await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); });
+                    await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -365,7 +373,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                                 {
                                     user.DrivesAvailable.Remove(existingDrive);
                                     user.DrivesAvailable.Add(tempDrive);
-                                });
+                                }).ConfigureAwait(false);
                                 break;
                             }
                         }
@@ -382,11 +390,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     var driveToRemove = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == existingId);
                     if (driveToRemove != null)
                     {
-                        await Utility.RunOnUIThread(() => { user.DrivesAvailable.Remove(driveToRemove); });
+                        await Utility.RunOnUIThread(() => { user.DrivesAvailable.Remove(driveToRemove); }).ConfigureAwait(false);
                     }
                 }
             }
-
+            return true;
         }
 
         public async Task<bool> RefreshSyncs(CancellationToken cancellationToken)
@@ -1029,10 +1037,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Limit] = 1000
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
-            if(!CheckJobResultAndLogIfError(data, parms))
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return false;
 
-            if(!HasRequiredParam(data, JsonKeys.ErrorInfoList))
+            if (!HasRequiredParam(data, JsonKeys.ErrorInfoList))
                 return false;
 
             var options = new JsonSerializerOptions

@@ -93,5 +93,12 @@ namespace Infomaniak.kDrive.ViewModels
             Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
             return true;
         }
+
+        public void Reset()
+        {
+            SelectedUser = null;
+            NewSyncs.Clear();
+            CurrentOAuth2State = OAuth2State.None;
+        }
     }
 }

@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Drive-related requests
         Task<bool> RefreshDrives(CancellationToken cancellationToken);
-        Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
 
         // Sync-related requests
         Task<bool> RefreshSyncs(CancellationToken cancellationToken);
