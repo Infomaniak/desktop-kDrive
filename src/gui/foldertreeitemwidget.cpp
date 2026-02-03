@@ -108,8 +108,8 @@ void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
 void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvailableInfo &driveInfo) {
     _userDbId = userDbId;
     _driveId = driveInfo.driveId();
-    _driveName = QString::fromStdString(driveInfo.name());
-    _driveColor = QString::fromStdString(driveInfo.color());
+    _driveName = driveInfo.name();
+    _driveColor = driveInfo.color();
 }
 
 void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {

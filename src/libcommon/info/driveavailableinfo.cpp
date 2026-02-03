@@ -29,8 +29,8 @@ static const auto driveAvailableInfoUserDbId = "userDbId";
 
 namespace KDC {
 
-DriveAvailableInfo::DriveAvailableInfo(int driveId, int userId, int accountId, const std::string &accountName,
-                                       const std::string &name, const std::string &color) :
+DriveAvailableInfo::DriveAvailableInfo(int driveId, int userId, int accountId, const QString &accountName, const QString &name,
+                                       const QString &color) :
     _driveId(driveId),
     _userId(userId),
     _accountId(accountId),
@@ -43,9 +43,9 @@ void DriveAvailableInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoDriveId, _driveId);
     CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoUserId, _userId);
     CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoAccountId, _accountId);
-    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoAccountName, _accountName);
-    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoName, _name);
-    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoColor, _color);
+    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoAccountName, CommonUtility::qStr2CommString(_accountName));
+    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoColor, CommonUtility::qStr2CommString(_color.name()));
     CommonUtility::writeValueToStruct(dstruct, driveAvailableInfoUserDbId, _userDbId);
 }
 
@@ -56,31 +56,24 @@ void DriveAvailableInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString str;
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoAccountName, str);
-    _accountName = CommonUtility::commString2Str(str);
+    _accountName = CommonUtility::commString2QStr(str);
 
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoName, str);
-    _name = CommonUtility::commString2Str(str);
+    _name = CommonUtility::commString2QStr(str);
 
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoColor, str);
-    _color = CommonUtility::commString2Str(str);
+    _color = CommonUtility::commString2QStr(str);
 
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoUserDbId, _userDbId);
 }
 
 QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info) {
-    QString accountName;
-    QString driveName;
-    QString driveColor;
-    in >> info._driveId >> info._userId >> info._accountId >> accountName >> driveName >> driveColor >> info._userDbId;
-    info.setAccountName(accountName.toStdString());
-    info.setName(driveName.toStdString());
-    info.setColor(driveColor.toStdString());
+    in >> info._driveId >> info._userId >> info._accountId >> info._accountName >> info._name >> info._color >> info._userDbId;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info) {
-    out << info._driveId << info._userId << info._accountId << QString::fromStdString(info._accountName)
-        << QString::fromStdString(info._name) << QColor(QString::fromStdString(info._color)) << info._userDbId;
+    out << info._driveId << info._userId << info._accountId << info._accountName << info._name << info._color << info._userDbId;
     return out;
 }
 

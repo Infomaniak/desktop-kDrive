@@ -79,7 +79,7 @@ struct GuiRequests {
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                      QString &errorDescr);
-        static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(int userDbId, QList<DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId);

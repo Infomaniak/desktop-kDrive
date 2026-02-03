@@ -1226,7 +1226,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
 
-            QHash<int, DriveAvailableInfo> list;
+            QList<DriveAvailableInfo> list;
             ExitCode exitCode = ServerRequests::getUserAvailableDrives(userDbId, list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
@@ -3740,8 +3740,8 @@ ExitInfo AppServer::updateAllUsersInfo() {
         if (accounts.empty()) {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
-            ServerRequests::deleteUser(user.dbId());
-            sendUserRemoved(user.dbId());
+            // ServerRequests::deleteUser(user.dbId());
+            // sendUserRemoved(user.dbId());
             continue;
         }
         if (user.keychainKey().empty()) {

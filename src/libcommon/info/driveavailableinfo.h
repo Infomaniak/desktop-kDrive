@@ -30,8 +30,8 @@ namespace KDC {
 class DriveAvailableInfo {
     public:
         DriveAvailableInfo() = default;
-        DriveAvailableInfo(int driveId, int userId, int accountId, const std::string &accountName, const std::string &name,
-                           const std::string &color);
+        DriveAvailableInfo(int driveId, int userId, int accountId, const QString &accountName, const QString &name,
+                           const QString &color);
 
         [[nodiscard]] int driveId() const { return _driveId; }
         void setDriveId(int driveId) { _driveId = driveId; }
@@ -39,12 +39,12 @@ class DriveAvailableInfo {
         void setUserId(int userId) { _userId = userId; }
         [[nodiscard]] int accountId() const { return _accountId; }
         void setAccountId(int accountId) { _accountId = accountId; }
-        [[nodiscard]] const std::string &accountName() const { return _accountName; }
-        void setAccountName(const std::string &accountName) { _accountName = accountName; }
-        [[nodiscard]] const std::string &name() const { return _name; }
-        void setName(const std::string &name) { _name = name; }
-        [[nodiscard]] const std::string &color() const { return _color; }
-        void setColor(const std::string &color) { _color = color; }
+        [[nodiscard]] const QString &accountName() const { return _accountName; }
+        void setAccountName(const QString &accountName) { _accountName = accountName; }
+        [[nodiscard]] const QString &name() const { return _name; }
+        void setName(const QString &name) { _name = name; }
+        [[nodiscard]] const QColor &color() const { return _color; }
+        void setColor(const QColor &color) { _color = color; }
         [[nodiscard]] int userDbId() const { return _userDbId; }
         void setUserDbId(int userDbId) { _userDbId = userDbId; }
 
@@ -61,9 +61,9 @@ class DriveAvailableInfo {
         int _driveId{0};
         int _userId{0};
         int _accountId{0};
-        std::string _accountName;
-        std::string _name;
-        std::string _color;
+        QString _accountName;
+        QString _name;
+        QColor _color;
 
         int _userDbId{0};
 };

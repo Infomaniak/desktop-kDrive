@@ -518,7 +518,7 @@ ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, QList<DriveAvailableInfo> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
@@ -547,7 +547,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
             availableDriveInfo.setUserDbId(user.dbId());
         }
 
-        list.insert(availableDriveInfo.driveId(), availableDriveInfo);
+        list.push_back(availableDriveInfo);
     }
 
     return ExitCode::Ok;
