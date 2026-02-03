@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 03 Feb 2026 10:19:22 +0100
+ * Exported at: Tue, 03 Feb 2026 11:19:34 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -13,8 +13,14 @@
 /* loco:6981b68c6d1056609e079525 */
 "accessibilityActivityTypePicker" = "Attività visibili";
 
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activityTitleIdle" = "Sincronizzazione completata";
+
 /* loco:6981b68b50a70d64050197e2 */
 "activityTitleInProgress" = "Sincronizzazione in corso";
+
+/* loco:6981cb9319de989ec9033882 */
+"activityTitleNoActivity" = "Nessuna attività recente";
 
 /* loco:6981b68a251c4a36c1078274 */
 "activityTypeAllActivities" = "Tutte le attività";

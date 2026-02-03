@@ -14,8 +14,12 @@ public enum KDriveLocalizable {
   public static let informationBlockSynchroErrorSubtitle = KDriveLocalizable.tr("Localizable", " informationBlockSynchroErrorSubtitle", fallback: "Some files could not be synchronized.")
   /// loco:6981b68c6d1056609e079525
   public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
+  /// loco:6981cb92c70239c9ed0d45a3
+  public static let activityTitleIdle = KDriveLocalizable.tr("Localizable", "activityTitleIdle", fallback: "Synchronization complete")
   /// loco:6981b68b50a70d64050197e2
   public static let activityTitleInProgress = KDriveLocalizable.tr("Localizable", "activityTitleInProgress", fallback: "Synchronization in progress")
+  /// loco:6981cb9319de989ec9033882
+  public static let activityTitleNoActivity = KDriveLocalizable.tr("Localizable", "activityTitleNoActivity", fallback: "No recent activity")
   /// loco:6981b68a251c4a36c1078274
   public static let activityTypeAllActivities = KDriveLocalizable.tr("Localizable", "activityTypeAllActivities", fallback: "All activities")
   /// loco:6981b68a1e51fbe933040213
