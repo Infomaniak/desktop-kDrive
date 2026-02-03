@@ -320,7 +320,7 @@ namespace Infomaniak.kDrive
         {
             Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
         }
-        public static void ShowTeachingTipFromxUid(string xuid, Control? target = null)
+        public static void ShowTeachingTipFromxUid(string xuid)
         {
             if (App.Current as App is not App app || app.CurrentWindow is null)
             {
@@ -342,11 +342,6 @@ namespace Infomaniak.kDrive
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };
-
-            if (target != null)
-            {
-                teachingTip.Target = target;
-            }
 
             // Attach to visual tree
             var rootPanel = (xamlRoot.Content as FrameworkElement);

@@ -619,7 +619,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return bestMode == VirtualFileMode.Win;
         }
 
-        public async Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
         {
             DbId driveDbId = -1;
             if (drive is Drive inDbDrive)
@@ -631,13 +631,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken);
-
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.GoodPath) || !data.Params.ContainsKey(JsonKeys.ErrorMessage))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.GoodPath} or {JsonKeys.Path} not found in response: {data.Params}");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken).ConfigureAwait(false);
+            if(!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if(!HasRequiredParam(data, JsonKeys.GoodPath) || !HasRequiredParam(data, JsonKeys.ErrorMessage))
+                return null;
 
             var options = new JsonSerializerOptions
             {
@@ -645,9 +644,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
 
-            GetGoodPathResult result = new();
-            result.GoodPath = data.Params[JsonKeys.GoodPath].Deserialize<string>(options) ?? "";
-            result.ErrorMessage = data.Params[JsonKeys.ErrorMessage].Deserialize<string>(options) ?? "";
+            string? result;
+            result = data.Params[JsonKeys.GoodPath].Deserialize<string>(options);
+
+            if(result is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.GoodPath} from response: {data.Params}");
+                return null;
+            }
+
             return result;
         }
         public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
