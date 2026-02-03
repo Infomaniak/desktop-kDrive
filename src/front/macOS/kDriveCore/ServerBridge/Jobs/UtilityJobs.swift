@@ -182,4 +182,20 @@ public struct UtilityJobs: Sendable {
 
         return decodedMessage.body.value
     }
+
+    public func sendLogToSupport(includeArchivedLogs: Bool) async throws {
+        IKLogger.data.log("Query for sending log to support")
+        let query = UtilitySendLogToSupportQuery(includeArchivedLogs: includeArchivedLogs)
+        let request = await RequestMessage<UtilitySendLogToSupportQuery>(
+            num: RequestNum.UTILITY_SEND_LOG_TO_SUPPORT,
+            body: query
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<EmptyResponse>.self
+        )
+
+        try decodedMessage.validate()
+    }
 }

@@ -69,3 +69,7 @@ struct UtilityGetAppStateQuery: Codable, Sendable {
 struct UtilityGetAppStateResponse: Codable, Sendable {
     let value: Int32
 }
+
+struct UtilitySendLogToSupportQuery: Codable, Sendable {
+    let includeArchivedLogs: Bool
+}
