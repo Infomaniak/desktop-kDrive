@@ -499,7 +499,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
                 if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
                 {
-                    Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
+                    Logger.Log(Logger.Level.Warning, $"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.");
                     return false;
                 }
             }
@@ -561,7 +561,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
             {
                 sync.SyncStatus = previousStatus;
@@ -586,7 +586,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken).ConfigureAwait(false);
             if(!CheckJobResultAndLogIfError(data, parms))
             {
                 sync.SyncStatus = previousStatus;
@@ -602,14 +602,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Path] = Utility.ToBase64String(absoluteLocalPath)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.BestMode))
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken).ConfigureAwait(false);
+            if(!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if(!HasRequiredParam(data, JsonKeys.BestMode))
+                return null;
+
+            VirtualFileMode? bestMode = (VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>());
+            if (!bestMode.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.BestMode} not found in response.");
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.BestMode} from response: {data.Params}");
                 return null;
             }
 
-            return ((VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>()) ?? VirtualFileMode.Off) == VirtualFileMode.Win;
+            return bestMode == VirtualFileMode.Win;
         }
 
         public async Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
