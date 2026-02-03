@@ -63,8 +63,8 @@ struct ActivityView: View {
             } else {
                 IKContentUnavailableView(
                     image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
-                    title: "Aucune activité récente",
-                    subtitle: "Vos fichiers sont accessibles et synchronisés."
+                    title: KDriveLocalizable.unavailableContentNoActivityTitle,
+                    subtitle: KDriveLocalizable.unavailableContentNoActivityDescription
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }

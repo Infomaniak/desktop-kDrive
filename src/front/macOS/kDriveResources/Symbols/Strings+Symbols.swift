@@ -234,6 +234,10 @@ public enum KDriveLocalizable {
   public static let tabTitleHome = KDriveLocalizable.tr("Localizable", "tabTitleHome", fallback: "Home")
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
+  /// loco:6981e8f0b024a7b4e00f7262
+  public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
+  /// loco:6981e8f0f994e5f7bc040692
+  public static let unavailableContentNoActivityTitle = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityTitle", fallback: "No recent activity")
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

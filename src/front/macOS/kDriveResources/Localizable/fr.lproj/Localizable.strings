@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 03 Feb 2026 11:19:34 +0100
+ * Exported at: Tue, 03 Feb 2026 13:24:54 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -327,3 +327,9 @@
 
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Stockage";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Vos fichiers sont accessibles et synchronisés.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Aucune activité récente";
