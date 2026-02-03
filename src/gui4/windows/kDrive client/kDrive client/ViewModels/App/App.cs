@@ -245,11 +245,36 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    await serverCommService.RefreshAccounts(CancellationToken.None);
-                    await serverCommService.RefreshDrives(CancellationToken.None);
-                    await serverCommService.RefreshSyncs(CancellationToken.None);
-                    await serverCommService.RefreshSettings(CancellationToken.None);
-                    await serverCommService.RefreshErrors(CancellationToken.None);
+                    if (!await serverCommService.RefreshAccounts(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh accounts during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshDrives(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh drives during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshSyncs(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh syncs during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshSettings(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh settings during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshErrors(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh errors during AppModel initialization.");
+                        return false;
+                    }
+
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
                     IsInitialized = true;
                     return true;
@@ -270,7 +295,7 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            if(!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
+            if (!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
             {
                 Logger.Log(Logger.Level.Error, $"Failed to disconnect user {userDbId}");
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -298,7 +323,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
-            if (appError != null)
+            if (appError is not null)
             {
                 await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
                 return;

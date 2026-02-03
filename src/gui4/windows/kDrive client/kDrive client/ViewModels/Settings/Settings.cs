@@ -133,10 +133,5 @@ namespace Infomaniak.kDrive.ViewModels
             PurgeOldLogs = enabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
-
-        public async Task Refresh()
-        {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshSettings(CancellationToken.None);
-        }
     }
 }
