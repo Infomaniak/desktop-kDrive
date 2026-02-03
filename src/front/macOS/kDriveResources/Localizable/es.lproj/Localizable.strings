@@ -4,8 +4,11 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Philippe Weidmann
- * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
+ * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
  */
+
+/* loco:698053a65bddc8df790d0212 */
+" informationBlockSynchroErrorSubtitle" = "No se han podido sincronizar algunos archivos.";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Añadir almacenamiento";
@@ -24,6 +27,9 @@
 
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Terminar la instalación";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Corregir errores";
 
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "He activado kDrive";
@@ -101,7 +107,7 @@
 "driveMaintenanceErrorTitle" = "Mantenimiento en curso";
 
 /* loco:6979e3dfba525501090fbfa8 */
-"driveWakingUpErrorDescription" = "El kDrive se está despertando... puede tardar unos momentos.";
+"driveWakingUpErrorDescription" = "El kDrive se está despertando… puede tardar unos momentos.";
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Activación de kDrive en curso";
@@ -113,7 +119,7 @@
 "folderShares" = "Comparticiones";
 
 /* loco:695e5889bc7544361b08b834 */
-"folderTrash" = "Basura";
+"folderTrash" = "Papelera";
 
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Hola %s, %s";
@@ -126,12 +132,6 @@
 
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Tu kDrive está lleno";
-
-/* loco:696a4fcf3932da71d1075552 */
-"informationBlockSynchroErrorTitle" = "";
-
-/* loco:696a4fdd3932da71d1075554 */
-"informationBlockSynchroErrorTitle-plural" = "";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activar kDrive.app";
@@ -176,13 +176,13 @@
 "instructionRestartIfNecessary" = "Reinicie la aplicación si es necesario";
 
 /* loco:693050ed6a0836d25507da22 */
-"onboardingAuthorizationExtensionDescription" = "Autorizar kDrive en los ajustes de macOS :";
+"onboardingAuthorizationExtensionDescription" = "Autorizar kDrive en los ajustes de macOS:";
 
 /* loco:6930509e14b396d6fc04b0f2 */
 "onboardingAuthorizationExtensionTitle" = "Activar kDrive en tu Mac";
 
 /* loco:6930510648920a67910d1094 */
-"onboardingAuthorizationFullDiskDescription" = "Para completar la instalación, debes autorizar a kDrive a acceder a tu :";
+"onboardingAuthorizationFullDiskDescription" = "Para completar la instalación, debes autorizar a kDrive a acceder a tu:";
 
 /* loco:693050bab2a2c1990a0d2f04 */
 "onboardingAuthorizationFullDiskTitle" = "Autorizar el acceso a los expedientes";

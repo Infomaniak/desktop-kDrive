@@ -47,15 +47,23 @@ namespace Infomaniak.kDrive.OnBoarding
                 // TODO: Go directly to Drive selection
             }
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
-            LottiePlayer.ActualThemeChanged += (s, e) =>
-            {
-                UpdateLottieSource(_lottieRessourceKey);
-            };
+            LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
+            UpdateLottieSource(_lottieRessourceKey);
+            Closed += OnBoardingWindow_Closed;
+        }
+
+        private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
+        {
+            LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
+        }
+
+        private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)
+        {
             UpdateLottieSource(_lottieRessourceKey);
         }
 
         public void UpdateLottieSource(string ressourceKey, int? height = null)
-            {
+        {
             App.Current.Resources.TryGetValue(ressourceKey, out var sourceObj);
             if (sourceObj is string source)
             {

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+ Loco ios export: Xcode Stringsdict (legacy)
+ Project: kDrive Desktop
+ Locale: de, German
+ Tagged: macOS-stringsdict
+ Exported by: Philippe Weidmann
+ Exported at: Mon, 02 Feb 2026 14:09:58 +0100
+-->
+<plist version="1.0">
+  <dict>
+    <key>informationBlockSynchroErrorTitle</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@value@</string>
+      <key>value</key>
+      <dict>
+        <key>NSStringFormatSpecTypeKey</key>
+        <string>NSStringPluralRuleType</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>d</string>
+        <key>one</key>
+        <string>Sie haben **einen Synchronisationsfehler**</string>
+        <key>other</key>
+        <string>Sie haben **%lld Synchronisierungsfehler**</string>
+      </dict>
+    </dict>
+  </dict>
+</plist>

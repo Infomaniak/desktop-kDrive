@@ -632,19 +632,6 @@ ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     return exitCode;
 }
 
-ExitCode GuiRequests::propagateExcludeListChange() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, {}, results, COMM_LONG_TIMEOUT)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {}, results)) {
@@ -954,14 +941,13 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
     return exitCode;
 }
 
-ExitCode GuiRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << def;
     paramsStream << templateList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_SETUSERLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 

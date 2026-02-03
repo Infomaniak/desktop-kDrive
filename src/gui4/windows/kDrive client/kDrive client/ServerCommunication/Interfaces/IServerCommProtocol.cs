@@ -54,5 +54,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         }
 
         event EventHandler<SignalEventArgs> SignalReceived;
+        event EventHandler ConnectionLost;
     }
 }

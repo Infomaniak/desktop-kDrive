@@ -87,8 +87,7 @@ enum class RequestNum {
     ERROR_RESOLVE_UNSUPPORTED_CHAR,
     EXCLTEMPL_GETEXCLUDED,
     EXCLTEMPL_GETLIST,
-    EXCLTEMPL_SETLIST,
-    EXCLTEMPL_PROPAGATE_CHANGE,
+    EXCLTEMPL_SETUSERLIST,
 #if defined(KD_MACOS)
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
@@ -201,10 +200,8 @@ inline std::string toString(RequestNum e) {
             return "EXCLTEMPL_GETEXCLUDED";
         case RequestNum::EXCLTEMPL_GETLIST:
             return "EXCLTEMPL_GETLIST";
-        case RequestNum::EXCLTEMPL_SETLIST:
-            return "EXCLTEMPL_SETLIST";
-        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE:
-            return "EXCLTEMPL_PROPAGATE_CHANGE";
+        case RequestNum::EXCLTEMPL_SETUSERLIST:
+            return "EXCLTEMPL_SETUSERLIST";
 #if defined(KD_MACOS)
         case RequestNum::EXCLAPP_GETLIST:
             return "EXCLAPP_GETLIST";

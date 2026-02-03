@@ -333,7 +333,6 @@ void TestParmsDb::testExclusionTemplate() {
     CPPUNIT_ASSERT(exclusionTemplateList[0].templ() == exclusionTemplate1.templ());
     CPPUNIT_ASSERT(exclusionTemplateList[0].warning() == exclusionTemplate1.warning());
     CPPUNIT_ASSERT(exclusionTemplateList[0].def() == exclusionTemplate1.def());
-    CPPUNIT_ASSERT(exclusionTemplateList[0].deleted() == exclusionTemplate1.deleted());
 
     exclusionTemplateList.clear();
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllExclusionTemplates(true, exclusionTemplateList));
@@ -343,7 +342,7 @@ void TestParmsDb::testExclusionTemplate() {
 }
 
 void TestParmsDb::testUpdateExclusionTemplates() {
-    ExclusionTemplate exclusionTemplate1("template 1", false, true, false); // extra default template
+    ExclusionTemplate exclusionTemplate1("template 1", false, true); // extra default template
     bool constraintError = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->insertExclusionTemplate(exclusionTemplate1, constraintError));
 

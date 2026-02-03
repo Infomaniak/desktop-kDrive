@@ -338,18 +338,17 @@
     "CREATE TABLE IF NOT EXISTS exclusion_template(" \
     "template TEXT PRIMARY KEY,"                     \
     "warning INTEGER,"                               \
-    "def INTEGER,"                                   \
-    "deleted INTEGER);"
+    "def INTEGER);"
 
 #define INSERT_EXCLUSION_TEMPLATE_REQUEST_ID "insert_exclusion_template"
-#define INSERT_EXCLUSION_TEMPLATE_REQUEST                               \
-    "INSERT INTO exclusion_template (template, warning, def, deleted) " \
-    "VALUES (?1, ?2, ?3, ?4);"
+#define INSERT_EXCLUSION_TEMPLATE_REQUEST                      \
+    "INSERT INTO exclusion_template (template, warning, def) " \
+    "VALUES (?1, ?2, ?3);"
 
 #define UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID "update_exclusion_template"
-#define UPDATE_EXCLUSION_TEMPLATE_REQUEST                           \
-    "UPDATE exclusion_template SET warning=?1, def=?2, deleted=?3 " \
-    "WHERE template=?4;"
+#define UPDATE_EXCLUSION_TEMPLATE_REQUEST               \
+    "UPDATE exclusion_template SET warning=?1, def=?2 " \
+    "WHERE template=?3;"
 
 #define DELETE_EXCLUSION_TEMPLATE_REQUEST_ID "delete_exclusion_template"
 #define DELETE_EXCLUSION_TEMPLATE_REQUEST \
@@ -362,11 +361,11 @@
     "WHERE def=?1;"
 
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID "select_exclusion_templates"
-#define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST "SELECT template, warning, def, deleted FROM exclusion_template;"
+#define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST "SELECT template, warning, def FROM exclusion_template;"
 
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID "select_exclusion_templates_by_def"
-#define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST             \
-    "SELECT template, warning, deleted FROM exclusion_template " \
+#define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST    \
+    "SELECT template, warning FROM exclusion_template " \
     "WHERE def=?1;"
 
 //
@@ -714,7 +713,7 @@ bool ParmsDb::updateExclusionTemplates() {
 
         // Add template as a DB default template.
         if (bool constraintError = false;
-            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true, false), constraintError)) {
+            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true), constraintError)) {
             LOG_WARN(_logger, "Error in insertExclusionTemplate");
             return false;
         }
@@ -2539,7 +2538,6 @@ bool ParmsDb::insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
     if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
         constraintError = (errId == SQLITE_CONSTRAINT);
@@ -2558,8 +2556,7 @@ bool ParmsDb::updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.warning()));
     LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.def()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.deleted()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.templ()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.templ()));
     if (!queryExec(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID);
         return false;
@@ -2618,11 +2615,8 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
         int def;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 2, def));
-        int deleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
-        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def),
-                                                  static_cast<bool>(deleted));
+        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
@@ -2650,11 +2644,8 @@ bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<Exc
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 0, templ));
         int warning;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, warning));
-        int deleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
 
-        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates,
-                                                  static_cast<bool>(deleted));
+        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
@@ -2684,7 +2675,6 @@ bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vect
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
         if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
             rollbackTransaction();

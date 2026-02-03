@@ -67,7 +67,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp
-    ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.h ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.h ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.cpp

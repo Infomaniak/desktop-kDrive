@@ -74,6 +74,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string WithPath = "withPath";
         static public string ParmsInfo = "parametersInfo";
 
+        static public string ExclusionTemplatesList = "exclusionTemplateList";
+        static public string Default = "default";
+
         static public string Limit = "limit";
         static public string IsValid = "isValid";
         static public string Path = "path";

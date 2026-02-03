@@ -36,7 +36,6 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
-            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 

@@ -10,6 +10,8 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 public enum KDriveLocalizable {
+  /// loco:698053a65bddc8df790d0212
+  public static let informationBlockSynchroErrorSubtitle = KDriveLocalizable.tr("Localizable", " informationBlockSynchroErrorSubtitle", fallback: "Some files could not be synchronized.")
   /// loco:696a483470f3b70399021c12
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
@@ -22,8 +24,10 @@ public enum KDriveLocalizable {
   public static let buttonCreateAccount = KDriveLocalizable.tr("Localizable", "buttonCreateAccount", fallback: "Create an account")
   /// loco:6930506962426d4ff30af473
   public static let buttonFinishInstallation = KDriveLocalizable.tr("Localizable", "buttonFinishInstallation", fallback: "Finish installation")
+  /// loco:698052d464e4b53cef0e9272
+  public static let buttonFixErrors = KDriveLocalizable.tr("Localizable", "buttonFixErrors", fallback: "Fix errors")
   /// loco:69304d546385bb9cfc03e524
-  public static let buttonKDriveIsActivated = KDriveLocalizable.tr("Localizable", "buttonKDriveIsActivated", fallback: "I've activated kDrive")
+  public static let buttonKDriveIsActivated = KDriveLocalizable.tr("Localizable", "buttonKDriveIsActivated", fallback: "I’ve activated kDrive")
   /// loco:695e58701870be5cd709d2a2
   public static let buttonKDriveOnline = KDriveLocalizable.tr("Localizable", "buttonKDriveOnline", fallback: "kDrive Online")
   /// loco:68e673b2042a15d8470f9452
@@ -94,13 +98,9 @@ public enum KDriveLocalizable {
   public static let informationBlockKDriveFullSubtitle = KDriveLocalizable.tr("Localizable", "informationBlockKDriveFullSubtitle", fallback: "Free up space or upgrade your plan to continue syncing your files.")
   /// loco:696a47fd5b6db1a9b1063182
   public static let informationBlockKDriveFullTitle = KDriveLocalizable.tr("Localizable", "informationBlockKDriveFullTitle", fallback: "Your kDrive is full")
-  /// loco:696a4fcf3932da71d1075552
-  public static func informationBlockSynchroErrorTitle(_ p1: UnsafePointer<CChar>) -> String {
-    return KDriveLocalizable.tr("Localizable", "informationBlockSynchroErrorTitle", p1, fallback: "You have %s synchronization error")
-  }
-  /// loco:696a4fdd3932da71d1075554
-  public static func informationBlockSynchroErrorTitlePlural(_ p1: UnsafePointer<CChar>) -> String {
-    return KDriveLocalizable.tr("Localizable", "informationBlockSynchroErrorTitle-plural", p1, fallback: "You have %s synchronization errors")
+  /// Plural format key: "%#@value@"
+  public static func informationBlockSynchroErrorTitle(_ p1: Int) -> String {
+    return KDriveLocalizable.tr("Localizable", "informationBlockSynchroErrorTitle", p1, fallback: "Plural format key: \"%#@value@\"")
   }
   /// loco:6930595e7664999c6a08c8a4
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")
@@ -131,17 +131,17 @@ public enum KDriveLocalizable {
   /// loco:69314d1a739c205c410aa087
   public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:693050ed6a0836d25507da22
-  public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings :")
+  public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings:")
   /// loco:6930509e14b396d6fc04b0f2
   public static let onboardingAuthorizationExtensionTitle = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionTitle", fallback: "Activate kDrive on your Mac")
   /// loco:6930510648920a67910d1094
-  public static let onboardingAuthorizationFullDiskDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationFullDiskDescription", fallback: "To complete the installation, you must authorize kDrive to access your :")
+  public static let onboardingAuthorizationFullDiskDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationFullDiskDescription", fallback: "To complete the installation, you must authorize kDrive to access your:")
   /// loco:693050bab2a2c1990a0d2f04
   public static let onboardingAuthorizationFullDiskTitle = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationFullDiskTitle", fallback: "Authorize access to files")
   /// loco:692406b0258f5599bf01d113
   public static let onboardingDriveSelectionNoDriveDescription = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveDescription", fallback: "Get started for free with my kSuite,\nor choose a package tailored to your needs.")
   /// loco:692405adc5c224ad2a07ff62
-  public static let onboardingDriveSelectionNoDriveTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveTitle", fallback: "You don't have a kDrive yet.")
+  public static let onboardingDriveSelectionNoDriveTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveTitle", fallback: "You don’t have a kDrive yet.")
   /// loco:69242dd4299cf487060f2143
   public static let onboardingDriveSelectionSelectTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionSelectTitle", fallback: "Select the kDrive to be synchronized on this computer:")
   /// loco:69271e987f61390c0e053442
@@ -155,7 +155,7 @@ public enum KDriveLocalizable {
   /// loco:68e8fa06c1b003290f0ccf42
   public static let onboardingLoginErrorTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginErrorTitle", fallback: "Connection error")
   /// loco:691deb66e28b84c78e034353
-  public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we'll load your account…")
+  public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we’ll load your account…")
   /// loco:691deb477145f10ab4052cd4
   public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser…")
   /// loco:68e673754d80559c460bdf02

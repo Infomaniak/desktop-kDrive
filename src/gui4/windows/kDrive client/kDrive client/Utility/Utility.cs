@@ -154,7 +154,14 @@ namespace Infomaniak.kDrive
             // Format the string if arguments are provided
             if (args != null && args.Length > 0)
             {
-                localizedString = string.Format(localizedString, args);
+                try
+                {
+                    localizedString = string.Format(localizedString, args);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}");
+                }
             }
 
             return localizedString;

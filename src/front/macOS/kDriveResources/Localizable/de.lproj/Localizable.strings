@@ -4,8 +4,11 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Philippe Weidmann
- * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
+ * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
  */
+
+/* loco:698053a65bddc8df790d0212 */
+" informationBlockSynchroErrorSubtitle" = "Einige Dateien konnten nicht synchronisiert werden.";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Speicher hinzufügen";
@@ -14,7 +17,7 @@
 "buttonAdvancedParameters" = "Erweiterte Einstellungen";
 
 /* loco:696a343b72b6dc32e00557a4 */
-"buttonClose" = "Schließen Sie";
+"buttonClose" = "Schliessen Sie";
 
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Weiter";
@@ -24,6 +27,9 @@
 
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Die Installation beenden";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Fehler beheben";
 
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "Ich habe kDrive aktiviert";
@@ -101,7 +107,7 @@
 "driveMaintenanceErrorTitle" = "Instandhaltung in Arbeit";
 
 /* loco:6979e3dfba525501090fbfa8 */
-"driveWakingUpErrorDescription" = "Das kDrive wird gerade aufgeweckt... das kann einen Moment dauern.";
+"driveWakingUpErrorDescription" = "Das kDrive wird gerade aufgeweckt… das kann einen Moment dauern.";
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Aufwecken des kDrive läuft";
@@ -126,12 +132,6 @@
 
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Ihr kDrive ist voll";
-
-/* loco:696a4fcf3932da71d1075552 */
-"informationBlockSynchroErrorTitle" = "";
-
-/* loco:696a4fdd3932da71d1075554 */
-"informationBlockSynchroErrorTitle-plural" = "";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivieren Sie kDrive.app";
@@ -176,13 +176,13 @@
 "instructionRestartIfNecessary" = "Starten Sie die Anwendung auf Wunsch neu";
 
 /* loco:693050ed6a0836d25507da22 */
-"onboardingAuthorizationExtensionDescription" = "Lassen Sie kDrive in den macOS-Einstellungen zu :";
+"onboardingAuthorizationExtensionDescription" = "Lassen Sie kDrive in den macOS-Einstellungen zu:";
 
 /* loco:6930509e14b396d6fc04b0f2 */
 "onboardingAuthorizationExtensionTitle" = "Aktivieren Sie kDrive auf Ihrem Mac";
 
 /* loco:6930510648920a67910d1094 */
-"onboardingAuthorizationFullDiskDescription" = "Um die Installation abzuschließen, müssen Sie kDrive den Zugriff auf Ihre Ordner erlauben :";
+"onboardingAuthorizationFullDiskDescription" = "Um die Installation abzuschliessen, müssen Sie kDrive den Zugriff auf Ihre Ordner erlauben:";
 
 /* loco:693050bab2a2c1990a0d2f04 */
 "onboardingAuthorizationFullDiskTitle" = "Erlauben Sie den Zugriff auf Ordner";
