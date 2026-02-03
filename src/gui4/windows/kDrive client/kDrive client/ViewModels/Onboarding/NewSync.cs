@@ -103,7 +103,7 @@ namespace Infomaniak.kDrive.ViewModels
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
             if (CanSupportOnlineMode is null)
-                Logger.Log(Logger.Level.Warning, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
+                Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
 
             SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
