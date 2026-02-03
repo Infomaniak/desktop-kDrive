@@ -494,17 +494,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
-            if (type == sync.SyncType)
-            {
-                Logger.Log(Logger.Level.Debug, $"Sync with DbId {syncDbId} is already of type {type}, no change needed.");
-                return true;
-            }
-
             if (type == SyncType.Online)
             {
                 // Ensure the path supports online mode
                 bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
-                if (!canSupportOnlineMode.HasValue || canSupportOnlineMode.Value == false)
+                if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
                 {
                     Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
                     return false;
@@ -518,11 +512,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken);
-            if (data?.Code != ExitCode.Ok)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to set sync type for sync with DbId {syncDbId}, exit code: {(ExitCode?)data?.Params?[JsonKeys.ExitCode]?.GetValue<int>()}");
+            if(!CheckJobResultAndLogIfError(data, parms))
                 return false;
-            }
 
             return true;
         }
