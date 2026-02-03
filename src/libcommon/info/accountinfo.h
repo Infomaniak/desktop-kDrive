@@ -50,14 +50,12 @@ class AccountInfo {
         friend QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list);
 
-        friend bool operator==(const AccountInfo &lhs, const AccountInfo &rhs) {
-            return (lhs.dbId() == rhs.dbId()) && (lhs.userDbId() == rhs.userDbId()) && (lhs.id() == rhs.id());
-        }
 
     private:
         int _dbId{0};
         int _userDbId{0};
         int _id{-1};
+        int _accountId{-1}; // Ignored by the old client-server communication
         std::string _name;
 };
 
