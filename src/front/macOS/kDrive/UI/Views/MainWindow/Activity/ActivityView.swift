@@ -35,6 +35,7 @@ struct ActivityView: View {
         VStack(spacing: AppPadding.padding32) {
             ActivityHeaderView(visibleActivities: $visibleActivities)
         }
+        .padding(AppPadding.page)
     }
 }
 
