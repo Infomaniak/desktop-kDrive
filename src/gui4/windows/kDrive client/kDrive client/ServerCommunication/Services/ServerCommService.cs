@@ -1385,7 +1385,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             SyncFileItem syncFileItem = new SyncFileItem(sync);
             CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
-            await Utility.RunOnUIThread(() => { sync.SyncActivities.Insert(0, syncFileItem); });
+            await Utility.RunOnUIThread(() => { 
+                sync.SyncActivities.Insert(0, syncFileItem);
+                // Ensure the list does not exceed 500 items
+                while (sync.SyncActivities.Count > 500)
+                {
+                    sync.SyncActivities.RemoveAt(sync.SyncActivities.Count - 1);
+                }
+
+            });
         }
 
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
