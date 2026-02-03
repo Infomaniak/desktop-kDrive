@@ -1950,11 +1950,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::EXCLTEMPL_SETLIST: {
-            bool def;
+        case RequestNum::EXCLTEMPL_SETUSERLIST: {
             QList<ExclusionTemplateInfo> list;
             QDataStream paramsStream(params);
-            paramsStream >> def;
             paramsStream >> list;
 
             std::vector<ExclusionTemplateInfo> exclusionTemplateList;
@@ -1962,11 +1960,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 exclusionTemplateList.push_back(templateInfo);
             });
 
-            if (!def) {
-                ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);
-            }
+            ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);
 
-            ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, exclusionTemplateList);
+
+            ExitCode exitCode = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1975,23 +1972,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             resultStream << toInt(exitCode);
-            break;
-        }
-        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
-            resultStream << ExitCode::Ok;
-
-            QTimer::singleShot(100, [=, this]() {
-                const std::scoped_lock lock(syncPalMapMutex);
-                for (const auto &[_, syncPal]: syncPalMap) {
-                    if (!syncPal) continue;
-                    unregisterSync(syncPal);
-                    if (const auto exitCode = syncPal->excludeListUpdated(); exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in SyncPal::excludeListUpdated: code=" << exitCode);
-                    }
-                    registerSync(syncPal);
-                }
-            });
-
             break;
         }
 #if defined(KD_MACOS)

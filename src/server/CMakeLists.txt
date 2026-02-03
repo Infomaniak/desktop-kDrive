@@ -91,8 +91,6 @@ set(server_SRCS
     comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
     comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
-    comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
-    
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
 

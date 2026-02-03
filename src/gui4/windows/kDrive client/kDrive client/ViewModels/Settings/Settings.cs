@@ -17,8 +17,8 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _logEnbaled = false;
         private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool _matomoEnabled;
-        private bool _sentryEnabled;
+        private bool _matomoEnabled = true;
+        private bool _sentryEnabled = true;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 
@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _proxyConfig, value);
         }
         public AppVersion AppVersion { get; } = AppVersion.Current();
-        
+
         public bool MatomoEnabled
         {
             get => _matomoEnabled;
@@ -132,11 +132,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             PurgeOldLogs = enabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
-        }
-
-        public async Task Refresh()
-        {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshSettings(CancellationToken.None);
         }
     }
 }

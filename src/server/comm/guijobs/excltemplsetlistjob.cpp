@@ -1,4 +1,4 @@
-/*ExclTemplSetListJob*/
+/*ExclTemplSetUserListJob*/
 
 #include "excltemplsetlistjob.h"
 #include "appserver.h"
@@ -7,21 +7,20 @@
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDefault = "default";
 static const auto inParamsExclusionTemplateList = "exclusionTemplateList";
 
 namespace KDC {
 
-ExclTemplSetListJob::ExclTemplSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+ExclTemplSetUserListJob::ExclTemplSetUserListJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                 const Poco::DynamicStruct &inParams,
+                                                 std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::EXCLTEMPL_SETLIST;
+    _requestNum = RequestNum::EXCLTEMPL_SETUSERLIST;
 }
 
-ExitInfo ExclTemplSetListJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in ExclTemplSetListJob::readParamValue: error=";
+ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in ExclTemplSetUserListJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDefault, _default);
         readParamValues(inParamsExclusionTemplateList, _exclusionTemplateList, dynamicVar2Struct<ExclusionTemplateInfo>);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
@@ -37,17 +36,27 @@ ExitInfo ExclTemplSetListJob::deserializeInputParms() {
 }
 
 
-ExitInfo ExclTemplSetListJob::process() {
-    if (!_default) {
-        ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
-    }
+ExitInfo ExclTemplSetUserListJob::process() {
+    ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
 
-    if (const auto exitCode = ServerRequests::setExclusionTemplateList(_default, _exclusionTemplateList);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
         addError(Error(ERR_ID, exitCode));
 
         return exitCode;
+    }
+
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto [_, syncPal]: _commManager->appServer().syncPalMap) {
+        if (!syncPal) continue;
+
+        _commManager->appServer().unregisterSync(syncPal);
+
+        if (const auto exitCode = syncPal->excludeListUpdated(); exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in SyncPal::excludeListUpdated: code=" << exitCode);
+        }
+
+        _commManager->appServer().registerSync(syncPal);
     }
 
     return ExitCode::Ok;

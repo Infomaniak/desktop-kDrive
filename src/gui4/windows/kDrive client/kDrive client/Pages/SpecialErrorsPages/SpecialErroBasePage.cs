@@ -34,7 +34,6 @@ namespace Infomaniak.kDrive.Pages
         public AppModel ViewModel => _viewModel;
         public SpecialErroBasePage(List<SyncErrorStates> syncErrorStates)
         {
-            Unloaded += (_, _) => DetachHandlers();
             _handledErrorStates = syncErrorStates;
         }
 

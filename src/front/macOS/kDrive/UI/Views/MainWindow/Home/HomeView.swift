@@ -60,6 +60,11 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
+            if let errorCount = mainViewModel.currentSynchro?.errorCount,
+               errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: errorCount)
+            }
+
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
                     SynchroStatusView(state: state, performAction: didTapStateButton)

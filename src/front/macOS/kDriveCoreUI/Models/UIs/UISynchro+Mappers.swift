@@ -18,6 +18,7 @@
 
 import Foundation
 import kDriveCore
+import OrderedCollections
 
 public extension UISynchro {
     init(synchro: Synchro) {
@@ -30,7 +31,8 @@ public extension UISynchro {
             dbId: Int(synchro.dbId),
             driveDbId: Int(synchro.driveDbId),
             localPath: URL(fileURLWithPath: synchro.localPath),
-            progressInfo: progressInfo
+            progressInfo: progressInfo,
+            errorCount: synchro.errors.count
         )
     }
 }

@@ -45,14 +45,17 @@ namespace Infomaniak.kDrive.ViewModels
                     Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
                     CurrentOAuth2State = OAuth2State.ProcessingResponse;
                     User? user = await _serverCommService.AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, cancelationToken);
-                    SelectedUser = user;
-                    CurrentOAuth2State = OAuth2State.Success;
+                    if (user is not null)
+                    {
+                        SelectedUser = user;
+                        CurrentOAuth2State = OAuth2State.Success;
+                        Logger.Log(Logger.Level.Info, $"User {user.Name} successfully connected.");
+                        return;
+                    }
                 }
-                else
-                {
-                    CurrentOAuth2State = OAuth2State.Error;
-                    Logger.Log(Logger.Level.Warning, "Authentication process failed");
-                }
+
+                CurrentOAuth2State = OAuth2State.Error;
+                Logger.Log(Logger.Level.Warning, "Authentication process failed");
             }
             catch (OperationCanceledException)
             {

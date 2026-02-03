@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             }
         }
-       
+
         public AppModel()
         {
             // Create a read-only observable collection of active drives across all users
@@ -188,7 +188,6 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-
         private void EnsureValidSelectedSync()
         {
             // If AllSync is empty, set SelectedSync to null
@@ -196,7 +195,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 Logger.Log(Logger.Level.Debug, "There are no syncs available, setting SelectedSync to null.");
                 SelectedSync = null;
-                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(SettingsPage));
+                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame.Navigate(typeof(SettingsPage));
             }
             else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {
@@ -227,7 +226,7 @@ namespace Infomaniak.kDrive.ViewModels
          *  This method is asynchronous and should be awaited.
          *  It loads the list of users and their properties/drives from the server.
          */
-        public async Task InitializeAsync()
+        public async Task<bool> InitializeAsync()
         {
 
             Logger.Log(Logger.Level.Info, "Initializing AppModel...");
@@ -235,20 +234,72 @@ namespace Infomaniak.kDrive.ViewModels
             SelectedSync = null;
 
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverCommService.RefreshUsers(new CancellationToken());
-            await serverCommService.RefreshAccounts(new CancellationToken());
-            await serverCommService.RefreshDrives(new CancellationToken());
-            await serverCommService.RefreshSyncs(new CancellationToken());
-            await serverCommService.RefreshSettings(new CancellationToken());
-            await serverCommService.RefreshErrors(new CancellationToken());
-            Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
-            IsInitialized = true;
+            try
+            {
+                // Allow up to 5 minutes for the initial load as it happen at computer startup wich can be slow
+                using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
+                {
+                    if (!await serverCommService.RefreshUsers(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh users during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshAccounts(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh accounts during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshDrives(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh drives during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshSyncs(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh syncs during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshSettings(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh settings during AppModel initialization.");
+                        return false;
+                    }
+
+                    if (!await serverCommService.RefreshErrors(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh errors during AppModel initialization.");
+                        return false;
+                    }
+
+                    Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
+                    IsInitialized = true;
+                    return true;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Error, "Operation canceled during AppModel initialization.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Exception during AppModel initialization: {ex}");
+                return false;
+            }
         }
 
         public async Task DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverCommService.RemoveUser(userDbId, CancellationToken.None);
+            if (!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to disconnect user {userDbId}");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
 
         public async Task AddErrorAsync(Error error)
@@ -272,7 +323,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
-            if (appError != null)
+            if (appError is not null)
             {
                 await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
                 return;

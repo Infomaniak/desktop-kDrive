@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             // Track Loaded state
             Loaded += OnLoaded;
-            Unloaded += (s, e) => _isLoaded = false;
+            Unloaded += OnUnloaded;
         }
 
         public static readonly DependencyProperty UriSourceProperty =
@@ -69,6 +69,11 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _isLoaded = true;
             ScheduleRefresh();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _isLoaded = false;
         }
 
         private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)

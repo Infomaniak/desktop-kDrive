@@ -17,7 +17,7 @@
  */
 
 #include "excludelistpropagator.h"
-#include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "libcommon/io/filestat.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -57,12 +57,19 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
     if (!isExcluded) return ExitCode::Ok;
 
     if (isWarning) {
-        const NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
-        const NodeType localNodeType =
-                localNodeId.empty() ? NodeType::Unknown : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
-        Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
-                    InconsistencyType::None, CancelType::ExcludedByTemplate);
-        _syncPal->addError(error);
+        IoError ioError = IoError::Success;
+        NodeId localNodeId;
+        ItemType localNodeType;
+        bool found = false;
+
+        if (IoHelper::getNodeId(entry.path(), localNodeId) && IoHelper::getItemType(entry.path(), localNodeType)) {
+            Error error(_syncPal->syncDbId(), localNodeId, NodeId(), localNodeType.nodeType, relativePath, ConflictType::None,
+                        InconsistencyType::None, CancelType::ExcludedByTemplate);
+            _syncPal->addError(error);
+        } else {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in SyncDb::getNodeId or SyncDb::getItemType for path="
+                                                                    << CommonUtility::formatSyncPath(relativePath));
+        }
     }
 
     // Find dbId from the entry path

@@ -56,22 +56,18 @@ ExclusionTemplateCache::ExclusionTemplateCache() {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
-    populateUndeletedExclusionTemplates();
+    populateExclusionTemplates();
 }
 
-void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
-    _undeletedExclusionTemplates.clear();
+void ExclusionTemplateCache::populateExclusionTemplates() {
+    _exclusionTemplates.clear();
 
     for (const auto &exclusionTemplate: _defExclusionTemplates) {
-        if (!exclusionTemplate.deleted()) {
-            _undeletedExclusionTemplates.push_back(exclusionTemplate);
-        }
+        _exclusionTemplates.push_back(exclusionTemplate);
     }
 
     for (const auto &exclusionTemplate: _userExclusionTemplates) {
-        if (!exclusionTemplate.deleted()) {
-            _undeletedExclusionTemplates.push_back(exclusionTemplate);
-        }
+        _exclusionTemplates.push_back(exclusionTemplate);
     }
 
     updateRegexPatterns();
@@ -194,7 +190,7 @@ ExitCode ExclusionTemplateCache::update(const bool def, const std::vector<Exclus
         return ExitCode::DbError;
     }
 
-    populateUndeletedExclusionTemplates();
+    populateExclusionTemplates();
 
     return ExitCode::Ok;
 }

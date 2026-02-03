@@ -54,6 +54,12 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
         }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            PageViewModel.Dispose();
+        }
+
         private async void RetryButton_click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn)
@@ -80,7 +86,7 @@ namespace Infomaniak.kDrive.Pages
         }
     }
 
-    public class StoragePageViewModel : UISafeObservableObject
+    public partial class StoragePageViewModel : UISafeObservableObject, IDisposable
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel AppViewModel => _viewModel;
@@ -93,6 +99,7 @@ namespace Infomaniak.kDrive.Pages
         private bool _loading = false;
         private string _diskRoot = "";
         private bool _isDiskConnected = false;
+        private bool _isDisposed = false;
 
         // Text
         private string _missingDiskTitle = "";
@@ -102,26 +109,32 @@ namespace Infomaniak.kDrive.Pages
 
         public StoragePageViewModel()
         {
-            AppViewModel.PropertyChanged += async (s, e) =>
-            {
-                if (e.PropertyName == nameof(AppViewModel.SelectedSync))
-                {
-                    try
-                    {
-                        await UpdateDiskSizeAsync();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
-                    }
-                }
-            };
+            AppViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
         }
 
-        ~StoragePageViewModel()
+        private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            try
+            {
+                await UpdateDiskSizeAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+            }
+        }
+
+        // IDisposable implementation
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                AppViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+            }
         }
 
         public long? DiskSize

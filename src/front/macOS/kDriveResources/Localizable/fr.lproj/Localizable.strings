@@ -4,8 +4,11 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Philippe Weidmann
- * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
+ * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
  */
+
+/* loco:698053a65bddc8df790d0212 */
+" informationBlockSynchroErrorSubtitle" = "Certains fichiers n’ont pas pu être synchronisés.";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
@@ -24,6 +27,9 @@
 
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Terminer l’installation";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Corriger les erreurs";
 
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "J’ai activé kDrive";
@@ -80,7 +86,7 @@
 "driveAsleepErrorTitle" = "Votre kDrive est en veille";
 
 /* loco:696ddb204d9cd9e240095142 */
-"driveLockedAdminErrorDescription" = "Ce kDrive n’a pas été renouvelé. Vous ne pouvez plus y accéder. \nRenouvelez votre abonnement pour réactiver le service.";
+"driveLockedAdminErrorDescription" = "Ce kDrive n’a pas été renouvelé. Vous ne pouvez plus y accéder.\nRenouvelez votre abonnement pour réactiver le service.";
 
 /* loco:696dda82726515a10a0772c2 */
 "driveLockedErrorDescription" = "Ce kDrive n’a pas été renouvelé. Vous ne pouvez plus y accéder.\nContactez votre administrateur pour réactiver le service.";
@@ -122,16 +128,10 @@
 "helpKDriveName" = "kDrive %s";
 
 /* loco:696a481cf54b5acbc60209c2 */
-"informationBlockKDriveFullSubtitle" = "Libérez de l'espace ou mettez votre forfait à niveau pour continuer à synchroniser vos fichiers.";
+"informationBlockKDriveFullSubtitle" = "Libérez de l’espace ou mettez votre forfait à niveau pour continuer à synchroniser vos fichiers.";
 
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Votre kDrive est plein";
-
-/* loco:696a4fcf3932da71d1075552 */
-"informationBlockSynchroErrorTitle" = "";
-
-/* loco:696a4fdd3932da71d1075554 */
-"informationBlockSynchroErrorTitle-plural" = "";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activez kDrive.app";
@@ -188,7 +188,7 @@
 "onboardingAuthorizationFullDiskTitle" = "Autorisez l’accès aux dossiers";
 
 /* loco:692406b0258f5599bf01d113 */
-"onboardingDriveSelectionNoDriveDescription" = "Commencez gratuitement avec my kSuite, \nou choisissez une offre adaptée à vos besoins.";
+"onboardingDriveSelectionNoDriveDescription" = "Commencez gratuitement avec my kSuite,\nou choisissez une offre adaptée à vos besoins.";
 
 /* loco:692405adc5c224ad2a07ff62 */
 "onboardingDriveSelectionNoDriveTitle" = "Vous n’avez pas encore de kDrive.";

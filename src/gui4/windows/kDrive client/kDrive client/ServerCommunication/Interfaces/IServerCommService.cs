@@ -1,5 +1,4 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -29,31 +28,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         /* Refreshes the information of all users from the server.
          * This includes their properties (name, email, avatar, etc.), accounts are not refreshed here, call RefreshAccounts for that.
          * User are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
+         * Note: This does not refresh accounts within users, only the users themselves.
          */
-        Task RefreshUsers(CancellationToken cancellationToken);
+        Task<bool> RefreshUsers(CancellationToken cancellationToken);
 
         /* Removes the user with the specified DbId from the server and local storage.
          * The view model's Users collection is updated accordingly.
          * Returns true on success, false on failure.
          */
-        Task RemoveUser(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken);
 
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.
          * Accounts are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
          * Note: This does not refresh drives within accounts, only the accounts themselves.
          */
-        Task RefreshAccounts(CancellationToken cancellationToken);
+        Task<bool> RefreshAccounts(CancellationToken cancellationToken);
 
 
         // Drive-related requests
-        Task RefreshDrives(CancellationToken cancellationToken);
+        Task<bool> RefreshDrives(CancellationToken cancellationToken);
         Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
 
         // Sync-related requests
-        Task RefreshSyncs(CancellationToken cancellationToken);
+        Task<bool> RefreshSyncs(CancellationToken cancellationToken);
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
@@ -83,10 +83,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests
-        Task RefreshSettings(CancellationToken cancellationToken);
+        Task<bool> RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);
+
+        // Exclusion template-related requests
+        Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken);
+        Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
 
         // Update-related requests
         Task StartUpdate(CancellationToken cancellationToken);
@@ -103,7 +107,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
         // Error-related requests
-        Task RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> RefreshErrors(CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);

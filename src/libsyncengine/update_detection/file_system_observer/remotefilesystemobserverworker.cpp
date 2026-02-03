@@ -442,7 +442,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
                                                                << std::to_string(_driveDbId) << " and cursor: " << _cursor);
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
-                _syncPal->addError(Error(ERR_ID, notifyJob->exitInfo()));
+                _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, notifyJob->exitInfo()));
             }
 
             return notifyJob->exitInfo();
@@ -632,7 +632,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 switch (exitInfo.code()) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
-                            _syncPal->addError(Error(ERR_ID, exitInfo));
+                            _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, exitInfo));
                         }
                         break;
                     case ExitCode::LogicError:

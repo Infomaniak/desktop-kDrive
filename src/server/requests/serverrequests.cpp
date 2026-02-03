@@ -108,7 +108,7 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteUser(int userDbId) {
+ExitInfo ServerRequests::deleteUser(int userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
@@ -117,7 +117,7 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     AbstractTokenNetworkJob::clearCacheForUser(userDbId);
@@ -1529,7 +1529,7 @@ ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<Exclusio
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
@@ -1537,7 +1537,7 @@ ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vec
         exclusionList.push_back(std::move(exclusionTemplate));
     }
 
-    if (const auto exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
@@ -1545,11 +1545,11 @@ ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vec
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplateInfo> exclusionStdVector;
     for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
 
-    return setExclusionTemplateList(def, exclusionStdVector);
+    return setUserExclusionTemplateList(exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
@@ -2268,6 +2268,8 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     }
     parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
+    parametersInfo.setSentryEnabled(parameters.sentryEnabled());
+    parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2300,6 +2302,8 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
+    parameters.setSentryEnabled(parametersInfo.sentryEnabled());
+    parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {
@@ -2355,7 +2359,6 @@ void ServerRequests::exclusionTemplateToExclusionTemplateInfo(const ExclusionTem
     exclusionTemplateInfo.setTempl(QString::fromStdString(exclusionTemplate.templ()));
     exclusionTemplateInfo.setWarning(exclusionTemplate.warning());
     exclusionTemplateInfo.setDef(exclusionTemplate.def());
-    exclusionTemplateInfo.setDeleted(exclusionTemplate.deleted());
 }
 
 void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTemplateInfo &exclusionTemplateInfo,
@@ -2363,7 +2366,6 @@ void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTem
     exclusionTemplate.setTempl(exclusionTemplateInfo.templ().toStdString());
     exclusionTemplate.setWarning(exclusionTemplateInfo.warning());
     exclusionTemplate.setDef(exclusionTemplateInfo.def());
-    exclusionTemplate.setDeleted(exclusionTemplateInfo.deleted());
 }
 
 void ServerRequests::exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo) {
