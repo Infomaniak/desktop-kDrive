@@ -1132,7 +1132,7 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
         DirectoryEntry entry;
 
         try {
-            if (!IoHelper::recursiveDirectoryIterator(path, dirIt)) {
+            if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
                 continue;
             }
@@ -1144,7 +1144,7 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
                 auto status = SyncFileStatus::Unknown;
                 if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                     LOGW_WARN(Log::instance()->getLogger(),
-                              L"Error in ExtensionJob::syncFileStatus: " << CommonUtility::formatSyncPath(entry.path()));
+                              L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
                     continue;
                 }
 
