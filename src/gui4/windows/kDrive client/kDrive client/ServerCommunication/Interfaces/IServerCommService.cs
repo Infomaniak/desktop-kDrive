@@ -36,7 +36,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
          * The view model's Users collection is updated accordingly.
          * Returns true on success, false on failure.
          */
-        Task RemoveUser(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken);
 
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.

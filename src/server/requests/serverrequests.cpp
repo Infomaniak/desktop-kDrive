@@ -108,7 +108,7 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteUser(int userDbId) {
+ExitInfo ServerRequests::deleteUser(int userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
@@ -117,7 +117,7 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     AbstractTokenNetworkJob::clearCacheForUser(userDbId);
@@ -1799,7 +1799,7 @@ ExitCode ServerRequests::deleteLiteSyncErrors() {
 
 ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;
-    accountUpdated = false; 
+    accountUpdated = false;
     quotaUpdated = false; // TODO: variable to be removed once migrated to the new UI
     // Get drive data
     std::shared_ptr<GetInfoDriveJob> job = nullptr;

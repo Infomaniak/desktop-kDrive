@@ -129,8 +129,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
             ContentDialog dialog = new ContentDialog();
-
-            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
             dialog.XamlRoot = this.XamlRoot;
             dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
@@ -141,20 +139,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
-                if (user is not null)
-                {
-                    var control = sender as Control;
-                    if (control is not null)
-                    {
-                        control.IsEnabled = false;
-                    }
-                    await _viewModel.DisconnectUserAsync(user.DbId);
-                    await Task.Delay(5000);
-                    if (control is not null)
-                    {
-                        control.IsEnabled = true;
-                    }
-                }
+                var control = sender as Control;
+                if (control is not null)
+                    control.IsEnabled = false;
+
+                await _viewModel.DisconnectUserAsync(user.DbId);
+
+                if (control is not null)
+                    control.IsEnabled = true;
             }
         }
 
@@ -384,7 +376,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             if (control is not null)
                 control.IsEnabled = true;
-        }      
+        }
     }
 
     // templateSelector for the drives listview

@@ -40,9 +40,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private static bool CheckJobResultAndLogIfError(CommData data, JsonObject jobInput, [CallerMemberName] string callerName = "")
+        private static bool CheckJobResultAndLogIfError(CommData? data, JsonObject jobInput, [CallerMemberName] string callerName = "")
         {
-            if (data?.Params is null)
+            if (data is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, CommData is null.");
+                return false;
+            }
+
+            if (data.Params is null)
             {
                 Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, Params is null.");
                 return false;
@@ -76,7 +82,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.OAuthCodeVerifier] = Utility.ToBase64String(oAuthCodeVerifier)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, parms, cancellationToken).ConfigureAwait(false);
 
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
@@ -116,7 +122,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!CheckJobResultAndLogIfError(data, new JsonObject()))
@@ -145,7 +151,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
                     continue;
                 }
-                await AddOrUpdateUserInModel(userInfo);
+                await AddOrUpdateUserInModel(userInfo).ConfigureAwait(false);
             }
 
             // Remove users that are no longer present
@@ -154,18 +160,34 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 var usersToRemove = _viewModel.Users.Where(u => !userDbIds.Contains(u.DbId)).ToList();
                 _viewModel.Users.RemoveMany(usersToRemove);
-                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed from the application.");
-            });
+                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed.");
+            }).ConfigureAwait(false);
             return true;
         }
 
-        public async Task RemoveUser(DbId userDbId, CancellationToken cancellationToken)
+        public async Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.UserDbId] = userDbId
             };
-            var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken);
+            var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken).ConfigureAwait(false);
+
+            // If the user is not found on the server, we assume it is already deleted and remove it from the model
+            if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
+            {
+                Logger.Log(Logger.Level.Warning, $"User with DbId {userDbId} not found on server, assuming already deleted.");
+                await Utility.RunOnUIThread(() =>
+                {
+                    var userToRemove = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
+                    if (userToRemove is not null)
+                        _viewModel.Users.Remove(userToRemove);
+                    Logger.Log(Logger.Level.Info, $"User with DbId {userDbId} removed.");
+                }).ConfigureAwait(false);
+                return true;
+            }
+
+            return CheckJobResultAndLogIfError(commData, parms);
         }
 
         public async Task RefreshAccounts(CancellationToken cancellationToken)
