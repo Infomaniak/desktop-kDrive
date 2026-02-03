@@ -100,10 +100,11 @@ struct ActivityHeaderView: View {
 #Preview("No Activity") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
     ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: false)
+        .padding()
 }
 
 @available(macOS 14.0, *)
-#Preview("No Activity") {
+#Preview("Idle") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
     ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: true)
 }

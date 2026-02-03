@@ -37,13 +37,13 @@ struct ActivityView: View {
         case .myActivityOnly:
             return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
         case .allActivities:
-            let isAnySynchroInProgress = mainViewModel.availableSynchros.contains { context in
+            let firstRunningSynchro = mainViewModel.availableSynchros.first { context in
                 let synchroStatus = context.synchro.progressInfo?.status
-                return synchroStatus == .running || synchroStatus == .running
+                return synchroStatus == .starting || synchroStatus == .running
             }
 
-            if isAnySynchroInProgress {
-                return .running
+            if let firstRunningSynchroStatus = firstRunningSynchro?.synchro.progressInfo?.status {
+                return firstRunningSynchroStatus
             }
             return mainViewModel.availableSynchros.first?.synchro.progressInfo?.status ?? .idle
         }
@@ -59,6 +59,7 @@ struct ActivityView: View {
             ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: hasActivities)
 
             if hasActivities {
+                // FIXME: It always returns false for now, it will be implemented in a future task.
                 Text("TODO.")
             } else {
                 IKContentUnavailableView(

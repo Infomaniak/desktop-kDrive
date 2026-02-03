@@ -31,7 +31,7 @@ public enum AppPadding {
     public static let padding4: CGFloat = 4
     public static let padding2: CGFloat = 2
 
-    // MARK: Semantic tokens
+    // MARK: - Semantic tokens
 
     public static let page = padding24
 }
