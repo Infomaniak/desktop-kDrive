@@ -36,3 +36,11 @@ struct UtilityGoodPathNewSyncResponse: Codable, Sendable {
     @Base64CodedString var goodPath: String
     @Base64CodedString var errorMessage: String
 }
+
+struct UtilityIsPathValidForNewSyncQuery: Codable, Sendable {
+    @Base64CodedString var path: String
+}
+
+struct UtilityIsPathValidForNewSyncResponse: Codable, Sendable {
+    let isValid: Bool
+}

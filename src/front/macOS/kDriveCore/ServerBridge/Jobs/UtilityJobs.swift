@@ -62,4 +62,23 @@ public struct UtilityJobs: Sendable {
 
         return decodedMessage.body.goodPath
     }
+
+    public func isPathValidFor(path: String) async throws -> Bool {
+        IKLogger.data.log("Query for path validation for new sync")
+        let query = UtilityIsPathValidForNewSyncQuery(path: path)
+        let request = await RequestMessage<UtilityIsPathValidForNewSyncQuery>(
+            num: RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC,
+            body: query
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self
+        )
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.isValid
+    }
+
 }
