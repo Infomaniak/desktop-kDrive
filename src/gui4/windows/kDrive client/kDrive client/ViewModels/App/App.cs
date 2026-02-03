@@ -256,7 +256,12 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.Log(Logger.Level.Error, "Failed to refresh drives during AppModel initialization.");
                         return false;
                     }
-                    await serverCommService.RefreshSyncs(CancellationToken.None);
+
+                    if (!await serverCommService.RefreshSyncs(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh syncs during AppModel initialization.");
+                        return false;
+                    }
                     await serverCommService.RefreshSettings(CancellationToken.None);
                     await serverCommService.RefreshErrors(CancellationToken.None);
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");

@@ -389,20 +389,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         }
 
-        public async Task RefreshSyncs(CancellationToken cancellationToken)
+        public async Task<bool> RefreshSyncs(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.SyncInfoList))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<SyncInfo> syncInfos = data.Params[JsonKeys.SyncInfoList].Deserialize<List<SyncInfo>>(options) ?? new List<SyncInfo>();
+            List<SyncInfo>? syncInfos = data.Params[JsonKeys.SyncInfoList].Deserialize<List<SyncInfo>>(options);
+            if (syncInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to deserialize SyncInfoList.");
+                return false;
+            }
 
             // Add/update drives
             foreach (var syncInfo in syncInfos)
@@ -412,7 +418,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, "syncInfo.DbId is null.");
                     continue;
                 }
-                await AddOrUpdateSyncInModel(syncInfo);
+                await AddOrUpdateSyncInModel(syncInfo).ConfigureAwait(false);
             }
 
             // Remove syncs that are no longer present
@@ -438,7 +444,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Info, $"Sync with DbId {sync.DbId} removed from drive DbId {parentDrive.DbId}.");
                     }
                 }
-            });
+            }).ConfigureAwait(false);
+            return true;
         }
         public async Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken)
         {

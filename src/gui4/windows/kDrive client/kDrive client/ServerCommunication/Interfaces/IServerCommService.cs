@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
 
         // Sync-related requests
-        Task RefreshSyncs(CancellationToken cancellationToken);
+        Task<bool> RefreshSyncs(CancellationToken cancellationToken);
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
