@@ -28,13 +28,13 @@ using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
 {
-    public sealed partial class LoggingErrorPage : SpecialErroBasePage
+    public sealed partial class LogginErrorPage : SpecialErroBasePage
     {
-        public LoggingErrorPage() : base([SyncErrorStates.LoggingError])
+        public LogginErrorPage() : base([SyncErrorStates.LoggingError])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to LoggingErrorPage - Initializing LoggingErrorPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to LogginErrorPage - Initializing LogginErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "LoggingErrorPage components initialized");
+            Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
         }
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
@@ -63,25 +63,20 @@ namespace Infomaniak.kDrive.Pages
                 {
                     Logger.Log(Logger.Level.Error, $"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}");
                     Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
                 }
-                else if (user.DbId != ViewModel.SelectedSync.Drive.Account.User.DbId)
+
+                if (user.DbId != ViewModel.SelectedSync.Drive.Account.User.DbId)
                 {
+                    Logger.Log(Logger.Level.Info, "Authenticated user does not match the expected user.");
                     DisplayUserMismatchContent();
-                }
-                else if (user.DbId == ViewModel.SelectedSync.Drive.Account.User.DbId)
-                {
-                    if (!await ViewModel.SelectedSync.Start())
-                    {
-                        Logger.Log(Logger.Level.Error, "Failed to start sync.");
-                        Utility.ShowUnexpectedErrorTeachingTip();
-                    }
-                }
-                else
-                {
-                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
                 }
 
+                if (await ViewModel.SelectedSync.Start())
+                    return;
 
+                Logger.Log(Logger.Level.Error, "Failed to start sync.");
             }
             catch (OperationCanceledException)
             {

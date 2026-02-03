@@ -85,7 +85,6 @@ public class SyncToButtonEnabledConverter : IValueConverter
         if (value is Sync sync)
         {
             SyncStatus syncStatus = sync.SyncStatus;
-            ;
             return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error);
         }
         return false;
