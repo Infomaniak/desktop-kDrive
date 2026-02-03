@@ -1127,41 +1127,45 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
     // Process all files
     for (const auto &path: inFileList) {
         const FileData fileData = FileData::get(path);
-        if (!fileData.isValid()) continue;
+        if (!fileData.isValid() || fileData.isLink) continue;
 
-        auto ioError = IoError::Success;
-        IoHelper::DirectoryIterator dirIt;
-        bool endOfDir = false;
-        DirectoryEntry entry;
+        if (fileData.isDirectory) {
+            auto ioError = IoError::Success;
+            IoHelper::DirectoryIterator dirIt;
+            bool endOfDir = false;
+            DirectoryEntry entry;
 
-        try {
-            if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
-                continue;
-            }
-
-            while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-                FileData tmpFileData = FileData::get(entry.path());
-                if (!tmpFileData.isValid()) continue;
-
-                auto status = SyncFileStatus::Unknown;
-                if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                    LOGW_WARN(Log::instance()->getLogger(),
-                              L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
+            try {
+                if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
+                    LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
                     continue;
                 }
 
-                if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
-                    continue;
-                }
+                while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+                    FileData tmpFileData = FileData::get(entry.path());
+                    if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
 
-                outFileList.push_back(entry.path());
+                    auto status = SyncFileStatus::Unknown;
+                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+                        LOGW_WARN(Log::instance()->getLogger(),
+                                  L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
+                        continue;
+                    }
+
+                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
+                        continue;
+                    }
+
+                    outFileList.push_back(entry.path());
+                }
+            } catch (std::filesystem::filesystem_error &e) {
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
+            } catch (...) {
+                LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
             }
-        } catch (std::filesystem::filesystem_error &e) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
-        } catch (...) {
-            LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
+        } else {
+            outFileList.push_back(path);
         }
     }
 }
