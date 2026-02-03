@@ -590,6 +590,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     channel->sendMessage(response);
 }
 #endif
+
 #if defined(KD_MACOS)
 void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     // This command is the same as RETRIEVE_FILE_STATUS
@@ -753,7 +754,7 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
     bool exists = false;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
         return;
     }
@@ -924,6 +925,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
     return true;
 }
 
+#if defined(KD_MACOS)
 bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
     const std::scoped_lock lock(AppServer::syncPalMapMutex);
 
@@ -942,6 +944,7 @@ bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString
 
     return true;
 }
+#endif
 
 void ExtensionJob::copyUrlToClipboard(const std::string &link) {
 #if defined(KD_WINDOWS)
@@ -1119,14 +1122,14 @@ void ExtensionJob::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChann
     channel->sendMessage(response);
 }
 
+#if defined(KD_MACOS)
 void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList) {
     // Process all files
     for (const auto &path: inFileList) {
         const FileData fileData = FileData::get(path);
         if (!fileData.isValid()) continue;
 
-#if defined(KD_MACOS)
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         IoHelper::DirectoryIterator dirIt;
         bool endOfDir = false;
         DirectoryEntry entry;
@@ -1160,11 +1163,9 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
         } catch (...) {
             LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
         }
-#elif defined(KD_WINDOWS)
-        outFileList.push_back(path);
-#endif
     }
 }
+#endif
 
 CommString ExtensionJob::vfsPinActionText() {
     return CommonUtility::qStr2CommString(QObject::tr("Make available locally"));

@@ -157,12 +157,15 @@ class ExtensionJob : public AbstractJob {
         void buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChannel> channel, const CommString &type, bool enabled,
                                          const CommString &text);
 
-        void processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
+
+#if defined(KD_MACOS)
+        void processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList);
         bool cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList);
+#endif
 
         // Commands texts translated
         CommString vfsPinActionText();
