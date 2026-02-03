@@ -33,6 +33,8 @@ public enum KDriveResources {
   public static let house = ImageAsset(name: "house")
   public static let kdriveFoldersStacked = ImageAsset(name: "kdrive-folders-stacked")
   public static let moonSleep = ImageAsset(name: "moon-sleep")
+  public static let people = ImageAsset(name: "people")
+  public static let person = ImageAsset(name: "person")
   public static let persons = ImageAsset(name: "persons")
   public static let settings = ImageAsset(name: "settings")
   public static let squareArrowDiagonalUp = ImageAsset(name: "square-arrow-diagonal-up")
