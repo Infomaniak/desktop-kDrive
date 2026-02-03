@@ -28,7 +28,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         /* Refreshes the information of all users from the server.
          * This includes their properties (name, email, avatar, etc.), accounts are not refreshed here, call RefreshAccounts for that.
          * User are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
+         * Note: This does not refresh accounts within users, only the users themselves.
          */
         Task<bool> RefreshUsers(CancellationToken cancellationToken);
 
@@ -41,7 +42,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.
          * Accounts are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
          * Note: This does not refresh drives within accounts, only the accounts themselves.
          */
         Task<bool> RefreshAccounts(CancellationToken cancellationToken);
