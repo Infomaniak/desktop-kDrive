@@ -52,7 +52,6 @@ ExitInfo UserDeleteJob::serializeOutputParms() {
 }
 
 ExitInfo UserDeleteJob::process() {
-    return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     // Get syncs do delete
     std::vector<int> syncDbIdList;
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
