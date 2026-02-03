@@ -47,7 +47,7 @@ public struct IKContentUnavailableView: View {
             image
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: 200, maxHeight: 200)
+                .frame(maxWidth: 200)
 
             VStack(spacing: AppPadding.padding8) {
                 Text(title)

@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 enum VisibleActivities: String, Identifiable, CaseIterable {
@@ -48,9 +49,25 @@ struct ActivityView: View {
         }
     }
 
+    private var hasActivities: Bool {
+        // FIXME: It always returns false for now, it will be implemented in a future task.
+        return false
+    }
+
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: true)
+            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: hasActivities)
+
+            if hasActivities {
+                Text("TODO.")
+            } else {
+                IKContentUnavailableView(
+                    image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+                    title: "Aucune activité récente",
+                    subtitle: "Vos fichiers sont accessibles et synchronisés."
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
         }
         .padding(AppPadding.page)
     }
