@@ -89,13 +89,8 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive?.Name ?? "unknown"}");
                 bool result = await _serverCommService.AddSync(sync, CancellationToken.None);
                 if (!result)
-                {
                     Logger.Log(Logger.Level.Warning, $"Failed to set up sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}");
-                }
-                else
-                {
 
-                }
                 successCount += result ? 1 : 0;
             }
             Logger.Log(Logger.Level.Info, $"Onboarding sync setup completed: {successCount}/{NewSyncs.Count} syncs successfully set up.");
