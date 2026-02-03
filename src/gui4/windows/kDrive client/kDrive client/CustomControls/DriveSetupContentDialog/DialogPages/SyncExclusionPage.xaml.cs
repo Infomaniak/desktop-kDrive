@@ -118,7 +118,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
             if (result is null || result == false)
             {
-                Utility.ShowTeachingTip(this.XamlRoot, "CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder", control);
+                Utility.ShowTeachingTipFromxUid("CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder");
                 Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;

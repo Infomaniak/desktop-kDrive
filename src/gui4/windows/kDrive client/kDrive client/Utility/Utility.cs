@@ -19,31 +19,64 @@ namespace Infomaniak.kDrive
 {
     public static class Utility
     {
+        public static async Task RunOnUIThread(Func<Task> action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+
+            if (dispatcher.HasThreadAccess)
+            {
+                await action();
+            }
+            else
+            {
+                TaskCompletionSource tcs = new();
+
+                await dispatcher.EnqueueAsync(async () =>
+                {
+                    try
+                    {
+                        await action();
+                        tcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                });
+
+                await tcs.Task;
+            }
+        }
+
         public static async Task RunOnUIThread(Action action)
         {
             var dispatcher = AppModel.UIThreadDispatcher;
+
             if (dispatcher.HasThreadAccess)
             {
                 action();
             }
             else
             {
-                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                TaskCompletionSource tcs = new();
+
                 await dispatcher.EnqueueAsync(() =>
                 {
                     try
                     {
                         action();
-                        taskCompletionSource.SetResult();
+                        tcs.SetResult();
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.SetException(ex);
+                        tcs.SetException(ex);
                     }
                 });
-                await taskCompletionSource.Task;
+
+                await tcs.Task;
             }
         }
+
         public static async Task OpenFileAsync(string filePath)
         {
             try
@@ -283,8 +316,19 @@ namespace Infomaniak.kDrive
                 return new string('*', localPart.Length) + domainPart;
         }
 
-        public static void ShowTeachingTip(XamlRoot xamlRoot, string xuid, Control? target = null)
+        public static void ShowUnexpectedErrorTeachingTip()
         {
+            Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+        }
+        public static void ShowTeachingTipFromxUid(string xuid, Control? target = null)
+        {
+            if (App.Current as App is not App app || app.CurrentWindow is null)
+            {
+                Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
+                return;
+            }
+            XamlRoot xamlRoot = app.CurrentWindow.Content.XamlRoot;
+
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,

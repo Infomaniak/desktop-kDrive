@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
@@ -28,11 +29,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _commClient.SignalReceived += OnSignalReceived;
         }
 
+        // Utility methods
+        private static bool HasRequiredParam(CommData data, string key, [CallerMemberName] string callerName = "")
+        {
+            if (data.Params is null || !data.Params.ContainsKey(key))
+            {
+                Logger.Log(Logger.Level.Error, $"{callerName}: {key} not found in response.");
+                return false;
+            }
+            return true;
+        }
+
+        private static bool CheckJobResultAndLogIfError(CommData? data, JsonObject jobInput, [CallerMemberName] string callerName = "")
+        {
+            if (data is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, CommData is null.");
+                return false;
+            }
+
+            if (data.Params is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, Params is null.");
+                return false;
+            }
+
+            if (data.Code != ExitCode.Ok)
+            {
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, exit code: {data.Code}, exit cause: {data.Cause}.");
+                return false;
+            }
+            return true;
+        }
+
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
+            if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
                 return null;
@@ -42,50 +76,72 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, new JsonObject
+            JsonObject parms = new()
             {
                 [JsonKeys.OAuthCode] = Utility.ToBase64String(oAuthCode),
                 [JsonKeys.OAuthCodeVerifier] = Utility.ToBase64String(oAuthCodeVerifier)
-            }, cancellationToken);
+            };
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbId) || data.Params[JsonKeys.UserDbId] == null)
+            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, parms, cancellationToken).ConfigureAwait(false);
+
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.UserDbId))
+                return null;
+
+            DbId userDbId = -1;
+            try
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbId} not found in response.");
+                userDbId = data.Params[JsonKeys.UserDbId]!.GetValue<DbId>();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse UserDbId from response: {ex.Message}");
                 return null;
             }
 
-            DbId userDbId = data.Params[JsonKeys.UserDbId]?.GetValue<DbId>() ?? -1;
-
-            await Utility.RunOnUIThread(() =>
+            await Utility.RunOnUIThread(async () =>
             {
-                if (_viewModel.Users.Any(u => u.DbId == userDbId))
+                // The server should send a signal user_added that will add the user to the model, we wait here for max 10s for that to happen
+                int maxRetries = 100;
+                do
                 {
-                    Logger.Log(Logger.Level.Info, $"User with DbId {userDbId} already exists in the application.");
-                }
-                else
-                {
-                    User newUser = new User(userDbId);
-                    _viewModel.Users.Add(newUser);
-                    Logger.Log(Logger.Level.Info, $"AddOrRelogUser: New user added with DbId {userDbId}.");
-                }
-            });
+                    if (_viewModel.Users.Any(u => u.DbId == userDbId))
+                    {
+                        Logger.Log(Logger.Level.Info, $"AddOrRelogUser: User with DbId {userDbId} already exists in the application.");
+                        return;
+                    }
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    --maxRetries;
+                } while (!cancellationToken.IsCancellationRequested && maxRetries > 0);
+                Logger.Log(Logger.Level.Error, $"AddOrRelogUser: Timeout waiting for user with DbId {userDbId} to be added to the application.");
+            }).ConfigureAwait(false);
             return _viewModel.Users.FirstOrDefault(u => u?.DbId == userDbId, null);
         }
 
-        public async Task RefreshUsers(CancellationToken cancellationToken)
+        public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfoList} not found in response.");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!CheckJobResultAndLogIfError(data, new JsonObject()))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.UserInfoList))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<UserInfo> userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
+            List<UserInfo>? userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options);
+            if (userInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to deserialize UserInfoList.");
+                return false;
+            }
 
             // Add/update users
             foreach (var userInfo in userInfos)
@@ -95,7 +151,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
                     continue;
                 }
-                await AddOrUpdateUserInModel(userInfo);
+                await AddOrUpdateUserInModel(userInfo).ConfigureAwait(false);
             }
 
             // Remove users that are no longer present
@@ -103,21 +159,35 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() =>
             {
                 var usersToRemove = _viewModel.Users.Where(u => !userDbIds.Contains(u.DbId)).ToList();
-                foreach (var user in usersToRemove)
-                {
-                    _viewModel.Users.Remove(user);
-                    Logger.Log(Logger.Level.Info, $"User with DbId {user.DbId} removed from the application.");
-                }
-            });
+                _viewModel.Users.RemoveMany(usersToRemove);
+                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed.");
+            }).ConfigureAwait(false);
+            return true;
         }
 
-        public async Task RemoveUser(DbId userDbId, CancellationToken cancellationToken)
+        public async Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.UserDbId] = userDbId
             };
-            var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken);
+            var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken).ConfigureAwait(false);
+
+            // If the user is not found on the server, we assume it is already deleted and remove it from the model
+            if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
+            {
+                Logger.Log(Logger.Level.Warning, $"User with DbId {userDbId} not found on server, assuming already deleted.");
+                await Utility.RunOnUIThread(() =>
+                {
+                    var userToRemove = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
+                    if (userToRemove is not null)
+                        _viewModel.Users.Remove(userToRemove);
+                    Logger.Log(Logger.Level.Info, $"User with DbId {userDbId} removed.");
+                }).ConfigureAwait(false);
+                return true;
+            }
+
+            return CheckJobResultAndLogIfError(commData, parms);
         }
 
         public async Task RefreshAccounts(CancellationToken cancellationToken)
@@ -1390,21 +1460,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Helpers
         private async Task AddOrUpdateUserInModel(UserInfo userInfo)
         {
-            if (_viewModel.Users.Any(u => u.DbId == userInfo.DbId))
+
+            if (!userInfo.DbId.HasValue)
             {
-                Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} already exists in the application.");
-                var user = _viewModel.Users.FirstOrDefault(u => u.DbId == userInfo.DbId);
-                if (user == null)
-                {
-                    Logger.Log(Logger.Level.Error, $"Unexpected error, user with DbId {userInfo.DbId} not found after existence check.");
-                    return;
-                }
+                Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                return;
+            }
+            DbId dbId = userInfo.DbId.Value;
+
+            User? user = _viewModel.Users.FirstOrDefault(u => u?.DbId == dbId, null);
+            if (user is not null)
+            {
+                Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
                 ConversionHelper.CopyToUser(userInfo, user);
-                Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} updated.");
+                Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
             }
             else
             {
-                User newUser = new User(userInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."));
+                User newUser = new User(dbId);
                 ConversionHelper.CopyToUser(userInfo, newUser);
                 await Utility.RunOnUIThread(() =>
                 {

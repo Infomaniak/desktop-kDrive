@@ -208,8 +208,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Find parrent button to anchor teaching tip
-
-
             DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
 
 

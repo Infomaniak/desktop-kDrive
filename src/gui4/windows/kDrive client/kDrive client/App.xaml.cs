@@ -151,8 +151,12 @@ namespace Infomaniak.kDrive
                 }
             };
 
-
-            await appModel.InitializeAsync();
+            if (!await appModel.InitializeAsync())
+            {
+                Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");
+                ExitApplication();
+                return;
+            }
             CurrentWindow.Content = currentWindowContent;
             (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();

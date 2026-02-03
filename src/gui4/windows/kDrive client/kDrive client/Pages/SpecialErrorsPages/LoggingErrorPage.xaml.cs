@@ -58,9 +58,13 @@ namespace Infomaniak.kDrive.Pages
                     {
                         ViewModel.SelectedSync?.Start();
                     }
-                    else
+                    else if (user is not null)
                     {
                         DisplayUserMismatchContent();
+                    }
+                    else
+                    {
+                        Utility.ShowUnexpectedErrorTeachingTip();
                     }
                 }
                 else
@@ -75,6 +79,7 @@ namespace Infomaniak.kDrive.Pages
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
             finally
             {

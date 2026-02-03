@@ -1,5 +1,4 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -31,13 +30,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
          * User are added/removed as necessary to match the server state.
          * Returns a Task that completes when the operation is done.
          */
-        Task RefreshUsers(CancellationToken cancellationToken);
+        Task<bool> RefreshUsers(CancellationToken cancellationToken);
 
         /* Removes the user with the specified DbId from the server and local storage.
          * The view model's Users collection is updated accordingly.
          * Returns true on success, false on failure.
          */
-        Task RemoveUser(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken);
 
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.
