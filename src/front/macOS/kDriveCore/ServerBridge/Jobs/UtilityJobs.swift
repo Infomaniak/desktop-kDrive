@@ -198,4 +198,19 @@ public struct UtilityJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func cancelLogToSupport() async throws {
+        IKLogger.data.log("Query for canceling log to support")
+        let request = await RequestMessage<EmptyQuery>(
+            num: RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT,
+            body: EmptyQuery()
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<EmptyResponse>.self
+        )
+
+        try decodedMessage.validate()
+    }
 }
