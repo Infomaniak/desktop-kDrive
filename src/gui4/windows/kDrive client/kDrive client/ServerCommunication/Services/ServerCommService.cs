@@ -353,30 +353,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     var drive = new DriveAvailable();
                     CommStruct.ConversionHelper.CopyToDriveAvailable(info, drive);
                     await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); }).ConfigureAwait(false);
+                    continue;
                 }
-                else
+
+                // Check if any of the properties have changed, if yes remove and re-add to trigger UI update
+                var existingDrive = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == info.DriveId);
+                if (existingDrive is null)
+                    continue;
+
+                var tempDrive = new DriveAvailable();
+                CommStruct.ConversionHelper.CopyToDriveAvailable(info, tempDrive);
+                // compare properties individually
+                foreach (var prop in typeof(DriveAvailable).GetProperties())
                 {
-                    // Check if any of the properties have changed, if yes remove and re-add to trigger UI update
-                    var existingDrive = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == info.DriveId);
-                    if (existingDrive != null)
+                    var existingValue = prop.GetValue(existingDrive);
+                    var newValue = prop.GetValue(tempDrive);
+                    if (!Equals(existingValue, newValue))
                     {
-                        var tempDrive = new DriveAvailable();
-                        CommStruct.ConversionHelper.CopyToDriveAvailable(info, tempDrive);
-                        // compare properties individually
-                        foreach (var prop in typeof(DriveAvailable).GetProperties())
+                        await Utility.RunOnUIThread(() =>
                         {
-                            var existingValue = prop.GetValue(existingDrive);
-                            var newValue = prop.GetValue(tempDrive);
-                            if (!Equals(existingValue, newValue))
-                            {
-                                await Utility.RunOnUIThread(() =>
-                                {
-                                    user.DrivesAvailable.Remove(existingDrive);
-                                    user.DrivesAvailable.Add(tempDrive);
-                                }).ConfigureAwait(false);
-                                break;
-                            }
-                        }
+                            user.DrivesAvailable.Remove(existingDrive);
+                            user.DrivesAvailable.Add(tempDrive);
+                        }).ConfigureAwait(false);
+                        break;
                     }
                 }
             }
@@ -525,6 +524,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken).ConfigureAwait(false);
+
+            // If the sync is not found on the server, we assume it is already deleted and remove it from the model
+            if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} not found on server, assuming already deleted.");
+                await Utility.RunOnUIThread(() =>
+                {
+                    var syncToRemove = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
+                    if (syncToRemove is not null)
+                        syncToRemove.Drive.Syncs.Remove(syncToRemove);
+                    Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} removed.");
+                }).ConfigureAwait(false);
+                return true;
+            }
+
             if (!CheckJobResultAndLogIfError(commData, parms))
                 return false;
 
@@ -1385,7 +1399,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             SyncFileItem syncFileItem = new SyncFileItem(sync);
             CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
-            await Utility.RunOnUIThread(() => { 
+            await Utility.RunOnUIThread(() =>
+            {
                 sync.SyncActivities.Insert(0, syncFileItem);
                 // Ensure the list does not exceed 500 items
                 while (sync.SyncActivities.Count > 500)
