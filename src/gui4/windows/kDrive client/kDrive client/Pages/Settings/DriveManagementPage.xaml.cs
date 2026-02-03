@@ -286,7 +286,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
             Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
-            await commService.AddSync(newSync, CancellationToken.None);
+            if (!await commService.AddSync(newSync, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive '{BaseDrive.Name}'");
+                if (control is not null)
+                    control.IsEnabled = true;
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
 
             if (ManagedDrive is null) // if the drive was not configured before, set it up now
             {

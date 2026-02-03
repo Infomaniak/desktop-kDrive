@@ -474,12 +474,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.LiteSync] = newSync.SyncType == SyncType.Online,
                 [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncInfo} not found in response.");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken).ConfigureAwait(false);
+            if(!CheckJobResultAndLogIfError(data, parms))
                 return false;
-            }
+
+            if(!HasRequiredParam(data, JsonKeys.SyncInfo))
+                return false;
 
             // Rely on signal to add the sync to the model
             return true;
