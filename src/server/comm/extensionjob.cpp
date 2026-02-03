@@ -1123,40 +1123,46 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
     // Process all files
     for (const auto &path: inFileList) {
         const FileData fileData = FileData::get(path);
-        if (fileData.isValid() && fileData.virtualFileMode == VirtualFileMode::Mac) {
-            const QFileInfo info(CommonUtility::commString2QStr(path));
-            if (info.isDir()) {
-                const QFileInfoList infoList =
-                        QDir(CommonUtility::commString2QStr(path)).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-                std::vector<CommString> fileList;
-                for (const auto &tmpInfo: qAsConst(infoList)) {
-                    const SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
-                    FileData tmpFileData = FileData::get(tmpPath);
-                    if (!tmpFileData.isValid()) continue;
+        if (!fileData.isValid()) continue;
 
-                    auto status = SyncFileStatus::Unknown;
-                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                        LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(tmpPath));
-                        continue;
-                    }
+#if defined(KD_MACOS)
+        IoError ioError = IoError::Success;
+        IoHelper::DirectoryIterator dirIt;
+        bool endOfDir = false;
+        DirectoryEntry entry;
 
-                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
-                        continue;
-                    }
-
-                    fileList.push_back(tmpPath);
-                }
-
-                if (fileList.size() > 0) {
-                    processFileList(fileList, outFileList);
-                }
-            } else {
-                outFileList.push_back(path);
+        try {
+            if (!IoHelper::recursiveDirectoryIterator(path, dirIt)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+                continue;
             }
-        } else {
-            outFileList.push_back(path);
+
+            while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+                FileData tmpFileData = FileData::get(entry.path());
+                if (!tmpFileData.isValid()) continue;
+
+                auto status = SyncFileStatus::Unknown;
+                if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+                    LOGW_WARN(Log::instance()->getLogger(),
+                              L"Error in ExtensionJob::syncFileStatus: " << CommonUtility::formatSyncPath(entry.path()));
+                    continue;
+                }
+
+                if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
+                    continue;
+                }
+
+                outFileList.push_back(entry.path());
+            }
+        } catch (std::filesystem::filesystem_error &e) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
+        } catch (...) {
+            LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
         }
+#elif defined(KD_WINDOWS)
+        outFileList.push_back(path);
+#endif
     }
 }
 
