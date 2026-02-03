@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests
-        Task RefreshSettings(CancellationToken cancellationToken);
+        Task<bool> RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);

@@ -916,26 +916,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
         }
 
-        public async Task RefreshSettings(CancellationToken cancellationToken)
+        public async Task<bool> RefreshSettings(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ParmsInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.ParmsInfo} not found in response.");
-                return;
-            }
+            if (!CheckJobResultAndLogIfError(data))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.ParmsInfo))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
             ParmsInfo? parametersInfo = data.Params[JsonKeys.ParmsInfo].Deserialize<ParmsInfo>(options);
-            if (parametersInfo == null)
+            if (parametersInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
-                return;
+                return false;
             }
-            CommStruct.ConversionHelper.CopyToSettings(parametersInfo, _viewModel.Settings);
+            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
+            return true;
         }
 
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
