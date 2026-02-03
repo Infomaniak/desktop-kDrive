@@ -48,16 +48,16 @@ struct ActivityHeaderView: View {
 
     var title: String {
         guard hasActivities else {
-            return "Aucune activité récente"
+            return KDriveLocalizable.activityTitleNoActivity
         }
 
         switch synchroStatus {
         case .starting, .running:
             return KDriveLocalizable.activityTitleInProgress
         case .idle, .paused, .stopped, .error:
-            return "Synchronisation terminée"
+            return KDriveLocalizable.activityTitleIdle
         case .pauseAsked, .stopAsked:
-            return "Placeholder string"
+            return "Placeholder string for loading"
         }
     }
 
