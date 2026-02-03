@@ -1472,13 +1472,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (user is not null)
             {
                 Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
-                ConversionHelper.copyToUser(userInfo, user);
+                ConversionHelper.CopyToUser(userInfo, user);
                 Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
             }
             else
             {
                 User newUser = new User(dbId);
-                ConversionHelper.copyToUser(userInfo, newUser);
+                ConversionHelper.CopyToUser(userInfo, newUser);
                 await Utility.RunOnUIThread(() =>
                 {
                     _viewModel.Users.Add(newUser);
