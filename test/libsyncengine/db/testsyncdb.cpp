@@ -112,7 +112,7 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
 
     const User user(1, 5555555, "123");
     (void) ParmsDb::instance()->insertUser(user);
-    const Account acc(1, 12345678, user.dbId());
+    const Account acc(1, 12345678, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(acc);
     Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
     (void) ParmsDb::instance()->insertDrive(drive);

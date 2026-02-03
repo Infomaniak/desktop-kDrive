@@ -79,7 +79,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
-    const Account account(1, accountId, user.dbId());
+    const Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
