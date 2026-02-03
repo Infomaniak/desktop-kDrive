@@ -34,14 +34,25 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
-                if (ObViewModel?.SelectedUser is null)
+                if (obvm.SelectedUser is null)
                 {
                     Logger.Log(Logger.Level.Error, "SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
-                    Frame.GoBack();
+                    obvm.Reset();
+                    Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
-                await ObViewModel.SelectedUser.RefreshAvailableDrives();
-                if (!ObViewModel.SelectedUser.AllDrives.Any())
+                if(!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to refresh available drives for user in DriveSelectionPage");
+                    obvm.Reset();
+                    Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+
+                if (!obvm.SelectedUser.AllDrives.Any())
                 {
                     Logger.Log(Logger.Level.Info, "No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
                     Frame.Navigate(typeof(NoDrivesPage), ObViewModel);

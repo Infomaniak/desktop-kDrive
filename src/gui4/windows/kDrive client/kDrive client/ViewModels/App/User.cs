@@ -47,6 +47,7 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
         private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
         private bool _driveRefreshInProgress = false;
+        private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
@@ -135,6 +136,7 @@ namespace Infomaniak.kDrive.ViewModels
         public bool DriveRefreshInProgress
         {
             get => _driveRefreshInProgress;
+            private set => SetPropertyInUIThread(ref _driveRefreshInProgress, value);
         }
 
         public ReadOnlyObservableCollection<Drive> Drives
@@ -159,17 +161,30 @@ namespace Infomaniak.kDrive.ViewModels
             return bitmap;
         }
 
-        public async Task RefreshAvailableDrives(CancellationToken cancellationToken = default)
+        public async Task<bool> RefreshAvailableDrives(CancellationToken cancellationToken)
         {
-            if (DriveRefreshInProgress)
+            if (_refreshAvailableDrivesTask is not null && !_refreshAvailableDrivesTask.IsCompleted)
             {
-                Logger.Log(Logger.Level.Info, $"Drive refresh already in progress for user {Name} ({DbId}), skipping.");
-                return;
+                Logger.Log(Logger.Level.Info, $"Drive refresh already in progress for user {Name} ({DbId}), awaiting existing task.");
+                return await _refreshAvailableDrivesTask;
             }
-            SetPropertyInUIThread(ref _driveRefreshInProgress, true, nameof(DriveRefreshInProgress));
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, cancellationToken);
+
+            _refreshAvailableDrivesTask = RefreshAvailableDrivesInternal(cancellationToken);
+            return await _refreshAvailableDrivesTask;
+        }
+
+        private async Task<bool> RefreshAvailableDrivesInternal(CancellationToken cancellationToken)
+        {
+            DriveRefreshInProgress = true;
+            bool result = await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, cancellationToken);
+            if (!result)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to refresh available drives for user {Name} ({DbId}), clearing available drives.");
+                DrivesAvailable.Clear();
+            }
             MergeDrives();
-            SetPropertyInUIThread(ref _driveRefreshInProgress, false, nameof(DriveRefreshInProgress));
+            DriveRefreshInProgress = false;
+            return result;
         }
 
         /* Merges the Drives and DrivesAvailable collections into the AllDrives collection,

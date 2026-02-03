@@ -104,12 +104,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Success:
-                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
-                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
-                    RestartOAuthButton.Visibility = Visibility.Collapsed;
-                    if (_onboardingViewModel?.SelectedUser is not null)
+                    if (_onboardingViewModel?.SelectedUser is not null && await _onboardingViewModel.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                     {
-                        await _onboardingViewModel.SelectedUser.RefreshAvailableDrives();
                         if (_onboardingViewModel.SelectedUser.AllDrives.Any())
                         {
                             Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
@@ -122,7 +118,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     else
                     {
                         Logger.Log(Logger.Level.Error, "SelectedUser is not set after a successful oAuth");
-                        HandleOAuth2StateChanged(OAuth2State.Error);
+                        _onboardingViewModel!.CurrentOAuth2State = OAuth2State.Error;
                     }
                     break;
 
