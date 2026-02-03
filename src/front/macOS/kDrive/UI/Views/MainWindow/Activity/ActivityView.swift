@@ -31,9 +31,26 @@ struct ActivityView: View {
 
     @State private var visibleActivities = VisibleActivities.myActivityOnly
 
+    private var synchroStatus: UISynchroStatus {
+        switch visibleActivities {
+        case .myActivityOnly:
+            return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
+        case .allActivities:
+            let isAnySynchroInProgress = mainViewModel.availableSynchros.contains { context in
+                let synchroStatus = context.synchro.progressInfo?.status
+                return synchroStatus == .running || synchroStatus == .running
+            }
+
+            if isAnySynchroInProgress {
+                return .running
+            }
+            return mainViewModel.availableSynchros.first?.synchro.progressInfo?.status ?? .idle
+        }
+    }
+
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ActivityHeaderView(visibleActivities: $visibleActivities)
+            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: true)
         }
         .padding(AppPadding.page)
     }

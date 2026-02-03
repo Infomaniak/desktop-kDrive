@@ -43,12 +43,40 @@ extension VisibleActivities {
 struct ActivityHeaderView: View {
     @Binding var visibleActivities: VisibleActivities
 
+    let synchroStatus: UISynchroStatus
+    let hasActivities: Bool
+
+    var title: String {
+        guard hasActivities else {
+            return "Aucune activité récente"
+        }
+
+        switch synchroStatus {
+        case .starting, .running:
+            return KDriveLocalizable.activityTitleInProgress
+        case .idle, .paused, .stopped, .error:
+            return "Synchronisation terminée"
+        case .pauseAsked, .stopAsked:
+            return "Placeholder string"
+        }
+    }
+
+    var isLoading: Bool {
+        switch synchroStatus {
+        case .pauseAsked, .stopAsked:
+            return true
+        default:
+            return false
+        }
+    }
+
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
-            Text(KDriveLocalizable.activityTitleInProgress)
+            Text(title)
                 .font(.Tokens.title2)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .redacted(reason: isLoading ? .placeholder : [])
 
             Picker(KDriveLocalizable.accessibilityActivityTypePicker, selection: $visibleActivities) {
                 ForEach(VisibleActivities.allCases) { activity in
@@ -63,7 +91,25 @@ struct ActivityHeaderView: View {
 }
 
 @available(macOS 14.0, *)
-#Preview {
-    @Previewable @State var visibleActivities: VisibleActivities = .allActivities
-    ActivityHeaderView(visibleActivities: $visibleActivities)
+#Preview("In Progress") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .running, hasActivities: true)
+}
+
+@available(macOS 14.0, *)
+#Preview("No Activity") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: false)
+}
+
+@available(macOS 14.0, *)
+#Preview("No Activity") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: true)
+}
+
+@available(macOS 14.0, *)
+#Preview("Loading") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .stopAsked, hasActivities: true)
 }
