@@ -88,8 +88,10 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Warning, "No selected sync found - Navigating to HomePage");
                 DetachHandlers();
                 Frame.Navigate(typeof(HomePage));
+                return;
             }
-            else if (!await ViewModel.SelectedSync.Start())
+
+            if (!await ViewModel.SelectedSync.Start())
             {
                 Logger.Log(Logger.Level.Error, "Failed to start sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
