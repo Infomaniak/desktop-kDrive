@@ -247,21 +247,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task RefreshDrives(CancellationToken cancellationToken)
+        public async Task<bool> RefreshDrives(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.DriveInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.DriveInfoList))
+                return false;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new ColorJsonConverter());
-            List<DriveInfo> driveInfos = data.Params[JsonKeys.DriveInfoList].Deserialize<List<DriveInfo>>(options) ?? new List<DriveInfo>();
+            List<DriveInfo>? driveInfos = data.Params[JsonKeys.DriveInfoList].Deserialize<List<DriveInfo>>(options);
+            if (driveInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to deserialize DriveInfoList.");
+                return false;
+            }
 
             // Add/update drives
             foreach (var driveInfo in driveInfos)
@@ -271,7 +277,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, "driveInfo.DbId is null.");
                     continue;
                 }
-                await AddOrUpdateDriveInModel(driveInfo);
+                await AddOrUpdateDriveInModel(driveInfo).ConfigureAwait(false);
             }
 
             // Remove drives that are no longer present
@@ -296,7 +302,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Info, $"Drive with DbId {drive.DbId} removed from account DbId {parentAccount.DbId}.");
                     }
                 }
-            });
+            }).ConfigureAwait(false);
+            return true;
         }
 
         public async Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken)
