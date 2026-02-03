@@ -17,10 +17,13 @@
  */
 
 #include "excludelistpropagator.h"
-#include "libcommon/io/filestat.h"
+
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
+
 #include "libcommon/utility/utility.h"
+
+#include "libcommonserver/io/filestat.h"
 
 namespace KDC {
 
@@ -68,7 +71,7 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
             _syncPal->addError(error);
         } else {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in SyncDb::getNodeId or SyncDb::getItemType for path="
-                                                                    << CommonUtility::formatSyncPath(relativePath));
+                                                                    << Utility::formatSyncPath(relativePath));
         }
     }
 
