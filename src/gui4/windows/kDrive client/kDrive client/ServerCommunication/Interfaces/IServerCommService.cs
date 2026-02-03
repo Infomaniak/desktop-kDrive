@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> RefreshSyncs(CancellationToken cancellationToken);
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
-        Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
         Task<bool> SetSyncType(DbId syncDbId, SyncType type, CancellationToken cancellationToken);
 

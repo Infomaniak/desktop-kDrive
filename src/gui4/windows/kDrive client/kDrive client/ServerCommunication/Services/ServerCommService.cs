@@ -475,10 +475,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken).ConfigureAwait(false);
-            if(!CheckJobResultAndLogIfError(data, parms))
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return false;
 
-            if(!HasRequiredParam(data, JsonKeys.SyncInfo))
+            if (!HasRequiredParam(data, JsonKeys.SyncInfo))
                 return false;
 
             // Rely on signal to add the sync to the model
@@ -511,20 +511,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Value] = type == SyncType.Online
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken);
-            if(!CheckJobResultAndLogIfError(data, parms))
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return false;
 
             return true;
         }
 
-        public async Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken);
+            var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(commData, parms))
+                return false;
+
+            // Rely on signal to remove the sync from the model
+            return true;
         }
 
         public async Task StartSync(DbId syncDbId, CancellationToken cancellationToken)
