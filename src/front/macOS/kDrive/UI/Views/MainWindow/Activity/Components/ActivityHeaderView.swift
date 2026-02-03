@@ -33,9 +33,9 @@ extension VisibleActivities {
     var title: String {
         switch self {
         case .myActivityOnly:
-            return "Mon activité uniquement"
+            return KDriveLocalizable.activityTypeMyActivity
         case .allActivities:
-            return "Toutes les activités"
+            return KDriveLocalizable.activityTypeAllActivities
         }
     }
 }
@@ -45,12 +45,12 @@ struct ActivityHeaderView: View {
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
-            Text("Synchronisation en cours")
+            Text(KDriveLocalizable.activityTitleInProgress)
                 .font(.Tokens.title2)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Picker("Visible activities", selection: $visibleActivities) {
+            Picker(KDriveLocalizable.accessibilityActivityTypePicker, selection: $visibleActivities) {
                 ForEach(VisibleActivities.allCases) { activity in
                     Label { Text(activity.title) } icon: { activity.icon }
                         .tag(activity)
