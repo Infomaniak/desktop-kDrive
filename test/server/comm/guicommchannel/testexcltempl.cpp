@@ -57,8 +57,8 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
+    auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
+        const auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
         CPPUNIT_ASSERT(exclTemplGetExcludedJob);
         CPPUNIT_ASSERT(CommString{Str("templateName")} == exclTemplGetExcludedJob->_name);
 
