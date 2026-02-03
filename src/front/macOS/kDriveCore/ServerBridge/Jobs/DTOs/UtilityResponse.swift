@@ -52,3 +52,7 @@ struct UtilityHasSystemLaunchOnStartupResponse: Codable, Sendable {
 struct UtilityHasLaunchOnStartupResponse: Codable, Sendable {
     let enabled: Bool
 }
+
+struct UtilitySetLaunchOnStartupQuery: Codable, Sendable {
+    let enabled: Bool
+}
