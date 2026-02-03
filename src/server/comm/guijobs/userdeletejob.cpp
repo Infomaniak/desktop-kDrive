@@ -67,7 +67,7 @@ ExitInfo UserDeleteJob::process() {
 
     // Delete user from DB
     const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);
-    if (!exitInfo) {
+    if (exitInfo) {
         auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_userDbId);
         _commManager->sendGuiSignal(signalUserRemovedJob);
     } else {
