@@ -33,7 +33,7 @@ public extension Font {
         public static let title3: Font = .title3
         public static let title3Emphasized: Font = .title3.weight(.emphasized)
 
-        public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
+        public static let headline: Font = .headline
 
         public static let body: Font = .body
         public static let bodyEmphasized: Font = .body.weight(.emphasized)

@@ -29,11 +29,14 @@ public struct UISynchro: Sendable, Equatable, Hashable {
     public let localPath: URL
     public let progressInfo: UISynchroProgressInfo?
 
-    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo?) {
+    public let errorCount: Int
+
+    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo?, errorCount: Int) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath
         self.progressInfo = progressInfo
+        self.errorCount = errorCount
     }
 }
 

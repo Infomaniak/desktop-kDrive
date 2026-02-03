@@ -4,8 +4,11 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Philippe Weidmann
- * Exported at: Fri, 30 Jan 2026 08:14:30 +0100
+ * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
  */
+
+/* loco:698053a65bddc8df790d0212 */
+" informationBlockSynchroErrorSubtitle" = "Some files could not be synchronized.";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Add Storage";
@@ -25,8 +28,11 @@
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Finish installation";
 
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Fix errors";
+
 /* loco:69304d546385bb9cfc03e524 */
-"buttonKDriveIsActivated" = "I've activated kDrive";
+"buttonKDriveIsActivated" = "I’ve activated kDrive";
 
 /* loco:695e58701870be5cd709d2a2 */
 "buttonKDriveOnline" = "kDrive Online";
@@ -127,12 +133,6 @@
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Your kDrive is full";
 
-/* loco:696a4fcf3932da71d1075552 */
-"informationBlockSynchroErrorTitle" = "You have %s synchronization error";
-
-/* loco:696a4fdd3932da71d1075554 */
-"informationBlockSynchroErrorTitle-plural" = "You have %s synchronization errors";
-
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activate kDrive.app";
 
@@ -176,13 +176,13 @@
 "instructionRestartIfNecessary" = "Restart the application if required";
 
 /* loco:693050ed6a0836d25507da22 */
-"onboardingAuthorizationExtensionDescription" = "Authorize kDrive in macOS settings :";
+"onboardingAuthorizationExtensionDescription" = "Authorize kDrive in macOS settings:";
 
 /* loco:6930509e14b396d6fc04b0f2 */
 "onboardingAuthorizationExtensionTitle" = "Activate kDrive on your Mac";
 
 /* loco:6930510648920a67910d1094 */
-"onboardingAuthorizationFullDiskDescription" = "To complete the installation, you must authorize kDrive to access your :";
+"onboardingAuthorizationFullDiskDescription" = "To complete the installation, you must authorize kDrive to access your:";
 
 /* loco:693050bab2a2c1990a0d2f04 */
 "onboardingAuthorizationFullDiskTitle" = "Authorize access to files";
@@ -191,7 +191,7 @@
 "onboardingDriveSelectionNoDriveDescription" = "Get started for free with my kSuite,\nor choose a package tailored to your needs.";
 
 /* loco:692405adc5c224ad2a07ff62 */
-"onboardingDriveSelectionNoDriveTitle" = "You don't have a kDrive yet.";
+"onboardingDriveSelectionNoDriveTitle" = "You don’t have a kDrive yet.";
 
 /* loco:69242dd4299cf487060f2143 */
 "onboardingDriveSelectionSelectTitle" = "Select the kDrive to be synchronized on this computer:";
@@ -212,7 +212,7 @@
 "onboardingLoginErrorTitle" = "Connection error";
 
 /* loco:691deb66e28b84c78e034353 */
-"onboardingLoginHintLoading" = "Just a few more moments, and we'll load your account…";
+"onboardingLoginHintLoading" = "Just a few more moments, and we’ll load your account…";
 
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Login from your browser…";
