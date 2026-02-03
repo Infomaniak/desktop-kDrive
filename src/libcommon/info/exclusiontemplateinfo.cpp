@@ -23,22 +23,19 @@
 static const auto exclusionTemplateInfoString = "template";
 static const auto exclusionTemplateInfoWarning = "warning";
 static const auto exclusionTemplateInfoDefault = "default";
-static const auto exclusionTemplateInfoDeleted = "deleted";
 
 namespace KDC {
 
-ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
+ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, const bool warning, const bool def) :
     _templ(templ),
     _warning(warning),
-    _def(def),
-    _deleted(deleted) {}
+    _def(def) {}
 
 
 void ExclusionTemplateInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoString, CommonUtility::qStr2CommString(_templ));
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
 }
 
 void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -47,8 +44,11 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     _templ = CommonUtility::commString2QStr(templateCommStr);
 
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
-    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
+    try {
+        CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
+    } catch (Poco::NotFoundException &) {
+        _def = false;
+    }
 }
 
 void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
@@ -65,7 +65,7 @@ void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<Exclu
         if (uniqueTemplSet.emplace(normalizedTempl).second)
             ++it;
         else
-            (void) templateList.erase(it);
+            it = templateList.erase(it);
     }
 }
 
@@ -75,7 +75,7 @@ void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<Exclusio
         const auto normalizations = computeNormalizations(QStr2SyncName(templateInfo.templ()));
         for (const auto &normalization: normalizations)
             newTemplateList.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization)),
-                                                            templateInfo.warning(), templateInfo.def(), templateInfo.deleted()});
+                                                            templateInfo.warning(), templateInfo.def()});
     }
     templateList = newTemplateList;
 }
@@ -91,14 +91,12 @@ SyncNameSet ExclusionTemplateInfo::computeNormalizations(const SyncName &templat
 }
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
-    in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
-            exclusionTemplateInfo._deleted;
+    in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo) {
-    out << exclusionTemplateInfo._templ << exclusionTemplateInfo._warning << exclusionTemplateInfo._def
-        << exclusionTemplateInfo._deleted;
+    out << exclusionTemplateInfo._templ << exclusionTemplateInfo._warning << exclusionTemplateInfo._def;
     return out;
 }
 

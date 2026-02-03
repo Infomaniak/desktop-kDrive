@@ -24,11 +24,10 @@ ExclusionTemplate::ExclusionTemplate() {
     evaluateComplexity();
 }
 
-ExclusionTemplate::ExclusionTemplate(const std::string &templ, bool warning, bool def, bool deleted) :
+ExclusionTemplate::ExclusionTemplate(const std::string &templ, bool warning, bool def) :
     _templ(templ),
     _warning(warning),
-    _def(def),
-    _deleted(deleted) {
+    _def(def){
     evaluateComplexity();
 }
 

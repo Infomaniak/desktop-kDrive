@@ -260,7 +260,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (!existingIds.Contains(info.DriveId ?? -1))
                 {
                     var drive = new DriveAvailable();
-                    CommStruct.ConversionHelper.copyToDriveAvailable(info, drive);
+                    CommStruct.ConversionHelper.CopyToDriveAvailable(info, drive);
                     await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); });
                 }
                 else
@@ -270,7 +270,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (existingDrive != null)
                     {
                         var tempDrive = new DriveAvailable();
-                        CommStruct.ConversionHelper.copyToDriveAvailable(info, tempDrive);
+                        CommStruct.ConversionHelper.CopyToDriveAvailable(info, tempDrive);
                         // compare properties individually
                         foreach (var prop in typeof(DriveAvailable).GetProperties())
                         {
@@ -845,7 +845,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
                 return;
             }
-            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
+            CommStruct.ConversionHelper.CopyToSettings(parametersInfo, _viewModel.Settings);
         }
 
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
@@ -861,7 +861,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task SaveSettings(CancellationToken cancellationToken)
         {
             ParmsInfo ParmsInfo = new();
-            CommStruct.ConversionHelper.copyToParmsInfo(_viewModel.Settings, ParmsInfo);
+            CommStruct.ConversionHelper.CopyToParmsInfo(_viewModel.Settings, ParmsInfo);
             JsonObject parms = new()
             {
                 [JsonKeys.ParmsInfo] = new JsonObject()
@@ -876,6 +876,58 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo, options);
             parms[JsonKeys.ParmsInfo] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
             await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
+        }
+
+        public async Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken)
+        {
+            List<ExclusionTemplate> result = new();
+
+            foreach (bool def in new bool[] { false, true })
+            {
+                JsonObject parms = new()
+                {
+                    [JsonKeys.Default] = def
+                };
+                CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_GETLIST, parms, cancellationToken);
+
+                if (data.Params is null || !data.Params.ContainsKey(JsonKeys.ExclusionTemplatesList))
+                {
+                    Logger.Log(Logger.Level.Error, $"{JsonKeys.ExclusionTemplatesList} not found in response.");
+                    return null;
+                }
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                options.Converters.Add(new Base64StringJsonConverter());
+                List<ExclusionTemplateInfo>? exclusionTemplateInfos = data.Params[JsonKeys.ExclusionTemplatesList].Deserialize<List<ExclusionTemplateInfo>>(options);
+                if (exclusionTemplateInfos is null)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to deserialize ExclusionTemplatesList from ${data.Params[JsonKeys.ExclusionTemplatesList]}.");
+                    return null;
+                }
+                foreach (var info in exclusionTemplateInfos)
+                {
+                    result.Add(CommStruct.ConversionHelper.FromExclusionTemplateInfo(info));
+                }
+            }
+            return result;
+        }
+
+        public async Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken)
+        {
+            JsonObject parms = new()
+            {
+                [JsonKeys.ExclusionTemplatesList] = JsonSerializer.SerializeToNode(templates, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() }, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_SETUSERLIST, parms, cancellationToken);
+
+            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<ExitCode>() != ExitCode.Ok)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to Set the excusion template list ${data.Params}");
+                return;
+            }
         }
 
         public async Task RefreshErrors(CancellationToken cancellationToken)
@@ -908,7 +960,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             foreach (var errorInfo in errorInfos)
             {
                 Error error = new();
-                CommStruct.ConversionHelper.copyToError(errorInfo, error);
+                CommStruct.ConversionHelper.CopyToError(errorInfo, error);
                 error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
                 await _viewModel.AddErrorAsync(error);
             }
@@ -1235,7 +1287,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             SyncFileItem syncFileItem = new SyncFileItem(sync);
-            CommStruct.ConversionHelper.copyToSyncFileItem(fileItemInfo, syncFileItem);
+            CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
             await Utility.RunOnUIThread(() => { sync.SyncActivities.Insert(0, syncFileItem); });
         }
 
@@ -1313,7 +1365,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            ConversionHelper.copyToError(errorInfo, error);
+            ConversionHelper.CopyToError(errorInfo, error);
             error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
             await _viewModel.AddErrorAsync(error);
         }
@@ -1347,13 +1399,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, $"Unexpected error, user with DbId {userInfo.DbId} not found after existence check.");
                     return;
                 }
-                ConversionHelper.copyToUser(userInfo, user);
+                ConversionHelper.CopyToUser(userInfo, user);
                 Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} updated.");
             }
             else
             {
                 User newUser = new User(userInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."));
-                ConversionHelper.copyToUser(userInfo, newUser);
+                ConversionHelper.CopyToUser(userInfo, newUser);
                 await Utility.RunOnUIThread(() =>
                 {
                     _viewModel.Users.Add(newUser);
@@ -1373,7 +1425,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         continue;
                     }
-                    ConversionHelper.copyToAccount(accountInfo, account);
+                    ConversionHelper.CopyToAccount(accountInfo, account);
                     Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
                     return true;
                 }
@@ -1389,7 +1441,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
-                ConversionHelper.copyToAccount(accountInfo, newAccount);
+                ConversionHelper.CopyToAccount(accountInfo, newAccount);
                 await Utility.RunOnUIThread(() => { parentUser.Accounts.Add(newAccount); });
                 Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
                 return true;
@@ -1409,7 +1461,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         continue;
                     }
-                    ConversionHelper.copyToDrive(driveInfo, drive);
+                    ConversionHelper.CopyToDrive(driveInfo, drive);
                     Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
                     return true;
                 }
@@ -1431,7 +1483,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await Utility.RunOnUIThread(() =>
                 {
                     Drive newDrive = new Drive(driveInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentAccount);
-                    ConversionHelper.copyToDrive(driveInfo, newDrive);
+                    ConversionHelper.CopyToDrive(driveInfo, newDrive);
                     parentAccount.Drives.Add(newDrive);
 
                 });
@@ -1457,7 +1509,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         continue;
                     }
-                    ConversionHelper.copyToSync(syncInfo, sync);
+                    ConversionHelper.CopyToSync(syncInfo, sync);
                     Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
                     return true;
                 }
@@ -1474,7 +1526,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await Utility.RunOnUIThread(() =>
                 {
                     Sync newSync = new Sync(syncInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentDrive);
-                    ConversionHelper.copyToSync(syncInfo, newSync);
+                    ConversionHelper.CopyToSync(syncInfo, newSync);
                     parentDrive.Syncs.Add(newSync);
                 });
                 Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");

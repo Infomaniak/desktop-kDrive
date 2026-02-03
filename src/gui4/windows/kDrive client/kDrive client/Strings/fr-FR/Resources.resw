@@ -612,6 +612,21 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
     <value>Synchronisation</value>
   </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Header" xml:space="preserve">
+    <value>Exclus automatiquement</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Header" xml:space="preserve">
+    <value>Règles d’exclusion personnalisées</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddButton.Content" xml:space="preserve">
+    <value>Ajouter une règle</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Description" xml:space="preserve">
+    <value>Ces fichiers sont ignorés par défaut et ne peuvent pas être modifiés.</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Description" xml:space="preserve">
+    <value>Ajoutez des fichiers à exclure de la synchronisation.</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" xml:space="preserve">
     <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value>
   </data>
@@ -900,6 +915,9 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_DriveManagement_Title.Text" xml:space="preserve">
     <value>Gestion du kDrive</value>
   </data>
+  <data name="Page_TemplateExclusionPage_Title.Text" xml:space="preserve">
+    <value>Fichiers à exclure</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
     <value>Synchronisations avancées</value>
   </data>
@@ -924,6 +942,36 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.Title" xml:space="preserve">
+    <value>Nouvelle règle</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_Title.Text" xml:space="preserve">
+    <value>Ajouter une règle d’exclusion</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_Description.Text" xml:space="preserve">
+    <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Ajouter la règle</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_Remove.Content" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_RemoveMany.Text" xml:space="preserve">
+    <value>Supprimer ({0} éléments)</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_CheckBox.Content" xml:space="preserve">
+    <value>Règles</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_Notification.Text" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Notification_Tooltip.Content" xml:space="preserve">
+    <value>Une notification vous informe lorsqu’un fichier est exclu par cette règle.</value>
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>
@@ -1159,5 +1207,11 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
   </data>
   <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive.Text" xml:space="preserve">
     <value>Tous les dossiers du kDrive</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_CheckBox.Content" xml:space="preserve">
+    <value>Recevoir une notification lorsqu’un fichier est exclu </value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Fichiers à exclure</value>
   </data>
 </root>

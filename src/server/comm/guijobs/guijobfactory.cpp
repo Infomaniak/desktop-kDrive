@@ -58,7 +58,6 @@
 #include "excltemplgetexcludedjob.h"
 #include "excltemplgetlistjob.h"
 #include "excltemplsetlistjob.h"
-#include "excltemplpropagatechangejob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
 
@@ -125,14 +124,7 @@ GuiJobFactory::GuiJobFactory() {
 #endif
         {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
         {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
-        {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
-        {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
-        {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
-        {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-        {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
-        {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
-        {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
-        {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
+        {RequestNum::EXCLTEMPL_SETUSERLIST, makeShared<ExclTemplSetUserListJob>},
         {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
         {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
         {RequestNum::UTILITY_BESTVFSAVAILABLEMODE, makeShared<UtilityBestVfsAvailableModeJob>},
