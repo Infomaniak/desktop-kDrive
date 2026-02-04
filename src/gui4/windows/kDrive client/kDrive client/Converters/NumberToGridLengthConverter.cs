@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.Converters
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Fatal,
+                Logger.Log(Logger.Level.Error,
                     $"NumberToGridLengthConverter: Unable to convert value '{value}' of type '{value.GetType()}' to double. Exception: {ex}");
                 return new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
             }
