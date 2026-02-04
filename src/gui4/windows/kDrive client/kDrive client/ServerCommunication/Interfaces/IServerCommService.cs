@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
-        Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+        Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests

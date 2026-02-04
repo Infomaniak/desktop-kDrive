@@ -848,22 +848,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId,
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_LIST, parms, cancellationToken);
-
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeIdList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeIdList} not found in response.");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_LIST, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.NodeIdList))
+                return null;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            return data.Params[JsonKeys.NodeIdList].Deserialize<List<NodeId>>(options) ?? new List<NodeId>();
+            List<NodeId>? result = data.Params[JsonKeys.NodeIdList].Deserialize<List<NodeId>>(options);
+            if (result is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.NodeIdList} from response: {data.Params}");
+                return null;
+            }
+            return result;
         }
 
-        public async Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken)
+        public async Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
@@ -871,12 +877,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(idList, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken);
-
-            if (data.Params is not null && data.Params.ContainsKey(JsonKeys.ExitCode) && data.Params[JsonKeys.ExitCode]?.GetValue<int>() != 0)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to set sync node id list for syncDbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
-                return;
-            }
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
         public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
