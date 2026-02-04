@@ -83,8 +83,8 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (_isInMaintenance) {
-        (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom);
+    if (_isInMaintenance) { // Not mandatory
+        (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom, false);
     }
 
     if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked)) {
