@@ -23,6 +23,7 @@
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/libcommon/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
@@ -42,8 +43,10 @@ void TestWindowsUpdater::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManagerSingleton::setStore(std::move(mockStore));
     (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+
     // Create parmsDb
     bool alreadyExists = false;
     (void) ParmsDb::instance(MockDb::makeDbName(alreadyExists), KDRIVE_VERSION_STRING, true, true);
