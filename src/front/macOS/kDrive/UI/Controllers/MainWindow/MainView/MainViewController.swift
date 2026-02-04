@@ -98,7 +98,7 @@ extension MainViewController: NavigableSidebarViewControllerDelegate {
         case .home:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         case .activity:
-            contentViewController = ActivityViewController()
+            contentViewController = ActivityViewController(mainViewModel: viewModel)
         case .storage:
             contentViewController = StorageViewController()
         default:

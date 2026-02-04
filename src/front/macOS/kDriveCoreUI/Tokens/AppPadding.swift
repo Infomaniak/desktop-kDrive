@@ -19,6 +19,8 @@
 import Foundation
 
 public enum AppPadding {
+    // MARK: - Primitive tokens
+
     public static let padding64: CGFloat = 64
     public static let padding48: CGFloat = 48
     public static let padding32: CGFloat = 32
@@ -28,4 +30,8 @@ public enum AppPadding {
     public static let padding8: CGFloat = 8
     public static let padding4: CGFloat = 4
     public static let padding2: CGFloat = 2
+
+    // MARK: - Semantic tokens
+
+    public static let page = padding24
 }

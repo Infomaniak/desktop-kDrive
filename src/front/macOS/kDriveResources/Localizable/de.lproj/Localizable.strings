@@ -3,12 +3,30 @@
  * Project: kDrive Desktop
  * Locale: de, German
  * Tagged: macOS
- * Exported by: Philippe Weidmann
- * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 03 Feb 2026 13:24:54 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "Einige Dateien konnten nicht synchronisiert werden.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Sichtbare Aktivitäten";
+
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activityTitleIdle" = "Synchronisation abgeschlossen";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activityTitleInProgress" = "Synchronisierung läuft";
+
+/* loco:6981cb9319de989ec9033882 */
+"activityTitleNoActivity" = "Keine aktuelle Aktivität";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activityTypeAllActivities" = "Alle Aktivitäten";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activityTypeMyActivity" = "Nur meine Aktivität";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Speicher hinzufügen";
@@ -309,3 +327,9 @@
 
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Speicherplatz";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Ihre Dateien sind zugänglich und synchronisiert.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Keine kürzliche Aktivität";
