@@ -56,7 +56,6 @@ ExitInfo UtilityBestVfsAvailableModeJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityBestVfsAvailableModeJob::process() {
-
     const VirtualFileMode mode = KDC::bestAvailableVfsMode();
     if (mode == VirtualFileMode::Off) {
         _bestMode = VirtualFileMode::Off;
