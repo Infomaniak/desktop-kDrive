@@ -80,7 +80,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
-        Task SaveSettings(CancellationToken cancellationToken);
+        Task<bool> SaveSettings(CancellationToken cancellationToken);
 
         // Exclusion template-related requests
         Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken);
@@ -92,12 +92,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
         // Log-related requests
-        Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
-        Task CancelLogUpload(CancellationToken cancellationToken);
+        Task<bool> StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
+        Task<bool> CancelLogUpload(CancellationToken cancellationToken);
 
 
         // App-related requests
-        Task ActivateLoadInfo(CancellationToken cancellationToken);
+        Task<bool> ActivateLoadInfo(CancellationToken cancellationToken);
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
         // Error-related requests
