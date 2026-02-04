@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private bool _autoUpdateEnabled = false;
         private VersionChannel _currentChannel = VersionChannel.Beta;
-        private AppVersion? _updateData;
+        private AppVersion? _availableUpdate;
 
         public bool AutoUpdateEnabled
         {
@@ -25,8 +25,8 @@ namespace Infomaniak.kDrive.ViewModels
         }
         public AppVersion? AvailableUpdate
         {
-            get => _updateData;
-            set => SetPropertyInUIThread(ref _updateData, value);
+            get => _availableUpdate;
+            set => SetPropertyInUIThread(ref _availableUpdate, value);
         }
 
         public static async Task<bool> StartUpdate()
@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             var previousChannel = CurrentChannel;
             CurrentChannel = newChannel;
-
+            AvailableUpdate = null;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
                 CurrentChannel = previousChannel;

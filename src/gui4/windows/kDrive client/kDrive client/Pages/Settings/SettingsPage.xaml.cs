@@ -77,23 +77,32 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (!IsLoaded)
                 return;
+
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
+                if (!comboBox.IsEnabled)
+                    return;
+
+                comboBox.IsEnabled = false;
+
                 string? selection = selectedItem.Tag as string;
-                if (Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
+                if (!Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
                 {
-                    if (!await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled))
-                    {
-                        Logger.Log(Logger.Level.Error, $"Failed to change update notifications disabled to {selectedNotificationsDisabled}");
-                        Utility.ShowUnexpectedErrorTeachingTip();
-                        return;
-                    }
-                    Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                    Logger.Log(Logger.Level.Error, $"Invalid selection for NotificationsDisabled: {selection}");
+                    comboBox.IsEnabled = true;
+                    return;
                 }
-                else
+
+                if (!await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled))
                 {
-                    Logger.Log(Logger.Level.Error, $"Update notifications disabled changed to  {selectedNotificationsDisabled}");
+                    Logger.Log(Logger.Level.Error, $"Failed to change update notifications disabled to {selectedNotificationsDisabled}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    comboBox.IsEnabled = true;
+                    return;
                 }
+
+                Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                comboBox.IsEnabled = true;
             }
         }
 
@@ -149,6 +158,10 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
                 return;
             }
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = this.XamlRoot;
             dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
@@ -160,15 +173,21 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
-                var control = sender as Control;
-                if (control is not null)
-                    control.IsEnabled = false;
-
-                await _viewModel.DisconnectUserAsync(user.DbId);
-
-                if (control is not null)
-                    control.IsEnabled = true;
+                if (!await _viewModel.DisconnectUserAsync(user.DbId))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to disconnect user");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    if (control is not null)
+                        control.IsEnabled = true;
+                    return;
+                }
             }
+            else
+            {
+                Logger.Log(Logger.Level.Info, "User disconnection cancelled by user");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
         }
 
         private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
@@ -232,25 +251,39 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (!IsLoaded)
                 return;
-            var control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
 
-            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
-            if (selectedItem is not null && Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            var control = sender as Control;
+            if (control is null)
             {
-                if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
-                {
-                    Logger.Log(Logger.Level.Error, "Failed to change proxy type");
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
             }
-            else
+
+            if (!control.IsEnabled)
+                return;
+
+            control.IsEnabled = false;
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is null)
             {
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (!Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            {
+                control.IsEnabled = true;
                 Logger.Log(Logger.Level.Error, "selected item is null or invalid");
             }
-            if (control is not null)
-                control.IsEnabled = true;
+
+
+            if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change proxy type");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            control.IsEnabled = true;
         }
 
         private void ProxyConfig_Changed(object sender, RoutedEventArgs e)
@@ -273,13 +306,18 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!ProxySettingsExpander.IsEnabled)
+                return;
+
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
+
             if (!await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change proxy configuration");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+
             ProxySettingsExpander.IsEnabled = true;
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
             ProxySaveProgressRing.Visibility = Visibility.Collapsed;
@@ -358,7 +396,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                     Logger.Log(Logger.Level.Error, "Failed to change log level");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
-
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
             }
         }
 
@@ -367,24 +406,41 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (!IsLoaded)
                 return;
             var control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
+            }
+
+            if (!control.IsEnabled)
+            {
+                Logger.Log(Logger.Level.Error, "control is disabled");
+                return;
+            }
+
+            control.IsEnabled = false;
 
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
-            if (selectedItem is not null && Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            if (selectedItem is null)
             {
-                if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
-                {
-                    Logger.Log(Logger.Level.Error, "LogLevelComboBox_SelectionChanged: Failed to change log level");
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Selected item is null or invalid");
-            }
-            if (control is not null)
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
                 control.IsEnabled = true;
+                return;
+            }
+
+            if (!Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            {
+                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change log level");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            control.IsEnabled = true;
         }
     }
 

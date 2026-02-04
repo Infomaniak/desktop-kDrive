@@ -946,12 +946,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
-            if (versionInfo.Tag == _viewModel.Settings.AppVersion.Tag && versionInfo.BuildVersion == _viewModel.Settings.AppVersion.BuildVersion)
-            {
+            if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
+                _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+            else
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-                return true;
-            }
-            _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+
             return true;
         }
 
@@ -1009,9 +1008,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> SaveSettings(CancellationToken cancellationToken)
         {
-            await Task.Delay(1500);
-            return false;
-
             ParmsInfo ParmsInfo = new();
             CommStruct.ConversionHelper.CopyToParmsInfo(_viewModel.Settings, ParmsInfo);
             JsonObject parms = new()
