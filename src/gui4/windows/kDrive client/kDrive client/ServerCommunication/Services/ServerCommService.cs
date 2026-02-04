@@ -686,7 +686,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
@@ -736,14 +736,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.Size))
+            if (!HasRequiredParam(data, JsonKeys.Size))
+                return null;
+
+            UInt64? size = data.Params[JsonKeys.Size]?.GetValue<UInt64>();
+            if (!size.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.Size} not found in response: {data.Params}");
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.Size} from response: {data.Params}");
                 return null;
             }
-            return data.Params[JsonKeys.Size]?.GetValue<UInt64>() ?? 0;
+            return size;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
