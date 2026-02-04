@@ -32,6 +32,7 @@ public extension UISynchro {
             driveDbId: Int(synchro.driveDbId),
             localPath: URL(fileURLWithPath: synchro.localPath),
             progressInfo: progressInfo,
+            nodes: [:],
             errorCount: synchro.errors.count
         )
     }
