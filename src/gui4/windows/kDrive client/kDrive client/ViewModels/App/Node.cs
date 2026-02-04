@@ -113,10 +113,9 @@ namespace Infomaniak.kDrive.ViewModels
             IsLoadingSize = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, CancellationToken.None);
-            if (res is null || res < 0)
-            {
+            if (res is null)
                 Logger.Log(Logger.Level.Warning, $"Failed to fecth size for NodeId: {NodeId} ");
-            }
+
             Size = res ?? -1;
             IsLoadingSize = false;
         }
