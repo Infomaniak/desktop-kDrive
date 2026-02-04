@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.CustomControls
             { "HomePage", new List<Type>() {
                 typeof(Pages.HomePage),
                 typeof(Pages.DriveAccessDeniedPage),
-                typeof(Pages.LoggingErrorPage),
+                typeof(Pages.LogginErrorPage),
                 typeof(Pages.NotRenewErrorPage),
                 typeof(Pages.MaintenanceErrorPage),
                 typeof(Pages.AsleepErrorPage)

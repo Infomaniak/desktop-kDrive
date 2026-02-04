@@ -104,13 +104,14 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private async void RemoveSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Control? control = sender as Control;
+        var control = sender as Control;
         if (control is null)
         {
             Logger.Log(Logger.Level.Error, "Remove sync button is null when clicking on remove sync button");
             return;
         }
 
+        control.IsEnabled = false;
         Sync? sync = control.DataContext as Sync;
         if (sync is null)
         {
@@ -119,26 +120,29 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        if (ManagedDrive is not null)
-        {
-            control.IsEnabled = false;
-            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
-            if (dialogResult == ContentDialogResult.Primary)
-            {
-                Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
-                await sync.Drive.RemoveSync(sync, CancellationToken.None);
-
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Info, "User canceled sync removal");
-            }
-            control.IsEnabled = true;
-        }
-        else
+        if (ManagedDrive is null)
         {
             Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or sync is null");
+            control.IsEnabled = true;
+            return;
         }
+
+        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+        if (dialogResult != ContentDialogResult.Primary)
+        {
+            Logger.Log(Logger.Level.Info, "User canceled sync removal");
+            control.IsEnabled = true;
+            return;
+        }
+
+        Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
+        if (!await sync.Drive.RemoveSync(sync, CancellationToken.None))
+        {
+            Logger.Log(Logger.Level.Error, "Failed to remove sync");
+            Utility.ShowUnexpectedErrorTeachingTip();
+        }
+
+        control.IsEnabled = true;
     }
 
     private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

@@ -353,30 +353,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     var drive = new DriveAvailable();
                     CommStruct.ConversionHelper.CopyToDriveAvailable(info, drive);
                     await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); }).ConfigureAwait(false);
+                    continue;
                 }
-                else
+
+                // Check if any of the properties have changed, if yes remove and re-add to trigger UI update
+                var existingDrive = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == info.DriveId);
+                if (existingDrive is null)
+                    continue;
+
+                var tempDrive = new DriveAvailable();
+                CommStruct.ConversionHelper.CopyToDriveAvailable(info, tempDrive);
+                // compare properties individually
+                foreach (var prop in typeof(DriveAvailable).GetProperties())
                 {
-                    // Check if any of the properties have changed, if yes remove and re-add to trigger UI update
-                    var existingDrive = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == info.DriveId);
-                    if (existingDrive != null)
+                    var existingValue = prop.GetValue(existingDrive);
+                    var newValue = prop.GetValue(tempDrive);
+                    if (!Equals(existingValue, newValue))
                     {
-                        var tempDrive = new DriveAvailable();
-                        CommStruct.ConversionHelper.CopyToDriveAvailable(info, tempDrive);
-                        // compare properties individually
-                        foreach (var prop in typeof(DriveAvailable).GetProperties())
+                        await Utility.RunOnUIThread(() =>
                         {
-                            var existingValue = prop.GetValue(existingDrive);
-                            var newValue = prop.GetValue(tempDrive);
-                            if (!Equals(existingValue, newValue))
-                            {
-                                await Utility.RunOnUIThread(() =>
-                                {
-                                    user.DrivesAvailable.Remove(existingDrive);
-                                    user.DrivesAvailable.Add(tempDrive);
-                                }).ConfigureAwait(false);
-                                break;
-                            }
-                        }
+                            user.DrivesAvailable.Remove(existingDrive);
+                            user.DrivesAvailable.Add(tempDrive);
+                        }).ConfigureAwait(false);
+                        break;
                     }
                 }
             }
@@ -474,12 +473,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.LiteSync] = newSync.SyncType == SyncType.Online,
                 [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncInfo} not found in response.");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return false;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.SyncInfo))
+                return false;
 
             // Rely on signal to add the sync to the model
             return true;
@@ -494,17 +493,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
-            if (type == sync.SyncType)
-            {
-                Logger.Log(Logger.Level.Debug, $"Sync with DbId {syncDbId} is already of type {type}, no change needed.");
-                return true;
-            }
-
             if (type == SyncType.Online)
             {
                 // Ensure the path supports online mode
                 bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
-                if (!canSupportOnlineMode.HasValue || canSupportOnlineMode.Value == false)
+                if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
                 {
                     Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
                     return false;
@@ -517,56 +510,76 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Value] = type == SyncType.Online
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken);
-            if (data?.Code != ExitCode.Ok)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to set sync type for sync with DbId {syncDbId}, exit code: {(ExitCode?)data?.Params?[JsonKeys.ExitCode]?.GetValue<int>()}");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return false;
-            }
 
             return true;
         }
 
-        public async Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken);
+            var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken).ConfigureAwait(false);
+
+            // If the sync is not found on the server, we assume it is already deleted and remove it from the model
+            if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} not found on server, assuming already deleted.");
+                await Utility.RunOnUIThread(() =>
+                {
+                    var syncToRemove = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
+                    if (syncToRemove is not null)
+                        syncToRemove.Drive.Syncs.Remove(syncToRemove);
+                    Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} removed.");
+                }).ConfigureAwait(false);
+                return true;
+            }
+
+            if (!CheckJobResultAndLogIfError(commData, parms))
+                return false;
+
+            // Rely on signal to remove the sync from the model
+            return true;
         }
 
-        public async Task StartSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> StartSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
-                return;
+                return false;
             }
+            var previousStatus = sync.SyncStatus;
             sync.SyncStatus = SyncStatus.Starting;
 
             var parms = new JsonObject
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
-            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            if (!CheckJobResultAndLogIfError(data, parms))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to start sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
-                return;
+                sync.SyncStatus = previousStatus;
+                return false;
             }
+
+            return true;
         }
 
-        public async Task PauseSync(DbId syncDbId, CancellationToken cancellationToken)
+        public async Task<bool> PauseSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
-                return;
+                return false;
             }
+            var previousStatus = sync.SyncStatus;
             sync.SyncStatus = SyncStatus.StopAsked;
 
             var parms = new JsonObject
@@ -574,11 +587,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken);
-            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            if(!CheckJobResultAndLogIfError(data, parms))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to pause sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
-                return;
+                sync.SyncStatus = previousStatus;
+                return false;
             }
+            return true;
         }
 
         public async Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
@@ -1389,7 +1403,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             SyncFileItem syncFileItem = new SyncFileItem(sync);
             CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
-            await Utility.RunOnUIThread(() => { sync.SyncActivities.Insert(0, syncFileItem); });
+            await Utility.RunOnUIThread(() =>
+            {
+                sync.SyncActivities.Insert(0, syncFileItem);
+                // Ensure the list does not exceed 500 items
+                while (sync.SyncActivities.Count > 500)
+                {
+                    sync.SyncActivities.RemoveAt(sync.SyncActivities.Count - 1);
+                }
+
+            });
         }
 
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)

@@ -35,16 +35,9 @@ namespace Infomaniak.kDrive.Pages
 
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel?.SelectedSync is null)
-            {
-                Logger.Log(Logger.Level.Warning, "");
-                DetachHandlers();
-                Frame.Navigate(typeof(HomePage));
-            }
-            else
-            {
-                await ViewModel.SelectedSync.Start();
-            }
+            Logger.Log(Logger.Level.Info, "Retry button clicked - Restarting sync");
+            await RestartSync();
         }
     }
 }
+

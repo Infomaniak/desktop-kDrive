@@ -192,10 +192,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _account, value);
         }
 
-        public async Task RemoveSync(Sync sync, CancellationToken cancellationToken)
+        public async Task<bool> RemoveSync(Sync sync, CancellationToken cancellationToken)
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.RemoveSync(sync.DbId, cancellationToken);
+            return await commService.RemoveSync(sync.DbId, cancellationToken);
         }
 
     }

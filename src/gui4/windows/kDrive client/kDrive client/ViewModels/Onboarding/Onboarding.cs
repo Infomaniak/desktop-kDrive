@@ -83,15 +83,18 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             Logger.Log(Logger.Level.Info, $"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
-            var commService = _serverCommService;
+            int successCount = 0;
             foreach (NewSync sync in NewSyncs)
             {
-                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync?.Drive?.Name ?? "unknown"}");
-                await _serverCommService.AddSync(sync!, CancellationToken.None);
-            }
+                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive?.Name ?? "unknown"}");
+                bool result = await _serverCommService.AddSync(sync, CancellationToken.None);
+                if (!result)
+                    Logger.Log(Logger.Level.Warning, $"Failed to set up sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}");
 
-            Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
-            return true;
+                successCount += result ? 1 : 0;
+            }
+            Logger.Log(Logger.Level.Info, $"Onboarding sync setup completed: {successCount}/{NewSyncs.Count} syncs successfully set up.");
+            return successCount == NewSyncs.Count;
         }
 
         public void Reset()
