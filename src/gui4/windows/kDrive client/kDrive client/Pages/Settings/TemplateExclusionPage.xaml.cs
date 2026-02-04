@@ -27,7 +27,11 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             SetupNavBar();
             _templateListModel = new ExclusionTemplateListModel();
-            await _templateListModel.LoadTemplates();
+            if(!await _templateListModel.LoadTemplates())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to load exclusion templates. The template list will be empty.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
