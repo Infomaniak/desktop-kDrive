@@ -761,19 +761,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(parentNodeId) ?? "",
                 [JsonKeys.WithPath] = true
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            if(!CheckJobResultAndLogIfError(data, parms))
+                return null;
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeSubFolderInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeSubFolderInfoList} not found in response.");
-                return new List<Node>();
-            }
+            if(!HasRequiredParam(data, JsonKeys.NodeSubFolderInfoList))
+                return null;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<NodeInfo> nodeList = data.Params[JsonKeys.NodeSubFolderInfoList].Deserialize<List<NodeInfo>>(options) ?? new List<NodeInfo>();
+            List<NodeInfo>? nodeList = data.Params[JsonKeys.NodeSubFolderInfoList].Deserialize<List<NodeInfo>>(options);
+            if (nodeList is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeList from ${data.Params[JsonKeys.NodeSubFolderInfoList]}.");
+                return null;
+            }
+
             List<Node> nodes = nodeList.Select(n =>
             {
                 return new Node(n.NodeId ?? "", n.Name ?? "", n.Size ?? 0, n.ParentNodeId ?? "", n.Path ?? "", userDbId, driveId, n.AccessDenied ?? false);
