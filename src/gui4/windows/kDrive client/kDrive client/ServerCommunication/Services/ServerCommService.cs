@@ -876,7 +876,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId,
                 [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(idList, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data, parms);
         }
 
@@ -887,20 +887,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.DriveDbId] = driveDbId,
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId)
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_GETPUBLICLINKURL, parms, cancellationToken);
-
-            if (data.Params is null || !data.Params.ContainsKey(JsonKeys.LinkUrl))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.LinkUrl} not found in response.");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_GETPUBLICLINKURL, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.LinkUrl))
+                return null;
 
             var options = new JsonSerializerOptions();
             options.Converters.Add(new Base64StringJsonConverter());
             string? linkStr = data.Params[JsonKeys.LinkUrl].Deserialize<string>(options);
+            if (linkStr is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.LinkUrl} from response: {data.Params}");
+                return null;
+            }
+
             try
             {
-                return new(linkStr ?? "");
+                return new Uri(linkStr);
             }
             catch (UriFormatException)
             {
@@ -909,9 +914,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task StartUpdate(CancellationToken cancellationToken)
+        public async Task<bool> StartUpdate(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data);
         }
         public async Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {

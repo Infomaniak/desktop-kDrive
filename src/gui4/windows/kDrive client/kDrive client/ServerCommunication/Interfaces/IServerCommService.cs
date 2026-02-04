@@ -87,7 +87,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
 
         // Update-related requests
-        Task StartUpdate(CancellationToken cancellationToken);
+        Task<bool> StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 

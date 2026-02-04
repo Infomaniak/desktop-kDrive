@@ -29,10 +29,9 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _updateData, value);
         }
 
-        public async Task<bool> StartUpdate()
+        public static async Task<bool> StartUpdate()
         {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
-            return true;
+            return await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
         }
 
         public async Task ChangeChannel(VersionChannel newChannel)

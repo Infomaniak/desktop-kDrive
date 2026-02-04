@@ -133,9 +133,10 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Info, "User clicked on Update button, starting update process.");
             }
 
-            if (!await ViewModel.Settings.UpdateManager.StartUpdate())
+            if (!await UpdateManager.StartUpdate())
             {
                 Logger.Log(Logger.Level.Error, "Update process failed to start.");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
 
             if (btn is not null)
