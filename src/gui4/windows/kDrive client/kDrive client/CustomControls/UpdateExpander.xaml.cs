@@ -56,9 +56,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs? e)
         {
-            if (e is null || e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-                Utility.SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
-
             if (e is null || e.PropertyName == nameof(UpdateManager.AvailableUpdate) || e.PropertyName == nameof(Settings.AppVersion))
                 Refresh();
         }
@@ -109,7 +106,7 @@ namespace Infomaniak.kDrive.CustomControls
                 string? channelString = selectedItem.Tag as string;
                 if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
-                    if(!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
+                    if (!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
                     {
                         Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
                         Utility.ShowUnexpectedErrorTeachingTip();
@@ -164,7 +161,7 @@ namespace Infomaniak.kDrive.CustomControls
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
-                if(!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
+                if (!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change auto-update setting.");
                     Utility.ShowUnexpectedErrorTeachingTip();

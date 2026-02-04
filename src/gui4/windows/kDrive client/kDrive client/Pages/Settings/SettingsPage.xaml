@@ -349,14 +349,14 @@
                                 <TextBox x:Name="ProxyHostTextBox"
                                          PlaceholderText="0.0.0.0"
                                          TextChanged="ProxyConfig_Changed"
-                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName}"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName, Mode=OneWay}"
                                          Width="200" />
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Port"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyPortTextBox"
                                          PlaceholderText="443"
-                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.Port}"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.Port, Mode=OneWay}"
                                          TextChanged="ProxyConfig_Changed"
                                          Width="200" />
                             </toolKit:SettingsCard >

@@ -15,6 +15,7 @@
         <!-- Converters -->
         <converters:DateToStringConverter x:Key="DateToStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:ToStringConverter x:Key="ToStringConverter" />
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
@@ -67,6 +68,8 @@
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
+                      SelectedValuePath="Tag"
+                      SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
                               x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />
