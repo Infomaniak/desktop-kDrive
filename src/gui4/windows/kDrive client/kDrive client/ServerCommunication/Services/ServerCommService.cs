@@ -919,7 +919,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data);
         }
-        public async Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
+        public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
@@ -927,24 +927,31 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.UpdateChannel] = (int)channel
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.VersionInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.VersionInfo} not found in response.");
-                return;
-            }
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.VersionInfo))
+                return false;
 
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = null;//           data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
-            if (versionInfo?.Tag == _viewModel.Settings.AppVersion?.Tag && versionInfo?.BuildVersion == _viewModel.Settings.AppVersion?.BuildVersion)
+            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
+            if (versionInfo is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data.Params[JsonKeys.VersionInfo]}.");
+                return false;
+            }
+
+            if (versionInfo.Tag == _viewModel.Settings.AppVersion.Tag && versionInfo.BuildVersion == _viewModel.Settings.AppVersion.BuildVersion)
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-                return;
+                return true;
             }
             _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+            return true;
         }
         public async Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
         {
@@ -952,6 +959,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { [JsonKeys.UpdateChannel] = (int)newChannel }, cancellationToken);
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
+
         public async Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
         {
             var parms = new JsonObject

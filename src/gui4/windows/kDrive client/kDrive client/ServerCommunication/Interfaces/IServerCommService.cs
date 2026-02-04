@@ -88,7 +88,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Update-related requests
         Task<bool> StartUpdate(CancellationToken cancellationToken);
-        Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
+        Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
         // Log-related requests
