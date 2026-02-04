@@ -34,9 +34,18 @@ namespace Infomaniak.kDrive.ViewModels
             return await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
         }
 
-        public static async Task<bool> ChangeChannel(VersionChannel newChannel)
+        public async Task<bool> ChangeChannel(VersionChannel newChannel)
         {
-            return await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, CancellationToken.None);
+            var previousChannel = CurrentChannel;
+            CurrentChannel = newChannel;
+
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                CurrentChannel = previousChannel;
+                return false;
+            }
+
+            return true;
         }
 
         public async Task<bool> ChangeAutoUpdate(bool activated)

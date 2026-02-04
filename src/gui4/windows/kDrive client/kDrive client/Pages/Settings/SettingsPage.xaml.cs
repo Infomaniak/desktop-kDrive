@@ -22,8 +22,6 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -55,12 +53,16 @@ namespace Infomaniak.kDrive.Pages.Settings
             (App.Current as App)?.StartOnboarding();
         }
 
-        private async void AutoStartToggleSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             if (!IsLoaded)
                 return;
+
             if (sender is ToggleSwitch toggleSwitch)
             {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+
                 toggleSwitch.IsEnabled = false;
                 if (!await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn))
                 {
@@ -95,12 +97,13 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private async void MoveToTrashToggleSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void MoveToTrashToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+
                 toggleSwitch.IsEnabled = false;
                 if (!await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn))
                 {
@@ -190,8 +193,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
             if (result == ConsentResult.Cancelled)
                 return;
@@ -204,8 +205,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void SentryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
             ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
             if (result == ConsentResult.Cancelled)
                 return;
@@ -219,9 +218,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void PrivacySeeSourcesButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
@@ -305,73 +301,65 @@ namespace Infomaniak.kDrive.Pages.Settings
             Utility.OpenFolderSecurely(Logger.LogFolder);
         }
 
-        private async void EnableDebugLogsToggleSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-
-            if (toggleSwitch is null)
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
-
-            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
-
-            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn)
-                return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn)
-                return; // No change needed
-
-            LogSettingsExpander.IsEnabled = false;
-            if (!await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None))
+            if (sender is ToggleSwitch toggleSwitch)
             {
-                Logger.Log(Logger.Level.Error, "Failed to change log level");
-                Utility.ShowUnexpectedErrorTeachingTip();
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
+                if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Debug : Logger.Level.None))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
             }
-            LogSettingsExpander.IsEnabled = true;
         }
 
-        private async void PurgeOldLogsToggleSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void PurgeOldLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-            if (toggleSwitch is null)
+            if (sender is ToggleSwitch toggleSwitch)
             {
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
-                return;
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
+                if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
             }
-
-            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch.IsOn)
-                return; // No change needed
-            LogSettingsExpander.IsEnabled = false;
-            if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
-            {
-                Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
-                Utility.ShowUnexpectedErrorTeachingTip();
-            }
-            LogSettingsExpander.IsEnabled = true;
         }
 
-        private async void ExtendedLogToggleSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void ExtendedLogToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-            if (toggleSwitch is null)
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
-
-            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
-            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn)
-                return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn)
-                return; // No change needed
-            LogSettingsExpander.IsEnabled = false;
-            if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch?.IsOn ?? false ? Logger.Level.Extended : Logger.Level.Debug))
+            if (sender is ToggleSwitch toggleSwitch)
             {
-                Logger.Log(Logger.Level.Error, "Failed to change log level");
-                Utility.ShowUnexpectedErrorTeachingTip();
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
+
+                if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleSwitch.IsOn || ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleSwitch.IsOn)
+                {
+                    toggleSwitch.IsEnabled = true;
+                    LogSettingsExpander.IsEnabled = true;
+                    return; // No change needed
+                }
+
+                if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Extended : Logger.Level.Debug))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+
             }
-            LogSettingsExpander.IsEnabled = true;
         }
 
         private async void LogLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

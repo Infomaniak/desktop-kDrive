@@ -955,21 +955,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task<bool> ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
-        {
-            _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-            var parms = new JsonObject
-            {
-                [JsonKeys.UpdateChannel] = (int)newChannel
-            };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, parms))
-                return false;
-
-            _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
-            return true;
-        }
-
         public async Task<bool> StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -1024,6 +1009,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> SaveSettings(CancellationToken cancellationToken)
         {
+            await Task.Delay(1500);
+            return false;
+
             ParmsInfo ParmsInfo = new();
             CommStruct.ConversionHelper.CopyToParmsInfo(_viewModel.Settings, ParmsInfo);
             JsonObject parms = new()
