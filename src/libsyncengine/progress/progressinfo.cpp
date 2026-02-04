@@ -111,7 +111,7 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return true;
 }
 
-bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
+bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
@@ -123,11 +123,16 @@ bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
         return true;
     }
 
-    if (const SyncFileItem &item = it->second.front().item(); !shouldCountProgress(item)) {
+    SyncFileItem &item = it->second.front().item();
+    item.setProgress(progress);
+
+    _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
+
+    if (!shouldCountProgress(item)) {
         return true;
     }
 
-    it->second.front().progress().setCompleted(completed);
+    it->second.front().progress().setCompleted(progress * it->second.front().progress().total() / 100);
     recomputeCompletedSize();
     return true;
 }
@@ -148,6 +153,7 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     SyncFileItem &item = it->second.front().item();
     item.setStatus(status);
+    item.setProgress(100); // 100%
 
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
 

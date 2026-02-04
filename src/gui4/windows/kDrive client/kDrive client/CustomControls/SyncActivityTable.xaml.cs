@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.CustomControls
             RefreshFilteredActivities();
         }
 
-        ~SyncActivityTable()
+        private void SyncActivityTable_Unloaded(object sender, RoutedEventArgs e)
         {
             _activitySubscription?.Dispose();
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -208,8 +208,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Find parrent button to anchor teaching tip
-
-
             DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
 
 

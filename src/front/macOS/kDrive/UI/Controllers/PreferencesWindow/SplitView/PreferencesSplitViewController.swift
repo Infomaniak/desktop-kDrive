@@ -47,7 +47,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
 // MARK: - NavigableSidebarViewControllerDelegate
 
 extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
+    func sidebarViewController(_: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
         var contentViewController: NSViewController
         switch item {
         case .general:

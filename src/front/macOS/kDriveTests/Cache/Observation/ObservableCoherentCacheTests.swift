@@ -18,30 +18,39 @@
 
 import Combine
 import Foundation
-import kDriveCore
+@testable import kDriveCore
 import OrderedCollections
-import XCTest
+import Testing
 
-final class ObservableCoherentCacheTests: XCTestCase {
-    static let expectedUserId = Int32.random(in: 0 ... 1000)
-    static let expectedUserDbId = Int32.random(in: 0 ... 1000)
+extension ServerCoherentCache {
+    var receivedUserValues: AsyncStream<IndexedUsers> {
+        AsyncStream { continuation in
+            let cancellable = usersPublisher
+                .sink { value in continuation.yield(value) }
 
-    @MainActor func testObserveUserChangesWithCombine() throws {
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+    }
+
+    var receivedErrorValues: AsyncStream<IndexedErrors> {
+        AsyncStream { continuation in
+            let cancellable = serverErrorsPublisher
+                .sink { value in continuation.yield(value) }
+
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+    }
+}
+
+@MainActor
+struct ObservableCoherentCacheTests {
+    @Test(.timeLimit(.minutes(1)))
+    func observeUserChangesWithCombine() async throws {
         // GIVEN
-        let user = User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
-            name: "appleseed",
-            email: "ja@apple.com",
-            accounts: [:],
-            availableDrives: [:],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
-
+        let user = ObservableData.expectedUser
         let cache = ServerCoherentCache()
-        let expectation = expectation(description: "User updates observed")
+        let receivedValues = await cache.receivedUserValues // Start to save the received values
+
         var receivedUsers: IndexedUsers?
         var cancellables = Set<AnyCancellable>()
 
@@ -50,33 +59,57 @@ final class ObservableCoherentCacheTests: XCTestCase {
         let subscription = publisher
             .sink { indexedUsers in
                 receivedUsers = indexedUsers
-                if !indexedUsers.isEmpty {
-                    expectation.fulfill()
-                } else {
-                    XCTFail("Received an empty users list")
-                }
             }
 
         subscription.store(in: &cancellables)
 
-        Task {
-            await cache.addUser(user)
-        }
+        await cache.addUser(user)
 
         // THEN
-        waitForExpectations(timeout: 10.0) { error in
-            if let error {
-                XCTFail("Expectation failed with error: \(error)")
-            }
-        }
+        _ = await receivedValues.first(where: { _ in true })
 
-        XCTAssertEqual(receivedUsers!.count, 1, "Should have received one user update")
+        #expect(receivedUsers != nil, "Should have received users update")
+        #expect(receivedUsers!.count == 1, "Should have received one user update")
 
         if let receivedUser = receivedUsers?.values.first {
-            XCTAssertEqual(receivedUser.dbId, Self.expectedUserDbId, "Received user ID should match expected")
-            XCTAssertEqual(receivedUser.name, "appleseed", "Received user name should match expected")
+            #expect(receivedUser.dbId == ObservableData.expectedUserDbId, "Received user ID should match expected")
+            #expect(receivedUser.name == "appleseed", "Received user name should match expected")
         } else {
-            XCTFail("Expected to find a user in the combine event")
+            Issue.record("Expected to find values")
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func observeServerErrorsChangesWithCombine() async throws {
+        // GIVEN
+        let serverError = ObservableData.expectedServerError
+        let cache = ServerCoherentCache()
+        let receivedValues = await cache.receivedErrorValues // Start to save the received values
+
+        var receivedServerErrors: IndexedErrors?
+        var cancellables = Set<AnyCancellable>()
+
+        // WHEN
+        let publisher = cache.serverErrorsPublisher
+        let subscription = publisher
+            .sink { indexedErrors in
+                receivedServerErrors = indexedErrors
+            }
+
+        subscription.store(in: &cancellables)
+
+        try await cache.addOrUpdateError(serverError)
+
+        // THEN
+        _ = await receivedValues.first(where: { _ in true })
+
+        #expect(receivedServerErrors != nil, "Should have received errors")
+        #expect(receivedServerErrors!.count == 1, "Should have received one error")
+
+        if let receivedServerError = receivedServerErrors?.values.first {
+            #expect(receivedServerError.dbId == ObservableData.expectedServerErrorDbId, "Received error ID should match expected")
+        } else {
+            Issue.record("Expected to find values")
         }
     }
 }

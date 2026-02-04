@@ -69,7 +69,7 @@ ExitInfo SyncGetPrivateLinkUrlJob::process() {
     if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_fileId), _linkUrl);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::getPrivateLinkUrl");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
 
         return exitCode;
     }

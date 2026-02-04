@@ -1,5 +1,4 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -29,36 +28,37 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         /* Refreshes the information of all users from the server.
          * This includes their properties (name, email, avatar, etc.), accounts are not refreshed here, call RefreshAccounts for that.
          * User are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
+         * Note: This does not refresh accounts within users, only the users themselves.
          */
-        Task RefreshUsers(CancellationToken cancellationToken);
+        Task<bool> RefreshUsers(CancellationToken cancellationToken);
 
         /* Removes the user with the specified DbId from the server and local storage.
          * The view model's Users collection is updated accordingly.
          * Returns true on success, false on failure.
          */
-        Task RemoveUser(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveUser(DbId userDbId, CancellationToken cancellationToken);
 
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.
          * Accounts are added/removed as necessary to match the server state.
-         * Returns a Task that completes when the operation is done.
+         * Returns true on success, false on failure.
          * Note: This does not refresh drives within accounts, only the accounts themselves.
          */
-        Task RefreshAccounts(CancellationToken cancellationToken);
+        Task<bool> RefreshAccounts(CancellationToken cancellationToken);
 
 
         // Drive-related requests
-        Task RefreshDrives(CancellationToken cancellationToken);
-        Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
+        Task<bool> RefreshDrives(CancellationToken cancellationToken);
+        Task<bool> RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
 
         // Sync-related requests
-        Task RefreshSyncs(CancellationToken cancellationToken);
-        Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
-        Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
-        Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> RefreshSyncs(CancellationToken cancellationToken);
+        Task<bool> StartSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> PauseSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
-        Task<bool> SetSyncType(DbId syncDbId, SyncType mode, CancellationToken cancellationToken);
+        Task<bool> SetSyncType(DbId syncDbId, SyncType type, CancellationToken cancellationToken);
 
         Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
@@ -66,8 +66,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         {
             public string? GoodPath { get; set; }
             public string? ErrorMessage { get; set; }
-        }    
-        
+        }
+
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
@@ -83,22 +83,31 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests
-        Task RefreshSettings(CancellationToken cancellationToken);
+        Task<bool> RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);
+
+        // Exclusion template-related requests
+        Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken);
+        Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
 
         // Update-related requests
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
+        // Log-related requests
+        Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
+        Task CancelLogUpload(CancellationToken cancellationToken);
+
+
         // App-related requests
         Task ActivateLoadInfo(CancellationToken cancellationToken);
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
         // Error-related requests
-        Task RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> RefreshErrors(CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
@@ -123,6 +132,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for Update-related signals
         Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for log-related signals
+        Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args);
 
         // Event handlers for error-related signals
         Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);

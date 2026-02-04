@@ -59,7 +59,7 @@ ExitInfo UserAvailableDrivesJob::process() {
     ExitCode exitCode = ServerRequests::getUserAvailableDrives(_userDbId, _driveAvailableInfoList);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }
 

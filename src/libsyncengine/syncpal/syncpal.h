@@ -132,12 +132,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
         }
 
-        inline void setSendSignalCallback(const std::function<void(SignalNum, int, const SigValueType &)> &sendSignal) {
-            _sendSignal = sendSignal;
+        inline void setFixConflictedFilesCompletedCallback(
+                const std::function<void(int, uint64_t)> &fixConflictedFilesCompleted) {
+            _fixConflictedFilesCompleted = fixConflictedFilesCompleted;
         }
 
         void setVfs(std::shared_ptr<Vfs> vfs);
@@ -218,6 +220,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void addError(const Error &error);
         void addCompletedItem(int syncDbId, const SyncFileItem &item);
+        void fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -324,7 +327,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Callbacks
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
-        std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
+        std::function<void(int syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
         std::shared_ptr<Vfs> _vfs;
 
         // DB
@@ -378,7 +381,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void stopEstimateUpdates();
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
+        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
                                                const NodeId &newRemoteNodeId = {});
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,18 +66,22 @@ namespace Infomaniak.kDrive.CustomControls
         public SyncExclusionSelector()
         {
             InitializeComponent();
-            Loaded += OnControlLoadedAsync;
         }
 
         // Initial load of data once control is displayed
-        private async void OnControlLoadedAsync(object sender, RoutedEventArgs e)
+        private async void SyncExclusionSelector_Loaded(object sender, RoutedEventArgs e)
         {
             await ReloadAsync();
+        }
+
+        private void SyncExclusionSelector_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ClearAllTreeItems();
         }
         #endregion
 
         #region Dependency Properties
-        public DbId UserDbId
+        private DbId UserDbId
         {
             get => (DbId)GetValue(UserDbIdProperty);
             set => SetValue(UserDbIdProperty, value);
@@ -84,7 +89,7 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty UserDbIdProperty =
             DependencyProperty.Register(nameof(UserDbId), typeof(DbId), typeof(SyncExclusionSelector), new PropertyMetadata(null));
 
-        public DriveId DriveId
+        private DriveId DriveId
         {
             get => (DriveId)GetValue(DriveIdProperty);
             set => SetValue(DriveIdProperty, value);
@@ -92,7 +97,7 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty DriveIdProperty =
             DependencyProperty.Register(nameof(DriveId), typeof(DriveId), typeof(SyncExclusionSelector), new PropertyMetadata(null));
 
-        public NodeId RemoteRootNodeId
+        private NodeId RemoteRootNodeId
         {
             get => (NodeId)GetValue(RemoteNodeIdProperty);
             set => SetValue(RemoteNodeIdProperty, value);
@@ -100,18 +105,32 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty RemoteNodeIdProperty =
             DependencyProperty.Register(nameof(RemoteRootNodeId), typeof(NodeId), typeof(SyncExclusionSelector), new PropertyMetadata(""));
 
-        public DbId? SyncDbId
+        public ISync? Sync
         {
-            get => (DbId?)GetValue(SyncDbIdProperty);
-            set => SetValue(SyncDbIdProperty, value);
+            get => (ISync?)GetValue(SyncProperty);
+            set
+            {
+                SetValue(SyncProperty, value);
+                if (value is not null)
+                {
+                    DriveId = value.Drive.DriveId;
+                    UserDbId = value.Drive.UserDbId;
+                    RemoteRootNodeId = value.RemoteNodeId;
+                }
+            }
         }
-        public static readonly DependencyProperty SyncDbIdProperty =
-            DependencyProperty.Register(nameof(SyncDbId), typeof(DbId), typeof(SyncExclusionSelector), new PropertyMetadata(null, OnSyncDbIdChanged));
+        public static readonly DependencyProperty SyncProperty =
+            DependencyProperty.Register(nameof(Sync), typeof(ISync), typeof(SyncExclusionSelector), new PropertyMetadata(null, OnSyncChanged));
 
         public bool HasPendingChanges
         {
             get => (bool)GetValue(HasPendingChangesProperty);
-            set => SetValue(HasPendingChangesProperty, value);
+            set
+            {
+                SetValue(HasPendingChangesProperty, value);
+                if (CanShowSaveMenu)
+                    ShowSaveMenu = value;
+            }
         }
         public static readonly DependencyProperty HasPendingChangesProperty =
             DependencyProperty.Register(nameof(HasPendingChanges), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
@@ -124,6 +143,20 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty IsLoadingProperty =
             DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(true));
 
+        public bool CanShowSaveMenu
+        {
+            get => (bool)GetValue(CanShowSaveMenuProperty);
+            set
+            {
+                SetValue(CanShowSaveMenuProperty, value);
+                if (!value)
+                    ShowSaveMenu = false;
+            }
+        }
+
+        public static readonly DependencyProperty CanShowSaveMenuProperty =
+            DependencyProperty.Register(nameof(CanShowSaveMenu), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
+
         // Internal root item
         private TreeItem RootTreeItem
         {
@@ -132,6 +165,15 @@ namespace Infomaniak.kDrive.CustomControls
         }
         private static readonly DependencyProperty RootTreeItemProperty =
             DependencyProperty.Register(nameof(RootTreeItem), typeof(TreeItem), typeof(SyncExclusionSelector), new PropertyMetadata(null));
+
+        public bool ShowSaveMenu
+        {
+            get => (bool)GetValue(ShowSaveMenuProperty);
+            set => SetValue(ShowSaveMenuProperty, value);
+        }
+        public static readonly DependencyProperty ShowSaveMenuProperty =
+            DependencyProperty.Register(nameof(ShowSaveMenu), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
+
         #endregion
 
 
@@ -141,17 +183,29 @@ namespace Infomaniak.kDrive.CustomControls
             if (IsLoading)
                 return;
 
-            if (SyncDbId is null)
+            if (Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: SyncDbId is null.");
+                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Sync is null.");
                 return;
             }
 
-            IsLoading = true;
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.SetBlacklistedNodeIdList(SyncDbId.Value, GetExcludedNodeIds(), CancellationToken.None);
-            await ReloadAsync();
-            IsLoading = false;
+            if (Sync is ViewModels.Sync dbSync)
+            {
+                IsLoading = true;
+                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None);
+                await ReloadAsync();
+                IsLoading = false;
+            }
+            else if (Sync is NewSync tmpSync)
+            {
+                tmpSync.ExcludedNodeIds.Clear();
+                tmpSync.ExcludedNodeIds.AddRange(GetExcludedNodeIds());
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Unsupported Sync type.");
+            }
         }
 
         public async Task CancelChanges()
@@ -176,7 +230,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Recursively accumulate excluded node IDs.
         private List<NodeId> GetExcludedDescendantNodeIds(TreeItem parent)
         {
-            if(parent.Node.AccessDenied)
+            if (parent.Node.AccessDenied)
                 return [];
 
             if (parent.IsSelected is not null) // If the parent is explicitly included or excluded (ie. not indeterminate)
@@ -209,7 +263,7 @@ namespace Infomaniak.kDrive.CustomControls
         #endregion
 
         #region DependencyProperty change handlers
-        private static async void OnSyncDbIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static async void OnSyncChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SyncExclusionSelector control && control.IsLoaded)
                 await control.ReloadAsync();
@@ -221,9 +275,25 @@ namespace Infomaniak.kDrive.CustomControls
         private async Task ReloadAsync()
         {
             IsLoading = true;
+            ClearAllTreeItems();
             await RefreshExcludedNodesAsync();
             await BuildRootLevelItemsAsync();
             IsLoading = false;
+        }
+
+        // Clear all tree items and dispose them
+        private void ClearAllTreeItems()
+        {
+            if (RootTreeItem is not null)
+            {
+                RootTreeItem.Dispose();
+                RootTreeItem = null;
+            }
+            foreach (var item in _rootLevelItems)
+            {
+                item.Dispose();
+            }
+            _rootLevelItems.Clear();
         }
 
         // (Re)build root level items under the logical root folder using current exclusion map
@@ -231,7 +301,10 @@ namespace Infomaniak.kDrive.CustomControls
         {
 
             if (RootTreeItem is not null)
-                RootTreeItem.Children.Clear();
+            {
+                RootTreeItem.Dispose();
+                RootTreeItem = null;
+            }
             _rootLevelItems.Clear();
 
             // Logical root node
@@ -253,18 +326,31 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh exclusion map from server
         private async Task RefreshExcludedNodesAsync()
         {
-            DbId syncDbId = SyncDbId ?? -1;
-            _excludedNodeIds.Clear();
-
-            if (syncDbId != -1) // Existing sync -> load exclusions
+            if (Sync is ViewModels.Sync dbSync)
             {
-                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                DbId syncDbId = dbSync.DbId;
+                _excludedNodeIds.Clear();
+
+                if (syncDbId != -1) // Existing sync -> load exclusions
+                {
+                    var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                    _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                    await RefreshExcludedNodePathsAsync();
+                }
+                else // New sync -> no exclusions
+                {
+                    _excludedNodePathsMap.Clear();
+                }
+            }
+            else if (Sync is NewSync tmpSync)
+            {
+                _excludedNodeIds.Clear();
+                _excludedNodeIds = tmpSync.ExcludedNodeIds.ToList();
                 await RefreshExcludedNodePathsAsync();
             }
-            else // New sync -> no exclusions
+            else
             {
-                _excludedNodePathsMap.Clear();
+                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
             }
         }
 
@@ -419,7 +505,7 @@ namespace Infomaniak.kDrive.CustomControls
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if ((sender as Control)?.DataContext is TreeItem treeItem && treeItem.Node.Size == -1)
-                    await treeItem.Node.LoadSize(); 
+                await treeItem.Node.LoadSize();
         }
 
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set
@@ -436,13 +522,35 @@ namespace Infomaniak.kDrive.CustomControls
             var excludedSet = new HashSet<string>(_excludedNodeIds);
             HasPendingChanges = !currentSet.SetEquals(excludedSet);
         }
+
+        private async void SaveSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+            await SaveChanges();
+            if (control is not null)
+                control.IsEnabled = true;
+
+        }
+
+        private async void CancelSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+            await CancelChanges();
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+
         #endregion      
     }
 
     /// <summary>
     /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
     /// </summary>
-    public class TreeItem : UISafeObservableObject
+    public class TreeItem : UISafeObservableObject, IDisposable
     {
         #region Private fields
         private readonly DbId _userDbId = 0;
@@ -451,6 +559,8 @@ namespace Infomaniak.kDrive.CustomControls
         private bool _childrenLoaded = false;
         private bool? _isSelected = true; // true=include, false=exclude, null=partial
         private readonly Dictionary<NodeId, string> _excludedNodes;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private bool _disposed = false;
         #endregion
 
         #region Public properties
@@ -489,6 +599,8 @@ namespace Infomaniak.kDrive.CustomControls
             _excludedNodes = excluded;
 
             Children.CollectionChanged += OnChildrenCollectionChanged;
+            _disposables.Add(Disposable.Create(() => Children.CollectionChanged -= OnChildrenCollectionChanged));
+
             RegisterSelectionCallbacks(Children);
 
             RecomputeSelectionFromExclusionMap();
@@ -527,6 +639,14 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (e.OldItems != null)
+            {
+                foreach (TreeItem item in e.OldItems.OfType<TreeItem>())
+                {
+                    item.Dispose();
+                }
+            }
+
             RegisterSelectionCallbacks(e.NewItems?.Cast<TreeItem>().ToList());
         }
 
@@ -535,10 +655,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (newItems != null)
                 foreach (var item in newItems)
                     if (item is TreeItem treeItem)
-                        treeItem.WhenAnyPropertyChanged(nameof(TreeItem.IsSelected)).Subscribe(changedItem =>
+                    {
+                        var subscription = treeItem.WhenAnyPropertyChanged(nameof(TreeItem.IsSelected)).Subscribe(changedItem =>
                         {
                             UpdateDirectoryTriStateFromChildren();
                         });
+                        _disposables.Add(subscription);
+                    }
         }
 
 
@@ -577,7 +700,24 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
             IsLoadingChildren = false;
         }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            foreach (var child in Children)
+            {
+                child.Dispose();
+            }
+            Children.Clear();
+
+            _disposables?.Dispose();
+        }
     }
+
     public partial class FolderTreeViewItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? DirectoryTemplate { get; set; }

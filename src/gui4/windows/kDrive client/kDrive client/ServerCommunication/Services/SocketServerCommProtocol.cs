@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -28,13 +30,14 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Networking.Connectivity;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     // For the moment, non implemented methods will fallback to the MockServerCommProtocol implementation
-    public class SocketServerCommProtocol : MockServerCommProtocol, Interfaces.IServerCommProtocol
+    public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
     {
         private TcpClient? _client;
         private long _requestIdCounter = 0;
@@ -55,17 +58,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public new event EventHandler<SignalEventArgs>? SignalReceived;
+        public event EventHandler<SignalEventArgs>? SignalReceived;
+        public event EventHandler? ConnectionLost;
 
         public SocketServerCommProtocol()
         {
-            base.SignalReceived += (s, e) => SignalReceived?.Invoke(s, e); // Forward signals from base class - TODO: remove when all methods are implemented
             Initialize();
         }
 
-        public new void Initialize()
+        public Task Initialize()
         {
             _ = Task.Run(ReconnectLoop);
+            return Task.CompletedTask;
         }
 
         ~SocketServerCommProtocol()
@@ -130,6 +134,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 Logger.Log(Logger.Level.Warning, "Disconnected from server, attempting to reconnect...");
+                ConnectionLost?.Invoke(this, EventArgs.Empty);
                 // Small delay before attempting reconnect
                 await Task.Delay(2000).ConfigureAwait(false);
             }
@@ -140,11 +145,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             try
             {
                 // Wait asynchronously until the client is connected
+                const int softWaitTimeMs = 30000; // Log every 30s
+                var lastLogTime = Stopwatch.StartNew();
                 while (_client == null || !_client.Connected)
                 {
-                    Logger.Log(Logger.Level.Warning, "Client not connected, waiting to send request...");
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (lastLogTime.ElapsedMilliseconds > softWaitTimeMs)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Client not connected, waiting to send request...");
+                        lastLogTime.Restart();
+                    }
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
+
 
                 long requestId = NextId;
                 _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
@@ -170,14 +184,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
                 if (reply.RequestNum == RequestNum.Unknown)
                 {
-                    Logger.Log(Logger.Level.Debug, "Request not implemented in the server, trying the mock implementation.");
-                    reply = await base.SendRequestAsync(requestNum, parameters, cancellationToken).ConfigureAwait(false);
+                    Logger.Log(Logger.Level.Debug, "Request not implemented server-side");
                 }
                 return reply;
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Error, "Request operation was canceled.");
+                Logger.Log(Logger.Level.Info, "Request operation was canceled.");
                 return new CommData();
             }
             catch (Exception ex)
@@ -278,7 +291,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonString}");
             var messageObj = JsonSerializer.Deserialize<CommData>(jsonString, options);
-            if (messageObj == null)
+            if (messageObj is null)
             {
                 Logger.Log(Logger.Level.Warning, "Invalid message format.");
                 return;

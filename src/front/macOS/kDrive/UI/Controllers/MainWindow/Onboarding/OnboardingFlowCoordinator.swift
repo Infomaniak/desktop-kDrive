@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 enum OnboardingStep: Sendable {
     case login

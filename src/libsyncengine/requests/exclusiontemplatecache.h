@@ -37,7 +37,7 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
 
         void operator=(ExclusionTemplateCache const &) = delete;
 
-        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates() const { return _undeletedExclusionTemplates; }
+        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates() const { return _exclusionTemplates; }
         [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates(const bool def) const {
             return def ? _defExclusionTemplates : _userExclusionTemplates;
         }
@@ -50,7 +50,7 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
     private:
         friend class TestExclusionTemplateCache;
         static std::shared_ptr<ExclusionTemplateCache> _instance;
-        std::vector<ExclusionTemplate> _undeletedExclusionTemplates;
+        std::vector<ExclusionTemplate> _exclusionTemplates;
         std::vector<ExclusionTemplate> _defExclusionTemplates;
         std::vector<ExclusionTemplate> _userExclusionTemplates;
         std::vector<std::pair<std::regex, ExclusionTemplate>> _regexPatterns;
@@ -59,7 +59,7 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
 
         ExclusionTemplateCache();
 
-        void populateUndeletedExclusionTemplates();
+        void populateExclusionTemplates();
 
         void updateRegexPatterns();
 

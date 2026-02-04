@@ -27,6 +27,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Settings
@@ -55,7 +56,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;
@@ -66,7 +68,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? selection = selectedItem.Tag as string;
@@ -84,7 +87,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void MoveToTrashToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;
@@ -96,25 +100,28 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
             User? user = (sender as FrameworkElement)?.DataContext as User;
-            if (user is not null)
+            if (user is null)
             {
-                await user.RefreshAvailableDrives();
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
             }
-            else
+
+            if (!await user.RefreshAvailableDrives(CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Warning, "Unable to find the user from DataContext. Refreshing for all users.");
-                await RefreshAvailableDrivesForAllUsers();
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+                Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
         }
 
         private async Task RefreshAvailableDrivesForAllUsers()
         {
-            List<Task> loadAvailableDrivesTasks = new List<Task>();
+            List<Task<bool>> loadAvailableDrivesTasks = new List<Task<bool>>();
             foreach (var user in ViewModel.Users)
             {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
+                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
+            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
@@ -126,8 +133,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
             ContentDialog dialog = new ContentDialog();
-
-            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
             dialog.XamlRoot = this.XamlRoot;
             dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
@@ -138,35 +143,24 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
-                if (user is not null)
-                {
-                    var control = sender as Control;
-                    if (control is not null)
-                    {
-                        control.IsEnabled = false;
-                    }
-                    await _viewModel.DisconnectUserAsync(user.DbId);
-                    await Task.Delay(5000);
-                    if (control is not null)
-                    {
-                        control.IsEnabled = true;
-                    }
-                }
+                var control = sender as Control;
+                if (control is not null)
+                    control.IsEnabled = false;
+
+                await _viewModel.DisconnectUserAsync(user.DbId);
+
+                if (control is not null)
+                    control.IsEnabled = true;
             }
         }
 
         private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
         {
             IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
-            if (drive is Drive)
+            if (drive is not null)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
                 Frame.Navigate(typeof(DriveManagementPage), drive);
-            }
-            else if (drive is DriveAvailable)
-            {
-                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for unconfigured drive {drive.Name}, going to onboarding page");
-                // TODO: Implement navigation to Onboarding Page
             }
             else
             {
@@ -177,28 +171,33 @@ namespace Infomaniak.kDrive.Pages.Settings
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
-            // TODO: Implement navigation to Sync Rules Page
+            Frame.Navigate(typeof(TemplateExclusionPage));
         }
 
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
-            if (result == ConsentResult.Cancelled) return;
+            if (result == ConsentResult.Cancelled)
+                return;
             await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed);
         }
 
         private async void SentryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
-            if (result == ConsentResult.Cancelled) return;
+            if (result == ConsentResult.Cancelled)
+                return;
             await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed);
         }
 
         private async void MatomoToogleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;
@@ -213,7 +212,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void SentryeSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;
@@ -229,7 +229,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void PrivacySeeSourcesButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
 
             var control = sender as Control;
             if (control is not null)
@@ -243,7 +244,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void ProxyTypeComboBox_Changed(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
@@ -263,7 +265,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void ProxyConfig_Changed(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (ProxyHostTextBox.Text != ViewModel.Settings.ProxyConfig.HostName ||
                ProxyPortTextBox.Text != ViewModel.Settings.ProxyConfig.Port.ToString() ||
                ProxyNeedsAuthToggleSwitch.IsOn != ViewModel.Settings.ProxyConfig.NeedsAuth ||
@@ -306,7 +309,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
 
             if (toggleSwitch is null)
@@ -314,8 +318,10 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             bool toggleIsOn = toggleSwitch?.IsOn ?? false;
 
-            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn) return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn)
+                return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn)
+                return; // No change needed
 
             LogSettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None);
@@ -324,12 +330,14 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void PurgeOldLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
             if (toggleSwitch is null)
                 Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
 
-            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
+            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn)
+                return; // No change needed
             LogSettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch?.IsOn ?? false);
             LogSettingsExpander.IsEnabled = true;
@@ -337,14 +345,17 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void ExtendedLogToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
             if (toggleSwitch is null)
                 Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
 
             bool toggleIsOn = toggleSwitch?.IsOn ?? false;
-            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn) return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn)
+                return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn)
+                return; // No change needed
             LogSettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangeLogLevel(toggleSwitch?.IsOn ?? false ? Logger.Level.Extended : Logger.Level.Debug);
             LogSettingsExpander.IsEnabled = true;
@@ -352,7 +363,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void LogLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
@@ -369,38 +381,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = true;
         }
-
-        bool _logUploadCancelled = false;
-        private async void SendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await SendLogDialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
-
-            // !!! Simulate log upload progress
-            // TODO: Implement actual log upload once linked with the server side
-
-            _logUploadCancelled = false;
-            SendLogsProgressRing.Value = 0;
-            SendLogsProgressRing.Visibility = Visibility.Visible;
-            SendLogButton.IsEnabled = false;
-            CancelSendLogButton.Visibility = Visibility.Visible;
-            while (SendLogsProgressRing.Value < 100 && !_logUploadCancelled)
-            {
-                await Task.Delay(Random.Shared.Next(200, 800));
-                SendLogsProgressRing.Value += Random.Shared.Next(1, 20);
-            }
-            SendLogsProgressRing.Value = 100;
-            await Task.Delay(500);
-            SendLogsProgressRing.Visibility = Visibility.Collapsed;
-            SendLogButton.IsEnabled = true;
-            CancelSendLogButton.Visibility = Visibility.Collapsed;
-            _logUploadCancelled = false;
-        }
-
-        private void CancelSendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            _logUploadCancelled = true;
-        }
     }
 
     // templateSelector for the drives listview
@@ -410,7 +390,8 @@ namespace Infomaniak.kDrive.Pages.Settings
         public DataTemplate? UnconfiguredTemplate { get; set; }
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is null) return base.SelectTemplateCore(item);
+            if (item is null)
+                return base.SelectTemplateCore(item);
             if (item is DriveAvailable)
                 return UnconfiguredTemplate;
             else if (item is Drive)
@@ -420,8 +401,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             return base.SelectTemplateCore(item);
         }
-
-
     }
 
 }

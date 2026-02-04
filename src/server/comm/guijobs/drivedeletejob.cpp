@@ -52,8 +52,8 @@ ExitInfo DriveDeleteJob::serializeOutputParms() {
 ExitInfo DriveDeleteJob::process() {
     // Get syncs to delete
     std::vector<int> syncDbIdList;
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    for (const auto &[syncDbId, syncPal]: AppServer::syncPalMap) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
         if (syncPal->driveDbId() == _driveDbId) {
             syncDbIdList.push_back(syncDbId);

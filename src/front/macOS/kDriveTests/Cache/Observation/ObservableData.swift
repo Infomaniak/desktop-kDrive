@@ -185,4 +185,23 @@ public enum ObservableData {
                                           targetNodeId: secondaryTargetNodeId,
                                           supportVfs: secondarySupportVFS,
                                           virtualFileMode: secondaryVirtualFileMode)
+
+    static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.Server,
+                                               functionName: "main.swift",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.DbError,
+                                               exitCause: KDC.ExitCause.DbEntryNotFound,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
 }

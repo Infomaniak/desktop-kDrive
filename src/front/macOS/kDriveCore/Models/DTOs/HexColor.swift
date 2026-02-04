@@ -20,9 +20,9 @@ import Foundation
 
 /// A lightweight exchange type mapping 1:1 the colors sent by the server (Hex RGB without alpha channel)
 public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
-    let red: UInt8
-    let green: UInt8
-    let blue: UInt8
+    public let red: UInt8
+    public let green: UInt8
+    public let blue: UInt8
 
     public var description: String {
         String(format: "#%02x%02x%02x", red, green, blue)

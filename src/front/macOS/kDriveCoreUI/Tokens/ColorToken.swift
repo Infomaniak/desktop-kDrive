@@ -37,11 +37,20 @@ public struct ColorToken {
         return asNSColor.cgColor
     }
 
-    // MARK: - Semantic tokens
+    // MARK: - Semantic tokens (T2)
+
+    public enum Accent {
+        public static let primary = ColorToken(light: KDriveColors.blue600, dark: KDriveColors.blue400)
+        public static let secondary = ColorToken(light: KDriveColors.kDrive500, dark: KDriveColors.kDrive600)
+    }
 
     public enum Action {
-        public static let primary = ColorToken(light: KDriveColors.drive600, dark: KDriveColors.drive400)
+        public static let primary = ColorToken.Accent.primary
         public static let onPrimary = ColorToken(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue800)
+
+        public enum Disabled {
+            public static let dimQuaternary = ColorToken(light: KDriveColors.gray400, dark: KDriveColors.gray400)
+        }
     }
 
     public enum Text {
@@ -64,11 +73,18 @@ public struct ColorToken {
         public enum Medium {
             public static let success = ColorToken(light: KDriveColors.green500, dark: KDriveColors.green400)
             public static let warning = ColorToken(light: KDriveColors.orange500, dark: KDriveColors.orange400)
-            public static let security = ColorToken(light: KDriveColors.drive500, dark: KDriveColors.drive400)
+            public static let security = ColorToken(light: KDriveColors.blue500, dark: KDriveColors.blue400)
+            public static let neutral = ColorToken(light: KDriveColors.gray500, dark: KDriveColors.gray400)
+        }
+
+        public enum Light {
+            public static let warning = ColorToken(light: KDriveColors.orange100, dark: KDriveColors.brown950)
+            public static let security = ColorToken(light: KDriveColors.blue100, dark: KDriveColors.blue950)
+            public static let neutral = ColorToken(light: KDriveColors.neutralBlue100, dark: KDriveColors.gray950)
         }
     }
 
-    // MARK: Contextual tokens
+    // MARK: Contextual tokens (T3)
 
     public enum Drive {
         public static let defaultColor = ColorToken(light: KDriveColors.infomaniak, dark: KDriveColors.infomaniak)

@@ -14,6 +14,7 @@
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
 
         <!-- File template -->
         <DataTemplate x:Key="FileTemplate"
@@ -27,8 +28,8 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -40,7 +41,11 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind SearchItem.Name}" />
+                    </ToolTipService.ToolTip>
+                </TextBlock>
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
@@ -81,8 +86,8 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -93,7 +98,11 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind SearchItem.Name}" />
+                    </ToolTipService.ToolTip>
+                </TextBlock>
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
@@ -107,6 +116,7 @@
                                Grid.Row="0"
                                Width="16"
                                HorizontalAlignment="Right"
+                               Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
@@ -204,7 +214,8 @@
                     ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"
                     UpdateTextOnSelect="False"
                     SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
-                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted">
+                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted"
+                    Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
     </AutoSuggestBox>
 
 </UserControl>

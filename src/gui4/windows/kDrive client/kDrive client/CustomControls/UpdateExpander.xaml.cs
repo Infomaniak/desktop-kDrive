@@ -17,11 +17,15 @@ namespace Infomaniak.kDrive.CustomControls
         public UpdateExpander()
         {
             InitializeComponent();
+
+        }
+        private void UpdateExpander_Loaded(object sender, RoutedEventArgs e)
+        {
             RegisterPropertyChangedHandlers();
             UpdateInternalChannelComboBoxVisibility();
         }
 
-        ~UpdateExpander()
+        private void UpdateExpander_Unloaded(object sender, RoutedEventArgs e)
         {
             UnregisterPropertyChangedHandlers();
         }

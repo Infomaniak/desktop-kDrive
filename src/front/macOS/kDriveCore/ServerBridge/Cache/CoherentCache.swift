@@ -56,6 +56,12 @@ public protocol CoherentCache: Sendable {
     func removeSynchro(synchroDbId: Int32) async throws
     func updateSynchro(_ synchro: Synchro) async throws
 
+    // MARK: - Errors
+
+    func addOrUpdateError(_ error: ErrorInfo) async throws
+    func removeError(_ errorDbId: Int32) async throws
+    func clearErrors() async
+
     // MARK: - Management
 
     func refresh() async throws

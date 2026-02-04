@@ -21,7 +21,7 @@ import InfomaniakDI
 import Sentry
 
 public protocol XPCSignalHandlerProtocol {
-    func handleServerSignal(_ signal: Data?)
+    func handleServerSignal(_ signal: Data?) async
 }
 
 enum SignalError: Error {
@@ -38,6 +38,8 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
+    case unableToGetErrorInfoFromSignal
+    case unableToGetErrorRemovedFromSignal
     case unsupported(_ num: SignalNum)
 }
 
@@ -47,26 +49,25 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let accountHandler = AccountSignalHandler()
     private let driveHandler = DriveSignalHandler()
     private let synchroHandler = SynchroSignalHandler()
+    private let utilitySignalHandler = UtilitySignalHandler()
 
-    func handleServerSignal(_ signal: Data?) {
-        Task {
-            do {
-                try await handleServerSignal(signal)
-            } catch {
-                IKLogger.xpc.error("[KD] signal error :\(error)")
+    func handleServerSignal(_ signal: Data?) async {
+        do {
+            try await decodeAndUseServerSignal(signal)
+        } catch {
+            IKLogger.xpc.error("[KD] signal error :\(error)")
 
-                SentrySDK.capture(message: "Error processing Signal") { scope in
-                    scope.setLevel(.error)
-                    scope.setContext(
-                        value: ["error": error, "description": error.localizedDescription],
-                        key: "underlying error"
-                    )
-                }
+            SentrySDK.capture(message: "Error processing Signal") { scope in
+                scope.setLevel(.error)
+                scope.setContext(
+                    value: ["error": error, "description": error.localizedDescription],
+                    key: "underlying error"
+                )
             }
         }
     }
 
-    private func handleServerSignal(_ signal: Data?) async throws {
+    private func decodeAndUseServerSignal(_ signal: Data?) async throws {
         guard let signal else {
             throw SignalError.nilData
         }
@@ -123,6 +124,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .SYNC_COMPLETEDITEM:
             try await synchroHandler.handleSyncCompleted(signal)
+
+        case .UTILITY_ERROR_ADDED:
+            try await utilitySignalHandler.handleError(signal)
+
+        case .UTILITY_ERROR_REMOVED:
+            try await utilitySignalHandler.handleErrorRemoved(signal)
+
+        case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
+            try await utilitySignalHandler.handleErrorCleared()
 
         default:
             throw SignalError.unsupported(signalNum)

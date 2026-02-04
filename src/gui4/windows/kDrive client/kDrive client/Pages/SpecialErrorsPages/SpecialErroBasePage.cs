@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -34,7 +35,6 @@ namespace Infomaniak.kDrive.Pages
         public AppModel ViewModel => _viewModel;
         public SpecialErroBasePage(List<SyncErrorStates> syncErrorStates)
         {
-            Unloaded += (_, _) => DetachHandlers();
             _handledErrorStates = syncErrorStates;
         }
 
@@ -78,6 +78,23 @@ namespace Infomaniak.kDrive.Pages
             {
                 DetachHandlers();
                 AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
+            }
+        }
+
+        protected async Task RestartSync()
+        {
+            if (ViewModel.SelectedSync is null)
+            {
+                Logger.Log(Logger.Level.Warning, "No selected sync found - Navigating to HomePage");
+                DetachHandlers();
+                Frame.Navigate(typeof(HomePage));
+                return;
+            }
+
+            if (!await ViewModel.SelectedSync.Start())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
     }

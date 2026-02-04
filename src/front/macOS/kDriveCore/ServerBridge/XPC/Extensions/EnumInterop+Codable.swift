@@ -31,5 +31,6 @@ extension KDC.InconsistencyType: Codable {}
 extension KDC.CancelType: Codable {}
 extension KDC.SyncStatus: Codable {}
 extension KDC.SyncStep: Codable {}
+extension KDC.ErrorLevel: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}

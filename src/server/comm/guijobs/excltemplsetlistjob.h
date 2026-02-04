@@ -24,32 +24,20 @@
 
 namespace KDC {
 
-class ExclTemplSetListJob : public AbstractGuiJob {
+class ExclTemplSetUserListJob : public AbstractGuiJob {
     public:
-        ExclTemplSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        ExclTemplSetUserListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                             std::shared_ptr<AbstractCommChannel> channel);
 
-        // Setters for compatibility with legacy comm layer
-        void setInParms(bool def, const std::vector<ExclusionTemplateInfo> &exclusionTemplateList) {
-            _default = def;
-            _exclusionTemplateList = exclusionTemplateList;
-        }
         ExitInfo process() override;
 
     private:
         // Input parameters
-        bool _default = false;
-
-        // Output parameters
         std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
 
-
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
 
-        std::vector<ExclusionTemplateInfo> computeNormalizations(const std::vector<ExclusionTemplateInfo> &templateList);
-        static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
-        static bool canNormalize(const SyncName &template_);
         friend class TestGuiCommChannel;
 };
 

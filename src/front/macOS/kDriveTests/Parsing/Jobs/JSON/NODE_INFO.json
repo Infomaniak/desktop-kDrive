@@ -1,0 +1,16 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 47,
+  "params": {
+    "nodeInfo": {
+      "accessDenied": false,
+      "modtime": 1337,
+      "name": "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=",
+      "nodeId": "QThBQjQ0MjEtNjk3Qi00OTZCLTk0N0ItRUQ5RTJEMTFFMDQx",
+      "parentNodeId": "Q0RFOUFFN0MtRTJGRS00QjBDLTlDQkItQkFFQjI2ODQ5NjE2",
+      "path": "L2Rldi9udWxs",
+      "size": 1234
+    }
+  }
+}

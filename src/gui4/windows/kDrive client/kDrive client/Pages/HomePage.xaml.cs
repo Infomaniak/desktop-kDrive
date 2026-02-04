@@ -36,7 +36,6 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
-            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
@@ -70,7 +69,7 @@ namespace Infomaniak.kDrive.Pages
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
                 case SyncErrorStates.LoggingError:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LoggingErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LogginErrorPage)));
                     break;
                 case SyncErrorStates.NotRenew:
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));

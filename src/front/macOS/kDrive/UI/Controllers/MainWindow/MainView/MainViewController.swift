@@ -17,6 +17,8 @@
  */
 
 import Cocoa
+import Combine
+import kDriveCore
 import kDriveCoreUI
 
 extension NSToolbarItem.Identifier {
@@ -26,10 +28,13 @@ extension NSToolbarItem.Identifier {
 final class MainViewController: IKSplitViewController {
     private let viewModel = MainViewModel()
 
+    private var bindStore = Set<AnyCancellable>()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupSplitView()
+        bindViewModel()
         viewModel.refreshCache()
     }
 
@@ -38,6 +43,24 @@ final class MainViewController: IKSplitViewController {
 
         configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
+    }
+
+    private func bindViewModel() {
+        viewModel.$currentSynchroContext
+            .map { $0?.blockingError }
+            .receiveOnMain(store: &bindStore) { [weak self] currentBlockingError in
+                self?.updateWithError(currentBlockingError)
+            }
+    }
+
+    private func updateWithError(_ blockingError: UIBlockingError?) {
+        if let blockingError {
+            switchContentViewController(destination: BlockingErrorViewController(blockingError: blockingError))
+        } else if let currentContentViewController,
+                  currentContentViewController is BlockingErrorViewController {
+            let homeViewController = HomeViewController(mainViewModel: viewModel)
+            switchContentViewController(destination: homeViewController)
+        }
     }
 
     private func configureWindowAppearance() {
@@ -60,6 +83,7 @@ final class MainViewController: IKSplitViewController {
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController(mainViewModel: viewModel)
+        currentContentViewController = homeViewController
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
@@ -68,13 +92,13 @@ final class MainViewController: IKSplitViewController {
 // MARK: - NavigableSidebarViewControllerDelegate
 
 extension MainViewController: NavigableSidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {
+    func sidebarViewController(_: NSViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
         case .home:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         case .activity:
-            contentViewController = ActivityViewController()
+            contentViewController = ActivityViewController(mainViewModel: viewModel)
         case .storage:
             contentViewController = StorageViewController()
         default:
