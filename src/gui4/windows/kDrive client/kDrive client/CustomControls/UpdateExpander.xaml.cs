@@ -103,12 +103,18 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!IsLoaded)
                 return;
+
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? channelString = selectedItem.Tag as string;
                 if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
-                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
+                    if(!await UpdateManager.ChangeChannel(selectedChannel))
+                    {
+                        Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
+                        Utility.ShowUnexpectedErrorTeachingTip();
+                        return;
+                    }
                     Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
                 }
                 else

@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
@@ -953,11 +954,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
             return true;
         }
-        public async Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
+
+        public async Task<bool> ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
         {
             _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-            await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { [JsonKeys.UpdateChannel] = (int)newChannel }, cancellationToken);
+            var parms = new JsonObject
+            {
+                [JsonKeys.UpdateChannel] = (int)newChannel
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return false;
+
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
+            return true;
         }
 
         public async Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
