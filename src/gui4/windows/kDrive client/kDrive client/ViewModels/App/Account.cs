@@ -22,9 +22,9 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Account : UISafeObservableObject
     {
-        private string _accountName = "";
+        private string _name = "";
         private DbId _dbId = -1;
-        private AccountId accountId = 0;
+        private AccountId _id = 0;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
         private User _user;
         public Account(DbId dbId, User user)
@@ -50,16 +50,16 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _drives, value);
         }
 
-        public string AccountName
+        public string Name
         {
-            get => string.IsNullOrEmpty(_accountName) ? $"Account {_dbId}" : _accountName;
-            set => SetPropertyInUIThread(ref _accountName, value);
+            get => string.IsNullOrEmpty(_name) ? $"Account {_dbId}" : _name;
+            set => SetPropertyInUIThread(ref _name, value);
         }
 
-        public AccountId AccountId
+        public AccountId Id
         {
-            get => accountId;
-            set => SetPropertyInUIThread(ref accountId, value);
+            get => _id;
+            set => SetPropertyInUIThread(ref _id, value);
         }
     }
 }

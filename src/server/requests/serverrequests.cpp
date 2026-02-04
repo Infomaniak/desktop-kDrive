@@ -2073,7 +2073,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
-    accountInfo.setAccountId(account.accountId());
+    accountInfo.setId(account.accountId());
     accountInfo.setName(account.name());
 }
 

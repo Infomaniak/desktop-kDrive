@@ -494,10 +494,10 @@ void TestGuiCommChannel::testAccountInfoListJob() {
         const auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
         AccountInfo ai1(1, 1);
-        ai1.setAccountId(1111);
+        ai1.setId(1111);
         ai1.setName("account1");
         AccountInfo ai2(2, 1);
-        ai2.setAccountId(2222);
+        ai2.setId(2222);
         ai2.setName("account2");
 
         accountInfoListJob->_accountInfoList = {ai1, ai2};

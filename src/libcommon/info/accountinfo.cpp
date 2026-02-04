@@ -17,6 +17,8 @@
  */
 
 #include "accountinfo.h"
+
+#include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "utility/utility.h"
 
 static const auto accountInfoDbId = "dbId";
@@ -33,14 +35,14 @@ AccountInfo::AccountInfo(int dbId, int userDbId) :
 void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);
-    CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _accountId);
+    CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _id);
     CommonUtility::writeValueToStruct(dstruct, accountInfoName, CommonUtility::str2CommString(_name));
 }
 
 void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::readValueFromStruct(dstruct, accountInfoUserDbId, _userDbId);
-    CommonUtility::readValueFromStruct(dstruct, accountInfoAccountId, _accountId);
+    CommonUtility::readValueFromStruct(dstruct, accountInfoAccountId, _id);
 
     CommString name;
     CommonUtility::readValueFromStruct(dstruct, accountInfoName, name);

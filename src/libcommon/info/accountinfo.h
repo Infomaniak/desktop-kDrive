@@ -36,8 +36,8 @@ class AccountInfo {
         void setDbId(const int dbId) { _dbId = dbId; }
         [[nodiscard]] int userDbId() const { return _userDbId; }
         void setUserDbId(const int userDbId) { _userDbId = userDbId; }
-        [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(const int accountId) { _accountId = accountId; }
+        [[nodiscard]] int id() const { return _id; }
+        void setId(const int accountId) { _id = accountId; }
         [[nodiscard]] std::string name() const { return _name; }
         void setName(const std::string &name) { _name = name; }
 
@@ -51,13 +51,13 @@ class AccountInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list);
 
         friend bool operator==(const AccountInfo &lhs, const AccountInfo &rhs) {
-            return (lhs.dbId() == rhs.dbId()) && (lhs.userDbId() == rhs.userDbId()) && (lhs.accountId() == rhs.accountId());
+            return (lhs.dbId() == rhs.dbId()) && (lhs.userDbId() == rhs.userDbId()) && (lhs.id() == rhs.id());
         }
 
     private:
         int _dbId{0};
         int _userDbId{0};
-        int _accountId{-1};
+        int _id{-1};
         std::string _name;
 };
 
