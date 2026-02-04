@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,21 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractsyncaddjob.h"
-#include "libcommon/info/syncinfo.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class SyncAddJob : public AbstractSyncAddJob {
+class GetAccountInfoJob : public AbstractTokenNetworkJob {
     public:
-        SyncAddJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                   std::shared_ptr<AbstractCommChannel> channel);
+        GetAccountInfoJob(const int userDbId, const uint64_t accountId);
 
     private:
-        // Input parameters
-        int _userDbId = 0;
-        int _accountId = 0;
-        int _driveId = 0;
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
+        std::string getSpecificUrl() override;
 
-        ExitInfo deserializeInputParms() override;
-        ExitInfo process() override;
+        uint64_t _accountId{0};
 
-        friend class TestGuiCommChannel;
+        std::string _name;
 };
 
 } // namespace KDC

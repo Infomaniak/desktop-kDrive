@@ -144,6 +144,8 @@ set(syncengine_SRCS
     requests/exclusiontemplatecache.h requests/exclusiontemplatecache.cpp
     # Performance watcher
     performance_watcher/performancewatcher.h performance_watcher/performancewatcher.cpp
+        jobs/network/infomaniak_API/GetAccountInfoJob.cpp
+        jobs/network/infomaniak_API/GetAccountInfoJob.h
 )
 
 if(WIN32)

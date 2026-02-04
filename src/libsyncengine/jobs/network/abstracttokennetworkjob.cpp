@@ -32,7 +32,6 @@
 
 constexpr char API_PREFIX_DRIVE[] = "/drive";
 constexpr char API_PREFIX_DESKTOP[] = "/desktop";
-constexpr char API_PREFIX_PROFILE[] = "/profile";
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
@@ -108,11 +107,10 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
         case ApiType::DriveByUser:
             str += API_PREFIX_DRIVE;
             break;
-        case ApiType::Profile:
-            str += API_PREFIX_PROFILE;
-            break;
         case ApiType::Desktop:
             str += API_PREFIX_DESKTOP;
+            break;
+        case ApiType::Profile:
             break;
     }
 

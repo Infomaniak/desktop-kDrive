@@ -1451,7 +1451,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::SYNC_ADD2: {
             int userDbId = 0;
             int accountId = 0;
-            QString accountName;
             int driveId = 0;
             int driveDbId = 0;
             QString localFolderPath;
@@ -1460,8 +1459,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool liteSync = false;
             QSet<QString> blackList;
             if (num == RequestNum::SYNC_ADD) {
-                ArgsWriter(params).write(userDbId, accountId, accountName, driveId, localFolderPath, serverFolderPath,
-                                         serverFolderNodeId, liteSync, blackList);
+                ArgsWriter(params).write(userDbId, accountId, driveId, localFolderPath, serverFolderPath, serverFolderNodeId,
+                                         liteSync, blackList);
             } else {
                 ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList);
             }
@@ -1473,14 +1472,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AccountInfo accountInfo;
                 DriveInfo driveInfo;
 
-                exitCode = ServerRequests::addSync(userDbId, accountId, accountName, driveId, localFolderPath, serverFolderPath,
+                exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
                                                    serverFolderNodeId, liteSync, accountInfo, driveInfo, syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
-                                               << userDbId << L" accountId=" << accountId << L" accountName="
-                                               << QStr2WStr(accountName) << L" driveId=" << driveId << L" localFolderPath="
-                                               << QStr2WStr(localFolderPath) << L" serverFolderPath="
+                                               << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                               << L" localFolderPath=" << QStr2WStr(localFolderPath) << L" serverFolderPath="
                                                << QStr2WStr(serverFolderPath) << L" serverFolderNodeId="
                                                << serverFolderNodeId.toStdWString() << L" liteSync=" << liteSync);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));

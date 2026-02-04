@@ -102,14 +102,12 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getUserAvailableDrives(
                 int userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
         static ExitInfo getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
-        static ExitInfo addSync(int userDbId, int accountId, const QString &accountName, int driveId,
-                                const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
-                                SyncInfo &syncInfo);
-        static ExitInfo addSync(int userDbId, int accountId, const QString &accountName, int driveId,
-                                const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
-                                SyncInfo &syncInfo);
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                                const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
+                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+                                const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
+                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
         static ExitInfo addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
@@ -142,6 +140,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
+        static ExitInfo loadAccountInfo(Account &account, bool &updated);
         static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);

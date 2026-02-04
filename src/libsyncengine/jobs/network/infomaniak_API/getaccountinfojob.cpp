@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "getinfouserjob.h"
+#include "getaccountinfojob.h"
 
 #include "utility/jsonparserutility.h"
 
@@ -24,40 +24,27 @@
 
 namespace KDC {
 
-static const std::string displayNameKey = "display_name";
-static const std::string emailKey = "email";
-static const std::string avatarKey = "avatar";
-static const std::string isStaffKey = "is_staff";
-
-GetInfoUserJob::GetInfoUserJob(const int userDbId) :
-    AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
+GetAccountInfoJob::GetAccountInfoJob(const int userDbId, const uint64_t accountId) :
+    AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0),
+    _accountId(accountId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 3;
 }
 
-ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
+ExitInfo GetAccountInfoJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj || dataObj->size() == 0) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
-
-    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    JsonParserUtility::extractValue(dataObj, isStaffKey, _isStaff, false);
     return ExitCode::Ok;
 }
 
-std::string GetInfoUserJob::getSpecificUrl() {
-    return "/profile";
+std::string GetAccountInfoJob::getSpecificUrl() {
+    return "/" + std::to_string(_accountId);
 }
 
 } // namespace KDC

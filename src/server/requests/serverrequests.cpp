@@ -173,6 +173,8 @@ ExitCode ServerRequests::deleteSync(int syncDbId) {
     return ExitCode::Ok;
 }
 
+ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated){...}
+
 ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
     std::vector<AccountInfo> accountInfoList;
     if (ExitCode exitCode = getAccountInfoList(accountInfoList); exitCode != ExitCode::Ok) {
@@ -588,15 +590,14 @@ ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveA
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::addSync(int userDbId, int accountId, const QString &accountName, int driveId,
-                                 const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
-                                 SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
-                                                    << userDbId << L" accountId=" << accountId << L" accountName="
-                                                    << QStr2WStr(accountName) << L" driveId=" << driveId << L" localFolderPath="
-                                                    << Path2WStr(localFolderPath).c_str() << L" serverFolderPath="
-                                                    << Path2WStr(serverFolderPath).c_str() << L" liteSync=" << liteSync);
+                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                                    << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
+                                                    << L" serverFolderPath=" << Path2WStr(serverFolderPath).c_str()
+                                                    << L" liteSync=" << liteSync);
 
     // Create Account in DB if needed
     Account account;
@@ -616,7 +617,6 @@ ExitInfo ServerRequests::addSync(int userDbId, int accountId, const QString &acc
         account.setDbId(accountDbId);
         account.setAccountId(accountId);
         account.setUserDbId(userDbId);
-        account.setName(QStr2Str(accountName));
         if (const auto exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
             return exitCode;
@@ -1035,6 +1035,10 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
 }
 
 ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &accountInfo) {
+    // Load account info
+    Account accountUpdated(account);
+
+
     if (!ParmsDb::instance()->insertAccount(account)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
@@ -1054,9 +1058,9 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
     // Load Drive info
     Drive driveUpdated(drive);
     Account account;
-    bool updated;
-    bool accountUpdated;
-    bool quotaUpdated;
+    bool updated = false;
+    bool accountUpdated = false;
+    bool quotaUpdated = false;
     ExitCode exitCode = loadDriveInfo(driveUpdated, account, updated, quotaUpdated, accountUpdated);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in User::loadDriveInfo");
@@ -1064,7 +1068,7 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
     }
 
     if (updated) {
-        bool found;
+        bool found = false;
         if (!ParmsDb::instance()->updateDrive(driveUpdated, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
             return ExitCode::DbError;
