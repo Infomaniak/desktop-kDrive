@@ -62,7 +62,7 @@ void DriveAvailableInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     _name = CommonUtility::commString2QStr(str);
 
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoColor, str);
-    _color = CommonUtility::commString2QStr(str);
+    _color = QColor(CommonUtility::commString2QStr(str));
 
     CommonUtility::readValueFromStruct(dstruct, driveAvailableInfoUserDbId, _userDbId);
 }
