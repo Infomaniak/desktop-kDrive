@@ -82,6 +82,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeAutoStart(bool activated)
         {
+            if (AutoStart == activated)
+                return true;
+
             AutoStart = activated;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
@@ -93,6 +96,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeNotificationsDisabled(NotificationsDisabled notificationsDisabled)
         {
+            if (NotificationsDisabled == notificationsDisabled)
+                return true;
+
             var previousState = NotificationsDisabled;
             NotificationsDisabled = notificationsDisabled;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
@@ -105,6 +111,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeMoveToTrash(bool activated)
         {
+            if (MoveToTrash == activated)
+                return true;
+
             MoveToTrash = activated;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
@@ -116,6 +125,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeMatomoEnabled(bool enabled)
         {
+            if (MatomoEnabled == enabled)
+                return true;
+
             MatomoEnabled = enabled;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
@@ -127,6 +139,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeSentryEnabled(bool enabled)
         {
+            if (SentryEnabled == enabled)
+                return true;
+
             SentryEnabled = enabled;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
@@ -138,6 +153,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeProxyType(ProxyType newType)
         {
+            if (ProxyConfig.Type == newType)
+                return true;
+
             var previousType = ProxyConfig.Type;
             ProxyConfig.Type = newType;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
@@ -150,6 +168,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeProxyConfiguration(string hostName, int port, bool needsAuth, string user, string pwd)
         {
+            if (ProxyConfig.HostName == hostName && ProxyConfig.Port == port && ProxyConfig.NeedsAuth == needsAuth && ProxyConfig.User == user && ProxyConfig.Pwd == pwd)
+                return true;
+
             var PreviousConfig = ProxyConfig.Clone();
             ProxyConfig.HostName = hostName;
             ProxyConfig.Port = port;
@@ -170,6 +191,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeLogLevel(Logger.Level newLevel)
         {
+            if(LogLevel == newLevel)
+                return true;
+
             var previousLogLevel = LogLevel;
             LogLevel = newLevel;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
@@ -182,6 +206,9 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangePurgeOldLog(bool enabled)
         {
+            if(PurgeOldLogs == enabled)
+                return true;
+
             PurgeOldLogs = enabled;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {

@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive.CustomControls
                 string? channelString = selectedItem.Tag as string;
                 if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
-                    if(!await UpdateManager.ChangeChannel(selectedChannel))
+                    if(!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
                     {
                         Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
                         Utility.ShowUnexpectedErrorTeachingTip();
