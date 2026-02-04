@@ -44,18 +44,21 @@ class AccountInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
+        friend bool operator==(const AccountInfo &lhs, const AccountInfo &rhs) {
+            return (lhs.dbId() == rhs.dbId()) && (lhs.userDbId() == rhs.userDbId()) && (lhs.id() == rhs.id()) &&
+                   (lhs.name() == rhs.name());
+        }
+
         friend QDataStream &operator>>(QDataStream &in, AccountInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const AccountInfo &userInfo);
 
         friend QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list);
 
-
     private:
         int _dbId{0};
         int _userDbId{0};
         int _id{-1};
-        int _accountId{-1}; // Ignored by the old client-server communication
         std::string _name;
 };
 

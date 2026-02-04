@@ -27,12 +27,12 @@ void TestAccountInfo::testConstructors() {
     AccountInfo info1;
     CPPUNIT_ASSERT_EQUAL(0, info1.dbId());
     CPPUNIT_ASSERT_EQUAL(0, info1.userDbId());
-    CPPUNIT_ASSERT_EQUAL(-1, info1.accountId());
+    CPPUNIT_ASSERT_EQUAL(std::string{}, info1.name());
 
     // Test parameterized constructor
     AccountInfo info2(42, 84);
     CPPUNIT_ASSERT_EQUAL(42, info2.dbId());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Second constructor should have default accountId", -1, info2.accountId());
+    CPPUNIT_ASSERT_EQUAL(std::string{}, info1.name());
 }
 
 void TestAccountInfo::testGettersSetters() {
@@ -44,13 +44,13 @@ void TestAccountInfo::testGettersSetters() {
     info.setUserDbId(200);
     CPPUNIT_ASSERT_EQUAL(200, info.userDbId());
 
-    info.setAccountId(300);
-    CPPUNIT_ASSERT_EQUAL(300, info.accountId());
+    info.setName("filename");
+    CPPUNIT_ASSERT_EQUAL(std::string{"filename"}, info.name());
 }
 
 void TestAccountInfo::testDynamicStruct() {
     AccountInfo info(123, 456);
-    info.setAccountId(789);
+    info.setName("filename");
 
     Poco::DynamicStruct dstruct;
     info.toDynamicStruct(dstruct);
@@ -60,12 +60,12 @@ void TestAccountInfo::testDynamicStruct() {
 
     CPPUNIT_ASSERT_EQUAL(123, readInfo.dbId());
     CPPUNIT_ASSERT_EQUAL(456, readInfo.userDbId());
-    CPPUNIT_ASSERT_EQUAL(789, readInfo.accountId());
+    CPPUNIT_ASSERT_EQUAL(std::string{"filename"}, info.name());
 }
 
 void TestAccountInfo::testDataStream() {
     AccountInfo original(111, 222);
-    original.setAccountId(333);
+    original.setName("file1.txt");
 
     QByteArray dataArray;
     QBuffer buffer(&dataArray);
@@ -84,13 +84,14 @@ void TestAccountInfo::testDataStream() {
 
     CPPUNIT_ASSERT_EQUAL(111, readInfo.dbId());
     CPPUNIT_ASSERT_EQUAL(222, readInfo.userDbId());
-    // readInfo.accountId() is ignored by the old client-server communication, so we don't test it here.
+    CPPUNIT_ASSERT_EQUAL(std::string("file1.txt"), readInfo.name());
 }
 
 void TestAccountInfo::testDataStreamList() {
     QList<AccountInfo> originalList;
     originalList.append(AccountInfo(1, 2));
     originalList.append(AccountInfo(4, 5));
+    originalList[1].setName("filename2");
 
     QByteArray dataArray;
     QBuffer buffer(&dataArray);
@@ -110,10 +111,11 @@ void TestAccountInfo::testDataStreamList() {
     CPPUNIT_ASSERT_EQUAL(qsizetype{2}, readList.size());
     CPPUNIT_ASSERT_EQUAL(1, readList[0].dbId());
     CPPUNIT_ASSERT_EQUAL(2, readList[0].userDbId());
-    // readList[0].accountId() is ignored by the old client-server communication, so we don't test it here.
+    CPPUNIT_ASSERT_EQUAL(std::string{}, readList[0].name());
+
     CPPUNIT_ASSERT_EQUAL(4, readList[1].dbId());
     CPPUNIT_ASSERT_EQUAL(5, readList[1].userDbId());
-    // readList[1].accountId() is ignored by the old client-server communication, so we don't test it here.
+    CPPUNIT_ASSERT_EQUAL(std::string{"filename2"}, readList[1].name());
 }
 
 } // namespace KDC

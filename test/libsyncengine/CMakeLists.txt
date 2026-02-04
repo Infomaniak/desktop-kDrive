@@ -6,7 +6,7 @@ endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
-find_package(log4cplus 2.1.2 REQUIRED)
+find_package(log4cplus 2.1.1 REQUIRED)
 
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
@@ -24,7 +24,7 @@ set(testsyncengine_SRCS
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
-        ../test_classes/syncpaltest.h
+        ../mocks/libcommonserver/keychainmanager/mockkeychainstore.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp

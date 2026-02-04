@@ -43,8 +43,6 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         KeyChainManager(KeyChainManager const &) = delete;
         void operator=(KeyChainManager const &) = delete;
 
-        static std::shared_ptr<KeyChainManager> instance();
-
         bool writeDummyTest();
         void clearDummyTest();
 
@@ -58,16 +56,26 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         static constexpr const char *DEFAULT_SERVICE = "desktopclient";
 
     private:
-        static std::shared_ptr<KeyChainManager> _instance;
-
         std::unique_ptr<IKeychainStore> _store;
-        std::string _package;
-        std::string _service;
+        std::string _package{DEFAULT_PACKAGE};
+        std::string _service{DEFAULT_SERVICE};
 
         static const std::string dummyKeychainKey;
         static const std::string dummyData;
 
         friend class TestKeyChainManager;
+};
+
+class KeyChainManagerSingleton {
+    public:
+        static std::shared_ptr<KeyChainManager> instance() noexcept;
+        static void setStore(std::unique_ptr<IKeychainStore> store) { _store = std::move(store); };
+
+        friend class TestKeyChainManager;
+
+    private:
+        static std::shared_ptr<KeyChainManager> _instance;
+        static std::unique_ptr<IKeychainStore> _store;
 };
 
 } // namespace KDC

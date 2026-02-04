@@ -27,7 +27,9 @@
 #include "propagation/executor/filerescuer.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
@@ -48,8 +50,9 @@ void TestExecutorWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManager manager(std::move(mockStore));
+    (void) manager.writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -219,7 +222,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };

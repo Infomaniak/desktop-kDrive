@@ -24,6 +24,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
 
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -63,8 +64,9 @@ void TestWorkers::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManagerSingleton::setStore(std::move(mockStore));
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

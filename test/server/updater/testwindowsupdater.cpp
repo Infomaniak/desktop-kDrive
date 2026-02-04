@@ -43,7 +43,7 @@ void TestWindowsUpdater::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
     (void) ParmsDb::instance(MockDb::makeDbName(alreadyExists), KDRIVE_VERSION_STRING, true, true);

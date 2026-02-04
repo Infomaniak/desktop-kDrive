@@ -30,6 +30,7 @@ bool KeychainStore::setPassword(const std::string &package, const std::string &s
         error = keychainError.message;
         return false;
     }
+
     return true;
 }
 
@@ -47,6 +48,7 @@ bool KeychainStore::getPassword(const std::string &package, const std::string &s
     }
 
     found = true;
+
     return true;
 }
 
@@ -59,6 +61,7 @@ bool KeychainStore::deletePassword(const std::string &package, const std::string
         error = keychainError.message;
         return false;
     }
+
     return true;
 }
 

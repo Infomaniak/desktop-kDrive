@@ -2299,7 +2299,7 @@ void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig
         // Read pwd from keystore
         std::string pwd;
         bool found;
-        if (!KeyChainManager::instance()->readDataFromKeystore(proxyConfig.token(), pwd, found)) {
+        if (!KeyChainManagerSingleton::instance()->readDataFromKeystore(proxyConfig.token(), pwd, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Failed to read proxy pwd from keychain");
             proxyConfigInfo.setPwd(QString());
             return;
@@ -2328,7 +2328,7 @@ void ServerRequests::proxyConfigInfoToProxyConfig(const ProxyConfigInfo &proxyCo
             std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
             proxyConfig.setToken(keychainKeyProxyPass);
         }
-        if (!KeyChainManager::instance()->writeToken(proxyConfig.token(), proxyConfigInfo.pwd().toStdString())) {
+        if (!KeyChainManagerSingleton::instance()->writeToken(proxyConfig.token(), proxyConfigInfo.pwd().toStdString())) {
             LOG_WARN(Log::instance()->getLogger(), "Failed to write proxy token into keychain");
             return;
         }

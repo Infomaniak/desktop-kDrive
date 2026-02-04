@@ -56,8 +56,8 @@ void TestSyncJobManagerSingleton::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManagerSingleton::instance();
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

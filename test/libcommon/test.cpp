@@ -24,7 +24,6 @@
 #include "log/sentry/testsentryhandler.h"
 #include "utility/testurlhelper.h"
 #include "utility/testjsonparserutility.h"
-#include "keychainmanager/testkeychainmanager.h"
 #include "theme/testtheme.h"
 #include "info/testaccountinfo.h"
 
@@ -35,7 +34,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUrlHelper);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJsonParserUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestKeyChainManager);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestTheme);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAccountInfo);
 } // namespace KDC

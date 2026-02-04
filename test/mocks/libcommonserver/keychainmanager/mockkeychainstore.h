@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/keychainmanager/ikeychainstore.h"
+#include "libcommonserver/keychainmanager/ikeychainstore.h"
 #include <unordered_map>
 
 namespace KDC {
@@ -35,30 +35,32 @@ class MockKeychainStore : public IKeychainStore {
         bool setPassword(const std::string &package, const std::string &service, const std::string &key,
                          const std::string &password, std::string &error) override {
             (void) error;
-            std::string fullKey = package + "/" + service + "/" + key;
+            const std::string fullKey = package + "/" + service + "/" + key;
             _data[fullKey] = password;
+
             return true;
         }
 
         bool getPassword(const std::string &package, const std::string &service, const std::string &key, std::string &password,
                          bool &found, std::string &error) override {
             (void) error;
-            std::string fullKey = package + "/" + service + "/" + key;
-            auto it = _data.find(fullKey);
-            if (it != _data.end()) {
+            const std::string fullKey = package + "/" + service + "/" + key;
+            if (const auto it = _data.find(fullKey); it != _data.end()) {
                 password = it->second;
                 found = true;
             } else {
                 found = false;
             }
+
             return true;
         }
 
         bool deletePassword(const std::string &package, const std::string &service, const std::string &key,
                             std::string &error) override {
             (void) error;
-            std::string fullKey = package + "/" + service + "/" + key;
+            const std::string fullKey = package + "/" + service + "/" + key;
             _data.erase(fullKey);
+
             return true;
         }
 
@@ -71,15 +73,17 @@ class MockKeychainStore : public IKeychainStore {
          * @brief Returns whether a key exists
          */
         bool hasKey(const std::string &package, const std::string &service, const std::string &key) const {
-            std::string fullKey = package + "/" + service + "/" + key;
-            return _data.find(fullKey) != _data.end();
+            const std::string fullKey = package + "/" + service + "/" + key;
+
+            return _data.contains(fullKey);
         }
 
         /**
          * @brief Pre-populate with data for testing
          */
         void setData(const std::string &package, const std::string &service, const std::string &key, const std::string &value) {
-            std::string fullKey = package + "/" + service + "/" + key;
+            const std::string fullKey = package + "/" + service + "/" + key;
+
             _data[fullKey] = value;
         }
 
