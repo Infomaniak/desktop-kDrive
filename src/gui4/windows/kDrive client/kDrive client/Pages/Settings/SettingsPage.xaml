@@ -104,7 +104,7 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}"
-                                      Toggled="AutoStartToggleSwitch_Toggled" />
+                                      Tapped="AutoStartToggleSwitch_Tapped" />
                     </toolKit:SettingsCard>
 
                     <!-- General - Notifications -->
@@ -147,7 +147,7 @@
                         </toolKit:SettingsCard.HeaderIcon>
                         <ToggleSwitch  x:Name="MoveToTrashToggleSwitch"
                                        IsOn="{x:Bind ViewModel.Settings.MoveToTrash, Mode=OneWay}"
-                                       Toggled="MoveToTrashToggleSwitch_Toggled" />
+                                       Tapped="MoveToTrashToggleSwitch_Tapped" />
 
                         <toolKit:SettingsCard.Description>
                             <StackPanel Orientation="Horizontal"
@@ -420,13 +420,13 @@
                                                   Background="{ThemeResource LayerFillColorDefault}">
                                 <ToggleSwitch x:Name="EnableDebugLogsToggleSwitch"
                                               IsOn="{x:Bind ViewModel.Settings.LogEnabled, Mode=OneWay}"
-                                              Toggled="EnableDebugLogsToggleSwitch_Toggled" />
+                                              Tapped="EnableDebugLogsToggleSwitch_Tapped" />
                             </toolKit:SettingsCard>
 
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Purge"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                                <ToggleSwitch Toggled="PurgeOldLogsToggleSwitch_Toggled"
+                                <ToggleSwitch Tapped="PurgeOldLogsToggleSwitch_Tapped"
                                               IsOn="{x:Bind ViewModel.Settings.PurgeOldLogs, Mode=OneWay}" />
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Extended"
@@ -436,7 +436,7 @@
                                     <ToolTip x:Uid="Page_SettingsPage_Logs_Extended_Tooltip" />
                                 </ToolTipService.ToolTip>
                                 <ToggleSwitch x:Name="ExtendedLogToggleSwitch"
-                                              Toggled="ExtendedLogToggleSwitch_Toggled"
+                                              Tapped="ExtendedLogToggleSwitch_Tapped"
                                               IsOn="{x:Bind ViewModel.Settings.ExtendedLogEnbaled, Mode=OneWay}" />
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugLevel"

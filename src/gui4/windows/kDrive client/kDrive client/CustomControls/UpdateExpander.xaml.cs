@@ -151,7 +151,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private async void AutoUpdateToggleSwitch_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             if (!IsLoaded)
                 return;
@@ -164,7 +164,11 @@ namespace Infomaniak.kDrive.CustomControls
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
-                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
+                if(!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change auto-update setting.");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
                 toggleSwitch.IsEnabled = true;
             }
         }

@@ -60,7 +60,7 @@
             </toolKit:SettingsCard.HeaderIcon>
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
-                          Toggled="AutoUpdateToggleSwitch_Toggled"
+                          Tapped="AutoUpdateToggleSwitch_Tapped"
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 

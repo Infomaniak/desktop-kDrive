@@ -970,29 +970,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
+        public async Task<bool> StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
                 [JsonKeys.IncludeArchivedLogs] = includeArchivedLogs
             };
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_SEND_LOG_TO_SUPPORT, parms, cancellationToken);
-
-            var generateArgs = (LogUploadState state, int progress) =>
-            {
-                return new SignalEventArgs(SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED,
-                 new JsonObject
-                 {
-                     [JsonKeys.State] = (int)state,
-                     [JsonKeys.Percentage] = progress
-                 }
-                );
-            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SEND_LOG_TO_SUPPORT, parms, cancellationToken);
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
-        public async Task CancelLogUpload(CancellationToken cancellationToken)
+        public async Task<bool> CancelLogUpload(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
+            return CheckJobResultAndLogIfError(data);
         }
 
         public async Task<bool> RefreshSettings(CancellationToken cancellationToken)
@@ -1019,17 +1010,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        public async Task ActivateLoadInfo(CancellationToken cancellationToken)
+        public async Task<bool> ActivateLoadInfo(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+            return CheckJobResultAndLogIfError(data);
         }
 
         public async Task Exit()
         {
+            // Try and forget, no need to wait for response on exit
             await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, new JsonObject { }, CancellationToken.None);
         }
 
-        public async Task SaveSettings(CancellationToken cancellationToken)
+        public async Task<bool> SaveSettings(CancellationToken cancellationToken)
         {
             ParmsInfo ParmsInfo = new();
             CommStruct.ConversionHelper.CopyToParmsInfo(_viewModel.Settings, ParmsInfo);
@@ -1037,16 +1030,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.ParmsInfo] = new JsonObject()
             };
-
             var options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
             options.Converters.Add(new Base64StringJsonConverter());
-
             string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo, options);
-            parms[JsonKeys.ParmsInfo] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
-            await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
+            parms[JsonKeys.ParmsInfo] = JsonNode.Parse(ParmsInfoJson);
+
+            if (parms[JsonKeys.ParmsInfo] is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to serialize ParmsInfo for saving settings.");
+                return false;
+            }
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return false;
+
+            return true;
         }
 
         public async Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken)
