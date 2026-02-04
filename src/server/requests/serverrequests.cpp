@@ -1780,9 +1780,8 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         updated = true;
     }
 
-    if (account.accountId() != job->accountId() || account.name() != job->accountName()) {
+    if (account.accountId() != job->accountId()) {
         account.setAccountId(job->accountId());
-        account.setName(job->accountName());
         accountUpdated = true;
     }
 

@@ -74,15 +74,7 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         (void) JsonParserUtility::extractValue(prefObj, colorKey, _colorHex, false);
     }
 
-    const auto accountObj = dataObj->getObject(accountKey);
-    if (!accountObj) {
-        LOG_ERROR(Log::instance()->getLogger(), "Missing account info!");
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (!JsonParserUtility::extractValue(accountObj, idKey, _accountId)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (!JsonParserUtility::extractValue(accountObj, nameKey, _accountName)) {
+    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
@@ -114,7 +106,7 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
 }
 
 void GetInfoDriveJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("with", "preferences,pack,account");
+    uri.addQueryParameter("with", "preferences,pack");
 }
 
 } // namespace KDC
