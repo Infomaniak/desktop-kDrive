@@ -762,10 +762,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.WithPath] = true
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
-            if(!CheckJobResultAndLogIfError(data, parms))
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
-            if(!HasRequiredParam(data, JsonKeys.NodeSubFolderInfoList))
+            if (!HasRequiredParam(data, JsonKeys.NodeSubFolderInfoList))
                 return null;
 
             var options = new JsonSerializerOptions
@@ -796,13 +796,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
                 [JsonKeys.WithPath] = true
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken);
-
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeInfo} not found in response.");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.NodeInfo))
+                return null;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -825,15 +825,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.DriveId] = driveId,
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.FolderSize))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.FolderSize} not found in response.");
-                return -1;
-            }
+            if (!HasRequiredParam(data, JsonKeys.FolderSize))
+                return null;
 
             Int64? folderSize = data.Params[JsonKeys.FolderSize]?.GetValue<Int64>();
+            if (!folderSize.HasValue)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.FolderSize} from response: {data.Params}");
+                return null;
+            }
+
             return folderSize;
         }
 
