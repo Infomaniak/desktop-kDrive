@@ -140,7 +140,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
-        static ExitInfo loadAccountInfo(Account &account, bool &updated);
+        static ExitInfo loadAccountInfo(Account &account);
         static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);

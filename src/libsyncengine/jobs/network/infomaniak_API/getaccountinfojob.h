@@ -26,6 +26,8 @@ class GetAccountInfoJob : public AbstractTokenNetworkJob {
     public:
         GetAccountInfoJob(const int userDbId, const uint64_t accountId);
 
+        [[nodiscard]] std::string name() const { return _name; }
+
     private:
         ExitInfo handleJsonResponse(const std::string &replyBody) override;
         std::string getSpecificUrl() override;

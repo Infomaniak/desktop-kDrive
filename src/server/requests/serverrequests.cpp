@@ -33,6 +33,7 @@
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
+#include "jobs/network/infomaniak_API/getaccountinfojob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
@@ -172,8 +173,6 @@ ExitCode ServerRequests::deleteSync(int syncDbId) {
 
     return ExitCode::Ok;
 }
-
-ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated){...}
 
 ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
     std::vector<AccountInfo> accountInfoList;
@@ -656,11 +655,10 @@ ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const
     return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, syncInfo);
 }
 
-ExitInfo ServerRequests::addSync(int userDbId, int accountId, const QString &accountName, int driveId,
-                                 const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
-                                 SyncInfo &syncInfo) {
-    return addSync(userDbId, accountId, accountName, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
+ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+    return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
                    serverFolderNodeId.toStdString(), liteSync, accountInfo, driveInfo, syncInfo);
 }
 
@@ -1036,15 +1034,19 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
 
 ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &accountInfo) {
     // Load account info
-    Account accountUpdated(account);
+    Account updatedAccount(account);
+    ExitCode exitCode = loadAccountInfo(updatedAccount);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::loadAccountInfo");
+        return exitCode;
+    }
 
-
-    if (!ParmsDb::instance()->insertAccount(account)) {
+    if (!ParmsDb::instance()->insertAccount(updatedAccount)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
 
-    accountToAccountInfo(account, accountInfo);
+    accountToAccountInfo(updatedAccount, accountInfo);
 
     return ExitCode::Ok;
 }
@@ -1710,6 +1712,23 @@ ExitCode ServerRequests::deleteLiteSyncErrors() {
     return ExitCode::Ok;
 }
 #endif
+
+ExitInfo ServerRequests::loadAccountInfo(Account &account) {
+    // Get drive data
+    std::shared_ptr<GetAccountInfoJob> job = nullptr;
+    try {
+        job = std::make_shared<GetAccountInfoJob>(account.userDbId(), account.accountId());
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetAccountInfoJob::GetAccountInfoJob for account DB ID=" << account.dbId() << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) return exitInfo;
+
+    account.setName(job->name());
+    return ExitCode::Ok;
+}
 
 ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;

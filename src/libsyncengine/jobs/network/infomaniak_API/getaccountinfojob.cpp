@@ -28,7 +28,7 @@ GetAccountInfoJob::GetAccountInfoJob(const int userDbId, const uint64_t accountI
     AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0),
     _accountId(accountId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
+    _apiVersion = 1;
 }
 
 ExitInfo GetAccountInfoJob::handleJsonResponse(const std::string &replyBody) {
@@ -44,7 +44,7 @@ ExitInfo GetAccountInfoJob::handleJsonResponse(const std::string &replyBody) {
 }
 
 std::string GetAccountInfoJob::getSpecificUrl() {
-    return "/" + std::to_string(_accountId);
+    return "/accounts/" + std::to_string(_accountId);
 }
 
 } // namespace KDC
