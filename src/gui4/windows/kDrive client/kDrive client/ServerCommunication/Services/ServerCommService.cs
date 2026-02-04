@@ -1045,13 +1045,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     [JsonKeys.Default] = def
                 };
-                CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_GETLIST, parms, cancellationToken);
-
-                if (data.Params is null || !data.Params.ContainsKey(JsonKeys.ExclusionTemplatesList))
-                {
-                    Logger.Log(Logger.Level.Error, $"{JsonKeys.ExclusionTemplatesList} not found in response.");
+                CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_GETLIST, parms, cancellationToken).ConfigureAwait(false);
+                if (!CheckJobResultAndLogIfError(data, parms))
                     return null;
-                }
+
+                if(!HasRequiredParam(data, JsonKeys.ExclusionTemplatesList))
+                    return null;
 
                 var options = new JsonSerializerOptions
                 {
@@ -1072,19 +1071,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken)
+        public async Task<bool> SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
             {
                 [JsonKeys.ExclusionTemplatesList] = JsonSerializer.SerializeToNode(templates, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() }, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_SETUSERLIST, parms, cancellationToken);
-
-            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<ExitCode>() != ExitCode.Ok)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to Set the excusion template list ${data.Params}");
-                return;
-            }
+            CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_SETUSERLIST, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
         public async Task<bool> RefreshErrors(CancellationToken cancellationToken)

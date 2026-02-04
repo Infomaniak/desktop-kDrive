@@ -51,6 +51,10 @@ namespace Infomaniak.kDrive.ViewModels
                     {
                         Logger.Log(Logger.Level.Error, $"Failed to save exclusion templates on dispose: {task.Exception}");
                     }
+                    else if (!task.Result)
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to save exclusion templates on dispose: server returned failure.");
+                    }
                 }, TaskScheduler.Default);
         }
 
@@ -77,19 +81,18 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // Method to load/add/remove templates
-        public async Task LoadTemplates()
+        public async Task<bool> LoadTemplates()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             var res = await commService.GetExclusionTemplates(CancellationToken.None);
-            if (res is not null)
-            {
-                _templates.Clear();
-                _templates.AddRange(res);
-            }
-            else
+            if (res is null)
             {
                 Logger.Log(Logger.Level.Error, "Failed to load exclusion templates from server.");
+                return false;
             }
+            _templates.Clear();
+            _templates.AddRange(res);
+            return true;
         }
 
         public async Task AddTemplate(ExclusionTemplate template)
@@ -141,13 +144,19 @@ namespace Infomaniak.kDrive.ViewModels
                 _saveDebounceCts?.Dispose();
                 _saveDebounceCts = null;
             }
-            await SaveUserTemplatesImmediateAsync();
+            if (!await SaveUserTemplatesImmediateAsync())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to save exclusion templates.");
+                Templates.Clear();
+                await LoadTemplates();
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
 
-        private async Task SaveUserTemplatesImmediateAsync()
+        private async Task<bool> SaveUserTemplatesImmediateAsync()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.SetUserExclusionTemplates(UserDefinedTemplates.AsList(), CancellationToken.None);
+            return await commService.SetUserExclusionTemplates(UserDefinedTemplates.AsList(), CancellationToken.None);
         }
     }
 }
