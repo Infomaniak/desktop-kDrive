@@ -69,14 +69,14 @@ void TestAccountInfo::testDataStream() {
 
     QByteArray dataArray;
     QBuffer buffer(&dataArray);
-    buffer.open(QIODevice::WriteOnly);
+    (void) buffer.open(QIODevice::WriteOnly);
     QDataStream out(&buffer);
 
     out << original;
 
     buffer.close();
     buffer.setData(dataArray);
-    buffer.open(QIODevice::ReadOnly);
+    (void) buffer.open(QIODevice::ReadOnly);
     QDataStream in(&buffer);
 
     AccountInfo readInfo;
@@ -95,14 +95,14 @@ void TestAccountInfo::testDataStreamList() {
 
     QByteArray dataArray;
     QBuffer buffer(&dataArray);
-    buffer.open(QIODevice::WriteOnly);
+    (void) buffer.open(QIODevice::WriteOnly);
     QDataStream out(&buffer);
 
     out << originalList;
 
     buffer.close();
     buffer.setData(dataArray);
-    buffer.open(QIODevice::ReadOnly);
+    (void) buffer.open(QIODevice::ReadOnly);
     QDataStream in(&buffer);
 
     QList<AccountInfo> readList;

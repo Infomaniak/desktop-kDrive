@@ -69,7 +69,7 @@ void TestKeyChainManager::testDeleteToken() {
     const std::string testData = "delete_me";
 
     // Write then delete
-    manager.writeToken(testKey, testData);
+    CPPUNIT_ASSERT(manager.writeToken(testKey, testData));
     CPPUNIT_ASSERT_MESSAGE("Key should exist before deletion",
                            mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
 

@@ -64,7 +64,7 @@ bool KeyChainManager::writeDummyTest() {
 
 void KeyChainManager::clearDummyTest() {
     std::string error;
-    _store->deletePassword(_package, _service, dummyKeychainKey, error);
+    (void) _store->deletePassword(_package, _service, dummyKeychainKey, error);
 }
 
 bool KeyChainManager::writeToken(const std::string &keychainKey, const std::string &rawData) {

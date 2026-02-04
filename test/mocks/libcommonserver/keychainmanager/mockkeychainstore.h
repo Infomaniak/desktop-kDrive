@@ -59,7 +59,7 @@ class MockKeychainStore : public IKeychainStore {
                             std::string &error) override {
             (void) error;
             const std::string fullKey = package + "/" + service + "/" + key;
-            _data.erase(fullKey);
+            (void) _data.erase(fullKey);
 
             return true;
         }
@@ -90,7 +90,7 @@ class MockKeychainStore : public IKeychainStore {
         /**
          * @brief Configure behavior for simulating errors
          */
-        void setFailNextOperation(bool fail, const std::string &errorMessage = "Mock error") {
+        void setFailNextOperation(const bool fail, const std::string &errorMessage = "Mock error") {
             _failNext = fail;
             _errorMessage = errorMessage;
         }

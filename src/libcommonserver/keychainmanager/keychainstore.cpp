@@ -44,12 +44,12 @@ bool KeychainStore::getPassword(const std::string &package, const std::string &s
         return true;
     } else if (keychainError) {
         error = keychainError.message;
+        found = true;
         return false;
+    } else {
+        found = true;
+        return true;
     }
-
-    found = true;
-
-    return true;
 }
 
 bool KeychainStore::deletePassword(const std::string &package, const std::string &service, const std::string &key,
