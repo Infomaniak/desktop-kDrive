@@ -193,7 +193,12 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 IsLoading = true;
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None);
+                if (!await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None))
+                {
+                    Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
                 await ReloadAsync();
                 IsLoading = false;
             }
@@ -339,7 +344,14 @@ namespace Infomaniak.kDrive.CustomControls
                 if (syncDbId != -1) // Existing sync -> load exclusions
                 {
                     var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                    _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                    var res = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None);
+                    if (res is null)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
+                        _excludedNodeIds.Clear();
+                        return false;
+                    }
+                    _excludedNodeIds = res;
                     return await RefreshExcludedNodePathsAsync();
                 }
 
