@@ -59,12 +59,33 @@ typealias SendableCodable = Codable & Sendable
 
 struct XPCQueryFetcherTests {
     static let allResponseTypes: [any SendableCodable.Type] = [
+        // UtilityJobs responses
         CallbackMessage<UtilityGetAppStateResponse>.self,
         CallbackMessage<UtilityHasLaunchOnStartupResponse>.self,
+        CallbackMessage<UtilityHasSystemLaunchOnStartupResponse>.self,
         CallbackMessage<EmptyResponse>.self,
         CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self,
         CallbackMessage<UtilityGoodPathNewSyncResponse>.self,
-        CallbackMessage<UtilityBestVFSResponse>.self
+        CallbackMessage<UtilityBestVFSResponse>.self,
+        // SyncJobs responses
+        CallbackMessage<SyncInfoList>.self,
+        CallbackMessage<SyncStatusResponse>.self,
+        CallbackMessage<SyncInfoSingle>.self,
+        CallbackMessage<PublicLinkResponse>.self,
+        // AccountJobs responses
+        CallbackMessage<AccountListResponse>.self,
+        // DriveJobs responses
+        CallbackMessage<DriveInfoListResponse>.self,
+        CallbackMessage<DriveListResponse>.self,
+        // UserJobs responses
+        CallbackMessage<UserDbIdsListResponse>.self,
+        CallbackMessage<UserInfoListResponse>.self,
+        // NodeJobs responses
+        CallbackMessage<NodePathResponse>.self,
+        CallbackMessage<NodeInfoResponse>.self,
+        CallbackMessage<NodeSubfoldersResponse>.self,
+        CallbackMessage<NodeSizeResponse>.self,
+        CallbackMessage<MissingFolderResponse>.self
     ]
 
     @Test func decodingNoErrorResponse() async throws {
