@@ -46,7 +46,8 @@ struct ActivitiesTable: View {
                 Text(node.size, format: .byteCount(style: .file))
             }
 
-            TableColumn("Status") { _ in
+            TableColumn("Status") { node in
+                ActivitiesTableStatusView(node: node)
             }
         }
     }
