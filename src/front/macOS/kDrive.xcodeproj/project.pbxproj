@@ -167,6 +167,10 @@
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
 				Parsing/Signals/UserAddedParsingTest.swift,
 				Parsing/Signals/UtilityErrorAddedTest.swift,
+				XPC/JSON/AnyValidJobResponse.json,
+				XPC/JSON/ParsingError.json,
+				XPC/JSON/QuotaExceededError.json,
+				XPC/XPCQueryFetcherTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
