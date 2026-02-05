@@ -18,6 +18,8 @@
 
 #include "testsocketcomm.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
 
 // Mock implementation of readMessage and sendMessage for testing purpose

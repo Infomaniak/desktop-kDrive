@@ -24,6 +24,8 @@
 #include "log/log.h"
 #include "utility/utility.h"
 
+#include "libcommon/utility/utility.h"
+
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {

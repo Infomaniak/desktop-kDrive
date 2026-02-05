@@ -19,8 +19,9 @@
 #include "pipecommserver.h"
 #include "requests/parameterscache.h"
 #include "libcommon/theme/theme.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 
