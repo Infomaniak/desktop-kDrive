@@ -125,6 +125,7 @@ set(syncengine_SRCS
     ## Executor
     propagation/executor/executorworker.h propagation/executor/executorworker.cpp
     propagation/executor/filerescuer.h propagation/executor/filerescuer.cpp
+    propagation/executor/apitranslator.h propagation/executor/apitranslator.cpp
     # SyncPal
     syncpal/isyncworker.h syncpal/isyncworker.cpp
     syncpal/operationprocessor.h syncpal/operationprocessor.cpp

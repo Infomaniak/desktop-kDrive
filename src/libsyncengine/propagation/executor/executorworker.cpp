@@ -17,6 +17,7 @@
  */
 
 #include "executorworker.h"
+#include "apitranslator.h"
 
 #include "filerescuer.h"
 #include "jobs/local/localcreatedirjob.h"
@@ -47,7 +48,6 @@
 
 namespace KDC {
 
-#define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
@@ -288,6 +288,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         bool isDehydratedPlaceholder = false;
         if (const auto exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate " << exitInfo);
+
             return exitInfo;
         }
 
@@ -363,8 +364,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -609,6 +610,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             }
 
             if (filesize > bigFileThreshold) {
+                const NodeId userRootFolderId = ApiTranslator::getUserPrivateRootFolderId(_syncPal->driveDbId());
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
