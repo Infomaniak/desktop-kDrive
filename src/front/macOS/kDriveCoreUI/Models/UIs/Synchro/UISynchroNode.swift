@@ -47,7 +47,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
 
     // FIXME: Fake properties while waiting on server update
     public let size: Int64 = 7_000_000
-    public let syncDate: Date = Date.now.addingTimeInterval(-60 * 5)
+    public let syncDate: Date = .now.addingTimeInterval(-60 * 5)
     public let fileType: UTType = .pdf
 
     public var parentFolderName: String {

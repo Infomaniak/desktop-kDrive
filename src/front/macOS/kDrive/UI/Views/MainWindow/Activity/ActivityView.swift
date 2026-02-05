@@ -65,7 +65,11 @@ struct ActivityView: View {
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasAnyActivity: hasAnyActivity)
+            ActivityHeaderView(
+                visibleActivities: $visibleActivities,
+                synchroStatus: synchroStatus,
+                hasAnyActivity: hasAnyActivity
+            )
 
             if hasAnyActivity {
                 ActivitiesTable(nodes: nodes)
