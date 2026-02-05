@@ -50,8 +50,6 @@ public struct DriveJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<DriveInfoListResponse>.self)
 
-        try decodedMessage.validate()
-
         let driveList = decodedMessage.body.driveInfoList
 
         await driveList.asyncForEach { try? await coherentCache.addDriveResponse($0) }
@@ -65,8 +63,6 @@ public struct DriveJobs: Sendable {
         let request = await RequestMessage<DriveListQuery>(num: RequestNum.USER_AVAILABLEDRIVES, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<DriveListResponse>.self)
-
-        try decodedMessage.validate()
 
         let driveList = decodedMessage.body.driveAvailableInfoList
         let availableDrives = driveList.map { $0.asAvailableDrive }
@@ -82,8 +78,6 @@ public struct DriveJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-        try decodedMessage.validate()
-
         // TODO: update cache by drive update signal
         // await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
@@ -95,8 +89,6 @@ public struct DriveJobs: Sendable {
         let request = await RequestMessage<DriveDeleteQuery>(num: RequestNum.DRIVE_DELETE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
 
         await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
 
@@ -110,9 +102,6 @@ public struct DriveJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SearchInfoList>.self)
 
-        try decodedMessage.validate()
-
-        let searchResult = decodedMessage.body.searchInfoList
-        return searchResult
+        return decodedMessage.body.searchInfoList
     }
 }
