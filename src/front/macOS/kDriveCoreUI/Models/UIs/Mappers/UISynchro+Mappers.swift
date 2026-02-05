@@ -27,12 +27,17 @@ public extension UISynchro {
             progressInfo = UISynchroProgressInfo(synchroProgressInfo: synchroProgressInfo)
         }
 
+        let nodes = OrderedDictionary(uniqueKeysWithValues: synchro.synchNodes.map { key, value in
+            let uiNode = UISynchroNode(synchroNode: value)
+            return (uiNode.id, uiNode)
+        })
+
         self.init(
             dbId: Int(synchro.dbId),
             driveDbId: Int(synchro.driveDbId),
             localPath: URL(fileURLWithPath: synchro.localPath),
             progressInfo: progressInfo,
-            nodes: [:],
+            nodes: nodes,
             errorCount: synchro.errors.count
         )
     }
