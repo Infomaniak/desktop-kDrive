@@ -43,8 +43,11 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
             throw QueryError.noReplyData
         }
 
+        // IKLogger.data.log("[KD] recv raw: \(String(data: replyData, encoding: .utf8))")
+        let headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
+        try headerMessage.validate()
+
         do {
-            // IKLogger.data.log("[KD] recv raw: \(String(data: replyData, encoding: .utf8))")
             let decodedMessage = try decoder.decode(Response.self, from: replyData)
             IKLogger.data.log("[KD] recv callback: \(String(describing: decodedMessage))")
             return decodedMessage
