@@ -20,8 +20,8 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-final class ActivityViewController: TitledViewController<Text> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.activity.title, contentView: Text("WIP"))
+final class ActivityViewController: TitledViewController<ActivityView> {
+    init(mainViewModel: MainViewModel) {
+        super.init(toolbarTitle: SidebarItem.activity.title, contentView: ActivityView(mainViewModel: mainViewModel))
     }
 }

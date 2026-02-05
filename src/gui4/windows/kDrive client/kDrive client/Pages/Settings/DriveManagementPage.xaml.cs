@@ -211,33 +211,45 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void RemoveSyncSettingsCard_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (ManagedDrive is not null && ManagedDrive.MainSync is not null)
-            {
-                var control = sender as Control;
-                if (control is not null)
-                    control.IsEnabled = false;
-                bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
-                var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
-                if (dialogResult == ContentDialogResult.Primary)
-                {
-                    Logger.Log(Logger.Level.Info, "User confirmed sync removal");
-                    await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None);
-                    if (goBackOnceDone)
-                    {
-                        Frame.Navigate(typeof(SettingsPage));
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Info, "User canceled sync removal");
-                }
-                if (control is not null)
-                    control.IsEnabled = true;
-            }
-            else
+            if (ManagedDrive is null || ManagedDrive.MainSync is null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or MainSync is null");
+                return;
             }
+
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "Cannot remove sync: sender is not a Control");
+                return;
+            }
+
+            control.IsEnabled = false;
+            bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
+            
+            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+            if (dialogResult != ContentDialogResult.Primary)
+            {
+                Logger.Log(Logger.Level.Info, "User canceled sync removal");
+                control.IsEnabled = true;
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, "User confirmed sync removal");
+            if (!await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to remove sync");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                control.IsEnabled = true;
+                return;
+            }
+            Logger.Log(Logger.Level.Info, "Sync removed successfully");
+            if (goBackOnceDone)
+            {
+                Frame.Navigate(typeof(SettingsPage));
+            }
+
+            control.IsEnabled = true;
         }
 
         private async void SetupMainSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -286,7 +298,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
             Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
-            await commService.AddSync(newSync, CancellationToken.None);
+            if (!await commService.AddSync(newSync, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive '{BaseDrive.Name}'");
+                if (control is not null)
+                    control.IsEnabled = true;
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
 
             if (ManagedDrive is null) // if the drive was not configured before, set it up now
             {

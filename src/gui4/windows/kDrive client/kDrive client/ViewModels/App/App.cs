@@ -236,7 +236,7 @@ namespace Infomaniak.kDrive.ViewModels
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             try
             {
-                // Allow up to 5 minutes for the initial load as it happen at computer startup wich can be slow
+                // Allow up to 5 minutes for the initial load as it happen at computer startup which can be slow
                 using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
                 {
                     if (!await serverCommService.RefreshUsers(cts.Token))

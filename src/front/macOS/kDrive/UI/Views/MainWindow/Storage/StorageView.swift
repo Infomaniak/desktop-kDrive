@@ -59,6 +59,7 @@ struct StorageView: View {
             }
         }
         .groupedFormatStyle()
+        .padding(AppPadding.page)
     }
 
     private func didTapFreeUpSpace() {

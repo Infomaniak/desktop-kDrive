@@ -1042,7 +1042,7 @@ void TestNetworkJobs::testGetInfoDrive() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
-    CPPUNIT_ASSERT_EQUAL(std::string("team"), job.packInfo().name);
+    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name);
     CPPUNIT_ASSERT(!job.packInfo().isFree);
 }
 

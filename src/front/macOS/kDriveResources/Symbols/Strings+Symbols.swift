@@ -12,6 +12,18 @@ import Foundation
 public enum KDriveLocalizable {
   /// loco:698053a65bddc8df790d0212
   public static let informationBlockSynchroErrorSubtitle = KDriveLocalizable.tr("Localizable", " informationBlockSynchroErrorSubtitle", fallback: "Some files could not be synchronized.")
+  /// loco:6981b68c6d1056609e079525
+  public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
+  /// loco:6981cb92c70239c9ed0d45a3
+  public static let activityTitleIdle = KDriveLocalizable.tr("Localizable", "activityTitleIdle", fallback: "Synchronization complete")
+  /// loco:6981b68b50a70d64050197e2
+  public static let activityTitleInProgress = KDriveLocalizable.tr("Localizable", "activityTitleInProgress", fallback: "Synchronization in progress")
+  /// loco:6981cb9319de989ec9033882
+  public static let activityTitleNoActivity = KDriveLocalizable.tr("Localizable", "activityTitleNoActivity", fallback: "No recent activity")
+  /// loco:6981b68a251c4a36c1078274
+  public static let activityTypeAllActivities = KDriveLocalizable.tr("Localizable", "activityTypeAllActivities", fallback: "All activities")
+  /// loco:6981b68a1e51fbe933040213
+  public static let activityTypeMyActivity = KDriveLocalizable.tr("Localizable", "activityTypeMyActivity", fallback: "My activity only")
   /// loco:696a483470f3b70399021c12
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
@@ -222,6 +234,10 @@ public enum KDriveLocalizable {
   public static let tabTitleHome = KDriveLocalizable.tr("Localizable", "tabTitleHome", fallback: "Home")
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
+  /// loco:6981e8f0b024a7b4e00f7262
+  public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
+  /// loco:6981e8f0f994e5f7bc040692
+  public static let unavailableContentNoActivityTitle = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityTitle", fallback: "No recent activity")
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

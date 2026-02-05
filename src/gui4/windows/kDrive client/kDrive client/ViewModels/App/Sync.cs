@@ -186,16 +186,16 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
-        public async Task Start()
+        public async Task<bool> Start()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.StartSync(DbId, CancellationToken.None);
+            return await commService.StartSync(DbId, CancellationToken.None);
         }
 
-        public async Task Pause()
+        public async Task<bool> Pause()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.PauseSync(DbId, CancellationToken.None);
+            return await commService.PauseSync(DbId, CancellationToken.None);
         }
 
         public async Task<bool> ChangeSyncType(SyncType newType)
