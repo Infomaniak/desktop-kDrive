@@ -37,12 +37,57 @@ extension UINodeType {
         }
     }
 }
-extension UISynchroNode {
-    public init(synchroNode: SynchroNode) {
-        self.init(
-            id: synchroNode.localNodeId,
-            type: UINodeType(synchroNodeType: synchroNode.type)
-        )
+
+extension UISyncDirection {
+    init?(syncDirection: KDC.SyncDirection) {
+        switch syncDirection {
+        case .Up:
+            self = .up
+        case .Down:
+            self = .down
+        case .Unknown:
+            return nil
+        case .EnumEnd:
+            ReportHelper.reportToSentryIfProd(message: "UISyncDirection init received KDC.SyncDirection.EnumEnd case")
+            return nil
+        @unknown default:
+            ReportHelper.reportToSentryIfProd(message: "Unhandled KDC.SyncDirection case")
+            return nil
+        }
     }
 }
 
+extension UISyncFileStatus {
+    init?(syncFileStatus: KDC.SyncFileStatus) {
+        switch syncFileStatus {
+        case .Syncing:
+            self = .syncing
+        case .Success:
+            self = .done
+        case .Error, .Conflict, .Inconsistency:
+            self = .error
+        case .Ignored:
+            self = .idle
+        case .Unknown:
+            return nil
+        case .EnumEnd:
+            ReportHelper.reportToSentryIfProd(message: "UISyncFileStatus init received KDC.SyncFileStatus.EnumEnd case")
+            return nil
+        @unknown default:
+            ReportHelper.reportToSentryIfProd(message: "Unhandled KDC.SyncFileStatus case")
+            return nil
+        }
+    }
+}
+
+public extension UISynchroNode {
+    init(synchroNode: SynchroNode) {
+        self.init(
+            id: synchroNode.localNodeId,
+            type: UINodeType(synchroNodeType: synchroNode.type),
+            path: URL(fileURLWithPath: synchroNode.path),
+            direction: UISyncDirection(syncDirection: synchroNode.direction),
+            status: UISyncFileStatus(syncFileStatus: synchroNode.status)
+        )
+    }
+}

@@ -17,10 +17,23 @@
  */
 
 import Foundation
+import UniformTypeIdentifiers
 
 public enum UINodeType: Sendable {
     case directory
     case file
+}
+
+public enum UISyncDirection: Sendable {
+    case up
+    case down
+}
+
+public enum UISyncFileStatus: Sendable {
+    case idle
+    case syncing
+    case done
+    case error
 }
 
 public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
@@ -28,9 +41,33 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
 
     public let id: ID
     public let type: UINodeType?
+    public let path: URL
+    public let direction: UISyncDirection?
+    public let status: UISyncFileStatus?
 
-    public init(id: ID, type: UINodeType?) {
+    // FIXME: Fake properties while waiting on server update
+    public let size: Int64 = 7_000_000
+    public let syncDate: Date = Date.now.addingTimeInterval(-60 * 5)
+    public let fileType: UTType = .pdf
+
+    public var parentFolderName: String {
+        let parentURL = path.deletingLastPathComponent()
+        return parentURL.lastPathComponent
+    }
+
+    public var fileName: String {
+        return path.lastPathComponent
+    }
+
+    public init(id: ID, type: UINodeType?, path: URL, direction: UISyncDirection?, status: UISyncFileStatus?) {
         self.id = id
         self.type = type
+        self.path = path
+        self.direction = direction
+        self.status = status
+    }
+
+    public static func == (lhs: UISynchroNode, rhs: UISynchroNode) -> Bool {
+        return lhs.id == rhs.id
     }
 }
