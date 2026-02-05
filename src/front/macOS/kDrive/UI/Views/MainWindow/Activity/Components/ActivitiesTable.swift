@@ -16,16 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
-import OrderedCollections
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
+import SwiftUI
 
 struct ActivitiesTable: View {
-    let activities: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
+    let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
     var body: some View {
-        Table(Array(activities.values)) {
+        Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
                     Text(node.fileName)
@@ -33,22 +33,27 @@ struct ActivitiesTable: View {
                     KDriveResources.cloud.swiftUIImage
                 }
             }
-            TableColumn("Folder", value: \.parentFolderName)
-            TableColumn("Time") { activity in
-                Text(activity.syncDate, format: .relative(presentation: .numeric))
-            }
-            TableColumn("Size") { activity in
-                Text(activity.size, format: .byteCount(style: .file))
-            }
-            TableColumn("Status") { _ in
 
+            TableColumn("Folder") { node in
+                Text(node.parentFolderName)
+            }
+
+            TableColumn("Time") { node in
+                Text(node.syncDate, format: .relative(presentation: .numeric))
+            }
+
+            TableColumn("Size") { node in
+                Text(node.size, format: .byteCount(style: .file))
+            }
+
+            TableColumn("Status") { _ in
             }
         }
     }
 }
 
 #Preview {
-    ActivitiesTable(activities: [
+    ActivitiesTable(nodes: [
         "1": UISynchroNode(
             id: "1",
             type: .file,

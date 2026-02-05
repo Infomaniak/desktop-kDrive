@@ -50,7 +50,7 @@ struct ActivityView: View {
         }
     }
 
-    private var activities: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
+    private var nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
         switch visibleActivities {
         case .myActivityOnly:
             return mainViewModel.currentSynchro?.nodes ?? [:]
@@ -60,7 +60,7 @@ struct ActivityView: View {
     }
 
     private var hasAnyActivity: Bool {
-        return !activities.isEmpty
+        return !nodes.isEmpty
     }
 
     var body: some View {
@@ -68,7 +68,7 @@ struct ActivityView: View {
             ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasAnyActivity: hasAnyActivity)
 
             if hasAnyActivity {
-                ActivitiesTable(activities: activities)
+                ActivitiesTable(nodes: nodes)
             } else {
                 IKContentUnavailableView(
                     image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
