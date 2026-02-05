@@ -18,6 +18,7 @@
 
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 import SwiftUI
 
 enum VisibleActivities: String, Identifiable, CaseIterable {
@@ -49,9 +50,17 @@ struct ActivityView: View {
         }
     }
 
+    private var activities: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
+        switch visibleActivities {
+        case .myActivityOnly:
+            return mainViewModel.currentSynchro?.nodes ?? [:]
+        case .allActivities:
+            return [:]
+        }
+    }
+
     private var hasActivities: Bool {
-        // FIXME: It always returns false for now, it will be implemented in a future task.
-        return false
+        return !activities.isEmpty
     }
 
     var body: some View {
@@ -59,8 +68,7 @@ struct ActivityView: View {
             ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: hasActivities)
 
             if hasActivities {
-                // FIXME: It always returns false for now, it will be implemented in a future task.
-                Text("TODO.")
+                ActivitiesTable(activities: activities)
             } else {
                 IKContentUnavailableView(
                     image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
