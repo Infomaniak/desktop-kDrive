@@ -22,9 +22,13 @@ public typealias AssetImageTypeAlias = ImageAsset.Image
 
 // swiftlint:disable identifier_name line_length nesting type_body_length type_name
 public enum KDriveResources {
+  public static let alert = ImageAsset(name: "alert")
+  public static let checkmarkCircle = ImageAsset(name: "checkmark-circle")
   public static let checkmark = ImageAsset(name: "checkmark")
   public static let circularArrowsClockwise = ImageAsset(name: "circular-arrows-clockwise")
+  public static let cloudArrowDown = ImageAsset(name: "cloud-arrow-down")
   public static let cloud = ImageAsset(name: "cloud")
+  public static let computerArrowUp = ImageAsset(name: "computer-arrow-up")
   public static let doorArrowRight = ImageAsset(name: "door-arrow-right")
   public static let folderCircleArrowRight = ImageAsset(name: "folder-circle-arrow-right")
   public static let folderShare = ImageAsset(name: "folder-share")
