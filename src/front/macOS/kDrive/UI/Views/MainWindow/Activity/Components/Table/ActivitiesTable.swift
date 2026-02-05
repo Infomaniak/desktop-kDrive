@@ -41,7 +41,7 @@ struct ActivitiesTable: View {
             }
 
             TableColumn("Time") { node in
-                Text(node.syncDate, format: .relative(presentation: .numeric))
+                Text(node.syncDate, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
