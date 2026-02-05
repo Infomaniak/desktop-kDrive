@@ -36,8 +36,6 @@ public struct UtilityJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UtilityBestVFSResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.bestMode
     }
 
@@ -53,8 +51,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<UtilityGoodPathNewSyncResponse>.self
         )
-
-        try decodedMessage.validate()
 
         guard !decodedMessage.body.errorMessage.isEmpty else {
             throw UtilityError.noGoodNewSynchPath(message: decodedMessage.body.errorMessage)
@@ -76,8 +72,6 @@ public struct UtilityJobs: Sendable {
             responseType: CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self
         )
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.isValid
     }
 
@@ -86,8 +80,6 @@ public struct UtilityJobs: Sendable {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_ACTIVATELOADINFO, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
     }
 
     public func checkCommStatus() async throws {
@@ -95,8 +87,6 @@ public struct UtilityJobs: Sendable {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CHECKCOMMSTATUS, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
     }
 
     public func hasSystemLaunchOnStartup() async throws -> Bool {
@@ -110,8 +100,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<UtilityHasSystemLaunchOnStartupResponse>.self
         )
-
-        try decodedMessage.validate()
 
         return decodedMessage.body.enabled
     }
@@ -128,8 +116,6 @@ public struct UtilityJobs: Sendable {
             responseType: CallbackMessage<UtilityHasLaunchOnStartupResponse>.self
         )
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.enabled
     }
 
@@ -145,8 +131,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
-
-        try decodedMessage.validate()
     }
 
     public func setAppState(key: Int32, value: Int32) async throws {
@@ -161,8 +145,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
-
-        try decodedMessage.validate()
     }
 
     public func getAppState(key: Int32) async throws -> Int32 {
@@ -177,8 +159,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<UtilityGetAppStateResponse>.self
         )
-
-        try decodedMessage.validate()
 
         return decodedMessage.body.value
     }
@@ -195,8 +175,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
-
-        try decodedMessage.validate()
     }
 
     public func cancelLogToSupport() async throws {
@@ -210,8 +188,6 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
-
-        try decodedMessage.validate()
     }
 
     public func crash() async throws {
@@ -219,8 +195,6 @@ public struct UtilityJobs: Sendable {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CRASH, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
     }
 
     public func quit() async throws {
@@ -228,8 +202,6 @@ public struct UtilityJobs: Sendable {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_QUIT, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
     }
 
     public func sendAppStartTrace() async throws {
@@ -243,7 +215,5 @@ public struct UtilityJobs: Sendable {
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
-
-        try decodedMessage.validate()
     }
 }
