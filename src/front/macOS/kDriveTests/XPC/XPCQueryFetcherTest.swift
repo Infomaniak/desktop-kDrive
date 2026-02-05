@@ -55,8 +55,10 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
     }
 }
 
+typealias SendableCodable = Codable & Sendable
+
 struct XPCQueryFetcherTests {
-    static let allResponseTypes: [any Codable.Type] = [
+    static let allResponseTypes: [any SendableCodable.Type] = [
         CallbackMessage<UtilityGetAppStateResponse>.self,
         CallbackMessage<UtilityHasLaunchOnStartupResponse>.self,
         CallbackMessage<EmptyResponse>.self,
@@ -80,7 +82,7 @@ struct XPCQueryFetcherTests {
     }
 
     @Test(arguments: allResponseTypes)
-    func decodingSomeErrorResponse(queryType: any Codable.Type) async throws {
+    func decodingSomeErrorResponse(queryType: any SendableCodable.Type) async throws {
         // GIVEN
         let mockedConnectionProvider = MCKXPCConnectionProvider(payloadFileName: "QuotaExceededError")
         let queryFetcher = XPCQueryFetcher(xpcConnectionProvider: mockedConnectionProvider)

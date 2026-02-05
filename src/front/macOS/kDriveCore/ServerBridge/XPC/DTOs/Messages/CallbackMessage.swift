@@ -22,7 +22,7 @@ enum CallbackError: Error, Equatable {
     case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
 }
 
-public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
+public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible, Sendable {
     public let code: KDC.ExitCode
     public let cause: KDC.ExitCause
     public let id: Int32
