@@ -131,7 +131,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(CommonUtility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
