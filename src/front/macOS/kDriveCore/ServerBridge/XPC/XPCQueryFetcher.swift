@@ -24,10 +24,19 @@ public protocol XPCQueryFetcherProtocol {
 }
 
 struct XPCQueryFetcher: XPCQueryFetcherProtocol {
-    @LazyInjectService var xpcConnectionProvider: XPCConnectionProvider
+    let xpcConnectionProvider: XPCConnectionProvider
 
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
+
+    init(xpcConnectionProvider: XPCConnectionProvider? = nil) {
+        if let xpcConnectionProvider {
+            self.xpcConnectionProvider = xpcConnectionProvider
+        } else {
+            @InjectService var connectionProvider: XPCConnectionProvider
+            self.xpcConnectionProvider = connectionProvider
+        }
+    }
 
     enum QueryError: Error {
         case noReplyData
