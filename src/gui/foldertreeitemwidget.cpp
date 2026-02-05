@@ -367,18 +367,6 @@ void FolderTreeItemWidget::initUI() {
     connect(this, &QTreeWidget::itemChanged, this, &FolderTreeItemWidget::onItemChanged);
 }
 
-QString FolderTreeItemWidget::iconPath(const QString &folderName, const bool isDisabled) {
-    QString iconPath;
-    if (folderName == sharedFolderName || isDisabled) {
-        iconPath = ":/client/resources/icons/document types/folder-disable.svg";
-    } else if (folderName == commonDocumentsFolderName) {
-        iconPath = ":/client/resources/icons/document types/folder-common-documents.svg";
-    } else {
-        iconPath = ":/client/resources/icons/actions/folder.svg";
-    }
-    return iconPath;
-}
-
 QColor FolderTreeItemWidget::iconColor(const QString &folderName) {
     QColor iconColor;
     if (folderName == commonDocumentsFolderName) {
@@ -403,11 +391,13 @@ void FolderTreeItemWidget::setFolderIcon() {
 void FolderTreeItemWidget::setFolderIcon(QTreeWidgetItem *item, const QString &folderName) {
     if (item) {
         if (item->data(TreeWidgetColumn::Folder, viewIconPathRole).isNull()) {
-            item->setData(TreeWidgetColumn::Folder, viewIconPathRole, iconPath(folderName, item->isDisabled()));
+            item->setData(TreeWidgetColumn::Folder, viewIconPathRole,
+                          CommonGuiUtility::treeItemIconPath(folderName, item->isDisabled()));
         }
         if (_folderIconColor != QColor() && _folderIconSize != QSize()) {
             item->setIcon(TreeWidgetColumn::Folder,
-                          KDC::GuiUtility::getIconWithColor(iconPath(folderName, item->isDisabled()), iconColor(folderName)));
+                          KDC::GuiUtility::getIconWithColor(CommonGuiUtility::treeItemIconPath(folderName, item->isDisabled()),
+                                                            iconColor(folderName)));
         }
     }
 }

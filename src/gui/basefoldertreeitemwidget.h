@@ -97,7 +97,6 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
         inline void setAddIconSize(QSize size) { _addIconSize = size; }
 
         void initUI();
-        QString iconPath(const QString &folderName, const bool isDisabled);
         QColor iconColor(const QString &folderName);
         void setFolderIcon();
         void setFolderIcon(QTreeWidgetItem *item, const QString &folderName);
