@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "io/filestat.h"
 #include "io/iohelper.h"
+
+#include "io/filestat.h"
 #include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -128,7 +129,7 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
-    if (!CommonUtility::getLinuxDesktopType(desktopType)) {
+    if (!Utility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
     }
 
