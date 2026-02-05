@@ -44,10 +44,10 @@ struct ActivityHeaderView: View {
     @Binding var visibleActivities: VisibleActivities
 
     let synchroStatus: UISynchroStatus
-    let hasActivities: Bool
+    let hasAnyActivity: Bool
 
     var title: String {
-        guard hasActivities else {
+        guard hasAnyActivity else {
             return KDriveLocalizable.activityTitleNoActivity
         }
 
@@ -93,24 +93,24 @@ struct ActivityHeaderView: View {
 @available(macOS 14.0, *)
 #Preview("In Progress") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .running, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .running, hasAnyActivity: true)
 }
 
 @available(macOS 14.0, *)
 #Preview("No Activity") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: false)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasAnyActivity: false)
         .padding()
 }
 
 @available(macOS 14.0, *)
 #Preview("Idle") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasAnyActivity: true)
 }
 
 @available(macOS 14.0, *)
 #Preview("Loading") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .stopAsked, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .stopAsked, hasAnyActivity: true)
 }

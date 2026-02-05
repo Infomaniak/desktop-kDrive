@@ -59,15 +59,15 @@ struct ActivityView: View {
         }
     }
 
-    private var hasActivities: Bool {
+    private var hasAnyActivity: Bool {
         return !activities.isEmpty
     }
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasActivities: hasActivities)
+            ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: synchroStatus, hasAnyActivity: hasAnyActivity)
 
-            if hasActivities {
+            if hasAnyActivity {
                 ActivitiesTable(activities: activities)
             } else {
                 IKContentUnavailableView(
