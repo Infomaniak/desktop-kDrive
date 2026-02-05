@@ -2143,15 +2143,13 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
     bool found = false;
     const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError);
     if (!success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
         error = QObject::tr("An error occurred while checking the local folder. Please try again.");
         return ExitCode::SystemError;
     }
 
     if (found) {
-        error = QObject::tr("The local folder %1 already exists. Please pick another one!")
-                        .arg(QDir::toNativeSeparators(path));
+        error = QObject::tr("The local folder %1 already exists. Please pick another one!").arg(QDir::toNativeSeparators(path));
         return {ExitCode::SystemError, ExitCause::DirExists};
     }
 
