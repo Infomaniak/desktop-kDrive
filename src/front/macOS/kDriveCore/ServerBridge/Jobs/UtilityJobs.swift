@@ -32,7 +32,6 @@ public struct UtilityJobs: Sendable {
         IKLogger.data.log("Query for best VFS mode")
         let query = UtilityBestVFSQuery(path: path, driveDbId: driveDbId)
         let request = await RequestMessage<UtilityBestVFSQuery>(num: RequestNum.UTILITY_BESTVFSAVAILABLEMODE, body: query)
-        print("woops \(RequestNum.EXCLAPP_GETLIST)")
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UtilityBestVFSResponse>.self)
 
