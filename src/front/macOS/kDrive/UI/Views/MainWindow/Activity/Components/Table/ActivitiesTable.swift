@@ -32,18 +32,22 @@ struct ActivitiesTable: View {
                 } icon: {
                     KDriveResources.cloud.swiftUIImage
                 }
+                .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             TableColumn("Folder") { node in
                 Text(node.parentFolderName)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn("Time") { node in
                 Text(node.syncDate, format: .relative(presentation: .numeric))
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn("Size") { node in
                 Text(node.size, format: .byteCount(style: .file))
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn("Status") { node in
