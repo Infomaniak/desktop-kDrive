@@ -20,12 +20,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-protocol StatusIndicator: Sendable {
-    var icon: Image { get }
-    var hint: String { get }
-    var color: Color { get }
-}
-
 struct DirectionIndicator: StatusIndicator {
     let icon: Image
     let hint: String
@@ -34,12 +28,12 @@ struct DirectionIndicator: StatusIndicator {
     static let up = DirectionIndicator(
         icon: KDriveResources.computerArrowUp.swiftUIImage,
         hint: "Synchronisé depuis votre ordinateur",
-        color: .blue
+        color: ColorToken.Text.tertiary.asColor
     )
     static let down = DirectionIndicator(
         icon: KDriveResources.cloudArrowDown.swiftUIImage,
         hint: "Synchronisé depuis kDrive web",
-        color: .blue
+        color: ColorToken.Text.tertiary.asColor
     )
 }
 
@@ -51,7 +45,7 @@ struct StateIndicator: StatusIndicator {
     static let synchronized = StateIndicator(
         icon: KDriveResources.checkmarkCircle.swiftUIImage,
         hint: "Synchronisé",
-        color: .blue
+        color: ColorToken.Status.Medium.success.asColor
     )
     static let inProgress = StateIndicator(
         icon: KDriveResources.circularArrowsClockwise.swiftUIImage,
@@ -61,7 +55,7 @@ struct StateIndicator: StatusIndicator {
     static let failed = StateIndicator(
         icon: KDriveResources.warning.swiftUIImage,
         hint: "Erreur de synchronisation",
-        color: .blue
+        color: ColorToken.Status.Medium.warning.asColor
     )
 }
 
@@ -98,8 +92,8 @@ struct ActivitiesTableStatusView: View {
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
-            direction.icon
-            status.icon
+            StatusIndicatorView(indicator: direction)
+            StatusIndicatorView(indicator: status)
         }
     }
 }
