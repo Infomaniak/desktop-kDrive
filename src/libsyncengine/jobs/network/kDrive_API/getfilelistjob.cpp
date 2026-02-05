@@ -23,12 +23,16 @@ namespace KDC {
 GetFileListJob::GetFileListJob(const int userDbId, const int driveId, const NodeId &fileId, const uint64_t page /*= 1*/,
                                const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     GetRootFileListJob(userDbId, driveId, page, dirOnly, nbItemsPerPage),
-    _fileId(fileId) {}
+    _fileId(fileId) {
+    _apiVersion = 3;
+}
 
 GetFileListJob::GetFileListJob(const int driveDbId, const NodeId &fileId, const uint64_t page /*= 1*/,
                                const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     GetRootFileListJob(driveDbId, page, dirOnly, nbItemsPerPage),
-    _fileId(fileId) {}
+    _fileId(fileId) {
+    _apiVersion = 3;
+}
 
 std::string GetFileListJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
