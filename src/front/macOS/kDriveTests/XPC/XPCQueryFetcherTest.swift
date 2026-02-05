@@ -56,6 +56,15 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 }
 
 struct XPCQueryFetcherTests {
+    static let allResponseTypes: [any Codable.Type] = [
+        CallbackMessage<UtilityGetAppStateResponse>.self,
+        CallbackMessage<UtilityHasLaunchOnStartupResponse>.self,
+        CallbackMessage<EmptyResponse>.self,
+        CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self,
+        CallbackMessage<UtilityGoodPathNewSyncResponse>.self,
+        CallbackMessage<UtilityBestVFSResponse>.self
+    ]
+
     @Test func decodingNoErrorResponse() async throws {
         // GIVEN
         let mockedConnectionProvider = MCKXPCConnectionProvider(payloadFileName: "AnyValidJobResponse")
@@ -70,7 +79,8 @@ struct XPCQueryFetcherTests {
         #expect(decodedMessage.cause == .Unknown)
     }
 
-    @Test func decodingSomeErrorResponse() async throws {
+    @Test(arguments: allResponseTypes)
+    func decodingSomeErrorResponse(queryType: any Codable.Type) async throws {
         // GIVEN
         let mockedConnectionProvider = MCKXPCConnectionProvider(payloadFileName: "QuotaExceededError")
         let queryFetcher = XPCQueryFetcher(xpcConnectionProvider: mockedConnectionProvider)
@@ -78,7 +88,7 @@ struct XPCQueryFetcherTests {
 
         // WHEN
         do {
-            _ = try await queryFetcher.query(query, responseType: CallbackMessage<AccountListResponse>.self)
+            _ = try await queryFetcher.query(query, responseType: queryType)
 
             // THEN
             Issue.record("We should throw")
