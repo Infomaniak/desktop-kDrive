@@ -52,8 +52,11 @@ final class MainViewController: IKSplitViewController {
     private func bindViewModel() {
         router.$currentPath
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
-                guard let self else { return }
-                onPathChange(newPath)
+                self?.onPathChange(newPath)
+            }
+        router.$currentModal
+            .receiveOnMain(store: &bindStore) { [weak self] newPath in
+                self?.onModalPathChange(newPath)
             }
     }
 
@@ -79,6 +82,14 @@ final class MainViewController: IKSplitViewController {
         currentContentViewController = homeViewController
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
+    }
+
+    func onModalPathChange(_ modalPath: ModalPath?) {
+        if let modalPath {
+            // TODO: Present some modal view controller based on modalPath
+        } else if let presentedViewController = presentedViewControllers?.first {
+            dismiss(presentedViewController)
+        }
     }
 
     func onPathChange(_ path: Path) {

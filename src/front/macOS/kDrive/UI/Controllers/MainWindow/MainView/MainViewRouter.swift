@@ -65,6 +65,9 @@ enum DetailsPath: Equatable {
     case versionConflict
 }
 
+enum ModalPath: Equatable {
+}
+
 struct Path: Equatable {
     let mainTab: MainViewTab
     let details: [DetailsPath]
@@ -72,6 +75,7 @@ struct Path: Equatable {
 
 final class MainViewRouter: ObservableObject {
     @Published private(set) var currentPath = Path(mainTab: .home, details: [MainViewTab.home.rootPath])
+    @Published private(set) var currentModal: ModalPath?
 
     private var pathCache: [MainViewTab: Path]
 
@@ -84,6 +88,11 @@ final class MainViewRouter: ObservableObject {
     @MainActor
     func setCurrentTab(_ tab: MainViewTab) {
         currentPath = pathCache[tab] ?? Path(mainTab: tab, details: [tab.rootPath])
+    }
+
+    @MainActor
+    func setCurrentModal(_ modal: ModalPath?) {
+        currentModal = modal
     }
 
     @MainActor
