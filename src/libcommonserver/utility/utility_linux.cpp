@@ -245,4 +245,18 @@ bool Utility::hasSystemLaunchOnStartup(const std::string &) {
     return false;
 }
 
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return {};
+    }
+
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
+    }
+
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
+}
+
 } // namespace KDC
