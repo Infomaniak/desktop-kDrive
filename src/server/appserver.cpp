@@ -2507,6 +2507,7 @@ void AppServer::onShowWindowsUpdateDialog() {
         _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     }
 }
+// test
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
     if (useOldCommServer()) {
