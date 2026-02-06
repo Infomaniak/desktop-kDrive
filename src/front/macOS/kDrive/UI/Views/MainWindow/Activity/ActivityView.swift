@@ -72,7 +72,11 @@ struct ActivityView: View {
             )
 
             if hasAnyActivity {
-                ActivitiesTable(nodes: nodes)
+                ActivitiesTable(
+                    driveName: mainViewModel.currentDrive?.name,
+                    synchro: mainViewModel.currentSynchro,
+                    nodes: nodes
+                )
             } else {
                 IKContentUnavailableView(
                     image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
