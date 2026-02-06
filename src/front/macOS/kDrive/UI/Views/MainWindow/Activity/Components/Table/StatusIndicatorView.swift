@@ -19,20 +19,21 @@
 import kDriveCoreUI
 import SwiftUI
 
-protocol StatusIndicator: Sendable {
+protocol StatusIndicator: Sendable, Equatable {
     var icon: Image { get }
     var hint: String { get }
     var color: Color { get }
 }
 
 struct StatusIndicatorView: View {
-    let indicator: StatusIndicator
+    let indicator: any StatusIndicator
 
     var body: some View {
         indicator.icon
             .resizable(at: AppIconSize.iconSize12)
             .foregroundStyle(indicator.color)
             .help(indicator.hint)
+            .accessibilityLabel(indicator.hint)
     }
 }
 
