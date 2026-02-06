@@ -880,8 +880,8 @@ void TestUtility::testToUpper() {
     CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toUpper(""));
     CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toUpper("123"));
 
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+    const std::string actual = "²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/";
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::toUpper(actual), actual);
 }
 
 void TestUtility::testToLower() {
@@ -891,8 +891,8 @@ void TestUtility::testToLower() {
     CPPUNIT_ASSERT_EQUAL(std::string(""), CommonUtility::toLower(""));
     CPPUNIT_ASSERT_EQUAL(std::string("123"), CommonUtility::toLower("123"));
 
-    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+    const std::string actual = "²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/";
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::toLower(actual), actual);
 }
 
 void TestUtility::testIsSameOrParentPath() {
