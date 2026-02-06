@@ -145,13 +145,13 @@ struct XPCQueryFetcherTests {
                 Issue.record("unexpected error \(error)")
                 return
             }
-            let expectedErrorValue: Bool = {
-                if case .unableToDecodeReply = error {
-                    true
-                } else {
-                    false
-                }
-            }()
+            let expectedErrorValue: Bool
+            if case .unableToDecodeReply = error {
+                expectedErrorValue = true
+            } else {
+                expectedErrorValue = false
+            }
+
             #expect(expectedErrorValue, "unexpected error \(error)")
         }
     }
