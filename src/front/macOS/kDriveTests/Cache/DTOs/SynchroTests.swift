@@ -91,8 +91,9 @@ struct SynchroTests {
                                conflict: .None,
                                inconsistency: .None,
                                cancelType: .None,
-                               error: "",
-                               size: 7_000_000)
+                               size: 7_000_000,
+                               date: Date(),
+                               error: "")
 
         // WHEN
         synchro.addOrUpdateSynchNode(node)
@@ -124,8 +125,9 @@ struct SynchroTests {
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
-                                       error: "",
-                                       size: 7_000_000)
+                                       size: 7_000_000),
+                                       date: Date(),
+                                       error: "")
 
         synchro.addOrUpdateSynchNode(originalNode)
 
@@ -140,8 +142,9 @@ struct SynchroTests {
                                       conflict: .None,
                                       inconsistency: .None,
                                       cancelType: .None,
-                                      error: "",
-                                      size: 7_000_000)
+                                      size: 7_000_000,
+                                      date: Date(),
+                                      error: "")
 
         // WHEN
         synchro.addOrUpdateSynchNode(updatedNode)
@@ -177,8 +180,9 @@ struct SynchroTests {
                                    conflict: .None,
                                    inconsistency: .None,
                                    cancelType: .None,
-                                   error: "",
-                                   size: 7_000_000)
+                                   size: 7_000_000,
+                                   date: Date(),
+                                   error: "")
             synchro.addOrUpdateSynchNode(node)
         }
 
@@ -194,8 +198,9 @@ struct SynchroTests {
                                     conflict: .None,
                                     inconsistency: .None,
                                     cancelType: .None,
-                                    error: "",
-                                    size: 7_000_000)
+                                    size: 7_000_000,
+                                    date: Date(),
+                                    error: "")
         synchro.addOrUpdateSynchNode(extraNode)
 
         // THEN - Should still have only 100 nodes (oldest removed)
@@ -226,8 +231,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node2 = SynchroNode(type: .File,
                                 path: "/file2.txt",
@@ -240,8 +246,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000
+                                date: Date(),
+                                error: "")
 
         synchro.addOrUpdateSynchNode(node1)
         synchro.addOrUpdateSynchNode(node2)
@@ -280,8 +287,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node2 = SynchroNode(type: .File,
                                 path: "/file2.txt",
@@ -294,8 +302,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node3 = SynchroNode(type: .File,
                                 path: "/file3.txt",
@@ -308,8 +317,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         synchro.addOrUpdateSynchNode(node1)
         synchro.addOrUpdateSynchNode(node2)
@@ -345,8 +355,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node2 = SynchroNode(type: .File,
                                 path: "/file2.txt",
@@ -359,8 +370,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node3 = SynchroNode(type: .File,
                                 path: "/file3.txt",
@@ -373,8 +385,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         synchro.addOrUpdateSynchNode(node1)
         synchro.addOrUpdateSynchNode(node2)
@@ -392,8 +405,9 @@ struct SynchroTests {
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
-                                       error: "",
-                                       size: 7_000_000)
+                                       size: 7_000_000,
+                                       date: Date(),
+                                       error: "")
 
         synchro.addOrUpdateSynchNode(updatedNode2)
 
@@ -428,8 +442,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node2 = SynchroNode(type: .File,
                                 path: "/file2.txt",
@@ -442,8 +457,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         let node3 = SynchroNode(type: .File,
                                 path: "/file3.txt",
@@ -456,8 +472,9 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                error: "",
-                                size: 7_000_000)
+                                size: 7_000_000,
+                                date: Date(),
+                                error: "")
 
         synchro.addOrUpdateSynchNode(node1)
         synchro.addOrUpdateSynchNode(node2)
