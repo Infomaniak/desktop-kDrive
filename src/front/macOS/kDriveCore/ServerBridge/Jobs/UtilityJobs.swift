@@ -51,7 +51,7 @@ public struct UtilityJobs: Sendable {
             responseType: CallbackMessage<UtilityGoodPathNewSyncResponse>.self
         )
 
-        guard !decodedMessage.body.errorMessage.isEmpty else {
+        guard decodedMessage.body.errorMessage.isEmpty else {
             throw UtilityError.noGoodNewSynchPath(message: decodedMessage.body.errorMessage)
         }
 
