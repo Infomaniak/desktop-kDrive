@@ -42,7 +42,8 @@
 
                     <toolKit:SettingsCard ContentAlignment="Left"
                                           Visibility="{x:Bind SupportOnlineMode, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                        <Grid HorizontalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch"
+                              Visibility="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="32" />
                                 <ColumnDefinition Width="10000" />
@@ -77,8 +78,7 @@
                                          MinWidth="0"
                                          HorizontalAlignment="Stretch"
                                          IsChecked="{x:Bind IsTypeOnline, Mode=OneWay}"
-                                         Checked="OnlineRadioButtonChecked"
-                                         Unchecked="OnlineRadioButtonUnchecked"
+                                         Click="SyncTypeRadioButton_Click"
                                          IsEnabled="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
 
                             <!-- Card content -->
@@ -95,8 +95,9 @@
                                          Grid.Row="2"
                                          GroupName="{x:Bind LocalPath}"
                                          MinWidth="0"
-                                         IsChecked="{x:Bind IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
                                          HorizontalAlignment="Stretch"
+                                         IsChecked="{x:Bind IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
+                                         Click="SyncTypeRadioButton_Click"
                                          IsEnabled="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
                         </Grid>
                     </toolKit:SettingsCard>
