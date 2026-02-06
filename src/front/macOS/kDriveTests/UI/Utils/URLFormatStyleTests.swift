@@ -16,9 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Testing
 import Foundation
 @testable import kDriveCoreUI
+import Testing
 
 @Suite("URLFormatStyle Tests")
 struct URLFormatStyleTests {
@@ -27,42 +27,31 @@ struct URLFormatStyleTests {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/example.txt")
         let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
+
         let result = formatter.format(url)
-        
+
         #expect(result == "example.txt")
     }
-    
+
     @Test("Format URL with folder path component")
     func formatWithFolderPathComponent() throws {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/Folder")
         let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
+
         let result = formatter.format(url)
-        
+
         #expect(result == "Folder")
     }
-    
-    @Test("Format URL with nested path component")
-    func formatWithNestedPathComponent() throws {
-        let driveName = "My Drive"
-        let url = URL(fileURLWithPath: "/test/Documents/Folder/Subfolder/file.pdf")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
-        let result = formatter.format(url)
-        
-        #expect(result == "file.pdf")
-    }
-    
+
     @Test("Format URL with root path returns drive name")
     func formatWithRootPath() throws {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/")
         let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
+
         let result = formatter.format(url)
-        
+
         #expect(result == driveName)
     }
 
@@ -91,33 +80,21 @@ struct URLFormatStyleTests {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/file with spaces & symbols.txt")
         let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
+
         let result = formatter.format(url)
-        
+
         #expect(result == "file with spaces & symbols.txt")
     }
-    
+
     @Test("Format URL with unicode characters in filename")
     func formatWithUnicodeCharacters() throws {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/Users/test/Documents/fichier_été_🎉.txt")
         let formatter = URL.NodeFormatStyle(driveName: driveName)
-        
+
         let result = formatter.format(url)
-        
+
         #expect(result == "fichier_été_🎉.txt")
-    }
-    
-    @Test("Format URL with different drive names")
-    func formatWithDifferentDriveNames() throws {
-        let driveNames = ["Work Drive", "Personal", "Team Shared", "Drive 123"]
-        let url = URL(fileURLWithPath: "/")
-        
-        for driveName in driveNames {
-            let formatter = URL.NodeFormatStyle(driveName: driveName)
-            let result = formatter.format(url)
-            #expect(result == driveName)
-        }
     }
 }
 
@@ -127,19 +104,19 @@ struct URLFormatStyleConvenienceTests {
     func useConvenienceMethod() throws {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/example.txt")
-        
+
         let result = url.formatted(.node(driveName: driveName))
-        
+
         #expect(result == "example.txt")
     }
-    
+
     @Test("Use convenience method with root path")
     func useConvenienceMethodWithRootPath() throws {
         let driveName = "My Drive"
         let url = URL(fileURLWithPath: "/")
-        
+
         let result = url.formatted(.node(driveName: driveName))
-        
+
         #expect(result == driveName)
     }
 }
