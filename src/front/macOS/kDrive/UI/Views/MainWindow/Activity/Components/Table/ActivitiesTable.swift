@@ -35,7 +35,9 @@ struct ActivitiesTable: View {
                 Label {
                     Text(node.path, format: .node())
                 } icon: {
-                    KDriveResources.cloud.swiftUIImage
+                    node.fileTypeRepresentation.icon
+                        .resizable(at: AppIconSize.iconSize12)
+                        .foregroundStyle(node.fileTypeRepresentation.color)
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
             }
