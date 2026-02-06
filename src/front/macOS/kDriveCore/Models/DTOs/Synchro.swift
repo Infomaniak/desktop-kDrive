@@ -101,6 +101,7 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let conflict: KDC.ConflictType
     public let inconsistency: KDC.InconsistencyType
     public let cancelType: KDC.CancelType
+    public let date: Date
     public let error: String
     public let size: Int64
 }
