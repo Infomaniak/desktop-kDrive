@@ -99,8 +99,6 @@ struct ActivitiesTableStatusView: View {
             StatusIndicatorView(indicator: direction)
             StatusIndicatorView(indicator: status)
 
-            Spacer()
-
             if shouldDisplayOptionButton {
                 Menu {
                     menuContent
@@ -108,7 +106,8 @@ struct ActivitiesTableStatusView: View {
                     Label { Text("Show options") } icon: { KDriveResources.dotsVertical.swiftUIImage }
                         .labelStyle(.iconOnly)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
     }
@@ -116,21 +115,35 @@ struct ActivitiesTableStatusView: View {
     @ViewBuilder
     private var menuContent: some View {
         if status == .synchronized {
-            Button(action: navigateToErrorsView) {
-                Label { Text(KDriveLocalizable.buttonOpenInFinder) } icon: { KDriveResources.finder.swiftUIImage }
+            Section {
+                Button(action: openInFinder) {
+                    Label { Text(KDriveLocalizable.buttonOpenInFinder) } icon: { KDriveResources.finder.swiftUIImage }
+                }
+                Button(action: openInBrowser) {
+                    Label { Text(KDriveLocalizable.buttonOpenInBrowser) } icon: {
+                        KDriveResources.kdriveFoldersStacked.swiftUIImage
+                    }
+                }
             }
-            Button(action: navigateToErrorsView) {
-                Label { Text(KDriveLocalizable.buttonOpenInBrowser) } icon: { KDriveResources.kdriveFoldersStacked.swiftUIImage }
-            }
-            Divider()
-            Button(action: navigateToErrorsView) {
-                Label { Text("Copier le lien de partage") } icon: { KDriveResources.squareArrowUp.swiftUIImage }
+
+            Section {
+                Button(action: navigateToErrorsView) {
+                    Label { Text("Copier le lien de partage") } icon: { KDriveResources.squareArrowUp.swiftUIImage }
+                }
             }
         } else if status == .failed {
             Button(action: navigateToErrorsView) {
                 Label { Text(KDriveLocalizable.buttonFixErrors) } icon: { KDriveResources.warning.swiftUIImage }
             }
         }
+    }
+
+    private func openInFinder() {
+        // TODO: Open in finder
+    }
+
+    private func openInBrowser() {
+        // TODO: Open in browser
     }
 
     private func navigateToErrorsView() {
