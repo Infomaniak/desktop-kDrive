@@ -68,4 +68,27 @@ bool CommonUtility::hasDarkSystray() {
     return true;
 }
 
+std::string CommonUtility::osVersion() {
+    std::string versionId;
+    // Try to get version from /etc/os-release (standard on modern Linux distributions)
+    std::ifstream osRelease("/etc/os-release");
+    if (osRelease.is_open()) {
+        std::string line;
+        while (std::getline(osRelease, line)) {
+            if (line.find("VERSION_ID=") == 0) {
+                versionId = line.substr(11);
+                // Remove quotes if present
+                if (!versionId.empty() && versionId.front() == '"') {
+                    versionId = versionId.substr(1);
+                }
+                if (!versionId.empty() && versionId.back() == '"') {
+                    versionId.pop_back();
+                }
+                break;
+            }
+        }
+    }
+    return versionId;
+}
+
 } // namespace KDC

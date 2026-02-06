@@ -39,7 +39,6 @@ class SparkleUpdater final : public AbstractUpdater {
         bool startSparkleUpdater();
 
         void skipVersionCallback();
-        bool checkMinOsVersion(const std::string_view minOsVersion) const override;
 
         class Private;
         Private *d;

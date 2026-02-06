@@ -70,9 +70,6 @@ void AbstractUpdater::onAppVersionReceived() {
     sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
 
     if (!checkMinOsVersion(versionInfo.buildMinOsVersion)) {
-        LOG_INFO(Log::instance()->getLogger(), "OS version not supported for this update. Current OS version: "
-                                                       << QSysInfo::kernelVersion().toStdString()
-                                                       << ", min OS version: " << versionInfo.buildMinOsVersion);
         setState(UpdateState::UpToDate);
         return;
     }
@@ -86,6 +83,15 @@ void AbstractUpdater::onAppVersionReceived() {
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
+}
+
+bool AbstractUpdater::checkMinOsVersion(const std::string &minOsVersion) const {
+    if (const auto currentOsVersion = CommonUtility::osVersion(); CommonUtility::isVersionLower(currentOsVersion, minOsVersion)) {
+        LOG_WARN(Log::instance()->getLogger(), "OS version not supported, the update is ignored. Current OS version: "
+                                                       << CommonUtility::osVersion() << ", min OS version: " << minOsVersion);
+        return false;
+    }
+    return true;
 }
 
 void AbstractUpdater::skipVersion(const std::string &skippedVersion) {

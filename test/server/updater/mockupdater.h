@@ -48,8 +48,6 @@ class MockUpdater : public AbstractUpdater {
         void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
 
     private:
-        bool checkMinOsVersion(const std::string_view) const override { return true; }
-
         std::function<std::string()> _mockGetCurrentVersion;
         std::function<void()> _startInstallerMock;
         std::function<void()> _quitCallback;

@@ -90,4 +90,11 @@ void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **
     }
 }
 
+std::string CommonUtility::osVersion() {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
+    return std::format("{}.{}.{}", std::to_string(osVersion.majorVersion), std::to_string(osVersion.minorVersion),
+                       std::to_string(osVersion.patchVersion));
+}
+
 } // namespace KDC

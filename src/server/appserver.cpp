@@ -3205,7 +3205,7 @@ void AppServer::logUsefulInformation() {
 
     LOG_INFO(_logger, "version: " << _theme->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
-    LOG_INFO(_logger, "os version: " << QSysInfo::productVersion().toStdString());
+    LOG_INFO(_logger, "os version: " << CommonUtility::osVersion());
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());

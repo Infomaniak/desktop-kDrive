@@ -26,9 +26,6 @@ class LinuxUpdater final : public AbstractUpdater {
     public:
         void onUpdateFound() override;
         void startInstaller() override { /* No automatic update on Linux for now */ }
-
-    private:
-        bool checkMinOsVersion(const std::string_view minOsVersion) override;
 };
 
 } // namespace KDC

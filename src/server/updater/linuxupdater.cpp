@@ -18,18 +18,47 @@
 
 #include "linuxupdater.h"
 
+#include <sys/utsname.h>
+#include <fstream>
+#include <sstream>
+#include <string>
+
 namespace KDC {
+
+static bool parseVersion(const std::string &versionStr, int &major, int &minor, int &patch) {
+    major = minor = patch = 0;
+
+    // Try format: major.minor.patch
+    if (sscanf(versionStr.c_str(), "%d.%d.%d", &major, &minor, &patch) == 3) {
+        return true;
+    }
+
+    // Try format: major.minor
+    if (sscanf(versionStr.c_str(), "%d.%d", &major, &minor) == 2) {
+        return true;
+    }
+
+    // Try format: major only
+    if (sscanf(versionStr.c_str(), "%d", &major) == 1) {
+        return true;
+    }
+
+    return false;
+}
+
+static bool compareVersions(int major1, int minor1, int patch1, int major2, int minor2, int patch2) {
+    // Returns true if version1 >= version2
+    if (major1 > major2) return true;
+    if (major1 < major2) return false;
+
+    if (minor1 > minor2) return true;
+    if (minor1 < minor2) return false;
+
+    return patch1 >= patch2;
+}
 
 void LinuxUpdater::onUpdateFound() {
     setState(UpdateState::ManualUpdateAvailable);
-}
-
-bool LinuxUpdater::checkMinOsVersion(const std::string_view minOsVersion) const {
-    if (minOsVersion.empty()) return true;
-
-    TODO !
-
-            return true;
 }
 
 } // namespace KDC
