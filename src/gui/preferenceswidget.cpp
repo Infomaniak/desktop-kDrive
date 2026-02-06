@@ -37,8 +37,6 @@
 
 #include "libcommongui/matomoclient.h"
 
-#include "libcommonserver/utility/utility.h"
-
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #ifdef Q_OS_WIN

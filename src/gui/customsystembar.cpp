@@ -19,8 +19,6 @@
 #include "customsystembar.h"
 #include "customtoolbutton.h"
 
-#include "libcommonserver/utility/utility.h"
-
 #include <QBoxLayout>
 #include <QApplication>
 #include <QIcon>
