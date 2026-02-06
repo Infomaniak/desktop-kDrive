@@ -20,6 +20,7 @@ import Cocoa
 import Foundation
 import kDriveCore
 import SwiftUI
+import OrderedCollections
 
 private final class PreviewBundle {
     /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
@@ -65,6 +66,15 @@ public enum PreviewHelper {
         userDbId: 1,
         name: "Drive Pro Max",
         color: .red
+    )
+
+    public static let synchro = UISynchro(
+        dbId: 0,
+        driveDbId: 0,
+        localPath: URL(fileURLWithPath: "~/kDrive"),
+        progressInfo: nil,
+        nodes: [:],
+        errorCount: 0
     )
 
     public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
