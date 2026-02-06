@@ -28,7 +28,7 @@ struct ActivitiesTable: View {
         Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
-                    Text(node.fileName)
+                    Text(node.parentFolder, format: .node(driveName: ""))
                 } icon: {
                     KDriveResources.cloud.swiftUIImage
                 }
@@ -36,7 +36,7 @@ struct ActivitiesTable: View {
             }
 
             TableColumn("Folder") { node in
-                Text(node.parentFolderName)
+                Text(node.parentFolder, format: .node(driveName: ""))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
