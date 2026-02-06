@@ -1149,7 +1149,7 @@ Infomaniak</value>
     <value>Impossible d'ajouter ce drive</value>
   </data>
   <data name="InvalidDefaultSyncLocationTeachingTip.Subtitle" xml:space="preserve">
-    <value>Assurez vous qu'aucune synchronisation n'est configuré sur votre dossie utilisateur.</value>
+    <value>Assurez vous qu'aucune synchronisation n'est configuré sur votre dossier utilisateur.</value>
   </data>
   <data name="UnexpectedErrorTeachingTip.Title" xml:space="preserve">
     <value>Une erreur inattendue est survenue</value>
