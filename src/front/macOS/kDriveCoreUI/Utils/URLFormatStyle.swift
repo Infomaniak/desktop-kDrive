@@ -37,7 +37,7 @@ public extension URL {
 }
 
 public extension FormatStyle where Self == URL.NodeFormatStyle {
-    static func node(driveName: String) -> Self {
+    static func node(driveName: String? = nil) -> Self {
         return URL.NodeFormatStyle(driveName: driveName)
     }
 }
