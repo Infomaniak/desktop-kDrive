@@ -33,6 +33,11 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
+        using NodeInfoList = std::vector<NodeInfo>;
+
+        // The return value of this accessor is only meaningful if the response has been handled.
+        [[nodiscard]] const NodeInfoList &nodeInfoList() const { return _nodeInfoList; };
+
     protected:
         ExitInfo handleResponse(std::istream &is) override;
 
@@ -65,7 +70,6 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         bool _dirOnly{false};
 
         // The deserialization of the request JSON result.
-        using NodeInfoList = std::vector<NodeInfo>;
         NodeInfoList _nodeInfoList;
 };
 

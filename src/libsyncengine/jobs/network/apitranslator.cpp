@@ -51,9 +51,12 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
     fileListJob.runSynchronously();
 
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+    const auto &nodeInfoList = fileListJob.nodeInfoList();
 
-    return {};
+    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                                 [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+
+    return it->nodeId().toStdString();
 }
 
 } // namespace KDC
