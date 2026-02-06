@@ -22,6 +22,22 @@ public typealias AssetImageTypeAlias = ImageAsset.Image
 
 // swiftlint:disable identifier_name line_length nesting type_body_length type_name
 public enum KDriveResources {
+  public enum FileTypes {
+    public static let fileArchive = ImageAsset(name: "FileTypes/fileArchive")
+    public static let fileAudio = ImageAsset(name: "FileTypes/fileAudio")
+    public static let fileCode = ImageAsset(name: "FileTypes/fileCode")
+    public static let fileDoc = ImageAsset(name: "FileTypes/fileDoc")
+    public static let fileFolder = ImageAsset(name: "FileTypes/fileFolder")
+    public static let fileFont = ImageAsset(name: "FileTypes/fileFont")
+    public static let fileGrid = ImageAsset(name: "FileTypes/fileGrid")
+    public static let fileIcs = ImageAsset(name: "FileTypes/fileIcs")
+    public static let fileImage = ImageAsset(name: "FileTypes/fileImage")
+    public static let filePdf = ImageAsset(name: "FileTypes/filePdf")
+    public static let filePoint = ImageAsset(name: "FileTypes/filePoint")
+    public static let fileUnknown = ImageAsset(name: "FileTypes/fileUnknown")
+    public static let fileVcard = ImageAsset(name: "FileTypes/fileVcard")
+    public static let fileVideo = ImageAsset(name: "FileTypes/fileVideo")
+  }
   public static let alert = ImageAsset(name: "alert")
   public static let checkmarkCircle = ImageAsset(name: "checkmark-circle")
   public static let checkmark = ImageAsset(name: "checkmark")
