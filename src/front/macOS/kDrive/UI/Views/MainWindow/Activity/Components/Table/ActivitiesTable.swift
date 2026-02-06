@@ -22,13 +22,14 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
+    let drive
     let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
     var body: some View {
         Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
-                    Text(node.parentFolder, format: .node(driveName: ""))
+                    Text(node.parentFolder, format: .node())
                 } icon: {
                     KDriveResources.cloud.swiftUIImage
                 }
