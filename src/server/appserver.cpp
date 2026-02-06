@@ -535,7 +535,7 @@ void AppServer::cleanup() {
     {
         const std::scoped_lock lock(vfsMapMutex);
         for (const auto &[syncDbId, _]: vfsMap) {
-            if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
+            if (const auto exitInfo = stopVfs(syncDbId); !exitInfo) {
                 LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
             }
         }
@@ -591,7 +591,7 @@ void AppServer::stopSyncTask(int syncDbId) {
     }
 
     // Stop Vfs
-    if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
+    if (const auto exitInfo = stopVfs(syncDbId); !exitInfo) {
         LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -3855,7 +3855,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
+ExitInfo AppServer::stopVfs(int syncDbId) {
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId);
 
     // Stop Vfs
@@ -3871,7 +3871,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    vfsMapIt->second->stop(unregister);
+    vfsMapIt->second->stop();
 
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId << " done");
 
@@ -3919,7 +3919,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         syncPalMapIt->second->stop();
 
         // Stop Vfs
-        if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
+        if (const auto exitInfo = stopVfs(syncDbId); !exitInfo) {
             LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
             return exitInfo;
         }

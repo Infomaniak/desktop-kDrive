@@ -43,7 +43,7 @@ DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWOR
 DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId, const wchar_t *folderName,
                              const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
 
-DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, bool unregister);
+DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId);
 
 DLL_EXP int __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced);
 
