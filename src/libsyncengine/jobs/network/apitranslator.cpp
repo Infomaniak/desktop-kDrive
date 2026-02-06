@@ -59,4 +59,10 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     return _rootNodeIdCache[driveDbId];
 }
 
+void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, NodeId &remoteDirectoryId) {
+    if (remoteDirectoryId != "1") return;
+
+    remoteDirectoryId = getUserPrivateRootFolderId(driveDbId);
+}
+
 } // namespace KDC

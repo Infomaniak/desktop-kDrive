@@ -38,7 +38,7 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 
-    const NodeId userRootFolderId = ApiTranslator::getUserPrivateRootFolderId(_driveDbId);
+    ApiTranslator::translateV2ToV3(_driveDbId, _remoteParentDirId);
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,

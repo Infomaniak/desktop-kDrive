@@ -26,10 +26,11 @@ class ApiTranslator {
         ~ApiTranslator();
         using DriveId = int32_t;
         using DriveDbId = int32_t;
-        static NodeId getUserPrivateRootFolderId(DriveDbId driveDbId);
+        static void translateV2ToV3(const DriveDbId driveDbId, NodeId &remoteDirectoryId);
 
     private:
         static DriveId getDriveId(DriveDbId driveDbId);
+        static NodeId getUserPrivateRootFolderId(DriveDbId driveDbId);
 
         using NodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
         static NodeIdCacheMap _rootNodeIdCache;
