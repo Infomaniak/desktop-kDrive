@@ -90,11 +90,51 @@ struct ActivitiesTableStatusView: View {
         }
     }
 
+    private var shouldDisplayOptionButton: Bool {
+        return status == .synchronized || status == .failed
+    }
+
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             StatusIndicatorView(indicator: direction)
             StatusIndicatorView(indicator: status)
+
+            Spacer()
+
+            if shouldDisplayOptionButton {
+                Menu {
+                    menuContent
+                } label: {
+                    Label { Text("Show options") } icon: { KDriveResources.dotsVertical.swiftUIImage }
+                        .labelStyle(.iconOnly)
+                }
+                .buttonStyle(.borderless)
+            }
         }
+    }
+
+    @ViewBuilder
+    private var menuContent: some View {
+        if status == .synchronized {
+            Button(action: navigateToErrorsView) {
+                Label { Text(KDriveLocalizable.buttonOpenInFinder) } icon: { KDriveResources.finder.swiftUIImage }
+            }
+            Button(action: navigateToErrorsView) {
+                Label { Text(KDriveLocalizable.buttonOpenInBrowser) } icon: { KDriveResources.kdriveFoldersStacked.swiftUIImage }
+            }
+            Divider()
+            Button(action: navigateToErrorsView) {
+                Label { Text("Copier le lien de partage") } icon: { KDriveResources.squareArrowUp.swiftUIImage }
+            }
+        } else if status == .failed {
+            Button(action: navigateToErrorsView) {
+                Label { Text(KDriveLocalizable.buttonFixErrors) } icon: { KDriveResources.warning.swiftUIImage }
+            }
+        }
+    }
+
+    private func navigateToErrorsView() {
+        // TODO: Navigate to correct folder
     }
 }
 
