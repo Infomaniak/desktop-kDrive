@@ -31,8 +31,7 @@ class ApiTranslator {
     private:
         static DriveId getDriveId(DriveDbId driveDbId);
 
-
-        using NodeIdCacheMap = std::unordered_map<int32_t, NodeId>;
+        using NodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
         static NodeIdCacheMap _rootNodeIdCache;
 };
 

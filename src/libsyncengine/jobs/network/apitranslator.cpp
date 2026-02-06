@@ -42,9 +42,7 @@ ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
 }
 
 NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
-    const auto driveId = getDriveId(driveDbId);
-
-    if (const auto it = _rootNodeIdCache.find(driveId); it != _rootNodeIdCache.cend()) {
+    if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
         return it->second;
     }
 
@@ -56,7 +54,9 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
                                  [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
 
-    return it->nodeId().toStdString();
+    _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
+
+    return _rootNodeIdCache[driveDbId];
 }
 
 } // namespace KDC
