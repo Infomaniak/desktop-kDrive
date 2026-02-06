@@ -22,14 +22,18 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
-    let drive
+    static let defaultFolderName = "kDrive"
+
+    let driveName: String?
+    let synchro: UISynchro?
+
     let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
     var body: some View {
         Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
-                    Text(node.parentFolder, format: .node())
+                    Text(node.path, format: .node())
                 } icon: {
                     KDriveResources.cloud.swiftUIImage
                 }
@@ -37,8 +41,14 @@ struct ActivitiesTable: View {
             }
 
             TableColumn("Folder") { node in
-                Text(node.parentFolder, format: .node(driveName: ""))
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                Button {
+                    openParentFolder(of: node)
+                } label: {
+                    Text(node.parentFolder, format: .node(driveName: driveName ?? ActivitiesTable.defaultFolderName))
+                        .underline()
+                }
+                .buttonStyle(.borderless)
+                .tint(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn("Time") { node in
@@ -56,37 +66,49 @@ struct ActivitiesTable: View {
             }
         }
     }
+
+    private func openParentFolder(of node: UISynchroNode) {
+        guard let url = synchro?.localPath.appendingPathComponent(node.parentFolder.path) else {
+            return
+        }
+
+        NSWorkspace.shared.open(url)
+    }
 }
 
 #Preview {
-    ActivitiesTable(nodes: [
-        "1": UISynchroNode(
-            id: "1",
-            type: .file,
-            path: URL(fileURLWithPath: "/Documents/Report.pdf"),
-            direction: .up,
-            status: .syncing
-        ),
-        "2": UISynchroNode(
-            id: "2",
-            type: .directory,
-            path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
-            direction: .down,
-            status: .done
-        ),
-        "3": UISynchroNode(
-            id: "3",
-            type: .file,
-            path: URL(fileURLWithPath: "/Presentation.pptx"),
-            direction: .up,
-            status: .error
-        ),
-        "4": UISynchroNode(
-            id: "4",
-            type: .file,
-            path: URL(fileURLWithPath: "/Downloads/Archive.zip"),
-            direction: .down,
-            status: .idle
-        )
-    ])
+    ActivitiesTable(
+        driveName: "kDrive",
+        synchro: PreviewHelper.synchro,
+        nodes: [
+            "1": UISynchroNode(
+                id: "1",
+                type: .file,
+                path: URL(fileURLWithPath: "/Documents/Report.pdf"),
+                direction: .up,
+                status: .syncing
+            ),
+            "2": UISynchroNode(
+                id: "2",
+                type: .directory,
+                path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
+                direction: .down,
+                status: .done
+            ),
+            "3": UISynchroNode(
+                id: "3",
+                type: .file,
+                path: URL(fileURLWithPath: "/Presentation.pptx"),
+                direction: .up,
+                status: .error
+            ),
+            "4": UISynchroNode(
+                id: "4",
+                type: .file,
+                path: URL(fileURLWithPath: "/Downloads/Archive.zip"),
+                direction: .down,
+                status: .idle
+            )
+        ]
+    )
 }
