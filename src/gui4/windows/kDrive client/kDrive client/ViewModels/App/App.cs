@@ -292,14 +292,15 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public async Task DisconnectUserAsync(DbId userDbId)
+        public async Task<bool> DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             if (!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
             {
                 Logger.Log(Logger.Level.Error, $"Failed to disconnect user {userDbId}");
-                Utility.ShowUnexpectedErrorTeachingTip();
+                return false;
             }
+            return true;
         }
 
         public async Task AddErrorAsync(Error error)

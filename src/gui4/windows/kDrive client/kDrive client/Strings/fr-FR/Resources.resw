@@ -1160,7 +1160,8 @@ Infomaniak</value>
 Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et ne doit pas contenir de sous-dossier de synchronisation.</value>
   </data>
   <data name="UnexpectedErrorTeachingTip.Content" xml:space="preserve">
-    <value>Veuillez réessayer dans quelques instants. Si le problème persiste, veuillez contacter le support</value>
+    <value>Veuillez réessayer dans quelques instants.
+Si le problème persiste, veuillez contacter le support</value>
   </data>
   <data name="InvalidDefaultSyncLocationTeachingTip.Content" xml:space="preserve">
     <value>Si le problème persiste, veuillez contacter le support</value>
