@@ -62,14 +62,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
-        public struct GetGoodPathResult
-        {
-            public string? GoodPath { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
-        Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
+        Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
         Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);

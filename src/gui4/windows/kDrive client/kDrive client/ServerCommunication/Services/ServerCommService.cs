@@ -13,7 +13,6 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
@@ -499,7 +498,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
                 if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
                 {
-                    Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
+                    Logger.Log(Logger.Level.Warning, $"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.");
                     return false;
                 }
             }
@@ -561,7 +560,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
             {
                 sync.SyncStatus = previousStatus;
@@ -586,8 +585,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken);
-            if(!CheckJobResultAndLogIfError(data, parms))
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
             {
                 sync.SyncStatus = previousStatus;
                 return false;
@@ -602,17 +601,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Path] = Utility.ToBase64String(absoluteLocalPath)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.BestMode))
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.BestMode))
+                return null;
+
+            VirtualFileMode? bestMode = (VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>());
+            if (!bestMode.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.BestMode} not found in response.");
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.BestMode} from response: {data.Params}");
                 return null;
             }
 
-            return ((VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>()) ?? VirtualFileMode.Off) == VirtualFileMode.Win;
+            return bestMode == VirtualFileMode.Win;
         }
 
-        public async Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
         {
             DbId driveDbId = -1;
             if (drive is Drive inDbDrive)
@@ -624,13 +630,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken);
-
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.GoodPath) || !data.Params.ContainsKey(JsonKeys.ErrorMessage))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.GoodPath} or {JsonKeys.Path} not found in response: {data.Params}");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.GoodPath) || !HasRequiredParam(data, JsonKeys.ErrorMessage))
+                return null;
 
             var options = new JsonSerializerOptions
             {
@@ -638,9 +643,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
 
-            GetGoodPathResult result = new();
-            result.GoodPath = data.Params[JsonKeys.GoodPath].Deserialize<string>(options) ?? "";
-            result.ErrorMessage = data.Params[JsonKeys.ErrorMessage].Deserialize<string>(options) ?? "";
+            string? result;
+            result = data.Params[JsonKeys.GoodPath].Deserialize<string>(options);
+
+            if (result is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.GoodPath} from response: {data.Params}");
+                return null;
+            }
+
             return result;
         }
         public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
@@ -651,13 +662,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.IsValid))
+            if (!HasRequiredParam(data, JsonKeys.IsValid))
+                return null;
+
+            bool? result = data.Params[JsonKeys.IsValid]?.GetValue<bool>();
+            if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.IsValid} not found in response: {data.Params}");
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.IsValid} from response: {data.Params}");
                 return null;
             }
-            return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
+
+            return result;
         }
 
         public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
