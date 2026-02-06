@@ -30,7 +30,7 @@ class MCKXPCGuiProtocol: XPCGuiProtocol {
         self.payloadFileName = payloadFileName
     }
 
-    var errorData: Data {
+    var responseData: Data {
         let bundle = Bundle(for: TestBundleMarker.self)
 
         guard let url = bundle.url(forResource: payloadFileName, withExtension: "json") else {
@@ -41,7 +41,7 @@ class MCKXPCGuiProtocol: XPCGuiProtocol {
     }
 
     func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {
-        callback(errorData)
+        callback(responseData)
     }
 }
 
