@@ -93,12 +93,12 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         static std::unordered_map<int, std::pair<int, int>> _driveToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
 
-        ApiType _apiType;
-        int _userDbId;
-        int _userId;
-        int _driveDbId;
-        int _driveId;
-        bool _returnJson;
+        ApiType _apiType{2};
+        int _userDbId{0};
+        int _userId{0};
+        int _driveDbId{0};
+        int _driveId{0};
+        bool _returnJson{true};
         ApiToken _apiToken;
 
         bool _accessTokenAlreadyRefreshed = false;

@@ -20,14 +20,21 @@
 
 #include "jobs/network/abstracttokennetworkjob.h"
 
+#include "info/nodeinfo.h"
+
 namespace KDC {
 
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        GetFilesInDirectoryJob(int userDbId, int driveId, const NodeId &fileId, bool dirOnly = false);
-        explicit GetFilesInDirectoryJob(int driveDbId, const NodeId &fileId, bool dirOnly = false);
+        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false);
+        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false);
 
         void setWithPath(const bool val) { _withPath = val; }
+        [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
+        [[nodiscard]] bool hasMore() const { return _hasMore; }
+
+    protected:
+        ExitInfo handleResponse(std::istream &is) override;
 
 
     private:
@@ -35,11 +42,31 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        ExitInfo handleResponse(std::istream &is) override;
+        // Fill the `_nodeInfoList` data structure with the deserialization
+        // of the JSON result's `data` field.
+        ExitInfo deserializeDataArray();
 
+        // The remote identifier of the folder whose file list is queried.
+        NodeId _fileId;
 
-        bool _dirOnly{false};
+        // If `_withPath` is `true`, the paths of the items will be returned.
         bool _withPath{false};
+
+        // If `_hasMore` is `true` a subsequent request is required.
+        bool _hasMore{false};
+
+        // The starting point of the listing to be performed by the backend.
+        std::string _cursorInput;
+
+        // Used for subsequent requests when `_hasMore` is `true`
+        std::string _cursorOutput;
+
+        // If `_dirOnly` is `true`, directories only will be listed in the result.
+        bool _dirOnly{false};
+
+        // The deserialization of the request JSON result.
+        using NodeInfoList = std::vector<NodeInfo>;
+        NodeInfoList _nodeInfoList;
 };
 
 } // namespace KDC

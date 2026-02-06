@@ -48,7 +48,7 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
         return it->second;
     }
 
-    GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, true);
+    GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
     fileListJob.runSynchronously();
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();

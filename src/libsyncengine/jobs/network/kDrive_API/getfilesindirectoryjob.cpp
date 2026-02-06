@@ -20,26 +20,37 @@
 
 #include "utility/jsonparserutility.h"
 
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, const NodeId &fileId,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, NodeId fileId, std::string cursorInput,
                                                const bool dirOnly /*= false*/) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    _fileId(std::move(fileId)),
+    _cursorInput(std::move(cursorInput)),
     _dirOnly(dirOnly) {
+    _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, const NodeId &fileId, const bool dirOnly /*= false*/) :
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
+                                               const bool dirOnly /*= false*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _fileId(std::move(fileId)),
+    _cursorInput(std::move(cursorInput)),
     _dirOnly(dirOnly) {
+    _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+    str += "/files/";
+    str += _fileId;
     str += "/files";
+
     return str;
 }
 
@@ -52,12 +63,97 @@ void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
     } else {
         uri.addQueryParameter("with", "capabilities");
     }
+
+    if (!_cursorInput.empty()) {
+        uri.addQueryParameter("cursor", _cursorInput);
+    }
+}
+
+ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
+    const auto dataArray = jsonRes()->getArray(dataKey);
+    if (!dataArray) {
+        LOG_WARN(_logger, "Missing data array for files in directory");
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
+        const auto obj = it->extract<Poco::JSON::Object::Ptr>();
+
+        NodeId nodeId;
+        if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        SyncName name;
+        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        std::string path;
+        if (_withPath) {
+            std::string rawPath;
+            if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) {
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+
+            if (!Utility::normalizedSyncName(rawPath, path)) {
+                LOGW_DEBUG(Log::instance()->getLogger(),
+                           L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(rawPath));
+                // Ignore the item
+                continue;
+            }
+        }
+
+        SyncTime modifiedTime = 0;
+        if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        Poco::JSON::Object::Ptr capabilitiesObj = obj->getObject(capabilitiesKey);
+        bool accessDenied = false;
+        if (capabilitiesObj) {
+            bool canShow = true;
+            if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow)) {
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+            accessDenied = !canShow;
+        }
+
+        std::string parentId;
+        if (!JsonParserUtility::extractValue(obj, parentIdKey, parentId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
+                          -1, // Size is not set as it can be long to calculate.
+                          parentId.c_str(), modifiedTime, SyncName2QStr(path));
+        nodeInfo.setAccessDenied(accessDenied);
+
+        _nodeInfoList.emplace_back(std::move(nodeInfo));
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitInfo GetFilesInDirectoryJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
-    if (!jsonRes()) return {};
-    return ExitCode::Ok;
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
+    }
+
+    if (!jsonRes()) {
+        LOG_WARN(_logger, "Invalid JSON object");
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    return deserializeDataArray();
 }
 
 } // namespace KDC
