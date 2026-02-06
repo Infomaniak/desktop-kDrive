@@ -73,8 +73,7 @@ void TestTheme::testUrls() {
 
 void TestTheme::testSystrayIcons() {
     int argc = 1;
-    char *argv[] = {const_cast<char *>("test")};
-    QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, nullptr);
     setlocale(LC_ALL, "C"); // QGuiApplication changes the locale
 
     Theme *const theme = Theme::instance();

@@ -93,7 +93,7 @@ class MockKeychainStore : public IKeychainStore {
         /**
          * @brief Configure behavior for simulating errors
          */
-        void setFailNextOperation(const bool fail, const std::string &errorMessage = "Mock error") {
+        void setFailNextOperation(const bool fail, const std::string_view errorMessage = "Mock error") {
             _failNext = fail;
             _errorMessage = errorMessage;
         }
