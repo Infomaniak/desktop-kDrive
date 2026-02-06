@@ -103,8 +103,14 @@ struct ActivitiesTableStatusView: View {
                 Menu {
                     menuContent
                 } label: {
-                    Label { Text("Show options") } icon: { KDriveResources.dotsVertical.swiftUIImage }
-                        .labelStyle(.iconOnly)
+                    Label {
+                        Text("Show options")
+                    } icon: {
+                        KDriveResources.dotsVertical.swiftUIImage
+                            .resizable(at: AppIconSize.iconSize12)
+                    }
+                    .labelStyle(.iconOnly)
+                    .tint(ColorToken.Text.primary.asColor)
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity, alignment: .trailing)
