@@ -17,7 +17,6 @@
  */
 
 #include "executorworker.h"
-#include "apitranslator.h"
 
 #include "filerescuer.h"
 #include "jobs/local/localcreatedirjob.h"
@@ -610,7 +609,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             }
 
             if (filesize > bigFileThreshold) {
-                const NodeId userRootFolderId = ApiTranslator::getUserPrivateRootFolderId(_syncPal->driveDbId());
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),

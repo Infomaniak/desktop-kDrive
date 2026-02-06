@@ -17,6 +17,7 @@
  */
 
 #include "driveuploadsession.h"
+#include "jobs/network/apitranslator.h"
 
 #include "io/filestat.h"
 #include "utility/utility.h"
@@ -36,6 +37,8 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int
     _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
+
+    const NodeId userRootFolderId = ApiTranslator::getUserPrivateRootFolderId(_driveDbId);
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,

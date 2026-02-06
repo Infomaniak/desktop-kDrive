@@ -16,26 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "apitranslator.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#pragma once
 
 namespace KDC {
 
-ApiTranslator::ApiTranslator() {}
+class ApiTranslator {
+    public:
+        ApiTranslator();
+        ~ApiTranslator();
+        using DriveId = int32_t;
+        using DriveDbId = int32_t;
+        static NodeId getUserPrivateRootFolderId(DriveDbId driveDbId);
 
-ApiTranslator::~ApiTranslator() {}
+    private:
+        static DriveId getDriveId(DriveDbId driveDbId);
 
-NodeId ApiTranslator::getUserPrivateRootFolderId(const int32_t driveId) {
-    if (const auto it = _rootNodeIdCache.find(driveId); it != _rootNodeIdCache.cend()) {
-        return it->second;
-    }
 
-    GetFileListJob fileListJob(driveId, NodeId{"1"});
-    fileListJob.runSynchronously();
-
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
-
-    return {};
-}
+        using NodeIdCacheMap = std::unordered_map<int32_t, NodeId>;
+        static NodeIdCacheMap _rootNodeIdCache;
+};
 
 } // namespace KDC
