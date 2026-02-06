@@ -80,7 +80,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
                 }
             }
 
-            return allNodes
+            return allNodes.sorted { $0.node.date < $1.node.date }
         }
         .removeDuplicates()
         .eraseToAnyPublisher()
