@@ -62,14 +62,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
-        public struct GetGoodPathResult
-        {
-            public string? GoodPath { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
-        Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
+        Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
         Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
@@ -79,31 +73,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
-        Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+        Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task<bool> RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
-        Task SaveSettings(CancellationToken cancellationToken);
+        Task<bool> SaveSettings(CancellationToken cancellationToken);
 
         // Exclusion template-related requests
         Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken);
-        Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
+        Task<bool> SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
 
         // Update-related requests
-        Task StartUpdate(CancellationToken cancellationToken);
-        Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
-        Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
+        Task<bool> StartUpdate(CancellationToken cancellationToken);
+        Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
 
         // Log-related requests
-        Task StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
-        Task CancelLogUpload(CancellationToken cancellationToken);
+        Task<bool> StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
+        Task<bool> CancelLogUpload(CancellationToken cancellationToken);
 
 
         // App-related requests
-        Task ActivateLoadInfo(CancellationToken cancellationToken);
+        Task<bool> ActivateLoadInfo(CancellationToken cancellationToken);
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
         // Error-related requests

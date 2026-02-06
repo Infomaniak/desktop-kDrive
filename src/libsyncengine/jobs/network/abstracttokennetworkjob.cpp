@@ -418,7 +418,6 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
                 _userId = it->second.second;
                 apiToken = it->second.first->apiToken();
             } else {
-                assert(false);
                 const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
                 LOG_WARN(_logger, err);
                 throw std::runtime_error(err);

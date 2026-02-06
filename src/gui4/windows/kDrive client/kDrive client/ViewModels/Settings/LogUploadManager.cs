@@ -51,16 +51,24 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _lastSuccessfullUpload, value);
         }
 
-        public static async Task StartUpload(bool includeArchivedLogs)
+        public async Task StartUpload(bool includeArchivedLogs)
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.StartLogUpload(includeArchivedLogs, CancellationToken.None);
+            if (!await commService.StartLogUpload(includeArchivedLogs, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, "Log upload could not be started");
+                State = LogUploadState.Failed;
+            }
         }
 
         public static async Task CancelUpload()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.CancelLogUpload(CancellationToken.None);
+            if (!await commService.CancelLogUpload(CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, "Log upload could not be cancelled");
+                // We do not change the state here as it will be changed by the server signal later
+            }
         }
     }
 }

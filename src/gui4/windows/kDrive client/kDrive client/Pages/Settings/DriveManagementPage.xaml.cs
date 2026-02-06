@@ -268,19 +268,15 @@ namespace Infomaniak.kDrive.Pages.Settings
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string desiredFolderName = BaseDrive.Name.StartsWith("kDrive") ? BaseDrive.Name : $"kDrive {BaseDrive.Name}";
             string desiredPath = Path.Combine(userProfile, desiredFolderName);
-            IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(BaseDrive, desiredPath, CancellationToken.None);
-            if (!result.HasValue || result.Value.GoodPath is null)
+            string? result = await commServices.GetGoodPathForNewSync(BaseDrive, desiredPath, CancellationToken.None);
+            if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}': {result?.ErrorMessage ?? "Unknown error"}");
+                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}'");
+                Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
                 return;
             }
 
-            NewSync newSync = new NewSync()
-            {
-                Drive = BaseDrive,
-                DefaultPath = result.Value.GoodPath,
-                LocalPath = result.Value.GoodPath
-            };
+            NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
             List<NewSync> newSyncs = new() { newSync };
 

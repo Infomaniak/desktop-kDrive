@@ -3,8 +3,8 @@
  * Project: kDrive Desktop
  * Locale: fr, French
  * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Tue, 03 Feb 2026 13:24:54 +0100
+ * Exported by: Philippe Weidmann
+ * Exported at: Fri, 06 Feb 2026 08:36:54 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -140,10 +140,10 @@
 "folderTrash" = "Poubelle";
 
 /* loco:6960b7720cbd5c07340af144 */
-"greetingLabel" = "Bonjour %s, %s";
+"greetingLabel" = "Bonjour %@, %@";
 
 /* loco:6964f0b575a31a8d9601a6d7 */
-"helpKDriveName" = "kDrive %s";
+"helpKDriveName" = "kDrive %@";
 
 /* loco:696a481cf54b5acbc60209c2 */
 "informationBlockKDriveFullSubtitle" = "Libérez de l’espace ou mettez votre forfait à niveau pour continuer à synchroniser vos fichiers.";
