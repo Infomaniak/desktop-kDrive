@@ -50,13 +50,8 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     public let syncDate: Date = .now.addingTimeInterval(-60 * 5)
     public let fileType: UTType = .pdf
 
-    public var parentFolderName: String {
-        let parentURL = path.deletingLastPathComponent()
-        return parentURL.lastPathComponent
-    }
-
-    public var fileName: String {
-        return path.lastPathComponent
+    public var parentFolder: URL {
+        return path.deletingLastPathComponent()
     }
 
     public init(id: ID, type: UINodeType?, path: URL, direction: UISyncDirection?, status: UISyncFileStatus?) {
