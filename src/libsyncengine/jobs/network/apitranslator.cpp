@@ -18,6 +18,7 @@
 
 #include "jobs/network/apitranslator.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 
 namespace KDC {
 
@@ -47,7 +48,7 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
         return it->second;
     }
 
-    GetFileListJob fileListJob(driveDbId, NodeId{"1"});
+    GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, true);
     fileListJob.runSynchronously();
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
