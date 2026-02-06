@@ -43,7 +43,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     private static let maxSynchNodesCount = 100
 
     public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
-        synchNodes[node.localNodeId] = node
+        let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
+        synchNodes[node.localNodeId] = nodeToStore
 
         guard synchNodes.count > Self.maxSynchNodesCount else {
             return
@@ -104,6 +105,27 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let date: Date
     public let error: String
     public let size: Int64
+}
+
+extension SynchroNode {
+    /// Returns a new SynchroNode updated with values from the provided node, preserving this node's original date.
+    func updating(with node: SynchroNode) -> SynchroNode {
+        SynchroNode(
+            type: node.type,
+            path: node.path,
+            newPath: node.newPath,
+            localNodeId: node.localNodeId,
+            remoteNodeId: node.remoteNodeId,
+            direction: node.direction,
+            instruction: node.instruction,
+            status: node.status,
+            conflict: node.conflict,
+            inconsistency: node.inconsistency,
+            cancelType: node.cancelType,
+            date: date,
+            error: node.error
+        )
+    }
 }
 
 public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
