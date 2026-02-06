@@ -483,7 +483,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (treeItem is not null)
             {
                 DeselectAllDescendants(treeItem, false);
-                treeItem.IsSelected = treeItem.Children.Any() ? null : false;
+                treeItem.IsSelected = false;
                 if (!IsLoading)
                     UpdateHasPendingChanges();
             }
