@@ -37,7 +37,7 @@ extension SidebarItem {
         title: KDriveLocalizable.tabTitleStorage
     )
     static let openInFinder = SidebarItem(
-        icon: KDriveResources.folderCircleArrowRight.image,
+        icon: KDriveResources.finder.image,
         title: KDriveLocalizable.buttonOpenInFinder,
         type: .action
     )
