@@ -124,6 +124,7 @@ bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
     }
 
     SyncFileItem &item = it->second.front().item();
+    item.setStatus(SyncFileStatus::Syncing);
     item.setProgress(progress);
 
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
