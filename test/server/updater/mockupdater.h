@@ -26,7 +26,7 @@ namespace KDC {
 
 class MockUpdater : public AbstractUpdater {
     public:
-        MockUpdater(const std::shared_ptr<UpdateChecker>& customUpdateChecker = std::make_shared<UpdateChecker>()) :
+        MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
             AbstractUpdater(customUpdateChecker) {}
 
         void startInstaller() override {
@@ -40,14 +40,16 @@ class MockUpdater : public AbstractUpdater {
             return AbstractUpdater::getCurrentVersion();
         }
 
-        void setMockGetCurrentVersion(const std::function<std::string()>& mockGetCurrentVersion) {
+        void setMockGetCurrentVersion(const std::function<std::string()> &mockGetCurrentVersion) {
             _mockGetCurrentVersion = mockGetCurrentVersion;
         }
 
-        void setMockStartInstaller(const std::function<void()>& startInstallerMock) { _startInstallerMock = startInstallerMock; }
-        void setQuitCallback(const std::function<void()>& quitCallback) override { _quitCallback = quitCallback; }
+        void setMockStartInstaller(const std::function<void()> &startInstallerMock) { _startInstallerMock = startInstallerMock; }
+        void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
 
     private:
+        bool checkMinOsVersion(const std::string_view) const override { return true; }
+
         std::function<std::string()> _mockGetCurrentVersion;
         std::function<void()> _startInstallerMock;
         std::function<void()> _quitCallback;

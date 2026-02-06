@@ -303,4 +303,29 @@ void SparkleUpdater::skipVersionCallback() {
     skipVersion(versionInfo(_currentChannel).fullVersion());
 }
 
+bool SparkleUpdater::checkMinOsVersion(const std::string_view minOsVersion) const {
+    if (minOsVersion.empty()) return true;
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
+
+    // Parse minOsVersion (format: "major.minor" or "major.minor.patch")
+    std::string versionStr(minOsVersion);
+    int minMajor = 0, minMinor = 0, minPatch = 0;
+
+    if (sscanf(versionStr.c_str(), "%d.%d.%d", &minMajor, &minMinor, &minPatch) < 2) {
+        // Try with just major.minor
+        sscanf(versionStr.c_str(), "%d.%d", &minMajor, &minMinor);
+    }
+
+    // Compare versions
+    if (osVersion.majorVersion > minMajor) return true;
+    if (osVersion.majorVersion < minMajor) return false;
+
+    if (osVersion.minorVersion > minMinor) return true;
+    if (osVersion.minorVersion < minMinor) return false;
+
+    return osVersion.patchVersion >= minPatch;
+}
+
 } // namespace KDC

@@ -186,4 +186,10 @@ bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
     return true;
 }
 
+bool WindowsUpdater::checkMinOsVersion(const std::string_view minOsVersion) const {
+    if (minOsVersion.empty()) return true;
+
+    TODO !return true;
+}
+
 } // namespace KDC

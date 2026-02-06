@@ -57,6 +57,7 @@ class WindowsUpdater : public AbstractUpdater {
          * @return true if the signature is valid.
          */
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
+        bool checkMinOsVersion(const std::string_view minOsVersion) const override;
 
         bool _autoUpdate{false};
 };

@@ -85,7 +85,7 @@ class AbstractUpdater {
 
     private:
         void onAppVersionReceived();
-        bool checkMinOsVersion(const std::string_view minOsVersion) const;
+        virtual bool checkMinOsVersion(const std::string_view minOsVersion) const = 0;
 
         std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.

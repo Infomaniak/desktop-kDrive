@@ -24,4 +24,12 @@ void LinuxUpdater::onUpdateFound() {
     setState(UpdateState::ManualUpdateAvailable);
 }
 
+bool LinuxUpdater::checkMinOsVersion(const std::string_view minOsVersion) const {
+    if (minOsVersion.empty()) return true;
+
+    TODO !
+
+            return true;
+}
+
 } // namespace KDC

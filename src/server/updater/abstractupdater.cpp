@@ -88,12 +88,6 @@ void AbstractUpdater::onAppVersionReceived() {
     }
 }
 
-bool AbstractUpdater::checkMinOsVersion(const std::string_view minOsVersion) const {
-    if (minOsVersion.empty()) return true;
-
-    return true;
-}
-
 void AbstractUpdater::skipVersion(const std::string &skippedVersion) {
     ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
     ParametersCache::instance()->save();
