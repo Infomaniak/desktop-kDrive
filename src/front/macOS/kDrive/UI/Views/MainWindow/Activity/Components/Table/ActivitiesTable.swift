@@ -55,15 +55,18 @@ struct ActivitiesTable: View {
                 Text(node.syncDate, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
+            .width(ideal: 80)
 
             TableColumn("Size") { node in
                 Text(node.size, format: .byteCount(style: .file))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
+            .width(ideal: 30)
 
             TableColumn("Status") { node in
                 ActivitiesTableStatusView(node: node)
             }
+            .width(ideal: 50)
         }
     }
 

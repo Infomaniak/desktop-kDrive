@@ -19,8 +19,8 @@
 import Cocoa
 import Foundation
 import kDriveCore
-import SwiftUI
 import OrderedCollections
+import SwiftUI
 
 private final class PreviewBundle {
     /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
