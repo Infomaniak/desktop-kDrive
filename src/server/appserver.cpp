@@ -445,9 +445,10 @@ void AppServer::init() {
         _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
-        connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-        connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-        connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+        (void) connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+        (void) connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+        (void) connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+        (void) connect(_updateManager.get(), &UpdateManager::requireUpdate, this, &AppServer::onUpdateRequired);
     }
 
     // Check last crash to avoid crash loop
@@ -531,27 +532,8 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "ExtJobManager stopped");
 #endif
 
-    // Stop SyncPals
-    {
-        const std::scoped_lock lock(syncPalMapMutex);
-        for (const auto &[syncDbId, _]: syncPalMap) {
-            if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
-            }
-        }
-    }
-    LOG_DEBUG(_logger, "Syncpal(s) stopped");
-
-    // Stop Vfs
-    {
-        const std::scoped_lock lock(vfsMapMutex);
-        for (const auto &[syncDbId, _]: vfsMap) {
-            if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
-            }
-        }
-    }
-    LOG_DEBUG(_logger, "Vfs(s) stopped");
+    stopAllSyncPals();
+    stopAllVfs();
 
     // Clear CommManager
     if (useCommManager()) {
@@ -628,6 +610,26 @@ ExitInfo AppServer::setSupportsVirtualFilesAsync(int syncDbId, bool value) {
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     return setSupportsVirtualFiles(syncDbId, value, false);
+}
+
+void AppServer::stopAllSyncPals() {
+    const std::scoped_lock lock(syncPalMapMutex);
+    for (const auto &[syncDbId, _]: syncPalMap) {
+        if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+            LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
+        }
+    }
+    LOG_DEBUG(_logger, "Syncpal(s) stopped");
+}
+
+void AppServer::stopAllVfs() {
+    const std::scoped_lock lock(vfsMapMutex);
+    for (const auto &[syncDbId, _]: vfsMap) {
+        if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
+            LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
+        }
+    }
+    LOG_DEBUG(_logger, "Vfs(s) stopped");
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
@@ -2504,6 +2506,11 @@ void AppServer::onShowWindowsUpdateDialog() {
     if (useCommManager()) {
         _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     }
+}
+
+void AppServer::onUpdateRequired() {
+    stopAllSyncPals();
+    addError(Error(ERR_ID, ExitCode::UpdateRequired));
 }
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
