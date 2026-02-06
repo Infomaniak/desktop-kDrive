@@ -686,13 +686,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken);
-
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SearchInfoList))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SearchInfoList} not found in response: {data.Params}");
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
-            }
+
+            if (!HasRequiredParam(data, JsonKeys.SearchInfoList))
+                return null;
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -711,23 +711,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             foreach (var item in resultInfos)
             {
-                if (typeof(SearchInfo).GetProperties().Any(p => p.GetValue(item) == null))
+                if (typeof(SearchInfo).GetProperties().Any(p => p.GetValue(item) is null))
                 {
-                    Logger.Log(
-                        Logger.Level.Error,
-                        $"SearchInfo contains null properties for item with NodeId {item.Id}. Skipping this item."
-                    );
+                    Logger.Log(Logger.Level.Error, $"SearchInfo contains null properties for item with NodeId {item.Id}. Skipping this item.");
                     continue;
                 }
 
                 resultItems.Add(new SearchItem(
                     item.Id!,
                     item.Name!,
-                    item.Type ?? NodeType.Unknown,
+                    item.Type!.Value,
                     item.Path!,
-                    item.ModifiedTime ?? DateTime.MinValue,
-                    item.Size ?? 0,
-                    item.IsAvailableLocally ?? false
+                    item.ModifiedTime!.Value,
+                    item.Size!.Value,
+                    item.IsAvailableLocally!.Value
                 ));
             }
             return resultItems;
@@ -739,14 +736,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
 
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
 
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.Size))
+            if (!HasRequiredParam(data, JsonKeys.Size))
+                return null;
+
+            UInt64? size = data.Params[JsonKeys.Size]?.GetValue<UInt64>();
+            if (!size.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.Size} not found in response: {data.Params}");
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.Size} from response: {data.Params}");
                 return null;
             }
-            return data.Params[JsonKeys.Size]?.GetValue<UInt64>() ?? 0;
+            return size;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
