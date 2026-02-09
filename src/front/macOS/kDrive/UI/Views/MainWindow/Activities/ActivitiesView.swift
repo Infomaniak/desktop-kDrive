@@ -55,7 +55,7 @@ struct ActivitiesView: View {
         case .myActivityOnly:
             return mainViewModel.currentSynchro?.nodes ?? [:]
         case .allActivities:
-            // TODO: Waiting on MCP to return all activities
+            // TODO: Waiting on XPC to return all activities
             return [:]
         }
     }
