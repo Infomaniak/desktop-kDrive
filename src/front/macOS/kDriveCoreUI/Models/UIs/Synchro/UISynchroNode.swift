@@ -24,25 +24,37 @@ public enum UINodeType: Sendable {
     case file
 }
 
-public enum UISyncDirection: Sendable {
+public enum UISynchroDirection: Sendable {
     case up
     case down
 }
 
-public enum UISyncFileStatus: Sendable {
+public enum UISynchroFileStatus: Sendable {
     case idle
     case syncing
     case done
     case error
 }
 
+public enum UISynchroFileInstruction: Sendable {
+    case update
+    case updateMetadata
+    case remove
+    case move
+    case get
+    case put
+    case ignore
+}
+
 public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     public typealias ID = String
 
     public let id: ID
+    public let remoteID: String
     public let type: UINodeType?
-    public let direction: UISyncDirection?
-    public let status: UISyncFileStatus?
+    public let direction: UISynchroDirection?
+    public let status: UISynchroFileStatus?
+    public let instruction: UISynchroFileInstruction?
 
     public let path: URL
     public let updatedPath: URL?
@@ -64,13 +76,24 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         FileTypeRepresentation(utType: fileType)
     }
 
-    public init(id: ID, type: UINodeType?, path: URL, updatedPath: URL?, direction: UISyncDirection?, status: UISyncFileStatus?) {
+    public init(
+        id: ID,
+        remoteID: String,
+        type: UINodeType?,
+        path: URL,
+        updatedPath: URL?,
+        direction: UISynchroDirection?,
+        status: UISynchroFileStatus?,
+        instruction: UISynchroFileInstruction?
+    ) {
         self.id = id
+        self.remoteID = remoteID
         self.type = type
         self.path = path
         self.updatedPath = updatedPath
         self.direction = direction
         self.status = status
+        self.instruction = instruction
     }
 
     public static func == (lhs: UISynchroNode, rhs: UISynchroNode) -> Bool {

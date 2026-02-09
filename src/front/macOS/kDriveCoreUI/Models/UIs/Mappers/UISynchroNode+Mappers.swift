@@ -38,7 +38,7 @@ extension UINodeType {
     }
 }
 
-extension UISyncDirection {
+extension UISynchroDirection {
     init?(syncDirection: KDC.SyncDirection) {
         switch syncDirection {
         case .Up:
@@ -57,7 +57,7 @@ extension UISyncDirection {
     }
 }
 
-extension UISyncFileStatus {
+extension UISynchroFileStatus {
     init?(syncFileStatus: KDC.SyncFileStatus) {
         switch syncFileStatus {
         case .Syncing:
@@ -80,6 +80,36 @@ extension UISyncFileStatus {
     }
 }
 
+extension UISynchroFileInstruction {
+    init?(syncFileInstruction: KDC.SyncFileInstruction) {
+        switch syncFileInstruction {
+        case .Update:
+            self = .update
+        case .UpdateMetadata:
+            self = .updateMetadata
+        case .Remove:
+            self = .remove
+        case .Move:
+            self = .move
+        case .Get:
+            self = .get
+        case .Put:
+            self = .put
+        case .Ignore:
+            self = .ignore
+        case .None:
+            return nil
+        case .EnumEnd:
+            ReportHelper
+                .reportToSentryIfProd(message: "UISynchroFileInstruction init received KDC.SyncFileInstruction.EnumEnd case")
+            return nil
+        @unknown default:
+            ReportHelper.reportToSentryIfProd(message: "Unhandled KDC.SyncFileInstruction case")
+            return nil
+        }
+    }
+}
+
 public extension UISynchroNode {
     init(synchroNode: SynchroNode) {
         var updatedLocalPath: URL?
@@ -89,11 +119,13 @@ public extension UISynchroNode {
 
         self.init(
             id: synchroNode.localNodeId,
+            remoteID: synchroNode.remoteNodeId,
             type: UINodeType(synchroNodeType: synchroNode.type),
             path: URL(fileURLWithPath: synchroNode.path),
             updatedPath: updatedLocalPath,
-            direction: UISyncDirection(syncDirection: synchroNode.direction),
-            status: UISyncFileStatus(syncFileStatus: synchroNode.status)
+            direction: UISynchroDirection(syncDirection: synchroNode.direction),
+            status: UISynchroFileStatus(syncFileStatus: synchroNode.status),
+            instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction)
         )
     }
 }
