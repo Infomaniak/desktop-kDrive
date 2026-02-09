@@ -86,9 +86,17 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        SyncName name;
-        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+        SyncName rawName;
+        if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        SyncName name;
+        if (!Utility::normalizedSyncName(rawName, name)) {
+            LOGW_DEBUG(Log::instance()->getLogger(),
+                       L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(rawName));
+            // Ignore the item
+            continue;
         }
 
         std::string path;
