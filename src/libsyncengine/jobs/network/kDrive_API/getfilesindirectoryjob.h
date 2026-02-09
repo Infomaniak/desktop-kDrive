@@ -30,10 +30,9 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false);
 
         void setWithPath(const bool val) { _withPath = val; }
+        void setLimit(const int64_t limit) { _limit = limit; }
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
-
-        using NodeInfoList = std::vector<NodeInfo>;
 
         // The return value of this accessor is only meaningful if the response has been handled.
         [[nodiscard]] const NodeInfoList &nodeInfoList() const { return _nodeInfoList; };
@@ -68,6 +67,9 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
 
         // If `_dirOnly` is `true`, directories only will be listed in the result.
         bool _dirOnly{false};
+
+        // The maximal number of items returned by the request.
+        int64_t _limit{10};
 
         // The deserialization of the request JSON result.
         NodeInfoList _nodeInfoList;

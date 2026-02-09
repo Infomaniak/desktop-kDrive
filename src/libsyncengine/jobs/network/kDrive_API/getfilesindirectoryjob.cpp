@@ -67,6 +67,8 @@ void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
     if (!_cursorInput.empty()) {
         uri.addQueryParameter("cursor", _cursorInput);
     }
+
+    uri.addQueryParameter("limit", std::to_string(_limit));
 }
 
 ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {

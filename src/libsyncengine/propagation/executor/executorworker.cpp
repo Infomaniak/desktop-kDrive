@@ -27,7 +27,7 @@
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/movejob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -397,57 +397,36 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     bool alreadyExist = false;
 
     // List all items in parent dir
-    std::shared_ptr<GetFileListJob> job = nullptr;
+    std::shared_ptr<GetFilesInDirectoryJob> job = nullptr;
     try {
-        job = std::make_shared<GetFileListJob>(_syncPal->driveDbId(), parentId);
+        job = std::make_shared<GetFilesInDirectoryJob>(_syncPal->driveDbId(), parentId);
     } catch (const std::exception &e) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFilesInDirectoryJob::GetFilesInDirectoryJob for driveDbId="
                                                                << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
                                                                << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
+    job->setLimit(1000);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFilesInDirectoryJob::runSynchronously for driveDbId="
                                           << _syncPal->driveDbId() << " nodeId=" << parentId << " : " << job->exitInfo());
         return exitInfo;
     }
 
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
-    if (!resObj) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-        return {ExitCode::BackError, ExitCause::ApiErr};
-    }
+    const auto &nodeInfoList = job->nodeInfoList();
 
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-        return {ExitCode::BackError, ExitCause::ApiErr};
-    }
-
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-        SyncName name;
-        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-            return {ExitCode::BackError, ExitCause::ApiErr};
-        }
-
-        if (name == absolutePath.filename()) {
+    for (const auto &nodeInfo: nodeInfoList) {
+        if (const auto name = QStr2SyncName(nodeInfo.name()); name == absolutePath.filename()) {
             alreadyExist = true;
             break;
         }
     }
 
-    if (!alreadyExist) {
-        return ExitCode::Ok;
-    }
+    if (!alreadyExist) return ExitCode::Ok;
+
     return {ExitCode::DataError, ExitCause::FileExists};
 }
-
 ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &hydrating) noexcept {
     // 1. If omit-flag is False, propagate the file or directory to replica Y, because the object is missing there.
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;

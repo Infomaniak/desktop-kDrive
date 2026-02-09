@@ -32,7 +32,7 @@ class ApiTranslator {
 
     private:
         static DriveId getDriveId(DriveDbId driveDbId);
-        static NodeId getRootFolderId(const DriveDbId driveDbId, const GetFilesInDirectoryJob::NodeInfoList &nodeInfoList);
+        static NodeId getRootFolderId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList);
         static NodeId getUserPrivateRootFolderId(DriveDbId driveDbId);
 
         using NodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;

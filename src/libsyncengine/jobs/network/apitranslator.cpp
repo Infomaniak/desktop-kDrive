@@ -40,7 +40,7 @@ ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     return drive.driveId();
 }
 
-NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const GetFilesInDirectoryJob::NodeInfoList &nodeInfoList) {
+NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList) {
     const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
                                  [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
 
@@ -60,9 +60,9 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
 
     bool hasMore = false;
     std::string cursor;
+    const bool directoryOnly = true;
     do {
-        // Get sub-folders only.
-        GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, cursor, true);
+        GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, cursor, directoryOnly);
         fileListJob.runSynchronously();
 
         const auto &nodeInfoList = fileListJob.nodeInfoList();
