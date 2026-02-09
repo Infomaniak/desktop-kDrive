@@ -87,7 +87,7 @@ struct SynchroTests {
                                remoteNodeId: "remote-1",
                                direction: .Up,
                                instruction: .Put,
-                               status: .Syncing,
+                               status: .Success,
                                conflict: .None,
                                inconsistency: .None,
                                cancelType: .None,
@@ -121,7 +121,7 @@ struct SynchroTests {
                                        remoteNodeId: "remote-1",
                                        direction: .Up,
                                        instruction: .Put,
-                                       status: .Syncing,
+                                       status: .Success,
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
@@ -138,7 +138,7 @@ struct SynchroTests {
                                       remoteNodeId: "remote-1",
                                       direction: .Down,
                                       instruction: .Update,
-                                      status: .Syncing,
+                                      status: .Success,
                                       conflict: .None,
                                       inconsistency: .None,
                                       cancelType: .None,
@@ -153,7 +153,7 @@ struct SynchroTests {
         #expect(synchro.synchNodes.count == 1)
         #expect(synchro.synchNodes["local-1"]?.direction == .Down)
         #expect(synchro.synchNodes["local-1"]?.instruction == .Update)
-        #expect(synchro.synchNodes["local-1"]?.status == .Syncing)
+        #expect(synchro.synchNodes["local-1"]?.status == .Success)
     }
 
     @Test("SynchroNode limit enforcement")
@@ -176,12 +176,12 @@ struct SynchroTests {
                                    remoteNodeId: "remote-\(i)",
                                    direction: .Up,
                                    instruction: .Put,
-                                   status: .Syncing,
+                                   status: .Success,
                                    conflict: .None,
                                    inconsistency: .None,
                                    cancelType: .None,
                                    size: 7_000_000,
-                                   date: Date(),
+                                   date: Date(timeIntervalSince1970: TimeInterval(i)),
                                    error: "")
             synchro.addOrUpdateSynchNode(node)
         }
@@ -194,12 +194,12 @@ struct SynchroTests {
                                     remoteNodeId: "remote-extra",
                                     direction: .Up,
                                     instruction: .Put,
-                                    status: .Syncing,
+                                    status: .Success,
                                     conflict: .None,
                                     inconsistency: .None,
                                     cancelType: .None,
                                     size: 7_000_000,
-                                    date: Date(),
+                                    date: Date(timeIntervalSince1970: 1337),
                                     error: "")
         synchro.addOrUpdateSynchNode(extraNode)
 
@@ -227,7 +227,7 @@ struct SynchroTests {
                                 remoteNodeId: "remote-1",
                                 direction: .Up,
                                 instruction: .Put,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
@@ -242,7 +242,7 @@ struct SynchroTests {
                                 remoteNodeId: "remote-2",
                                 direction: .Down,
                                 instruction: .Update,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
@@ -264,8 +264,8 @@ struct SynchroTests {
         #expect(nonExistentNode == nil)
     }
 
-    @Test("SynchroNode insertion order")
-    func synchroNodeInsertionOrder() {
+    @Test("SynchroNode sort order")
+    func synchroNodeSortDateOrder() {
         // GIVEN
         var synchro = Synchro(dbId: 1,
                               driveDbId: 2,
@@ -275,7 +275,7 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        // WHEN - Add nodes in a specific order
+        // WHEN
         let node1 = SynchroNode(type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
@@ -283,12 +283,11 @@ struct SynchroTests {
                                 remoteNodeId: "remote-1",
                                 direction: .Up,
                                 instruction: .Put,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 1),
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -298,12 +297,11 @@ struct SynchroTests {
                                 remoteNodeId: "remote-2",
                                 direction: .Down,
                                 instruction: .Update,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 2),
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -317,20 +315,85 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 3),
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
         synchro.addOrUpdateSynchNode(node2)
         synchro.addOrUpdateSynchNode(node3)
 
-        // THEN - Verify insertion order is maintained
+        // THEN
         let nodesArray = Array(synchro.synchNodes.values)
         #expect(nodesArray.count == 3)
-        #expect(nodesArray[0] == node1)
+        #expect(nodesArray[0] == node3)
         #expect(nodesArray[1] == node2)
-        #expect(nodesArray[2] == node3)
+        #expect(nodesArray[2] == node1)
+    }
+
+    @Test("SynchroNode sort out of order")
+    func synchroNodeSortDateOutOfOrder() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        // WHEN
+        let node1 = SynchroNode(type: .File,
+                                path: "/file1.txt",
+                                newPath: "/file1.txt",
+                                localNodeId: "local-1",
+                                remoteNodeId: "remote-1",
+                                direction: .Up,
+                                instruction: .Put,
+                                status: .Success,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                date: Date(timeIntervalSince1970: 1),
+                                error: "")
+
+        let node2 = SynchroNode(type: .File,
+                                path: "/file2.txt",
+                                newPath: "/file2.txt",
+                                localNodeId: "local-2",
+                                remoteNodeId: "remote-2",
+                                direction: .Down,
+                                instruction: .Update,
+                                status: .Success,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                date: Date(timeIntervalSince1970: 2),
+                                error: "")
+
+        let node3 = SynchroNode(type: .File,
+                                path: "/file3.txt",
+                                newPath: "/file3.txt",
+                                localNodeId: "local-3",
+                                remoteNodeId: "remote-3",
+                                direction: .Up,
+                                instruction: .Remove,
+                                status: .Success,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                date: Date(timeIntervalSince1970: 3),
+                                error: "")
+
+        synchro.addOrUpdateSynchNode(node3)
+        synchro.addOrUpdateSynchNode(node1)
+        synchro.addOrUpdateSynchNode(node2)
+
+        // THEN
+        let nodesArray = Array(synchro.synchNodes.values)
+        #expect(nodesArray.count == 3)
+        #expect(nodesArray[0] == node3)
+        #expect(nodesArray[1] == node2)
+        #expect(nodesArray[2] == node1)
     }
 
     @Test("SynchroNode order maintenance on update")
@@ -351,12 +414,12 @@ struct SynchroTests {
                                 remoteNodeId: "remote-1",
                                 direction: .Up,
                                 instruction: .Put,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 1),
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -366,12 +429,12 @@ struct SynchroTests {
                                 remoteNodeId: "remote-2",
                                 direction: .Down,
                                 instruction: .Update,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 2),
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -386,7 +449,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 3),
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
@@ -401,23 +464,24 @@ struct SynchroTests {
                                        remoteNodeId: "remote-2",
                                        direction: .Up,
                                        instruction: .Put,
-                                       status: .Syncing,
+                                       status: .Success,
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
                                        size: 7_000_000,
-                                       date: Date(),
+                                       date: Date(timeIntervalSince1970: 4),
                                        error: "")
 
         synchro.addOrUpdateSynchNode(updatedNode2)
 
-        // THEN - Verify order is maintained (node2 should still be in position 1)
+        // THEN
         let nodesArray = Array(synchro.synchNodes.values)
         #expect(nodesArray.count == 3)
-        #expect(nodesArray[0] == node1)
+        #expect(nodesArray[0] == node3)
         #expect(nodesArray[1].localNodeId == node2.localNodeId) // Same node but updated
         #expect(nodesArray[1].path == updatedNode2.path) // Verify it's the updated version
-        #expect(nodesArray[2] == node3)
+        #expect(nodesArray[1].date == node2.date) // Verify the date is the original one
+        #expect(nodesArray[2] == node1)
     }
 
     @Test("SynchroNode order maintenance on deletion")
@@ -438,12 +502,12 @@ struct SynchroTests {
                                 remoteNodeId: "remote-1",
                                 direction: .Up,
                                 instruction: .Put,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 1),
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -453,12 +517,12 @@ struct SynchroTests {
                                 remoteNodeId: "remote-2",
                                 direction: .Down,
                                 instruction: .Update,
-                                status: .Syncing,
+                                status: .Success,
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 2),
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -473,7 +537,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 size: 7_000_000,
-                                date: Date(),
+                                date: Date(timeIntervalSince1970: 3),
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
@@ -486,8 +550,8 @@ struct SynchroTests {
         // THEN - Verify order is maintained (remaining nodes should keep their positions)
         let nodesArray = Array(synchro.synchNodes.values)
         #expect(nodesArray.count == 2)
-        #expect(nodesArray[0] == node1)
-        #expect(nodesArray[1] == node3)
+        #expect(nodesArray[0] == node3)
+        #expect(nodesArray[1] == node1)
     }
 
     @Test("Synchro equality")

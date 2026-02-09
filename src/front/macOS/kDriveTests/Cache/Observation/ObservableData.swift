@@ -238,7 +238,7 @@ public enum ObservableData {
             remoteNodeId: "remote-456",
             direction: .Up,
             instruction: .None,
-            status: .Syncing,
+            status: .Success,
             conflict: .None,
             inconsistency: .None,
             cancelType: .None,
