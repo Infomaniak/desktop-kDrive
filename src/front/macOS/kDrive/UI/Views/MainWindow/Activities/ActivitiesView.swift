@@ -28,7 +28,7 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
     var id: String { rawValue }
 }
 
-struct ActivityView: View {
+struct ActivitiesView: View {
     @ObservedObject var mainViewModel: MainViewModel
 
     @State private var visibleActivities = VisibleActivities.myActivityOnly
@@ -55,6 +55,7 @@ struct ActivityView: View {
         case .myActivityOnly:
             return mainViewModel.currentSynchro?.nodes ?? [:]
         case .allActivities:
+            // TODO: Waiting on MCP to return all activities
             return [:]
         }
     }
@@ -91,5 +92,5 @@ struct ActivityView: View {
 }
 
 #Preview {
-    ActivityView(mainViewModel: MainViewModel())
+    ActivitiesView(mainViewModel: MainViewModel())
 }

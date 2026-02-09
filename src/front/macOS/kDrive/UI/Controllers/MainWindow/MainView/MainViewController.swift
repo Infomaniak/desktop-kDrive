@@ -98,7 +98,7 @@ final class MainViewController: IKSplitViewController {
         case .home:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         case .activities:
-            contentViewController = ActivityViewController(mainViewModel: viewModel)
+            contentViewController = ActivitiesViewController(mainViewModel: viewModel)
         case .storage:
             contentViewController = StorageViewController()
         case .blockingError:
