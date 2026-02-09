@@ -18,15 +18,15 @@
 
 import Foundation
 
-public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
+enum CallbackError: Error, Equatable {
+    case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
+}
+
+public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible, Sendable {
     public let code: KDC.ExitCode
     public let cause: KDC.ExitCause
     public let id: Int32
     public let body: Body
-
-    enum CallbackError: Error {
-        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
-    }
 
     public init(code: KDC.ExitCode, cause: KDC.ExitCause, id: Int32, body: Body) {
         self.code = code

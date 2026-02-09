@@ -99,12 +99,12 @@ public enum KDriveLocalizable {
   /// loco:695e5889bc7544361b08b834
   public static let folderTrash = KDriveLocalizable.tr("Localizable", "folderTrash", fallback: "Trash")
   /// loco:6960b7720cbd5c07340af144
-  public static func greetingLabel(_ p1: UnsafePointer<CChar>, _ p2: UnsafePointer<CChar>) -> String {
-    return KDriveLocalizable.tr("Localizable", "greetingLabel", p1, p2, fallback: "Hello %s, %s")
+  public static func greetingLabel(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "greetingLabel", String(describing: p1), String(describing: p2), fallback: "Hello %@, %@")
   }
   /// loco:6964f0b575a31a8d9601a6d7
-  public static func helpKDriveName(_ p1: UnsafePointer<CChar>) -> String {
-    return KDriveLocalizable.tr("Localizable", "helpKDriveName", p1, fallback: "kDrive %s")
+  public static func helpKDriveName(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "helpKDriveName", String(describing: p1), fallback: "kDrive %@")
   }
   /// loco:696a481cf54b5acbc60209c2
   public static let informationBlockKDriveFullSubtitle = KDriveLocalizable.tr("Localizable", "informationBlockKDriveFullSubtitle", fallback: "Free up space or upgrade your plan to continue syncing your files.")

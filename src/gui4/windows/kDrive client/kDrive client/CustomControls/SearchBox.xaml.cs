@@ -79,11 +79,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             try
             {
-                var result = await commService.SearchItem(
-                    ViewModel.SelectedSync.DbId,
-                    sender.Text,
-                    token);
-
+                var result = await commService.SearchItem(ViewModel.SelectedSync.DbId, sender.Text, token);
                 if (token.IsCancellationRequested)
                 {
                     return;
@@ -92,6 +88,14 @@ namespace Infomaniak.kDrive.CustomControls
                 if (result is null)
                 {
                     Logger.Log(Logger.Level.Warning, "SearchItem returned null result.");
+                    sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                if (!result.Any())
+                {
+                    Logger.Log(Logger.Level.Extended, "SearchItem returned empty result.");
                     sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
                     return;
                 }

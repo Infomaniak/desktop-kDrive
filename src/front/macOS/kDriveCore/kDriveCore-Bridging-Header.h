@@ -16,6 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Required flag to correctly compile shared types
+#define KD_MACOS 1
+
 // Bridging-Header.h
 #import "ServerBridge/XPC/xpcGuiProtocol.h"
 #import "ServerBridge/XPC/xpcLoginItemProtocol.h"

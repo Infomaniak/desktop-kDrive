@@ -31,8 +31,6 @@ public struct LoginJob: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.userDbId
     }
 }

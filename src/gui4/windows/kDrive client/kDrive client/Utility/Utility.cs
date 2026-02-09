@@ -316,17 +316,24 @@ namespace Infomaniak.kDrive
                 return new string('*', localPart.Length) + domainPart;
         }
 
+
         public static void ShowUnexpectedErrorTeachingTip()
         {
-            Utility.ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+            ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
         }
-        public static void ShowTeachingTipFromxUid(string xuid, Control? target = null)
+
+        private static TeachingTip? _currentTeachingTip;
+        public static void ShowTeachingTipFromxUid(string xuid)
         {
-            if (App.Current as App is not App app || app.CurrentWindow is null)
+            if (App.Current is not App app || app.CurrentWindow is null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
                 return;
             }
+
+            // Close previous tip if any
+            CloseCurrentTeachingTip();
+
             XamlRoot xamlRoot = app.CurrentWindow.Content.XamlRoot;
 
             var teachingTip = new TeachingTip
@@ -343,34 +350,43 @@ namespace Infomaniak.kDrive
                 IsLightDismissEnabled = true,
             };
 
-            if (target != null)
-            {
-                teachingTip.Target = target;
-            }
+            teachingTip.Closed += TeachingTip_Closed;
 
             // Attach to visual tree
-            var rootPanel = (xamlRoot.Content as FrameworkElement);
-            if (rootPanel is Panel panel)
+            if (xamlRoot.Content is Panel panel)
             {
                 panel.Children.Add(teachingTip);
             }
 
+            _currentTeachingTip = teachingTip;
             teachingTip.IsOpen = true;
-            teachingTip.Closed += TeachingTip_Closed;
+        }
+
+        private static void CloseCurrentTeachingTip()
+        {
+            if (_currentTeachingTip is null)
+                return;
+
+            _currentTeachingTip.IsOpen = false;
+            // Actual removal happens in Closed handler
         }
 
         private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
         {
             // Detach from visual tree
-            var parent = VisualTreeHelper.GetParent(sender);
-            if (parent is Panel panel)
+            if (VisualTreeHelper.GetParent(sender) is Panel panel)
             {
                 panel.Children.Remove(sender);
             }
 
-            // Unsubscribe from event
             sender.Closed -= TeachingTip_Closed;
+
+            if (ReferenceEquals(_currentTeachingTip, sender))
+            {
+                _currentTeachingTip = null;
+            }
         }
+
     }
 }
 
