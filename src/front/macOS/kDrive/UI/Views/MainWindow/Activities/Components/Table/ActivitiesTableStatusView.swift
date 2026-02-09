@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -61,6 +63,7 @@ struct StateIndicator: StatusIndicator {
 
 struct ActivitiesTableStatusView: View {
     let node: UISynchroNode
+    let driveID: Int?
 
     private var direction: DirectionIndicator {
         guard let nodeDirection = node.direction else {
@@ -91,7 +94,14 @@ struct ActivitiesTableStatusView: View {
     }
 
     private var shouldDisplayOptionButton: Bool {
-        return status == .synchronized || status == .failed
+        switch status {
+        case .synchronized:
+            return node.instruction != .remove
+        case .failed:
+            return true
+        default:
+            return false
+        }
     }
 
     var body: some View {
@@ -145,15 +155,32 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func openInFinder() {
-        // TODO: Open in finder
+        guard let driveID else { return }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.localURL(for: node.id)
+
+        NSWorkspace.shared.open(url)
     }
 
     private func openInBrowser() {
-        // TODO: Open in browser
+        guard let driveID else { return }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.remoteURL(for: node.remoteID, inDrive: driveID)
+
+        NSWorkspace.shared.open(url)
     }
 
     private func navigateToErrorsView() {
-        // TODO: Navigate to correct folder
+        guard let driveID else { return }
+
+        Task {
+            @InjectService var nodeURLGenerator: NodeURLGenerator
+            let url = await nodeURLGenerator.shareURL(for: node.id, inDrive: driveID)
+
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 
@@ -161,11 +188,14 @@ struct ActivitiesTableStatusView: View {
     ActivitiesTableStatusView(
         node: UISynchroNode(
             id: "42",
+            remoteID: "4242",
             type: .file,
             path: URL(fileURLWithPath: "/"),
             updatedPath: nil,
             direction: .up,
-            status: .done
-        )
+            status: .done,
+            instruction: .update
+        ),
+        driveID: 42
     )
 }
