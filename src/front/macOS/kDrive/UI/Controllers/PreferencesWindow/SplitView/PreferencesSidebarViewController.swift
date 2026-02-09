@@ -46,6 +46,12 @@ class PreferencesSidebarViewController: NSViewController {
         outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
     }
 
+    deinit {
+        // Break retain cycles by clearing delegate references
+        outlineView?.delegate = nil
+        outlineView?.dataSource = nil
+    }
+
     private func setupView() {
         outlineView = NSOutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false

@@ -35,6 +35,12 @@ final class AppReadyViewController: OnboardingStepViewController {
         setupUI()
     }
 
+    deinit {
+        // Break retain cycles by clearing target references
+        primaryButton.target = nil
+        secondaryButton.target = nil
+    }
+
     private func setupUI() {
         titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyDescription

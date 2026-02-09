@@ -64,6 +64,12 @@ final class DriveSelectionViewController: OnboardingStepViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        // Break retain cycles by clearing target references
+        primaryButton.target = nil
+        secondaryButton.target = nil
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 

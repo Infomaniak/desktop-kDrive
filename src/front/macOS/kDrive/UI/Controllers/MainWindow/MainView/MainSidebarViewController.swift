@@ -102,6 +102,13 @@ final class MainSidebarViewController: NSViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        // Break retain cycles by clearing delegate and target references
+        outlineView.delegate = nil
+        outlineView.dataSource = nil
+        popUpButton.target = nil
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
