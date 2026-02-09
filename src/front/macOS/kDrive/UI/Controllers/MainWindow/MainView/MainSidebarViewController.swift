@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -45,7 +46,7 @@ extension SidebarItem {
 final class MainSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
-    weak var delegate: NavigableSidebarViewControllerDelegate?
+    @LazyInjectService private var router: MainViewRouter
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
@@ -191,7 +192,7 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func updateSidebar() {
-        let previousSelectedRow = outlineView.selectedRow
+        let previousSelectedRow = outlineView.selectedRow == -1 ? 0 : outlineView.selectedRow
         outlineView.reloadData()
         if mainViewModel.currentBlockingError != nil {
             outlineView.selectRowIndexes([], byExtendingSelection: false)
@@ -257,8 +258,9 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
-        delegate?.sidebarViewController(self, didSelectItem: selectedItem)
+        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem,
+              let path = selectedItem.tab else { return }
+        router.setCurrentTab(path)
     }
 
     func outlineView(_: NSOutlineView, didClick item: Any?) {
