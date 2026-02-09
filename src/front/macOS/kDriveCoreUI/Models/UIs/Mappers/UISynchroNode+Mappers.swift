@@ -82,10 +82,16 @@ extension UISyncFileStatus {
 
 public extension UISynchroNode {
     init(synchroNode: SynchroNode) {
+        var updatedLocalPath: URL?
+        if !synchroNode.newPath.isEmpty {
+            updatedLocalPath = URL(fileURLWithPath: synchroNode.newPath)
+        }
+
         self.init(
             id: synchroNode.localNodeId,
             type: UINodeType(synchroNodeType: synchroNode.type),
             path: URL(fileURLWithPath: synchroNode.path),
+            updatedPath: updatedLocalPath,
             direction: UISyncDirection(syncDirection: synchroNode.direction),
             status: UISyncFileStatus(syncFileStatus: synchroNode.status)
         )

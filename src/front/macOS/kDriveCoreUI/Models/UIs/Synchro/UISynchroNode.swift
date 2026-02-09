@@ -41,27 +41,34 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
 
     public let id: ID
     public let type: UINodeType?
-    public let path: URL
     public let direction: UISyncDirection?
     public let status: UISyncFileStatus?
+
+    public let path: URL
+    public let updatedPath: URL?
 
     // FIXME: Fake properties while waiting on server update
     public let size: Int64 = 7_000_000
     public let syncDate: Date = .now.addingTimeInterval(-60 * 5)
-    public let fileType: UTType = .pdf
+    public let fileType: UTType = .item
+
+    public var relevantPath: URL {
+        return updatedPath ?? path
+    }
 
     public var parentFolder: URL {
-        return path.deletingLastPathComponent()
+        return relevantPath.deletingLastPathComponent()
     }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
         FileTypeRepresentation(utType: fileType)
     }
 
-    public init(id: ID, type: UINodeType?, path: URL, direction: UISyncDirection?, status: UISyncFileStatus?) {
+    public init(id: ID, type: UINodeType?, path: URL, updatedPath: URL?, direction: UISyncDirection?, status: UISyncFileStatus?) {
         self.id = id
         self.type = type
         self.path = path
+        self.updatedPath = updatedPath
         self.direction = direction
         self.status = status
     }
