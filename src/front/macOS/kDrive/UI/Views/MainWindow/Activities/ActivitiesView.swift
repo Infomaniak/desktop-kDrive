@@ -74,7 +74,6 @@ struct ActivitiesView: View {
 
             if hasAnyActivity {
                 ActivitiesTable(
-                    driveName: mainViewModel.currentDrive?.name,
                     synchro: mainViewModel.currentSynchro,
                     nodes: nodes
                 )

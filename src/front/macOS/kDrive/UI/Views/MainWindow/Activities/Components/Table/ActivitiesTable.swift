@@ -24,20 +24,21 @@ import SwiftUI
 struct ActivitiesTable: View {
     static let defaultFolderName = "kDrive"
 
-    let driveName: String?
     let synchro: UISynchro?
-
     let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
+
+    private var synchroOrigin: String {
+        return synchro?.localPath.lastPathComponent ?? ActivitiesTable.defaultFolderName
+    }
 
     var body: some View {
         Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
-                    Text(node.path, format: .node())
+                    Text(node.path, format: .node)
                 } icon: {
-                    node.fileTypeRepresentation.icon
-                        .resizable(at: AppIconSize.iconSize12)
-                        .foregroundStyle(node.fileTypeRepresentation.color)
+                    FileTypeView(fileTypeRepresentation: node.fileTypeRepresentation)
+                        .frame(size: AppIconSize.iconSize12)
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
             }
@@ -46,7 +47,7 @@ struct ActivitiesTable: View {
                 Button {
                     openParentFolder(of: node)
                 } label: {
-                    Text(node.parentFolder, format: .node(driveFolderName: driveName ?? ActivitiesTable.defaultFolderName))
+                    Text(node.parentFolder, format: .node(driveFolderName: synchroOrigin))
                         .underline()
                 }
                 .buttonStyle(.borderless)
@@ -83,7 +84,6 @@ struct ActivitiesTable: View {
 
 #Preview {
     ActivitiesTable(
-        driveName: "kDrive",
         synchro: PreviewHelper.synchro,
         nodes: [
             "1": UISynchroNode(
