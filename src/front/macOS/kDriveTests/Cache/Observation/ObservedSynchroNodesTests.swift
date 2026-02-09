@@ -105,7 +105,7 @@ struct ObservedSynchroNodesTests {
         try await cache.addSynchro(expectedSynchro)
         let secondarySynchro = ObservableData.secondarySynchro
         try await cache.addSynchro(secondarySynchro)
-        
+
         // WHEN
         var synchroWithNode = expectedSynchro
         synchroWithNode.addOrUpdateSynchNode(ObservableData.firstSynchroNode)
@@ -144,6 +144,72 @@ struct ObservedSynchroNodesTests {
         #expect(secondaryObservedNode.drive.driveDbId == secondaryDrive.driveDbId, "The drive should match")
         #expect(secondaryObservedNode.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
         #expect(secondaryObservedNode.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedSynchroNodes() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        let receivedValues = $observedNodes.receivedValues
+
+        #expect(observedNodes == [], "Nodes should initially be empty")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let expectedSynchro = ObservableData.expectedSynchro
+        try await cache.addSynchro(expectedSynchro)
+
+        var synchroWithNode = expectedSynchro
+        synchroWithNode.addOrUpdateSynchNode(ObservableData.firstSynchroNode)
+        synchroWithNode.addOrUpdateSynchNode(ObservableData.secondSynchroNode)
+        try await cache.updateSynchro(synchroWithNode)
+        #expect(observedNodes.count == 2, "We should have two nodes in the array")
+
+        // WHEN - Update the node with a different status
+        let updatedNode = SynchroNode(
+            type: .File,
+            path: ObservableData.expectedNodePath,
+            newPath: "",
+            localNodeId: ObservableData.expectedNodeLocalId,
+            remoteNodeId: "remote-123",
+            direction: .Down,
+            instruction: .None,
+            status: .Error, // Changed from Success to Error
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(),
+            error: "Some error"
+        )
+
+        var updatedSynchro = expectedSynchro
+        updatedSynchro.synchNodes = synchroWithNode.synchNodes
+        updatedSynchro.addOrUpdateSynchNode(updatedNode)
+        try await cache.updateSynchro(updatedSynchro)
+
+        // THEN
+        _ = await receivedValues.dropFirst(2).first(where: { _ in true })
+
+        #expect(observedNodes.count == 2, "We should still have two nodes")
+
+        let firstNode = observedNodes[0]
+        #expect(firstNode.node.id == ObservableData.secondSynchroNode.id, "The most recent node should be on top")
+        #expect(firstNode.node == ObservableData.secondSynchroNode)
+
+        let secondNode = observedNodes[1]
+        #expect(secondNode.node.id == ObservableData.firstSynchroNode.id, "The older node should be on the bottom")
+        #expect(secondNode.node.status == .Error, "The node status should be updated")
+        #expect(secondNode.node.error == "Some error", "The node error should be updated")
+        #expect(secondNode.synchro.dbId == expectedSynchro.dbId, "The synchro should match")
+        #expect(secondNode.drive.driveDbId == expectedDrive.driveDbId, "The drive should match")
+        #expect(secondNode.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
+        #expect(secondNode.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
     }
 
     @Test(.timeLimit(.minutes(1)))
