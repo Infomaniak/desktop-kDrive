@@ -18,7 +18,6 @@
 
 #include "jobs/network/apitranslator.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
-#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 
 namespace KDC {
 
@@ -41,22 +40,39 @@ ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     return drive.driveId();
 }
 
+NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const GetFilesInDirectoryJob::NodeInfoList &nodeInfoList) {
+    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                                 [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+
+    if (it != nodeInfoList.cend()) {
+        _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
+
+        return _rootNodeIdCache[driveDbId];
+    }
+
+    return {};
+}
+
 NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
         return it->second;
     }
 
-    GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
-    fileListJob.runSynchronously();
+    bool hasMore = false;
+    std::string cursor;
+    do {
+        // Get sub-folders only.
+        GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, cursor, true);
+        fileListJob.runSynchronously();
 
-    const auto &nodeInfoList = fileListJob.nodeInfoList();
+        const auto &nodeInfoList = fileListJob.nodeInfoList();
+        if (const auto rootFolderId = getRootFolderId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
 
-    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                                 [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+        hasMore = fileListJob.hasMore();
+        cursor = fileListJob.cursor();
+    } while (hasMore);
 
-    _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
-
-    return _rootNodeIdCache[driveDbId];
+    return {};
 }
 
 void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, NodeId &remoteDirectoryId) {
