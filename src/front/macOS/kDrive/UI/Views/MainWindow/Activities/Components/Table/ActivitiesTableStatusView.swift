@@ -185,17 +185,5 @@ struct ActivitiesTableStatusView: View {
 }
 
 #Preview {
-    ActivitiesTableStatusView(
-        node: UISynchroNode(
-            id: "42",
-            remoteID: "4242",
-            type: .file,
-            path: URL(fileURLWithPath: "/"),
-            updatedPath: nil,
-            direction: .up,
-            status: .done,
-            instruction: .update
-        ),
-        driveID: 42
-    )
+    ActivitiesTableStatusView(node: PreviewHelper.synchroNode1, driveID: 42)
 }

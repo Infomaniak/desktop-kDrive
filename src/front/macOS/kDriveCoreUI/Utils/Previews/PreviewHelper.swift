@@ -77,6 +77,37 @@ public enum PreviewHelper {
         errorCount: 0
     )
 
+    public static let synchroNode1 = UISynchroNode(
+        id: "1",
+        remoteID: "1",
+        type: .file,
+        path: URL(fileURLWithPath: "/Documents/Report.pdf"),
+        updatedPath: nil,
+        direction: .up,
+        status: .syncing,
+        instruction: .update
+    )
+    public static let synchroNode2 = UISynchroNode(
+        id: "2",
+        remoteID: "2",
+        type: .directory,
+        path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
+        updatedPath: nil,
+        direction: .down,
+        status: .done,
+        instruction: .update
+    )
+    public static let synchroNode3 = UISynchroNode(
+        id: "3",
+        remoteID: "3",
+        type: .file,
+        path: URL(fileURLWithPath: "/Presentation.pptx"),
+        updatedPath: nil,
+        direction: .up,
+        status: .error,
+        instruction: .update
+    )
+
     public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
         return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
     }

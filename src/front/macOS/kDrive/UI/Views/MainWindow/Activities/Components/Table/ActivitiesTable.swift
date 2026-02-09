@@ -86,46 +86,9 @@ struct ActivitiesTable: View {
     ActivitiesTable(
         synchro: PreviewHelper.synchro,
         nodes: [
-            "1": UISynchroNode(
-                id: "1",
-                remoteID: "1",
-                type: .file,
-                path: URL(fileURLWithPath: "/Documents/Report.pdf"),
-                updatedPath: nil,
-                direction: .up,
-                status: .syncing,
-                instruction: .update
-            ),
-            "2": UISynchroNode(
-                id: "2",
-                remoteID: "2",
-                type: .directory,
-                path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
-                updatedPath: nil,
-                direction: .down,
-                status: .done,
-                instruction: .update
-            ),
-            "3": UISynchroNode(
-                id: "3",
-                remoteID: "3",
-                type: .file,
-                path: URL(fileURLWithPath: "/Presentation.pptx"),
-                updatedPath: nil,
-                direction: .up,
-                status: .error,
-                instruction: .update
-            ),
-            "4": UISynchroNode(
-                id: "4",
-                remoteID: "4",
-                type: .file,
-                path: URL(fileURLWithPath: "/Downloads/Archive.zip"),
-                updatedPath: nil,
-                direction: .down,
-                status: .idle,
-                instruction: .update
-            )
+            "1": PreviewHelper.synchroNode1,
+            "2": PreviewHelper.synchroNode2,
+            "3": PreviewHelper.synchroNode3
         ]
     )
 }
