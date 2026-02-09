@@ -18,14 +18,22 @@
 
 import Foundation
 
-public enum Constants {
-    public static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
-    public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
-    public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
+public protocol NodeURLGenerator: Sendable {
+    func localURL(for nodeID: String) -> URL
+    func remoteURL(for nodeID: String, inDrive driveID: Int) -> URL
+    func shareURL(for nodeID: String, inDrive driveID: Int) async -> URL
 }
 
-public enum URLConstants {
-    public static func kDrive(for driveID: Int) -> URL {
-        return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
+public struct DriveNodeURLGenerator: NodeURLGenerator {
+    public func localURL(for nodeID: String) -> URL {
+        return URL(string: "")!
+    }
+
+    public func remoteURL(for nodeID: String, inDrive driveID: Int) -> URL {
+        return URLConstants.kDrive(for: driveID).appendingPathComponent("/redirect/\(nodeID)")
+    }
+
+    public func shareURL(for nodeID: String, inDrive driveID: Int) async -> URL {
+        return URL(string: "")!
     }
 }
