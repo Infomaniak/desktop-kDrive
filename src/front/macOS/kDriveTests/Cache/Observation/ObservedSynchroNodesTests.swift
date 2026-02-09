@@ -248,4 +248,66 @@ struct ObservedSynchroNodesTests {
 
         #expect(observedNodes.isEmpty, "Nodes should be empty once the synchro is deleted")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func testRemoveDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        let receivedValues = $observedNodes.receivedValues
+
+        #expect(observedNodes == [], "Nodes should initially be empty")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let secondaryDrive = ObservableData.secondaryDrive
+        try await cache.addDrive(secondaryDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+        let secondaryCachedDrive = await cache.getDrive(driveDbId: ObservableData.secondaryDriveDbId)
+        #expect(secondaryCachedDrive == secondaryDrive, "The cache should have been updated with another Drive")
+
+        let expectedSynchro = ObservableData.expectedSynchro
+        try await cache.addSynchro(expectedSynchro)
+        let secondarySynchro = ObservableData.secondarySynchro
+        try await cache.addSynchro(secondarySynchro)
+
+        var synchroWithNode = expectedSynchro
+        synchroWithNode.addOrUpdateSynchNode(ObservableData.firstSynchroNode)
+        try await cache.updateSynchro(synchroWithNode)
+
+        var secondarySynchroWithNode = secondarySynchro
+        secondarySynchroWithNode.addOrUpdateSynchNode(ObservableData.secondSynchroNode)
+        try await cache.updateSynchro(secondarySynchroWithNode)
+
+        #expect(observedNodes.count == 2, "We should have two nodes before drive removal")
+
+        // WHEN
+        try await cache.removeDrive(driveDbId: ObservableData.secondaryDriveDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst(3).first(where: { _ in true })
+
+        #expect(observedNodes.count == 1, "We should have one node after drive removal")
+
+        guard let remainingNode = observedNodes.first else {
+            Issue.record("Failed to unwrap the remaining node")
+            return
+        }
+
+        #expect(
+            remainingNode.node.localNodeId == ObservableData.expectedNodeLocalId,
+            "The remaining node should be from the first synchro"
+        )
+        #expect(remainingNode.synchro.dbId == expectedSynchro.dbId, "The synchro should match")
+        #expect(remainingNode.drive.driveDbId == expectedDrive.driveDbId, "The drive should match")
+        #expect(remainingNode.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
+        #expect(remainingNode.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
+    }
 }
