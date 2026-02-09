@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -27,10 +28,7 @@ struct WebFolder: Sendable, Identifiable, Equatable {
     let path: String
 
     func url(driveID: Int) -> URL {
-        var baseURL = URL(string: "https://ksuite.infomaniak.com/all/kdrive/app/drive/\(driveID)/")!
-        baseURL.appendPathComponent(path)
-
-        return baseURL
+        return URLConstants.kDrive(for: driveID).appendingPathComponent("/\(path)")
     }
 
     static let favorites = WebFolder(
