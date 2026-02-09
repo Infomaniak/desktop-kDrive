@@ -80,12 +80,12 @@ class AbstractUpdater {
         explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker);
         void setState(UpdateState newState);
         inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
+        virtual bool checkMinOsVersion(const std::string &minOsVersion) const;
 
         VersionChannel _currentChannel{VersionChannel::Unknown};
 
     private:
         void onAppVersionReceived();
-        bool checkMinOsVersion(const std::string &minOsVersion) const;
 
         std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.

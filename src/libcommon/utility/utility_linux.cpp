@@ -75,20 +75,28 @@ std::string CommonUtility::osVersion() {
     if (osRelease.is_open()) {
         std::string line;
         while (std::getline(osRelease, line)) {
-            if (line.find("VERSION_ID=") == 0) {
-                versionId = line.substr(11);
+            if (line.find(key) == 0) {
+                value = line.substr(key.length());
                 // Remove quotes if present
-                if (!versionId.empty() && versionId.front() == '"') {
-                    versionId = versionId.substr(1);
+                if (!value.empty() && value.front() == '"') {
+                    value = value.substr(1);
                 }
-                if (!versionId.empty() && versionId.back() == '"') {
-                    versionId.pop_back();
+                if (!value.empty() && value.back() == '"') {
+                    value.pop_back();
                 }
                 break;
             }
         }
     }
-    return versionId;
+    return value;
+}
+
+std::string CommonUtility::osVersion() {
+    return extractOSInfo("VERSION_ID");
+}
+
+std::string CommonUtility::distributionName() {
+    return extractOSInfo("NAME");
 }
 
 } // namespace KDC

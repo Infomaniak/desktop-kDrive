@@ -61,4 +61,9 @@ void LinuxUpdater::onUpdateFound() {
     setState(UpdateState::ManualUpdateAvailable);
 }
 
+bool LinuxUpdater::checkMinOsVersion(const std::string &minOsVersion) const {
+    if (CommonUtility::distributionName() != "Ubuntu") return true; // Do not check OS version for distributions other than Ubuntu
+    return AbstractUpdater::checkMinOsVersion(minOsVersion);
+}
+
 } // namespace KDC
