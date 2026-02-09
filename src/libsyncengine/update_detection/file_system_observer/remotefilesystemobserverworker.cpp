@@ -31,7 +31,7 @@
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #if defined(KD_MACOS)
 #include "utility/utility.h"

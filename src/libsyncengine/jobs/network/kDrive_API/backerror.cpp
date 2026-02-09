@@ -19,7 +19,7 @@
 #include "backerror.h"
 
 #include "jobs/network/networkjobsparams.h"
-#include "../../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 namespace KDC {
 

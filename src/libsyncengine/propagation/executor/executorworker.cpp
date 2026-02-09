@@ -40,7 +40,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
-#include "../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>

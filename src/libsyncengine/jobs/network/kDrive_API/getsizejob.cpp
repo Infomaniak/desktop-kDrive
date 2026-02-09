@@ -17,7 +17,7 @@
  */
 
 #include "getsizejob.h"
-#include "../../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 

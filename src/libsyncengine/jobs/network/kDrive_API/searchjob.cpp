@@ -20,7 +20,7 @@
 
 #include "info/searchinfo.h"
 #include "jobs/network/abstracttokennetworkjob.h"
-#include "../../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 

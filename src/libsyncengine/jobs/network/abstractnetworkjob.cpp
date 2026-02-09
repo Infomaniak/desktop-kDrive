@@ -23,7 +23,7 @@
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 

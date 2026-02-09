@@ -18,7 +18,7 @@
 
 #include "duplicatejob.h"
 #include "libcommonserver/utility/utility.h"
-#include "../../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 

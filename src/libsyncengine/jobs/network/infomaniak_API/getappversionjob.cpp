@@ -17,7 +17,7 @@
  */
 
 #include "getappversionjob.h"
-#include "../../../../libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "utility/utility.h"
 
 #include <Poco/Net/HTTPRequest.h>
