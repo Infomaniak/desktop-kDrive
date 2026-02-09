@@ -35,7 +35,7 @@ struct ActivitiesTable: View {
         Table(Array(nodes.values)) {
             TableColumn("Name") { node in
                 Label {
-                    Text(node.path, format: .node)
+                    Text(node.relevantPath, format: .node)
                 } icon: {
                     FileTypeView(fileTypeRepresentation: node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize12)
@@ -90,6 +90,7 @@ struct ActivitiesTable: View {
                 id: "1",
                 type: .file,
                 path: URL(fileURLWithPath: "/Documents/Report.pdf"),
+                updatedPath: nil,
                 direction: .up,
                 status: .syncing
             ),
@@ -97,6 +98,7 @@ struct ActivitiesTable: View {
                 id: "2",
                 type: .directory,
                 path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
+                updatedPath: nil,
                 direction: .down,
                 status: .done
             ),
@@ -104,6 +106,7 @@ struct ActivitiesTable: View {
                 id: "3",
                 type: .file,
                 path: URL(fileURLWithPath: "/Presentation.pptx"),
+                updatedPath: nil,
                 direction: .up,
                 status: .error
             ),
@@ -111,6 +114,7 @@ struct ActivitiesTable: View {
                 id: "4",
                 type: .file,
                 path: URL(fileURLWithPath: "/Downloads/Archive.zip"),
+                updatedPath: nil,
                 direction: .down,
                 status: .idle
             )

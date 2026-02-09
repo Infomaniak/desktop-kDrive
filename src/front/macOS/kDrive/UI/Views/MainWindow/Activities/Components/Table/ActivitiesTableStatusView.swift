@@ -163,6 +163,7 @@ struct ActivitiesTableStatusView: View {
             id: "42",
             type: .file,
             path: URL(fileURLWithPath: "/"),
+            updatedPath: nil,
             direction: .up,
             status: .done
         )
