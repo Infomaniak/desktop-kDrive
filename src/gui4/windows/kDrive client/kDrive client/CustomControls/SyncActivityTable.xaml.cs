@@ -247,27 +247,23 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
         {
-            const string loadingTextXuid = "CC_SyncActivityTable_FetchingLink/Text";
-            const string errorTextXuid = "CC_SyncActivityTable_LinkFaillure/Text";
-            const string successTextXuid = "CC_SyncActivityTable_LinkFetched/Text";
-
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Localizer.GetString("creatingShareLink"), false);
                 return;
             }
 
             // Find parrent button to anchor teaching tip
-            DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
+            DisplayTeachingTip(Localizer.Localizer.GetString("creatingShareLink"), true);
 
 
             var activity = element.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Localizer.GetString("failedToCreateShareLink"), false);
                 return;
             }
 
@@ -280,12 +276,12 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Utility.GetLocalizedString(successTextXuid), false);
+                DisplayTeachingTip(Localizer.Localizer.GetString("linkCopiedToClipboard"), false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Localizer.GetString("failedToCreateShareLink"), false);
             }
         }
 
@@ -354,6 +350,17 @@ namespace Infomaniak.kDrive.CustomControls
                     parent.Content = currentContent; // Restore content
                 }
             }
+        }
+        
+        public static string GetSyncDirectionToolTip(SyncDirection direction)
+        {
+            return direction switch
+            {
+
+                SyncDirection.Up => Localizer.Localizer.GetString("syncedFromThisDevice"),
+                SyncDirection.Down => Localizer.Localizer.GetString("syncedFromKDriveWeb"),
+                _ => ""
+            };
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
