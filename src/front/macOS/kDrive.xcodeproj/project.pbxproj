@@ -167,6 +167,7 @@
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
 				Parsing/Signals/UserAddedParsingTest.swift,
 				Parsing/Signals/UtilityErrorAddedTest.swift,
+				Router/MainViewRouterTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
 				XPC/JSON/QuotaExceededError.json,

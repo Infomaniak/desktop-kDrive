@@ -65,14 +65,14 @@ enum DetailsPath: Equatable {
     case versionConflict
 }
 
-enum ModalPath: Equatable {
-}
+enum ModalPath: Equatable {}
 
 struct Path: Equatable {
     let mainTab: MainViewTab
     let details: [DetailsPath]
 }
 
+// periphery:ignore - Some functions will be used later.
 final class MainViewRouter: ObservableObject {
     @Published private(set) var currentPath = Path(mainTab: .home, details: [MainViewTab.home.rootPath])
     @Published private(set) var currentModal: ModalPath?
