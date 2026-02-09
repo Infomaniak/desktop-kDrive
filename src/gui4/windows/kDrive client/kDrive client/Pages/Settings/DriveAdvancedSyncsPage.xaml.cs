@@ -173,12 +173,12 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             if (radioButton.Name == "OnlineRadioButton")
             {
                 sync.SyncType = Types.SyncType.Online;
-                sync.SyncType = Types.SyncType.Offline; 
+                sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
             }
             else
             {
                 sync.SyncType = Types.SyncType.Offline;
-                sync.SyncType = Types.SyncType.Online;
+                sync.SyncType = Types.SyncType.Online; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
             }
             return;
         }
