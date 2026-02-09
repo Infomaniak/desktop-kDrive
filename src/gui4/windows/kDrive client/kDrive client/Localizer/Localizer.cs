@@ -27,9 +27,21 @@ namespace Infomaniak.kDrive.Localizer
             // Replace literal \r\n with real newlines
             localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
 
-            // Format the string if arguments are provided
-            if (args != null && args.Length > 0)
+            // Replace each %@ with {0}, {1}, etc. for string formatting
+            if (args is not null && args.Length > 0)
             {
+                const string macOSPlaceholder = "%@";
+                int argIndex = 0;
+                while (localizedString.Contains(macOSPlaceholder))
+                {
+                    int pos = localizedString.IndexOf(macOSPlaceholder);
+                    if (pos == -1)
+                        break;
+
+                    localizedString = localizedString.Substring(0, pos) + "{" + argIndex + "}" + localizedString.Substring(pos + macOSPlaceholder.Length);
+                    ++argIndex;
+                }
+
                 try
                 {
                     localizedString = string.Format(localizedString, args);
