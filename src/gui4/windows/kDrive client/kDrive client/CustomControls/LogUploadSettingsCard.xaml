@@ -10,6 +10,7 @@
                       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
                       xmlns:converters="using:Infomaniak.kDrive.Converters"
                       xmlns:types="using:Infomaniak.kDrive.Types"
+                      xmlns:loc="using:Infomaniak.kDrive.Localizer"
                       mc:Ignorable="d">
     <toolKit:SettingsCard.Resources>
         <!-- Converters -->
@@ -22,10 +23,11 @@
         </DataTemplate>
 
         <!-- Archiving -->
-        <DataTemplate x:Key="LastUploadStatusArchivingTemplate">
+        <DataTemplate x:Key="LastUploadStatusArchivingTemplate"
+                      x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock x:Uid="CC_LogUploadSettingsCard_Archiving"
+                <TextBlock Text="{x:Bind loc:Localizer.GetString('logsStatusCompression')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -41,7 +43,7 @@
                       x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock x:Uid="CC_LogUploadSettingsCard_Uploading"
+                <TextBlock Text="{x:Bind loc:Localizer.GetString('logsStatusUpload')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -73,7 +75,7 @@
                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
-                    <ToolTip x:Uid="CC_LogUploadSettingsCard_Error_Tooltip" />
+                    <ToolTip Content="{x:Bind loc:Localizer.GetString('logsUploadErrorTooltip')}" />
                 </ToolTipService.ToolTip>
             </local:SvgIcon>
         </DataTemplate>
@@ -84,11 +86,7 @@
             <local:SvgIcon Height="16"
                            UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           VerticalAlignment="Center">
-                <ToolTipService.ToolTip>
-                    <ToolTip x:Uid="CC_LogUploadSettingsCard_Canceled_Tooltip" />
-                </ToolTipService.ToolTip>
-            </local:SvgIcon>
+                           VerticalAlignment="Center" />
         </DataTemplate>
 
         <!-- Template selector -->
@@ -104,7 +102,7 @@
     </toolKit:SettingsCard.Resources>
 
     <toolKit:SettingsCard.Header>
-        <TextBlock x:Uid="CC_LogUploadSettingsCard_Header" />
+        <TextBlock Text="{x:Bind loc:Localizer.GetString('infomaniakSupport')}" />
     </toolKit:SettingsCard.Header>
 
     <toolKit:SettingsCard.HeaderIcon>
@@ -121,14 +119,14 @@
                             VerticalContentAlignment="Center" />
 
             <Button x:Name="SendLogsButton"
-                    x:Uid="CC_LogUploadSettingsCard_SendButton"
+                    Content="{x:Bind loc:Localizer.GetString('buttonSendLog')}"
                     Style="{ThemeResource AccentButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                     Click="SendLogsButton_Click" />
 
             <Button x:Name="CancelButton"
                     VerticalAlignment="Center"
-                    x:Uid="CC_LogUploadSettingsCard_CancelButton"
+                    Content="{x:Bind loc:Localizer.GetString('cancel')}"
                     Style="{ThemeResource DefaultButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                     Click="CancelButton_Click" />
