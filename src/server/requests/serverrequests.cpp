@@ -25,7 +25,7 @@
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/postfilelinkjob.h"
 #include "jobs/network/kDrive_API/getfilelinkjob.h"
@@ -835,115 +835,30 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
 }
 
 
-ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, NodeInfoList &list,
                                        const bool withPath /*= false*/) {
     list.clear();
-    uint64_t page = 1;
-    uint64_t totalPages = 0;
-    do {
-        std::shared_ptr<GetRootFileListJob> job = nullptr;
-        if (nodeId.empty()) {
-            try {
-                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
-            } catch (const std::exception &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId << " error=" << e.what());
-                return AbstractTokenNetworkJob::exception2ExitCode(e);
-            }
-        } else {
-            try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
-            } catch (const std::exception &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
-                                                               << " error=" << e.what());
-                return AbstractTokenNetworkJob::exception2ExitCode(e);
-            }
-        }
 
-        job->setWithPath(withPath);
-        if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in GetFileListJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                               << " nodeId=" << nodeId << " error=" << exitInfo);
-            return exitInfo;
-        }
+    std::shared_ptr<GetAllFilesInDirectoryJob> job = nullptr;
+    const auto fileId = nodeId.empty() ? NodeId{"1"} : nodeId;
 
-        Poco::JSON::Object::Ptr resObj = job->jsonRes();
-        if (!resObj) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: no valid JSON message retrieved.");
-            return ExitCode::BackError;
-        }
+    try {
+        job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, fileId);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob for userDbId="
+                                                       << userDbId << " driveId=" << driveId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
 
-        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-        if (!dataArray) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: missing `data` array in retrieved JSON message.");
-            return ExitCode::BackError;
-        }
+    job->setWithPath(withPath);
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::runSynchronously for userDbId="
+                                                       << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
+                                                       << " error=" << exitInfo);
+        return exitInfo;
+    }
 
-        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-            Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-            SyncTime modTime;
-            if (!JsonParserUtility::extractValue(dirObj, lastModifiedAtKey, modTime)) {
-                return ExitCode::BackError;
-            }
-
-            NodeId nodeId2;
-            if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName tmp;
-            if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName name;
-            if (!Utility::normalizedSyncName(tmp, name)) {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-                // Ignore the folder
-                continue;
-            }
-
-            std::string parentId;
-            if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName path;
-            if (withPath) {
-                if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
-                    return ExitCode::BackError;
-                }
-                if (!Utility::normalizedSyncName(tmp, path)) {
-                    LOGW_DEBUG(Log::instance()->getLogger(),
-                               L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-                    // Ignore the folder
-                    continue;
-                }
-            }
-
-            Poco::JSON::Object::Ptr capabilitiesObj = dirObj->getObject(capabilitiesKey);
-            bool accessDenied = false;
-            if (capabilitiesObj) {
-                bool canShow = true;
-                if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow)) {
-                    return ExitCode::BackError;
-                }
-                accessDenied = !canShow;
-            }
-
-            NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
-                              -1, // Size is not set here as it can be very long to evaluate
-                              parentId.c_str(), modTime, SyncName2QStr(path));
-            nodeInfo.setAccessDenied(accessDenied);
-            list.push_back(nodeInfo);
-        }
-
-        page++;
-        totalPages = job->totalPages();
-    } while (page <= totalPages);
+    list = job->nodeInfoList();
 
     return ExitCode::Ok;
 }
