@@ -62,7 +62,6 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     // FIXME: Fake properties while waiting on server update
     public let size: Int64 = 7_000_000
     public let syncDate: Date = .now.addingTimeInterval(-60 * 5)
-    public let fileType: UTType = .item
 
     public var relevantPath: URL {
         return updatedPath ?? path
@@ -72,8 +71,16 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         return relevantPath.deletingLastPathComponent()
     }
 
+    public var fileType: UTType? {
+        return UTType(
+            filenameExtension: relevantPath.pathExtension)
+    }
+
     public var fileTypeRepresentation: FileTypeRepresentation {
-        FileTypeRepresentation(utType: fileType)
+        guard let fileType else {
+            return .unknown
+        }
+        return FileTypeRepresentation(utType: fileType)
     }
 
     public init(
