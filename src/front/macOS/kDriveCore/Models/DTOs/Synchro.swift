@@ -45,17 +45,14 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
         let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
         synchNodes[node.localNodeId] = nodeToStore
-
-        guard synchNodes.count > Self.maxSynchNodesCount else {
-            return
-        }
-
+        synchNodes.sort { $0.value > $1.value }
+        
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
         guard itemsToRemove > 0 else {
             return
         }
 
-        synchNodes.removeFirst(itemsToRemove)
+        synchNodes.removeLast(itemsToRemove)
     }
 
     public func getSynchNode(by localNodeId: String) -> SynchroNode? {
@@ -85,7 +82,7 @@ public struct SyncProgress: Hashable, Sendable {
     }
 }
 
-public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
+public struct SynchroNode: Identifiable, Codable, Hashable, Comparable, Sendable {
     public var id: String {
         localNodeId
     }
@@ -105,6 +102,10 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let date: Date
     public let error: String
     public let size: Int64
+
+    public static func < (lhs: SynchroNode, rhs: SynchroNode) -> Bool {
+        lhs.date < rhs.date
+    }
 }
 
 extension SynchroNode {
