@@ -6,6 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:loc="using:Infomaniak.kDrive.Localizer"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
@@ -67,7 +68,7 @@
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
+                        <ToolTip Content="{x:Bind loc:Localizer.GetString('itemUnavailableBrowserFallback')}" />
                     </ToolTipService.ToolTip>
                 </local:SvgIcon>
             </Grid>
@@ -122,7 +123,7 @@
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
+                        <ToolTip Content="{x:Bind loc:Localizer.GetString('itemUnavailableBrowserFallback')}" />
                     </ToolTipService.ToolTip>
                 </local:SvgIcon>
 
@@ -143,7 +144,7 @@
                                Height="100"
                                HorizontalAlignment="Center" />
                 <TextBlock Grid.Row="1"
-                           Text="Aucun résultat trouvé"
+                           Text="{x:Bind loc:Localizer.GetString('noResultsFound')}"
                            HorizontalAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -203,9 +204,9 @@
                                                    NotFoundTemplate="{StaticResource NotFoundTemplate}" />
     </UserControl.Resources>
 
-    <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
-                    x:Name="TitleBarSearchBox"
+    <AutoSuggestBox x:Name="TitleBarSearchBox"
                     QueryIcon="Find"
+                    PlaceholderText="{x:Bind loc:Localizer.GetString('searchBoxPlaceholder', ViewModel.SelectedSync.Drive.Name), Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
