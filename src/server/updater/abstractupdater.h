@@ -91,8 +91,9 @@ class AbstractUpdater {
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
         bool _appShouldBeBlocked{false};
-};
 
+        friend class TestAbstractUpdater;
+};
 
 std::unique_ptr<AbstractUpdater> createUpdater();
 

@@ -26,15 +26,19 @@ namespace KDC {
 
 class MockUpdater : public AbstractUpdater {
     public:
-        MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
-            AbstractUpdater(customUpdateChecker) {}
+        explicit MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
+            AbstractUpdater(customUpdateChecker) {
+            _currentChannel = VersionChannel::Beta;
+        }
 
         void startInstaller() override {
             if (_startInstallerMock) _startInstallerMock();
         }
+
         void onUpdateFound() override {
             if (_quitCallback) _quitCallback();
         }
+
         std::string getCurrentVersion() const override {
             if (_mockGetCurrentVersion) return _mockGetCurrentVersion();
             return AbstractUpdater::getCurrentVersion();
