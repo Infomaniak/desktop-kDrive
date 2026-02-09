@@ -17,7 +17,7 @@
  */
 
 #include "jobs/network/apitranslator.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 
 namespace KDC {
 
@@ -58,19 +58,11 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
         return it->second;
     }
 
-    bool hasMore = false;
-    std::string cursor;
-    const bool directoryOnly = true;
-    do {
-        GetFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, cursor, directoryOnly);
-        fileListJob.runSynchronously();
+    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, true);
+    fileListJob.runSynchronously();
 
-        const auto &nodeInfoList = fileListJob.nodeInfoList();
-        if (const auto rootFolderId = getRootFolderId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
-
-        hasMore = fileListJob.hasMore();
-        cursor = fileListJob.cursor();
-    } while (hasMore);
+    const auto &nodeInfoList = fileListJob.nodeInfoList();
+    if (const auto rootFolderId = getRootFolderId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
 
     return {};
 }

@@ -17,6 +17,7 @@
  */
 
 #include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
+#include "jobs/network/apitranslator.h"
 
 #include "utility/jsonparserutility.h"
 
@@ -33,6 +34,7 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int dri
     _dirOnly(dirOnly) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
 }
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
@@ -43,6 +45,7 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileI
     _dirOnly(dirOnly) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    ApiTranslator::translateV2ToV3(driveDbId, _fileId);
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {
