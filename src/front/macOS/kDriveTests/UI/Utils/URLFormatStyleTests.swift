@@ -24,9 +24,9 @@ import Testing
 struct URLFormatStyleTests {
     @Test("Format URL with file path component")
     func formatWithFilePathComponent() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/example.txt")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
+        let formatter = URL.NodeFormatStyle(driveFolderName: driveFolderName)
 
         let result = formatter.format(url)
 
@@ -35,9 +35,9 @@ struct URLFormatStyleTests {
 
     @Test("Format URL with folder path component")
     func formatWithFolderPathComponent() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/Folder")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
+        let formatter = URL.NodeFormatStyle(driveFolderName: driveFolderName)
 
         let result = formatter.format(url)
 
@@ -46,13 +46,13 @@ struct URLFormatStyleTests {
 
     @Test("Format URL with root path returns drive name")
     func formatWithRootPath() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
+        let formatter = URL.NodeFormatStyle(driveFolderName: driveFolderName)
 
         let result = formatter.format(url)
 
-        #expect(result == driveName)
+        #expect(result == driveFolderName)
     }
 
     @Test("Format URL without drive name returns last path component")
@@ -77,9 +77,9 @@ struct URLFormatStyleTests {
 
     @Test("Format URL with special characters in filename")
     func formatWithSpecialCharacters() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/file with spaces & symbols.txt")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
+        let formatter = URL.NodeFormatStyle(driveFolderName: driveFolderName)
 
         let result = formatter.format(url)
 
@@ -88,9 +88,9 @@ struct URLFormatStyleTests {
 
     @Test("Format URL with unicode characters in filename")
     func formatWithUnicodeCharacters() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/Users/test/Documents/fichier_été_🎉.txt")
-        let formatter = URL.NodeFormatStyle(driveName: driveName)
+        let formatter = URL.NodeFormatStyle(driveFolderName: driveFolderName)
 
         let result = formatter.format(url)
 
@@ -102,21 +102,21 @@ struct URLFormatStyleTests {
 struct URLFormatStyleConvenienceTests {
     @Test("Use convenience static method for formatting")
     func useConvenienceMethod() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/test/Documents/example.txt")
 
-        let result = url.formatted(.node(driveName: driveName))
+        let result = url.formatted(.node(driveFolderName: driveFolderName))
 
         #expect(result == "example.txt")
     }
 
     @Test("Use convenience method with root path")
     func useConvenienceMethodWithRootPath() throws {
-        let driveName = "My Drive"
+        let driveFolderName = "My Drive"
         let url = URL(fileURLWithPath: "/")
 
-        let result = url.formatted(.node(driveName: driveName))
+        let result = url.formatted(.node(driveFolderName: driveFolderName))
 
-        #expect(result == driveName)
+        #expect(result == driveFolderName)
     }
 }

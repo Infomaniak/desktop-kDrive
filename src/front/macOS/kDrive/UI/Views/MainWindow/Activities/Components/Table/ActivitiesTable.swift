@@ -46,7 +46,7 @@ struct ActivitiesTable: View {
                 Button {
                     openParentFolder(of: node)
                 } label: {
-                    Text(node.parentFolder, format: .node(driveName: driveName ?? ActivitiesTable.defaultFolderName))
+                    Text(node.parentFolder, format: .node(driveFolderName: driveName ?? ActivitiesTable.defaultFolderName))
                         .underline()
                 }
                 .buttonStyle(.borderless)

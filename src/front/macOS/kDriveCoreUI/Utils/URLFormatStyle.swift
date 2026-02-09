@@ -20,16 +20,16 @@ import Foundation
 
 public extension URL {
     struct NodeFormatStyle: Foundation.FormatStyle {
-        let driveName: String?
+        let driveFolderName: String?
 
-        public init(driveName: String? = nil) {
-            self.driveName = driveName
+        public init(driveFolderName: String? = nil) {
+            self.driveFolderName = driveFolderName
         }
 
         public func format(_ value: URL) -> String {
             let path = value.lastPathComponent
-            if path.isEmpty || path == "/", let driveName {
-                return driveName
+            if path.isEmpty || path == "/", let driveFolderName {
+                return driveFolderName
             }
             return path
         }
@@ -37,7 +37,7 @@ public extension URL {
 }
 
 public extension FormatStyle where Self == URL.NodeFormatStyle {
-    static func node(driveName: String? = nil) -> Self {
-        return URL.NodeFormatStyle(driveName: driveName)
+    static func node(driveFolderName: String? = nil) -> Self {
+        return URL.NodeFormatStyle(driveFolderName: driveFolderName)
     }
 }
