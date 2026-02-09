@@ -19,6 +19,7 @@
 import Foundation
 import kDriveResources
 import SwiftUI
+import UniformTypeIdentifiers
 
 public struct FileTypeRepresentation: Sendable {
     public let icon: Image

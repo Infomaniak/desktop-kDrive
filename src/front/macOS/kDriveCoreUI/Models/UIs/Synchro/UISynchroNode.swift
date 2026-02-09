@@ -55,7 +55,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
-        return .pdf
+        FileTypeRepresentation(utType: fileType)
     }
 
     public init(id: ID, type: UINodeType?, path: URL, direction: UISyncDirection?, status: UISyncFileStatus?) {
