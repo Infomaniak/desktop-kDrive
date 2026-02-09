@@ -168,10 +168,6 @@ final class PermissionsViewController: OnboardingStepViewController {
     }
 
     deinit {
-        // Break retain cycles by clearing target references
-        primaryButton.target = nil
-        secondaryButton.target = nil
-        
         if let didBecomeActiveObserver {
             NotificationCenter.default.removeObserver(didBecomeActiveObserver)
         }
