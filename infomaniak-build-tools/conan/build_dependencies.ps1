@@ -77,7 +77,7 @@ function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path
-$DefaultOutputDir = Join-Path $CurrentDir "build-windows\build"
+$DefaultOutputDir = Join-Path $CurrentDir "build-windows"
 
 # If a custom output directory is provided, use it
 if ($OutputDir) {
