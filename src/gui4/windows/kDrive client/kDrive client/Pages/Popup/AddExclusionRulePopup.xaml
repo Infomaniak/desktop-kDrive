@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page x:Class="Infomaniak.kDrive.Pages.Popup.AddExclusionRulePopup"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
+      >
 
     <StackPanel VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
@@ -9,16 +11,16 @@
         <StackPanel VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-            <TextBlock x:Uid="Pages_AddExclusionRulePopup_Title"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('filesToExclude')}"
                        Style="{StaticResource SubtitleTextBlockStyle}" />
-            <TextBlock x:Uid="Pages_AddExclusionRulePopup_Description"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('excludeRuleDescription')}"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
-        <TextBox x:Uid="Pages_AddExclusionRulePopup_TextBox"
+        <TextBox PlaceholderText="{x:Bind loc:Localizer.GetString('filesToExclude')}"
                  x:Name="TextBox" />
         <CheckBox x:Name="CheckBox"
-                  x:Uid="Pages_AddExclusionRulePopup_CheckBox"
+                  Content="{x:Bind loc:Localizer.GetString('notifyOnFileExcluded')}"
                   IsChecked="False" />
     </StackPanel>
 </Page>
