@@ -72,6 +72,8 @@ public enum KDriveLocalizable {
   public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
   /// loco:697b65886840f9d35605a132
   public static let buttonWakeUp = KDriveLocalizable.tr("Localizable", "buttonWakeUp", fallback: "Wake-up")
+  /// loco:698b244d7e73966ce3096b02
+  public static let copyingLink = KDriveLocalizable.tr("Localizable", "copyingLink", fallback: "Copying Link…")
   /// loco:696a260311ac2de6c6029683
   public static let driveAccessDeniedErrorDescription = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorDescription", fallback: "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.")
   /// loco:696a25f0bcde38f2b9018124
@@ -156,6 +158,8 @@ public enum KDriveLocalizable {
   public static let labelStatus = KDriveLocalizable.tr("Localizable", "labelStatus", fallback: "Status")
   /// loco:698aeefb604e522161001392
   public static let labelTime = KDriveLocalizable.tr("Localizable", "labelTime", fallback: "Time")
+  /// loco:698a1276e1c66ed33b03bf32
+  public static let linkCopiedToClipboard = KDriveLocalizable.tr("Localizable", "linkCopiedToClipboard", fallback: "Link copied to clipboard")
   /// loco:693050ed6a0836d25507da22
   public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings:")
   /// loco:6930509e14b396d6fc04b0f2

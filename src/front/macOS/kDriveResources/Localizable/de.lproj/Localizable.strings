@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 10 Feb 2026 09:41:27 +0100
+ * Exported at: Tue, 10 Feb 2026 13:29:32 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -100,6 +100,8 @@
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Aufwachen";
 
+/* loco:698b244d7e73966ce3096b02 */
+"copyingLink" = "Kopieren von Link…";
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Sie haben keine Berechtigung, auf dieses kDrive zuzugreifen.\nBitte überprüfen Sie Ihre Berechtigungen oder kontaktieren Sie Ihren Administrator.";
 
@@ -213,6 +215,8 @@
 
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Zeit";
+/* loco:698a1276e1c66ed33b03bf32 */
+"linkCopiedToClipboard" = "Link in die Zwischenablage kopiert";
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Lassen Sie kDrive in den macOS-Einstellungen zu:";
 
