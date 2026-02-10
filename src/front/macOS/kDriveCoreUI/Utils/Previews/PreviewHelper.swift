@@ -29,6 +29,14 @@ private final class PreviewBundle {
 public enum PreviewHelper {
     public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
 
+    public static let context = UISynchroContext(
+        synchro: PreviewHelper.synchro,
+        drive: PreviewHelper.drive1,
+        account: PreviewHelper.account,
+        user: PreviewHelper.user,
+        blockingError: nil
+    )
+
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
@@ -36,6 +44,12 @@ public enum PreviewHelper {
         email: "tim@apple.com",
         avatar: PreviewHelper.userImage,
         accounts: [:]
+    )
+
+    public static let account = UIAccount(
+        dbId: 1,
+        name: "Tim Cook",
+        drives: [:]
     )
 
     public static let drive1 = UIDrive(
