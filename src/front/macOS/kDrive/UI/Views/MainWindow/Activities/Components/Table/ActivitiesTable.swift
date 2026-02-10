@@ -45,7 +45,7 @@ struct ActivitiesTable: View {
 
     var body: some View {
         Table(orderedNodes) {
-            TableColumn("Name") { node in
+            TableColumn(KDriveLocalizable.labelName) { node in
                 Label {
                     Text(node.relevantPath, format: .node)
                 } icon: {
@@ -55,7 +55,7 @@ struct ActivitiesTable: View {
                 .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
-            TableColumn("Folder") { node in
+            TableColumn(KDriveLocalizable.labelFolder) { node in
                 Button {
                     openParentFolder(of: node)
                 } label: {
@@ -66,19 +66,19 @@ struct ActivitiesTable: View {
                 .tint(ColorToken.Text.tertiary.asColor)
             }
 
-            TableColumn("Time") { node in
+            TableColumn(KDriveLocalizable.labelTime) { node in
                 Text(node.syncDate, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             .width(ideal: 50)
 
-            TableColumn("Size") { node in
+            TableColumn(KDriveLocalizable.labelSize) { node in
                 Text(node.size, format: .byteCount(style: .file))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             .width(ideal: 20)
 
-            TableColumn("Status") { node in
+            TableColumn(KDriveLocalizable.labelStatus) { node in
                 ActivitiesTableStatusView(context: context, node: node)
             }
             .width(ideal: 30)

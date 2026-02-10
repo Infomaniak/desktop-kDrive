@@ -114,7 +114,7 @@ struct ActivitiesTableStatusView: View {
                     menuContent
                 } label: {
                     Label {
-                        Text("Show options")
+                        Text(KDriveLocalizable.buttonShowOption)
                     } icon: {
                         KDriveResources.dotsVertical.swiftUIImage
                             .resizable(at: AppIconSize.iconSize12)
@@ -144,7 +144,7 @@ struct ActivitiesTableStatusView: View {
 
             Section {
                 Button(action: copyShareLink) {
-                    Label { Text("Copier le lien de partage") } icon: { KDriveResources.squareArrowUp.swiftUIImage }
+                    Label { Text(KDriveLocalizable.buttonCopyShareLink) } icon: { KDriveResources.squareArrowUp.swiftUIImage }
                 }
             }
         } else if status == .failed {
