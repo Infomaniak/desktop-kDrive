@@ -1031,7 +1031,7 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
-        LOGW_INFO(Log::instance()->getLogger(),
+        LOGW_INFO(logger(),
                   L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
                   L"CoCreateInstance is failing.");
     }
@@ -1041,15 +1041,14 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     HRESULT hr = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
     if (FAILED(hr)) {
         // Couldn't CoCreateInstance - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in CoCreateInstance - path=" << Path2WStr(itemPath) << L" err="
+                                                                 << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
                     << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        LOGW_WARN(logger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "CoCreateInstance failed");
         CoUninitialize();
         return false;
@@ -1058,15 +1057,14 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     hr = fileOperation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
     if (FAILED(hr)) {
         // Couldn't add flags - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in SetOperationFlags path=" << Path2WStr(itemPath) << L" err="
+                                                                << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
                     << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        LOGW_WARN(logger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "SetOperationFlags failed");
         fileOperation->Release();
@@ -1080,16 +1078,16 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
                                      IID_PPV_ARGS(&fileOrFolderItem));
     if (FAILED(hr)) {
         // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in SHCreateItemFromParsingName - path="
+                                    << Path2WStr(itemPath) << L" err="
+                                    << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
                     << L" - SHCreateItemFromParsingName failed with error: "
                     << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        LOGW_WARN(logger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
         fileOperation->Release();
@@ -1100,15 +1098,14 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     hr = fileOperation->DeleteItem(fileOrFolderItem, nullptr);
     if (FAILED(hr)) {
         // Failed to mark file/folder item for deletion - cleanup and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in DeleteItem - path=" << Path2WStr(itemPath) << L" err="
+                                                           << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
                     << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        LOGW_WARN(logger(), errorStr);
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
 
         fileOrFolderItem->Release();
@@ -1120,15 +1117,14 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     hr = fileOperation->PerformOperations();
     if (FAILED(hr)) {
         // failed to carry out delete - return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in PerformOperations - path=" << Path2WStr(itemPath) << L" err="
+                                                                  << CommonUtility::s2ws(std::system_category().message(hr)));
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
                     << CommonUtility::s2ws(std::system_category().message(hr));
         std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        LOGW_WARN(logger(), errorStr);
 
         sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
         fileOrFolderItem->Release();
@@ -1141,12 +1137,11 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     BOOL result = true;
     hr = fileOperation->GetAnyOperationsAborted(&aborted);
     if (FAILED(hr)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
-                                                        << Utility::formatSyncPath(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        LOGW_WARN(logger(), L"Error in GetAnyOperationsAborted - " << Utility::formatSyncPath(itemPath) << L" err="
+                                                                   << CommonUtility::s2ws(std::system_category().message(hr)));
         result = false;
     } else if (aborted) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
+        LOGW_WARN(logger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
         result = false;
     } else {
         // MISRA Coding Guideline
@@ -1167,22 +1162,22 @@ PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
 
     HMODULE hModule = GetModuleHandle(L"ntdll.dll");
     if (hModule == nullptr) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetModuleHandle for ntdll.dll");
-        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        LOG_WARN(logger(), "Error in GetModuleHandle for ntdll.dll");
+        ioError = dWordError2ioError(GetLastError(), logger());
         return nullptr;
     }
 
     try {
         pzwQueryDirectoryFile = (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(hModule, "ZwQueryDirectoryFile");
     } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Exception in GetProcAddress: err=" << e.what());
+        LOG_WARN(logger(), "Exception in GetProcAddress: err=" << e.what());
         ioError = IoError::Unknown;
         return nullptr;
     }
 
     if (pzwQueryDirectoryFile == nullptr) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetProcAddress");
-        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        LOG_WARN(logger(), "Error in GetProcAddress");
+        ioError = dWordError2ioError(GetLastError(), logger());
         return nullptr;
     }
 
