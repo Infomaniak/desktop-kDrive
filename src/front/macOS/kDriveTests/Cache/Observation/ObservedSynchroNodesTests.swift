@@ -22,7 +22,7 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-extension ObservedSynchroNodes {
+extension ObservedSynchrosNodes {
     var receivedValues: AsyncStream<[SynchroNodeContext]> {
         AsyncStream { continuation in
             let cancellable = $wrappedValue
@@ -34,15 +34,15 @@ extension ObservedSynchroNodes {
 }
 
 @MainActor
-struct ObservedSynchroNodesTests {
+struct ObservedSynchrosNodesTests {
     @Test(.timeLimit(.minutes(1)))
-    func setObservedSynchroNodes() async throws {
+    func setObservedSynchrosNodes() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchrosNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -78,13 +78,13 @@ struct ObservedSynchroNodesTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func setMultipleObservedSynchroNodes() async throws {
+    func setMultipleObservedSynchrosNodes() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchrosNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -147,13 +147,13 @@ struct ObservedSynchroNodesTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func updateObservedSynchroNodes() async throws {
+    func updateObservedSynchrosNodes() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchrosNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -213,13 +213,13 @@ struct ObservedSynchroNodesTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func deleteObservedSynchroNodes() async throws {
+    func deleteObservedSynchrosNodes() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchrosNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -256,7 +256,7 @@ struct ObservedSynchroNodesTests {
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchrosNodes(cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")

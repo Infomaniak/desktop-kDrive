@@ -23,7 +23,7 @@ import OrderedCollections
 
 @MainActor
 @propertyWrapper
-public final class ObservedSynchroNodes: ObservableObject {
+public final class ObservedSynchrosNodes: ObservableObject {
     @Published public private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
@@ -43,7 +43,7 @@ public final class ObservedSynchroNodes: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchroNodes {
+    public var projectedValue: ObservedSynchrosNodes {
         self
     }
 }
