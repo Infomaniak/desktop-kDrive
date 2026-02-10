@@ -7,6 +7,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <StackPanel HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -15,19 +16,19 @@
                     VerticalAlignment="Center"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <!-- Titre -->
-            <TextBlock x:Uid="Page_Onboarding_FinishPage_Title"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationAppReadyTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- Sous-titre -->
-            <TextBlock x:Uid="Page_Onboarding_FinishPage_Subtitle"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationAppReadyDescription')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        MaxWidth="350"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
         </StackPanel>
         <!-- Boutons -->
-        <Button x:Uid="Page_Onboarding_FinishPage_OpenButton"
+        <Button Content="{x:Bind loc:Localizer.GetString('buttonOpenKDrive')}"
                 Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
                 Click="FinishButton_Click" />
     </StackPanel>
