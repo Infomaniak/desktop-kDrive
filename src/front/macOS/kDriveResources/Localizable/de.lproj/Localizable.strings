@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 10 Feb 2026 13:29:32 +0100
+ * Exported at: Tue, 10 Feb 2026 14:18:09 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -309,6 +309,12 @@
 
 /* loco:6979e265a8419bb7510c8122 */
 "storageUsageLabel" = "%@ auf %@ verwendet";
+
+/* loco:698b2ff6c504d956e009aad2 */
+"syncedFromComputer" = "Von Ihrem Computer synchronisiert";
+
+/* loco:698a08bdb6b870234906e103 */
+"syncedFromKDriveWeb" = "Synchronisiert von kDrive Web";
 
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "ihre Dateien werden synchronisiert";

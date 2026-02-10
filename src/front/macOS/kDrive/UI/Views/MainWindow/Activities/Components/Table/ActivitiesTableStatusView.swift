@@ -29,12 +29,12 @@ struct DirectionIndicator: StatusIndicator {
 
     static let up = DirectionIndicator(
         icon: KDriveResources.computerArrowUp.swiftUIImage,
-        hint: "Synchronisé depuis votre ordinateur",
+        hint: KDriveLocalizable.syncedFromComputer,
         color: ColorToken.Text.tertiary.asColor
     )
     static let down = DirectionIndicator(
         icon: KDriveResources.cloudArrowDown.swiftUIImage,
-        hint: "Synchronisé depuis kDrive web",
+        hint: KDriveLocalizable.syncedFromKDriveWeb,
         color: ColorToken.Text.tertiary.asColor
     )
 }

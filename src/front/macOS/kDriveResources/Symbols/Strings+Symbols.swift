@@ -224,6 +224,10 @@ public enum KDriveLocalizable {
   public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")
   }
+  /// loco:698b2ff6c504d956e009aad2
+  public static let syncedFromComputer = KDriveLocalizable.tr("Localizable", "syncedFromComputer", fallback: "Synced from your computer")
+  /// loco:698a08bdb6b870234906e103
+  public static let syncedFromKDriveWeb = KDriveLocalizable.tr("Localizable", "syncedFromKDriveWeb", fallback: "Synced from kDrive Web")
   /// loco:6960b7decf8ffcd3950d2706
   public static let synchroInProgress = KDriveLocalizable.tr("Localizable", "synchroInProgress", fallback: "your files are synchronizing")
   /// loco:6960b7fd4e868a099e022dc5
