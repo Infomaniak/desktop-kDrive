@@ -850,7 +850,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    job->setWithPath(withPath);
+    job->setListingConf({.withPath = withPath});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId << " nodeId=" << nodeId

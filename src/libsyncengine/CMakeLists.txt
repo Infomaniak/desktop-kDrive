@@ -47,6 +47,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getfilesinrootdirjob.h jobs/network/kDrive_API/getfilesinrootdirjob.cpp
     jobs/network/kDrive_API/getfilesindirectoryjob.h jobs/network/kDrive_API/getfilesindirectoryjob.cpp
     jobs/network/kDrive_API/getallfilesindirectoryjob.h jobs/network/kDrive_API/getallfilesindirectoryjob.cpp
+    jobs/network/kDrive_API/filelistjob.h jobs/network/kDrive_API/filelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp

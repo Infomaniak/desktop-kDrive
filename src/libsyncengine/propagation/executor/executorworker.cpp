@@ -406,7 +406,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    job->setLimit(maxNumberOfItemsParRequest);
+    job->setListingConf({.limit = maxNumberOfItemsParRequest});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in GetAllFilesInDirectoryJob::runSynchronously for driveDbId="
                                           << _syncPal->driveDbId() << " nodeId=" << parentId << " : " << job->exitInfo());

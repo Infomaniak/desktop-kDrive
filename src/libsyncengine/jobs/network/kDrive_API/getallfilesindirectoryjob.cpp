@@ -22,58 +22,17 @@
 namespace KDC {
 
 GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int userDbId, const DriveId driveId, NodeId fileId,
-                                                     const bool dirOnly /*= false*/, const bool translateV2ToV3) :
-    _userDbId{userDbId},
-    _driveId{driveId},
-    _fileId(std::move(fileId)),
-    _translateV2ToV3(translateV2ToV3),
-    _dirOnly(dirOnly) {
-    assert(_userDbId > 0 && "Invalid user DB ID.");
-    assert(_driveId > 0 && "Invalid drive ID.");
-}
+                                                     const bool translateV2ToV3) :
+    FileListJob(userDbId, driveId, std::move(fileId), translateV2ToV3) {}
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int driveDbId, NodeId fileId, const bool dirOnly /*= false*/,
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int driveDbId, NodeId fileId,
                                                      const bool translateV2ToV3 /*= false */) :
-    _driveDbId{driveDbId},
-    _fileId(std::move(fileId)),
-    _translateV2ToV3(translateV2ToV3),
-    _dirOnly(dirOnly) {
-    assert(_driveDbId > 0 && "Invalid drive DB ID.");
-}
+    FileListJob(driveDbId, std::move(fileId), translateV2ToV3) {}
+
 
 void GetAllFilesInDirectoryJob::abort() {
     LOG_DEBUG(_logger, "Aborting exhaustive file list request " << jobId());
     SyncJob::abort();
-}
-
-std::string GetAllFilesInDirectoryJob::getConstructorFailureLogMessage(const std::exception &e) const {
-    constexpr auto logMessage = "Error in GetFilesInDirectoryJob::GetFilesInDirectoryJob for ";
-    std::stringstream ss;
-
-    if (_driveDbId) {
-        ss << logMessage << " driveDbId=" << _driveDbId;
-    } else {
-        ss << logMessage << " userDbId=" << _userDbId << " driveId=" << _driveId;
-    }
-
-    ss << " nodeId=" << _fileId << " error=" << e.what();
-
-    return ss.str();
-}
-
-std::string GetAllFilesInDirectoryJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
-    constexpr auto logMessage = "Error in GetFilesInDirectoryJob::runSynchronously for ";
-    std::stringstream ss;
-
-    if (_driveDbId) {
-        ss << logMessage << " driveDbId=" << _driveDbId;
-    } else {
-        ss << logMessage << " userDbId=" << _userDbId << " driveId=" << _driveId;
-    }
-
-    ss << " nodeId=" << _fileId << " exitInfo:" << exitInfo;
-
-    return ss.str();
 }
 
 ExitInfo GetAllFilesInDirectoryJob::runJob() {
@@ -82,18 +41,18 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     do {
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
-            fileListJob =
-                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _dirOnly, _translateV2ToV3)
-                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _dirOnly,
-                                                                          _translateV2ToV3);
+            fileListJob = _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _listingConf.dirOnly,
+                                                                                _translateV2ToV3)
+                                     : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor,
+                                                                                _listingConf.dirOnly, _translateV2ToV3);
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        fileListJob->setLimit(_limit);
-        fileListJob->setWithPath(_withPath);
+        fileListJob->setLimit(_listingConf.limit);
+        fileListJob->setWithPath(_listingConf.withPath);
 
         if (const auto exitInfo = fileListJob->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
