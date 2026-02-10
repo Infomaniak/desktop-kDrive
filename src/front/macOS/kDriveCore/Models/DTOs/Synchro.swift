@@ -43,6 +43,10 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     private static let maxSynchNodesCount = 100
 
     public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
+        guard node.status != .Ignored else {
+            return
+        }
+
         // FIXME: Remove stopgap once server has implemented a stable identifier
         guard node.status != .Syncing else {
             IKLogger.data.log("[KD] Skip a Syncing activity")
