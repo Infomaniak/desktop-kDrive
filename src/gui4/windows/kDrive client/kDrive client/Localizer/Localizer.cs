@@ -12,6 +12,11 @@ namespace Infomaniak.kDrive.Localizer
             return GetString(key, null);
         }
 
+        public static string GetString1s(string key, string arg1)
+        {
+            return GetString(key, new object?[] { arg1 });
+        }
+
         public static string GetString(string key, params object?[]? args)
         {
             key = key.Replace(".", "/");

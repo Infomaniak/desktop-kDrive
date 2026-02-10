@@ -8,18 +8,18 @@
                           xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
                           xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
                           xmlns:converters="using:Infomaniak.kDrive.Converters"
+                          xmlns:loc="using:Infomaniak.kDrive.Localizer"
                           Loaded="UpdateExpander_Loaded"
                           Unloaded="UpdateExpander_Unloaded"
                           mc:Ignorable="d">
     <toolKit:SettingsExpander.Resources>
         <!-- Converters -->
-        <converters:DateToStringConverter x:Key="DateToStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ToStringConverter x:Key="ToStringConverter" />
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
-        <TextBlock x:Uid="CC_UpdateExpander_Header" />
+        <TextBlock Text="{x:Bind loc:Localizer.GetString('updateLabel')}" />
     </toolKit:SettingsExpander.Header>
 
     <toolKit:SettingsExpander.HeaderIcon>
@@ -28,56 +28,49 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
 
-    <Button x:Uid="CC_UpdateExpander_UpdateButton"
+    <Button Content="{x:Bind loc:Localizer.GetString('buttonUpdate')}"
             Style="{ThemeResource AccentButtonStyle}"
             Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
             Click="UpdateButton_Click" />
 
     <toolKit:SettingsExpander.Items>
-        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-            <toolKit:SettingsCard.Header>
-                <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                    <Run Text="kDrive" />
-                    <Run Text="{x:Bind DisplayedVersion.Tag , Mode=OneWay}" />
-                </TextBlock>
-            </toolKit:SettingsCard.Header>
+        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
+                              Header="{x:Bind loc:Localizer.GetString1s('kDriveVersionLabel', DisplayedVersion.Tag), Mode=OneWay}"
+                              Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <toolKit:SettingsCard.Description>
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <TextBlock x:Uid="CC_UpdateExpander_UpdateAvailable_UpdateDetails"
-                               Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
-                    <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
-                </StackPanel>
+                <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
             </toolKit:SettingsCard.Description>
-            <HyperlinkButton x:Uid="
-                           CC_UpdateExpander_ChangeLogHyperLink"
+            <HyperlinkButton Content="{x:Bind loc:Localizer.GetString('buttonReleaseNotes')}"
                              NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
-        <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                              Background="{ThemeResource LayerFillColorDefault}">
+        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('automaticUpdates')}"
+                              Background="{ThemeResource LayerFillColorDefault}"
+                              Visibility="Collapsed">
+            <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
             <toolKit:SettingsCard.HeaderIcon>
                 <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
                                Height="32"
                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             </toolKit:SettingsCard.HeaderIcon>
-            <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
                           Tapped="AutoUpdateToggleSwitch_Tapped"
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander"
+        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('joinBetaProgram')}"
+                              Description="{x:Bind loc:Localizer.GetString('betaProgramDescription')}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
                       SelectedValuePath="Tag"
                       SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />
+                              Content="{x:Bind loc:Localizer.GetString('doNotJoin')}" />
                 <ComboBoxItem Tag="Beta"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Beta" />
+                              Content="{x:Bind loc:Localizer.GetString('beta')}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Internal"
+                              Content="{x:Bind loc:Localizer.GetString('internal')}"
                               Foreground="{ThemeResource SystemErrorTextColor}"
                               Visibility="Collapsed" />
             </ComboBox>
