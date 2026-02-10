@@ -36,7 +36,7 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
-        // The return value of this accessor is only meaningful if the response has been handled.
+        // The return value of this accessor is meaningful only if the response has been handled.
         [[nodiscard]] const NodeInfoList &nodeInfoList() const { return _nodeInfoList; };
 
     protected:

@@ -838,9 +838,8 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
 namespace {
 
 std::string getFileListConstructorErrorMsg(FileListJob *job, const int userDbId, const int driveId, const std::exception &e) {
-    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
-                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
-                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                                                   : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
     std::stringstream ss;
     ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " error=" << e.what();
 
@@ -848,8 +847,8 @@ std::string getFileListConstructorErrorMsg(FileListJob *job, const int userDbId,
 }
 
 std::string getFileListExecErrorMsg(FileListJob *job, const int userDbId, const int driveId, const ExitInfo &exitInfo) {
-    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
-                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                   : " GetAllFilesInDirectoryJob::runSynchronously";
     std::stringstream ss;
     ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " ExitInfo:" << exitInfo;
 
