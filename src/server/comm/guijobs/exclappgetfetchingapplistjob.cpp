@@ -21,7 +21,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 // Output parameters keys
 static const auto outParamsApplicationTable = "applicationTable";

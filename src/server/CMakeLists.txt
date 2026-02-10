@@ -287,7 +287,7 @@ list(APPEND PC_HEADER_FILES
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 

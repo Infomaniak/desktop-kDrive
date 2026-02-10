@@ -15,14 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libparms/db/parmsdb.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
+
 #include "mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
 #include "testloguploadjob.h"
+
+#include "libparms/db/parmsdb.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <iostream>
 #include <zip.h>
@@ -159,7 +162,7 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
     std::thread t1([&job1]() { job1->runSynchronously(); });
     int counter = 0;
     while (!job1->isRunning()) {
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
 

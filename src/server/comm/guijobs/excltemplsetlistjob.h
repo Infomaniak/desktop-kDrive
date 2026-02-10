@@ -27,7 +27,7 @@ namespace KDC {
 class ExclTemplSetUserListJob : public AbstractGuiJob {
     public:
         ExclTemplSetUserListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                            std::shared_ptr<AbstractCommChannel> channel);
+                                std::shared_ptr<AbstractCommChannel> channel);
 
         ExitInfo process() override;
 

@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
 
@@ -62,13 +62,13 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
 }
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    const auto trashPath = CommonUtility::getTrashPath();
+    const auto trashPath = Utility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
     if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::eraseFromTrash: " << CommonUtility::formatStdError(ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::eraseFromTrash: " << Utility::formatStdError(ec));
         return;
     }
 
@@ -85,13 +85,13 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
 }
 
 bool isInTrash(const SyncPath &relativePath) {
-    const auto trashPath = CommonUtility::getTrashPath();
+    const auto trashPath = Utility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
     if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::isInTrash: " << CommonUtility::formatStdError(ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::isInTrash: " << Utility::formatStdError(ec));
         return false;
     }
 

@@ -178,8 +178,7 @@ void TestGuiCommChannel::testExclTemplSetUserListJob() {
         CPPUNIT_ASSERT(exclTemplSetListJob);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, exclTemplSetListJob->_exclusionTemplateList.size());
         CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, false) == exclTemplSetListJob->_exclusionTemplateList.at(0));
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, false) ==
-                       exclTemplSetListJob->_exclusionTemplateList.at(1));
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, false) == exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

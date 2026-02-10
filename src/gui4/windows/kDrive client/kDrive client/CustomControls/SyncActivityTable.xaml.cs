@@ -22,6 +22,58 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Infomaniak.kDrive.CustomControls
 {
+    public static class AncestorSource
+    {
+        public static readonly DependencyProperty AncestorTypeProperty =
+            DependencyProperty.RegisterAttached(
+                "AncestorType",
+                typeof(Type),
+                typeof(AncestorSource),
+                new PropertyMetadata(default(Type), OnAncestorTypeChanged)
+        );
+
+        public static void SetAncestorType(FrameworkElement element, Type value) =>
+            element.SetValue(AncestorTypeProperty, value);
+
+        public static Type GetAncestorType(FrameworkElement element) =>
+            (Type)element.GetValue(AncestorTypeProperty);
+
+        private static void OnAncestorTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            FrameworkElement target = (FrameworkElement)d;
+            if (target.IsLoaded)
+                SetDataContext(target);
+            else
+                target.Loaded += OnTargetLoaded;
+        }
+
+        private static void OnTargetLoaded(object sender, RoutedEventArgs e)
+        {
+            FrameworkElement target = (FrameworkElement)sender;
+            target.Loaded -= OnTargetLoaded;
+            SetDataContext(target);
+        }
+
+        private static void SetDataContext(FrameworkElement target)
+        {
+            Type ancestorType = GetAncestorType(target);
+            if (ancestorType != null)
+                target.DataContext = FindParent(target, ancestorType);
+        }
+
+        private static object FindParent(DependencyObject dependencyObject, Type ancestorType)
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
+            if (parent == null)
+                return null;
+
+            if (ancestorType.IsAssignableFrom(parent.GetType()))
+                return parent;
+
+            return FindParent(parent, ancestorType);
+        }
+    }
+
     public sealed partial class SyncActivityTable : UserControl
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
@@ -265,6 +317,44 @@ namespace Infomaniak.kDrive.CustomControls
         {
             NotificationTeachingTip.IsOpen = false;
         }
+
+        private void SynchronizingProgressRing_Loaded(object sender, RoutedEventArgs e)
+        {
+            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
+            if (syncItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+            syncItem.PropertyChanged += SyncItem_PropertyChanged;
+        }
+
+        private void SynchronizingProgressRing_Unloaded(object sender, RoutedEventArgs e)
+        {
+            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
+            if (syncItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+            syncItem.PropertyChanged -= SyncItem_PropertyChanged;
+        }
+
+        private void SyncItem_PropertyChanged(object? sender, PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(SyncFileItem.Status))
+            {
+                // Force the ContentControl to re-evaluate the DataTemplateSelector
+                var frameWorkElement = sender as FrameworkElement;
+                var parent = VisualTreeHelper.GetParent(frameWorkElement) as ContentControl;
+                if (parent != null)
+                {
+                    var currentContent = parent.Content;
+                    parent.Content = null; // Clear content to force re-evaluation
+                    parent.Content = currentContent; // Restore content
+                }
+            }
+        }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
@@ -306,15 +396,19 @@ namespace Infomaniak.kDrive.CustomControls
             if (item == null)
                 return null;
 
-            Types.SyncFileStatus syncFileStatus;
+            SyncFileStatus syncFileStatus;
             if (item is SyncFileItem syncActivity)
             {
                 syncFileStatus = syncActivity.Status;
             }
+            else if (item is SyncFileStatus status)
+            {
+                syncFileStatus = status;
+            }
             else
             {
                 Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
-                return null;
+                return base.SelectTemplate(item, container);
             }
 
             return syncFileStatus switch

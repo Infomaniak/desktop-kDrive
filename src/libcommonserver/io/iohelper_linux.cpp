@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "io/filestat.h"
 #include "io/iohelper.h"
+
+#include "io/filestat.h"
 #include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -128,7 +129,7 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
-    if (!CommonUtility::getLinuxDesktopType(desktopType)) {
+    if (!Utility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
     }
 
@@ -142,17 +143,17 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    const SyncPath trashPath = CommonUtility::getTrashPath();
+    const SyncPath trashPath = Utility::getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << CommonUtility::formatStdError(ec));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
             return false;
         }
 
         if (!std::filesystem::create_directories(trashPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << CommonUtility::formatSyncPath(trashPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
             return false;
         }
     }

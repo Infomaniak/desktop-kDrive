@@ -19,9 +19,9 @@
 #include "libcommon/utility/utility.h"
 
 #include "libcommonserver/commonserverlib.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 #include "libparms/db/user.h"
 #include "libparms/db/parmsdb.h"
@@ -95,10 +95,10 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
                                                // 80% of the original size.
             return true;
         }
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
     LOGW_WARN(Log::instance()->getLogger(),
-              L"Error in LogArchiver::getLogDirEstimatedSize: " << CommonUtility::formatIoError(logPath, ioError));
+              L"Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError));
 
     return result;
 }
@@ -189,13 +189,13 @@ void LogUploadJob::finalize() {
     (void) IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
     if (ioError != IoError::Success) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Error in IoHelper::deleteItem: " << CommonUtility::formatIoError(_tmpJobWorkingDir, ioError));
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
     (void) IoHelper::deleteItem(_generatedArchivePath, ioError);
     if (ioError != IoError::Success) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Error in IoHelper::deleteItem: " << CommonUtility::formatIoError(_generatedArchivePath, ioError));
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_generatedArchivePath, ioError));
     }
 
     (void) notifyLogUploadProgress(LogUploadState::Success, 100);
@@ -270,7 +270,7 @@ ExitInfo LogUploadJob::getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const {
     if (IoError ioError = IoError::Unknown;
         !IoHelper::createDirectory(tmpJobWorkingDir, false, ioError) && ioError != IoError::DirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::createDirectory: " << CommonUtility::formatIoError(tmpJobWorkingDir, ioError));
+                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tmpJobWorkingDir, ioError));
         switch (ioError) {
             case IoError::DiskFull:
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
@@ -319,8 +319,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logDirPath, false, ioError, dir)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << CommonUtility::formatIoError(logDirPath, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -340,7 +339,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
 
         if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::copyFileOrDirectory: " << CommonUtility::formatIoError(entry.path(), ioError));
+                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError));
             if (ioError == IoError::DiskFull) {
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             }
@@ -349,8 +348,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << CommonUtility::formatIoError(logDirPath, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -362,7 +360,7 @@ ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
     auto ioError = IoError::Unknown;
     if (DirectoryEntry entryParmsDb; !IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getDirectoryEntry: " << CommonUtility::formatIoError(parmsDbPath, ioError));
+                  L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError));
         if (ioError == IoError::NoSuchFileOrDirectory) {
             return {ExitCode::SystemError, ExitCause::NotFound};
         } else {
@@ -372,7 +370,7 @@ ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
 
     if (!IoHelper::copyFileOrDirectory(parmsDbPath, outputPath, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::copyFileOrDirectory: " << CommonUtility::formatIoError(parmsDbPath, ioError));
+                  L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError));
 
         if (ioError == IoError::DiskFull) {
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
@@ -389,7 +387,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
 
     std::ofstream file((outputPath / "user_description.txt").string());
     if (!file.is_open()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Unable to create : " << CommonUtility::formatSyncPath(outputPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to create : " << Utility::formatSyncPath(outputPath));
         return ExitCode::Ok; // We don't want to stop the process if we can't create the file
     }
     file << "OS Name: " << osName << std::endl;
@@ -423,7 +421,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
 
     file.close();
     if (file.bad()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in file.close() for " << CommonUtility::formatSyncPath(outputPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in file.close() for " << Utility::formatSyncPath(outputPath));
         // We don't want to stop the process if we can't close the file
     }
 
@@ -475,7 +473,7 @@ ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, cons
 
     if (!endOfDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << CommonUtility::formatIoError(directoryToCompress, ioError));
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError));
         return ExitCode::SystemError;
     }
 
@@ -590,13 +588,13 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
     if (clearTmpDir || exitInfo.code() == ExitCode::OperationCanceled) {
         if (auto ioError = IoError::Unknown; IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in IoHelper::deleteItem: " << CommonUtility::formatIoError(_tmpJobWorkingDir, ioError));
+                      L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
         }
     }
 
     if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"Error in IoHelper::deleteItem: " << CommonUtility::formatIoError(_tmpJobWorkingDir, ioError));
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
     if (exitInfo.code() != ExitCode::NetworkError) {
@@ -611,12 +609,11 @@ bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
 
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getFileSize for " << CommonUtility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
         return false;
     }
     if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Unable to read file size for " << CommonUtility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to read file size for " << Utility::formatIoError(path, ioError));
         return false;
     }
 

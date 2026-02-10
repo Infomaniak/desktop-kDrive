@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
@@ -1049,7 +1048,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (!CheckJobResultAndLogIfError(data, parms))
                     return null;
 
-                if(!HasRequiredParam(data, JsonKeys.ExclusionTemplatesList))
+                if (!HasRequiredParam(data, JsonKeys.ExclusionTemplatesList))
                     return null;
 
                 var options = new JsonSerializerOptions
@@ -1439,9 +1438,37 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             SyncFileItem syncFileItem = new SyncFileItem(sync);
-            CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
             await Utility.RunOnUIThread(() =>
             {
+                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
+
+                var existingItems = sync.SyncActivities.Where(item => (item.LocalNodeId == syncFileItem.LocalNodeId && item.LocalNodeId.Length > 0) || (item.RemoteNodeId == syncFileItem.RemoteNodeId && item.RemoteNodeId.Length > 0));
+
+                // Remove existing items with same LocalNodeId and RemoteNodeId that are not successful or are still syncing
+                var itemsToRemove = existingItems.Where(item => item.Status != SyncFileStatus.Success && item.Status != SyncFileStatus.Syncing);
+                sync.SyncActivities.RemoveMany(itemsToRemove);
+
+                // update existing item if it is syncing
+                var syncingItem = existingItems.FirstOrDefault(item => item.Status == SyncFileStatus.Syncing);
+                if (syncingItem is not null)
+                {
+                    ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncingItem);
+
+                    // Move the updated item just before the first item that is not 
+                    var firstNonSyncingItem = sync.SyncActivities.FirstOrDefault(item => item.Status != SyncFileStatus.Syncing);
+                    if (firstNonSyncingItem is not null)
+                    {
+                        int index = sync.SyncActivities.IndexOf(firstNonSyncingItem);
+                        if (index < sync.SyncActivities.IndexOf(syncingItem))
+                        {
+                            sync.SyncActivities.Remove(syncingItem);
+                            sync.SyncActivities.Insert(index, syncingItem);
+                        }
+                    }
+                    return;
+                }
+
+                // Insert the new item at the beginning of the list
                 sync.SyncActivities.Insert(0, syncFileItem);
                 // Ensure the list does not exceed 500 items
                 while (sync.SyncActivities.Count > 500)

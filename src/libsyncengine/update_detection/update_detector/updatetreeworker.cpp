@@ -294,7 +294,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             case NodeType::File: {
                 if (!Utility::normalizedSyncPath(createOp->path(), path)) {
                     path = createOp->path();
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << CommonUtility::formatSyncPath(createOp->path()));
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
                 }
                 if (!_createFileOperationSet.try_emplace(path, createOp).second) {
                     insertionFailedBecausePathExists = _createFileOperationSet.contains(
@@ -319,10 +319,9 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             // The following issue has been identified: the operating system missed a delete operation, in which case a
             // liveSnapshot rebuild is both required and sufficient.
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
-                                             << CommonUtility::formatSyncPath(createOp->path()) << L", ID: "
+                                             << Utility::formatSyncPath(createOp->path()) << L", ID: "
                                              << CommonUtility::s2ws(createOp->nodeId()) << L", type " << createOp->objectType()
-                                             << L", destination path: "
-                                             << CommonUtility::formatSyncPath(createOp->destinationPath()));
+                                             << L", destination path: " << Utility::formatSyncPath(createOp->destinationPath()));
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step4",
                                             "2 Create operations detected on the same item");
@@ -407,7 +406,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             SyncPath normalizedPath;
             if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
                 normalizedPath = deleteOp->path();
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << CommonUtility::formatSyncPath(deleteOp->path()));
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
             }
             if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
                 createFileOpSetIt != _createFileOperationSet.end()) {
@@ -911,8 +910,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
         }
 
         if (!moveOriginParentId.has_value()) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Parent node id is empty for node with " << CommonUtility::formatSyncPath(moveOp->path()));
+            LOGW_SYNCPAL_WARN(_logger, L"Parent node id is empty for node with " << Utility::formatSyncPath(moveOp->path()));
             return ExitCode::DataError;
         }
 
@@ -1083,9 +1081,9 @@ ExitCode UpdateTreeWorker::createTmpNode(std::shared_ptr<Node> &tmpNode, const S
     }
 
     if (!parentNode->insertChildren(tmpNode)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << CommonUtility::formatSyncName(tmpNode->name())
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(tmpNode->name())
                                                                            << L" parent node "
-                                                                           << CommonUtility::formatSyncName(parentNode->name()));
+                                                                           << Utility::formatSyncName(parentNode->name()));
         return ExitCode::DataError;
     }
     return ExitCode::Ok;
@@ -1138,7 +1136,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
     LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Merging tmp node " << CommonUtility::s2ws(tmpNode->id().value())
                                       << L" and real node " << CommonUtility::s2ws(realNode->id().value()) << L" - "
-                                      << CommonUtility::formatSyncName(realNode->name()));
+                                      << Utility::formatSyncName(realNode->name()));
 
     // merging tmpNode's children to realNode
     for (auto &child: tmpNode->children()) {
@@ -1177,7 +1175,7 @@ std::wstring logStr(const std::shared_ptr<Node> node) {
     const auto nodeParentId = CommonUtility::s2ws(
             node->parentNode() && node->parentNode()->id().has_value() ? node->parentNode()->id().value() : "-1");
     logStream << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or("-1")) << L", node parent ID: " << nodeParentId
-              << L"', DB ID: '" << node->idb().value_or(-1) << L"', " << CommonUtility::formatSyncName(node->name()) << L")";
+              << L"', DB ID: '" << node->idb().value_or(-1) << L"', " << Utility::formatSyncName(node->name()) << L")";
     return logStream.str();
 }
 static const auto integrityCheckFailureMsg = L" update tree integrity check failed.";
@@ -1250,7 +1248,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
             return ExitCode::DbError;
         }
         if (!found || !tmpNodeId.has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << CommonUtility::formatSyncPath(tmpPath));
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(tmpPath));
             return ExitCode::DataError;
         }
         (void) nodeIds.emplace_back(*tmpNodeId);
@@ -1385,7 +1383,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in DB for " << CommonUtility::formatSyncPath(dbPath) << L" (Node name: '"
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in DB for " << Utility::formatSyncPath(dbPath) << L" (Node name: '"
                                                                 << SyncName2WStr(tmpNode->name()) << L"') on side" << _side);
         return ExitCode::DataError;
     }

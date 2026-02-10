@@ -323,6 +323,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public CancelType? CancelType { get; set; }
         public string? Error { get; set; }
         public Int64? Size { get; set; }
+        public int? Progress { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -342,6 +343,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             CopyProperty(source, target, nameof(source.Error), nameof(target.Error));
             CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            CopyProperty(source, target, nameof(source.Progress), nameof(target.ProgressPercent));
         }
     }
 

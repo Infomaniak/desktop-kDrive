@@ -17,12 +17,14 @@
  */
 
 #include "abstracttokennetworkjob.h"
+
 #include "config.h"
-#include "libcommonserver/utility/utility.h"
-#include "libparms/db/parmsdb.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
+
+#include "libparms/db/parmsdb.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <unordered_map>
 

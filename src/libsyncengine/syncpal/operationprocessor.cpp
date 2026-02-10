@@ -84,8 +84,8 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
     bool isEqual = false;
     if (!Utility::checkIfSameNormalization(node->name(), correspondingNode->name(), isEqual)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
-                                                        << CommonUtility::formatSyncName(node->name()) << L" / "
-                                                        << CommonUtility::formatSyncName(correspondingNode->name()));
+                                                        << Utility::formatSyncName(node->name()) << L" / "
+                                                        << Utility::formatSyncName(correspondingNode->name()));
         return false;
     }
 

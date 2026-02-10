@@ -33,7 +33,6 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
-#include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
@@ -44,11 +43,15 @@
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+
 #include "libparms/db/parmsdb.h"
+
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -770,12 +773,12 @@ void TestNetworkJobs::testDownloadAborted() {
 
     int counter = 0;
     while (!job->isRunning()) {
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     job->abort();
 
-    CommonUtility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
     job.reset();
 
     CPPUNIT_ASSERT(forceStatusCalled);
@@ -1228,14 +1231,14 @@ void TestNetworkJobs::testUploadAborted() {
 
     int counter = 0;
     while (!job->isRunning()) {
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     job->abort();
 
     // Wait for job to finish
     while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
 
     const auto newNodeId = job->nodeId();
@@ -1403,12 +1406,12 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     int counter = 0;
     while (!DriveUploadSessionJob->isRunning()) {
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     DriveUploadSessionJob->abort();
 
-    CommonUtility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
     NodeId newNodeId = DriveUploadSessionJob->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
@@ -1441,14 +1444,14 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     int counter = 0;
     while (static_cast<int>(driveUploadSessionJob->state()) <= static_cast<int>(DriveUploadSession::StateStartUploadSession)) {
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Abort");
     driveUploadSessionJob->abort();
 
-    CommonUtility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Check jobs");
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());

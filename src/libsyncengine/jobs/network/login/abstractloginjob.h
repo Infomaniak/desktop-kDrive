@@ -19,7 +19,8 @@
 #pragma once
 
 #include "jobs/network/abstractnetworkjob.h"
-#include "libcommon/keychainmanager/apitoken.h"
+
+#include "libcommonserver/keychainmanager/apitoken.h"
 
 namespace KDC {
 

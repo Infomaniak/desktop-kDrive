@@ -112,8 +112,7 @@ class AbstractNetworkJob : public SyncJob {
         ExitInfo receiveResponse(const Poco::URI &uri);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
-        }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }

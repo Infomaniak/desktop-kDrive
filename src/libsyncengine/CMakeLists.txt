@@ -189,8 +189,8 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:syncpal/syncpal.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/io/iohelper.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libparms/db/parmsdb.h>"
 )

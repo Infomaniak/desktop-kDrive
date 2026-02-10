@@ -19,7 +19,7 @@
 #pragma once
 
 #include "abstractcommchannel.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 

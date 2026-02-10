@@ -34,10 +34,11 @@
 #include "enablestateholder.h"
 #include "libcommongui/logger.h"
 #include "guirequests.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-
 #ifdef Q_OS_WIN
 #include "libcommon/info/parametersinfo.h"
 #endif

@@ -74,44 +74,4 @@ void UnixTimeToFiletime(time_t t, FILETIME *filetime);
 
 } // namespace OldUtility
 
-inline bool OldUtility::isWindows() {
-#ifdef Q_OS_WIN
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isMac() {
-#ifdef Q_OS_MAC
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isUnix() {
-#ifdef Q_OS_UNIX
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isLinux() {
-#if defined(Q_OS_LINUX)
-    return true;
-#else
-    return false;
-#endif
-}
-
-inline bool OldUtility::isBSD() {
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
-    return true;
-#else
-    return false;
-#endif
-}
-
 } // namespace KDC
