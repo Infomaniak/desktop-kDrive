@@ -54,11 +54,14 @@ NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoL
 }
 
 NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
+    constexpr auto maxNumberOfItems = 1000;
+
     if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
         return it->second;
     }
 
     GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, true);
+    fileListJob.setListingConf({.limit = maxNumberOfItems});
     fileListJob.runSynchronously();
 
     const auto &nodeInfoList = fileListJob.nodeInfoList();

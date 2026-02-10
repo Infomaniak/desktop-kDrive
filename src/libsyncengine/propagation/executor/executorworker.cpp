@@ -27,6 +27,7 @@
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/movejob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
+#include "jobs/network/kDrive_API/getfilesinrootdirjob.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -393,23 +394,49 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     return ExitCode::Ok;
 }
 
+namespace {
+
+std::string getFileListConstructorErrorMsg(FileListJob *job, const int driveDbId, const NodeId &nodeId, const std::exception &e) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
+                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const int driveDbId, const NodeId &nodeId, const ExitInfo &exitInfo) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
+} // namespace
+
 ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
     constexpr auto maxNumberOfItemsParRequest = 1000;
-    std::shared_ptr<GetAllFilesInDirectoryJob> job = nullptr;
+    std::shared_ptr<FileListJob> job = nullptr;
 
     try {
-        job = std::make_shared<GetAllFilesInDirectoryJob>(_syncPal->driveDbId(), parentId);
+        if (parentId == NodeId{"1"})
+            job = std::make_shared<GetFilesInRootDirJob>(_syncPal->driveDbId());
+        else {
+            constexpr bool translateV2ToV3 = true;
+            job = std::make_shared<GetAllFilesInDirectoryJob>(_syncPal->driveDbId(), parentId, translateV2ToV3);
+        }
     } catch (const std::exception &e) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error in GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob for driveDbId="
-                                 << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " error=" << e.what());
+        LOG_SYNCPAL_WARN(Log::in stance()->getLogger(),
+                         getFileListConstructorErrorMsg(job.get(), _syncPal->driveDbId(), parentId, e));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     job->setListingConf({.limit = maxNumberOfItemsParRequest});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetAllFilesInDirectoryJob::runSynchronously for driveDbId="
-                                          << _syncPal->driveDbId() << " nodeId=" << parentId << " : " << job->exitInfo());
+        LOG_SYNCPAL_WARN(_logger, getFileListExecErrorMsg(job.get(), _syncPal->driveDbId(), parentId, job->exitInfo()));
         return exitInfo;
     }
 

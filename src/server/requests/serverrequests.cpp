@@ -835,6 +835,8 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
+namespace {
+
 std::string getFileListConstructorErrorMsg(FileListJob *job, const int userDbId, const int driveId, const std::exception &e) {
     const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
                                         ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
@@ -854,6 +856,7 @@ std::string getFileListExecErrorMsg(FileListJob *job, const int userDbId, const 
     return ss.str();
 }
 
+} // namespace
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, NodeInfoList &list,
                                        const bool withPath /*= false*/) {
