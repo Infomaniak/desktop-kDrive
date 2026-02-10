@@ -41,22 +41,79 @@ void GetFilesInRootDirJob::abort() {
     SyncJob::abort();
 }
 
+std::string GetFilesInRootDirJob::getConstructorFailureLogMessage(const std::exception &e) const {
+    constexpr auto logMessage = "Error in GetFilesInRootDirJob::GetFilesInRootDirJob for ";
+    std::stringstream ss;
+
+    if (_driveDbId) {
+        ss << logMessage << " driveDbId=" << _driveDbId;
+    } else {
+        ss << logMessage << " userDbId=" << _userDbId << " driveId=" << _driveId;
+    }
+
+    ss << " nodeId=" << _fileId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string GetFilesInRootDirJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
+    constexpr auto logMessage = "Error in GetFilesInDirectoryJob::runSynchronously for ";
+    std::stringstream ss;
+
+    if (_driveDbId) {
+        ss << logMessage << " driveDbId=" << _driveDbId;
+    } else {
+        ss << logMessage << " userDbId=" << _userDbId << " driveId=" << _driveId;
+    }
+
+    ss << " nodeId=" << _fileId << " exitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
 ExitInfo GetFilesInRootDirJob::runJob() {
-    GetAllFilesInDirectoryJob getRootDirListJob =
-            _driveDbId ? GetAllFilesInDirectoryJob(_driveDbId, NodeId{"1"}, true, false)
-                       : GetAllFilesInDirectoryJob(_userDbId, _driveId, NodeId{"1"}, true, false);
+    std::shared_ptr<GetAllFilesInDirectoryJob> getRootDirListJob = nullptr;
+    try {
+        getRootDirListJob =
+                _driveDbId ? std::make_shared<GetAllFilesInDirectoryJob>(_driveDbId, NodeId{"1"}, _listingConf.dirOnly, false)
+                           : std::make_shared<GetAllFilesInDirectoryJob>(_userDbId, _driveId, NodeId{"1"}, _listingConf.dirOnly,
+                                                                         false);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
-    getRootDirListJob.runSynchronously();
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
 
-    GetAllFilesInDirectoryJob getPrivateDirListJob = _driveDbId ? GetAllFilesInDirectoryJob(_driveDbId, NodeId{"1"})
-                                                                : GetAllFilesInDirectoryJob(_userDbId, _driveId, NodeId{"1"});
-    getPrivateDirListJob.runSynchronously();
+    if (const auto exitInfo = getRootDirListJob->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
+
+        return exitInfo;
+    }
+
+    std::shared_ptr<GetAllFilesInDirectoryJob> getPrivateDirListJob = nullptr;
+    try {
+        getPrivateDirListJob = _driveDbId ? std::make_shared<GetAllFilesInDirectoryJob>(_driveDbId, NodeId{"1"})
+                                          : std::make_shared<GetAllFilesInDirectoryJob>(_userDbId, _driveId, NodeId{"1"});
+
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
+
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = getPrivateDirListJob->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
+
+        return exitInfo;
+    }
 
     // Concatenate the two listings
-    _nodeInfoList = getRootDirListJob.nodeInfoList();
-    _nodeInfoList.reserve(_nodeInfoList.size() + getPrivateDirListJob.nodeInfoList().size());
-    _nodeInfoList.insert(_nodeInfoList.end(), getPrivateDirListJob.nodeInfoList().begin(),
-                         getPrivateDirListJob.nodeInfoList().end());
+    _nodeInfoList = getRootDirListJob->nodeInfoList();
+    _nodeInfoList.reserve(_nodeInfoList.size() + getPrivateDirListJob->nodeInfoList().size());
+    _nodeInfoList.insert(_nodeInfoList.end(), getPrivateDirListJob->nodeInfoList().begin(),
+                         getPrivateDirListJob->nodeInfoList().end());
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

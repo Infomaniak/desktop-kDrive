@@ -59,6 +59,9 @@ class GetFilesInRootDirJob : public SyncJob {
 
         // The deserialization of the request JSON result.
         NodeInfoList _nodeInfoList;
+
+        std::string getConstructorFailureLogMessage(const std::exception &e) const;
+        std::string getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const;
 };
 
 } // namespace KDC
