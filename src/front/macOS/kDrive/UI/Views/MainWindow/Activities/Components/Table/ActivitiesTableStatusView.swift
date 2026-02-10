@@ -176,6 +176,9 @@ struct ActivitiesTableStatusView: View {
     private func copyShareLink() {
         guard let drive = context?.drive else { return }
 
+        @InjectService var loadingIndicatorShower: SidebarNotificationShowing
+        loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
+
         Task {
             @InjectService var nodeURLGenerator: NodeURLGenerator
             let url = try await nodeURLGenerator.shareURL(for: node.remoteID, driveDbId: drive.dbId)
@@ -183,6 +186,15 @@ struct ActivitiesTableStatusView: View {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             pasteboard.setString(url.absoluteString, forType: .string)
+
+            loadingIndicatorShower.show(
+                SidebarNotificationState(
+                    icon: .init(icon: KDriveResources.checkmarkCircle.image, tint: ColorToken.Status.Medium.success.asNSColor),
+                    text: .init(text: KDriveLocalizable.linkCopiedToClipboard),
+                    showLoader: false,
+                    duration: SidebarNotificationState.defaultDuration
+                )
+            )
         }
     }
 
