@@ -875,7 +875,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    job->setListingConf({.withPath = withPath});
+    job->setListingConf({.withPath = withPath, .dirOnly = true});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), getFileListExecErrorMsg(job.get(), userDbId, driveId, exitInfo));
         return exitInfo;
