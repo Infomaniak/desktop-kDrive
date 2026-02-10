@@ -137,6 +137,8 @@
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/HexColorTests.swift,
+				Parsing/Jobs/BlacklistedNodeListTest.swift,
+				Parsing/Jobs/JSON/BLACKLISTED_NODE_LIST.json,
 				Parsing/Jobs/JSON/NODE_CREATEMISSINGFOLDERS.json,
 				Parsing/Jobs/JSON/NODE_FOLDER_SIZE.json,
 				Parsing/Jobs/JSON/NODE_INFO.json,
