@@ -138,7 +138,8 @@
                                                  MinWidth="0"
                                                  HorizontalAlignment="Stretch"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
-                                                 Click="OnlineRadioButtonClicked" />
+                                                 IsEnabled="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
+                                                 Click="SyncTypeRadioButton_Click" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
@@ -165,8 +166,9 @@
                                                  GroupName="SyncModeRadioGroup"
                                                  MinWidth="0"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
+                                                 IsEnabled="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
                                                  HorizontalAlignment="Stretch"
-                                                 Click="OnlineRadioButtonClicked" />
+                                                 Click="SyncTypeRadioButton_Click" />
                                 </Grid>
                             </toolKit:SettingsCard>
 

@@ -201,10 +201,13 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task<bool> ChangeSyncType(SyncType newType)
         {
             SyncTypeMigrationInProgress = true;
+            var previousType = SyncType;
+            SyncType = newType;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
+            if (!result)
+                SyncType = previousType;
             SyncTypeMigrationInProgress = false;
-
             return result;
         }
 
