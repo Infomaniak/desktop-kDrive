@@ -17,6 +17,8 @@
 #include "uploadjob.h"
 
 #include "uploadjobreplyhandler.h"
+#include "jobs/network/apitranslator.h"
+
 #include "io/filestat.h"
 
 #include "libcommonserver/io/iohelper.h"
@@ -43,6 +45,9 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const 
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
+
+    _apiVersion = 3;
+    ApiTranslator::translateV2ToV3(driveDbId, _remoteParentDirId);
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
@@ -77,7 +82,7 @@ ExitInfo UploadJob::canRun() {
         return ExitCode::Ok;
     }
 
-    // Check that the item still exist
+    // Check that the item still exists.
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
@@ -105,6 +110,7 @@ ExitInfo UploadJob::handleResponse(std::istream &is) {
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return {};
+
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();

@@ -57,7 +57,7 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
                                                         << _modificationTimeOut << L" for "
                                                         << Utility::formatSyncPath(_absoluteFilePath));
 
-        if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, _isLink);
+        if (const auto ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, _isLink);
             ioError != IoError::Success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
