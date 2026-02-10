@@ -27,7 +27,7 @@ public extension UISynchro {
             progressInfo = UISynchroProgressInfo(synchroProgressInfo: synchroProgressInfo)
         }
 
-        let nodes = OrderedDictionary(uniqueKeysWithValues: synchro.synchNodes.map { key, value in
+        let nodes = OrderedDictionary(uniqueKeysWithValues: synchro.synchNodes.map { _, value in
             let uiNode = UISynchroNode(synchroNode: value)
             return (uiNode.id, uiNode)
         })

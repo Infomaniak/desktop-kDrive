@@ -46,17 +46,17 @@ struct StateIndicator: StatusIndicator {
 
     static let synchronized = StateIndicator(
         icon: KDriveResources.checkmarkCircle.swiftUIImage,
-        hint: "Synchronisé",
+        hint: KDriveLocalizable.syncSuccessTooltip,
         color: ColorToken.Status.Medium.success.asColor
     )
     static let inProgress = StateIndicator(
         icon: KDriveResources.circularArrowsClockwise.swiftUIImage,
-        hint: "Synchronisation en cours",
+        hint: KDriveLocalizable.syncInProgressTooltip,
         color: .blue
     )
     static let failed = StateIndicator(
         icon: KDriveResources.warning.swiftUIImage,
-        hint: "Erreur de synchronisation",
+        hint: KDriveLocalizable.syncErrorTooltip,
         color: ColorToken.Status.Medium.warning.asColor
     )
 }

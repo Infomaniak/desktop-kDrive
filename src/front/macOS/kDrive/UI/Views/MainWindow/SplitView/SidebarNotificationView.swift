@@ -22,10 +22,6 @@ import kDriveCoreUI
 final class SidebarNotificationView: NSView {
     static let defaultColor = ColorToken.Text.tertiary.asNSColor
 
-    var isVisible: Bool {
-        return !imageView.isHidden || !textField.isHidden || !progressIndicator.isHidden
-    }
-
     private lazy var imageView: NSImageView = {
         let imageView = NSImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false

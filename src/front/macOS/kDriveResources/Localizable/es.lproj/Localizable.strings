@@ -311,6 +311,15 @@
 /* loco:6979e265a8419bb7510c8122 */
 "storageUsageLabel" = "%@ en %@ utilizado";
 
+/* loco:698a07efc9e9b6dcce04dc86 */
+"syncErrorTooltip" = "Error de sincronización";
+
+/* loco:698a085329fb169f6605ac62 */
+"syncInProgressTooltip" = "Sincronización";
+
+/* loco:698a08137065b2ad54014e72 */
+"syncSuccessTooltip" = "Sincronizado";
+
 /* loco:698b2ff6c504d956e009aad2 */
 "syncedFromComputer" = "Sincronizado desde el ordenador";
 

@@ -228,6 +228,8 @@ public enum KDriveLocalizable {
   public static let syncedFromComputer = KDriveLocalizable.tr("Localizable", "syncedFromComputer", fallback: "Synced from your computer")
   /// loco:698a08bdb6b870234906e103
   public static let syncedFromKDriveWeb = KDriveLocalizable.tr("Localizable", "syncedFromKDriveWeb", fallback: "Synced from kDrive Web")
+  /// loco:698a07efc9e9b6dcce04dc86
+  public static let syncErrorTooltip = KDriveLocalizable.tr("Localizable", "syncErrorTooltip", fallback: "Sync error")
   /// loco:6960b7decf8ffcd3950d2706
   public static let synchroInProgress = KDriveLocalizable.tr("Localizable", "synchroInProgress", fallback: "your files are synchronizing")
   /// loco:6960b7fd4e868a099e022dc5
@@ -250,6 +252,10 @@ public enum KDriveLocalizable {
   public static let synchroStatusUpToDateTitle = KDriveLocalizable.tr("Localizable", "synchroStatusUpToDateTitle", fallback: "No activity in progress")
   /// loco:6960b7a6cf8ffcd3950d2704
   public static let synchroUpToDate = KDriveLocalizable.tr("Localizable", "synchroUpToDate", fallback: "your files are up to date")
+  /// loco:698a085329fb169f6605ac62
+  public static let syncInProgressTooltip = KDriveLocalizable.tr("Localizable", "syncInProgressTooltip", fallback: "Syncing")
+  /// loco:698a08137065b2ad54014e72
+  public static let syncSuccessTooltip = KDriveLocalizable.tr("Localizable", "syncSuccessTooltip", fallback: "Synced")
   /// loco:68a70be4b749277aa1081dc2
   public static let tabTitleActivities = KDriveLocalizable.tr("Localizable", "tabTitleActivities", fallback: "Activities")
   /// loco:68a705225b0066f86e001d52
