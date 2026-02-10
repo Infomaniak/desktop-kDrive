@@ -48,6 +48,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoError::Success;
+
     std::error_code ec;
     (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);

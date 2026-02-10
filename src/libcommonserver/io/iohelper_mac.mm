@@ -311,8 +311,9 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
 bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoError::Success;
+
     std::error_code ec;
-    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
@@ -323,45 +324,29 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
 
     if (ioError == IoError::Success && exists) {
         // Case sensitive check
-        /*int flags = O_RDONLY;
-        if (status.type() == std::filesystem::file_type::symlink) {
-            // Don't follow symlinks
-            flags |= O_SYMLINK;
-        }
-        if (int fd = open(path.native().c_str(), flags); fd < 0) {
-            ioError = posixError2ioError(errno);
-        } else {
-            char pathBuf[MAXPATHLEN];
-            if (fcntl(fd, F_GETPATH, pathBuf) < 0) {
-                ioError = posixError2ioError(errno);
-            } else {
-                const SyncPath realPath{pathBuf};
-                exists = realPath.filename() == path.filename();
-            }
-            close(fd);
-        }*/
-
-        NSString *nstr = [NSString stringWithCString:path.filename().c_str() encoding:NSUTF8StringEncoding];
-        NSString *ppstr = [NSString stringWithCString:path.parent_path().c_str() encoding:NSUTF8StringEncoding];
-        NSURL *purl = [NSURL fileURLWithPath:ppstr];
+        assert(!path.empty());
+        auto *_Nonnull parentPathStr = (NSString *_Nonnull) [NSString stringWithCString:path.parent_path().c_str()
+                                                                               encoding:NSUTF8StringEncoding];
+        auto *_Nonnull parentPathURL = [NSURL fileURLWithPath:parentPathStr];
         NSError *err = nil;
-        NSFileWrapper *pfw = [[NSFileWrapper alloc] initWithURL:purl options:NSFileWrapperReadingImmediate error:&err];
-        if (!err) {
-            auto wrappers = [pfw fileWrappers];
-            NSString *n = @"picture-1.jpg";
-            auto fw2 = [wrappers objectForKey:n];
-            if (fw2) {
-                NSString *n2 = [fw2 filename];
-                NSString *np2 = [fw2 preferredFilename];
-                auto e = [n isEqualToString:n2];
+        auto *parentFileWrapper = [[NSFileWrapper alloc] initWithURL:parentPathURL
+                                                             options:NSFileWrapperReadingWithoutMapping
+                                                               error:&err];
+        if (parentFileWrapper) {
+            NSDictionary<NSString *, NSFileWrapper *> *fileWrappers = nil;
+            @try {
+                fileWrappers = [parentFileWrapper fileWrappers];
+            } @catch (NSException *e) {
+                ioError = IoError::Unknown;
+                return false;
             }
-            auto fw = [wrappers objectForKey:nstr];
-            if (fw) {
-                NSString *nstr2 = [fw filename];
-                NSString *npstr = [fw preferredFilename];
-                exists = [nstr isEqualToString:nstr2];
-            } else {
-                exists = false;
+
+            if (fileWrappers) {
+                auto *_Nonnull fileNameStr = (NSString *_Nonnull) [NSString stringWithCString:path.filename().c_str()
+                                                                                     encoding:NSUTF8StringEncoding];
+                if (![fileWrappers objectForKey:fileNameStr]) {
+                    exists = false;
+                }
             }
         }
     }

@@ -513,7 +513,12 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
+
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && !exists);
+#else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);
+#endif
 
         NodeId nfcNodeId, nfdNodeId;
         IoHelper::getNodeId(nfcPath, nfcNodeId);
@@ -544,7 +549,12 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         bool exists = false;
         IoError ioError = IoError::Unknown;
 
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && !exists);
+#else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
+#endif
+
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);
 
         NodeId nfcNodeId, nfdNodeId;
