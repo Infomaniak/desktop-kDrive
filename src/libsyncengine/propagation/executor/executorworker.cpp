@@ -429,7 +429,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
             job = std::make_shared<GetAllFilesInDirectoryJob>(_syncPal->driveDbId(), parentId, translateV2ToV3);
         }
     } catch (const std::exception &e) {
-        LOG_SYNCPAL_WARN(Log::in stance()->getLogger(),
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          getFileListConstructorErrorMsg(job.get(), _syncPal->driveDbId(), parentId, e));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
