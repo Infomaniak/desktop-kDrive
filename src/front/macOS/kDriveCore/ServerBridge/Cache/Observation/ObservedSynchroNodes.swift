@@ -73,7 +73,18 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
                 }
             }
 
-            return allNodes.sorted { $0.node.date > $1.node.date }
+            return allNodes.sorted { lhs, rhs in
+                // Primary: Status descending (Syncing appears first due to Comparable implementation)
+                if lhs.node.status > rhs.node.status {
+                    return true
+                }
+                if rhs.node.status > lhs.node.status {
+                    return false
+                }
+
+                // Fallback: Date descending (most recent first) when statuses are equal
+                return lhs.node.date > rhs.node.date
+            }
         }
         .removeDuplicates()
         .eraseToAnyPublisher()
