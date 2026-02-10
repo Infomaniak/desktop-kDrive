@@ -48,6 +48,8 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+std::function<bool(const SyncPath &path, bool &exists, IoError &ioError)> IoHelper::_checkIfPathExists =
+        IoHelper::_checkIfPathExistsFn;
 bool IoHelper::_unsuportedFSLogged = false;
 #if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
@@ -769,33 +771,7 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 
 
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
-    exists = false;
-    ioError = IoError::Success;
-    std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
-    ioError = stdError2ioError(ec);
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::Success;
-        return true;
-    }
-#if defined(KD_WINDOWS) // TODO: Remove this block when migrating the release process to Visual Studio 2022.
-    // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
-    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
-    // compiling with VS2022, see
-    // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
-    if (ioError == IoError::InvalidArgument && !CommonUtility::isNTFS(path)) {
-        (void) std::filesystem::status(
-                path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
-        ioError = stdError2ioError(ec);
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            ioError = IoError::Success;
-            return true;
-        }
-    }
-#endif
-
-    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    return _checkIfPathExists(path, exists, ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,

@@ -37,6 +37,16 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
+    // A regular file whose name exists with a different capitalization
+    {
+        const SyncPath path = _localTestDirPath / "test_pictures/Picture-1.jpg";
+        bool exists = false;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";

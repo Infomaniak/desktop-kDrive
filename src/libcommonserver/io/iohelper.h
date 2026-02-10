@@ -565,7 +565,9 @@ struct IoHelper {
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
+        static std::function<bool(const SyncPath &path, bool &exists, IoError &ioError)> _checkIfPathExists;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static bool _checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
         static void setCacheDirectoryPath(const SyncPath &newPath);

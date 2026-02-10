@@ -272,7 +272,7 @@ class LiteSyncCommClientPrivate {
         liteSyncExtMachName = [NSString stringWithUTF8String:KDC::CommonUtility::liteSyncExtBundleId().c_str()];
     }
 
-    _connection = [[NSXPCConnection alloc] initWithMachServiceName:liteSyncExtMachName options:0];
+    _connection = [[NSXPCConnection alloc] initWithMachServiceName:(NSString *_Nonnull) liteSyncExtMachName options:0];
     if (_connection == nil) {
         NSLog(@"[KD] Failed to connect to LiteSync extension");
         return FALSE;
@@ -560,7 +560,9 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
         return false;
     }
 
-    NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
+    assert(!folderPath.empty());
+    NSString *_Nonnull nsPath = (NSString *_Nonnull) [NSString stringWithCString:folderPath.c_str()
+                                                                        encoding:NSUTF8StringEncoding];
     if (![_connector registerFolder:nsPath]) {
         LOG_ERROR(_logger, "Cannot register folder!");
         return false;
@@ -610,7 +612,9 @@ bool LiteSyncCommClientPrivate::vfsStop(const SyncPath &folderPath) {
         return false;
     }
 
-    NSString *nsPath = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
+    assert(!folderPath.empty());
+    NSString *_Nonnull nsPath = (NSString *_Nonnull) [NSString stringWithCString:folderPath.c_str()
+                                                                        encoding:NSUTF8StringEncoding];
     if (![_connector unregisterFolder:nsPath]) {
         LOG_ERROR(_logger, "Cannot unregister folder!");
         return false;
@@ -642,8 +646,10 @@ bool LiteSyncCommClientPrivate::updateFetchStatus(const SyncPath &filePath, cons
         return false;
     }
 
-    NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
-    NSString *nsStatus = [NSString stringWithUTF8String:status.c_str()];
+    assert(!filePath.empty());
+    NSString *_Nonnull nsPath = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.c_str()];
+    assert(!status.empty());
+    NSString *_Nonnull nsStatus = (NSString *_Nonnull) [NSString stringWithUTF8String:status.c_str()];
     if (![_connector updateFetchStatus:nsPath fileStatus:nsStatus]) {
         LOGW_ERROR(_logger, L"Call to updateFetchStatus failed: " << Utility::formatSyncPath(filePath));
         return false;
@@ -670,11 +676,12 @@ bool LiteSyncCommClientPrivate::setThumbnail(const SyncPath &filePath, const QPi
         error = true;
     }
 
-    NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
+    assert(!filePath.empty());
+    NSString *_Nonnull nsPath = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.c_str()];
     if (!error) {
         // Destination image
         int size = static_cast<int>(qMax(srcImage.size.width, srcImage.size.height));
-        NSImage *dstImage = [[NSImage alloc] initWithSize:CGSizeMake(size, size)];
+        NSImage *_Nonnull dstImage = [[NSImage alloc] initWithSize:CGSizeMake(size, size)];
 
         // Copy source image into destination image
         NSRect dstRect = NSMakeRect(size == srcImage.size.width ? 0 : (size - srcImage.size.width) / 2,
@@ -704,7 +711,8 @@ bool LiteSyncCommClientPrivate::setAppExcludeList(const std::string &appList) {
         return false;
     }
 
-    NSString *nsAppList = [NSString stringWithUTF8String:appList.c_str()];
+    assert(!appList.empty());
+    NSString *_Nonnull nsAppList = (NSString *_Nonnull) [NSString stringWithUTF8String:appList.c_str()];
     if (![_connector setAppExcludeList:nsAppList]) {
         LOG_ERROR(_logger, "Error in setAppExcludeList!");
         return false;
@@ -1119,12 +1127,15 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const SyncPath &filePath,
                                               const SyncPath &localSyncPath, unsigned long long completed, bool &canceled,
                                               bool &finished) {
+    (void) tmpFilePath;
     canceled = false;
 
     @autoreleasepool {
         // Get file attributes
+        assert(!filePath.empty());
+        NSString *_Nonnull nsPath = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.c_str()];
+
         NSError *error = nil;
-        NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
         NSDictionary<NSFileAttributeKey, id> *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:nsPath
                                                                                                             error:&error];
         NSInteger errorCode = error ? error.code : 0;
@@ -1161,7 +1172,8 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                 LOGW_INFO(_logger, L"Copying temp file from " << Utility::formatSyncPath(tmpFilePath) << L" to "
                                                               << Utility::formatSyncPath(filePath));
 
-                NSString *nsTmpPath = [NSString stringWithUTF8String:tmpFilePath.c_str()];
+                assert(!tmpFilePath.empty());
+                NSString *_Nonnull nsTmpPath = (NSString *_Nonnull) [NSString stringWithUTF8String:tmpFilePath.c_str()];
                 NSFileHandle *tmpFileHandle = [NSFileHandle fileHandleForReadingAtPath:nsTmpPath];
                 NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:nsPath];
                 NSData *buffer = nil;
@@ -1174,7 +1186,6 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                                        L"Error while reading tmp file: " << Utility::formatErrno(tmpFilePath, errorCode));
                             break;
                         }
-                        errorCode = error ? error.code : 0;
                         if (buffer.length == 0) {
                             // Nothing else to read
                             break;

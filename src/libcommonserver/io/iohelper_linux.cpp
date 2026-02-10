@@ -45,6 +45,21 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
+bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+    exists = false;
+    ioError = IoError::Success;
+    std::error_code ec;
+    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    ioError = stdError2ioError(ec);
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::Success;
+        return true;
+    }
+
+    exists = (ioError != IoError::FileNameTooLong);
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
+}
+
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 

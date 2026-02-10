@@ -18,6 +18,7 @@
 
 #import "libcommon/utility/types.h"
 #import "libcommonserver/io/iohelper.h"
+#import "libcommonserver/io/filestat.h"
 #import "libcommonserver/utility/utility.h"
 
 #import "config.h"
@@ -233,9 +234,9 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
-    NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
-    NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
-    NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
+    NSDate *_Nonnull cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
+    NSDate *_Nonnull mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
+    NSString *_Nonnull filePathStr = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.native().c_str()];
     NSError *error = nil;
     bool ret = false;
     if (symlink) {
@@ -305,6 +306,67 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     }
 
     return success;
+}
+
+bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+    exists = false;
+    ioError = IoError::Success;
+    std::error_code ec;
+    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    ioError = stdError2ioError(ec);
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::Success;
+        return true;
+    }
+
+    exists = (ioError != IoError::FileNameTooLong);
+
+    if (ioError == IoError::Success && exists) {
+        // Case sensitive check
+        /*int flags = O_RDONLY;
+        if (status.type() == std::filesystem::file_type::symlink) {
+            // Don't follow symlinks
+            flags |= O_SYMLINK;
+        }
+        if (int fd = open(path.native().c_str(), flags); fd < 0) {
+            ioError = posixError2ioError(errno);
+        } else {
+            char pathBuf[MAXPATHLEN];
+            if (fcntl(fd, F_GETPATH, pathBuf) < 0) {
+                ioError = posixError2ioError(errno);
+            } else {
+                const SyncPath realPath{pathBuf};
+                exists = realPath.filename() == path.filename();
+            }
+            close(fd);
+        }*/
+
+        NSString *nstr = [NSString stringWithCString:path.filename().c_str() encoding:NSUTF8StringEncoding];
+        NSString *ppstr = [NSString stringWithCString:path.parent_path().c_str() encoding:NSUTF8StringEncoding];
+        NSURL *purl = [NSURL fileURLWithPath:ppstr];
+        NSError *err = nil;
+        NSFileWrapper *pfw = [[NSFileWrapper alloc] initWithURL:purl options:NSFileWrapperReadingImmediate error:&err];
+        if (!err) {
+            auto wrappers = [pfw fileWrappers];
+            NSString *n = @"picture-1.jpg";
+            auto fw2 = [wrappers objectForKey:n];
+            if (fw2) {
+                NSString *n2 = [fw2 filename];
+                NSString *np2 = [fw2 preferredFilename];
+                auto e = [n isEqualToString:n2];
+            }
+            auto fw = [wrappers objectForKey:nstr];
+            if (fw) {
+                NSString *nstr2 = [fw filename];
+                NSString *npstr = [fw preferredFilename];
+                exists = [nstr isEqualToString:nstr2];
+            } else {
+                exists = false;
+            }
+        }
+    }
+
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 } // namespace KDC

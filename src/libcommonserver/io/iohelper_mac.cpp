@@ -146,10 +146,19 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     ioError = IoError::Success;
 
     struct stat sb;
-
     if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
+    }
+
+    // Case sensitive check
+    bool exists = false;
+    if (!_checkIfPathExistsFn(path, exists, ioError)) {
+        return false;
+    }
+    if (!exists) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return true;
     }
 
     buf->isHidden = false;

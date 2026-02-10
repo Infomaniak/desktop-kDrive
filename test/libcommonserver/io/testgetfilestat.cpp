@@ -46,6 +46,16 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
+    // A regular file whose name exists with a different capitalization
+    {
+        const SyncPath path = _localTestDirPath / "test_pictures/Picture-1.jpg";
+        FileStat fileStat;
+        IoError ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+    }
+
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
