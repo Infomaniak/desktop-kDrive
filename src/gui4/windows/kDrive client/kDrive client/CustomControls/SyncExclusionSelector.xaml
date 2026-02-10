@@ -143,14 +143,14 @@
                                           MinHeight="0"
                                           Click="CheckBox_Click"
                                           DataContext="{x:Bind RootTreeItem, Mode=OneWay}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('name')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.GetString('labelName')}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Column="1"
                               HorizontalAlignment="Right"
                               Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}">
-                            <TextBlock Text="{x:Bind loc:Localizer.GetString('size')}" />
+                            <TextBlock Text="{x:Bind loc:Localizer.GetString('labelSize')}" />
                         </Grid>
 
                         <TreeView x:Name="FolderTree"

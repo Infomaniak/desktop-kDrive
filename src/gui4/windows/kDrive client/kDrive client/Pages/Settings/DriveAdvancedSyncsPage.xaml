@@ -23,6 +23,7 @@
             <toolKit:SettingsExpander Header="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}">
                 <toolKit:SettingsExpander.HeaderIcon>
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
                 <toolKit:SettingsExpander.Items>
@@ -165,13 +166,13 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <StackPanel>
                     <!-- Subtitle -->
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSync')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncTitle')}"
                                Style="{StaticResource BodyLargeStrongTextBlockStyle}"
                                Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('syncFolderWithKDrive')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncSubtitle')}"
                                Style="{StaticResource BodyTextBlockStyle}" />
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('syncFolderWithKDriveDescription')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncDescription')}"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
                 <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"
@@ -192,7 +193,7 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
-                <Button Content="{x:Bind loc:Localizer.GetString('syncFolder')}" />
+                <Button Content="{x:Bind loc:Localizer.GetString('buttonAddAdvancedSync')}" />
                 <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>

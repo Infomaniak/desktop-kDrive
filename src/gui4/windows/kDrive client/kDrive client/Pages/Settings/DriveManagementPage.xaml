@@ -195,7 +195,7 @@
                 </StackPanel>
 
                 <!-- Main sync is not setted -->
-                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('synchronization')}"
+                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('synchronizationSettings')}"
                                       Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
                                       IsClickEnabled="False">
                     <StackPanel Orientation="Horizontal"
@@ -205,7 +205,7 @@
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorSecondary}" />
 
-                        <Button Content="{x:Bind loc:Localizer.GetString('enable')}"
+                        <Button Content="{x:Bind loc:Localizer.GetString('buttonConfigureMainSync')}"
                                 Click="SetupMainSyncButton_Click" />
                     </StackPanel>
                     <toolKit:SettingsCard.HeaderIcon>
