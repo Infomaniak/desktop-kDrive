@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -24,11 +26,11 @@ import SwiftUI
 struct ActivitiesTable: View {
     static let defaultFolderName = "kDrive"
 
-    let synchro: UISynchro?
+    let context: UISynchroContext?
     let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
     private var synchroOrigin: String {
-        return synchro?.localPath.lastPathComponent ?? ActivitiesTable.defaultFolderName
+        return context?.synchro.localPath.lastPathComponent ?? ActivitiesTable.defaultFolderName
     }
 
     var body: some View {
@@ -67,16 +69,20 @@ struct ActivitiesTable: View {
             .width(ideal: 20)
 
             TableColumn("Status") { node in
-                ActivitiesTableStatusView(node: node, driveID: synchro?.driveDbId)
+                ActivitiesTableStatusView(context: context, node: node)
             }
             .width(ideal: 30)
         }
+        .animation(.default, value: nodes)
     }
 
     private func openParentFolder(of node: UISynchroNode) {
-        guard let url = synchro?.localPath.appendingPathComponent(node.parentFolder.path) else {
+        guard let synchroURL = context?.synchro.localPath else {
             return
         }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.localURL(for: node.parentFolder.path, synchroPath: synchroURL)
 
         NSWorkspace.shared.open(url)
     }
@@ -84,7 +90,7 @@ struct ActivitiesTable: View {
 
 #Preview {
     ActivitiesTable(
-        synchro: PreviewHelper.synchro,
+        context: PreviewHelper.context,
         nodes: [
             "1": PreviewHelper.synchroNode1,
             "2": PreviewHelper.synchroNode2,
