@@ -19,21 +19,21 @@
 import Foundation
 
 public protocol NodeURLGenerator: Sendable {
-    func localURL(for nodeID: String) -> URL
-    func remoteURL(for nodeID: String, inDrive driveID: Int) -> URL
-    func shareURL(for nodeID: String, inDrive driveID: Int) async -> URL
+    func localURL(for nodePath: String, synchroPath: URL) -> URL
+    func remoteURL(for nodeId: String, driveId: Int) -> URL
+    func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL
 }
 
 public struct DriveNodeURLGenerator: NodeURLGenerator {
-    public func localURL(for nodeID: String) -> URL {
-        return URL(string: "")!
+    public func localURL(for nodePath: String, synchroPath: URL) -> URL {
+        return synchroPath.appendingPathComponent(nodePath)
     }
 
-    public func remoteURL(for nodeID: String, inDrive driveID: Int) -> URL {
-        return URLConstants.kDrive(for: driveID).appendingPathComponent("/redirect/\(nodeID)")
+    public func remoteURL(for nodeId: String, driveId: Int) -> URL {
+        return URLConstants.kDrive(for: driveId).appendingPathComponent("/redirect/\(nodeId)")
     }
 
-    public func shareURL(for nodeID: String, inDrive driveID: Int) async -> URL {
-        return URL(string: "")!
+    public func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL {
+        return try await SyncJobs().getPublicLinkUrl(driveDbId: Int32(driveDbId), nodeId: nodeId)
     }
 }
