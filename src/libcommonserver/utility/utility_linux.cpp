@@ -206,19 +206,17 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     if (enable) {
         IoError ioError = IoError::Unknown;
         if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
-            LOGW_WARN(logger(),
-                      L"Could not create autostart folder: " << CommonUtility::formatIoError(userAutoStartDirPath, ioError));
+            LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }
 
         std::ofstream autoStartFile{userAutoStartFilePath};
         if (!autoStartFile.is_open()) {
-            LOGW_WARN(logger(),
-                      L"Could not create autostart desktop file: " << CommonUtility::formatSyncPath(userAutoStartFilePath));
+            LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
         }
         const SyncPath appimageDir{CommonUtility::envVarValue("APPIMAGE")};
-        LOGW_DEBUG(logger(), L"APPIMAGE: " << CommonUtility::formatSyncPath(appimageDir));
+        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appimageDir));
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
@@ -234,8 +232,8 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     } else {
         IoError ioError = IoError::Unknown;
         if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
-            LOGW_WARN(logger(), L"Could not remove autostart desktop file: "
-                                        << CommonUtility::formatIoError(userAutoStartDirPath, ioError));
+            LOGW_WARN(logger(),
+                      L"Could not remove autostart desktop file: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }
     }
@@ -245,6 +243,20 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
 
 bool Utility::hasSystemLaunchOnStartup(const std::string &) {
     return false;
+}
+
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return {};
+    }
+
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
+    }
+
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
 } // namespace KDC

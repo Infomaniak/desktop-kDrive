@@ -17,7 +17,11 @@
  */
 
 #include "guicommserver.h"
+
+#include "libcommon/utility/utility.h"
+
 #include <Poco/JSON/Parser.h>
+
 namespace KDC {
 
 bool GuiCommChannel::sendMessage(const CommString &message) {

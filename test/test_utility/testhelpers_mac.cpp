@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
 
@@ -32,13 +32,13 @@ namespace KDC::testhelpers {
 
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    (void) IoHelper::deleteItem(CommonUtility::getTrashPath() / relativePath);
+    (void) IoHelper::deleteItem(Utility::getTrashPath() / relativePath);
 }
 
 bool isInTrash(const SyncPath &path) {
-    if (std::error_code ec; !std::filesystem::exists(CommonUtility::getTrashPath() / path, ec) || ec) {
+    if (std::error_code ec; !std::filesystem::exists(Utility::getTrashPath() / path, ec) || ec) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << CommonUtility::formatStdError(ec));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
         }
         return false;
     }

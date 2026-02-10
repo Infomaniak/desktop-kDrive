@@ -52,9 +52,9 @@ void ConflictFinderWorker::findConflicts() {
         for (const Conflict &c: *moveMoveCycleList) {
             _syncPal->_conflictQueue->push(c);
             LOGW_SYNCPAL_INFO(_logger, c.type() << L" conflict found between local node "
-                                                << CommonUtility::formatSyncName(c.localNode()->name()) << L" ("
+                                                << Utility::formatSyncName(c.localNode()->name()) << L" ("
                                                 << CommonUtility::s2ws(*c.localNode()->id()) << L") and remote node "
-                                                << CommonUtility::formatSyncName(c.remoteNode()->name()) << L" ("
+                                                << Utility::formatSyncName(c.remoteNode()->name()) << L" ("
                                                 << CommonUtility::s2ws(*c.remoteNode()->id()) << L")");
         }
     }
@@ -96,13 +96,13 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
         if (node->hasChangeEvent(OperationType::Create) && !node->hasConflictAlreadyConsidered(ConflictType::CreateCreate)) {
             if (std::optional<Conflict> createCreateConf = checkCreateCreateConflict(node)) {
                 _syncPal->_conflictQueue->push(*createCreateConf);
-                LOGW_SYNCPAL_INFO(_logger,
-                                  createCreateConf->type()
-                                          << L" conflict found between local node "
-                                          << CommonUtility::formatSyncName(createCreateConf->localNode()->name()) << L" ("
-                                          << CommonUtility::s2ws(*createCreateConf->localNode()->id()) << L") and remote node "
-                                          << CommonUtility::formatSyncName(createCreateConf->remoteNode()->name()) << L" ("
-                                          << CommonUtility::s2ws(*createCreateConf->remoteNode()->id()) << L")");
+                LOGW_SYNCPAL_INFO(_logger, createCreateConf->type()
+                                                   << L" conflict found between local node "
+                                                   << Utility::formatSyncName(createCreateConf->localNode()->name()) << L" ("
+                                                   << CommonUtility::s2ws(*createCreateConf->localNode()->id())
+                                                   << L") and remote node "
+                                                   << Utility::formatSyncName(createCreateConf->remoteNode()->name()) << L" ("
+                                                   << CommonUtility::s2ws(*createCreateConf->remoteNode()->id()) << L")");
             }
         }
         // Edit - Edit_Edit conflict
@@ -111,10 +111,10 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
                 _syncPal->_conflictQueue->push(*editEditConf);
                 LOGW_SYNCPAL_INFO(_logger, editEditConf->type()
                                                    << L" conflict found between local node "
-                                                   << CommonUtility::formatSyncName(editEditConf->localNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(editEditConf->localNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*editEditConf->localNode()->id())
                                                    << L") and remote node "
-                                                   << CommonUtility::formatSyncName(editEditConf->remoteNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(editEditConf->remoteNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*editEditConf->remoteNode()->id()) << L")");
             }
         }
@@ -128,11 +128,11 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
                         _syncPal->_conflictQueue->push(conflict);
                         LOGW_SYNCPAL_INFO(_logger, conflict.type()
                                                            << L" conflict found between local node "
-                                                           << CommonUtility::formatSyncName(conflict.localNode()->name()) << L" ("
+                                                           << Utility::formatSyncName(conflict.localNode()->name()) << L" ("
                                                            << CommonUtility::s2ws(*conflict.localNode()->id())
                                                            << L") and remote node "
-                                                           << CommonUtility::formatSyncName(conflict.remoteNode()->name())
-                                                           << L" (" << CommonUtility::s2ws(*conflict.remoteNode()->id()) << L")");
+                                                           << Utility::formatSyncName(conflict.remoteNode()->name()) << L" ("
+                                                           << CommonUtility::s2ws(*conflict.remoteNode()->id()) << L")");
                     }
                 }
                 if (createParentDeleteConf) {
@@ -140,11 +140,11 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
                         _syncPal->_conflictQueue->push(conflict);
                         LOGW_SYNCPAL_INFO(_logger, conflict.type()
                                                            << L" conflict found between local node "
-                                                           << CommonUtility::formatSyncName(conflict.localNode()->name()) << L" ("
+                                                           << Utility::formatSyncName(conflict.localNode()->name()) << L" ("
                                                            << CommonUtility::s2ws(*conflict.localNode()->id())
                                                            << L") and remote node "
-                                                           << CommonUtility::formatSyncName(conflict.remoteNode()->name())
-                                                           << L" (" << CommonUtility::s2ws(*conflict.remoteNode()->id()) << L")");
+                                                           << Utility::formatSyncName(conflict.remoteNode()->name()) << L" ("
+                                                           << CommonUtility::s2ws(*conflict.remoteNode()->id()) << L")");
                     }
                 }
             }
@@ -154,20 +154,20 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
                 _syncPal->_conflictQueue->push(*moveDeleteConf);
                 LOGW_SYNCPAL_INFO(_logger, moveDeleteConf->type()
                                                    << L" conflict found between local node "
-                                                   << CommonUtility::formatSyncName(moveDeleteConf->localNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(moveDeleteConf->localNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*moveDeleteConf->localNode()->id())
                                                    << L") and remote node "
-                                                   << CommonUtility::formatSyncName(moveDeleteConf->remoteNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(moveDeleteConf->remoteNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*moveDeleteConf->remoteNode()->id()) << L")");
             }
             if (editDeleteConf) {
                 _syncPal->_conflictQueue->push(*editDeleteConf);
                 LOGW_SYNCPAL_INFO(_logger, editDeleteConf->type()
                                                    << L" conflict found between local node "
-                                                   << CommonUtility::formatSyncName(editDeleteConf->localNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(editDeleteConf->localNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*editDeleteConf->localNode()->id())
                                                    << L") and remote node "
-                                                   << CommonUtility::formatSyncName(editDeleteConf->remoteNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(editDeleteConf->remoteNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*editDeleteConf->remoteNode()->id()) << L")");
             }
         }
@@ -178,34 +178,34 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
                 _syncPal->_conflictQueue->push(*moveCreateConf);
                 LOGW_SYNCPAL_INFO(_logger, moveCreateConf->type()
                                                    << L" conflict found between local node "
-                                                   << CommonUtility::formatSyncName(moveCreateConf->localNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(moveCreateConf->localNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*moveCreateConf->localNode()->id())
                                                    << L") and remote node "
-                                                   << CommonUtility::formatSyncName(moveCreateConf->remoteNode()->name()) << L" ("
+                                                   << Utility::formatSyncName(moveCreateConf->remoteNode()->name()) << L" ("
                                                    << CommonUtility::s2ws(*moveCreateConf->remoteNode()->id()) << L")");
             }
             if (!node->hasConflictAlreadyConsidered(ConflictType::MoveMoveDest)) {
                 if (std::optional<Conflict> moveMoveDestConf = checkMoveMoveDestConflict(node)) {
                     _syncPal->_conflictQueue->push(*moveMoveDestConf);
-                    LOGW_SYNCPAL_INFO(
-                            _logger, moveMoveDestConf->type()
-                                             << L" conflict found between local node "
-                                             << CommonUtility::formatSyncName(moveMoveDestConf->localNode()->name()) << L" ("
-                                             << CommonUtility::s2ws(*moveMoveDestConf->localNode()->id()) << L") and remote node "
-                                             << CommonUtility::formatSyncName(moveMoveDestConf->remoteNode()->name()) << L" ("
-                                             << CommonUtility::s2ws(*moveMoveDestConf->remoteNode()->id()) << L")");
+                    LOGW_SYNCPAL_INFO(_logger, moveMoveDestConf->type()
+                                                       << L" conflict found between local node "
+                                                       << Utility::formatSyncName(moveMoveDestConf->localNode()->name()) << L" ("
+                                                       << CommonUtility::s2ws(*moveMoveDestConf->localNode()->id())
+                                                       << L") and remote node "
+                                                       << Utility::formatSyncName(moveMoveDestConf->remoteNode()->name()) << L" ("
+                                                       << CommonUtility::s2ws(*moveMoveDestConf->remoteNode()->id()) << L")");
                 }
             }
             if (!node->hasConflictAlreadyConsidered(ConflictType::MoveMoveSource)) {
                 if (std::optional<Conflict> moveMoveSrcConf = checkMoveMoveSourceConflict(node)) {
                     _syncPal->_conflictQueue->push(*moveMoveSrcConf);
-                    LOGW_SYNCPAL_INFO(_logger,
-                                      moveMoveSrcConf->type()
-                                              << L" conflict found between local node "
-                                              << CommonUtility::formatSyncName(moveMoveSrcConf->localNode()->name()) << L" ("
-                                              << CommonUtility::s2ws(*moveMoveSrcConf->localNode()->id()) << L") and remote node "
-                                              << CommonUtility::formatSyncName(moveMoveSrcConf->remoteNode()->name()) << L" ("
-                                              << CommonUtility::s2ws(*moveMoveSrcConf->remoteNode()->id()) << L")");
+                    LOGW_SYNCPAL_INFO(_logger, moveMoveSrcConf->type()
+                                                       << L" conflict found between local node "
+                                                       << Utility::formatSyncName(moveMoveSrcConf->localNode()->name()) << L" ("
+                                                       << CommonUtility::s2ws(*moveMoveSrcConf->localNode()->id())
+                                                       << L") and remote node "
+                                                       << Utility::formatSyncName(moveMoveSrcConf->remoteNode()->name()) << L" ("
+                                                       << CommonUtility::s2ws(*moveMoveSrcConf->remoteNode()->id()) << L")");
                 }
             }
         }
@@ -231,14 +231,14 @@ std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(const st
         correspondingParentNode = correspondingNodeInOtherTree(createNode->parentNode());
     }
     if (!correspondingParentNode) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: "
-                                           << CommonUtility::formatSyncName(createNode->parentNode()->name()));
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Failed to get corresponding node: " << Utility::formatSyncName(createNode->parentNode()->name()));
         return std::nullopt;
     }
     std::optional<Conflict> conflict = std::nullopt;
     SyncName normalizedName;
     if (!Utility::normalizedSyncName(createNode->name(), normalizedName)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(createNode->name()));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(createNode->name()));
         return std::nullopt;
     }
 
@@ -270,7 +270,7 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveCreateConflict(const std:
     if (const auto correspondingParentNode = correspondingNodeDirect(moveParentNode); correspondingParentNode) {
         SyncName normalizedName;
         if (!Utility::normalizedSyncName(moveNode->name(), normalizedName)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(moveNode->name()));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(moveNode->name()));
             return std::nullopt;
         }
         if (const auto potentialCreateChildNode = correspondingParentNode->getChildExcept(normalizedName, OperationType::Delete);
@@ -367,7 +367,7 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveMoveDestConflict(const st
     if (nodeParentInOtherTree) {
         SyncName normalizedName;
         if (!Utility::normalizedSyncName(moveNode->name(), normalizedName)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(moveNode->name()));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(moveNode->name()));
             return std::nullopt;
         }
         if (const auto potentialMoveChild = nodeParentInOtherTree->getChildExcept(normalizedName, OperationType::Delete);

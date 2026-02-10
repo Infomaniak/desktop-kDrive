@@ -29,21 +29,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
-#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -53,6 +38,24 @@
 #include "syncpal/excludelistpropagator.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "update_detection/blacklist_changes_propagator/blacklistpropagator.h"
+
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
+
+#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
+#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 
 using namespace CppUnit;
 using namespace std::chrono;
@@ -362,7 +365,7 @@ void TestIntegration::testBlacklist() {
     const TimerUtility timer;
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(10)) {
         if (_syncPal->isPaused()) break;
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
 
@@ -779,11 +782,11 @@ void TestIntegration::waitForSyncToBeIdle(
             const TimerUtility idleTimer;
             while (_syncPal->isIdle() && idleTimer.elapsed<milliseconds>() < minWaitTime) {
                 CPPUNIT_ASSERT_MESSAGE(srcLoc.toString(), timeoutTimer.elapsed<minutes>() < timeOutDuration);
-                CommonUtility::msleep(5);
+                Utility::msleep(5);
             }
             ended = idleTimer.elapsed<milliseconds>() >= minWaitTime;
         }
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
 }
 

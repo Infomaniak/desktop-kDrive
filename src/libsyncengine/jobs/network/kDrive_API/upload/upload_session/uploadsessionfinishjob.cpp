@@ -20,7 +20,7 @@
 
 #include "jobs/network/kDrive_API/upload/uploadjobreplyhandler.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -51,8 +51,7 @@ UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
     if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger,
-                  L"Error in vfsForceStatus for " << CommonUtility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
     }
 }
 

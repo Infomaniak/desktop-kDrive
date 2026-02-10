@@ -19,8 +19,8 @@
 #include "exclusiontemplatecache.h"
 #include "parameterscache.h"
 #include "libparms/db/parmsdb.h"
-#include "libcommon/log/log.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -212,7 +212,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << CommonUtility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
                                              << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename match exactly the pattern
@@ -244,7 +244,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                 if (exclude) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << CommonUtility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
                                              << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true; // Filename contains the pattern
@@ -256,7 +256,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWa
                 if (std::regex_match(fileName, regex)) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << CommonUtility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
+                                  L"Item \"" << Utility::formatSyncPath(relativePath) << L"\" rejected because of rule \""
                                              << CommonUtility::s2ws(exclusionTemplate.templ()) << L"\"");
                     }
                     return true;

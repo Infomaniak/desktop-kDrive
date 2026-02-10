@@ -18,7 +18,7 @@
 
 #include "utilitybestvfsavailablemodejob.h"
 #include "libcommon/comm.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 // Input parameters keys
 static const auto inParamsPath = "path";
@@ -63,7 +63,7 @@ ExitInfo UtilityBestVfsAvailableModeJob::process() {
     }
 
     if (_path.empty() || !_path.is_absolute()) {
-        LOGW_WARN(_logger, L"The provided path is empty or not absolute: " << CommonUtility::formatSyncPath(_path));
+        LOGW_WARN(_logger, L"The provided path is empty or not absolute: " << Utility::formatSyncPath(_path));
         _bestMode = VirtualFileMode::Off;
         return ExitCode::LogicError;
     }
@@ -71,14 +71,13 @@ ExitInfo UtilityBestVfsAvailableModeJob::process() {
     // Check if VFS can be used on the given path
 #ifdef KD_WINDOWS
     if (!CommonUtility::isNTFS(_path)) {
-        LOGW_DEBUG(_logger, L"The file system is not NTFS: " << CommonUtility::formatSyncPath(_path) << L". VFS cannot be used.");
+        LOGW_DEBUG(_logger, L"The file system is not NTFS: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
         _bestMode = VirtualFileMode::Off;
         return ExitCode::Ok;
     }
 
     if (_path == _path.root_path()) {
-        LOGW_DEBUG(_logger,
-                   L"The path is the root of a disk: " << CommonUtility::formatSyncPath(_path) << L". VFS cannot be used.");
+        LOGW_DEBUG(_logger, L"The path is the root of a disk: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
         _bestMode = VirtualFileMode::Off;
         return ExitCode::Ok;
     }
@@ -86,7 +85,7 @@ ExitInfo UtilityBestVfsAvailableModeJob::process() {
 
 #ifdef KD_MACOS
     if (!CommonUtility::isAPFS(_path)) {
-        LOGW_DEBUG(_logger, L"The file system is not APFS: " << CommonUtility::formatSyncPath(_path) << L". VFS cannot be used.");
+        LOGW_DEBUG(_logger, L"The file system is not APFS: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
         _bestMode = VirtualFileMode::Off;
         return ExitCode::Ok;
     }

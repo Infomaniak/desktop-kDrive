@@ -18,12 +18,14 @@
 
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
+
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -253,18 +255,18 @@ void TestSyncPal::testBlacklist() {
 void TestSyncPal::testAll() {
     // Start sync
     _syncPal->start();
-    CommonUtility::msleep(1000);
+    Utility::msleep(1000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of 1st sync
     while (!_syncPal->syncHasFullyCompleted()) {
-        CommonUtility::msleep(1000);
+        Utility::msleep(1000);
     }
-    CommonUtility::msleep(60000);
+    Utility::msleep(60000);
 
     // Pause sync
     _syncPal->pause();
-    CommonUtility::msleep(5000);
+    Utility::msleep(5000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Apply tests cases
@@ -273,12 +275,12 @@ void TestSyncPal::testAll() {
 
     // Unpause sync
     _syncPal->unpause();
-    CommonUtility::msleep(10000);
+    Utility::msleep(10000);
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
-        CommonUtility::msleep(1000);
+        Utility::msleep(1000);
     }
 
     // Check sync results

@@ -32,22 +32,22 @@ ExitInfo GenericLocalDeleteJob::runJob() {
 
 ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &path) {
     if (const bool moveToTrashSuccess = IoHelper::moveItemToTrash(path); !moveToTrashSuccess) {
-        LOGW_WARN(_logger, L"Failed to move item: " << CommonUtility::formatSyncPath(path) << L" to trash. Trying hard delete.");
+        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
         return hardDelete(path);
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item with " << CommonUtility::formatSyncPath(path) << L" was moved to trash.");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(path) << L" was moved to trash.");
     }
 
     return ExitCode::Ok;
 }
 
 ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
-    LOGW_DEBUG(_logger, L"Try to hard delete item with " << CommonUtility::formatSyncPath(path));
+    LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
     if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(path, ioError)) {
-        LOGW_WARN(_logger, L"Failed to delete item with " << CommonUtility::formatIoError(_absolutePath, ioError));
+        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(_absolutePath, ioError));
         if (ioError == IoError::AccessDenied) {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
@@ -56,7 +56,7 @@ ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_INFO(_logger, L"Item: " << CommonUtility::formatSyncPath(path) << L" deleted.");
+        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(path) << L" deleted.");
     }
 
     return ExitCode::Ok;

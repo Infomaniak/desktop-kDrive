@@ -4,7 +4,7 @@
 #include "appserver.h"
 
 #include "libcommon/comm.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 // Input parameters keys
 static const auto inParamsExclusionTemplateList = "exclusionTemplateList";
@@ -39,8 +39,7 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 ExitInfo ExclTemplSetUserListJob::process() {
     ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
 
-    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
         addError(Error(ERR_ID, exitCode));
 
