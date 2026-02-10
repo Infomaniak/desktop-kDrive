@@ -36,7 +36,12 @@ struct JsonParserUtility {
                 return false;
             }
 
-            if (obj->has(key) && obj->isNull(key)) {
+            if (!obj->has(key)) {
+                LOG_WARN(Log::instance()->getLogger(), "Missing key: " << key);
+                return mandatory ? false : true;
+            }
+
+            if (obj->isNull(key)) {
                 // Item exists in JSON but is null, this is ok
                 return true;
             }
