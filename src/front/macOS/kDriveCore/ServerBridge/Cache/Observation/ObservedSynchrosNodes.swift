@@ -34,7 +34,7 @@ public final class ObservedSynchrosNodes: ObservableObject {
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .allSynchroNodesPublisher()
+            .allSynchrosNodesPublisher()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] nodes in
                 self?.wrappedValue = nodes
@@ -57,7 +57,7 @@ public struct SynchroNodeContext: Sendable, Equatable {
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func allSynchroNodesPublisher() -> AnyPublisher<[SynchroNodeContext], Never> {
+    func allSynchrosNodesPublisher() -> AnyPublisher<[SynchroNodeContext], Never> {
         map { usersDict in
             var allNodes: [SynchroNodeContext] = []
 
