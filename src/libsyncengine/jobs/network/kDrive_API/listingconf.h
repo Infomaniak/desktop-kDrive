@@ -18,25 +18,17 @@
 
 #pragma once
 
-#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
+#include <cstdint>
 
 namespace KDC {
 
-class ApiTranslator {
-    public:
-        ApiTranslator();
-        ~ApiTranslator();
-        using DriveId = int32_t;
-        using DriveDbId = int32_t;
-        static void translateV2ToV3(const DriveDbId driveDbId, NodeId &remoteDirectoryId);
-        static NodeId getUserPrivateRootFolderId(DriveDbId driveDbId);
-
-    private:
-        static DriveId getDriveId(DriveDbId driveDbId);
-        static NodeId getRootFolderId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList);
-
-        using NodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
-        static NodeIdCacheMap _rootNodeIdCache;
+struct ListingConf {
+        // If `_withPath` is `true`, the paths of the items will be returned.
+        bool withPath{false};
+        // If `_dirOnly` is `true`, directories only will be listed in the result.
+        bool dirOnly{false};
+        // The maximal number of items returned by the request.
+        int64_t limit{10};
 };
 
 } // namespace KDC

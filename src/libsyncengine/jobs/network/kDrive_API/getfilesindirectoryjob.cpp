@@ -27,25 +27,25 @@
 namespace KDC {
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, NodeId fileId, std::string cursorInput,
-                                               const bool dirOnly /*= false*/) :
+                                               const bool dirOnly /*= false*/, const bool translateV2ToV3 /*= false */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)),
     _dirOnly(dirOnly) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
+    if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
 }
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
-                                               const bool dirOnly /*= false*/) :
+                                               const bool dirOnly /*= false*/, const bool translateV2ToV3 /*= false */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)),
     _dirOnly(dirOnly) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    ApiTranslator::translateV2ToV3(driveDbId, _fileId);
+    if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId, _fileId);
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {
@@ -97,7 +97,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         SyncName name;
         if (!Utility::normalizedSyncName(rawName, name)) {
             LOGW_DEBUG(Log::instance()->getLogger(),
-                       L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(rawName));
+                       L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
             // Ignore the item
             continue;
         }
@@ -111,7 +111,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
 
             if (!Utility::normalizedSyncName(rawPath, path)) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(rawPath));
+                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
                 // Ignore the item
                 continue;
             }

@@ -26,8 +26,10 @@ namespace KDC {
 
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false);
-        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false);
+        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false,
+                               bool translateV2toV3 = false);
+        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false,
+                                        bool translateV2toV3 = false);
 
         void setWithPath(const bool val) { _withPath = val; }
         void setLimit(const int64_t limit) { _limit = limit; }

@@ -24,7 +24,7 @@
 #include "appserver.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "jobs/network/kDrive_API/getrootfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilesinrootdirjob.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/postfilelinkjob.h"

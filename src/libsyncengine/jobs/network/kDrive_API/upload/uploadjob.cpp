@@ -96,7 +96,7 @@ ExitInfo UploadJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restarting: "
-                                    << CommonUtility::formatSyncPath(_absoluteFilePath));
+                                    << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 

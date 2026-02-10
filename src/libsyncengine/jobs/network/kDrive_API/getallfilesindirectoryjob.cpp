@@ -22,18 +22,21 @@
 namespace KDC {
 
 GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int userDbId, const DriveId driveId, NodeId fileId,
-                                                     const bool dirOnly /*= false*/) :
+                                                     const bool dirOnly /*= false*/, const bool translateV2ToV3) :
     _userDbId{userDbId},
     _driveId{driveId},
     _fileId(std::move(fileId)),
+    _translateV2ToV3(translateV2ToV3),
     _dirOnly(dirOnly) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
 }
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int driveDbId, NodeId fileId, const bool dirOnly /*= false*/) :
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const int driveDbId, NodeId fileId, const bool dirOnly /*= false*/,
+                                                     const bool translateV2ToV3 /*= false */) :
     _driveDbId{driveDbId},
     _fileId(std::move(fileId)),
+    _translateV2ToV3(translateV2ToV3),
     _dirOnly(dirOnly) {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
@@ -43,7 +46,7 @@ void GetAllFilesInDirectoryJob::abort() {
     SyncJob::abort();
 }
 
-std::string GetAllFilesInDirectoryJob::getConstructorFailureLogMessage(const std::exception &e) {
+std::string GetAllFilesInDirectoryJob::getConstructorFailureLogMessage(const std::exception &e) const {
     constexpr auto logMessage = "Error in GetFilesInDirectoryJob::GetFilesInDirectoryJob for ";
     std::stringstream ss;
 
@@ -58,7 +61,7 @@ std::string GetAllFilesInDirectoryJob::getConstructorFailureLogMessage(const std
     return ss.str();
 }
 
-std::string GetAllFilesInDirectoryJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) {
+std::string GetAllFilesInDirectoryJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
     constexpr auto logMessage = "Error in GetFilesInDirectoryJob::runSynchronously for ";
     std::stringstream ss;
 
@@ -79,8 +82,10 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     do {
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
-            fileListJob = _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _dirOnly)
-                                     : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _dirOnly);
+            fileListJob =
+                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _dirOnly, _translateV2ToV3)
+                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _dirOnly,
+                                                                          _translateV2ToV3);
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
