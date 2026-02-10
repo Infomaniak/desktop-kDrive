@@ -7,19 +7,22 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
-    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}" VerticalAlignment="Center" HorizontalAlignment="Center">
+    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
 
         <!-- Titre -->
-        <TextBlock x:Uid="Page_Onboarding_FinishingPage_Title"
+        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionSyncInProgress')}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Sous-titre -->
-        <TextBlock x:Uid="Page_Onboarding_FinishingPage_Subtitle"
+        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationInProgressDescription')}"
                    MaxWidth="350"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    TextWrapping="WrapWholeWords"
                    Foreground="{ThemeResource TextBoxDisabledForegroundThemeBrush}" />
     </StackPanel>
-  
+
 </Page>
