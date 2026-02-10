@@ -2509,8 +2509,9 @@ void AppServer::onShowWindowsUpdateDialog() {
 }
 
 void AppServer::onUpdateRequired() {
-    stopAllSyncPals();
     addError(Error(ERR_ID, ExitCode::UpdateRequired));
+    stopAllSyncPals();
+    stopAllVfs();
 }
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
