@@ -101,9 +101,6 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncStatusResponse>.self)
 
         return decodedMessage.body.syncStatus
-
-        // TODO: update existing sync state in cache
-        // await coherentCache.updateSynchroState(syncDbId / newSyncState)
     }
 
     public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
