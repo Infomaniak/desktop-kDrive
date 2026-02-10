@@ -24,6 +24,7 @@
 #include "appserver.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
+#include "jobs/network/kDrive_API/filelistjob.h"
 #include "jobs/network/kDrive_API/getfilesinrootdirjob.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
@@ -834,27 +835,46 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
+std::string getFileListConstructorErrorMsg(FileListJob *job, const int userDbId, const int driveId, const std::exception &e) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
+                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const int userDbId, const int driveId, const ExitInfo &exitInfo) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, NodeInfoList &list,
                                        const bool withPath /*= false*/) {
     list.clear();
 
-    std::shared_ptr<GetAllFilesInDirectoryJob> job = nullptr;
-    const auto fileId = nodeId.empty() ? NodeId{"1"} : nodeId;
-
+    std::shared_ptr<FileListJob> job = nullptr;
     try {
-        job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, fileId);
+        if (nodeId.empty()) {
+            job = std::make_shared<GetFilesInRootDirJob>(userDbId, driveId);
+        } else {
+            constexpr bool translateV2ToV3 = true;
+            job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, nodeId, translateV2ToV3);
+        }
     } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob for userDbId="
-                                                       << userDbId << " driveId=" << driveId << " error=" << e.what());
+        LOG_WARN(Log::instance()->getLogger(), getFileListConstructorErrorMsg(job.get(), userDbId, driveId, e));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     job->setListingConf({.withPath = withPath});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::runSynchronously for userDbId="
-                                                       << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
-                                                       << " error=" << exitInfo);
+        LOG_WARN(Log::instance()->getLogger(), getFileListExecErrorMsg(job.get(), userDbId, driveId, exitInfo));
         return exitInfo;
     }
 
