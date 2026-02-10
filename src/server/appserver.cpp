@@ -445,10 +445,14 @@ void AppServer::init() {
         _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
-        (void) connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-        (void) connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-        (void) connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
-        (void) connect(_updateManager.get(), &UpdateManager::requireUpdate, this, &AppServer::onUpdateRequired);
+        (void) connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::requireUpdate, this, &AppServer::onUpdateRequired,
+                       Qt::QueuedConnection);
     }
 
     // Check last crash to avoid crash loop
