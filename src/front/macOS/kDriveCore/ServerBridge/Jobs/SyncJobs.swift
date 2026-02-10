@@ -132,7 +132,6 @@ public struct SyncJobs: Sendable {
     private func addSyncQuery<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> SyncInfo {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
 
-        // TODO: bump cache / listen signal
         return decodedMessage.body.syncInfo
     }
 
