@@ -41,7 +41,7 @@ namespace KDC {
 SyncPath Utility::getTrashPath() {
     const char *homePathEnv = std::getenv("HOME");
     if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        LOG_WARN(logger(), "Path to HOME not found");
         return {};
     }
 
