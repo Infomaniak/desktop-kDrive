@@ -8,6 +8,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
@@ -23,12 +24,12 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <!-- Titre -->
                 <TextBlock x:Name="Title"
-                           x:Uid="Page_Onboarding_WelcomePage_Title"
+                           Text="{x:Bind loc:Localizer.GetString('onboardingLoginTitle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                            Foreground="{ThemeResource TextFillColorPrimary}" />
 
                 <!-- Sous-titre -->
-                <TextBlock x:Uid="Page_Onboarding_WelcomePage_Subtitle"
+                <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingLoginDescription')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondary}"
@@ -39,14 +40,14 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <Button x:Uid="Page_Onboarding_WelcomePage_SignupButton"
+                <Button Content="{x:Bind loc:Localizer.GetString('buttonCreateAccount')}"
                         Style="{StaticResource SubtleButtonStyle}"
                         Click="SignupButton_Click" />
 
-                <Button Click="SigninButton_Click"
-                        x:Uid="Page_Onboarding_WelcomePage_SigninButton"
+                <Button Content="{x:Bind loc:Localizer.GetString('buttonLogin')}"
                         Style="{StaticResource AccentButtonStyle}"
-                        MinWidth="120"/>
+                        MinWidth="120"
+                        Click="SigninButton_Click" />
             </StackPanel>
         </StackPanel>
     </Grid>
