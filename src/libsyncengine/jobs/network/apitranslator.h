@@ -37,6 +37,8 @@ class ApiTranslator {
 
         using NodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
         static NodeIdCacheMap _rootNodeIdCache;
+
+        static std::mutex _mutex;
 };
 
 } // namespace KDC

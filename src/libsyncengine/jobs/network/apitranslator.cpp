@@ -21,6 +21,8 @@
 
 namespace KDC {
 
+std::mutex ApiTranslator::_mutex;
+
 ApiTranslator::NodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
 
 ApiTranslator::ApiTranslator() {}
@@ -45,6 +47,7 @@ NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoL
                                  [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
 
     if (it != nodeInfoList.cend()) {
+        const std::scoped_lock lock(_mutex);
         _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
 
         return _rootNodeIdCache[driveDbId];
@@ -55,12 +58,14 @@ NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoL
 
 NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     constexpr auto maxNumberOfItems = 1000;
-
-    if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
-        return it->second;
+    {
+        const std::scoped_lock lock(_mutex);
+        if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
+            return it->second;
+        }
     }
 
-    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, true);
+    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
     fileListJob.setListingConf({.limit = maxNumberOfItems});
     fileListJob.runSynchronously();
 
