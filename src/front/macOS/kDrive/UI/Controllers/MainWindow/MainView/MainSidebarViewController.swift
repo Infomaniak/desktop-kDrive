@@ -28,7 +28,7 @@ extension SidebarItem {
         icon: KDriveResources.house.image,
         title: KDriveLocalizable.tabTitleHome
     )
-    static let activity = SidebarItem(
+    static let activities = SidebarItem(
         icon: KDriveResources.circularArrowsClockwise.image,
         title: KDriveLocalizable.tabTitleActivity
     )
@@ -51,7 +51,7 @@ final class MainSidebarViewController: NSViewController {
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+    private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
 
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()

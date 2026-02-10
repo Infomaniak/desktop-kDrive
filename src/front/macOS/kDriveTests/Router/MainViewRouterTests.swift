@@ -39,10 +39,10 @@ struct MainViewRouterTests {
         let router = MainViewRouter()
 
         // WHEN
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
 
         // THEN
-        #expect(router.currentPath.mainTab == .activity)
+        #expect(router.currentPath.mainTab == .activities)
         #expect(router.currentPath.details == [.activities])
     }
 
@@ -79,7 +79,7 @@ struct MainViewRouterTests {
         await router.append(.activityError)
 
         // WHEN - switch to activity and set some details
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
         await router.append(.versionConflict)
 
         // WHEN - switch back to home (should use cache)
@@ -90,10 +90,10 @@ struct MainViewRouterTests {
         #expect(router.currentPath.details == [.home, .activityError])
 
         // WHEN - switch back to activity (should use cache)
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
 
         // THEN - should have the cached path with versionConflict
-        #expect(router.currentPath.mainTab == .activity)
+        #expect(router.currentPath.mainTab == .activities)
         #expect(router.currentPath.details == [.activities, .versionConflict])
     }
 
@@ -118,7 +118,7 @@ struct MainViewRouterTests {
         await router.append(.activityError)
 
         // WHEN - switch away and back to verify cache
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
         await router.setCurrentTab(.home)
 
         // THEN
@@ -191,7 +191,7 @@ struct MainViewRouterTests {
         await router.removeLast()
 
         // WHEN - switch away and back to verify cache
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
         await router.setCurrentTab(.home)
 
         // THEN
@@ -216,7 +216,7 @@ struct MainViewRouterTests {
         let router = MainViewRouter()
 
         // WHEN
-        await router.setCurrentTab(.activity)
+        await router.setCurrentTab(.activities)
 
         // THEN - modal should remain nil regardless of tab switches
         #expect(router.currentModal == nil)

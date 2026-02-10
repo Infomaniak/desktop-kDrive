@@ -22,6 +22,6 @@ import SwiftUI
 
 final class ActivitiesViewController: TitledViewController<ActivitiesView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: SidebarItem.activity.title, contentView: ActivitiesView(mainViewModel: mainViewModel))
+        super.init(toolbarTitle: SidebarItem.activities.title, contentView: ActivitiesView(mainViewModel: mainViewModel))
     }
 }
