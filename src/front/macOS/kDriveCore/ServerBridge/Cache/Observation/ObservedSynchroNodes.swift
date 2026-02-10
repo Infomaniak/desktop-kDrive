@@ -21,6 +21,20 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+extension SynchroNodeContext {
+    /// Sorts nodes by status (Syncing first) then by date (most recent first).
+    /// Suitable for display in UI lists where active syncs should be prominent.
+    static func descendingStatusAndDate(lhs: SynchroNodeContext, rhs: SynchroNodeContext) -> Bool {
+        if lhs.node.status > rhs.node.status {
+            return true
+        }
+        if rhs.node.status > lhs.node.status {
+            return false
+        }
+        return lhs.node.date > rhs.node.date
+    }
+}
+
 @MainActor
 @propertyWrapper
 public final class ObservedSynchroNodes: ObservableObject {
@@ -73,18 +87,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
                 }
             }
 
-            return allNodes.sorted { lhs, rhs in
-                // Primary: Status descending (Syncing appears first due to Comparable implementation)
-                if lhs.node.status > rhs.node.status {
-                    return true
-                }
-                if rhs.node.status > lhs.node.status {
-                    return false
-                }
-
-                // Fallback: Date descending (most recent first) when statuses are equal
-                return lhs.node.date > rhs.node.date
-            }
+            return allNodes.sorted(by: SynchroNodeContext.descendingStatusAndDate)
         }
         .removeDuplicates()
         .eraseToAnyPublisher()
