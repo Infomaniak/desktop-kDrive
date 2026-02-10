@@ -60,7 +60,7 @@ ExitInfo ExclAppGetListJob::serializeOutputParms() {
 ExitInfo ExclAppGetListJob::process() {
     if (const auto exitCode = ServerRequests::getExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getExclusionAppList: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
 
         return exitCode;
     }

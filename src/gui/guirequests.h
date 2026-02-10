@@ -60,7 +60,7 @@ struct GuiRequests {
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
-        static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &templateList);
+        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
 #ifdef Q_OS_MAC
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
@@ -108,7 +108,6 @@ struct GuiRequests {
                                           QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
-        static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);

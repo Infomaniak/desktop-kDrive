@@ -31,7 +31,7 @@ class ExclAppGetFetchingAppListJob : public AbstractGuiJob {
         // Output parameters
         AppTable _applicationTable;
 
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 

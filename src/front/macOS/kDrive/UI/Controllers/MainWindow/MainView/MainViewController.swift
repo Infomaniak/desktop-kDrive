@@ -17,19 +17,28 @@
  */
 
 import Cocoa
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
+import SwiftUI
 
 extension NSToolbarItem.Identifier {
     static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
 final class MainViewController: IKSplitViewController {
+    @LazyInjectService private var router: MainViewRouter
+
     private let viewModel = MainViewModel()
+
+    private var bindStore = Set<AnyCancellable>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupSplitView()
+        bindViewModel()
         viewModel.refreshCache()
     }
 
@@ -38,6 +47,17 @@ final class MainViewController: IKSplitViewController {
 
         configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
+    }
+
+    private func bindViewModel() {
+        router.$currentPath
+            .receiveOnMain(store: &bindStore) { [weak self] newPath in
+                self?.onPathChange(newPath)
+            }
+        router.$currentModal
+            .receiveOnMain(store: &bindStore) { [weak self] newPath in
+                self?.onModalPathChange(newPath)
+            }
     }
 
     private func configureWindowAppearance() {
@@ -53,32 +73,53 @@ final class MainViewController: IKSplitViewController {
         splitView.isVertical = true
 
         let sidebarViewController = MainSidebarViewController(mainViewModel: viewModel)
-        sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
         sidebarItem.maximumThickness = 250
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController(mainViewModel: viewModel)
+        currentContentViewController = homeViewController
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
-}
 
-// MARK: - NavigableSidebarViewControllerDelegate
+    func onModalPathChange(_ modalPath: ModalPath?) {
+        if let modalPath {
+            // TODO: Present some modal view controller based on modalPath
+        } else if let presentedViewController = presentedViewControllers?.first {
+            dismiss(presentedViewController)
+        }
+    }
 
-extension MainViewController: NavigableSidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {
-        var contentViewController: NSViewController
-        switch item {
+    func onPathChange(_ path: Path) {
+        let contentViewController: NSViewController
+        switch path.details.last {
         case .home:
             contentViewController = HomeViewController(mainViewModel: viewModel)
-        case .activity:
-            contentViewController = ActivityViewController()
+        case .activities:
+            contentViewController = ActivityViewController(mainViewModel: viewModel)
         case .storage:
             contentViewController = StorageViewController()
+        case .blockingError:
+            if let blockingError = viewModel.currentBlockingError {
+                contentViewController = BlockingErrorViewController(blockingError: blockingError)
+            } else {
+                #if DEBUG
+                fatalError("Attempting to navigate to blocking error view without an error")
+                #else
+                contentViewController = HomeViewController(mainViewModel: viewModel)
+                #endif
+            }
+        case .activityError:
+            contentViewController = TitledViewController(toolbarTitle: "activityError", contentView: Text("activityError - WIP"))
+        case .versionConflict:
+            contentViewController = TitledViewController(
+                toolbarTitle: "versionConflict",
+                contentView: Text("versionConflict - WIP")
+            )
         default:
-            fatalError("Destination \(item) not handled")
+            contentViewController = HomeViewController(mainViewModel: viewModel)
         }
 
         switchContentViewController(destination: contentViewController)

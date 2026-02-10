@@ -88,7 +88,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 return;
             }
 
-            await OnboardingViewModel.SelectedUser.RefreshAvailableDrives(cancellationToken);
+            await OnboardingViewModel.SelectedUser.RefreshAvailableDrives(cancellationToken); // This method is refactored and moved to obvm in an other PR, TODO: handle errors when the PR is merged
             if (!cancellationToken.IsCancellationRequested && OnboardingViewModel.SelectedUser.AllDrives.Any())
             {
                 Logger.Log(Logger.Level.Info, "Drives found for user - Navigating to DriveSelectionPage");

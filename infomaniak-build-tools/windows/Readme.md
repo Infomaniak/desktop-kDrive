@@ -57,6 +57,12 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
 
+When installing `Visual Studio 2022 or 2025`, select the following components:
+- Desktop development with C++
+- Desktop development with .NET
+- WinUI development with .NET
+- .NET 9.0 Runtime
+
 ## CPPUnit
 
 Clone `CPPUnit`:

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolKit:SettingsCard x:Class="Infomaniak.kDrive.CustomControls.LogUploadSettingsCard"
+                      x:Name="LogUploadSettingsCardRoot"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:local="using:Infomaniak.kDrive.CustomControls"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+                      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+                      xmlns:converters="using:Infomaniak.kDrive.Converters"
+                      xmlns:types="using:Infomaniak.kDrive.Types"
+                      mc:Ignorable="d">
+    <toolKit:SettingsCard.Resources>
+        <!-- Converters -->
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <!-- Last upload status templates -->
+        <!-- None -->
+        <DataTemplate x:Key="LastUploadStatusNoneTemplate">
+            <Grid />
+        </DataTemplate>
+
+        <!-- Archiving -->
+        <DataTemplate x:Key="LastUploadStatusArchivingTemplate">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock x:Uid="CC_LogUploadSettingsCard_Archiving"
+                           VerticalAlignment="Center" />
+
+                <ProgressRing VerticalAlignment="Center"
+                              Width="16"
+                              Height="16"
+                              IsIndeterminate="False"
+                              Value="{Binding ElementName=LogUploadSettingsCardRoot, Path=LogUploadManager.PercentComplete, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Uploading -->
+        <DataTemplate x:Key="LastUploadStatusUploadingTemplate"
+                      x:DataType="types:LogUploadState">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock x:Uid="CC_LogUploadSettingsCard_Uploading"
+                           VerticalAlignment="Center" />
+
+                <ProgressRing VerticalAlignment="Center"
+                              Width="16"
+                              Height="16"
+                              IsIndeterminate="False"
+                              Value="{Binding ElementName=LogUploadSettingsCardRoot, Path=LogUploadManager.PercentComplete, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Success -->
+        <DataTemplate x:Key="LastUploadStatusSuccessTemplate"
+                      x:DataType="types:LogUploadState">
+            <local:SvgIcon Height="16"
+                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+                           Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                           VerticalAlignment="Center">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="{Binding ElementName=LogUploadSettingsCardRoot, Path=LogUploadManager.LastSuccessfullUpload, Mode=OneWay}" />
+                </ToolTipService.ToolTip>
+            </local:SvgIcon>
+        </DataTemplate>
+
+        <!-- Error -->
+        <DataTemplate x:Key="LastUploadStatusErrorTemplate"
+                      x:DataType="types:LogUploadState">
+            <local:SvgIcon Height="16"
+                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                           Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                           VerticalAlignment="Center">
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Uid="CC_LogUploadSettingsCard_Error_Tooltip" />
+                </ToolTipService.ToolTip>
+            </local:SvgIcon>
+        </DataTemplate>
+
+        <!-- Canceled -->
+        <DataTemplate x:Key="LastUploadStatusCancelRequestedTemplate"
+                      x:DataType="types:LogUploadState">
+            <local:SvgIcon Height="16"
+                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center">
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Uid="CC_LogUploadSettingsCard_Canceled_Tooltip" />
+                </ToolTipService.ToolTip>
+            </local:SvgIcon>
+        </DataTemplate>
+
+        <!-- Template selector -->
+        <local:LogUploadStateTemplateSelector x:Key="LogUploadStateTemplateSelector"
+                                              NoneTemplate="{StaticResource LastUploadStatusNoneTemplate}"
+                                              ArchivingTemplate="{StaticResource LastUploadStatusArchivingTemplate}"
+                                              UploadingTemplate="{StaticResource LastUploadStatusUploadingTemplate}"
+                                              SuccessTemplate="{StaticResource LastUploadStatusSuccessTemplate}"
+                                              FailedTemplate="{StaticResource LastUploadStatusErrorTemplate}"
+                                              CancelRequestedTemplate="{StaticResource LastUploadStatusCancelRequestedTemplate}"
+                                              CanceledTemplate="{StaticResource LastUploadStatusCancelRequestedTemplate}" />
+
+    </toolKit:SettingsCard.Resources>
+
+    <toolKit:SettingsCard.Header>
+        <TextBlock x:Uid="CC_LogUploadSettingsCard_Header" />
+    </toolKit:SettingsCard.Header>
+
+    <toolKit:SettingsCard.HeaderIcon>
+        <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
+                       Height="32"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+    </toolKit:SettingsCard.HeaderIcon>
+
+    <Grid>
+        <StackPanel Orientation="Horizontal"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <ContentControl ContentTemplateSelector="{StaticResource LogUploadStateTemplateSelector}"
+                            Content="{x:Bind LogUploadManager.State, Mode=OneWay}"
+                            VerticalContentAlignment="Center" />
+
+            <Button x:Name="SendLogsButton"
+                    x:Uid="CC_LogUploadSettingsCard_SendButton"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                    Click="SendLogsButton_Click" />
+
+            <Button x:Name="CancelButton"
+                    VerticalAlignment="Center"
+                    x:Uid="CC_LogUploadSettingsCard_CancelButton"
+                    Style="{ThemeResource DefaultButtonStyle}"
+                    Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                    Click="CancelButton_Click" />
+        </StackPanel>
+
+    </Grid>
+
+</toolKit:SettingsCard>

@@ -17,7 +17,7 @@
  */
 
 #include "excludelistpropagator.h"
-#include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "libcommon/io/filestat.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -36,9 +36,9 @@ ExcludeListPropagator::~ExcludeListPropagator() {
 ExitInfo ExcludeListPropagator::runJob() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator started " << jobId());
 
-    if (ExitCode exitCode = checkItems(); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = checkItems(); !exitInfo) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ExcludeListPropagator::checkItems");
-        return exitCode;
+        return exitInfo;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator ended");
@@ -49,89 +49,99 @@ int ExcludeListPropagator::syncDbId() const {
     return _syncPal->syncDbId();
 }
 
-ExitCode ExcludeListPropagator::checkItems() {
+ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
+    const SyncPath &relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
+
+    bool isWarning = false;
+    const bool isExcluded = ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning);
+    if (!isExcluded) return ExitCode::Ok;
+
+    if (isWarning) {
+        IoError ioError = IoError::Success;
+        NodeId localNodeId;
+        ItemType localNodeType;
+        bool found = false;
+
+        if (IoHelper::getNodeId(entry.path(), localNodeId) && IoHelper::getItemType(entry.path(), localNodeType)) {
+            Error error(_syncPal->syncDbId(), localNodeId, NodeId(), localNodeType.nodeType, relativePath, ConflictType::None,
+                        InconsistencyType::None, CancelType::ExcludedByTemplate);
+            _syncPal->addError(error);
+        } else {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                              L"Error in SyncDb::getNodeId or SyncDb::getItemType for path=" << CommonUtility::formatSyncPath(relativePath));
+        }
+    }
+
+    // Find dbId from the entry path
+    DbNodeId dbNodeId = -1;
+    bool found = false;
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in SyncDb::dbId for path=" << CommonUtility::formatSyncPath(relativePath));
+        return ExitCode::DbError;
+    }
+
+    if (!found) return ExitCode::Ok;
+
+    // Remove node (and children by cascade) from DB
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node " << CommonUtility::formatSyncPath(relativePath)
+                                                                           << L" from DB because it is excluded from sync");
+    }
+
+    if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in SyncDb::deleteNode for " << CommonUtility::formatSyncPath(relativePath));
+        return ExitCode::DbError;
+    }
+
+    if (!found) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExcludeListPropagator::checkItems() {
+    bool directoryIterationException = false;
+    auto ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-                _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << CommonUtility::formatStdError(ec));
+        if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
             return ExitCode::SystemError;
         }
 
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
             if (isAborted()) {
                 LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
                 return ExitCode::Ok;
             }
-#if defined(KD_WINDOWS)
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void) (dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
 
-            if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(dirIt->path())
+            if (entry.path().native().length() > CommonUtility::maxPathLength()) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(entry.path())
                                                                            << L" because size > "
                                                                            << CommonUtility::maxPathLength());
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
-            if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
-                if (isWarning) {
-                    NodeId localNodeId = _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativePath);
-                    NodeType localNodeType = localNodeId.empty() ? NodeType::Unknown
-                                                                 : _syncPal->liveSnapshot(ReplicaSide::Local).type(localNodeId);
-                    Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
-                                InconsistencyType::None, CancelType::ExcludedByTemplate);
-                    _syncPal->addError(error);
-                }
-                // Find dbId from the entry path
-                DbNodeId dbNodeId = -1;
-                bool found = false;
-                if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
-                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::dbId for path=" << CommonUtility::formatSyncPath(relativePath));
-                    return ExitCode::DbError;
-                }
-
-                if (!found) continue;
-
-                // Remove node (and children by cascade) from DB
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
-                                                                             << CommonUtility::formatSyncPath(relativePath)
-                                                                             << L" from DB because it is excluded from sync");
-                }
-
-                if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
-                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::deleteNode for " << CommonUtility::formatSyncPath(relativePath));
-                    return ExitCode::DbError;
-                }
-                if (!found) {
-                    LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
-                    return ExitCode::DataError;
-                }
-            }
+            if (const auto checkItemExitInfo = checkItem(entry); !checkItemExitInfo) return checkItemExitInfo;
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in ExcludeListPropagator::checkItems: code=" << e.code() << " error=" << e.what());
-        return ExitCode::SystemError;
+        directoryIterationException = true;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in ExcludeListPropagator::checkItems");
-        return ExitCode::SystemError;
+        directoryIterationException = true;
     }
 
-    return ExitCode::Ok;
+    return IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
 }
 
 } // namespace KDC

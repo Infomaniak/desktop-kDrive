@@ -21,16 +21,20 @@ import Combine
 import Foundation
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
+    @LazyInjectService private var router: MainViewRouter
 
-    @Published private(set) var currentUser: UIUser?
-    @Published private(set) var currentAccount: UIAccount?
-    @Published private(set) var currentDrive: UIDrive?
-    @Published private(set) var currentSynchro: UISynchro?
+    var currentUser: UIUser? { currentSynchroContext?.user }
+    var currentDrive: UIDrive? { currentSynchroContext?.drive }
+    var currentSynchro: UISynchro? { currentSynchroContext?.synchro }
+    var currentBlockingError: UIBlockingError? { currentSynchroContext?.blockingError }
+
+    @Published private(set) var currentSynchroContext: UISynchroContext?
 
     @Published private(set) var availableSynchros = [UISynchroContext]()
 
@@ -55,34 +59,31 @@ final class MainViewModel: ObservableObject {
     }
 
     func setCurrentSynchro(_ synchro: UISynchro) {
-        Task {
-            currentSynchro = synchro
-            UserDefaults.standard.selectedSynchroDbId = synchro.dbId
-
-            guard let selectedValues = getSelectedValuesFromSynchro(synchro) else {
-                return
-            }
-            currentUser = selectedValues.user
-            currentAccount = selectedValues.account
-            currentDrive = selectedValues.drive
+        guard let synchroContext = getSelectedValuesFromSynchro(synchro) else {
+            return
         }
+
+        currentSynchroContext = synchroContext
+        UserDefaults.standard.selectedSynchroDbId = synchro.dbId
     }
 
     private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
         availableSynchros = synchros
         updateSelectedItems()
+        if currentBlockingError != nil {
+            router.setCurrentTab(.blockingError)
+        } else if router.currentPath.mainTab == .blockingError {
+            router.setCurrentTab(.home)
+        }
     }
 
     private func updateSelectedItems() {
         guard let currentSynchro,
-              let currentSyncContext = getSelectedValuesFromSynchro(currentSynchro) else {
+              let updatedSynchroContext = getSelectedValuesFromSynchro(currentSynchro) else {
             return
         }
 
-        currentUser = currentSyncContext.user
-        currentAccount = currentSyncContext.account
-        currentDrive = currentSyncContext.drive
-        self.currentSynchro = currentSyncContext.synchro
+        currentSynchroContext = updatedSynchroContext
     }
 
     private func restoreLastSelection() async {

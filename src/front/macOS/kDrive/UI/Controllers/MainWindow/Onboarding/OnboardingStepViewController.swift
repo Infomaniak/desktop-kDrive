@@ -27,10 +27,6 @@ open class OnboardingStepViewController: NSViewController {
 
         static let viewHorizontalPadding: CGFloat = AppPadding.padding64
         static let viewVerticalPadding: CGFloat = AppPadding.padding32
-
-        static let titlePadding: CGFloat = AppPadding.padding8
-        static let descriptionPadding: CGFloat = AppPadding.padding32
-        static let contentPadding: CGFloat = AppPadding.padding24
     }
 
     public let stackView = NSStackView()
@@ -48,8 +44,6 @@ open class OnboardingStepViewController: NSViewController {
         label.isHidden = true
         return label
     }()
-
-    private var customContent: NSView?
 
     override open func viewDidLoad() {
         super.viewDidLoad()

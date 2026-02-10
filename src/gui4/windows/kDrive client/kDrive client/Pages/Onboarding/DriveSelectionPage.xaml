@@ -14,7 +14,6 @@
 
     <Page.Resources>
         <!-- Converters -->
-        <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter  x:Key="BooleanToInvertedBooleanConverter" />
         <converters:IntegerToBooleanConverter  x:Key="IntegerToBooleanConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -150,7 +149,7 @@
                                 <ToolTipService.ToolTip>
                                     <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
                                              VerticalOffset="-80"
-                                             IsEnabled="{x:Bind IsConfigured}" />
+                                             IsEnabled="{x:Bind IsConfigured, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
                                 <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
                                         Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -160,7 +159,7 @@
                                     <ContentControl Content="{x:Bind}"
                                                     ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
                                                     VerticalContentAlignment="Center"
-                                                    IsEnabled="{x:Bind IsConfigured, Converter={StaticResource BooleanToInvertedBooleanConverter}}" />
+                                                    IsEnabled="{x:Bind IsConfigured, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
                                 </Border>
 
                             </Grid>
@@ -189,87 +188,5 @@
                     Click="Finish_Click" />
 
         </StackPanel>
-
-        <!-- Advanced settings dialog -->
-        <ContentDialog x:Name="AdvancedSettingsDialog"
-                       x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog"
-                       IsPrimaryButtonEnabled="False"
-                       CloseButtonClick="AdvancedSettingsDialog_CloseButtonClick"
-                       Opened="AdvancedSettingsDialog_Opened">
-            <ContentDialog.Title>
-                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-            </ContentDialog.Title>
-            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <InfoBar Grid.Row="0"
-                         x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar"
-                         IsOpen="True"
-                         IsClosable="False"
-                         Severity="Informational" />
-                <ListView x:Name="DriveListView"
-                          Grid.Row="1"
-                          SelectionMode="None"
-                          IsItemClickEnabled="False"
-                          ItemsSource="{x:Bind ObViewModel.NewSyncs, Mode=OneWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:NewSync">
-                            <Border Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
-                                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto" />
-                                        <RowDefinition Height="auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                                      Grid.Column="0"
-                                                      Grid.Row="0"
-                                                      Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}, Mode=OneWay}" />
-
-                                    <TextBlock Grid.Column="1"
-                                               Grid.Row="0"
-                                               Text="{x:Bind Drive.Name, Mode=OneWay}"
-                                               HorizontalAlignment="Left"
-                                               VerticalAlignment="Center"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-
-                                    <TextBlock Grid.Column="1"
-                                               Grid.Row="1"
-                                               Text="{x:Bind LocalPath, Mode=OneWay}"
-                                               HorizontalAlignment="Left"
-                                               VerticalAlignment="Top"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               Foreground="{ThemeResource TextFillColorSecondary}"
-                                               TextWrapping="Wrap" />
-
-                                    <Button Grid.RowSpan="2"
-                                            Grid.Column="2"
-                                            x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Click="ChangeSyncPathButton_Click" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-                <TeachingTip x:Name="FolderSelectionError"
-                             x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip"
-                             IsLightDismissEnabled="True"
-                             PlacementMargin="20"
-                             PreferredPlacement="Auto">
-                </TeachingTip>
-            </Grid>
-        </ContentDialog>
     </Grid>
 </Page>

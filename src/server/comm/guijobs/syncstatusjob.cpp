@@ -56,8 +56,8 @@ ExitInfo SyncStatusJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStatusJob::process() {
-    const auto syncPalMapIt = AppServer::syncPalMap.find(_syncDbId);
-    if (syncPalMapIt == AppServer::syncPalMap.end()) {
+    const auto syncPalMapIt = _commManager->appServer().syncPalMap.find(_syncDbId);
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
         LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
         return ExitCode::DataError;
     }

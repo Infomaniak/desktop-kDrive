@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
@@ -61,6 +60,11 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
+            if let errorCount = mainViewModel.currentSynchro?.errorCount,
+               errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: errorCount)
+            }
+
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
                     SynchroStatusView(state: state, performAction: didTapStateButton)
@@ -71,7 +75,7 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(AppPadding.padding24)
+        .padding(AppPadding.page)
     }
 
     private func didTapStateButton(for state: HomeState) {

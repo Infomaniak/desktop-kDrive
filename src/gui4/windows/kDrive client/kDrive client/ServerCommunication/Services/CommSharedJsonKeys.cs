@@ -73,6 +73,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string WithPath = "withPath";
         static public string ParmsInfo = "parametersInfo";
 
+        static public string ExclusionTemplatesList = "exclusionTemplateList";
+        static public string Default = "default";
+
         static public string Limit = "limit";
         static public string IsValid = "isValid";
         static public string Path = "path";
@@ -88,5 +91,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string DriveAvailableInfoList = "driveAvailableInfoList";
 
         static public string UpdateChannel = "channel";
+        static public string State = "state";
+        static public string Percentage = "percentage";
+
+        static public string IncludeArchivedLogs = "includeArchivedLogs";
     }
 }

@@ -7,12 +7,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Storage;
@@ -23,31 +19,64 @@ namespace Infomaniak.kDrive
 {
     public static class Utility
     {
+        public static async Task RunOnUIThread(Func<Task> action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+
+            if (dispatcher.HasThreadAccess)
+            {
+                await action();
+            }
+            else
+            {
+                TaskCompletionSource tcs = new();
+
+                await dispatcher.EnqueueAsync(async () =>
+                {
+                    try
+                    {
+                        await action();
+                        tcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                });
+
+                await tcs.Task;
+            }
+        }
+
         public static async Task RunOnUIThread(Action action)
         {
             var dispatcher = AppModel.UIThreadDispatcher;
+
             if (dispatcher.HasThreadAccess)
             {
                 action();
             }
             else
             {
-                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                TaskCompletionSource tcs = new();
+
                 await dispatcher.EnqueueAsync(() =>
                 {
                     try
                     {
                         action();
-                        taskCompletionSource.SetResult();
+                        tcs.SetResult();
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.SetException(ex);
+                        tcs.SetException(ex);
                     }
                 });
-                await taskCompletionSource.Task;
+
+                await tcs.Task;
             }
         }
+
         public static async Task OpenFileAsync(string filePath)
         {
             try
@@ -158,7 +187,14 @@ namespace Infomaniak.kDrive
             // Format the string if arguments are provided
             if (args != null && args.Length > 0)
             {
-                localizedString = string.Format(localizedString, args);
+                try
+                {
+                    localizedString = string.Format(localizedString, args);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}");
+                }
             }
 
             return localizedString;
@@ -182,7 +218,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -190,14 +226,14 @@ namespace Infomaniak.kDrive
             dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
             dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
-            dialog.DefaultButton = contentDialogButton;
+            dialog.DefaultButton = defaultButton;
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
             return dialog;
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            var result = await GetContentDialog(xamlRoot, xuid, contentDialogButton).ShowAsync();
+            var result = await GetContentDialog(xamlRoot, xuid, defaultButton).ShowAsync();
             return result;
         }
 
@@ -279,6 +315,78 @@ namespace Infomaniak.kDrive
             else
                 return new string('*', localPart.Length) + domainPart;
         }
+
+
+        public static void ShowUnexpectedErrorTeachingTip()
+        {
+            ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+        }
+
+        private static TeachingTip? _currentTeachingTip;
+        public static void ShowTeachingTipFromxUid(string xuid)
+        {
+            if (App.Current is not App app || app.CurrentWindow is null)
+            {
+                Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
+                return;
+            }
+
+            // Close previous tip if any
+            CloseCurrentTeachingTip();
+
+            XamlRoot xamlRoot = app.CurrentWindow.Content.XamlRoot;
+
+            var teachingTip = new TeachingTip
+            {
+                XamlRoot = xamlRoot,
+                Title = GetLocalizedString($"{xuid}/Title"),
+                Subtitle = GetLocalizedString($"{xuid}/Subtitle"),
+                Content = new TextBlock
+                {
+                    Text = GetLocalizedString($"{xuid}/Content"),
+                    TextWrapping = TextWrapping.Wrap
+                },
+                PreferredPlacement = TeachingTipPlacementMode.Bottom,
+                IsLightDismissEnabled = true,
+            };
+
+            teachingTip.Closed += TeachingTip_Closed;
+
+            // Attach to visual tree
+            if (xamlRoot.Content is Panel panel)
+            {
+                panel.Children.Add(teachingTip);
+            }
+
+            _currentTeachingTip = teachingTip;
+            teachingTip.IsOpen = true;
+        }
+
+        private static void CloseCurrentTeachingTip()
+        {
+            if (_currentTeachingTip is null)
+                return;
+
+            _currentTeachingTip.IsOpen = false;
+            // Actual removal happens in Closed handler
+        }
+
+        private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            // Detach from visual tree
+            if (VisualTreeHelper.GetParent(sender) is Panel panel)
+            {
+                panel.Children.Remove(sender);
+            }
+
+            sender.Closed -= TeachingTip_Closed;
+
+            if (ReferenceEquals(_currentTeachingTip, sender))
+            {
+                _currentTeachingTip = null;
+            }
+        }
+
     }
 }
 

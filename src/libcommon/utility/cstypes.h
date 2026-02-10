@@ -280,4 +280,15 @@ enum class VirtualFileMode {
     EnumEnd
 };
 
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled,
+    EnumEnd
+};
+
 } // namespace KDC

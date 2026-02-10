@@ -577,6 +577,21 @@
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -835,12 +850,6 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value />
   </data>
@@ -854,6 +863,9 @@
     <value />
   </data>
   <data name="Page_DriveManagement_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_TemplateExclusionPage_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">

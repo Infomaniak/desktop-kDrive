@@ -70,7 +70,7 @@ ExitInfo NodeSubFolders2Job::process() {
     if (const auto exitInfo = ServerRequests::getSubFolders(_driveDbId, _nodeId, _nodeSubFolderInfoList, _withPath);
         exitInfo.code() != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getSubFolders");
-        AppServer::addError(Error(ERR_ID, exitInfo));
+        addError(Error(ERR_ID, exitInfo));
 
         return exitInfo;
     }

@@ -22,10 +22,10 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
-    @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var syncCreator: SyncCreator
 
     private let flowCoordinator: OnboardingFlowCoordinator

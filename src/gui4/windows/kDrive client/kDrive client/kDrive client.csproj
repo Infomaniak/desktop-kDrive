@@ -107,6 +107,9 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\DriveSetupContentDialog\SyncSetupPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\DynamicTextBlock.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -161,6 +164,12 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Popup\AddExclusionRulePopup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\Popup\LogUploadPopup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\Settings\DriveManagementPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -195,6 +204,7 @@
   <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
+    <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
     <Folder Include="CustomControls\Errors\Templates\Server\" />
     <Folder Include="CustomControls\Errors\Templates\SyncPal\" />
   </ItemGroup>
@@ -202,6 +212,9 @@
     <None Update="Pages\Onboarding\NoDrivesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Pages\Settings\DriveAdvancedSyncsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">

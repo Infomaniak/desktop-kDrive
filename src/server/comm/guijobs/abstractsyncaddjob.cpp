@@ -77,7 +77,7 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     ServerRequests::syncInfoToSync(syncInfo, sync);
     if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(sync); !exitInfo) {
         LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        AppServer::addError(Error(sync.dbId(), ERR_ID, exitInfo));
+        addError(Error(sync.dbId(), ERR_ID, exitInfo));
         return exitInfo;
     }
 
@@ -100,7 +100,7 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
         // Delete sync from DB
         if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
             LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-            AppServer::addError(Error(ERR_ID, exitInfo));
+            addError(Error(ERR_ID, exitInfo));
         }
 
         return exitInfo;

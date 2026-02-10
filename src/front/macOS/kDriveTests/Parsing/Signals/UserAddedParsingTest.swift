@@ -20,7 +20,7 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-private final class TestBundleMarker {}
+final class TestBundleMarker {}
 
 @Suite("UserAdded Signal Parsing Test")
 struct UserAddedParsingTest {

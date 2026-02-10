@@ -87,8 +87,7 @@ enum class RequestNum {
     ERROR_RESOLVE_UNSUPPORTED_CHAR,
     EXCLTEMPL_GETEXCLUDED,
     EXCLTEMPL_GETLIST,
-    EXCLTEMPL_SETLIST,
-    EXCLTEMPL_PROPAGATE_CHANGE,
+    EXCLTEMPL_SETUSERLIST,
 #if defined(KD_MACOS)
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
@@ -109,7 +108,7 @@ enum class RequestNum {
     UTILITY_GET_APPSTATE,
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
-    UTILITY_GET_LOG_ESTIMATED_SIZE,
+    UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -201,10 +200,8 @@ inline std::string toString(RequestNum e) {
             return "EXCLTEMPL_GETEXCLUDED";
         case RequestNum::EXCLTEMPL_GETLIST:
             return "EXCLTEMPL_GETLIST";
-        case RequestNum::EXCLTEMPL_SETLIST:
-            return "EXCLTEMPL_SETLIST";
-        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE:
-            return "EXCLTEMPL_PROPAGATE_CHANGE";
+        case RequestNum::EXCLTEMPL_SETUSERLIST:
+            return "EXCLTEMPL_SETUSERLIST";
 #if defined(KD_MACOS)
         case RequestNum::EXCLAPP_GETLIST:
             return "EXCLAPP_GETLIST";
@@ -243,8 +240,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_SEND_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT:
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
-        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
-            return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
+            return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:

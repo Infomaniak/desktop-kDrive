@@ -164,34 +164,6 @@ void FileExclusionDialog::initUI() {
     connect(this, &CustomDialog::exit, this, &FileExclusionDialog::onExit);
 }
 
-namespace {
-
-QList<ExclusionTemplateInfo> filterOutTemplatesWrtNfcNormalization(const QList<ExclusionTemplateInfo> &templateList) {
-    QList<ExclusionTemplateInfo> result;
-
-    SyncNameSet uniqueTemplateNames; // Unique template names up to NFC-encoding.
-    for (const auto &templateInfo: templateList) {
-        SyncName normalizedName;
-        SyncName insertedName = QStr2SyncName(templateInfo.templ());
-        QString insertedString;
-
-        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(insertedName, normalizedName, UnicodeNormalization::NFC);
-            !nfcSuccess) {
-            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template " << templateInfo.templ();
-            insertedString = templateInfo.templ();
-        } else {
-            insertedName = normalizedName;
-            insertedString = SyncName2QStr(normalizedName);
-        }
-
-        const bool isNew = uniqueTemplateNames.emplace(insertedName).second;
-        if (isNew) result.append(ExclusionTemplateInfo{insertedString});
-    }
-
-    return result;
-}
-} // namespace
-
 void FileExclusionDialog::updateUI() {
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionTemplateList(true, _defaultTemplateList);
@@ -206,7 +178,6 @@ void FileExclusionDialog::updateUI() {
         return;
     }
 
-    _userTemplateList = filterOutTemplatesWrtNfcNormalization(_userTemplateList);
     loadPatternTable();
 
     ClientGui::restoreGeometry(this);
@@ -305,9 +276,7 @@ void FileExclusionDialog::loadPatternTable(const QString &scrollToPattern) {
 
     // Default patterns
     for (const auto &template_: _defaultTemplateList) {
-        if (!template_.deleted()) {
-            addTemplate(template_, true, row, scrollToPattern, scrollToRow);
-        }
+        addTemplate(template_, true, row, scrollToPattern, scrollToRow);
     }
 
     // User patterns
@@ -460,26 +429,14 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("preferencesFileExclusion", MatomoEventAction::Click, "saveButton");
 
-    if (const auto exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList); exitCode != ExitCode::Ok) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
-        msgBox.exec();
-        return;
-    }
-
-    if (const auto exitCode = GuiRequests::setExclusionTemplateList(false, _userTemplateList); exitCode != ExitCode::Ok) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
+    if (const auto exitCode = GuiRequests::setUserExclusionTemplateList(_userTemplateList); exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setUserExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
 
     ParametersCache::instance()->saveParametersInfo();
-
-    if (auto exitCode = GuiRequests::propagateExcludeListChange(); exitCode != ExitCode::Ok) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange: code=" << exitCode;
-    }
-
     accept();
 }
 

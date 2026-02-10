@@ -74,9 +74,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
-        static ExitCode setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list);
+        static ExitCode setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list);
-        static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);
+        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
@@ -134,7 +134,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
-        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitInfo deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!

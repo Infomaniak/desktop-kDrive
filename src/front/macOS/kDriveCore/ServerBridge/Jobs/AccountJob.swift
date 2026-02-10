@@ -34,8 +34,6 @@ public struct AccountJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<AccountListResponse>.self)
 
-        try decodedMessage.validate()
-
         let accountList = decodedMessage.body.accountInfoList
 
         // TODO: Parse name when available

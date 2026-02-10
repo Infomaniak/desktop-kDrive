@@ -9,7 +9,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
              xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             Unloaded="SyncActivityTable_Unloaded">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
@@ -24,7 +25,7 @@
         <GridLength x:Key="LocationGridLength">204</GridLength>
         <GridLength x:Key="SizeGridLength">92</GridLength>
         <GridLength x:Key="StateGridLength">80</GridLength>
-        
+
     </UserControl.Resources>
     <Grid>
         <!--  Empty list  -->

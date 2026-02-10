@@ -40,22 +40,24 @@ class SyncJob : public AbstractJob {
         void setProgressExpectedFinalValue(const int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
-        void setProgressPercentCallback(const std::function<void(const UniqueId, const int64_t)> &newCallback) {
+        void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
-        virtual int64_t getProgress() { return _progress; }
-        void setProgress(int64_t newProgress);
-        void addProgress(int64_t progressToAdd);
+
+        virtual int64_t getProgress() { return _progressSize; }
+        void setProgress(int64_t newProgressSize);
+        void addProgress(int64_t progressSizeToAdd);
         bool progressChanged();
-        [[nodiscard]] bool isProgressTracked() const { return _progress > -1; }
+        [[nodiscard]] bool isProgressTracked() const { return _progressSize > -1; }
 
     private:
         int64_t _expectedFinishProgress =
                 expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
-        int64_t _progress = -1; // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1; // Progress last time it was checked using progressChanged()
-        std::function<void(const UniqueId id, const int64_t progress)> _progressPercentCallback =
+        std::function<void(UniqueId id, int progress)> _progressPercentCallback =
                 nullptr; // Used by the caller to be notified of job progress.
+        int64_t _progressSize = -1; // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgressSize = -1; // Progress last time it was checked using progressChanged()
+        std::chrono::time_point<std::chrono::steady_clock> _lastProgressTimeStamp = std::chrono::steady_clock::now();
 
         SyncPath _affectedFilePath; // The file path associated to _progress
         bool _bypassCheck = false;

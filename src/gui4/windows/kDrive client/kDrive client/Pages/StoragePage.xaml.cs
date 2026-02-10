@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,6 +55,12 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
         }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            PageViewModel.Dispose();
+        }
+
         private async void RetryButton_click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn)
@@ -80,7 +87,7 @@ namespace Infomaniak.kDrive.Pages
         }
     }
 
-    public class StoragePageViewModel : UISafeObservableObject
+    public partial class StoragePageViewModel : UISafeObservableObject, IDisposable
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel AppViewModel => _viewModel;
@@ -93,6 +100,7 @@ namespace Infomaniak.kDrive.Pages
         private bool _loading = false;
         private string _diskRoot = "";
         private bool _isDiskConnected = false;
+        private bool _isDisposed = false;
 
         // Text
         private string _missingDiskTitle = "";
@@ -102,26 +110,32 @@ namespace Infomaniak.kDrive.Pages
 
         public StoragePageViewModel()
         {
-            AppViewModel.PropertyChanged += async (s, e) =>
-            {
-                if (e.PropertyName == nameof(AppViewModel.SelectedSync))
-                {
-                    try
-                    {
-                        await UpdateDiskSizeAsync();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
-                    }
-                }
-            };
+            AppViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
         }
 
-        ~StoragePageViewModel()
+        private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            try
+            {
+                await UpdateDiskSizeAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+            }
+        }
+
+        // IDisposable implementation
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                AppViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+            }
         }
 
         public long? DiskSize
@@ -219,12 +233,19 @@ namespace Infomaniak.kDrive.Pages
             IsDiskConnected = false;
             var syncPath = sync.LocalPath;
             DiskRoot = Path.GetPathRoot(syncPath) ?? "";
-            if (DiskRoot == "")
+            if (DiskRoot.Length == 0)
             {
                 Logger.Log(Logger.Level.Warning, $"Unable to get disk root of {syncPath}");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                DiskSize = -1;
+                DiskFreeSize = -1;
+                DiskUsedSize = -1;
+                HydratedFileSize = -1;
+                OtherFileSize = -1;
                 Loading = false;
                 return;
             }
+
             try
             {
                 DriveInfo driveInfo = new DriveInfo(DiskRoot);
@@ -233,9 +254,11 @@ namespace Infomaniak.kDrive.Pages
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
                 HydratedFileSize = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
-                if (HydratedFileSize == null)
+                if (HydratedFileSize is null)
                 {
                     Loading = false;
+                    HydratedFileSize = -1;
+                    OtherFileSize = -1;
                     Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
                     return;
                 }
@@ -257,13 +280,17 @@ namespace Infomaniak.kDrive.Pages
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             UInt64? res = await commService.GetSyncOfflineFilesSize(AppViewModel.SelectedSync.DbId, cancellationToken);
 
-            if (res is not null)
-                if (res.Value > long.MaxValue)
-                    return long.MaxValue;
-                else
-                    return (long)res.Value;
-            else
+            if (res is null)
+            {
+                Logger.Log(Logger.Level.Warning, "GetSyncOfflineFilesSize returned null");
+                Utility.ShowUnexpectedErrorTeachingTip();
                 return null;
+            }
+
+            if (res.Value > long.MaxValue)
+                return long.MaxValue;
+            else
+                return (long)res.Value;
         }
     }
 }

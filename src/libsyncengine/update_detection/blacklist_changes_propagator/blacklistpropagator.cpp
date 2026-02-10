@@ -52,18 +52,16 @@ ExitInfo BlacklistPropagator::runJob() {
         return ExitCode::DataError;
     }
 
-    if (const auto exitCode = checkNodes(); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = checkNodes(); !exitInfo) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in BlacklistPropagator::checkNodes");
-        return exitCode;
+        return exitInfo;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator ended");
     return ExitCode::Ok;
 }
 
-ExitCode BlacklistPropagator::checkNodes() {
-    ExitCode exitCode(ExitCode::Unknown);
-
+ExitInfo BlacklistPropagator::checkNodes() {
     _syncPal->setSyncHasFullyCompleted(false);
 
     NodeSet blackList;
@@ -75,6 +73,7 @@ ExitCode BlacklistPropagator::checkNodes() {
     }
 
     bool noItemToRemoveFound = true;
+    ExitInfo exitInfo(ExitCode::Unknown);
     for (auto &remoteNodeId: blackList) {
         if (isAborted()) {
             LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "BlacklistPropagator aborted " << jobId());
@@ -86,7 +85,7 @@ ExitCode BlacklistPropagator::checkNodes() {
         bool found = false;
         if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteNodeId, dbId, found)) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
-            exitCode = ExitCode::DbError;
+            exitInfo = ExitCode::DbError;
             break;
         }
 
@@ -96,31 +95,104 @@ ExitCode BlacklistPropagator::checkNodes() {
             NodeId localNodeId;
             if (!_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::correspondingNodeId");
-                exitCode = ExitCode::DbError;
+                exitInfo = ExitCode::DbError;
                 break;
             }
             if (!found) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                                  "Corresponding node ID not found for remote ID = " << remoteNodeId);
-                exitCode = ExitCode::DataError;
+                exitInfo = ExitCode::DataError;
                 break;
             }
 
-            exitCode = removeItem(localNodeId, remoteNodeId, dbId);
-            if (exitCode != ExitCode::Ok) {
-                break;
-            }
+            exitInfo = removeItem(localNodeId, remoteNodeId, dbId).code();
+            if (!exitInfo) break;
         }
     }
 
     if (noItemToRemoveFound) {
-        exitCode = ExitCode::Ok;
+        exitInfo = ExitCode::Ok;
     }
 
-    return exitCode;
+    return exitInfo;
 }
 
-ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId) {
+ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath) {
+    bool directoryIterationException = false;
+    auto ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
+    try {
+        if (!IoHelper::recursiveDirectoryIterator(absoluteLocalPath, dirIt)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+            return ExitCode::SystemError;
+        }
+
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+            if (isAborted()) return ExitCode::Ok;
+
+            const SyncPath &absoluteLocalPath_ = entry.path();
+            // Check if the directory entry is managed
+            bool isManaged = true;
+            auto managedDirEntryError = IoError::Success;
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedDirEntryError)) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfDirEntryIsManaged: "
+                                                                        << CommonUtility::formatSyncPath(absoluteLocalPath_));
+                dirIt.disableRecursionPending();
+                continue;
+            }
+
+            if (managedDirEntryError == IoError::NoSuchFileOrDirectory) {
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Directory entry does not exist anymore:"
+                                                                         << CommonUtility::formatSyncPath(absoluteLocalPath_));
+                dirIt.disableRecursionPending();
+                continue;
+            }
+
+            if (ioError == IoError::AccessDenied) {
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                                   L"Directory misses search permission: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
+                dirIt.disableRecursionPending();
+                continue;
+            }
+
+            if (!isManaged) {
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                                   L"Directory entry is not managed: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
+                dirIt.disableRecursionPending();
+                continue;
+            }
+
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Cancel hydration: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
+            _syncPal->vfs()->cancelHydrate(entry.path());
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "Exception caught in BlacklistPropagator::removeItem: code=" << e.code() << " error=" << e.what());
+        directoryIterationException = true;
+    } catch (...) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in BlacklistPropagator::removeItem.");
+        directoryIterationException = true;
+    }
+
+    if (const auto interruptionExitInfo =
+                IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
+        !interruptionExitInfo) {
+        return interruptionExitInfo;
+    }
+
+    LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                       L"Cancelling hydration of " << CommonUtility::formatSyncPath(absoluteLocalPath));
+
+    _syncPal->vfs()->cancelHydrate(absoluteLocalPath);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId) {
     // Get path from nodeId
     SyncPath localPath;
     SyncPath remotePath;
@@ -135,92 +207,17 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
-
-    // Cancel hydration
     const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
+
     if (liteSyncActivated) {
-        try {
-            std::error_code ec;
-            auto dirIt = std::filesystem::recursive_directory_iterator(
-                    absoluteLocalPath, std::filesystem::directory_options::skip_permission_denied, ec);
-            if (ec) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                  L"Error in BlacklistPropagator::removeItem :" << CommonUtility::formatStdError(ec));
-                return ExitCode::SystemError;
-            }
-            for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-                if (isAborted()) {
-                    return ExitCode::Ok;
-                }
-
-#if defined(KD_WINDOWS)
-                // skip_permission_denied doesn't work on Windows
-                try {
-                    bool dummy = dirIt->exists();
-                    (void) (dummy);
-                } catch (std::filesystem::filesystem_error &) {
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-#endif
-
-                SyncPath absoluteLocalPath_ = dirIt->path();
-
-                // Check if the directory entry is managed
-                bool isManaged = true;
-                IoError ioError = IoError::Success;
-                if (!Utility::checkIfDirEntryIsManaged(*dirIt, isManaged, ioError)) {
-                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfDirEntryIsManaged: "
-                                                                            << CommonUtility::formatSyncPath(absoluteLocalPath_));
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-
-                if (ioError == IoError::NoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(
-                            Log::instance()->getLogger(),
-                            L"Directory entry does not exist anymore:" << CommonUtility::formatSyncPath(absoluteLocalPath_));
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-
-                if (ioError == IoError::AccessDenied) {
-                    LOGW_SYNCPAL_DEBUG(
-                            Log::instance()->getLogger(),
-                            L"Directory misses search permission: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-
-                if (!isManaged) {
-                    LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                       L"Directory entry is not managed: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
-                    dirIt.disable_recursion_pending();
-                    continue;
-                }
-
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   L"Cancel hydration: " << CommonUtility::formatSyncPath(absoluteLocalPath_));
-                _syncPal->vfs()->cancelHydrate(dirIt->path());
-            }
-        } catch (const std::filesystem::filesystem_error &e) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "Exception caught in BlacklistPropagator::removeItem: code=" << e.code() << " error=" << e.what());
-            return ExitCode::SystemError;
-        } catch (...) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in BlacklistPropagator::removeItem.");
-            return ExitCode::SystemError;
+        if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
+            return cancellationExitInfo;
         }
-
-        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                           L"Cancel hydration: " << CommonUtility::formatSyncPath(absoluteLocalPath));
-        _syncPal->vfs()->cancelHydrate(absoluteLocalPath);
     }
 
     // Remove item from filesystem
     bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
+    if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for " << CommonUtility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
