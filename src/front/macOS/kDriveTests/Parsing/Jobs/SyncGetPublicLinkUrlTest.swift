@@ -44,7 +44,7 @@ struct SyncGetPublicLinkUrlTest {
         let callbackData = validJobCallbackData
 
         // WHEN
-        let linkUrl = try decoder.decode(CallbackMessage<PublicLinkResponse>.self, from: callbackData).body.linkUrl
+        let linkUrl = try decoder.decode(CallbackMessage<LinkResponse>.self, from: callbackData).body.linkUrl
 
         // THEN
         #expect(linkUrl.absoluteString == "https://kdrive.infomaniak.com/app/drive/123456/redirect/")

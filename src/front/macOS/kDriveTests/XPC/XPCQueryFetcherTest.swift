@@ -71,7 +71,7 @@ struct XPCQueryFetcherTests {
         CallbackMessage<SyncInfoList>.self,
         CallbackMessage<SyncStatusResponse>.self,
         CallbackMessage<SyncInfoSingle>.self,
-        CallbackMessage<PublicLinkResponse>.self,
+        CallbackMessage<LinkResponse>.self,
         // AccountJobs responses
         CallbackMessage<AccountListResponse>.self,
         // DriveJobs responses

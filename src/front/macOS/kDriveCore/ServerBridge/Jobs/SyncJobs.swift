@@ -160,19 +160,19 @@ public struct SyncJobs: Sendable {
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
         IKLogger.data.log("Query to syncGetPublicLinkUrl")
-        let query = PublicLinkQuery(driveDbId: driveDbId, nodeId: nodeId)
-        let request = await RequestMessage<PublicLinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
+        let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
+        let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<PublicLinkResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LinkResponse>.self)
         return decodedMessage.body.linkUrl
     }
 
     public func getPrivateLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
         IKLogger.data.log("Query to syncGetPrivateLinkUrl")
-        let query = PublicLinkQuery(driveDbId: driveDbId, nodeId: nodeId)
-        let request = await RequestMessage<PublicLinkQuery>(num: RequestNum.SYNC_GETPRIVATELINKURL, body: query)
+        let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
+        let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPRIVATELINKURL, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<PublicLinkResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LinkResponse>.self)
         return decodedMessage.body.linkUrl
     }
 }

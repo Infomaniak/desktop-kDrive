@@ -18,12 +18,12 @@
 
 import Foundation
 
-struct PublicLinkQuery: Codable, Sendable {
+struct LinkQuery: Codable, Sendable {
     let driveDbId: Int32
     @Base64CodedString var nodeId: String
 }
 
-struct PublicLinkResponse: Codable, Sendable {
+struct LinkResponse: Codable, Sendable {
     @Base64CodedURL var linkUrl: URL
 }
 
