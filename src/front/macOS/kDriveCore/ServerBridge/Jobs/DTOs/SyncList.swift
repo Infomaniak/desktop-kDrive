@@ -31,6 +31,11 @@ struct SyncQuery: Codable, Sendable {
     let syncDbId: Int32
 }
 
+struct SetSupportsVirtualFilesQuery: Codable, Sendable {
+    let syncDbId: Int32
+    let value: Bool
+}
+
 struct SyncInfoList: Codable, Sendable {
     let syncInfoList: [SyncInfo]
 }

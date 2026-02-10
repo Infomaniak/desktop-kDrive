@@ -183,4 +183,15 @@ public struct SyncJobs: Sendable {
 
         _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
+        IKLogger.data.log("Query to setSupportsVirtualFiles")
+        let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
+        let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
+            num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
+            body: query
+        )
+
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
 }
