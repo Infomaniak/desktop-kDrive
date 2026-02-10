@@ -110,6 +110,7 @@ void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
     }
 
     // Check if app should be blocked
+    _appShouldBeBlocked = false;
     if (CommonUtility::isVersionLower(CommonUtility::currentVersion(), getAppVersionJobPtr->minAppVersion())) {
         LOG_WARN(Log::instance()->getLogger(), "The current version needs to be updated. Current version: "
                                                        << CommonUtility::currentVersion()
