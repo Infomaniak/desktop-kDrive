@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -104,13 +105,14 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private async void RemoveSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Control? control = sender as Control;
+        var control = sender as Control;
         if (control is null)
         {
             Logger.Log(Logger.Level.Error, "Remove sync button is null when clicking on remove sync button");
             return;
         }
 
+        control.IsEnabled = false;
         Sync? sync = control.DataContext as Sync;
         if (sync is null)
         {
@@ -119,116 +121,77 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        if (ManagedDrive is not null)
+        if (ManagedDrive is null)
         {
-            control.IsEnabled = false;
-            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
-            if (dialogResult == ContentDialogResult.Primary)
-            {
-                Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
-                await sync.Drive.RemoveSync(sync, CancellationToken.None);
+            Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or sync is null");
+            control.IsEnabled = true;
+            return;
+        }
 
+        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+        if (dialogResult != ContentDialogResult.Primary)
+        {
+            Logger.Log(Logger.Level.Info, "User canceled sync removal");
+            control.IsEnabled = true;
+            return;
+        }
+
+        Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
+        if (!await sync.Drive.RemoveSync(sync, CancellationToken.None))
+        {
+            Logger.Log(Logger.Level.Error, "Failed to remove sync");
+            Utility.ShowUnexpectedErrorTeachingTip();
+        }
+
+        control.IsEnabled = true;
+    }
+
+    private async void SyncTypeRadioButton_Click(object sender, RoutedEventArgs e)
+    {
+        var radioButton = sender as RadioButton;
+        if (radioButton is null)
+        {
+            Logger.Log(Logger.Level.Error, "Online sync mode radio button is null when clicking on online sync mode radio button");
+            return;
+        }
+
+        if (!radioButton.IsEnabled || radioButton.IsChecked != true)
+            return;
+
+        Sync? sync = radioButton.DataContext as Sync;
+        if (sync is null)
+        {
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on online sync mode radio button");
+            return;
+        }
+
+        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
+        if (canceledByUser)
+        {
+            Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
+            // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
+            if (radioButton.Name == "OnlineRadioButton")
+            {
+                sync.SyncType = Types.SyncType.Online;
+                sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
             }
             else
             {
-                Logger.Log(Logger.Level.Info, "User canceled sync removal");
+                sync.SyncType = Types.SyncType.Offline;
+                sync.SyncType = Types.SyncType.Online; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
             }
-            control.IsEnabled = true;
-        }
-        else
-        {
-            Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or sync is null");
-        }
-    }
-
-    private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        var radioButton = sender as RadioButton;
-        if (!IsLoaded || radioButton is null || !radioButton.IsEnabled)
-            return;
-
-        Logger.Log(Logger.Level.Info, "User initiated change to online Sync mode");
-        bool succeed = false;
-        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
-
-        var revertFunc = () =>
-        {
-            bool prevState = radioButton.IsEnabled;
-            radioButton.IsEnabled = false;
-            radioButton.IsChecked = false;
-            radioButton.IsEnabled = prevState;
-        };
-
-        if (canceledByUser)
-        {
-            Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-            revertFunc();
             return;
         }
 
-        Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
-        Sync? sync = radioButton.DataContext as Sync;
-        if (sync is not null)
-        {
-            succeed = await sync.ChangeSyncType(Types.SyncType.Online);
-        }
-        else
-        {
-            Logger.Log(Logger.Level.Error, "Cannot change sync mode: radioButton.DataContext is null or not a sync");
-            succeed = false;
-        }
 
+        bool success = false;
+        if (radioButton.Name == "OnlineRadioButton")
+            success = await sync.ChangeSyncType(Types.SyncType.Online);
+        else if (radioButton.Name == "OfflineRadioButton")
+            success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
-        if (!succeed)
-        {
+        if (!success)
             await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-            revertFunc();
-        }
-    }
-
-    private async void OnlineRadioButtonUnchecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        var radioButton = sender as RadioButton;
-        if (!IsLoaded || radioButton is null || !radioButton.IsEnabled)
-            return;
-
-        Logger.Log(Logger.Level.Info, "User initiated change to offline Sync mode");
-        bool succeed = false;
-        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
-
-        var revertFunc = () =>
-        {
-            bool prevState = radioButton.IsEnabled;
-            radioButton.IsEnabled = false;
-            radioButton.IsChecked = true;
-            radioButton.IsEnabled = prevState;
-        };
-
-        if (canceledByUser)
-        {
-            Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-            revertFunc();
-            return;
-        }
-
-        Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
-        Sync? sync = radioButton.DataContext as Sync;
-        if (sync is not null)
-        {
-            succeed = await sync.ChangeSyncType(Types.SyncType.Offline);
-        }
-        else
-        {
-            Logger.Log(Logger.Level.Error, "Cannot change sync mode: ManagedDrive or MainSync is null");
-            succeed = false;
-        }
-
-
-        if (!succeed)
-        {
-            await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-            revertFunc();
-        }
     }
 
     private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

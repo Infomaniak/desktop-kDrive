@@ -17,10 +17,13 @@
  */
 
 #include "excludelistpropagator.h"
-#include "libcommon/io/filestat.h"
+
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
+
 #include "libcommon/utility/utility.h"
+
+#include "libcommonserver/io/filestat.h"
 
 namespace KDC {
 
@@ -68,7 +71,7 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
             _syncPal->addError(error);
         } else {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in SyncDb::getNodeId or SyncDb::getItemType for path="
-                                                                    << CommonUtility::formatSyncPath(relativePath));
+                                                                    << Utility::formatSyncPath(relativePath));
         }
     }
 
@@ -77,7 +80,7 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
     bool found = false;
     if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                          L"Error in SyncDb::dbId for path=" << CommonUtility::formatSyncPath(relativePath));
+                          L"Error in SyncDb::dbId for path=" << Utility::formatSyncPath(relativePath));
         return ExitCode::DbError;
     }
 
@@ -85,13 +88,13 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
 
     // Remove node (and children by cascade) from DB
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node " << CommonUtility::formatSyncPath(relativePath)
+        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node " << Utility::formatSyncPath(relativePath)
                                                                            << L" from DB because it is excluded from sync");
     }
 
     if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                          L"Error in SyncDb::deleteNode for " << CommonUtility::formatSyncPath(relativePath));
+                          L"Error in SyncDb::deleteNode for " << Utility::formatSyncPath(relativePath));
         return ExitCode::DbError;
     }
 
@@ -123,7 +126,7 @@ ExitInfo ExcludeListPropagator::checkItems() {
             }
 
             if (entry.path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << CommonUtility::formatSyncPath(entry.path())
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(entry.path())
                                                                            << L" because size > "
                                                                            << CommonUtility::maxPathLength());
                 dirIt.disableRecursionPending();

@@ -19,8 +19,9 @@
 #include "deletejob.h"
 
 #include "requests/parameterscache.h"
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
+
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <Poco/Net/HTTPRequest.h>
@@ -48,7 +49,7 @@ ExitInfo DeleteJob::canRun() {
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
                                    << CommonUtility::s2ws(_remoteItemId) << L", local ID: " << CommonUtility::s2ws(_localItemId)
-                                   << L", " << CommonUtility::formatSyncPath(_absoluteLocalFilepath));
+                                   << L", " << Utility::formatSyncPath(_absoluteLocalFilepath));
         return ExitCode::DataError;
     }
 
@@ -58,8 +59,7 @@ ExitInfo DeleteJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId,
                                                    ioError)) {
-        LOGW_WARN(_logger,
-                  L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(_absoluteLocalFilepath, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
@@ -70,31 +70,29 @@ ExitInfo DeleteJob::canRun() {
         FileStat filestat;
         ioError = IoError::Success;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::getFileStat: " << CommonUtility::formatIoError(_absoluteLocalFilepath, ioError));
+            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << CommonUtility::formatSyncPath(_absoluteLocalFilepath));
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath));
             return {ExitCode::DataError, ExitCause::InvalidSnapshot};
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << CommonUtility::formatSyncPath(_absoluteLocalFilepath));
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
             // The nodeId has been reused by a new item.
             LOGW_DEBUG(_logger,
-                       L"Item: " << CommonUtility::formatSyncPath(_absoluteLocalFilepath) << L" has been reused by a new item.");
+                       L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" has been reused by a new item.");
             return ExitCode::Ok;
         }
 
-        LOGW_DEBUG(_logger,
-                   L"Item: " << CommonUtility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
         return {ExitCode::DataError, ExitCause::FileExists};
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
-        LOGW_DEBUG(_logger, L"Item: " << CommonUtility::formatSyncPath(_absoluteLocalFilepath)
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
                                       << L" exists on local replica with another ID (" << CommonUtility::s2ws(_localItemId)
                                       << L"/" << CommonUtility::s2ws(otherNodeId) << L")");
 

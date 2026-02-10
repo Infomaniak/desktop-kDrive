@@ -20,7 +20,9 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libcommongui/utility/utility.h"
 
 #include <QApplication>

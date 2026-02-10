@@ -21,8 +21,11 @@
 #include "requests/serverrequests.h"
 #include "requests/parameterscache.h"
 #include "utility/types.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+
 #include "libparms/db/parmsdb.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/remotetemporarydirectory.h"

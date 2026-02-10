@@ -18,6 +18,8 @@
 
 #include "socketcommserver.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :

@@ -4,11 +4,29 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Philippe Weidmann
- * Exported at: Mon, 02 Feb 2026 14:10:19 +0100
+ * Exported at: Fri, 06 Feb 2026 08:36:54 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "Einige Dateien konnten nicht synchronisiert werden.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Sichtbare Aktivitäten";
+
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activityTitleIdle" = "Synchronisation abgeschlossen";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activityTitleInProgress" = "Synchronisierung läuft";
+
+/* loco:6981cb9319de989ec9033882 */
+"activityTitleNoActivity" = "Keine aktuelle Aktivität";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activityTypeAllActivities" = "Alle Aktivitäten";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activityTypeMyActivity" = "Nur meine Aktivität";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Speicher hinzufügen";
@@ -122,10 +140,10 @@
 "folderTrash" = "Papierkorb";
 
 /* loco:6960b7720cbd5c07340af144 */
-"greetingLabel" = "Hallo %s, %s";
+"greetingLabel" = "Hallo %@, %@";
 
 /* loco:6964f0b575a31a8d9601a6d7 */
-"helpKDriveName" = "kDrive %s";
+"helpKDriveName" = "kDrive %@";
 
 /* loco:696a481cf54b5acbc60209c2 */
 "informationBlockKDriveFullSubtitle" = "Geben Sie Speicherplatz frei oder aktualisieren Sie Ihren Tarif, um Ihre Dateien weiterhin zu synchronisieren.";
@@ -309,3 +327,9 @@
 
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Speicherplatz";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Ihre Dateien sind zugänglich und synchronisiert.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Keine kürzliche Aktivität";

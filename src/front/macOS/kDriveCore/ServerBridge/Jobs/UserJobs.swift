@@ -32,8 +32,6 @@ public struct UserJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserDbIdsListResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.userDbIdList
     }
 
@@ -43,8 +41,6 @@ public struct UserJobs: Sendable {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserInfoListResponse>.self)
-
-        try decodedMessage.validate()
 
         let userList = decodedMessage.body.userInfoList
 
@@ -59,8 +55,6 @@ public struct UserJobs: Sendable {
         let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        try decodedMessage.validate()
 
         await coherentCache.removeUser(dbId: dbId)
     }

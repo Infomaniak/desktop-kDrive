@@ -20,7 +20,7 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 

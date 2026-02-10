@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -80,6 +81,11 @@ namespace Infomaniak.kDrive.ViewModels
 
             SyncActivities.CollectionChanged += (s, args) =>
             {
+                if (!SyncActivities.Any())
+                {
+                    LastActivity = null;
+                    return;
+                }
                 try
                 {
                     LastActivity = SyncActivities[0];
@@ -186,25 +192,28 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
-        public async Task Start()
+        public async Task<bool> Start()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.StartSync(DbId, CancellationToken.None);
+            return await commService.StartSync(DbId, CancellationToken.None);
         }
 
-        public async Task Pause()
+        public async Task<bool> Pause()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.PauseSync(DbId, CancellationToken.None);
+            return await commService.PauseSync(DbId, CancellationToken.None);
         }
 
         public async Task<bool> ChangeSyncType(SyncType newType)
         {
             SyncTypeMigrationInProgress = true;
+            var previousType = SyncType;
+            SyncType = newType;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
+            if (!result)
+                SyncType = previousType;
             SyncTypeMigrationInProgress = false;
-
             return result;
         }
 

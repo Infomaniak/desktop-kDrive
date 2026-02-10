@@ -1145,10 +1145,26 @@ Infomaniak</value>
   <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Title" xml:space="preserve">
     <value>Ce dossier ne peut pas être sélectionné</value>
   </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Title" xml:space="preserve">
+    <value>Impossible d'ajouter ce drive</value>
+  </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Subtitle" xml:space="preserve">
+    <value>Assurez vous qu'aucune synchronisation n'est configuré sur votre dossier utilisateur.</value>
+  </data>
+  <data name="UnexpectedErrorTeachingTip.Title" xml:space="preserve">
+    <value>Une erreur inattendue est survenue</value>
+  </data>
   <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Content" xml:space="preserve">
     <value>Veuillez sélectionner un dossier vide qui ne se trouve pas à la racine d’un lecteur.
 
 Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et ne doit pas contenir de sous-dossier de synchronisation.</value>
+  </data>
+  <data name="UnexpectedErrorTeachingTip.Content" xml:space="preserve">
+    <value>Veuillez réessayer dans quelques instants.
+Si le problème persiste, veuillez contacter le support</value>
+  </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Content" xml:space="preserve">
+    <value>Si le problème persiste, veuillez contacter le support</value>
   </data>
   <data name="CC_DriveSetupContentDialog_SyncExclusionPage_Title.Text" xml:space="preserve">
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value>

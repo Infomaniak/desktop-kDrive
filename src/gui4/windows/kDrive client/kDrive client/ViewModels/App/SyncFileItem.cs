@@ -3,6 +3,7 @@ using System;
 
 namespace Infomaniak.kDrive.ViewModels
 {
+
     public class SyncFileItem : UISafeObservableObject
     {
         // SyncFileItem properties
@@ -22,6 +23,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DateTime _timestamp = DateTime.Now;
         private string _localPath = "";
         private string _parentFolderPath = "";
+        private int _progressPercent = 0;
 
         public Sync Sync { get; }
 
@@ -82,6 +84,13 @@ namespace Infomaniak.kDrive.ViewModels
             get => _status;
             set => SetPropertyInUIThread(ref _status, value);
         }
+
+        public int ProgressPercent
+        {
+            get => _progressPercent;
+            set => SetPropertyInUIThread(ref _progressPercent, value);
+        }
+
         public ConflictType Conflict
         {
             get => _conflict;

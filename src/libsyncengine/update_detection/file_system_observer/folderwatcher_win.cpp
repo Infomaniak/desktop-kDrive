@@ -18,7 +18,7 @@
 
 #include "folderwatcher_win.h"
 #include "localfilesystemobserverworker.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
@@ -62,7 +62,7 @@ void FolderWatcher_win::startWatching() {
         if (!_stop) {
             changesLost();
             // TODO: Is it necessary to wait?
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
     }
 
@@ -161,28 +161,28 @@ void FolderWatcher_win::watchChanges() {
                     if (notFound) {
                         // Item doesn't exist anymore
                         LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
-                                                                  << CommonUtility::formatSyncPath(longfilepath)
+                                                                  << Utility::formatSyncPath(longfilepath)
                                                                   << L" to Delete (item doesn't exist)");
                         opType = OperationType::Delete;
                         converted = true;
                     } else {
                         // Keep original name
                         LOGW_WARN(KDC::Log::instance()->getLogger(),
-                                  L"Error in Utility::longpath for " << CommonUtility::formatSyncPath(longfilepath));
+                                  L"Error in Utility::longpath for " << Utility::formatSyncPath(longfilepath));
                     }
                 }
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"") << L" detected on item with "
-                                                  << CommonUtility::formatSyncPath(longfilepath));
+                                                  << Utility::formatSyncPath(longfilepath));
             }
 
             if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
 
             if (const auto exitInfo = changeDetected(longfilepath, opType); exitInfo.code() != ExitCode::Ok) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_win::changeDetected for "
-                                                                     << CommonUtility::formatSyncPath(longfilepath) << L" "
+                                                                     << Utility::formatSyncPath(longfilepath) << L" "
                                                                      << exitInfo);
             }
 

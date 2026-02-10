@@ -19,15 +19,19 @@
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "requests/syncnodecache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/upload/uploadjob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/localtemporarydirectory.h"
@@ -175,7 +179,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         SyncTime prevCreationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId);
         SyncTime prevModificationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);
 
-        CommonUtility::msleep(1000);
+        Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         UploadJob job(nullptr, _driveDbId, testFilePath, _testFileId, time);

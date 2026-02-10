@@ -18,6 +18,8 @@
 
 #include "extcommserver.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
 
 bool ExtCommChannel::sendMessage(const CommString &message) {

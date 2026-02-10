@@ -34,14 +34,25 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
-                if (ObViewModel?.SelectedUser is null)
+                if (obvm.SelectedUser is null)
                 {
                     Logger.Log(Logger.Level.Error, "SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
-                    Frame.GoBack();
+                    obvm.Reset();
+                    Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
-                await ObViewModel.SelectedUser.RefreshAvailableDrives();
-                if (!ObViewModel.SelectedUser.AllDrives.Any())
+                if(!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to refresh available drives for user in DriveSelectionPage");
+                    obvm.Reset();
+                    Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+
+                if (!obvm.SelectedUser.AllDrives.Any())
                 {
                     Logger.Log(Logger.Level.Info, "No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
                     Frame.Navigate(typeof(NoDrivesPage), ObViewModel);
@@ -66,14 +77,17 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 string desiredFolderName = drive.Name.StartsWith("kDrive") ? drive.Name : $"kDrive {drive.Name}";
                 string desiredPath = Path.Combine(userProfile, desiredFolderName);
-                IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(drive, desiredPath, CancellationToken.None);
-                if (!result.HasValue || result.Value.GoodPath is null)
+                string? result = await commServices.GetGoodPathForNewSync(drive, desiredPath, CancellationToken.None);
+                if (result is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}': {result?.ErrorMessage ?? "Unknown error"}");
+                    Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}'");
+                    cb.IsChecked = false;
+                    cb.IsEnabled = true;
+                    Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
                     return;
                 }
 
-                NewSync newSync = new() { Drive = drive, DefaultPath = result.Value.GoodPath, LocalPath = result.Value.GoodPath };
+                NewSync newSync = new() { Drive = drive, DefaultPath = result, LocalPath = result };
                 await newSync.SelectBestVfsMode();
 
                 _onBoardingViewModel.NewSyncs.Add(newSync);

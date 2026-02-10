@@ -274,9 +274,8 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
 
     while (!opsToMove.empty()) {
         const auto createPair = opsToMove.top();
-        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << CommonUtility::formatSyncName(createPair.op->affectedNode()->name())
-                                            << L", ancestorOp: "
-                                            << CommonUtility::formatSyncName(createPair.ancestorOp->affectedNode()->name())
+        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(createPair.op->affectedNode()->name()) << L", ancestorOp: "
+                                            << Utility::formatSyncName(createPair.ancestorOp->affectedNode()->name())
                                             << L", depth; " << createPair.opNodeDepth);
         moveFirstAfterSecond(createPair.op, createPair.ancestorOp);
         opsToMove.pop();
@@ -368,7 +367,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     const auto path = node->getPath();
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(path));
         normalizedPath = path;
     }
 
@@ -379,9 +378,8 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     const auto correspondingDestinationParentNode = correspondingNodeInOtherTree(node->parentNode());
     const auto correspondingSourceNode = correspondingNodeInOtherTree(node);
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
-        LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << CommonUtility::formatSyncName(node->name())
-                                                                             << L" (" << CommonUtility::s2ws(*node->id())
-                                                                             << L")");
+        LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << Utility::formatSyncName(node->name()) << L" ("
+                                                                             << CommonUtility::s2ws(*node->id()) << L")");
         return std::nullopt; // Should never happen
     }
 
@@ -509,10 +507,10 @@ void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const
         // make sure opSecond is executed after opFirst
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Operation " << opFirst->id() << L" (" << opFirst->type() << L" "
-                                                      << CommonUtility::formatSyncName(opFirst->affectedNode()->name())
+                                                      << Utility::formatSyncName(opFirst->affectedNode()->name())
                                                       << L") moved after operation " << opSecond->id() << L" ("
                                                       << opSecond->type() << L" "
-                                                      << CommonUtility::formatSyncName(opSecond->affectedNode()->name()) << L")");
+                                                      << Utility::formatSyncName(opSecond->affectedNode()->name()) << L")");
         }
 
         _syncPal->_syncOps->deleteOp(firstIt);
@@ -543,7 +541,7 @@ bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &
     }
 
     if (!found || !tmpId) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << CommonUtility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(path));
         return false;
     }
 

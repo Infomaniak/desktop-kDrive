@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.Pages
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
                 case SyncErrorStates.LoggingError:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LoggingErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LogginErrorPage)));
                     break;
                 case SyncErrorStates.NotRenew:
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));

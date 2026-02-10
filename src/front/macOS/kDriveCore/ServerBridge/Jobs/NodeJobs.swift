@@ -32,8 +32,6 @@ public struct NodeJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodePathResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.path
     }
 
@@ -46,8 +44,6 @@ public struct NodeJobs: Sendable {
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeInfoResponse>.self)
-
-        try decodedMessage.validate()
 
         return NodeInfo(nodeInfoResponseMetadata: decodedMessage.body.nodeInfo)
     }
@@ -62,8 +58,6 @@ public struct NodeJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeSubfoldersResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.nodeSubFolderInfoList.map { NodeInfo(nodeInfoResponseMetadata: $0) }
     }
 
@@ -76,8 +70,6 @@ public struct NodeJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeSubfoldersResponse>.self)
 
-        try decodedMessage.validate()
-
         return decodedMessage.body.nodeSubFolderInfoList.map { NodeInfo(nodeInfoResponseMetadata: $0) }
     }
 
@@ -87,8 +79,6 @@ public struct NodeJobs: Sendable {
         let request = await RequestMessage<NodeSizeQuery>(num: RequestNum.NODE_FOLDER_SIZE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeSizeResponse>.self)
-
-        try decodedMessage.validate()
 
         return decodedMessage.body.folderSize
     }
@@ -100,8 +90,6 @@ public struct NodeJobs: Sendable {
         let request = await RequestMessage<AddMissingFolderQuery>(num: RequestNum.NODE_CREATEMISSINGFOLDERS, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<MissingFolderResponse>.self)
-
-        try decodedMessage.validate()
 
         return decodedMessage.body.parentNodeId
     }

@@ -32,7 +32,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
-#include "utility/jsonparserutility.h"
+#include "../../../src/libcommonserver/utility/jsonparserutility.h"
 
 
 using namespace CppUnit;
@@ -258,7 +258,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
 
     // Wait for all uploads to finish
     while (!jobIds.empty()) {
-        CommonUtility::msleep(10); // Wait 10ms
+        Utility::msleep(10); // Wait 10ms
         while (!jobIds.empty() && SyncJobManagerSingleton::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }

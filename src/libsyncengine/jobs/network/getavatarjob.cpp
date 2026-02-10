@@ -18,7 +18,8 @@
 
 #include "getavatarjob.h"
 #include "jobs/network/networkjobsparams.h"
-#include "libcommon/log/log.h"
+
+#include "libcommonserver/log/log.h"
 
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>

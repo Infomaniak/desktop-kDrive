@@ -17,12 +17,14 @@
  */
 
 #include "abstracttokennetworkjob.h"
+
 #include "config.h"
-#include "libcommonserver/utility/utility.h"
-#include "libparms/db/parmsdb.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
+
+#include "libparms/db/parmsdb.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <unordered_map>
 
@@ -414,7 +416,6 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
                 _userId = it->second.second;
                 apiToken = it->second.first->apiToken();
             } else {
-                assert(false);
                 const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
                 LOG_WARN(_logger, err);
                 throw std::runtime_error(err);

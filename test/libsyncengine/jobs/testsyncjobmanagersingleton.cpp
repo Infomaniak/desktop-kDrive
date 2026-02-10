@@ -28,12 +28,14 @@
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
+
 #include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/dataextractor.h"
-
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 
@@ -126,7 +128,7 @@ void TestSyncJobManagerSingleton::testWithoutCallback() {
         CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 2 minutes",
                                std::chrono::duration_cast<std::chrono::minutes>(now - start).count() < 2);
 
-        CommonUtility::msleep(100); // Wait 100ms
+        Utility::msleep(100); // Wait 100ms
         while (!jobIds.empty() && SyncJobManagerSingleton::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }
@@ -167,7 +169,7 @@ void TestSyncJobManagerSingleton::testWithCallback() {
     int waitCountMax = 1200; // Wait max 2min (Can happen if one of the upload encounters a timeout error)
     while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         waitCountMax--;
-        CommonUtility::msleep(100); // Wait 100ms
+        Utility::msleep(100); // Wait 100ms
     }
 
     if (_jobErrorSocketsDefuncted || _jobErrorOther) {
@@ -220,7 +222,7 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
         (void) _ongoingJobs.try_emplace(job->jobId(), job);
     }
     while (_ongoingJobs.size() == localFileCounter) {
-        CommonUtility::msleep(1); // Wait 1ms
+        Utility::msleep(1); // Wait 1ms
     }
 
     cancelAllOngoingJobs();
@@ -232,7 +234,7 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
             !SyncJobManagerSingleton::instance()->_data._pendingJobs.empty()) &&
            (retry > 0)) {
         retry--;
-        CommonUtility::msleep(10);
+        Utility::msleep(10);
     }
 
     CPPUNIT_ASSERT(SyncJobManagerSingleton::instance()->_data._managedJobs.empty());
@@ -289,7 +291,7 @@ void TestSyncJobManagerSingleton::testJobPriority() {
     // Don't know how to test it but logs looks good...
 
     while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
 }
 
@@ -325,7 +327,7 @@ void TestSyncJobManagerSingleton::testJobPriority2() {
     // Don't know how to test it but logs looks good...
 
     while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
 }
 
@@ -343,7 +345,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         }
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
     }
     // Upload sessions
@@ -361,15 +363,15 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
                                                                testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job1));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
-        CommonUtility::msleep(200);
+        Utility::msleep(200);
         CPPUNIT_ASSERT_EQUAL(false, SyncJobManagerSingleton::instance()->canRunJob(job2));
         while (!SyncJobManagerSingleton::instance()->isJobFinished(job1->jobId())) {
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job2));
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
     }
     // Big files download
@@ -391,13 +393,13 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             }
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             counter++;
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
         CPPUNIT_ASSERT_EQUAL(maxNumberParallelBigDownloads, counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
     }
 }
@@ -509,7 +511,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
         uint32_t waitCountMax = 6000; // Wait max 10 minutes.
         while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
             --waitCountMax;
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
 
         LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors and job errors.");

@@ -23,7 +23,7 @@
 #include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 
 // Input parameters keys
 static const auto inParamsUserDbId = "userDbId";
@@ -66,14 +66,14 @@ ExitInfo UserDeleteJob::process() {
     _commManager->appServer().stopAllSyncsTask(syncDbIdList);
 
     // Delete user from DB
-    const ExitCode exitCode = ServerRequests::deleteUser(_userDbId);
-    if (exitCode == ExitCode::Ok) {
+    const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);
+    if (exitInfo) {
         auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_userDbId);
         _commManager->sendGuiSignal(signalUserRemovedJob);
     } else {
-        LOG_WARN(_logger, "Error in ServerRequests::deleteUser: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        return exitCode;
+        LOG_WARN(_logger, "Error in ServerRequests::deleteUser:" << exitInfo);
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     return ExitCode::Ok;

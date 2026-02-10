@@ -179,7 +179,7 @@ void SyncPalWorker::execute() {
                 LOG_SYNCPAL_INFO(_logger, "***** Pause");
             }
 
-            CommonUtility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
+            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
 
             // Manage unpause
             if (_unpauseAsked) {
@@ -265,7 +265,7 @@ void SyncPalWorker::execute() {
             break;
         }
 
-        CommonUtility::msleep(LOOP_EXEC_SLEEP_PERIOD);
+        Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
@@ -548,18 +548,17 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
 
     NodeId newLocalRootNodeId;
     if (!IoHelper::getNodeId(_syncPal->localPath(), newLocalRootNodeId)) {
-        LOGW_SYNCPAL_WARN(
-                _logger, L"Unable to get new local node ID for " << CommonUtility::formatSyncPath(_syncPal->localPath()) << L".");
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Unable to get new local node ID for " << Utility::formatSyncPath(_syncPal->localPath()) << L".");
         sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning, "Failed to get new local node ID for sync dir",
-                                                    "Sync Dir migration faillure");
+                                                    "Sync Dir migration failure");
         return false;
     }
 
     if (!_syncPal->syncDb()->tryToFixDbNodeIdsAfterSyncDirChange(_syncPal->localPath())) {
         LOGW_SYNCPAL_WARN(_logger, L"SyncDb could not be fixed after sync dir change.");
-        sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
-                                                    "Failed to fix SyncDb node IDs after sync dir change",
-                                                    "Sync Dir migration faillure");
+        sentry::Handler::instance()->captureMessage(
+                KDC::sentry::Level::Warning, "Failed to fix SyncDb node IDs after sync dir change", "Sync Dir migration failure");
         return false;
     }
 
@@ -567,7 +566,7 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
         LOGW_SYNCPAL_WARN(_logger, L"Error in setLocalNodeId: " << exitInfo);
         sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Warning,
                                                     "Failed to set new local node ID after sync dir change",
-                                                    "Sync Dir migration faillure");
+                                                    "Sync Dir migration failure");
         return false;
     }
     LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
@@ -611,8 +610,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             bool isManaged = true;
             auto managedEntryError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedEntryError)) {
-                LOGW_SYNCPAL_WARN(
-                        _logger, L"Error in Utility::checkIfDirEntryIsManaged : " << CommonUtility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
                 ok = false;
                 dirIt.disableRecursionPending();
                 continue;
@@ -620,20 +619,19 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
             if (managedEntryError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore : " << CommonUtility::formatSyncPath(absolutePath));
+                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disableRecursionPending();
                 continue;
             }
 
             if (managedEntryError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission : " << CommonUtility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disableRecursionPending();
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << CommonUtility::formatSyncPath(absolutePath));
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
                 dirIt.disableRecursionPending();
                 continue;
             }
@@ -641,7 +639,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             VfsStatus vfsStatus;
             if (const auto exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in vfsStatus : " << CommonUtility::formatSyncPath(entry.path()) << L": " << exitInfo);
+                                  L"Error in vfsStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
                 ok = false;
                 dirIt.disableRecursionPending();
                 continue;
@@ -654,8 +652,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (vfsStatus.isSyncing) {
                 // Force status to dehydrate
                 if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), VfsStatus()); !exitInfo) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << CommonUtility::formatSyncPath(entry.path())
-                                                                             << L": " << exitInfo);
+                    LOGW_SYNCPAL_WARN(
+                            _logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
                     ok = false;
                     dirIt.disableRecursionPending();
                     continue;
@@ -676,7 +674,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                 (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfs()->fileStatusChanged(entry.path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in fileStatusChanged: " << CommonUtility::formatSyncPath(entry.path()));
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in fileStatusChanged: " << Utility::formatSyncPath(entry.path()));
                     ok = false;
                     dirIt.disableRecursionPending();
                     continue;
@@ -694,7 +692,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
     if (!endOfDir || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << CommonUtility::formatIoError(entry.path(), ioError));
+                                   << Utility::formatIoError(entry.path(), ioError));
     }
 
     if (ok) {

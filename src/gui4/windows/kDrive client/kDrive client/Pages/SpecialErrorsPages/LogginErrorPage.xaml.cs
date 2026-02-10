@@ -28,13 +28,13 @@ using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
 {
-    public sealed partial class LoggingErrorPage : SpecialErroBasePage
+    public sealed partial class LogginErrorPage : SpecialErroBasePage
     {
-        public LoggingErrorPage() : base([SyncErrorStates.LoggingError])
+        public LogginErrorPage() : base([SyncErrorStates.LoggingError])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to LoggingErrorPage - Initializing LoggingErrorPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to LogginErrorPage - Initializing LogginErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "LoggingErrorPage components initialized");
+            Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
         }
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
@@ -50,23 +50,33 @@ namespace Infomaniak.kDrive.Pages
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
                 var OAutCodes = await OAuthHelper.GetCode(cts.Token);
-                if (OAutCodes.Code != "")
+                if (OAutCodes.Code == "")
                 {
-                    Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
-                    User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
-                    if (user is not null && user.DbId == ViewModel.SelectedSync?.Drive.Account.User.DbId)
-                    {
-                        ViewModel.SelectedSync?.Start();
-                    }
-                    else
-                    {
-                        DisplayUserMismatchContent();
-                    }
+                    Logger.Log(Logger.Level.Warning, "Failed to obtain user code.");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
                 }
-                else
+
+                Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
+                User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
+                if (user is null || ViewModel.SelectedSync is null)
                 {
-                    Logger.Log(Logger.Level.Warning, "Authentication process failed");
+                    Logger.Log(Logger.Level.Error, $"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
                 }
+
+                if (user.DbId != ViewModel.SelectedSync.Drive.Account.User.DbId)
+                {
+                    Logger.Log(Logger.Level.Info, "Authenticated user does not match the expected user.");
+                    DisplayUserMismatchContent();
+                    return;
+                }
+
+                if (await ViewModel.SelectedSync.Start())
+                    return;
+
+                Logger.Log(Logger.Level.Error, "Failed to start sync.");
             }
             catch (OperationCanceledException)
             {
@@ -75,6 +85,7 @@ namespace Infomaniak.kDrive.Pages
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
             finally
             {

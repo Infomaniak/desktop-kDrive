@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "utility/types.h"
 #import "iohelper.h"
-#import "libcommonserver/utility/utility.h"
+
+#import "utility/utility.h"
+#import "utility/types.h"
+
+#import "libcommon/utility/utility.h"
 
 #import "config.h"
 
@@ -72,15 +75,15 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in getResourceValue: " << CommonUtility::formatIoError(path, ioError));
+                LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatIoError(path, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in getResourceValue: " << CommonUtility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatSyncPath(path));
         return false;
     } else if (isAliasNumber == nil) {
         // Property not available (should not happen)
-        LOGW_WARN(logger(), L"No NSURLIsAliasFileKey: " << CommonUtility::formatSyncPath(path));
+        LOGW_WARN(logger(), L"No NSURLIsAliasFileKey: " << Utility::formatSyncPath(path));
         return false;
     }
 
@@ -108,12 +111,11 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLWriteBookmarkDataToFile: " << CommonUtility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << CommonUtility::formatSyncPath(aliasPath));
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -140,12 +142,11 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             if (ioError != IoError::Unknown) {
                 return true;
             } else {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLCreateBookmarkDataFromFile: " << CommonUtility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 return false;
             }
         }
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << CommonUtility::formatSyncPath(aliasPath));
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -198,7 +199,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
         }
         CFRelease(aliasUrl);
         CFRelease(targetUrl);
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << CommonUtility::formatSyncPath(targetPath));
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << Utility::formatSyncPath(targetPath));
         return false;
     }
 
@@ -214,7 +215,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
             ioError = nsError2ioError((__bridge NSError *) error);
             CFRelease(error);
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << CommonUtility::formatSyncPath(aliasPath));
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
 
@@ -289,8 +290,8 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 
     if (filePath == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in stringWithCString. Failed to cast std filepath to NSString."
-                                                        << CommonUtility::formatSyncPath(itemPath));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
         return false;
     }
     NSURL *fileURL = [NSURL fileURLWithPath:filePath];
@@ -303,7 +304,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     if (error != nil) {
         const auto wcharError = reinterpret_cast<const wchar_t *>(
                 [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << CommonUtility::formatSyncPath(itemPath));
+        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
     }
 
     return success;

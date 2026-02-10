@@ -439,24 +439,18 @@ class VfsOff : public Vfs {
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/
-        }
+        void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
-        }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/
-        }
-        void hydrate(const SyncPath &) override { /*VfsOff*/
-        }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
-        }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
+        void hydrate(const SyncPath &) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
-        }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
 
         friend class TestWorkers;
 };

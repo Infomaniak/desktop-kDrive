@@ -21,9 +21,12 @@
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/iohelper.h"
+
 #include "libcommon/utility/utility.h"
-#include "libcommon/io/iohelper.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
