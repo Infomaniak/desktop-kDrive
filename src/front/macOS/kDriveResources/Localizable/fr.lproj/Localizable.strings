@@ -3,8 +3,8 @@
  * Project: kDrive Desktop
  * Locale: fr, French
  * Tagged: macOS
- * Exported by: Philippe Weidmann
- * Exported at: Fri, 06 Feb 2026 08:36:54 +0100
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 10 Feb 2026 09:41:27 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -14,19 +14,20 @@
 "accessibilityActivityTypePicker" = "Activités visibles";
 
 /* loco:6981cb92c70239c9ed0d45a3 */
-"activityTitleIdle" = "Synchronisation terminée";
+"activitiesTitleIdle" = "Synchronisation terminée";
 
 /* loco:6981b68b50a70d64050197e2 */
-"activityTitleInProgress" = "Synchronisation en cours";
+"activitiesTitleInProgress" = "Synchronisation en cours";
 
 /* loco:6981cb9319de989ec9033882 */
-"activityTitleNoActivity" = "Aucune activité récente";
+"activitiesTitleNoActivity" = "Aucune activité récente";
 
 /* loco:6981b68a251c4a36c1078274 */
-"activityTypeAllActivities" = "Toutes les activités";
+"activitiesTypeAllActivities" = "Toutes les activités";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activityTypeMyActivity" = "Mon activité uniquement";
+"activitiesTypeMyActivity" = "Mon activité uniquement";
+
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
@@ -39,6 +40,9 @@
 
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Continuer";
+
+/* loco:698a09c2c9fb920b0c03e782 */
+"buttonCopyShareLink" = "Copier le lien de partage";
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
@@ -84,6 +88,9 @@
 
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Voir les offres";
+
+/* loco:698af1b4d7cad5e8710909b2 */
+"buttonShowOption" = "Afficher les options";
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
@@ -137,7 +144,7 @@
 "folderShares" = "Partages";
 
 /* loco:695e5889bc7544361b08b834 */
-"folderTrash" = "Poubelle";
+"folderTrash" = "Corbeille";
 
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Bonjour %@, %@";
@@ -193,6 +200,20 @@
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Redémarrez l’application si demandé";
 
+/* loco:6989ff5b78003eb4e20e2652 */
+"labelFolder" = "Dossier";
+
+/* loco:6989fec57ca0d7305008b1e2 */
+"labelName" = "Nom";
+
+/* loco:6989ff974ef31503cb002e23 */
+"labelSize" = "Taille";
+
+/* loco:698a070557f1356c46048003 */
+"labelStatus" = "Statut";
+
+/* loco:698aeefb604e522161001392 */
+"labelTime" = "Temps";
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
 
@@ -320,7 +341,7 @@
 "synchroUpToDate" = "vos fichiers sont à jour";
 
 /* loco:68a70be4b749277aa1081dc2 */
-"tabTitleActivity" = "Activité";
+"tabTitleActivities" = "Activités";
 
 /* loco:68a705225b0066f86e001d52 */
 "tabTitleHome" = "Accueil";
