@@ -28,7 +28,7 @@ struct WebFolder: Sendable, Identifiable, Equatable {
     let path: String
 
     func url(driveID: Int) -> URL {
-        return URLConstants.kDrive(for: driveID).appendingPathComponent("/\(path)")
+        return URLConstants.kDrive(for: driveID).appendingPathComponent(path)
     }
 
     static let favorites = WebFolder(

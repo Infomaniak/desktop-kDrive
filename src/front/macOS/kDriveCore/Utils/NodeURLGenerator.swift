@@ -30,7 +30,7 @@ public struct DriveNodeURLGenerator: NodeURLGenerator {
     }
 
     public func remoteURL(for nodeId: String, driveId: Int) -> URL {
-        return URLConstants.kDrive(for: driveId).appendingPathComponent("/redirect/\(nodeId)")
+        return URLConstants.kDrive(for: driveId).appendingPathComponent("redirect/\(nodeId)")
     }
 
     public func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL {
