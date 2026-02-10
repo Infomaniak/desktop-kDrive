@@ -337,23 +337,23 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     terminatedJobsQueue.lock(); // Lock the queue for the current thread
 
     std::thread t1(inserter, 1);
-    CommonUtility::msleep(10); // Give enough time for the thread to terminate
+    Utility::msleep(10); // Give enough time for the thread to terminate
     CPPUNIT_ASSERT_EQUAL(0, ended);
 
     std::thread t2(fronter);
-    CommonUtility::msleep(10);
+    Utility::msleep(10);
     CPPUNIT_ASSERT_EQUAL(0, ended);
 
     std::thread t3(popper);
-    CommonUtility::msleep(10);
+    Utility::msleep(10);
     CPPUNIT_ASSERT_EQUAL(0, ended);
 
     std::thread t4(emptyChecker);
-    CommonUtility::msleep(10);
+    Utility::msleep(10);
     CPPUNIT_ASSERT_EQUAL(0, ended);
 
     terminatedJobsQueue.unlock(); // Unlock the queue for the current thread
-    CommonUtility::msleep(10);
+    Utility::msleep(10);
     CPPUNIT_ASSERT_EQUAL(4, ended);
 
     t1.join();

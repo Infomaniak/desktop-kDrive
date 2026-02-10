@@ -19,10 +19,13 @@
 #include "testsyncpalworker.h"
 
 #include "jobs/syncjobmanager.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
+
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -115,7 +118,7 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
                     syncPtr->unpause();
                 }
             }
-            CommonUtility::msleep(100);
+            Utility::msleep(100);
         }
     };
     _runningThreads.emplace_back(std::make_shared<std::thread>(restarter, _syncPal));
@@ -386,7 +389,7 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(boo
 
     const auto start = steady_clock::now();
     while (_networkAvailable && !stopAsked() && start + _longPollDuration < steady_clock::now()) {
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
     if (!_networkAvailable) {
         return ExitCode::NetworkError;

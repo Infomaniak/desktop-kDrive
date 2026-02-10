@@ -51,10 +51,10 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void SecondaryButton_Click(object sender, RoutedEventArgs e)
+        private async void SecondaryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Renew drive button clicked - Opening drive renewal page");
-            ViewModel.SelectedSync?.Start();
+            await RestartSync();
         }
 
         private async void MainButton_Click(object sender, RoutedEventArgs e)
@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive.Pages
             else
             {
                 Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync to retry connection");
-                ViewModel.SelectedSync?.Start();
+                await RestartSync();
             }
         }
     }

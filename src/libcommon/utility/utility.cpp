@@ -21,7 +21,6 @@
 #include "log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
-#include "io/iohelper.h"
 
 #include <system_error>
 #include <sys/types.h>
@@ -1149,7 +1148,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        (void) IoHelper::deleteItem(sigFilePath);
+        (void) std::filesystem::remove(sigFilePath);
     }
 }
 
@@ -1393,64 +1392,6 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
-bool CommonUtility::isWindows() {
-#if defined(KD_WINDOWS)
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isMac() {
-#if defined(KD_MACOS)
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isLinux() {
-#if defined(KD_LINUX)
-    return true;
-#else
-    return false;
-#endif
-}
-
-void CommonUtility::msleep(int msec) {
-    std::chrono::milliseconds dura(msec);
-    std::this_thread::sleep_for(dura);
-}
-
-bool CommonUtility::getLinuxDesktopType(std::string &currentDesktop) {
-    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
-    if (xdgCurrentDesktop.empty()) {
-        return false;
-    }
-
-    // ':' is the separator in the env variable, like "ubuntu:GNOME"
-    size_t colon_pos = xdgCurrentDesktop.find(':');
-
-    if (colon_pos != std::string::npos) {
-        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
-        return true;
-    }
-
-    return false;
-}
-
-#ifdef KD_MACOS
-SyncPath CommonUtility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
-        return {};
-    }
-
-    return SyncPath(homePathEnv) / ".Trash";
-}
-#endif
-
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);
@@ -1500,86 +1441,28 @@ void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64
     base64Str = ostr.str();
 }
 
-std::wstring CommonUtility::formatStdError(const std::error_code &ec) {
+bool CommonUtility::isWindows() {
 #if defined(KD_WINDOWS)
-    std::stringstream ss;
-    ss << ec.message() << " (code: " << ec.value() << ")";
-    return CommonUtility::s2ws(ss.str());
-#elif defined(KD_LINUX)
-    std::stringstream ss;
-    ss << ec.message() << ". (code: " << ec.value() << ")";
-    return CommonUtility::s2ws(ss.str());
-#elif defined(KD_MACOS)
-    return CommonUtility::s2ws(ec.message());
+    return true;
+#else
+    return false;
 #endif
 }
 
-std::wstring CommonUtility::formatStdError(const SyncPath &path, const std::error_code &ec) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << formatStdError(ec) << L"'";
-
-    return ss.str();
+bool CommonUtility::isMac() {
+#if defined(KD_MACOS)
+    return true;
+#else
+    return false;
+#endif
 }
 
-std::wstring CommonUtility::formatIoError(const IoError ioError) {
-    std::wstringstream ss;
-    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatIoError(const SyncPath &path, const IoError ioError) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatIoError(const QString &path, const IoError ioError) {
-    return formatIoError(QStr2Path(path), ioError);
-}
-
-std::wstring CommonUtility::formatErrno(const SyncPath &path, long cError) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatErrno(const QString &path, long cError) {
-    return formatErrno(QStr2Path(path), cError);
-}
-
-std::wstring CommonUtility::quotedSyncName(const SyncName &name) {
-    return L"'" + SyncName2WStr(name) + L"'";
-}
-
-std::wstring CommonUtility::formatSyncName(const SyncName &name) {
-    std::wstringstream ss;
-    ss << L"name=" << quotedSyncName(name);
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatSyncPath(const SyncPath &path) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"'";
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatPath(const QString &path) {
-    std::wstringstream ss;
-    ss << L"path='" << QStr2WStr(path) << L"'";
-
-    return ss.str();
-}
-
-std::wstring CommonUtility::formatSystemError(const std::system_error &exception) {
-    std::wstringstream ss;
-    ss << L"code=" << exception.code() << L", error=" << exception.what();
-
-    return ss.str();
+bool CommonUtility::isLinux() {
+#if defined(KD_LINUX)
+    return true;
+#else
+    return false;
+#endif
 }
 
 } // namespace KDC

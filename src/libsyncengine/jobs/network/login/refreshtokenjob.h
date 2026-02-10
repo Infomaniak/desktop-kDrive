@@ -19,7 +19,8 @@
 #pragma once
 
 #include "abstractloginjob.h"
-#include "libcommon/keychainmanager/apitoken.h"
+
+#include "libcommonserver/keychainmanager/apitoken.h"
 
 namespace KDC {
 

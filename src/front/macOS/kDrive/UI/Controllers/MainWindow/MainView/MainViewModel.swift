@@ -27,6 +27,7 @@ import kDriveCoreUI
 final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
+    @LazyInjectService private var router: MainViewRouter
 
     var currentUser: UIUser? { currentSynchroContext?.user }
     var currentDrive: UIDrive? { currentSynchroContext?.drive }
@@ -69,6 +70,11 @@ final class MainViewModel: ObservableObject {
     private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
         availableSynchros = synchros
         updateSelectedItems()
+        if currentBlockingError != nil {
+            router.setCurrentTab(.blockingError)
+        } else if router.currentPath.mainTab == .blockingError {
+            router.setCurrentTab(.home)
+        }
     }
 
     private func updateSelectedItems() {

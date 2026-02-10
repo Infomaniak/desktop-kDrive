@@ -112,15 +112,15 @@ void OperationGeneratorWorker::execute() {
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
-                                                                      << CommonUtility::formatSyncPath(_syncPal->localPath())
-                                                                      << L", " << _bytesToDownload
+                                                                      << Utility::formatSyncPath(_syncPal->localPath()) << L", "
+                                                                      << _bytesToDownload
                                                                       << L" B to download. Synchronization canceled.");
                 exitCode = ExitCode::SystemError;
                 setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at "
-                                               << CommonUtility::formatSyncPath(_syncPal->localPath()));
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
         }
     }
 
@@ -153,14 +153,14 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create-Create pseudo conflict detected. Operation Create to be propagated in DB only for item "
-                                       << CommonUtility::formatSyncPath(currentNode->getPath()));
+                                       << Utility::formatSyncPath(currentNode->getPath()));
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create operation "
                                        << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << CommonUtility::formatSyncPath(currentNode->getPath()) << L" ("
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
 
@@ -183,7 +183,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
-                                       << CommonUtility::formatSyncPath(currentNode->getPath()));
+                                       << Utility::formatSyncPath(currentNode->getPath()));
         }
     }
 
@@ -191,7 +191,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     bool propagateEdit = true;
     if (const auto exitInfo = editChangeShouldBePropagated(currentNode, propagateEdit); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
-                                           << CommonUtility::formatSyncPath(currentNode->getPath()) << L" " << exitInfo);
+                                           << Utility::formatSyncPath(currentNode->getPath()) << L" " << exitInfo);
         _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
     }
 
@@ -202,7 +202,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
             LOGW_SYNCPAL_DEBUG(
                     _logger,
                     L"Among dates, only the creation date has changed. Operation Edit to be propagated in DB only for item with "
-                            << CommonUtility::formatSyncPath(currentNode->getPath()));
+                            << Utility::formatSyncPath(currentNode->getPath()));
         }
     }
 
@@ -222,7 +222,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit operation "
                                        << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << CommonUtility::formatSyncPath(currentNode->getPath()) << L"(ID: "
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L"(ID: "
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
 
@@ -269,14 +269,14 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                     _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
-                                     << CommonUtility::formatSyncPath(currentNode->getPath()));
+                                     << Utility::formatSyncPath(currentNode->getPath()));
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Move operation "
                                                 << op->id() << L" to be propagated on " << op->targetSide() << L" replica from "
-                                                << CommonUtility::formatSyncPath(currentNode->moveOriginInfos().path()) << L" to "
-                                                << CommonUtility::formatSyncPath(currentNode->getPath()) << L" (ID: "
+                                                << Utility::formatSyncPath(currentNode->moveOriginInfos().path()) << L" to "
+                                                << Utility::formatSyncPath(currentNode->getPath()) << L" (ID: "
                                                 << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1")
                                                 << L")");
         }
@@ -290,7 +290,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     assert(correspondingNode);
 
     if (!currentNode->parentNode() || !currentNode->parentNode()->id().has_value()) {
-        LOGW_SYNCPAL_WARN(_logger, L"Missing parent for node with " << CommonUtility::formatSyncName(currentNode->name()));
+        LOGW_SYNCPAL_WARN(_logger, L"Missing parent for node with " << Utility::formatSyncName(currentNode->name()));
         return;
     }
 
@@ -322,7 +322,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
                                                 << op->targetSide()
                                                 << L" replica. Operation Delete to be propagated in DB only for item "
-                                                << CommonUtility::formatSyncPath(currentNode->getPath()));
+                                                << Utility::formatSyncPath(currentNode->getPath()));
         }
         _syncPal->setRestart(true);
         // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
@@ -332,7 +332,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Delete operation "
                                        << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                       << CommonUtility::formatSyncPath(currentNode->getPath()) << L" ("
+                                       << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
     }

@@ -2,6 +2,7 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
@@ -90,113 +91,53 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             await Utility.OpenFolderSecurely(path);
         }
-        private void OnlineRadioButtonClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+
+        private async void SyncTypeRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            if (OnlineRadioButton.IsChecked == true)
+            var radioButton = sender as RadioButton;
+            if (radioButton is null)
             {
-                OnlineRadioButtonChecked();
-            }
-            else
-            {
-                OnlineRadioButtonUnchecked();
+                Logger.Log(Logger.Level.Error, "Online sync mode radio button is null when clicking on online sync mode radio button");
+                return;
             }
 
-        }
-
-        private async void OnlineRadioButtonChecked()
-        {
-            if (!IsLoaded || !OnlineRadioButton.IsEnabled)
+            if (!radioButton.IsEnabled || radioButton.IsChecked != true)
                 return;
 
-            Logger.Log(Logger.Level.Info, "User initiated change to online Sync mode");
-            OnlineRadioButton.IsEnabled = false;
-            OfflineRadioButton.IsEnabled = false;
-            bool succeed = false;
-            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
-
-            var revertFunc = () =>
+            Sync? sync = ManagedDrive?.MainSync;
+            if (sync is null)
             {
-                OnlineRadioButton.IsChecked = false;
-                OfflineRadioButton.IsChecked = true;
-                OnlineRadioButton.IsEnabled = true;
-                OfflineRadioButton.IsEnabled = true;
-            };
+                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on online sync mode radio button");
+                return;
+            }
 
+            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
             if (canceledByUser)
             {
                 Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-                revertFunc();
+                // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
+                if (radioButton.Name == "OnlineRadioButton")
+                {
+                    sync.SyncType = Types.SyncType.Online;
+                    sync.SyncType = Types.SyncType.Offline;
+                }
+                else
+                {
+                    sync.SyncType = Types.SyncType.Offline;
+                    sync.SyncType = Types.SyncType.Online;
+                }
                 return;
             }
 
-            Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
-            if (ManagedDrive?.MainSync is not null)
-            {
-                succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Online);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Cannot change sync mode: ManagedDrive or MainSync is null");
-                succeed = false;
-            }
 
+            bool success = false;
+            if (radioButton.Name == "OnlineRadioButton")
+                success = await sync.ChangeSyncType(Types.SyncType.Online);
+            else if (radioButton.Name == "OfflineRadioButton")
+                success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
-            if (!succeed)
-            {
+            if (!success)
                 await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-                revertFunc();
-            }
-
-            OnlineRadioButton.IsEnabled = true;
-            OfflineRadioButton.IsEnabled = true;
-        }
-
-        private async void OnlineRadioButtonUnchecked()
-        {
-            if (!IsLoaded || !OnlineRadioButton.IsEnabled)
-                return;
-
-            Logger.Log(Logger.Level.Info, "User initiated change to offline Sync mode");
-            OnlineRadioButton.IsEnabled = false;
-            OfflineRadioButton.IsEnabled = false;
-            bool succeed = false;
-            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
-
-            var revertFunc = () =>
-            {
-                OnlineRadioButton.IsChecked = true;
-                OfflineRadioButton.IsChecked = false;
-                OnlineRadioButton.IsEnabled = true;
-                OfflineRadioButton.IsEnabled = true;
-            };
-
-            if (canceledByUser)
-            {
-                Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-                revertFunc();
-                return;
-            }
-
-            Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
-            if (ManagedDrive?.MainSync is not null)
-            {
-                succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Offline);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Cannot change sync mode: ManagedDrive or MainSync is null");
-                succeed = false;
-            }
-
-
-            if (!succeed)
-            {
-                await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-                revertFunc();
-            }
-
-            OnlineRadioButton.IsEnabled = true;
-            OfflineRadioButton.IsEnabled = true;
         }
 
         private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -211,33 +152,45 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void RemoveSyncSettingsCard_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (ManagedDrive is not null && ManagedDrive.MainSync is not null)
-            {
-                var control = sender as Control;
-                if (control is not null)
-                    control.IsEnabled = false;
-                bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
-                var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
-                if (dialogResult == ContentDialogResult.Primary)
-                {
-                    Logger.Log(Logger.Level.Info, "User confirmed sync removal");
-                    await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None);
-                    if (goBackOnceDone)
-                    {
-                        Frame.Navigate(typeof(SettingsPage));
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Info, "User canceled sync removal");
-                }
-                if (control is not null)
-                    control.IsEnabled = true;
-            }
-            else
+            if (ManagedDrive is null || ManagedDrive.MainSync is null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or MainSync is null");
+                return;
             }
+
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "Cannot remove sync: sender is not a Control");
+                return;
+            }
+
+            control.IsEnabled = false;
+            bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
+            
+            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+            if (dialogResult != ContentDialogResult.Primary)
+            {
+                Logger.Log(Logger.Level.Info, "User canceled sync removal");
+                control.IsEnabled = true;
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, "User confirmed sync removal");
+            if (!await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to remove sync");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                control.IsEnabled = true;
+                return;
+            }
+            Logger.Log(Logger.Level.Info, "Sync removed successfully");
+            if (goBackOnceDone)
+            {
+                Frame.Navigate(typeof(SettingsPage));
+            }
+
+            control.IsEnabled = true;
         }
 
         private async void SetupMainSyncButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -256,19 +209,15 @@ namespace Infomaniak.kDrive.Pages.Settings
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string desiredFolderName = BaseDrive.Name.StartsWith("kDrive") ? BaseDrive.Name : $"kDrive {BaseDrive.Name}";
             string desiredPath = Path.Combine(userProfile, desiredFolderName);
-            IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(BaseDrive, desiredPath, CancellationToken.None);
-            if (!result.HasValue || result.Value.GoodPath is null)
+            string? result = await commServices.GetGoodPathForNewSync(BaseDrive, desiredPath, CancellationToken.None);
+            if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}': {result?.ErrorMessage ?? "Unknown error"}");
+                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}'");
+                Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
                 return;
             }
 
-            NewSync newSync = new NewSync()
-            {
-                Drive = BaseDrive,
-                DefaultPath = result.Value.GoodPath,
-                LocalPath = result.Value.GoodPath
-            };
+            NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
             List<NewSync> newSyncs = new() { newSync };
 
@@ -286,7 +235,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
             Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
-            await commService.AddSync(newSync, CancellationToken.None);
+            if (!await commService.AddSync(newSync, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive '{BaseDrive.Name}'");
+                if (control is not null)
+                    control.IsEnabled = true;
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
 
             if (ManagedDrive is null) // if the drive was not configured before, set it up now
             {

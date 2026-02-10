@@ -88,14 +88,14 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
     if (!paths.empty()) {
         if (const auto exitInfo = fw->doNotifyParent(paths); exitInfo.code() != ExitCode::Ok) {
             LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_mac::doNotifyParent for "
-                                                                 << CommonUtility::formatSyncPath(paths.front().first) << L"... "
+                                                                 << Utility::formatSyncPath(paths.front().first) << L"... "
                                                                  << exitInfo);
         }
     }
 }
 
 void FolderWatcher_mac::startWatching() {
-    LOGW_DEBUG(_logger, L"Start watching folder: " << CommonUtility::formatSyncPath(_folder));
+    LOGW_DEBUG(_logger, L"Start watching folder: " << Utility::formatSyncPath(_folder));
     LOG_DEBUG(_logger, "File system format: " << CommonUtility::fileSystemName(_folder));
     LOG_DEBUG(_logger, "Free space on disk: " << Utility::getFreeDiskSpace(_folder) << " bytes.");
 
@@ -121,7 +121,7 @@ void FolderWatcher_mac::startWatching() {
 
     CFRunLoopRun();
 
-    LOGW_DEBUG(_logger, L"Folder watching stopped: " << CommonUtility::formatSyncPath(_folder));
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
 ExitInfo FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
@@ -153,7 +153,7 @@ OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFl
 void KDC::FolderWatcher_mac::stopWatching() {
     const std::scoped_lock lock(_streamMutex);
     if (_stream) {
-        LOGW_DEBUG(_logger, L"Stop watching folder: " << CommonUtility::formatSyncPath(_folder));
+        LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
         CFRunLoopStop(_ref);
         FSEventStreamStop(_stream);
         FSEventStreamInvalidate(_stream);

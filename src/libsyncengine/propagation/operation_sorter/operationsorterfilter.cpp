@@ -107,7 +107,7 @@ void OperationSorterFilter::filterMoveBeforeDeleteCandidates(const SyncOpPtr &op
         SyncPath normalizedDeletedPath;
         if (const auto deletedPath = op->affectedNode()->getPath();
             !Utility::normalizedSyncPath(deletedPath, normalizedDeletedPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncPath(deletedPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(deletedPath));
             normalizedDeletedPath = deletedPath;
         }
         (void) deletedDirectoryPaths.try_emplace(normalizedDeletedPath, op);
@@ -150,7 +150,7 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
         SyncPath normalizedCreatedPath;
         if (const auto createdPath = op->affectedNode()->getPath();
             !Utility::normalizedSyncPath(createdPath, normalizedCreatedPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncPath(createdPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(createdPath));
             normalizedCreatedPath = createdPath;
         }
         (void) createdDirectoryPaths.try_emplace(normalizedCreatedPath, op);
@@ -171,7 +171,7 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
         SyncPath normalizedDestinationPath;
         if (const auto destinationPath = op->affectedNode()->getPath();
             !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncPath(destinationPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(destinationPath));
             normalizedDestinationPath = destinationPath;
         }
         (void) moveDestinationPaths.try_emplace(normalizedDestinationPath, op);
@@ -269,7 +269,7 @@ void OperationSorterFilter::filterMoveBeforeMoveHierarchyFlipCandidates(
     SyncPath normalizedDestinationPath;
     if (const auto destinationPath = op->affectedNode()->getPath();
         !Utility::normalizedSyncPath(destinationPath, normalizedDestinationPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncPath(destinationPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncPath(destinationPath));
         normalizedDestinationPath = destinationPath;
     }
 

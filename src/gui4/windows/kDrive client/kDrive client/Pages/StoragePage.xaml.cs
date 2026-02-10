@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -232,12 +233,19 @@ namespace Infomaniak.kDrive.Pages
             IsDiskConnected = false;
             var syncPath = sync.LocalPath;
             DiskRoot = Path.GetPathRoot(syncPath) ?? "";
-            if (DiskRoot == "")
+            if (DiskRoot.Length == 0)
             {
                 Logger.Log(Logger.Level.Warning, $"Unable to get disk root of {syncPath}");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                DiskSize = -1;
+                DiskFreeSize = -1;
+                DiskUsedSize = -1;
+                HydratedFileSize = -1;
+                OtherFileSize = -1;
                 Loading = false;
                 return;
             }
+
             try
             {
                 DriveInfo driveInfo = new DriveInfo(DiskRoot);
@@ -246,9 +254,11 @@ namespace Infomaniak.kDrive.Pages
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
                 HydratedFileSize = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
-                if (HydratedFileSize == null)
+                if (HydratedFileSize is null)
                 {
                     Loading = false;
+                    HydratedFileSize = -1;
+                    OtherFileSize = -1;
                     Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
                     return;
                 }
@@ -270,13 +280,17 @@ namespace Infomaniak.kDrive.Pages
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             UInt64? res = await commService.GetSyncOfflineFilesSize(AppViewModel.SelectedSync.DbId, cancellationToken);
 
-            if (res is not null)
-                if (res.Value > long.MaxValue)
-                    return long.MaxValue;
-                else
-                    return (long)res.Value;
-            else
+            if (res is null)
+            {
+                Logger.Log(Logger.Level.Warning, "GetSyncOfflineFilesSize returned null");
+                Utility.ShowUnexpectedErrorTeachingTip();
                 return null;
+            }
+
+            if (res.Value > long.MaxValue)
+                return long.MaxValue;
+            else
+                return (long)res.Value;
         }
     }
 }

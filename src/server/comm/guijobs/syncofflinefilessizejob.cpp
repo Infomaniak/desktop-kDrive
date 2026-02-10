@@ -19,7 +19,7 @@
 #include "syncofflinefilessizejob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
-#include "libcommon/log/log.h"
+#include "libcommonserver/log/log.h"
 #include <requests/offlinefilessizeestimator.h>
 #include <mutex>
 

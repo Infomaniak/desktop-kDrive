@@ -17,9 +17,12 @@
  */
 
 #include "sqlitequery.h"
+
 #include "utility/utility.h"
 #include "utility/logiffail.h"
 #include "log/log.h"
+
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -55,7 +58,7 @@ int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
 
             if ((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)) {
                 n++;
-                CommonUtility::msleep(SQLITE_SLEEP_TIME_MSEC);
+                Utility::msleep(SQLITE_SLEEP_TIME_MSEC);
             }
         } while ((n < SQLITE_REPEAT_COUNT) && ((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)));
         _errId = rc;
@@ -135,9 +138,9 @@ bool SqliteQuery::exec() {
         if (rc == SQLITE_LOCKED) {
             rc = sqlite3_reset(_stmt.get()); /* This will also return SQLITE_LOCKED */
             n++;
-            CommonUtility::msleep(SQLITE_SLEEP_TIME_MSEC);
+            Utility::msleep(SQLITE_SLEEP_TIME_MSEC);
         } else if (rc == SQLITE_BUSY) {
-            CommonUtility::msleep(SQLITE_SLEEP_TIME_MSEC);
+            Utility::msleep(SQLITE_SLEEP_TIME_MSEC);
             n++;
         }
     } while ((n < SQLITE_REPEAT_COUNT) && ((rc == SQLITE_BUSY) || (rc == SQLITE_LOCKED)));
@@ -178,7 +181,7 @@ SqliteQuery::NextResult KDC::SqliteQuery::next() {
         if (n < SQLITE_REPEAT_COUNT && firstStep && (_errId == SQLITE_LOCKED || _errId == SQLITE_BUSY)) {
             sqlite3_reset(_stmt.get()); // not necessary after sqlite version 3.6.23.1
             n++;
-            CommonUtility::msleep(SQLITE_SLEEP_TIME_MSEC);
+            Utility::msleep(SQLITE_SLEEP_TIME_MSEC);
         } else {
             break;
         }

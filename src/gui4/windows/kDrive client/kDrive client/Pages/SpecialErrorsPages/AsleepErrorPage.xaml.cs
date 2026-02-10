@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.Pages
         private async void SecondaryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync");
-            ViewModel.SelectedSync?.Start();
+            await RestartSync();
         }
     }
 }

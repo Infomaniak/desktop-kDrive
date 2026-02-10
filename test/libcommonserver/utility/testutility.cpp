@@ -20,9 +20,11 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
+
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "libcommon/io/iohelper.h"
-#include "../../../src/libcommon/log/log.h"
+
+#include "log/log.h"
+#include "io/iohelper.h"
 
 #include <Poco/URI.h>
 
@@ -75,7 +77,7 @@ void TestUtility::testIsCreationDateValid(void) {
 
 void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
-    CommonUtility::msleep(1000);
+    Utility::msleep(1000);
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
@@ -129,11 +131,11 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(CommonUtility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
-    CPPUNIT_ASSERT(!CommonUtility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
 }
 
 void TestUtility::testStr2HexStr() {
@@ -338,13 +340,13 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
 
 void TestUtility::testFormatStdError() {
     const std::error_code ec;
-    std::wstring result = CommonUtility::formatStdError(ec);
+    std::wstring result = Utility::formatStdError(ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
     const SyncPath path = "A/AA";
-    result = CommonUtility::formatStdError(path, ec);
+    result = Utility::formatStdError(path, ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
                            result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
@@ -356,7 +358,7 @@ void TestUtility::testFormatIoError() {
     {
         const IoError ioError = IoError::Success;
         const SyncPath path = "A/AA";
-        const std::wstring result = CommonUtility::formatIoError(path, ioError);
+        const std::wstring result = Utility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
@@ -368,7 +370,7 @@ void TestUtility::testFormatIoError() {
     {
         const IoError ioError = IoError::Success;
         const QString path = "A/AA";
-        const std::wstring result = CommonUtility::formatIoError(path, ioError);
+        const std::wstring result = Utility::formatIoError(path, ioError);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
                                result.find(L"err='Success'") != std::wstring::npos);
         CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
@@ -380,17 +382,17 @@ void TestUtility::testFormatIoError() {
 
 void TestUtility::testFormatSyncName() {
     const SyncName name = Str("FileA.txt");
-    CPPUNIT_ASSERT(CommonUtility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
 }
 
 void TestUtility::testFormatPath() {
     const QString path = "A/AA";
-    CPPUNIT_ASSERT(CommonUtility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(CommonUtility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(CommonUtility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest() {
@@ -465,7 +467,7 @@ void TestUtility::testUserName() {
     const char *value = std::getenv("USERPROFILE");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << CommonUtility::formatSyncPath(homeDir));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
 
     if (homeDir.filename().native() == std::wstring(L"systemprofile")) {
         // CI execution
@@ -477,7 +479,7 @@ void TestUtility::testUserName() {
     const char *value = std::getenv("HOME");
     CPPUNIT_ASSERT(value);
     const SyncPath homeDir(value);
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << CommonUtility::formatSyncPath(homeDir));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
     CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
 #endif
 }

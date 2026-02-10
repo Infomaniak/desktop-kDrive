@@ -29,7 +29,9 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
 

@@ -193,7 +193,12 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 IsLoading = true;
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None);
+                if (!await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None))
+                {
+                    Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
                 await ReloadAsync();
                 IsLoading = false;
             }
@@ -276,7 +281,12 @@ namespace Infomaniak.kDrive.CustomControls
         {
             IsLoading = true;
             ClearAllTreeItems();
-            await RefreshExcludedNodesAsync();
+            if (!await RefreshExcludedNodesAsync())
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                IsLoading = false;
+                return;
+            }
             await BuildRootLevelItemsAsync();
             IsLoading = false;
         }
@@ -324,7 +334,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         // Refresh exclusion map from server
-        private async Task RefreshExcludedNodesAsync()
+        private async Task<bool> RefreshExcludedNodesAsync()
         {
             if (Sync is ViewModels.Sync dbSync)
             {
@@ -334,39 +344,46 @@ namespace Infomaniak.kDrive.CustomControls
                 if (syncDbId != -1) // Existing sync -> load exclusions
                 {
                     var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                    _excludedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
-                    await RefreshExcludedNodePathsAsync();
+                    var res = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None);
+                    if (res is null)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
+                        _excludedNodeIds.Clear();
+                        return false;
+                    }
+                    _excludedNodeIds = res;
+                    return await RefreshExcludedNodePathsAsync();
                 }
-                else // New sync -> no exclusions
-                {
-                    _excludedNodePathsMap.Clear();
-                }
+
+                // New sync -> no exclusions
+                _excludedNodePathsMap.Clear();
+                return true;
             }
             else if (Sync is NewSync tmpSync)
             {
                 _excludedNodeIds.Clear();
                 _excludedNodeIds = tmpSync.ExcludedNodeIds.ToList();
-                await RefreshExcludedNodePathsAsync();
+                return await RefreshExcludedNodePathsAsync();
             }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
-            }
+
+            Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
+            return false;
         }
 
         // Ensure path map for excluded nodes is up to date (add new)
-        private async Task RefreshExcludedNodePathsAsync()
+        private async Task<bool> RefreshExcludedNodePathsAsync()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            async Task loadPath(NodeId nodeId)
+            async Task<bool> loadPath(NodeId nodeId)
             {
                 var nodeInfo = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
                 if (nodeId is null || nodeInfo is null || nodeInfo.Path == "")
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
-                    return;
+                    return false;
                 }
                 _excludedNodePathsMap.TryAdd(nodeId, nodeInfo.Path);
+                return true;
             }
             var newExcludedNodePathsMap = _excludedNodePathsMap.Where(pair => _excludedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
             _excludedNodePathsMap.Clear(); // Cannot just use "=" because of references held by TreeItems.
@@ -376,12 +393,22 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Fetch path for newly excluded nodes
-            List<Task> loadTasks = [];
+            List<Task<bool>> loadTasks = [];
             foreach (var nodeId in _excludedNodeIds.Where(id => !_excludedNodePathsMap.ContainsKey(id)))
             {
                 loadTasks.Add(loadPath(nodeId));
             }
             await Task.WhenAll(loadTasks);
+
+            // Check for any failures
+            bool results = loadTasks.All(t => t.Result);
+            if (!results)
+            {
+                Logger.Log(Logger.Level.Warning, "Some excluded node paths failed to load.");
+                _excludedNodePathsMap.Clear();
+            }
+
+            return results;
         }
         #endregion
 
@@ -456,7 +483,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (treeItem is not null)
             {
                 DeselectAllDescendants(treeItem, false);
-                treeItem.IsSelected = treeItem.Children.Any() ? null : false;
+                treeItem.IsSelected = false;
                 if (!IsLoading)
                     UpdateHasPendingChanges();
             }
@@ -690,14 +717,19 @@ namespace Infomaniak.kDrive.CustomControls
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             List<Node>? nodes = await commService.GetSubFolders(_userDbId, _driveId, Node.NodeId, CancellationToken.None);
-            if (nodes != null)
+            if (nodes is null)
             {
-                foreach (Node node in nodes)
-                    Children.Add(new TreeItem(node, _userDbId, _driveId, this, _excludedNodes));
-                _childrenLoaded = true;
-            }
-            else
                 Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
+                IsLoadingChildren = false;
+                Utility.ShowUnexpectedErrorTeachingTip();
+                _childrenLoaded = true;
+                IsLoadingChildren = false;
+                return;
+            }
+
+            foreach (Node node in nodes)
+                Children.Add(new TreeItem(node, _userDbId, _driveId, this, _excludedNodes));
+            _childrenLoaded = true;
             IsLoadingChildren = false;
         }
 

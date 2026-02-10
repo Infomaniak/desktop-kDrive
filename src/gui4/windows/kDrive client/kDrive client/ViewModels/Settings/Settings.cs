@@ -80,63 +80,142 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _sentryEnabled, value);
         }
 
-        public async Task ChangeAutoStart(bool activated)
+        public async Task<bool> ChangeAutoStart(bool activated)
         {
+            if (AutoStart == activated)
+                return true;
+
             AutoStart = activated;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                AutoStart = !activated;
+                return false;
+            }
+            return true;
         }
-        public async Task ChangeNotificationsDisabled(NotificationsDisabled notificationsDisabled)
+
+        public async Task<bool> ChangeNotificationsDisabled(NotificationsDisabled notificationsDisabled)
         {
+            if (NotificationsDisabled == notificationsDisabled)
+                return true;
+
+            var previousState = NotificationsDisabled;
             NotificationsDisabled = notificationsDisabled;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                NotificationsDisabled = previousState;
+                return false;
+            }
+            return true;
         }
-        public async Task ChangeMoveToTrash(bool activated)
+
+        public async Task<bool> ChangeMoveToTrash(bool activated)
         {
+            if (MoveToTrash == activated)
+                return true;
+
             MoveToTrash = activated;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                MoveToTrash = !activated;
+                return false;
+            }
+            return true;
         }
 
-        public async Task ChangeMatomoEnabled(bool enabled)
+        public async Task<bool> ChangeMatomoEnabled(bool enabled)
         {
+            if (MatomoEnabled == enabled)
+                return true;
+
             MatomoEnabled = enabled;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                MatomoEnabled = !enabled;
+                return false;
+            }
+            return true;
         }
-        public async Task ChangeSentryEnabled(bool enabled)
+
+        public async Task<bool> ChangeSentryEnabled(bool enabled)
         {
+            if (SentryEnabled == enabled)
+                return true;
+
             SentryEnabled = enabled;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                SentryEnabled = !enabled;
+                return false;
+            }
+            return true;
         }
 
-        public async Task ChangeProxyType(ProxyType newType)
+        public async Task<bool> ChangeProxyType(ProxyType newType)
         {
+            if (ProxyConfig.Type == newType)
+                return true;
+
+            var previousType = ProxyConfig.Type;
             ProxyConfig.Type = newType;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                ProxyConfig.Type = previousType;
+                return false;
+            }
+            return true;
         }
 
-        public async Task ChangeProxyConfiguration(string hostName, int port, bool needsAuth, string user, string pwd)
+        public async Task<bool> ChangeProxyConfiguration(string hostName, int port, bool needsAuth, string user, string pwd)
         {
+            if (ProxyConfig.HostName == hostName && ProxyConfig.Port == port && ProxyConfig.NeedsAuth == needsAuth && ProxyConfig.User == user && ProxyConfig.Pwd == pwd)
+                return true;
+
+            var PreviousConfig = ProxyConfig.Clone();
             ProxyConfig.HostName = hostName;
             ProxyConfig.Port = port;
             ProxyConfig.NeedsAuth = needsAuth;
             ProxyConfig.User = user;
             ProxyConfig.Pwd = pwd;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                ProxyConfig.HostName = PreviousConfig.HostName;
+                ProxyConfig.Port = PreviousConfig.Port;
+                ProxyConfig.NeedsAuth = PreviousConfig.NeedsAuth;
+                ProxyConfig.User = PreviousConfig.User;
+                ProxyConfig.Pwd = PreviousConfig.Pwd;
+                return false;
+            }
+            return true;
         }
 
-        public async Task ChangeLogLevel(Logger.Level newLevel)
+        public async Task<bool> ChangeLogLevel(Logger.Level newLevel)
         {
+            if(LogLevel == newLevel)
+                return true;
+
+            var previousLogLevel = LogLevel;
             LogLevel = newLevel;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
-        }
-        public async Task ChangePurgeOldLog(bool enabled)
-        {
-            PurgeOldLogs = enabled;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                LogLevel = previousLogLevel;
+                return false;
+            }
+            return true;
         }
 
-        public async Task Refresh()
+        public async Task<bool> ChangePurgeOldLog(bool enabled)
         {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshSettings(CancellationToken.None);
+            if(PurgeOldLogs == enabled)
+                return true;
+
+            PurgeOldLogs = enabled;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                PurgeOldLogs = !enabled;
+                return false;
+            }
+            return true;
         }
     }
 }

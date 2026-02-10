@@ -25,6 +25,11 @@ namespace Infomaniak.kDrive.Converters
                 throw new ArgumentException("Invalid value type", nameof(value));
             }
 
+            if (byteCount < 0)
+            {
+                return $"? {Utility.GetLocalizedString("Global_MegaBytes")}";
+            }
+
             var units = new (long Threshold, string ResourceKey)[]
             {
                 (0L,                      "Global_Bytes"),

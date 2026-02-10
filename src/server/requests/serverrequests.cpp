@@ -37,11 +37,11 @@
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
@@ -109,7 +109,7 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteUser(int userDbId) {
+ExitInfo ServerRequests::deleteUser(int userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
@@ -118,7 +118,7 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     AbstractTokenNetworkJob::clearCacheForUser(userDbId);
@@ -333,8 +333,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
     std::error_code ec;
     if (std::filesystem::exists(path, ec) && !ec) {
         if (!std::filesystem::is_directory(path)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"The path exists but is not a directory: " << CommonUtility::formatSyncPath(path));
+            LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
             valid = false;
             return ExitCode::Ok;
         }
@@ -349,7 +348,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
     }
 
     if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
-        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << CommonUtility::formatSyncPath(path));
+        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << Utility::formatSyncPath(path));
         valid = false;
         return ExitCode::Ok;
     }
@@ -825,7 +824,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             SyncName name;
             if (!Utility::normalizedSyncName(tmp, name)) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(tmp));
+                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
                 // Ignore the folder
                 continue;
             }
@@ -842,7 +841,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
                 }
                 if (!Utility::normalizedSyncName(tmp, path)) {
                     LOGW_DEBUG(Log::instance()->getLogger(),
-                               L"Error in Utility::normalizedSyncName: " << CommonUtility::formatSyncName(tmp));
+                               L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
                     // Ignore the folder
                     continue;
                 }
@@ -1640,7 +1639,7 @@ bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
         const SyncPath dest = sync.localPath() / error.destinationPath();
         if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(dest, ioError));
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
             exitInfo = ExitCode::SystemError;
             return false;
         }

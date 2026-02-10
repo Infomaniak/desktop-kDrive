@@ -75,7 +75,7 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(AppPadding.padding24)
+        .padding(AppPadding.page)
     }
 
     private func didTapStateButton(for state: HomeState) {

@@ -18,9 +18,12 @@
 
 #include "testworkers.h"
 #include "propagation/executor/executorworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+
 #include "libcommonserver/network/proxy.h"
-#include "libcommon/io/iohelper.h"
+#include "libcommonserver/io/iohelper.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"

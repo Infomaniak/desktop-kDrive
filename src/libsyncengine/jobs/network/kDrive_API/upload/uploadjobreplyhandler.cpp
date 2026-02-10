@@ -17,7 +17,7 @@
 #include "uploadjobreplyhandler.h"
 
 #include "jobs/network/networkjobsparams.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 namespace KDC {
 
@@ -55,12 +55,12 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
                                                         << L" Sent values: " << _creationTimeIn << L"/" << _modificationTimeIn
                                                         << L" Returned values: " << _creationTimeOut << L"/"
                                                         << _modificationTimeOut << L" for "
-                                                        << CommonUtility::formatSyncPath(_absoluteFilePath));
+                                                        << Utility::formatSyncPath(_absoluteFilePath));
 
         if (const IoError ioError = IoHelper::setFileDates(_absoluteFilePath, _creationTimeOut, _modificationTimeOut, _isLink);
             ioError != IoError::Success) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::setFileDates: " << CommonUtility::formatIoError(_absoluteFilePath, ioError));
+                      L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
         }
 #if defined(KD_LINUX)
         _creationTimeOut = _creationTimeIn; // Unix systems do not support setting creation time, so we keep the original value.

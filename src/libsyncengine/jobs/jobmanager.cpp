@@ -19,12 +19,13 @@
 #include "jobmanager.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
-#include "libcommon/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "network/kDrive_API/downloadjob.h"
 #include "network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
+
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <algorithm> // std::max
 
@@ -131,7 +132,7 @@ void JobManager::run() noexcept {
 
         managePendingJobs();
 
-        CommonUtility::msleep(100); // Sleep for 0.1 s
+        Utility::msleep(100); // Sleep for 0.1 s
     }
 }
 

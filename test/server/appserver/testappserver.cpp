@@ -20,7 +20,7 @@
 
 #include "utility/types.h"
 #include "requests/parameterscache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -192,7 +192,7 @@ bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) con
     int count = 0;
     while (count++ < 100) {
         if (auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
-        CommonUtility::msleep(100);
+        Utility::msleep(100);
     }
     return false;
 }
