@@ -71,13 +71,13 @@ void RemoteFileSystemObserverWorker::execute() {
         // We never pause this thread
 
         if (!_liveSnapshot.isValid()) {
-            if (exitInfo = generateInitialSnapshot(); exitInfo.code() != ExitCode::Ok) {
+            if (exitInfo = generateInitialSnapshot(); !exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
                 break;
             }
         }
 
-        if (exitInfo = processEvents(); exitInfo.code() != ExitCode::Ok) {
+        if (exitInfo = processEvents(); !exitInfo) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: " << exitInfo);
             break;
         }
@@ -302,7 +302,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp);
             if (!exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
-                setExitCause(ExitCause::DbAccessError);
 
                 return exitInfo;
             }
@@ -329,7 +328,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         itemCount++;
         if (error) {
             LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
-            setExitCause(ExitCause::FullListParsingError);
 
             return {ExitCode::LogicError, ExitCause::FullListParsingError};
         }
@@ -383,7 +381,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg);
         sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
-        setExitCause(ExitCause::FullListParsingError);
 
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
