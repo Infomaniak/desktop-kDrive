@@ -122,7 +122,7 @@ class Vfs : public QObject {
 
         /// Stop interaction with VFS provider. Like when the client application quits.
         /// Also deregister the folder with the sync provider, like when a folder is removed.
-        void stop(bool unregister);
+        void stop();
 
         /** Whether the socket api should show pin state options
          *
@@ -349,7 +349,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) = 0;
 
-        virtual void stopImpl(bool unregister) = 0;
+        virtual void stopImpl() = 0;
 
         log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
@@ -386,8 +386,8 @@ class Vfs : public QObject {
         }
 
     private:
-        bool _extendedLog;
-        bool _started;
+        bool _extendedLog{false};
+        bool _started{false};
 };
 } // namespace KDC
 
@@ -437,24 +437,18 @@ class VfsOff : public Vfs {
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/
-        }
+        void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
-        }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/
-        }
-        void hydrate(const SyncPath &) override { /*VfsOff*/
-        }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
-        }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
+        void hydrate(const SyncPath &) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
-        }
+        void stopImpl() override { /*VfsOff*/ }
 
         friend class TestWorkers;
 };

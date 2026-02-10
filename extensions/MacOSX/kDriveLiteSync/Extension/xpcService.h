@@ -22,7 +22,7 @@
 #import "xpcServiceProxy.h"
 
 @interface XPCService : NSObject <XPCServiceProxyDelegate> {
-    NSMutableDictionary<NSString *, NSMutableSet<NSNumber *> *> *_fetchThumbnailMap;
+    NSMutableDictionary<NSString *, NSMutableDictionary *> *_fetchThumbnailMap;
     NSMutableDictionary<NSString *, NSMutableSet<NSNumber *> *> *_fetchMap;
     NSSet<NSString *> *_defaultOpenWhiteListThumbnailSet;
     NSSet<NSString *> *_defaultOpenWhiteListSet;

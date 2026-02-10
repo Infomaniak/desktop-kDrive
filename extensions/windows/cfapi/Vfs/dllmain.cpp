@@ -98,21 +98,19 @@ DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, cons
     return S_OK;
 }
 
-DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, bool unregister) {
+DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId) {
     TRACE_DEBUG(L"Stop VFS");
 
     int ret = S_OK;
 
     CloudProvider *cloudProvider = s_cloudProviders[PROVIDERID(driveId, folderId)];
     if (cloudProvider) {
-        if (unregister) {
-            TRACE_DEBUG(L"Stop cloud provider");
-            if (!cloudProvider->stop()) {
-                TRACE_ERROR(L"Stop failed!");
-                ret = E_ABORT;
-            }
-            TRACE_DEBUG(L"Stop cloud provider done");
+        TRACE_DEBUG(L"Stop cloud provider");
+        if (!cloudProvider->stop()) {
+            TRACE_ERROR(L"Stop failed!");
+            ret = E_ABORT;
         }
+        TRACE_DEBUG(L"Stop cloud provider done");
 
         delete cloudProvider;
         s_cloudProviders.erase(PROVIDERID(driveId, folderId));

@@ -130,7 +130,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
     // Stop Vfs
-    exitInfo = _appPtr->stopVfs(syncDbId, /*unregister*/ false);
+    exitInfo = _appPtr->stopVfs(syncDbId);
     CPPUNIT_ASSERT(exitInfo);
 }
 

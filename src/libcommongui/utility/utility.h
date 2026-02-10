@@ -37,6 +37,8 @@ struct COMMONGUI_EXPORT CommonGuiUtility {
         static void sortSubfolders(QList<::KDC::NodeInfo> subfolders);
 
         static QString octetsToString(qint64 octets);
+
+        static QString treeItemIconPath(const QString &folderName, const bool isDisabled);
 };
 
 } // namespace KDC
