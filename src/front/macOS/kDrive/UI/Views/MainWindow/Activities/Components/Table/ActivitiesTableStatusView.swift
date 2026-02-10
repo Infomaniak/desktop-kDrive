@@ -62,8 +62,8 @@ struct StateIndicator: StatusIndicator {
 }
 
 struct ActivitiesTableStatusView: View {
+    let context: UISynchroContext?
     let node: UISynchroNode
-    let driveID: Int?
 
     private var direction: DirectionIndicator {
         guard let nodeDirection = node.direction else {
@@ -143,7 +143,7 @@ struct ActivitiesTableStatusView: View {
             }
 
             Section {
-                Button(action: navigateToErrorsView) {
+                Button(action: copyShareLink) {
                     Label { Text("Copier le lien de partage") } icon: { KDriveResources.squareArrowUp.swiftUIImage }
                 }
             }
@@ -155,35 +155,40 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func openInFinder() {
-        guard let driveID else { return }
+        guard let synchro = context?.synchro else { return }
 
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        let url = nodeURLGenerator.localURL(for: node.id)
+        let pathToLink = node.type == .directory ? node.path : node.parentFolder
+        let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: synchro.localPath)
 
         NSWorkspace.shared.open(url)
     }
 
     private func openInBrowser() {
-        guard let driveID else { return }
+        guard let drive = context?.drive else { return }
 
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        let url = nodeURLGenerator.remoteURL(for: node.remoteID, inDrive: driveID)
+        let url = nodeURLGenerator.remoteURL(for: node.remoteID, driveId: drive.driveId)
 
         NSWorkspace.shared.open(url)
     }
 
-    private func navigateToErrorsView() {
-        guard let driveID else { return }
+    private func copyShareLink() {
+        guard let drive = context?.drive else { return }
 
         Task {
             @InjectService var nodeURLGenerator: NodeURLGenerator
-            let url = await nodeURLGenerator.shareURL(for: node.id, inDrive: driveID)
+            let url = try await nodeURLGenerator.shareURL(for: node.remoteID, driveDbId: drive.dbId)
 
-            NSWorkspace.shared.open(url)
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(url.absoluteString, forType: .string)
         }
     }
+
+    private func navigateToErrorsView() {}
 }
 
 #Preview {
-    ActivitiesTableStatusView(node: PreviewHelper.synchroNode1, driveID: 42)
+    ActivitiesTableStatusView(context: PreviewHelper.context, node: PreviewHelper.synchroNode1)
 }
