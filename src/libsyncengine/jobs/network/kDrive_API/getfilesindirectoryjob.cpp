@@ -27,22 +27,20 @@
 namespace KDC {
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, NodeId fileId, std::string cursorInput,
-                                               const bool dirOnly /*= false*/, const bool translateV2ToV3 /*= false */) :
+                                               const bool translateV2ToV3 /*= false */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _fileId(std::move(fileId)),
-    _cursorInput(std::move(cursorInput)),
-    _dirOnly(dirOnly) {
+    _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
 }
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
-                                               const bool dirOnly /*= false*/, const bool translateV2ToV3 /*= false */) :
+                                               const bool translateV2ToV3 /*= false */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _fileId(std::move(fileId)),
-    _cursorInput(std::move(cursorInput)),
-    _dirOnly(dirOnly) {
+    _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId, _fileId);
@@ -58,10 +56,10 @@ std::string GetFilesInDirectoryJob::getSpecificUrl() {
 }
 
 void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
-    if (_dirOnly) {
+    if (_listingConf.dirOnly) {
         uri.addQueryParameter("type[]", "dir");
     }
-    if (_withPath) {
+    if (_listingConf.withPath) {
         uri.addQueryParameter("with", "path,capabilities");
     } else {
         uri.addQueryParameter("with", "capabilities");
@@ -71,7 +69,7 @@ void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
         uri.addQueryParameter("cursor", _cursorInput);
     }
 
-    uri.addQueryParameter("limit", std::to_string(_limit));
+    uri.addQueryParameter("limit", std::to_string(_listingConf.limit));
 }
 
 ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
@@ -103,7 +101,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         }
 
         std::string path;
-        if (_withPath) {
+        if (_listingConf.withPath) {
             std::string rawPath;
             if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) {
                 return {ExitCode::BackError, ExitCause::MissingReplyData};

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_API/listingconf.h"
 
 #include "info/nodeinfo.h"
 
@@ -26,13 +27,12 @@ namespace KDC {
 
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false,
+        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {},
                                bool translateV2toV3 = false);
-        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool dirOnly = false,
-                                        bool translateV2toV3 = false);
+        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {}, bool translateV2toV3 = false);
 
-        void setWithPath(const bool val) { _withPath = val; }
-        void setLimit(const int64_t limit) { _limit = limit; }
+        void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
+
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
@@ -55,9 +55,6 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // The remote identifier of the folder whose file list is queried.
         NodeId _fileId;
 
-        // If `_withPath` is `true`, the paths of the items will be returned.
-        bool _withPath{false};
-
         // If `_hasMore` is `true` a subsequent request is required.
         bool _hasMore{false};
 
@@ -67,14 +64,10 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // Used for subsequent requests when `_hasMore` is `true`
         std::string _cursorOutput;
 
-        // If `_dirOnly` is `true`, directories only will be listed in the result.
-        bool _dirOnly{false};
-
-        // The maximal number of items returned by the request.
-        int64_t _limit{10};
-
         // The deserialization of the request JSON result.
         NodeInfoList _nodeInfoList;
+
+        ListingConf _listingConf;
 };
 
 } // namespace KDC

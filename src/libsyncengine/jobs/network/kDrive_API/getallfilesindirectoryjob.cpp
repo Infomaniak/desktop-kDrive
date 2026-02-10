@@ -41,18 +41,16 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     do {
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
-            fileListJob = _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _listingConf.dirOnly,
-                                                                                _translateV2ToV3)
-                                     : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor,
-                                                                                _listingConf.dirOnly, _translateV2ToV3);
+            fileListJob =
+                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translateV2ToV3)
+                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translateV2ToV3);
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        fileListJob->setLimit(_listingConf.limit);
-        fileListJob->setWithPath(_listingConf.withPath);
+        fileListJob->setListingConf(_listingConf);
 
         if (const auto exitInfo = fileListJob->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
