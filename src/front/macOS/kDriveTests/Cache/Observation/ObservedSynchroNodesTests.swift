@@ -42,7 +42,8 @@ struct ObservedSynchroNodesTests {
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -84,7 +85,8 @@ struct ObservedSynchroNodesTests {
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -143,7 +145,8 @@ struct ObservedSynchroNodesTests {
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -209,7 +212,8 @@ struct ObservedSynchroNodesTests {
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         #expect(initialUser == nil, "Cache should initially be empty")
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
         let receivedValues = $observedNodes.receivedValues
 
         #expect(observedNodes == [], "Nodes should initially be empty")
@@ -240,7 +244,7 @@ struct ObservedSynchroNodesTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func testMultipleSynchroObservers() async throws {
+    func multipleSynchroObservers() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -257,10 +261,12 @@ struct ObservedSynchroNodesTests {
         let secondarySynchro = ObservableData.secondarySynchro
         try await cache.addSynchro(secondarySynchro)
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var firstObservedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+                              cacheObservation: cache) var firstObservedNodes: [SynchroNodeContext]
         let firstReceivedValues = $firstObservedNodes.receivedValues
 
-        @ObservedSynchroNodes(synchroDbId: ObservableData.secondarySynchroDbId, cacheObservation: cache) var secondObservedNodes: [SynchroNodeContext]
+        @ObservedSynchroNodes(synchroDbId: ObservableData.secondarySynchroDbId,
+                              cacheObservation: cache) var secondObservedNodes: [SynchroNodeContext]
         let secondReceivedValues = $secondObservedNodes.receivedValues
 
         // WHEN - Add nodes to both synchros
