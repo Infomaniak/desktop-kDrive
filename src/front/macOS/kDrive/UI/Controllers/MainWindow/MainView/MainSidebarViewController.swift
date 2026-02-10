@@ -30,7 +30,7 @@ extension SidebarItem {
     )
     static let activities = SidebarItem(
         icon: KDriveResources.circularArrowsClockwise.image,
-        title: KDriveLocalizable.tabTitleActivity
+        title: KDriveLocalizable.tabTitleActivities
     )
     static let storage = SidebarItem(
         icon: KDriveResources.hardDiskDrive.image,

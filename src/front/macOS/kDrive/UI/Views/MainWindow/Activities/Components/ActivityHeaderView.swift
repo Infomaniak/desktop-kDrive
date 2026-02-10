@@ -33,9 +33,9 @@ extension VisibleActivities {
     var title: String {
         switch self {
         case .myActivityOnly:
-            return KDriveLocalizable.activityTypeMyActivity
+            return KDriveLocalizable.activitiesTypeMyActivity
         case .allActivities:
-            return KDriveLocalizable.activityTypeAllActivities
+            return KDriveLocalizable.activitiesTypeAllActivities
         }
     }
 }
@@ -48,14 +48,14 @@ struct ActivityHeaderView: View {
 
     var title: String {
         guard hasAnyActivity else {
-            return KDriveLocalizable.activityTitleNoActivity
+            return KDriveLocalizable.activitiesTitleNoActivity
         }
 
         switch synchroStatus {
         case .starting, .running:
-            return KDriveLocalizable.activityTitleInProgress
+            return KDriveLocalizable.activitiesTitleInProgress
         case .idle, .paused, .stopped, .error:
-            return KDriveLocalizable.activityTitleIdle
+            return KDriveLocalizable.activitiesTitleIdle
         case .pauseAsked, .stopAsked:
             return "Placeholder string for loading"
         }
