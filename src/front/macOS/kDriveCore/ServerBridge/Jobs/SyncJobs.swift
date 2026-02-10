@@ -175,4 +175,12 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LinkResponse>.self)
         return decodedMessage.body.linkUrl
     }
+
+    public func triggerSyncProgressUpdate() async throws {
+        IKLogger.data.log("Query to triggerSyncProgressUpdate")
+        let query = EmptyQuery()
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
+
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
 }
