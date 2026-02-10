@@ -140,8 +140,6 @@ class KDriveDesktop(ConanFile):
         # Qt 6.8.3 for Linux ARM, Qt 6.5.3 for other platforms
         if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"):
             self.requires("qt/6.8.3")
-        elif self.settings.os == "Macos":
-            self.requires("qt/6.2.3")
         else:
             self.requires("qt/6.5.3")
         self.requires("xxhash/0.8.2") # From local recipe
