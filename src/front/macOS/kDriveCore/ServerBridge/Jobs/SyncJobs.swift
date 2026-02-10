@@ -150,8 +150,7 @@ public struct SyncJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-        // TODO: clear cache based only on syncDbId
-        // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userDbId: <#T##Int32#>)
+        async try? coherentCache.removeSynchro(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
