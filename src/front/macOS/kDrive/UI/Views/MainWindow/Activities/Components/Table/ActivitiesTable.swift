@@ -29,12 +29,22 @@ struct ActivitiesTable: View {
     let context: UISynchroContext?
     let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
+    private var orderedNodes: [UISynchroNode] {
+        let nodes = Array(nodes.values)
+        return nodes.sorted { lhs, rhs in
+            if lhs.status == .syncing && rhs.status != .syncing {
+                return true
+            }
+            return lhs.syncDate > rhs.syncDate
+        }
+    }
+
     private var synchroOrigin: String {
         return context?.synchro.localPath.lastPathComponent ?? ActivitiesTable.defaultFolderName
     }
 
     var body: some View {
-        Table(Array(nodes.values)) {
+        Table(orderedNodes) {
             TableColumn("Name") { node in
                 Label {
                     Text(node.relevantPath, format: .node)
@@ -73,7 +83,6 @@ struct ActivitiesTable: View {
             }
             .width(ideal: 30)
         }
-        .animation(.default, value: nodes)
     }
 
     private func openParentFolder(of node: UISynchroNode) {
