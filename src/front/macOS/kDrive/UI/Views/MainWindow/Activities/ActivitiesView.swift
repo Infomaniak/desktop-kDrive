@@ -72,16 +72,17 @@ struct ActivitiesView: View {
                 hasAnyActivity: hasAnyActivity
             )
 
-            if hasAnyActivity {
-                ActivitiesTable(context: mainViewModel.currentSynchroContext, nodes: nodes)
-            } else {
-                IKContentUnavailableView(
-                    image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
-                    title: KDriveLocalizable.unavailableContentNoActivityTitle,
-                    subtitle: KDriveLocalizable.unavailableContentNoActivityDescription
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
+            ActivitiesTable(context: mainViewModel.currentSynchroContext, nodes: nodes)
+                .opacity(hasAnyActivity ? 1 : 0)
+                .overlay(alignment: .top) {
+                    if !hasAnyActivity {
+                        IKContentUnavailableView(
+                            image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+                            title: KDriveLocalizable.unavailableContentNoActivityTitle,
+                            subtitle: KDriveLocalizable.unavailableContentNoActivityDescription
+                        )
+                    }
+                }
         }
         .padding(AppPadding.page)
     }
