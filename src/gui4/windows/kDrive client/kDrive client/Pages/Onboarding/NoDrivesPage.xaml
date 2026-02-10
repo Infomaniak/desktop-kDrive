@@ -10,14 +10,8 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
-
-    <Page.Resources>
-        <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedBooleanConverter  x:Key="BooleanToInvertedBooleanConverter" />
-        <converters:IntegerToBooleanConverter  x:Key="IntegerToBooleanConverter" />
-        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
-    </Page.Resources>
 
     <Grid HorizontalAlignment="Center"
           VerticalAlignment="Center"
@@ -31,7 +25,7 @@
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <!-- Title -->
-            <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_Title"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
@@ -54,12 +48,12 @@
                     Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
             <!-- Subtitle -->
             <TextBlock Grid.Row="0"
-                       x:Uid="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle"
+                       Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionNoDriveTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}" />
 
             <!-- No drive text -->
             <TextBlock Grid.Row="1"
-                       x:Uid="Page_Onboarding_DriveSelectionPage_NoDrive_Text"
+                       Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionNoDriveDescription')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        Foreground="{ThemeResource TextFillColorSecondary}"
                        TextWrapping="WrapWholeWords" />
@@ -70,12 +64,12 @@
                     Orientation="Horizontal"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
-            <Button x:Uid="Page_Onboarding_DriveSelectionPage_OffersButton"
+            <Button Content="{x:Bind loc:Localizer.GetString('buttonShowOffers')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource SubtleButtonStyle}"
                     Click="OnOffersButtonClick" />
 
-            <Button x:Uid="Page_Onboarding_DriveSelectionPage_StartFreeButton"
+            <Button Content="{x:Bind loc:Localizer.GetString('buttonStartForFree')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource AccentButtonStyle}"
                     Click="OnStartFreeButtonClick" />
