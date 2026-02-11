@@ -312,46 +312,36 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
     exists = false;
     ioError = IoError::Success;
 
-    std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
-    ioError = stdError2ioError(ec);
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::Success;
-        return true;
-    }
-
-    exists = (ioError != IoError::FileNameTooLong);
-
-    if (ioError == IoError::Success && exists) {
-        // Case sensitive check
-        assert(!path.empty());
-        auto *_Nonnull parentPathStr = (NSString *_Nonnull) [NSString stringWithCString:path.parent_path().c_str()
-                                                                               encoding:NSUTF8StringEncoding];
-        auto *_Nonnull parentPathURL = [NSURL fileURLWithPath:parentPathStr];
-        NSError *err = nil;
-        auto *parentFileWrapper = [[NSFileWrapper alloc] initWithURL:parentPathURL
-                                                             options:NSFileWrapperReadingWithoutMapping
-                                                               error:&err];
-        if (parentFileWrapper) {
-            NSDictionary<NSString *, NSFileWrapper *> *fileWrappers = nil;
-            @try {
-                fileWrappers = [parentFileWrapper fileWrappers];
-            } @catch (NSException *e) {
-                ioError = IoError::Unknown;
-                return false;
-            }
-
-            if (fileWrappers) {
-                auto *_Nonnull fileNameStr = (NSString *_Nonnull) [NSString stringWithCString:path.filename().c_str()
-                                                                                     encoding:NSUTF8StringEncoding];
-                if (![fileWrappers objectForKey:fileNameStr]) {
-                    exists = false;
-                }
-            }
+    // Case-sensitive and encoding-accurate checking
+    assert(!path.empty());
+    auto *_Nonnull parentPathStr = (NSString *_Nonnull) [NSString stringWithCString:path.parent_path().c_str()
+                                                                           encoding:NSUTF8StringEncoding];
+    auto *_Nonnull parentPathURL = [NSURL fileURLWithPath:parentPathStr];
+    NSError *error = nil;
+    auto *parentFileWrapper = [[NSFileWrapper alloc] initWithURL:parentPathURL
+                                                         options:NSFileWrapperReadingWithoutMapping
+                                                           error:&error];
+    if (parentFileWrapper) {
+        NSDictionary<NSString *, NSFileWrapper *> *fileWrappers = nil;
+        @try {
+            fileWrappers = [parentFileWrapper fileWrappers];
+        } @catch (NSException *e) {
+            // The file wrapper object is not a directory file wrapper (=> exists == false)
+            return true;
         }
+
+        if (fileWrappers) {
+            auto *_Nonnull fileNameStr = (NSString *_Nonnull) [NSString stringWithCString:path.filename().c_str()
+                                                                                 encoding:NSUTF8StringEncoding];
+            exists = [fileWrappers objectForKey:fileNameStr] != nil;
+        } else {
+            ioError = IoError::AccessDenied;
+        }
+    } else {
+        exists = (error.code == NSFileReadNoPermissionError) || (error.code == NSFileReadTooLargeError);
     }
 
-    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
+    return true;
 }
 
 } // namespace KDC

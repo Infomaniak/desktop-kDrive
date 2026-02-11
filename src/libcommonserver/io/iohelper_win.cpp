@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
-
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/utility.h"
 
 #include "log/log.h"
 
@@ -198,7 +197,7 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
     exists = false;
     ioError = IoError::Success;
 
-    // Case sensitive check
+    // Case-sensitive and encoding-accurate checking
     WIN32_FIND_DATAW findFileData;
     if (HANDLE h = FindFirstFile(path.c_str(), &findFileData); h != INVALID_HANDLE_VALUE) {
         SyncName fileName{findFileData.cFileName};
@@ -206,10 +205,8 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
         exists = (fileName == path.filename());
     } else {
         DWORD dwError = GetLastError();
-        if (utility_base::isLikeFileNotFoundError(dwError)) {
-            exists = false;
-        } else {
-            ioError = dWordError2ioError(dwError, logger());
+        ioError = dWordError2ioError(dwError, logger());
+        if (ioError != IoError::NoSuchFileOrDirectory) {
             return false;
         }
     }
@@ -220,7 +217,7 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    // Case sensitive existence check
+    // Case-sensitive and encoding-accurate existence checking
     bool exists = false;
     if (!_checkIfPathExistsFn(path, exists, ioError)) {
         return false;

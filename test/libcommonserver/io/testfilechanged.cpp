@@ -343,7 +343,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-    // A non-existing file with a very long path causes an error.
+    // A with a very long path
     {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
@@ -353,14 +353,10 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoError::Success;
-#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
-#elif defined(KD_MACOS)
-        CPPUNIT_ASSERT(!IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
 #elif defined(KD_LINUX)
-        CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #endif
         CPPUNIT_ASSERT(!isHidden);

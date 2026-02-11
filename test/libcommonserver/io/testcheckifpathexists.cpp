@@ -102,12 +102,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
-#else
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
-                                     ioError);
-#endif
     }
     // A dangling symbolic link
     {

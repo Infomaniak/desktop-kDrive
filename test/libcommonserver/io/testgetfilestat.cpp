@@ -233,7 +233,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
     }
 
-    // An existing file with dots and colons in its name
+    // A file with dots and colons in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / ":.file.::.name.:";
@@ -245,13 +245,23 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
+
+#if defined(KD_WINDOWS)
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_GREATER(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_GREATER(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
+#endif
     }
 
     // An existing file with emojis in its name
@@ -513,11 +523,8 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
-#else
-        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
-#endif
+
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
@@ -556,6 +563,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_GREATER(SyncTime{0}, fileStat.modificationTime);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
