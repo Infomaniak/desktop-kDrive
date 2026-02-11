@@ -47,10 +47,10 @@ public struct SyncRemoteFolder: Sendable {
 public struct NewSyncCandidate {
     public let origin: SyncOrigin
     public let remoteFolder: SyncRemoteFolder
-    public let localFolder: String
+    public let localFolder: String?
     public let blackList: [String]
 
-    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: String, blackList: [String]) {
+    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: String?, blackList: [String]) {
         self.origin = origin
         self.remoteFolder = remoteFolder
         self.localFolder = localFolder
@@ -74,9 +74,9 @@ public final class SyncCreationService: SyncCreator {
         let identifier = getIdentifier(from: sync.origin)
 
         let useLightSync = shouldUseLightSync(for: sync.origin)
-        let metadata = getMetadata(for: sync, useLightSync: useLightSync)
+        let metadata = try await getMetadata(for: sync, useLightSync: useLightSync)
 
-        try createDestinationIfNecessary(at: sync.localFolder)
+        try createDestinationIfNecessary(at: metadata.localFolderPath)
 
         let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
         return syncInfo
@@ -95,7 +95,7 @@ public final class SyncCreationService: SyncCreator {
             driveName = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
         }
 
-        let folderName = "kDrive \(driveName)"
+        let folderName = "kDrive \(driveName)".trimmingCharacters(in: .whitespacesAndNewlines)
 
         return homeDirectory.appendingPathComponent(folderName).path
     }
@@ -113,20 +113,26 @@ public final class SyncCreationService: SyncCreator {
         }
     }
 
-    private func getMetadata(for sync: NewSyncCandidate, useLightSync: Bool) -> NewSyncMetadata {
+    private func getMetadata(for sync: NewSyncCandidate, useLightSync: Bool) async throws -> NewSyncMetadata {
         let drive = sync.origin.drive
-        let metadata = NewSyncMetadata(
+
+        let localPath: String
+        if let providedPath = sync.localFolder {
+            localPath = providedPath
+        } else {
+            localPath = try await preferredLocalPath(for: sync.origin)
+        }
+
+        return NewSyncMetadata(
             userDbId: drive.userDbId,
             accountId: drive.accountId,
             driveId: drive.driveId,
-            localFolderPath: sync.localFolder,
+            localFolderPath: localPath,
             serverFolderPath: sync.remoteFolder.path,
             serverFolderNodeId: sync.remoteFolder.nodeId,
             liteSync: useLightSync,
-            blackList: sync.blackList,
-            whiteList: [] // TODO: Remove this parameter when removed from the server object
+            blackList: sync.blackList
         )
-        return metadata
     }
 
     private func shouldUseLightSync(for _: SyncOrigin) -> Bool {
