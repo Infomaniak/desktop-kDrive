@@ -66,11 +66,12 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
             return IoError::FileNameTooLong;
-        case ERROR_BAD_NETPATH:
         case ERROR_FILE_NOT_FOUND:
-        case ERROR_INVALID_DRIVE:
-        case ERROR_INVALID_NAME:
         case ERROR_PATH_NOT_FOUND:
+        case ERROR_INVALID_DRIVE:
+        case ERROR_BAD_NETPATH:
+        case ERROR_INVALID_NAME:
+        case ERROR_DIRECTORY:
             return IoError::NoSuchFileOrDirectory;
         case ERROR_NOT_SAME_DEVICE:
             return IoError::CrossDeviceLink;
@@ -197,35 +198,37 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
     exists = false;
     ioError = IoError::Success;
 
-    std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
-    ioError = stdError2ioError(ec);
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::Success;
-        return true;
-    }
-
-    // TODO: Remove this block when migrating the release process to Visual Studio 2022.
-    // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
-    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
-    // compiling with VS2022, see
-    // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
-    if (ioError == IoError::InvalidArgument && !CommonUtility::isNTFS(path)) {
-        (void) std::filesystem::status(
-                path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
-        ioError = stdError2ioError(ec);
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            ioError = IoError::Success;
-            return true;
+    // Case sensitive check
+    WIN32_FIND_DATAW findFileData;
+    if (HANDLE h = FindFirstFile(path.c_str(), &findFileData); h != INVALID_HANDLE_VALUE) {
+        SyncName fileName{findFileData.cFileName};
+        FindClose(h);
+        exists = (fileName == path.filename());
+    } else {
+        DWORD dwError = GetLastError();
+        if (utility_base::isLikeFileNotFoundError(dwError)) {
+            exists = false;
+        } else {
+            ioError = dWordError2ioError(dwError, logger());
+            return false;
         }
     }
 
-    exists = (ioError != IoError::FileNameTooLong);
     return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
     ioError = IoError::Success;
+
+    // Case sensitive existence check
+    bool exists = false;
+    if (!_checkIfPathExistsFn(path, exists, ioError)) {
+        return false;
+    }
+    if (!exists) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return true;
+    }
 
     // Get parent folder handle
     HANDLE hParent;

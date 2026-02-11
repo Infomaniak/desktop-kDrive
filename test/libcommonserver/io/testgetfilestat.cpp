@@ -126,6 +126,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
+
     // A non-existing file
     {
         const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
@@ -148,19 +149,16 @@ void TestIo::testGetFileStat() {
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         FileStat fileStat;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
-#if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
-#else
-        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
-#endif
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     }
+
     // A non-existing file with a very long path
     {
         const std::string pathSegment(50, 'a');
@@ -171,15 +169,16 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
         CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     }
+
     // A hidden file
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -233,6 +232,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
     }
+
     // An existing file with dots and colons in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -244,23 +244,14 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-#if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError));
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.modificationTime);
-        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileStat.modificationTime);
-        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, ioError);
-#else
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_GREATER(int64_t{0}, fileStat.size);
-        CPPUNIT_ASSERT_GREATER(SyncTime{0}, fileStat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileStat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#endif
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     }
 
     // An existing file with emojis in its name
@@ -300,7 +291,6 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
-
 #else
         CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(targetPath.native().length()), fileStat.size);
 #endif
@@ -455,6 +445,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 #endif
+
     // A regular file missing all permissions (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
