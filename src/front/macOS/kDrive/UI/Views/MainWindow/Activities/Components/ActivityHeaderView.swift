@@ -33,29 +33,37 @@ extension VisibleActivities {
     var title: String {
         switch self {
         case .myActivityOnly:
-            return KDriveLocalizable.activityTypeMyActivity
+            return KDriveLocalizable.activitiesTypeMyActivity
         case .allActivities:
-            return KDriveLocalizable.activityTypeAllActivities
+            return KDriveLocalizable.activitiesTypeAllActivities
         }
     }
 }
 
 struct ActivityHeaderView: View {
+    @StateObject private var networkObserver = NetworkObserver()
+
     @Binding var visibleActivities: VisibleActivities
 
     let synchroStatus: UISynchroStatus
-    let hasActivities: Bool
+    let hasAnyActivity: Bool
 
     var title: String {
-        guard hasActivities else {
-            return KDriveLocalizable.activityTitleNoActivity
+        guard networkObserver.isConnected else {
+            return KDriveLocalizable.activitiesTitleOffline
+        }
+
+        guard hasAnyActivity else {
+            return KDriveLocalizable.activitiesTitleNoActivity
         }
 
         switch synchroStatus {
+        case .idle:
+            return KDriveLocalizable.activitiesTitleIdle
         case .starting, .running:
-            return KDriveLocalizable.activityTitleInProgress
-        case .idle, .paused, .stopped, .error:
-            return KDriveLocalizable.activityTitleIdle
+            return KDriveLocalizable.activitiesTitleInProgress
+        case .paused, .stopped, .error:
+            return KDriveLocalizable.activitiesTitlePause
         case .pauseAsked, .stopAsked:
             return "Placeholder string for loading"
         }
@@ -71,7 +79,7 @@ struct ActivityHeaderView: View {
     }
 
     var body: some View {
-        HStack(spacing: AppPadding.padding8) {
+        HStack(alignment: .top, spacing: AppPadding.padding8) {
             Text(title)
                 .font(.Tokens.title2)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
@@ -93,24 +101,30 @@ struct ActivityHeaderView: View {
 @available(macOS 14.0, *)
 #Preview("In Progress") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .running, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .running, hasAnyActivity: true)
 }
 
 @available(macOS 14.0, *)
 #Preview("No Activity") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: false)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasAnyActivity: false)
         .padding()
 }
 
 @available(macOS 14.0, *)
 #Preview("Idle") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasAnyActivity: true)
+}
+
+@available(macOS 14.0, *)
+#Preview("Pause") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .paused, hasAnyActivity: true)
 }
 
 @available(macOS 14.0, *)
 #Preview("Loading") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
-    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .stopAsked, hasActivities: true)
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .stopAsked, hasAnyActivity: true)
 }

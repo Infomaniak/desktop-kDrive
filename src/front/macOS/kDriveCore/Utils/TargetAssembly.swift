@@ -64,6 +64,9 @@ open class TargetAssembly {
             },
             Factory(type: MacOSPermissionHandling.self) { _, _ in
                 MacOSPermissionHandler()
+            },
+            Factory(type: NodeURLGenerator.self) { _, _ in
+                DriveNodeURLGenerator()
             }
         ]
     }

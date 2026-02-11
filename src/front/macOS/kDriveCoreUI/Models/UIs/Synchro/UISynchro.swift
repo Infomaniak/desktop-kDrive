@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 public struct UISynchro: Sendable, Equatable, Hashable {
     public var id: Int {
@@ -28,14 +29,23 @@ public struct UISynchro: Sendable, Equatable, Hashable {
 
     public let localPath: URL
     public let progressInfo: UISynchroProgressInfo?
+    public let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
 
     public let errorCount: Int
 
-    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo?, errorCount: Int) {
+    public init(
+        dbId: Int,
+        driveDbId: Int,
+        localPath: URL,
+        progressInfo: UISynchroProgressInfo?,
+        nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>,
+        errorCount: Int
+    ) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath
         self.progressInfo = progressInfo
+        self.nodes = nodes
         self.errorCount = errorCount
     }
 }

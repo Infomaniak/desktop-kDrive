@@ -1,5 +1,5 @@
 {
-  "originHash" : "895eefd3fcd18c50d9ba4ab65a0b26ca81fc66919a9369f336c0653958a8bb9c",
+  "originHash" : "26f4b038697fb2961312828a038a1c55b47bdd38ce6ccf598c9ea812a2cc17fc",
   "pins" : [
     {
       "identity" : "ios-dependency-injection",
@@ -53,6 +53,15 @@
       "state" : {
         "revision" : "97ae7c9b998a43812d3f57ae106cb447a853bf3b",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "swift-foundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Infomaniak/swift-foundation.git",
+      "state" : {
+        "revision" : "37ef5bf8dc138598a41d53a81c04984fa74235d3",
+        "version" : "0.1.0"
       }
     }
   ],

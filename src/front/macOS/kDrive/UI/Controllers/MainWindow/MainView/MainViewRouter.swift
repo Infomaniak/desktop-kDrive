@@ -25,8 +25,8 @@ extension SidebarItem {
         switch self {
         case .home:
             return .home
-        case .activity:
-            return .activity
+        case .activities:
+            return .activities
         case .storage:
             return .storage
         default:
@@ -37,7 +37,7 @@ extension SidebarItem {
 
 enum MainViewTab: Equatable {
     case home
-    case activity
+    case activities
     case storage
     case blockingError
 
@@ -45,7 +45,7 @@ enum MainViewTab: Equatable {
         switch self {
         case .home:
             return .home
-        case .activity:
+        case .activities:
             return .activities
         case .storage:
             return .storage

@@ -3,8 +3,8 @@
  * Project: kDrive Desktop
  * Locale: it, Italian
  * Tagged: macOS
- * Exported by: Philippe Weidmann
- * Exported at: Fri, 06 Feb 2026 08:36:54 +0100
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 10 Feb 2026 14:18:09 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -14,19 +14,25 @@
 "accessibilityActivityTypePicker" = "Attività visibili";
 
 /* loco:6981cb92c70239c9ed0d45a3 */
-"activityTitleIdle" = "Sincronizzazione completata";
+"activitiesTitleIdle" = "Sincronizzazione completata";
 
 /* loco:6981b68b50a70d64050197e2 */
-"activityTitleInProgress" = "Sincronizzazione in corso";
+"activitiesTitleInProgress" = "Sincronizzazione in corso";
 
 /* loco:6981cb9319de989ec9033882 */
-"activityTitleNoActivity" = "Nessuna attività recente";
+"activitiesTitleNoActivity" = "Nessuna attività recente";
+
+/* loco:698c2d6ab41c289de2072ab2 */
+"activitiesTitleOffline" = "You are offline";
+
+/* loco:698c1fa979440e4f370444a2 */
+"activitiesTitlePause" = "Synchronisation paused";
 
 /* loco:6981b68a251c4a36c1078274 */
-"activityTypeAllActivities" = "Tutte le attività";
+"activitiesTypeAllActivities" = "Tutte le attività";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activityTypeMyActivity" = "Solo la mia attività";
+"activitiesTypeMyActivity" = "Solo la mia attività";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Aggiungere l’archiviazione";
@@ -39,6 +45,9 @@
 
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Continua";
+
+/* loco:698a09c2c9fb920b0c03e782 */
+"buttonCopyShareLink" = "Copiare il link di condivisione";
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
@@ -85,6 +94,9 @@
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Vedi le offerte";
 
+/* loco:698af1b4d7cad5e8710909b2 */
+"buttonShowOption" = "Mostra le opzioni";
+
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Iniziare gratuitamente";
 
@@ -94,6 +106,8 @@
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Risveglio";
 
+/* loco:698b244d7e73966ce3096b02 */
+"copyingLink" = "Copia del link…";
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Non si ha l’autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l’amministratore.";
 
@@ -193,6 +207,22 @@
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Riavviare l’applicazione, se necessario";
 
+/* loco:6989ff5b78003eb4e20e2652 */
+"labelFolder" = "Cartella";
+
+/* loco:6989fec57ca0d7305008b1e2 */
+"labelName" = "Nome";
+
+/* loco:6989ff974ef31503cb002e23 */
+"labelSize" = "Dimensione";
+
+/* loco:698a070557f1356c46048003 */
+"labelStatus" = "Stato";
+
+/* loco:698aeefb604e522161001392 */
+"labelTime" = "Tempo";
+/* loco:698a1276e1c66ed33b03bf32 */
+"linkCopiedToClipboard" = "Link copiato negli appunti";
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizzare kDrive nelle impostazioni di macOS:";
 
@@ -286,6 +316,21 @@
 /* loco:6979e265a8419bb7510c8122 */
 "storageUsageLabel" = "%@ su %@ utilizzato";
 
+/* loco:698a07efc9e9b6dcce04dc86 */
+"syncErrorTooltip" = "Errore di sincronizzazione";
+
+/* loco:698a085329fb169f6605ac62 */
+"syncInProgressTooltip" = "Sincronizzazione";
+
+/* loco:698a08137065b2ad54014e72 */
+"syncSuccessTooltip" = "Sincronizzato";
+
+/* loco:698b2ff6c504d956e009aad2 */
+"syncedFromComputer" = "Sincronizzato dal computer";
+
+/* loco:698a08bdb6b870234906e103 */
+"syncedFromKDriveWeb" = "Sincronizzato da kDrive Web";
+
 /* loco:6960b7decf8ffcd3950d2706 */
 "synchroInProgress" = "i file si stanno sincronizzando";
 
@@ -320,7 +365,7 @@
 "synchroUpToDate" = "i vostri file sono aggiornati";
 
 /* loco:68a70be4b749277aa1081dc2 */
-"tabTitleActivity" = "Attività";
+"tabTitleActivities" = "Attività";
 
 /* loco:68a705225b0066f86e001d52 */
 "tabTitleHome" = "Casa";

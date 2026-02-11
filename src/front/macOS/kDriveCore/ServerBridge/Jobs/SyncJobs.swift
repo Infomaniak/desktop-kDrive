@@ -161,11 +161,12 @@ public struct SyncJobs: Sendable {
         // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userDbId: <#T##Int32#>)
     }
 
-    public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws {
+    public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
         IKLogger.data.log("Query to syncGetPublicLinkUrl")
         let query = PublicLinkQuery(driveDbId: driveDbId, nodeId: nodeId)
         let request = await RequestMessage<PublicLinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<PublicLinkResponse>.self)
+        return decodedMessage.body.linkUrl
     }
 }
