@@ -171,7 +171,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
     IoError ioError = IoError::Success;
-    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError, logger());
     if (!pzwQueryDirectoryFile) {
         LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
         (void) CloseHandle(hParent);
@@ -242,7 +242,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError, logger());
     if (!pzwQueryDirectoryFile) {
         LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
         (void) CloseHandle(hParent);
@@ -1154,7 +1154,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     return result;
 }
 
-PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
+PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError, const log4cplus::Logger &logger) {
     static PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = nullptr;
 
     ioError = IoError::Success;
@@ -1162,22 +1162,22 @@ PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
 
     HMODULE hModule = GetModuleHandle(L"ntdll.dll");
     if (hModule == nullptr) {
-        LOG_WARN(logger(), "Error in GetModuleHandle for ntdll.dll");
-        ioError = dWordError2ioError(GetLastError(), logger());
+        LOG_WARN(logger, "Error in GetModuleHandle for ntdll.dll");
+        ioError = dWordError2ioError(GetLastError(), logger);
         return nullptr;
     }
 
     try {
         pzwQueryDirectoryFile = (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(hModule, "ZwQueryDirectoryFile");
     } catch (const std::exception &e) {
-        LOG_WARN(logger(), "Exception in GetProcAddress: err=" << e.what());
+        LOG_WARN(logger, "Exception in GetProcAddress: err=" << e.what());
         ioError = IoError::Unknown;
         return nullptr;
     }
 
     if (pzwQueryDirectoryFile == nullptr) {
-        LOG_WARN(logger(), "Error in GetProcAddress");
-        ioError = dWordError2ioError(GetLastError(), logger());
+        LOG_WARN(logger, "Error in GetProcAddress");
+        ioError = dWordError2ioError(GetLastError(), logger);
         return nullptr;
     }
 
