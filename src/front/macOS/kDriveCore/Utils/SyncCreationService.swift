@@ -82,12 +82,22 @@ public final class SyncCreationService: SyncCreator {
         return syncInfo
     }
 
-    public func preferredLocalPath(for _: SyncOrigin) async throws -> String {
-        // TODO: The server cannot provide the preferred value yet. We have a dummy implementation for the moment.
+    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> String {
+        let defaultPath = computeDefaultFolderPath(drive: syncOrigin.drive)
+        return try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath)
+    }
 
+    private func computeDefaultFolderPath(drive: any DriveRepresentation) -> String {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
-        let uuid = UUID()
-        return homeDirectory.appendingPathComponent("kDriveTest/kDrive_\(uuid)").path
+
+        var driveName = drive.name
+        if driveName.lowercased().hasPrefix("kdrive") {
+            driveName = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
+        }
+
+        let folderName = "kDrive \(driveName)"
+
+        return homeDirectory.appendingPathComponent(folderName).path
     }
 
     private func getIdentifier(from origin: SyncOrigin) -> NewSyncParentIdentifier {
