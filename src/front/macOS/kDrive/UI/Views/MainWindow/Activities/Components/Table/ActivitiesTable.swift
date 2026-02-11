@@ -83,6 +83,7 @@ struct ActivitiesTable: View {
             }
             .width(ideal: 30)
         }
+        .animation(.default, value: orderedNodes)
     }
 
     private func openParentFolder(of node: UISynchroNode) {

@@ -31,32 +31,20 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
 struct ActivitiesView: View {
     @ObservedObject var mainViewModel: MainViewModel
 
-    @State private var visibleActivities = VisibleActivities.myActivityOnly
+    @State private var visibleActivities = VisibleActivities.allActivities
 
     private var synchroStatus: UISynchroStatus {
-        switch visibleActivities {
-        case .myActivityOnly:
-            return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
-        case .allActivities:
-            let firstRunningSynchro = mainViewModel.availableSynchros.first { context in
-                let synchroStatus = context.synchro.progressInfo?.status
-                return synchroStatus == .starting || synchroStatus == .running
-            }
-
-            if let firstRunningSynchroStatus = firstRunningSynchro?.synchro.progressInfo?.status {
-                return firstRunningSynchroStatus
-            }
-            return mainViewModel.availableSynchros.first?.synchro.progressInfo?.status ?? .idle
-        }
+        return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
     }
 
     private var nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
+        let allNodes = mainViewModel.currentSynchro?.nodes ?? [:]
+
         switch visibleActivities {
         case .myActivityOnly:
-            return mainViewModel.currentSynchro?.nodes ?? [:]
+            return allNodes.filter { $0.value.direction == .up }
         case .allActivities:
-            // TODO: Waiting on XPC to return all activities
-            return [:]
+            return allNodes
         }
     }
 
