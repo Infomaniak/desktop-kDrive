@@ -1523,8 +1523,14 @@ Renouvelez votre abonnement pour réactiver le service.</value>
   <data name="storageMacUsedByComputer" xml:space="preserve"> 
     <value>Autres fichiers du Mac</value> 
   </data> 
+  <data name="storageComputerUsedByOther" xml:space="preserve"> 
+    <value>Autres fichiers sur l'ordinateur</value> 
+  </data> 
   <data name="storageMacFreeSpace" xml:space="preserve"> 
     <value>Espace libre</value> 
+  </data> 
+  <data name="storageComputerFreeSpace" xml:space="preserve"> 
+    <value>Espace libre sur l’ordinateur</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisation</value> 

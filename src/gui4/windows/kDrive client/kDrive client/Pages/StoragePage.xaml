@@ -44,7 +44,7 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock x:Uid="Page_StoragePage_Title"
+        <TextBlock Text="{x:Bind loc:Localizer.GetString('tabTitleStorage')}"
                    Grid.Row="0"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
@@ -176,7 +176,7 @@
                              Width="8"
                              Fill="{ThemeResource SystemFillColorSuccessBackgroundBrush}" />
 
-                    <TextBlock x:Uid="Page_StoragePage_OtherFiles"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerUsedByOther')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
@@ -218,7 +218,7 @@
                              Width="8"
                              Fill="{ThemeResource AccentAAFillColorDisabledBrush}" />
 
-                    <TextBlock x:Uid="Page_StoragePage_FreeSpace"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerFreeSpace')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
