@@ -644,10 +644,24 @@ bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) n
 }
 
 namespace details {
-class CacheDirectoryHanlder {
+
+class CacheDirectoryHandler {
     public:
-        static CacheDirectoryHanlder &instance() noexcept { return _instance; }
-        const SyncPath &directoryPath() noexcept { return _directoryPath; }
+        static CacheDirectoryHandler &instance() noexcept {
+            static CacheDirectoryHandler instance;
+            return instance;
+        }
+        const SyncPath &directoryPath() noexcept {
+            bool exists = false;
+            auto ioError = IoError::Unknown;
+            if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError)) {
+                sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
+                                                CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
+            }
+
+            if (_directoryPath.empty() || !exists) resetDirectoryPath();
+            return _directoryPath;
+        }
         void setDirectoryPath(const SyncPath &newPath) {
             deleteDirectoryPath();
             _directoryPath = newPath;
@@ -658,13 +672,12 @@ class CacheDirectoryHanlder {
             initDirectoryPath();
             if (!_directoryPath.empty()) createDirectoryPath();
         }
-        ~CacheDirectoryHanlder() { deleteDirectoryPath(); }
+        ~CacheDirectoryHandler() { deleteDirectoryPath(); }
 
     private:
-        static CacheDirectoryHanlder _instance;
         SyncPath _directoryPath;
 
-        CacheDirectoryHanlder() {
+        CacheDirectoryHandler() {
             if (_directoryPath.empty()) initDirectoryPath();
             if (!_directoryPath.empty()) createDirectoryPath();
         }
@@ -702,8 +715,9 @@ class CacheDirectoryHanlder {
         void createDirectoryPath() noexcept {
             if (!_directoryPath.empty()) {
                 IoError ioError = IoError::Success;
-                // It is a best effort, we cannot log/sentry anything here as the logger/sentry may not be initialized yet.
                 if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
+                    sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
+                                                    CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
                     _directoryPath.clear(); // Clear the path if the directory could not be created.
                     return;
                 }
@@ -717,19 +731,18 @@ class CacheDirectoryHanlder {
         }
 };
 
-CacheDirectoryHanlder CacheDirectoryHanlder::_instance;
 } // namespace details
 
 void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
     if (!newPath.empty()) {
-        details::CacheDirectoryHanlder::instance().setDirectoryPath(newPath);
+        details::CacheDirectoryHandler::instance().setDirectoryPath(newPath);
     } else {
-        details::CacheDirectoryHanlder::instance().resetDirectoryPath();
+        details::CacheDirectoryHandler::instance().resetDirectoryPath();
     }
 }
 
 bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
-    directoryPath = details::CacheDirectoryHanlder::instance().directoryPath();
+    directoryPath = details::CacheDirectoryHandler::instance().directoryPath();
     return !directoryPath.empty();
 }
 
