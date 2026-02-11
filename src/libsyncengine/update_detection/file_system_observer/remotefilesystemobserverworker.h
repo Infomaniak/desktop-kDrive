@@ -49,7 +49,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
                 SnapshotItem snapshotItem;
-                SyncName path;
+                const SyncName &path() const { return _path; };
+                void setPath(const SyncName &p);
+
+            private:
+                SyncName _path;
         };
         ExitInfo processActions(Poco::JSON::Array::Ptr filesArray);
         ExitInfo extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);

@@ -23,7 +23,7 @@ namespace KDC {
 
 std::mutex ApiTranslator::_mutex;
 
-ApiTranslator::NodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
+ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
 
 ApiTranslator::ApiTranslator() {}
 
@@ -42,7 +42,7 @@ ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     return drive.driveId();
 }
 
-NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList) {
+ApiTranslator::RemoteNodeId ApiTranslator::getPrivateFolderRemoteId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList) {
     const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
                                  [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
 
@@ -56,7 +56,7 @@ NodeId ApiTranslator::getRootFolderId(const DriveDbId driveDbId, const NodeInfoL
     return {};
 }
 
-NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
+ApiTranslator::RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const DriveDbId driveDbId) {
     constexpr auto maxNumberOfItems = 1000;
     {
         const std::scoped_lock lock(_mutex);
@@ -70,15 +70,21 @@ NodeId ApiTranslator::getUserPrivateRootFolderId(const DriveDbId driveDbId) {
     fileListJob.runSynchronously();
 
     const auto &nodeInfoList = fileListJob.nodeInfoList();
-    if (const auto rootFolderId = getRootFolderId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
+    if (const auto rootFolderId = getPrivateFolderRemoteId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
 
     return {};
 }
 
-void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, NodeId &remoteDirectoryId) {
+void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId) {
     if (remoteDirectoryId != "1") return;
 
-    remoteDirectoryId = getUserPrivateRootFolderId(driveDbId);
+    remoteDirectoryId = getUserPrivateFolderRemoteId(driveDbId);
+}
+
+void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
+    if (remotePath.empty() || *remotePath.begin() != "Private") return;
+
+    remotePath = std::filesystem::relative(remotePath, "Private");
 }
 
 } // namespace KDC

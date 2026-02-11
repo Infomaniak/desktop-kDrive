@@ -22,6 +22,8 @@
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/apitranslator.h"
+
 #if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
@@ -498,7 +500,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(),
-                            actionInfo.path, ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
+                            actionInfo.path(), ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from liveSnapshot
@@ -565,14 +567,16 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!tmpDestPathStr.empty()) {
         // This a move operation. Get the name from the `destination` field
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
-        actionInfo.path = tmpDestPathStr;
+        actionInfo.setPath(tmpDestPathStr);
     } else {
         // Otherwise, get the name from the `path` field
-        if (!JsonParserUtility::extractValue(actionObj, pathKey, actionInfo.path)) {
+        SyncName actionPath;
+        if (!JsonParserUtility::extractValue(actionObj, pathKey, actionPath)) {
             return ExitCode::BackError;
         }
+        actionInfo.setPath(actionPath);
         actionInfo.snapshotItem.setName(
-                actionInfo.path.substr(actionInfo.path.find_last_of('/') + 1)); // +1 to ignore the last "/"
+                actionInfo.path().substr(actionInfo.path().find_last_of('/') + 1)); // +1 to ignore the last "/"
     }
 
     SyncTime tmpTime = 0;
@@ -842,6 +846,12 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     }
 
     _listingFullCounter++;
+}
+
+void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
+    SyncPath remotePath_{remotePath};
+    ApiTranslator::translateV3ToV2(remotePath_);
+    _path = remotePath_.filename();
 }
 
 } // namespace KDC
