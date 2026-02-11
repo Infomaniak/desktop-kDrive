@@ -179,7 +179,7 @@ struct ActivitiesTableStatusView: View {
         @InjectService var loadingIndicatorShower: SidebarNotificationShowing
         loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
 
-        Task {
+        Task { @MainActor in
             @InjectService var nodeURLGenerator: NodeURLGenerator
             let url = try await nodeURLGenerator.shareURL(for: node.remoteID, driveDbId: drive.dbId)
 
