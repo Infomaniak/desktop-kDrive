@@ -105,7 +105,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
-    if (exitInfo = initWithCursor(); !exitInfo && !stopAsked()) {
+    if (exitInfo = initWithCursor(); exitInfo && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
                                                                    << _liveSnapshot.nbItems() << " items");
@@ -299,7 +299,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor);
             int64_t timestamp = static_cast<long int>(time(0));
-            ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp);
+            const ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp);
             if (!exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
 
