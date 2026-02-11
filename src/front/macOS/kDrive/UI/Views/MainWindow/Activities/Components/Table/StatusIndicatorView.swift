@@ -39,4 +39,5 @@ struct StatusIndicatorView: View {
 
 #Preview {
     StatusIndicatorView(indicator: DirectionIndicator.up)
+        .padding()
 }
