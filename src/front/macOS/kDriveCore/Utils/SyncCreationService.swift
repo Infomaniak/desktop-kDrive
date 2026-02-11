@@ -47,10 +47,10 @@ public struct SyncRemoteFolder: Sendable {
 public struct NewSyncCandidate {
     public let origin: SyncOrigin
     public let remoteFolder: SyncRemoteFolder
-    public let localFolder: String?
+    public let localFolder: URL?
     public let blackList: [String]
 
-    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: String?, blackList: [String]) {
+    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: URL?, blackList: [String]) {
         self.origin = origin
         self.remoteFolder = remoteFolder
         self.localFolder = localFolder
@@ -60,7 +60,7 @@ public struct NewSyncCandidate {
 
 public protocol SyncCreator: Sendable {
     func create(from sync: NewSyncCandidate) async throws -> SyncInfo
-    func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> String
+    func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL
 }
 
 public final class SyncCreationService: SyncCreator {
@@ -73,21 +73,24 @@ public final class SyncCreationService: SyncCreator {
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
         let identifier = getIdentifier(from: sync.origin)
 
-        let useLightSync = shouldUseLightSync(for: sync.origin)
-        let metadata = try await getMetadata(for: sync, useLightSync: useLightSync)
+        let localFolderURL = try await getLocalFolderURL(for: sync)
 
-        try createDestinationIfNecessary(at: metadata.localFolderPath)
+        let useLightSync = try await shouldUseLightSync(at: localFolderURL)
+        let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
+
+        try createDestinationIfNecessary(at: localFolderURL)
 
         let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
         return syncInfo
     }
 
-    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> String {
+    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL {
         let defaultPath = computeDefaultFolderPath(drive: syncOrigin.drive)
-        return try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath)
+        let path = try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath.path)
+        return URL(fileURLWithPath: path)
     }
 
-    private func computeDefaultFolderPath(drive: any DriveRepresentation) -> String {
+    private func computeDefaultFolderPath(drive: any DriveRepresentation) -> URL {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
 
         var driveName = drive.name
@@ -97,7 +100,7 @@ public final class SyncCreationService: SyncCreator {
 
         let folderName = "kDrive \(driveName)".trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return homeDirectory.appendingPathComponent(folderName).path
+        return homeDirectory.appendingPathComponent(folderName)
     }
 
     private func getIdentifier(from origin: SyncOrigin) -> NewSyncParentIdentifier {
@@ -113,21 +116,13 @@ public final class SyncCreationService: SyncCreator {
         }
     }
 
-    private func getMetadata(for sync: NewSyncCandidate, useLightSync: Bool) async throws -> NewSyncMetadata {
+    private func getMetadata(for sync: NewSyncCandidate, useLightSync: Bool, localFolderURL: URL) -> NewSyncMetadata {
         let drive = sync.origin.drive
-
-        let localPath: String
-        if let providedPath = sync.localFolder {
-            localPath = providedPath
-        } else {
-            localPath = try await preferredLocalPath(for: sync.origin)
-        }
-
         return NewSyncMetadata(
             userDbId: drive.userDbId,
             accountId: drive.accountId,
             driveId: drive.driveId,
-            localFolderPath: localPath,
+            localFolderPath: localFolderURL.path,
             serverFolderPath: sync.remoteFolder.path,
             serverFolderNodeId: sync.remoteFolder.nodeId,
             liteSync: useLightSync,
@@ -135,20 +130,28 @@ public final class SyncCreationService: SyncCreator {
         )
     }
 
-    private func shouldUseLightSync(for _: SyncOrigin) -> Bool {
+    private func shouldUseLightSync(at url: URL) async throws -> Bool {
         guard useLightSyncIfPossible else {
             return false
         }
 
-        // TODO: Check if the drive can use the Light Sync for the given origin
-        return true
+        let bestMode = try await UtilityJobs().getBestVirtualFileSystemMode(path: url.path)
+        return bestMode == .Mac
     }
 
-    private func createDestinationIfNecessary(at path: String) throws {
-        guard !FileManager.default.fileExists(atPath: path) else {
+    private func getLocalFolderURL(for sync: NewSyncCandidate) async throws -> URL {
+        if let providedPath = sync.localFolder {
+            return providedPath
+        } else {
+            return try await preferredLocalPath(for: sync.origin)
+        }
+    }
+
+    private func createDestinationIfNecessary(at url: URL) throws {
+        guard !FileManager.default.fileExists(atPath: url.path) else {
             return
         }
 
-        try FileManager.default.createDirectory(at: URL(fileURLWithPath: path), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
 }
