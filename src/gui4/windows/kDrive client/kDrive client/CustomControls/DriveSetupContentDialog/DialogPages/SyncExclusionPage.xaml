@@ -10,6 +10,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <Page.Transitions>
         <TransitionCollection>
@@ -29,13 +30,13 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   x:Uid="CC_DriveSetupContentDialog_SyncExclusionPage_Title"
+                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsExclusionTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <!-- Message -->
         <TextBlock Grid.Row="1"
-                   x:Uid="CC_DriveSetupContentDialog_SyncExclusionPage_Message"
+                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsExclusionDescription')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

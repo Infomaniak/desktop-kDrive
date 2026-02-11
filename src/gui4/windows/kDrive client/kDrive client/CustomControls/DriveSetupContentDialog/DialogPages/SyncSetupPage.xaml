@@ -10,6 +10,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -40,7 +41,7 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Title"
+                   Text="{x:Bind loc:Localizer.GetString('onBoardingAdvancedSettingsDriveTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
@@ -91,13 +92,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Title"
+                               Text="{x:Bind loc:Localizer.GetString('labelSyncLocation')}"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Message"
+                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveCustomizeLocation')}"
                                TextWrapping="WrapWholeWords"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -114,7 +115,7 @@
                     </Grid.RowDefinitions>
 
                     <DropDownButton Grid.Row="0"
-                                    x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_DropDown_Default"
+                                    Content="{x:Bind loc:Localizer.GetString('buttonDefaultLocation')}"
                                     Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                     Click="ChangeFolder_Click">
                         <ToolTipService.ToolTip>
@@ -134,7 +135,7 @@
                     </DropDownButton>
 
                     <TextBlock Grid.Row="1"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Location_Caption"
+                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
                                TextTrimming="CharacterEllipsis"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"
@@ -161,13 +162,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Title"
+                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionTitle')}"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message"
+                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionDescription')}"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                FontWeight="SemiBold"
@@ -188,7 +189,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="0"
-                            x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Button"
+                            Content="{x:Bind loc:Localizer.GetString('buttonSelectFolders')}"
                             Click="Exclusionbutton_click" />
 
                     <StackPanel Grid.Column="1"
@@ -200,7 +201,7 @@
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                           VerticalAlignment="Center" />
 
-                        <TextBlock x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive"
+                        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingExclusionSummaryNone')}"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -215,26 +216,16 @@
                                           VerticalAlignment="Center" />
 
                         <TextBlock Grid.Column="1"
-                                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content"
+                                   Text="{x:Bind loc:Localizer.GetString('onboardingExclusionSummaryAtLeastOne')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    TextTrimming="WordEllipsis">
-
                         </TextBlock>
-
-                        <ToolTipService.ToolTip>
-                            <ToolTip>
-                                <TextBlock>
-                                    <Run Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Mode=OneWay}" />
-                                    <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
-                                </TextBlock>
-                            </ToolTip>
-                        </ToolTipService.ToolTip>
                     </StackPanel>
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="1"
-                               x:Uid="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption"
+                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionTip')}"
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"

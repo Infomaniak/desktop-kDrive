@@ -10,6 +10,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -33,11 +34,11 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Title"
+                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveSelectionTitle')}"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <TextBlock Grid.Row="1"
-                   x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Message"
+                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveSelectionDescription')}"
                    TextTrimming="WordEllipsis"
                    Style="{StaticResource BodyTextBlockStyle}" />
 
@@ -92,85 +93,30 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <!-- Local path -->
-                                <Grid Grid.Row="0"
-                                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Location"
-                                               FontSize="12"
-                                               FontWeight="Normal"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
-                                    <TextBlock Grid.Column="1"
-                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Location_Default"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               Visibility="{x:Bind IsDefaultLocalPath, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Grid.Column="1"
+                                           Text="{x:Bind local:DriveSelectionPage.GetLoacationSummary(IsDefaultLocalPath,  LocalPath), Mode=OneWay}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis">
                                         <ToolTipService.ToolTip>
                                             <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
                                         </ToolTipService.ToolTip>
-                                    </TextBlock>
-
-                                    <TextBlock Grid.Column="1"
-                                               Text="{x:Bind LocalPath, Mode=OneWay}"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               Visibility="{x:Bind IsDefaultLocalPath, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                        <ToolTipService.ToolTip>
-                                            <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
-                                        </ToolTipService.ToolTip>
-                                    </TextBlock>
-                                </Grid>
+                                </TextBlock>
 
                                 <!-- Exclusions -->
-                                <Grid Grid.Row="1"
-                                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion"
-                                               FontSize="12"
-                                               FontWeight="Normal"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Default"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="WordEllipsis"
-                                               Visibility="{x:Bind ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay }" />
+                                <TextBlock Grid.Column="0"
+                                           Text="{x:Bind local:DriveSelectionPage.GetExclusionsSummary(ExcludedNodeIds.Count), Mode=OneWay}"
+                                           FontSize="12"
+                                           FontWeight="Normal"
+                                           TextTrimming="WordEllipsis"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                                    <TextBlock Grid.Column="1"
-                                               x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextTrimming="WordEllipsis"
-                                               Visibility="{x:Bind ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                                        <ToolTipService.ToolTip>
-                                            <ToolTip>
-                                                <TextBlock>
-                                                    <Run Text="{x:Bind ExcludedNodeIds.Count, Mode=OneWay}" />
-                                                    <Run x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip" />
-                                                </TextBlock>
-                                            </ToolTip>
-                                        </ToolTipService.ToolTip>
-                                    </TextBlock>
-                                </Grid>
                             </Grid>
                             <!-- Edit button -->
                             <HyperlinkButton Grid.Column="2"
                                              Grid.RowSpan="2"
-                                             x:Uid="CC_DriveSetupContentDialog_DriveSelectionPage_Configure"
+                                             Content="{x:Bind loc:Localizer.GetString('buttonConfigure')}"
                                              Click="EditButton_Click" />
                         </Grid>
                     </Border>

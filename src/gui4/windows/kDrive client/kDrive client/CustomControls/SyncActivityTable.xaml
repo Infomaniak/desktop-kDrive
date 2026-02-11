@@ -92,7 +92,7 @@
                                Foreground="{ThemeResource TextFillColorSecondary}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="1"
-                               Text="{x:Bind loc:Localizer.GetString('folder')}"
+                               Text="{x:Bind loc:Localizer.GetString('labelfolder')}"
                                Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
                                VerticalAlignment="Center"
                                Foreground="{ThemeResource TextFillColorSecondary}"
@@ -105,7 +105,7 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
                     <TextBlock Grid.Column="3"
-                               Text="{x:Bind loc:Localizer.GetString('state')}"
+                               Text="{x:Bind loc:Localizer.GetString('labelstate')}"
                                VerticalAlignment="Center"
                                Foreground="{ThemeResource TextFillColorSecondary}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

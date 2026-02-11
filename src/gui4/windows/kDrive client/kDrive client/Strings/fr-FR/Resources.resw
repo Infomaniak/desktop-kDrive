@@ -310,6 +310,12 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_ErrorBar.Title" xml:space="preserve">
     <value>Vous avez {0} erreurs de synchronisation</value>
   </data>
+  <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve">
+    <value>Vous avez {0} erreurs de synchronisation</value>
+  </data>
+  <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve">
+    <value>Vous avez une erreur de synchronisation</value>
+  </data>
   <data name="CC_RemoteDiskFullBar.Message" xml:space="preserve">
     <value>Libérez de l’espace ou faites évoluer votre offre  pour continuer à synchroniser vos fichiers.</value>
   </data>
@@ -1197,14 +1203,14 @@ Si le problème persiste, veuillez contacter le support</value>
     <value>Par défaut</value>
   </data>
   <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Message.Text" xml:space="preserve">
-    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value>
+    <value> </value>
   </data>
   <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip.Text" xml:space="preserve">
     <value>dossier(s) exclu(s)</value>
     <comment>x dossiers exclus</comment>
   </data>
   <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message.Text" xml:space="preserve">
-    <value>Choisissez les dossiers à synchronisés sur cet ordinateur :</value>
+    <value>  </value>
   </data>
   <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption.Text" xml:space="preserve">
     <value>Les dossiers non sélectionnés resteront accessibles en ligne.</value>
@@ -1562,7 +1568,7 @@ Renouvelez votre abonnement pour réactiver le service.</value>
   <data name="buttonFixErrors" xml:space="preserve"> 
     <value>Corriger les erreurs</value> 
   </data> 
-  <data name=" informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
+  <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Certains fichiers n’ont pas pu être synchronisés.</value> 
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
