@@ -39,8 +39,8 @@ final class DriveTargetAssembly: TargetAssembly {
             Factory(type: InfomaniakLoginable.self) { _, _ in
                 InfomaniakLogin(config: Self.loginConfig)
             },
-            Factory(type: SidebarNotificationShowing.self) { _, _ in
-                SidebarNotificationShower()
+            Factory(type: SidebarNotificationPresenting.self) { _, _ in
+                SidebarNotificationPresenter()
             }
         ]
     }

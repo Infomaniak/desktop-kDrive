@@ -60,14 +60,14 @@ public struct SidebarNotificationState: Sendable {
     }
 }
 
-public protocol SidebarNotificationShowing: AnyObject {
+public protocol SidebarNotificationPresenting: AnyObject {
     @MainActor var statePublisher: AnyPublisher<SidebarNotificationState?, Never> { get }
 
     @MainActor func show(_ notification: SidebarNotificationState)
     @MainActor func hide()
 }
 
-public final class SidebarNotificationShower: SidebarNotificationShowing {
+public final class SidebarNotificationPresenter: SidebarNotificationPresenting {
     @MainActor @Published public private(set) var state: SidebarNotificationState?
 
     @MainActor private var hideTask: Task<Void, Never>?

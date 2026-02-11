@@ -176,7 +176,7 @@ struct ActivitiesTableStatusView: View {
     private func copyShareLink() {
         guard let drive = context?.drive else { return }
 
-        @InjectService var loadingIndicatorShower: SidebarNotificationShowing
+        @InjectService var loadingIndicatorShower: SidebarNotificationPresenting
         loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
 
         Task { @MainActor in

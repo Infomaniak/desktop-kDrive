@@ -47,7 +47,7 @@ final class MainSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     @LazyInjectService private var router: MainViewRouter
-    @LazyInjectService private var loadingIndicatorShower: SidebarNotificationShowing
+    @LazyInjectService private var loadingIndicatorShower: SidebarNotificationPresenting
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
