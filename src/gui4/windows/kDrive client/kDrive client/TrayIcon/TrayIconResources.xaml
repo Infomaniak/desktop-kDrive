@@ -17,16 +17,14 @@
  * along with this program.  If not, see<http://www.gnu.org/licenses/> .
  -->
 
-<ResourceDictionary x:Class="Infomaniak.kDrive.TrayIcon.TrayIconResources"
-                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:tb="using:H.NotifyIcon"
-                    xmlns:loc="using:Infomaniak.kDrive.Localizer">
+                    xmlns:tb="using:H.NotifyIcon">
     <XamlUICommand x:Key="ShowWindowCommand"
-                   Label="{Binding ButtonOpenKDrive}">
+                   x:Uid="trayIconButtonOpenKDrive">
     </XamlUICommand>
     <XamlUICommand x:Key="ExitApplicationCommand"
-                   Label="{Binding ButtonCloseKDrive}">
+                   x:Uid="trayIconButtonCloseKDrive">
     </XamlUICommand>
     <tb:TaskbarIcon x:Key="TrayIcon"
                     Visibility="Visible"

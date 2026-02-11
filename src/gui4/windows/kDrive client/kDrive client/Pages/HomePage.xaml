@@ -234,11 +234,6 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Update Available Banner -->
-        <controls:UpdateAvailableBar Grid.Row="0"
-                                     Visibility="Collapsed"
-                                     Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.M}" />
-
         <!-- Main content-->
         <Grid Grid.Row="1"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}"

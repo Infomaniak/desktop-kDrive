@@ -409,7 +409,7 @@ Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.<
   <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
     <value>Ouvrir kDrive</value>
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+  <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve">
     <value>Ce drive est déja configuré, rendez vous dans vos paramètres pour le modifier.</value>
   </data>
   <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
@@ -1387,6 +1387,12 @@ Nous vous invitons à patienter quelques instants.</value>
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Ouvrir kDrive</value> 
   </data> 
+  <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
+    <value>Ouvrir kDrive</value> 
+  </data> 
+  <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
+    <value>Fermer kDrive</value> 
+  </data> 
   <data name="folderFavorites" xml:space="preserve"> 
     <value>Favoris</value> 
   </data> 
@@ -1460,6 +1466,9 @@ Réessayez dans quelques minutes.</value>
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Fermer</value> 
+  </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>Fermer kDrive</value> 
   </data> 
   <data name="buttonCloseKDrive" xml:space="preserve"> 
     <value>Fermer kDrive</value> 
@@ -1696,7 +1705,7 @@ Renouvelez votre abonnement pour réactiver le service.</value>
     <value>Mise à jour</value> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
-    <value>Mise à jour</value> 
+    <value>Mettre à jour</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 

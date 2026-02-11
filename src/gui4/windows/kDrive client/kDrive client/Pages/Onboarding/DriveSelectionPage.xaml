@@ -148,7 +148,7 @@
                         <DataTemplate x:DataType="types:IDrive">
                             <Grid>
                                 <ToolTipService.ToolTip>
-                                    <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
+                                    <ToolTip Content="{x:Bind loc:Localizer.GetString('onboardingAlreadySyncedDriveTooltip')}"
                                              VerticalOffset="-80"
                                              IsEnabled="{x:Bind IsConfigured, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
