@@ -25,6 +25,7 @@
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:controls="using:Infomaniak.kDrive.CustomControls"
                            xmlns:converters="using:Infomaniak.kDrive.Converters"
+                           xmlns:loc="using:Infomaniak.kDrive.Localizer"
                            mc:Ignorable="d">
     <local:SpecialErroBasePage.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -43,17 +44,17 @@
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
                 <TextBlock x:Name="TitleTextBlock"
-                           x:Uid="Page_LogginErrorPage_Title"
+                           Text="{x:Bind loc:Localizer.GetString('driveLoggingErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
                 <TextBlock x:Name="SubtitleTextBlock"
-                           x:Uid="Page_LogginErrorPage_Subtitle"
+                           Text="{x:Bind loc:Localizer.GetString('driveLoggingErrorDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
                 <Button x:Name="ConnectionButton"
-                        x:Uid="Page_LogginErrorPage_Button"
+                        Content="{x:Bind loc:Localizer.GetString('buttonLogin')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource AccentButtonStyle}"
                         Click="ConnectionButton_Click" />

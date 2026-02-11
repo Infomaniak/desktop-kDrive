@@ -25,6 +25,7 @@
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:controls="using:Infomaniak.kDrive.CustomControls"
                            xmlns:converters="using:Infomaniak.kDrive.Converters"
+                           xmlns:loc="using:Infomaniak.kDrive.Localizer"
                            mc:Ignorable="d">
     <local:SpecialErroBasePage.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -42,24 +43,19 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock x:Uid="Page_AsleepErrorPage_Title"
+                <TextBlock Text="{x:Bind loc:Localizer.GetString('driveAsleepErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
-                           HorizontalAlignment="Center"
-                           />
-
-                <TextBlock  x:Uid="Page_AsleepErrorPage_Subtitle"
-                            HorizontalAlignment="Center"
-                            TextAlignment="Center" />
+                           HorizontalAlignment="Center" />
 
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <Button  x:Uid="Page_AsleepErrorPage_PrimaryButton"
+                    <Button  Content="{x:Bind loc:Localizer.GetString('buttonWakeUp')}"
                              HorizontalAlignment="Center"
                              Style="{ThemeResource AccentButtonStyle}"
                              Click="PrimaryButton_Click" />
 
-                    <Button  x:Uid="Page_AsleepErrorPage_SecondaryButton"
+                    <Button  Content="{x:Bind loc:Localizer.GetString('buttonRefresh')}"
                              HorizontalAlignment="Center"
                              Style="{ThemeResource DefaultButtonStyle}"
                              Click="SecondaryButton_Click" />
