@@ -40,7 +40,7 @@ public struct UtilityJobs: Sendable {
 
     public func getGoodPathForNewSynchro(basePath: String) async throws -> String {
         IKLogger.data.log("Query for good Path for new Synchro")
-        let query = UtilityGoodPathNewSyncQuery(basePath: basePath, driveDbId: nil)
+        let query = UtilityGoodPathNewSyncQuery(basePath: basePath)
         let request = await RequestMessage<UtilityGoodPathNewSyncQuery>(
             num: RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC,
             body: query
