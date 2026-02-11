@@ -47,6 +47,11 @@ public protocol CoherentCache: Sendable {
     func removeDrive(driveDbId: Int32) async throws
     func updateDrive(drive: Drive) async throws
 
+    // MARK: - Available Drive
+
+    func getAvailableDrive(driveDb: Int32, userDbId: Int32) async -> AvailableDrive?
+    func getAvailableDrive(driveDb: Int32) async -> AvailableDrive?
+
     // MARK: - Synchro
 
     func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Synchro?
