@@ -428,6 +428,27 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
                 LOG_WARN(_logger, err);
                 throw std::runtime_error(err);
             }
+
+            if (!_driveDbId) {
+                Drive drive;
+                bool found = false;
+                if (!ParmsDb::instance()->selectDriveByDriveId(_driveId, drive, found)) {
+                    assert(false);
+                    const std::string err{"Error in ParmsDb::selectDriveById"};
+                    LOG_WARN(_logger, err);
+                    throw DbError(err);
+                }
+                if (!found) {
+                    assert(false);
+                    const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
+                    LOG_WARN(_logger, err);
+                    throw DataError(err);
+                }
+
+                _driveDbId = drive.dbId();
+                _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
+            }
+
             break;
         }
         case ApiType::Profile:
