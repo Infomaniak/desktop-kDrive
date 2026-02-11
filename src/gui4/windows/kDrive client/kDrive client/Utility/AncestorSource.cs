@@ -40,7 +40,12 @@ namespace Infomaniak.kDrive
         {
             Type ancestorType = GetAncestorType(target);
             if (ancestorType != null)
-                target.DataContext = FindParent(target, ancestorType);
+            {
+                FrameworkElement? source = FindParent(target, ancestorType) as FrameworkElement;
+                if (source is null)
+                    return;
+                target.DataContext = source.DataContext;
+            }
         }
 
         private static object FindParent(DependencyObject dependencyObject, Type ancestorType)

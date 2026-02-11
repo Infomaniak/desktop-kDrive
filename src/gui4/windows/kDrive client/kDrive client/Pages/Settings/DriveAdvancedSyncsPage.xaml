@@ -27,18 +27,18 @@
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
                 <toolKit:SettingsExpander.Items>
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('localLocation')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('localLocation')}">
                         <HyperlinkButton Content="{x:Bind LocalPath}"
                                          Click="LocalPathLink_Click" />
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('remoteLocation')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('remoteLocation')}">
                         <HyperlinkButton Content="{x:Bind RemotePath}"
                                          Click="RemotePathLink_Click" />
                     </toolKit:SettingsCard>
 
                     <!-- Lite sync -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('applyingChange')}"
-                                          Description="{x:Bind loc:Localizer.GetString('syncModeApplying')}"
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('applyingChange')}"
+                                          Description="{x:Bind loc:Localizer.Instance.GetString('syncModeApplying')}"
                                           Visibility="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                     </toolKit:SettingsCard>
 
@@ -59,15 +59,15 @@
                             <StackPanel Grid.Row="0"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="2">
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('fileSyncMode')}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('fileSyncModeDescription')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('fileSyncMode')}" />
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('fileSyncModeDescription')}"
                                            Style="{StaticResource CaptionTextBlockStyle}" />
 
                             </StackPanel>
                             <!-- Card content -->
                             <toolKit:SettingsCard Grid.Row="1"
                                                   Grid.Column="1"
-                                                  Header="{x:Bind loc:Localizer.GetString('storedOnline')}"
+                                                  Header="{x:Bind loc:Localizer.Instance.GetString('storedOnline')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -86,7 +86,7 @@
                             <!-- Card content -->
                             <toolKit:SettingsCard Grid.Column="1"
                                                   Grid.Row="2"
-                                                  Header="{x:Bind loc:Localizer.GetString('availableOffline')}"
+                                                  Header="{x:Bind loc:Localizer.Instance.GetString('availableOffline')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -116,11 +116,11 @@
                             </Grid.RowDefinitions>
                             <StackPanel Grid.Row="0"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('selectFoldersToSync')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('selectFoldersToSync')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                            TextWrapping="Wrap" />
 
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('selectFoldersToSyncDescription')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap" />
@@ -131,7 +131,7 @@
                                                             HorizontalAlignment="Stretch" />
                         </Grid>
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('removeSync')}"
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('removeSync')}"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
                                           IsClickEnabled="True"
@@ -154,7 +154,7 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('settings')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('settings')}"
                        Style="{StaticResource TitleTextBlockStyle}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -166,13 +166,13 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <StackPanel>
                     <!-- Subtitle -->
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncTitle')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('advancedSyncTitle')}"
                                Style="{StaticResource BodyLargeStrongTextBlockStyle}"
                                Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncSubtitle')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('advancedSyncSubtitle')}"
                                Style="{StaticResource BodyTextBlockStyle}" />
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('advancedSyncDescription')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('advancedSyncDescription')}"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
                 <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"
@@ -193,7 +193,7 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
-                <Button Content="{x:Bind loc:Localizer.GetString('buttonAddAdvancedSync')}" />
+                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonAddAdvancedSync')}" />
                 <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>

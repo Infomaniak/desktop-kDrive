@@ -27,7 +27,7 @@
                       x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('logsStatusCompression')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('logsStatusCompression')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -43,7 +43,7 @@
                       x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('logsStatusUpload')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('logsStatusUpload')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -75,7 +75,7 @@
                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind loc:Localizer.GetString('logsUploadErrorTooltip')}" />
+                    <ToolTip Content="{x:Bind loc:Localizer.Instance.GetString('logsUploadErrorTooltip')}" />
                 </ToolTipService.ToolTip>
             </local:SvgIcon>
         </DataTemplate>
@@ -102,7 +102,7 @@
     </toolKit:SettingsCard.Resources>
 
     <toolKit:SettingsCard.Header>
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('infomaniakSupport')}" />
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('infomaniakSupport')}" />
     </toolKit:SettingsCard.Header>
 
     <toolKit:SettingsCard.HeaderIcon>
@@ -119,14 +119,14 @@
                             VerticalContentAlignment="Center" />
 
             <Button x:Name="SendLogsButton"
-                    Content="{x:Bind loc:Localizer.GetString('buttonSendLog')}"
+                    Content="{x:Bind loc:Localizer.Instance.GetString('buttonSendLog')}"
                     Style="{ThemeResource AccentButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                     Click="SendLogsButton_Click" />
 
             <Button x:Name="CancelButton"
                     VerticalAlignment="Center"
-                    Content="{x:Bind loc:Localizer.GetString('cancel')}"
+                    Content="{x:Bind loc:Localizer.Instance.GetString('cancel')}"
                     Style="{ThemeResource DefaultButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                     Click="CancelButton_Click" />

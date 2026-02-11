@@ -190,11 +190,11 @@ namespace Infomaniak.kDrive
             ContentDialog dialog = new ContentDialog();
 
             dialog.XamlRoot = xamlRoot;
-            dialog.Title = Localizer.Localizer.GetString($"{translationKeyPreffix}Title");
-            dialog.PrimaryButtonText = Localizer.Localizer.GetString($"{translationKeyPreffix}PrimaryButtonText");
-            dialog.SecondaryButtonText = Localizer.Localizer.GetString($"{translationKeyPreffix}SecondaryButtonText");
+            dialog.Title = Localizer.Localizer.Instance.GetString($"{translationKeyPreffix}Title");
+            dialog.PrimaryButtonText = Localizer.Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText");
+            dialog.SecondaryButtonText = Localizer.Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText");
             dialog.DefaultButton = defaultButton;
-            dialog.Content = Localizer.Localizer.GetString($"{translationKeyPreffix}Content");
+            dialog.Content = Localizer.Localizer.Instance.GetString($"{translationKeyPreffix}Content");
             return dialog;
         }
 
@@ -318,11 +318,11 @@ namespace Infomaniak.kDrive
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Localizer.GetString($"{translationKeyPreffix}Title"),
-                Subtitle = Localizer.Localizer.IsValidKey(subtitleKey) ? Localizer.Localizer.GetString(subtitleKey) : "",
-                Content = Localizer.Localizer.IsValidKey(contentKey) ? new TextBlock
+                Title = Localizer.Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
+                Subtitle = Localizer.Localizer.Instance.IsValidKey(subtitleKey) ? Localizer.Localizer.Instance.GetString(subtitleKey) : "",
+                Content = Localizer.Localizer.Instance.IsValidKey(contentKey) ? new TextBlock
                 {
-                    Text = Localizer.Localizer.GetString(contentKey),
+                    Text = Localizer.Localizer.Instance.GetString(contentKey),
                     TextWrapping = TextWrapping.Wrap
                 } : "",
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,

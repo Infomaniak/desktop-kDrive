@@ -12,8 +12,8 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind loc:Localizer.GetString('errFrobiddenCharTitle')}"
-                     Description="{x:Bind loc:Localizer.GetString('errFrobiddenCharDescription')}"
+                     Title="{x:Bind loc:Localizer.Instance.GetString('errFrobiddenCharTitle')}"
+                     Description="{x:Bind loc:Localizer.Instance.GetString('errFrobiddenCharDescription')}"
                      ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
                      ItemPath="{x:Bind _error.Path}" />
 </UserControl>

@@ -7,10 +7,10 @@
     <StackPanel VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('largeFolderRecommendation')}"
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('largeFolderRecommendation')}"
                    TextWrapping="WrapWholeWords" />
         <CheckBox x:Name="CheckBox"
-                  Content="{x:Bind loc:Localizer.GetString('sendLastSessionOnly')}"
+                  Content="{x:Bind loc:Localizer.Instance.GetString('sendLastSessionOnly')}"
                   IsChecked="False" />
     </StackPanel>
 </Page>

@@ -26,10 +26,10 @@ namespace Infomaniak.kDrive.CustomControls
         {
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = XamlRoot;
-            dialog.Title = Localizer.Localizer.GetString("logUploadPopupTitle");
+            dialog.Title = Localizer.Localizer.Instance.GetString("logUploadPopupTitle");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.PrimaryButtonText = Localizer.Localizer.GetString("send");
-            dialog.SecondaryButtonText = Localizer.Localizer.GetString("cancel");
+            dialog.PrimaryButtonText = Localizer.Localizer.Instance.GetString("send");
+            dialog.SecondaryButtonText = Localizer.Localizer.Instance.GetString("cancel");
             var popupPage = new Pages.Popup.LogUploadPopup();
             dialog.Content = popupPage;
 

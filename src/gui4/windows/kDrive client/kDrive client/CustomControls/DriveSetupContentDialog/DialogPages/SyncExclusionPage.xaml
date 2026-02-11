@@ -30,13 +30,13 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsExclusionTitle')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <!-- Message -->
         <TextBlock Grid.Row="1"
-                   Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsExclusionDescription')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionDescription')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

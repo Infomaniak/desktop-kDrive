@@ -3,28 +3,32 @@ using Windows.ApplicationModel.Resources;
 
 namespace Infomaniak.kDrive.Localizer
 {
-    internal static class Localizer
+    internal class Localizer : UISafeObservableObject
     {
         private static readonly ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+        public static Localizer Instance { get; } = new Localizer();
 
-        public static string GetString(string key)
+        public void TriggerRefresh()
         {
-            return GetString(key, null);
+            OnPropertyChanged(nameof(GetString1s));
+            OnPropertyChanged(nameof(GetStringWithPlural1i));
+            OnPropertyChanged(nameof(GetStringWithPlural));
+            OnPropertyChanged(nameof(IsValidKey));
         }
 
-        public static string GetString1s(string key, string arg1)
+        public string GetString1s(string key, string arg1)
         {
             return GetString(key, new object?[] { arg1 });
         }
 
-        public static string GetStringWithPlural1i(string key, int count, int arg1)
+        public string GetStringWithPlural1i(string key, int count, int arg1)
         {
             return GetStringWithPlural(key, count, new object?[] { arg1 });
         }
 
         // This method is used to get a localized string that has a singular and plural form based on the count.
         // The singularKey is the key for the singular form of the string, and the plural form is expected to be defined in the resource file with the key singularKey + "-plural".
-        public static string GetStringWithPlural(string singularKey, int count, params object?[]? args)
+        public string GetStringWithPlural(string singularKey, int count, params object?[]? args)
         {
             // Compute wich form to use based on the count and the pluralization rules of the current culture
             bool usePluralForm = System.Globalization.CultureInfo.CurrentUICulture.Name switch
@@ -37,7 +41,12 @@ namespace Infomaniak.kDrive.Localizer
             return GetString(keyToUse, args);
         }
 
-        public static string GetString(string key, params object?[]? args)
+        public string GetString(string key)
+        {
+            return GetString(key, null);
+        }
+
+        public string GetString(string key, params object?[]? args)
         {
             key = key.Replace(".", "/");
 
@@ -80,7 +89,7 @@ namespace Infomaniak.kDrive.Localizer
             return localizedString;
         }
 
-        public static bool IsValidKey(string key)
+        public bool IsValidKey(string key)
         {
             string localizedString = GetString(key);
             return !localizedString.StartsWith("!") && !localizedString.EndsWith("!");

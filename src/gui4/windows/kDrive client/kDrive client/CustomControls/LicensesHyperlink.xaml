@@ -12,6 +12,6 @@
             mc:Ignorable="d">
 
     <TextBlock x:Name="ExpandedTextBox" />
-    <HyperlinkButton Content="{x:Bind loc:Localizer.GetString('LicensesHyperLink')}"
+    <HyperlinkButton Content="{x:Bind loc:Localizer.Instance.GetString('LicensesHyperLink')}"
                      NavigateUri="{x:Bind kDrive:App.Constants.GitHub.LicenseUrl}" />
 </StackPanel>

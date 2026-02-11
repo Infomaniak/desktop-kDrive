@@ -41,7 +41,7 @@
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind loc:Localizer.GetString('onBoardingAdvancedSettingsDriveTitle')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('onBoardingAdvancedSettingsDriveTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
@@ -92,13 +92,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               Text="{x:Bind loc:Localizer.GetString('labelSyncLocation')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('labelSyncLocation')}"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveCustomizeLocation')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocation')}"
                                TextWrapping="WrapWholeWords"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -115,7 +115,7 @@
                     </Grid.RowDefinitions>
 
                     <DropDownButton Grid.Row="0"
-                                    Content="{x:Bind loc:Localizer.GetString('buttonDefaultLocation')}"
+                                    Content="{x:Bind loc:Localizer.Instance.GetString('buttonDefaultLocation')}"
                                     Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                     Click="ChangeFolder_Click">
                         <ToolTipService.ToolTip>
@@ -135,7 +135,7 @@
                     </DropDownButton>
 
                     <TextBlock Grid.Row="1"
-                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
                                TextTrimming="CharacterEllipsis"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"
@@ -162,13 +162,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
-                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionTitle')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveExclusionTitle')}"
                                Style="{StaticResource BodyTextBlockStyle}"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
 
                     <TextBlock Grid.Row="1"
-                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionDescription')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveExclusionDescription')}"
                                Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                FontWeight="SemiBold"
@@ -189,7 +189,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="0"
-                            Content="{x:Bind loc:Localizer.GetString('buttonSelectFolders')}"
+                            Content="{x:Bind loc:Localizer.Instance.GetString('buttonSelectFolders')}"
                             Click="Exclusionbutton_click" />
 
                     <StackPanel Grid.Column="1"
@@ -201,7 +201,7 @@
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                           VerticalAlignment="Center" />
 
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingExclusionSummaryNone')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingExclusionSummaryNone')}"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -216,7 +216,7 @@
                                           VerticalAlignment="Center" />
 
                         <TextBlock Grid.Column="1"
-                                   Text="{x:Bind loc:Localizer.GetString('onboardingExclusionSummaryAtLeastOne')}"
+                                   Text="{x:Bind loc:Localizer.Instance.GetString('onboardingExclusionSummaryAtLeastOne')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    TextTrimming="WordEllipsis">
@@ -225,7 +225,7 @@
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="1"
-                               Text="{x:Bind loc:Localizer.GetString('onboardingAdvancedSettingsDriveExclusionTip')}"
+                               Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveExclusionTip')}"
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource BodyTextBlockStyle}"

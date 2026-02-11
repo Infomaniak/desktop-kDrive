@@ -14,11 +14,11 @@
                 HorizontalAlignment="Center">
 
         <!-- Titre -->
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionSyncInProgress')}"
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingDriveSelectionSyncInProgress')}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Sous-titre -->
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationInProgressDescription')}"
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingSynchronizationInProgressDescription')}"
                    MaxWidth="350"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    TextWrapping="WrapWholeWords"

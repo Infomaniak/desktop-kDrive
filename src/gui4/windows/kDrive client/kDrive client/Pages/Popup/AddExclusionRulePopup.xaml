@@ -11,16 +11,16 @@
         <StackPanel VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('dialogNewExclusionRuleTitle')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('dialogNewExclusionRuleTitle')}"
                        Style="{StaticResource SubtitleTextBlockStyle}" />
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('excludeRuleDescription')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('excludeRuleDescription')}"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
-        <TextBox PlaceholderText="{x:Bind loc:Localizer.GetString('filesToExclude')}"
+        <TextBox PlaceholderText="{x:Bind loc:Localizer.Instance.GetString('filesToExclude')}"
                  x:Name="TextBox" />
         <CheckBox x:Name="CheckBox"
-                  Content="{x:Bind loc:Localizer.GetString('notifyOnFileExcluded')}"
+                  Content="{x:Bind loc:Localizer.Instance.GetString('notifyOnFileExcluded')}"
                   IsChecked="False" />
     </StackPanel>
 </Page>

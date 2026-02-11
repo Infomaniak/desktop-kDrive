@@ -164,11 +164,11 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = this.XamlRoot;
-            dialog.Title = Localizer.Localizer.GetString("dialogRemoveAccountTitle");
-            dialog.PrimaryButtonText = Localizer.Localizer.GetString("dialogRemoveAccountPrimaryButton");
-            dialog.SecondaryButtonText = Localizer.Localizer.GetString("dialogRemoveAccountCancelButton");
+            dialog.Title = Localizer.Localizer.Instance.GetString("dialogRemoveAccountTitle");
+            dialog.PrimaryButtonText = Localizer.Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton");
+            dialog.SecondaryButtonText = Localizer.Localizer.Instance.GetString("dialogRemoveAccountCancelButton");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Localizer.Localizer.GetString("dialogRemoveAccountContent", user.Name);
+            dialog.Content = Localizer.Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name);
 
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)

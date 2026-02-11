@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Warning, "DisplayedVersion is null, this is unexpected.");
                 return;
             }
-            ExpandedTextBox.Text = Localizer.Localizer.GetString("aboutAppVersionCopyright", DisplayedVersion.Tag, DisplayedVersion.BuildVersion, DateTime.Now.Year);
+            ExpandedTextBox.Text = Localizer.Localizer.Instance.GetString("aboutAppVersionCopyright", DisplayedVersion.Tag, DisplayedVersion.BuildVersion, DateTime.Now.Year);
         }
     }
 }

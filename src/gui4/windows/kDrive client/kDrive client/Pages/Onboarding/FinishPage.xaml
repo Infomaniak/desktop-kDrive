@@ -16,19 +16,19 @@
                     VerticalAlignment="Center"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <!-- Titre -->
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationAppReadyTitle')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingSynchronizationAppReadyTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- Sous-titre -->
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingSynchronizationAppReadyDescription')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingSynchronizationAppReadyDescription')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        MaxWidth="350"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
         </StackPanel>
         <!-- Boutons -->
-        <Button Content="{x:Bind loc:Localizer.GetString('buttonOpenKDrive')}"
+        <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonOpenKDrive')}"
                 Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
                 Click="FinishButton_Click" />
     </StackPanel>

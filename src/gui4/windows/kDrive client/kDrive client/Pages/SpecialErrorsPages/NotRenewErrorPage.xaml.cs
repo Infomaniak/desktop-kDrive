@@ -34,19 +34,19 @@ namespace Infomaniak.kDrive.Pages
 
         private void UpdateContent()
         {
-            TitleTextBlock.Text = Localizer.Localizer.GetString("driveLockedErrorTitle");
+            TitleTextBlock.Text = Localizer.Localizer.Instance.GetString("driveLockedErrorTitle");
 
             if (ViewModel.SelectedSync?.Drive.IsAdmin ?? false)
             {
-                SubtitleTextBlock.Text = Localizer.Localizer.GetString("driveLockedAdminErrorDescription");
-                MainButton.Content = Localizer.Localizer.GetString("buttonUpdateSubscription");
-                SecondaryButton.Content = Localizer.Localizer.GetString("buttonRefresh");
+                SubtitleTextBlock.Text = Localizer.Localizer.Instance.GetString("driveLockedAdminErrorDescription");
+                MainButton.Content = Localizer.Localizer.Instance.GetString("buttonUpdateSubscription");
+                SecondaryButton.Content = Localizer.Localizer.Instance.GetString("buttonRefresh");
                 SecondaryButton.Visibility = Visibility.Visible;
             }
             else
             {
-                SubtitleTextBlock.Text = Localizer.Localizer.GetString("driveLockedAdminErrorDescription");
-                MainButton.Content = Localizer.Localizer.GetString("buttonRefresh");
+                SubtitleTextBlock.Text = Localizer.Localizer.Instance.GetString("driveLockedAdminErrorDescription");
+                MainButton.Content = Localizer.Localizer.Instance.GetString("buttonRefresh");
                 SecondaryButton.Visibility = Visibility.Collapsed;
             }
         }

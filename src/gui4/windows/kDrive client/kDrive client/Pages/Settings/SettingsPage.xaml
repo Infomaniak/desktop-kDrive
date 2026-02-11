@@ -24,14 +24,14 @@
         <!-- DataTemplates -->
         <DataTemplate x:Key="ConfiguredDriveTemplate"
                       x:DataType="types:IDrive">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('syncedDrive')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('syncedDrive')}"
                        VerticalAlignment="Center"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
         </DataTemplate>
         <DataTemplate x:Key="UnconfiguredDriveTemplate"
                       x:DataType="types:IDrive">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('notSyncedDrive')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('notSyncedDrive'), Mode=OneWay}"
                        VerticalAlignment="Center"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
@@ -49,19 +49,19 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind loc:Localizer.GetString('settingsTitle')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('settingsTitle'), Mode=OneWay}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
         <ScrollView Grid.Row="1">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('sidebarItemGeneral')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('sidebarItemGeneral'), Mode=OneWay}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
                     <controls:UpdateExpander />
                     <!-- General - Language -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('languageSetting')}"
-                                          Description="{x:Bind loc:Localizer.GetString('languageSettingWarning')}"
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('languageSetting'), Mode=OneWay}"
+                                          Description="{x:Bind loc:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
                                           IsEnabled="False">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
@@ -74,7 +74,7 @@
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - Auto start -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('openKDriveAtStartupSetting')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('openKDriveAtStartupSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.power}"
                                               Height="32"
@@ -84,7 +84,7 @@
                                       Toggled="AutoStartToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
                     <!-- General - Notifications -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('disableNotificationsSetting')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('disableNotificationsSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.bell}"
                                               Height="32"
@@ -94,27 +94,27 @@
                                   SelectedValue="{x:Bind ViewModel.Settings.NotificationsDisabled, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="NotificationsCombobox_SelectionChanged"
                                   x:Name="NotificationsComboBox">
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('notificationsDisabledNever')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('notificationsDisabledNever'), Mode=OneWay}"
                                           Tag="Never" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('notificationsDisabledAlways')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('notificationsDisabledAlways'), Mode=OneWay}"
                                           Tag="Always" />
                             <!-- These options are disabled until the notification snooze feature is fixed (see card 1172-Fix NotificationsDisabled ) -->
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('forOneHour')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('forOneHour'), Mode=OneWay}"
                                           Tag="OneHour"
                                           IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('untilTomorrow')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('untilTomorrow'), Mode=OneWay}"
                                           Tag="UntilTomorrow"
                                           IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('forThreeDays')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('forThreeDays'), Mode=OneWay}"
                                           Tag="ThreeDays"
                                           IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('forOneWeek')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('forOneWeek'), Mode=OneWay}"
                                           Tag="OneWeek"
                                           IsEnabled="False" />
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - MoveToTrash -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('moveDeletedFilesToRecycleBinSetting')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}"
                                               Height="32"
@@ -126,9 +126,9 @@
                         <toolKit:SettingsCard.Description>
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding IsOn, ElementName=MoveToTrashToggleSwitch, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('moveDeletedFilesToRecycleBinWarning')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}"
                                            TextWrapping="WrapWholeWords" />
-                                <HyperlinkButton Content="{x:Bind loc:Localizer.GetString('learnMore')}"
+                                <HyperlinkButton Content="{x:Bind loc:Localizer.Instance.GetString('learnMore'), Mode=OneWay}"
                                                  NavigateUri="https://faq.infomaniak.com/2383#desktop" />
                             </StackPanel>
                         </toolKit:SettingsCard.Description>
@@ -137,10 +137,10 @@
                 <!-- Account -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid>
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('sidebarItemAccounts')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('sidebarItemAccounts'), Mode=OneWay}"
                                    HorizontalAlignment="Left"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                        <HyperlinkButton Content="{x:Bind loc:Localizer.GetString('connectAccount')}"
+                        <HyperlinkButton Content="{x:Bind loc:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
                                          HorizontalAlignment="Right"
                                          Click="CreateAccountButton_Click" />
                     </Grid>
@@ -205,7 +205,7 @@
                                         </DataTemplate>
                                     </toolKit:SettingsExpander.ItemTemplate>
                                     <toolKit:SettingsExpander.ItemsFooter>
-                                        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('disconnectAccount')}"
+                                        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('disconnectAccount'), Mode=OneWay}"
                                                               Style="{StaticResource DefaultSettingsExpanderItemStyle}"
                                                               IsClickEnabled="True"
                                                               Click="DisconectUser_Click" />
@@ -217,10 +217,10 @@
                 </StackPanel>
                 <!-- Advanced -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('sidebarItemAdvanced')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('sidebarItemAdvanced'), Mode=OneWay}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- Advanced - Sync rules -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('syncRules')}"
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('syncRules'), Mode=OneWay}"
                                           IsClickEnabled="True"
                                           Click="SyncRulesCard_Clicked">
                         <toolKit:SettingsCard.HeaderIcon>
@@ -230,7 +230,7 @@
                         </toolKit:SettingsCard.HeaderIcon>
                     </toolKit:SettingsCard>
                     <!-- Advanced - Privacy -->
-                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.GetString('dataManagementSettings')}">
+                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.Instance.GetString('dataManagementSettings'), Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user-cog}"
                                               Height="32"
@@ -238,8 +238,8 @@
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
                             <!-- Presentation -->
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('dataManagementSubtitle')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('dataManagementDescription')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('dataManagementSubtitle'), Mode=OneWay}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('dataManagementDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}" />
                             <!-- Matomo -->
                             <toolKit:SettingsCard Header="Matomo"
@@ -252,7 +252,7 @@
                                                   IsClickEnabled="True"
                                                   Click="SentryButton_Click" />
                             <!-- Sources -->
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('viewSourceCode')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('viewSourceCode'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="PrivacySeeSourcesButton_Click">
@@ -265,8 +265,8 @@
                     </toolKit:SettingsExpander>
                     <!-- Advanced - Proxy -->
                     <toolKit:SettingsExpander x:Name="ProxySettingsExpander"
-                                              Header="{x:Bind loc:Localizer.GetString('proxySettings')}"
-                                              Description="{x:Bind loc:Localizer.GetString('proxyConnectionDescription')}">
+                                              Header="{x:Bind loc:Localizer.Instance.GetString('proxySettings'), Mode=OneWay}"
+                                              Description="{x:Bind loc:Localizer.Instance.GetString('proxyConnectionDescription'), Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Network.globe}"
                                               Height="32"
@@ -275,21 +275,21 @@
                         <ComboBox SelectedValuePath="Tag"
                                   SelectedValue="{x:Bind ViewModel.Settings.ProxyConfig.Type, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="ProxyTypeComboBox_Changed">
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('proxyTypeHTTP')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('proxyTypeHTTP'), Mode=OneWay}"
                                           Tag="HTTP" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('proxyTypeNone')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('proxyTypeNone'), Mode=OneWay}"
                                           Tag="None" />
-                            <ComboBoxItem Content="{x:Bind loc:Localizer.GetString('proxyTypeSameAsSystem')}"
+                            <ComboBoxItem Content="{x:Bind loc:Localizer.Instance.GetString('proxyTypeSameAsSystem'), Mode=OneWay}"
                                           Tag="System" />
                         </ComboBox>
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyType')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyType'), Mode=OneWay}"
                                                   IsEnabled="False">
                                 <TextBox PlaceholderText="HTTP(S)"
                                          IsEnabled="False"
                                          Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyHost')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyHost'), Mode=OneWay}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyHostTextBox"
                                          PlaceholderText="0.0.0.0"
@@ -297,7 +297,7 @@
                                          Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName, Mode=OneWay}"
                                          Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyPort')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyPort'), Mode=OneWay}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyPortTextBox"
                                          PlaceholderText="443"
@@ -305,13 +305,13 @@
                                          TextChanged="ProxyConfig_Changed"
                                          Width="200" />
                             </toolKit:SettingsCard >
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyNeedAuth')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyNeedAuth'), Mode=OneWay}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <ToggleSwitch x:Name="ProxyNeedsAuthToggleSwitch"
                                               IsOn="{x:Bind ViewModel.Settings.ProxyConfig.NeedsAuth, Mode=OneWay}"
                                               Toggled="ProxyConfig_Changed" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyUser')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyUser'), Mode=OneWay}"
                                                   Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyUserTextBox"
@@ -320,11 +320,11 @@
                                          TextChanged="ProxyConfig_Changed"
                                          Width="200" />
                             </toolKit:SettingsCard >
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('proxyPassword')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('proxyPassword'), Mode=OneWay}"
                                                   Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <PasswordBox x:Name="ProxyPwdPasswordBox"
-                                             PlaceholderText="{x:Bind loc:Localizer.GetString('enterPasswordPlaceholder')}"
+                                             PlaceholderText="{x:Bind loc:Localizer.Instance.GetString('enterPasswordPlaceholder'), Mode=OneWay}"
                                              PasswordChanged="ProxyConfig_Changed"
                                              Width="200" />
                             </toolKit:SettingsCard >
@@ -336,11 +336,11 @@
                                                   Height="16"
                                                   Width="Auto"
                                                   Visibility="Collapsed" />
-                                    <Button Content="{x:Bind loc:Localizer.GetString('buttonSave')}"
+                                    <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonSave'), Mode=OneWay}"
                                             Style="{StaticResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="SaveProxySettingsButton_Click" />
-                                    <Button Content="{x:Bind loc:Localizer.GetString('cancel')}"
+                                    <Button Content="{x:Bind loc:Localizer.Instance.GetString('cancel'), Mode=OneWay}"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="CancelProxySettingsButton_Click" />
                                 </StackPanel>
@@ -349,41 +349,41 @@
                     </toolKit:SettingsExpander>
                     <!-- Advanced - Log -->
                     <toolKit:SettingsExpander x:Name="LogSettingsExpander"
-                                              Header="{x:Bind loc:Localizer.GetString('debugLogsSettings')}"
-                                              Description="{x:Bind loc:Localizer.GetString('DebugLogsDescription')}">
+                                              Header="{x:Bind loc:Localizer.Instance.GetString('debugLogsSettings'), Mode=OneWay}"
+                                              Description="{x:Bind loc:Localizer.Instance.GetString('DebugLogsDescription'), Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.users-circle-question-mark}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('enableDebugLogsSetting')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('enableDebugLogDescription')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('enableDebugLogsSetting'), Mode=OneWay}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('enableDebugLogDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}">
                                 <ToggleSwitch x:Name="EnableDebugLogsToggleSwitch"
                                               IsOn="{x:Bind ViewModel.Settings.LogEnabled, Mode=OneWay}"
                                               Toggled="EnableDebugLogsToggleSwitch_Toggled" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('autoCleanupLogsSetting')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('autoCleanupLogsDescription')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('autoCleanupLogsSetting'), Mode=OneWay}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('autoCleanupLogsDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <ToggleSwitch Toggled="PurgeOldLogsToggleSwitch_Toggled"
                                               IsOn="{x:Bind ViewModel.Settings.PurgeOldLogs, Mode=OneWay}" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('extendedLogSetting')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('extendedLogDescription')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('extendedLogSetting'), Mode=OneWay}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('extendedLogDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <ToolTipService.ToolTip>
-                                    <ToolTip Content="{x:Bind loc:Localizer.GetString('extendedLogWarning')}" />
+                                    <ToolTip Content="{x:Bind loc:Localizer.Instance.GetString('extendedLogWarning'), Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
                                 <ToggleSwitch x:Name="ExtendedLogToggleSwitch"
                                               Toggled="ExtendedLogToggleSwitch_Toggled"
                                               IsOn="{x:Bind ViewModel.Settings.ExtendedLogEnbaled, Mode=OneWay}" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('debugLevelSetting')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('debugLevelDescription')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('debugLevelSetting'), Mode=OneWay}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('debugLevelDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                                   IsEnabled="{x:Bind ExtendedLogToggleSwitch.IsOn, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}">
@@ -391,20 +391,20 @@
                                           SelectedValuePath="Tag"
                                           SelectionChanged="LogLevelComboBox_SelectionChanged">
                                     <ComboBoxItem Tag="Extended"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelExtended')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelExtended'), Mode=OneWay}" />
                                     <ComboBoxItem Tag="Debug"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelDebug')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelDebug'), Mode=OneWay}" />
                                     <ComboBoxItem Tag="Info"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelInfo')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelInfo'), Mode=OneWay}" />
                                     <ComboBoxItem Tag="Warning"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelWarning')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelWarning'), Mode=OneWay}" />
                                     <ComboBoxItem Tag="Error"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelError')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelError'), Mode=OneWay}" />
                                     <ComboBoxItem Tag="Fatal"
-                                                  Content="{x:Bind loc:Localizer.GetString('logLevelFatal')}" />
+                                                  Content="{x:Bind loc:Localizer.Instance.GetString('logLevelFatal'), Mode=OneWay}" />
                                 </ComboBox>
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('buttonOpenDebugFolder')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('buttonOpenDebugFolder'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="OpenDebugFolderButton_Click"
@@ -419,7 +419,7 @@
                     <!-- Advanced - Send log -->
                     <controls:LogUploadSettingsCard LogUploadManager="{x:Bind ViewModel.Settings.LogUploadManager}" />
                     <!-- About - Privacy -->
-                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.GetString('aboutKDrive')}">
+                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.Instance.GetString('aboutKDrive'), Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                               Height="32"
@@ -431,7 +431,7 @@
                                                   Background="{ThemeResource LayerFillColorDefault}">
                                 <toolKit:SettingsCard.Description>
                                     <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                                        <TextBlock Text="{x:Bind loc:Localizer.GetString('aboutKDriveDescription')}" />
+                                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('aboutKDriveDescription'), Mode=OneWay}" />
                                         <controls:LicensesHyperlink DisplayedVersion="{x:Bind ViewModel.Settings.AppVersion, Mode=OneWay}" />
                                     </StackPanel>
                                 </toolKit:SettingsCard.Description>
@@ -440,11 +440,11 @@
                     </toolKit:SettingsExpander>
                 </StackPanel>
                 <controls:ConsentDialog x:Name="SentryContentDialog"
-                                        Description="{x:Bind loc:Localizer.GetString('sentryDescription')}"
+                                        Description="{x:Bind loc:Localizer.Instance.GetString('sentryDescription'), Mode=OneWay}"
                                         LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
                                         CurrentValue="{x:Bind ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
                 <controls:ConsentDialog x:Name="MatomoContentDialog"
-                                        Description="{x:Bind loc:Localizer.GetString('matomoDescription')}"
+                                        Description="{x:Bind loc:Localizer.Instance.GetString('matomoDescription'), Mode=OneWay}"
                                         LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
                                         CurrentValue="{x:Bind ViewModel.Settings.MatomoEnabled, Mode=OneWay}" />
             </StackPanel>

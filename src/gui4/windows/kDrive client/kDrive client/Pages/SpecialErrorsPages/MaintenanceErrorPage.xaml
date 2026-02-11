@@ -43,15 +43,15 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('driveMaintenanceErrorTitle')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('driveMaintenanceErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('driveMaintenanceErrorDescription')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('driveMaintenanceErrorDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
-                <Button Content="{x:Bind loc:Localizer.GetString('buttonRefresh')}"
+                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonRefresh')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource AccentButtonStyle}"
                         Click="RetryButton_Click" />

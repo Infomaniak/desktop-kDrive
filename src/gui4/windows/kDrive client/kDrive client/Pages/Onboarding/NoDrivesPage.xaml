@@ -25,7 +25,7 @@
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <!-- Title -->
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionTitle')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingDriveSelectionTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
@@ -48,12 +48,12 @@
                     Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
             <!-- Subtitle -->
             <TextBlock Grid.Row="0"
-                       Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionNoDriveTitle')}"
+                       Text="{x:Bind loc:Localizer.Instance.GetString('onboardingDriveSelectionNoDriveTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}" />
 
             <!-- No drive text -->
             <TextBlock Grid.Row="1"
-                       Text="{x:Bind loc:Localizer.GetString('onboardingDriveSelectionNoDriveDescription')}"
+                       Text="{x:Bind loc:Localizer.Instance.GetString('onboardingDriveSelectionNoDriveDescription')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        Foreground="{ThemeResource TextFillColorSecondary}"
                        TextWrapping="WrapWholeWords" />
@@ -64,12 +64,12 @@
                     Orientation="Horizontal"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
-            <Button Content="{x:Bind loc:Localizer.GetString('buttonShowOffers')}"
+            <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonShowOffers')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource SubtleButtonStyle}"
                     Click="OnOffersButtonClick" />
 
-            <Button Content="{x:Bind loc:Localizer.GetString('buttonStartForFree')}"
+            <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonStartForFree')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource AccentButtonStyle}"
                     Click="OnStartFreeButtonClick" />

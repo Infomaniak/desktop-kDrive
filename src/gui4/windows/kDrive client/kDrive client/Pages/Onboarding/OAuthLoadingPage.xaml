@@ -31,7 +31,7 @@
 
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind loc:Localizer.GetString('signInBrowser')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('signInBrowser')}"
                    TextWrapping="WrapWholeWords"
                    x:Name="TitleTextBlock"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
@@ -39,7 +39,7 @@
 
         <!-- Subtitle -->
         <TextBlock Grid.Row="1"
-                   Text="{x:Bind loc:Localizer.GetString('browserSignInInstruction')}"
+                   Text="{x:Bind loc:Localizer.Instance.GetString('browserSignInInstruction')}"
                    x:Name="SubtitleTextBlock"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    TextWrapping="WrapWholeWords"
@@ -48,7 +48,7 @@
         <!-- Restart oauth button -->
         <Button Grid.Row="2"
                 x:Name="RestartOAuthButton"
-                Content="{x:Bind loc:Localizer.GetString('openLoginPage')}"
+                Content="{x:Bind loc:Localizer.Instance.GetString('openLoginPage')}"
                 Style="{StaticResource AccentButtonStyle}"
                 Click="RestartOAuthButton_Click"
                 IsEnabled="False" />

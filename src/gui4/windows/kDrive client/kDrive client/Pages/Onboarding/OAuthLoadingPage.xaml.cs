@@ -92,14 +92,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.WaitingForUserAction:
-                    TitleTextBlock.Text = Localizer.Localizer.GetString("signInBrowser");
-                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("browserSignInInstruction");
+                    TitleTextBlock.Text = Localizer.Localizer.Instance.GetString("signInBrowser");
+                    SubtitleTextBlock.Text = Localizer.Localizer.Instance.GetString("browserSignInInstruction");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
                 case OAuth2State.ProcessingResponse:
-                    TitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginProcessingTitle");
-                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginProcessingDescription");
+                    TitleTextBlock.Text = Localizer.Localizer.Instance.GetString("onboardingLoginProcessingTitle");
+                    SubtitleTextBlock.Text = Localizer.Localizer.Instance.GetString("onboardingLoginProcessingDescription");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
@@ -123,8 +123,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
-                    TitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginErrorTitle");
-                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginErrorDescription");
+                    TitleTextBlock.Text = Localizer.Localizer.Instance.GetString("onboardingLoginErrorTitle");
+                    SubtitleTextBlock.Text = Localizer.Localizer.Instance.GetString("onboardingLoginErrorDescription");
                     RestartOAuthButton.IsEnabled = true;
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     await _enableRestartCts.CancelAsync();

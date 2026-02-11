@@ -15,14 +15,14 @@
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
     <InfoBar x:Name="InfoBar_"
-             Title="{x:Bind loc:Localizer.GetStringWithPlural1i('winInformationBlockSynchroErrorTitle', ViewModel.SelectedSync.SyncErrors.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}"
-             Message="{x:Bind loc:Localizer.GetString('informationBlockSynchroErrorSubtitle')}"
+             Title="{x:Bind loc:Localizer.Instance.GetStringWithPlural1i('winInformationBlockSynchroErrorTitle', ViewModel.SelectedSync.SyncErrors.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}"
+             Message="{x:Bind loc:Localizer.Instance.GetString('informationBlockSynchroErrorSubtitle')}"
              Severity="Informational"
              IsIconVisible="False"
              IsClosable="False"
              IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter='{StaticResource IntegerToBooleanConverter}', Mode=OneWay}">
         <InfoBar.ActionButton>
-            <Button Content="{x:Bind loc:Localizer.GetString('buttonFixErrors')}"
+            <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonFixErrors')}"
                     HorizontalAlignment="Right"
                     Style="{ThemeResource AccentButtonStyle}"
                     Click="InfoBarButton_Click" />

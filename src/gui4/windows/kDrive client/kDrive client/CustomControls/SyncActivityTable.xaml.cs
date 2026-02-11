@@ -198,19 +198,19 @@ namespace Infomaniak.kDrive.CustomControls
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip(Localizer.Localizer.GetString("creatingShareLink"), false);
+                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("creatingShareLink"), false);
                 return;
             }
 
             // Find parrent button to anchor teaching tip
-            DisplayTeachingTip(Localizer.Localizer.GetString("creatingShareLink"), true);
+            DisplayTeachingTip(Localizer.Localizer.Instance.GetString("creatingShareLink"), true);
 
 
             var activity = element.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip(Localizer.Localizer.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("failedToCreateShareLink"), false);
                 return;
             }
 
@@ -223,12 +223,12 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Localizer.Localizer.GetString("linkCopiedToClipboard"), false);
+                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("linkCopiedToClipboard"), false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip(Localizer.Localizer.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("failedToCreateShareLink"), false);
             }
         }
 
@@ -260,52 +260,14 @@ namespace Infomaniak.kDrive.CustomControls
         {
             NotificationTeachingTip.IsOpen = false;
         }
-
-        private void SynchronizingProgressRing_Loaded(object sender, RoutedEventArgs e)
-        {
-            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
-            if (syncItem is null)
-            {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                return;
-            }
-            syncItem.PropertyChanged += SyncItem_PropertyChanged;
-        }
-
-        private void SynchronizingProgressRing_Unloaded(object sender, RoutedEventArgs e)
-        {
-            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
-            if (syncItem is null)
-            {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                return;
-            }
-            syncItem.PropertyChanged -= SyncItem_PropertyChanged;
-        }
-
-        private void SyncItem_PropertyChanged(object? sender, PropertyChangedEventArgs args)
-        {
-            if (args.PropertyName == nameof(SyncFileItem.Status))
-            {
-                // Force the ContentControl to re-evaluate the DataTemplateSelector
-                var frameWorkElement = sender as FrameworkElement;
-                var parent = VisualTreeHelper.GetParent(frameWorkElement) as ContentControl;
-                if (parent != null)
-                {
-                    var currentContent = parent.Content;
-                    parent.Content = null; // Clear content to force re-evaluation
-                    parent.Content = currentContent; // Restore content
-                }
-            }
-        }
         
         public static string GetSyncDirectionToolTip(SyncDirection direction)
         {
             return direction switch
             {
 
-                SyncDirection.Up => Localizer.Localizer.GetString("syncedFromThisDevice"),
-                SyncDirection.Down => Localizer.Localizer.GetString("syncedFromKDriveWeb"),
+                SyncDirection.Up => Localizer.Localizer.Instance.GetString("syncedFromThisDevice"),
+                SyncDirection.Down => Localizer.Localizer.Instance.GetString("syncedFromKDriveWeb"),
                 _ => ""
             };
         }

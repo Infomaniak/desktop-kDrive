@@ -43,19 +43,19 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('driveAsleepErrorTitle')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('driveAsleepErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <Button  Content="{x:Bind loc:Localizer.GetString('buttonWakeUp')}"
+                    <Button  Content="{x:Bind loc:Localizer.Instance.GetString('buttonWakeUp')}"
                              HorizontalAlignment="Center"
                              Style="{ThemeResource AccentButtonStyle}"
                              Click="PrimaryButton_Click" />
 
-                    <Button  Content="{x:Bind loc:Localizer.GetString('buttonRefresh')}"
+                    <Button  Content="{x:Bind loc:Localizer.Instance.GetString('buttonRefresh')}"
                              HorizontalAlignment="Center"
                              Style="{ThemeResource DefaultButtonStyle}"
                              Click="SecondaryButton_Click" />

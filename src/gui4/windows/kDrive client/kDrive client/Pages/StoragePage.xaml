@@ -44,7 +44,7 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('tabTitleStorage')}"
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('tabTitleStorage')}"
                    Grid.Row="0"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
@@ -66,7 +66,7 @@
                            Style="{ThemeResource SubtitleTextBlockStyle}" />
                 <TextBlock Text="{x:Bind PageViewModel.MissingDiskSubtitle, Mode=OneWay}"
                            TextAlignment="Center" />
-                <Button Content="{x:Bind loc:Localizer.GetString('buttonRetry')}"
+                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonRetry')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource TextBlockButtonStyle}"
                         Click="RetryButton_click" />
@@ -111,12 +111,14 @@
                                                 Color2="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
                                                 Color3="{ThemeResource AccentAAFillColorDisabledBrush}" />
                 <Grid>
+                    
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorSecondary}"
                                Text="{x:Bind GetStorageUsedLabel(PageViewModel.DiskUsedSize), Mode=OneWay}" />
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorSecondary}"
-                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.DiskFreeSize), Mode=OneWay}" />
+                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.DiskFreeSize), Mode=OneWay}" 
+                               HorizontalAlignment="Right"/>
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="1">
@@ -133,7 +135,7 @@
                              Width="8"
                              Fill="{ThemeResource AccentAAFillColorDefaultBrush}" />
 
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerUsedByKDrive')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('storageComputerUsedByKDrive')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
@@ -151,7 +153,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -176,7 +178,7 @@
                              Width="8"
                              Fill="{ThemeResource SystemFillColorSuccessBackgroundBrush}" />
 
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerUsedByOther')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('storageComputerUsedByOther')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
@@ -194,7 +196,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -218,7 +220,7 @@
                              Width="8"
                              Fill="{ThemeResource AccentAAFillColorDisabledBrush}" />
 
-                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerFreeSpace')}"
+                    <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('storageComputerFreeSpace')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
@@ -236,7 +238,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

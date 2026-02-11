@@ -43,13 +43,13 @@
                 <controls:SvgIcon Height="16"
                                   HorizontalAlignment="Left"
                                   UriString="{ThemeResource Infomaniak.Custom.Icons.logo-myksuiteplus}" />
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('Plus d’espace, plus de fonctionnalités, avec my kSuite+')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('Plus d’espace, plus de fonctionnalités, avec my kSuite+')}"
                            HorizontalAlignment="Left"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
             </StackPanel>
 
             <HyperlinkButton x:Name="UpgradeHyperLinkButton"
-                             Content="{x:Bind loc:Localizer.GetString('buttonUpgradeOffer')}"
+                             Content="{x:Bind loc:Localizer.Instance.GetString('buttonUpgradeOffer')}"
                              HorizontalAlignment="Right"
                              HorizontalContentAlignment="Right"
                              Grid.Column="1" />

@@ -24,8 +24,8 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:loc="using:Infomaniak.kDrive.Localizer">
     <ContentDialog x:Name="Dialog"
-                   PrimaryButtonText="{x:Bind loc:Localizer.GetString('save')}"
-                   SecondaryButtonText="{x:Bind loc:Localizer.GetString('cancel')}"
+                   PrimaryButtonText="{x:Bind loc:Localizer.Instance.GetString('save')}"
+                   SecondaryButtonText="{x:Bind loc:Localizer.Instance.GetString('cancel')}"
                    DefaultButton="Primary">
 
         <ContentDialog.TitleTemplate>
@@ -41,8 +41,8 @@
                            TextWrapping="WrapWholeWords"
                            TextAlignment="Justify" />
                 <ToggleSwitch x:Name="Toggle"
-                              OnContent="{x:Bind loc:Localizer.GetString('allowTrackingLabel')}"
-                              OffContent="{x:Bind loc:Localizer.GetString('allowTrackingLabel')}"
+                              OnContent="{x:Bind loc:Localizer.Instance.GetString('allowTrackingLabel')}"
+                              OffContent="{x:Bind loc:Localizer.Instance.GetString('allowTrackingLabel')}"
                               IsOn="{x:Bind CurrentValue, Mode=OneWay}" />
             </StackPanel>
         </ContentDialog.Content>

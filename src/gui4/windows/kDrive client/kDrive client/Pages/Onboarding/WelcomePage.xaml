@@ -24,12 +24,12 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <!-- Titre -->
                 <TextBlock x:Name="Title"
-                           Text="{x:Bind loc:Localizer.GetString('onboardingLoginTitle')}"
+                           Text="{x:Bind loc:Localizer.Instance.GetString('onboardingLoginTitle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                            Foreground="{ThemeResource TextFillColorPrimary}" />
 
                 <!-- Sous-titre -->
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('onboardingLoginDescription')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingLoginDescription')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondary}"
@@ -40,11 +40,11 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <Button Content="{x:Bind loc:Localizer.GetString('buttonCreateAccount')}"
+                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonCreateAccount')}"
                         Style="{StaticResource SubtleButtonStyle}"
                         Click="SignupButton_Click" />
 
-                <Button Content="{x:Bind loc:Localizer.GetString('buttonLogin')}"
+                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonLogin')}"
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="120"
                         Click="SigninButton_Click" />

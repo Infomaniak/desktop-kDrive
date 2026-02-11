@@ -74,7 +74,7 @@
                       x:Key="AccessDeneidDirectoryTemplate">
             <TreeViewItem HorizontalAlignment="Stretch">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind loc:Localizer.GetString('unauthorizedAccess')}" />
+                    <ToolTip Content="{x:Bind loc:Localizer.Instance.GetString('unauthorizedAccess')}" />
                 </ToolTipService.ToolTip>
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
@@ -143,14 +143,14 @@
                                           MinHeight="0"
                                           Click="CheckBox_Click"
                                           DataContext="{x:Bind RootTreeItem, Mode=OneWay}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.GetString('labelName')}"
+                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('labelName')}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Column="1"
                               HorizontalAlignment="Right"
                               Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}">
-                            <TextBlock Text="{x:Bind loc:Localizer.GetString('labelSize')}" />
+                            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('labelSize')}" />
                         </Grid>
 
                         <TreeView x:Name="FolderTree"
@@ -173,10 +173,10 @@
                                 Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                                 Visibility="{x:Bind ShowSaveMenu, Mode=OneWay}">
                         <Button Click="CancelSyncSelection_click"
-                                Content="{x:Bind loc:Localizer.GetString('cancel')}"
+                                Content="{x:Bind loc:Localizer.Instance.GetString('cancel')}"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                         <Button Style="{ThemeResource AccentButtonStyle}"
-                                Content="{x:Bind loc:Localizer.GetString('saveMyChoices')}"
+                                Content="{x:Bind loc:Localizer.Instance.GetString('saveMyChoices')}"
                                 Click="SaveSyncSelection_click"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                     </StackPanel>

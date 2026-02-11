@@ -30,7 +30,7 @@
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('settingsTitle')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource TitleLargeTextBlockStyle}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -40,12 +40,12 @@
         <!-- Template exclusion management -->
         <ScrollView Grid.Row="1">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('filesToExclude')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('filesToExclude')}"
                            Style="{StaticResource TitleTextBlockStyle}" />
 
                 <!-- Default Exclusion -->
-                <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.GetString('defaultExclusionFileListHeader')}"
-                                          Description="{x:Bind loc:Localizer.GetString('defaultExclusionFileListDescription')}">
+                <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.Instance.GetString('defaultExclusionFileListHeader')}"
+                                          Description="{x:Bind loc:Localizer.Instance.GetString('defaultExclusionFileListDescription')}">
                     <toolKit:SettingsExpander.HeaderIcon>
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-cross}"
                                           Height="32"
@@ -84,15 +84,15 @@
                 </toolKit:SettingsExpander>
 
                 <!-- User Exclusion -->
-                <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.GetString('userExclusionFileListHeader')}"
-                                          Description="{x:Bind loc:Localizer.GetString('userExclusionFileListDescription')}">
+                <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.Instance.GetString('userExclusionFileListHeader')}"
+                                          Description="{x:Bind loc:Localizer.Instance.GetString('userExclusionFileListDescription')}">
                     <toolKit:SettingsExpander.HeaderIcon>
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-plus}"
                                           Height="32"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                     </toolKit:SettingsExpander.HeaderIcon>
-                    <Button Content="{x:Bind loc:Localizer.GetString('buttonAddFileExclusionRule')}"
+                    <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonAddFileExclusionRule')}"
                             Click="AddRuleButton_Click" />
                     <toolKit:SettingsExpander.Items>
                         <toolKit:SettingsCard HorizontalAlignment="Stretch"
@@ -114,13 +114,13 @@
                                     </Grid.ColumnDefinitions>
                                     <CheckBox Grid.Column="0"
                                               x:Name="SelectAllCheckBox"
-                                              Content="{x:Bind loc:Localizer.GetString('labelRules')}"
+                                              Content="{x:Bind loc:Localizer.Instance.GetString('labelRules')}"
                                               HorizontalAlignment="Stretch"
                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               Click="SelectAllCheckBox_Click" />
 
                                     <TextBlock  Grid.Column="1"
-                                                Text="{x:Bind loc:Localizer.GetString('labelNotifications')}"
+                                                Text="{x:Bind loc:Localizer.Instance.GetString('labelNotifications')}"
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -150,7 +150,7 @@
                                                               Toggled="WarningToggleSwitch_Toggled"
                                                               HorizontalAlignment="Right">
                                                     <ToolTipService.ToolTip>
-                                                        <ToolTip Content="{x:Bind loc:Localizer.GetString('tooltipExclusionRuleNotifications')}" />
+                                                        <ToolTip Content="{x:Bind loc:Localizer.Instance.GetString('tooltipExclusionRuleNotifications')}" />
                                                     </ToolTipService.ToolTip>
                                                 </ToggleSwitch>
                                             </Grid>
@@ -159,7 +159,7 @@
                                 </ListView>
                                 <HyperlinkButton Grid.Row="2"
                                                  x:Name="DeleteButton"
-                                                 Content="{x:Bind loc:Localizer.GetStringWithPlural1i('buttonRemoveFileExclusionRule', _templateListModel.SelectedCount, _templateListModel.SelectedCount)}"
+                                                 Content="{x:Bind loc:Localizer.Instance.GetStringWithPlural1i('buttonRemoveFileExclusionRule', _templateListModel.SelectedCount, _templateListModel.SelectedCount)}"
                                                  Foreground="{ThemeResource SystemErrorTextColor}"
                                                  Visibility="{x:Bind _templateListModel.HasSelectedTemplates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                  Click="DeleteButton_Click" />

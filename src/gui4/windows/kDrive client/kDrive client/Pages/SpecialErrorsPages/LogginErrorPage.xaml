@@ -44,17 +44,17 @@
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
                 <TextBlock x:Name="TitleTextBlock"
-                           Text="{x:Bind loc:Localizer.GetString('driveLoggingErrorTitle')}"
+                           Text="{x:Bind loc:Localizer.Instance.GetString('driveLoggingErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
                 <TextBlock x:Name="SubtitleTextBlock"
-                           Text="{x:Bind loc:Localizer.GetString('driveLoggingErrorDescription')}"
+                           Text="{x:Bind loc:Localizer.Instance.GetString('driveLoggingErrorDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
                 <Button x:Name="ConnectionButton"
-                        Content="{x:Bind loc:Localizer.GetString('buttonLogin')}"
+                        Content="{x:Bind loc:Localizer.Instance.GetString('buttonLogin')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource AccentButtonStyle}"
                         Click="ConnectionButton_Click" />

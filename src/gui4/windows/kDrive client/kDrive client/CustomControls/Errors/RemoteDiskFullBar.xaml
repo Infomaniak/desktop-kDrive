@@ -14,8 +14,8 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
-    <InfoBar Title="{x:Bind loc:Localizer.GetString('informationBlockKDriveFullTitle')}"
-             Message="{x:Bind loc:Localizer.GetString('informationBlockKDriveFullSubtitle')}"
+    <InfoBar Title="{x:Bind loc:Localizer.Instance.GetString('informationBlockKDriveFullTitle')}"
+             Message="{x:Bind loc:Localizer.Instance.GetString('informationBlockKDriveFullSubtitle')}"
              Severity="Informational"
              IsOpen="{x:Bind Drive.DisplayRemoteSpaceWarning, Mode=OneWay}"
              IsClosable="True"
@@ -28,7 +28,7 @@
             </ImageIconSource>
         </InfoBar.IconSource>
         <InfoBar.ActionButton>
-            <Button Content="{x:Bind loc:Localizer.GetString('buttonAddStorage')}"
+            <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonAddStorage')}"
                     HorizontalAlignment="Right"
                     Click="InfoBarButton_Click"
                     Style="{ThemeResource AccentButtonStyle}"

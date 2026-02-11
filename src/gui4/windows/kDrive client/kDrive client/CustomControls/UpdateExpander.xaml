@@ -19,7 +19,7 @@
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
-        <TextBlock Text="{x:Bind loc:Localizer.GetString('updateSettings')}" />
+        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('updateSettings')}" />
     </toolKit:SettingsExpander.Header>
 
     <toolKit:SettingsExpander.HeaderIcon>
@@ -28,22 +28,22 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
 
-    <Button Content="{x:Bind loc:Localizer.GetString('buttonUpdate')}"
+    <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonUpdate')}"
             Style="{ThemeResource AccentButtonStyle}"
             Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
             Click="UpdateButton_Click" />
 
     <toolKit:SettingsExpander.Items>
         <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
-                              Header="{x:Bind loc:Localizer.GetString1s('labelKDriveVersion', DisplayedVersion.Tag), Mode=OneWay}"
+                              Header="{x:Bind loc:Localizer.Instance.GetString1s('labelKDriveVersion', DisplayedVersion.Tag), Mode=OneWay}"
                               Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <toolKit:SettingsCard.Description>
                 <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
             </toolKit:SettingsCard.Description>
-            <HyperlinkButton Content="{x:Bind loc:Localizer.GetString('buttonReleaseNotes')}"
+            <HyperlinkButton Content="{x:Bind loc:Localizer.Instance.GetString('buttonReleaseNotes')}"
                              NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
-        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('automaticUpdatesSetting')}"
+        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('automaticUpdatesSetting')}"
                               Background="{ThemeResource LayerFillColorDefault}"
                               Visibility="Collapsed">
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
@@ -57,20 +57,20 @@
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('joinBetaProgram')}"
-                              Description="{x:Bind loc:Localizer.GetString('betaProgramDescription')}"
+        <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('joinBetaProgram')}"
+                              Description="{x:Bind loc:Localizer.Instance.GetString('betaProgramDescription')}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
                       SelectedValuePath="Tag"
                       SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
-                              Content="{x:Bind loc:Localizer.GetString('doNotJoin')}" />
+                              Content="{x:Bind loc:Localizer.Instance.GetString('doNotJoin')}" />
                 <ComboBoxItem Tag="Beta"
-                              Content="{x:Bind loc:Localizer.GetString('releaseChannelbeta')}" />
+                              Content="{x:Bind loc:Localizer.Instance.GetString('releaseChannelbeta')}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
-                              Content="{x:Bind loc:Localizer.GetString('releaseChannelInternal')}"
+                              Content="{x:Bind loc:Localizer.Instance.GetString('releaseChannelInternal')}"
                               Foreground="{ThemeResource SystemErrorTextColor}"
                               Visibility="Collapsed" />
             </ComboBox>

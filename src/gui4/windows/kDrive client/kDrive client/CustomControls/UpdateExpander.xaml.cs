@@ -85,12 +85,12 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (ViewModel.Settings.UpdateManager.AvailableUpdate is AppVersion updateVersion)
             {
-                base.Description = Localizer.Localizer.GetString("updateAvailable", updateVersion.Tag);
+                base.Description = Localizer.Localizer.Instance.GetString("updateAvailable", updateVersion.Tag);
                 DisplayedVersion = updateVersion;
             }
             else if (ViewModel.Settings.AppVersion is AppVersion AppVersionInfo)
             {
-                base.Description = Localizer.Localizer.GetString("appUpToDate");
+                base.Description = Localizer.Localizer.Instance.GetString("appUpToDate");
                 DisplayedVersion = AppVersionInfo;
             }
             UpdateInternalChannelComboBoxVisibility();

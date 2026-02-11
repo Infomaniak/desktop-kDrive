@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar()
         {
-            NavBar.ItemsSource = new string[] { Localizer.Localizer.GetString("settingsTitle"), Localizer.Localizer.GetString("filesToExclude") };
+            NavBar.ItemsSource = new string[] { Localizer.Localizer.Instance.GetString("settingsTitle"), Localizer.Localizer.Instance.GetString("filesToExclude") };
         }
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
         {
@@ -58,8 +58,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
-                PrimaryButtonText = Localizer.Localizer.GetString("dialogNewExclusionRulePrimaryButton"),
-                SecondaryButtonText = Localizer.Localizer.GetString("buttonCancel"),
+                PrimaryButtonText = Localizer.Localizer.Instance.GetString("dialogNewExclusionRulePrimaryButton"),
+                SecondaryButtonText = Localizer.Localizer.Instance.GetString("buttonCancel"),
                 DefaultButton = ContentDialogButton.Primary
             };
 

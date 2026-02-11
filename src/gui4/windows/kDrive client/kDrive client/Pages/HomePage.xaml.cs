@@ -143,17 +143,17 @@ namespace Infomaniak.kDrive.Pages
             {
                 SyncStatus.Undefined => transitionStr,
                 SyncStatus.Starting => transitionStr,
-                SyncStatus.Running => Localizer.Localizer.GetString("synchroInProgress"),
-                SyncStatus.Idle => Localizer.Localizer.GetString("synchroUpToDate"),
+                SyncStatus.Running => Localizer.Localizer.Instance.GetString("synchroInProgress"),
+                SyncStatus.Idle => Localizer.Localizer.Instance.GetString("synchroUpToDate"),
                 SyncStatus.PauseAsked => transitionStr,
-                SyncStatus.Paused => Localizer.Localizer.GetString("synchroPaused"),
+                SyncStatus.Paused => Localizer.Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.StopAsked => transitionStr,
-                SyncStatus.Stopped => Localizer.Localizer.GetString("synchroPaused"),
+                SyncStatus.Stopped => Localizer.Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.Error => transitionStr,
-                SyncStatus.Offline => Localizer.Localizer.GetString("synchroPaused")
+                SyncStatus.Offline => Localizer.Localizer.Instance.GetString("synchroPaused")
             };
 
-            return Localizer.Localizer.GetString("greetingLabel", userName, syncStateStr);
+            return Localizer.Localizer.Instance.GetString("greetingLabel", userName, syncStateStr);
         }
     }
 }

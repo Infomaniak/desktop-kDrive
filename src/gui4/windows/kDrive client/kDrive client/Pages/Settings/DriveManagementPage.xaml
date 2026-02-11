@@ -32,7 +32,7 @@
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('settings')}"
+            <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('settings')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -56,7 +56,7 @@
                             Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay, FallbackValue='Collapsed'}">
 
                     <!-- Location -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('labelSyncLocation')}">
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('labelSyncLocation')}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open}"
                                               Height="20"
@@ -67,7 +67,7 @@
                     </toolKit:SettingsCard>
 
                     <!-- Folder Selection -->
-                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.GetString('labelSynchronisation')}">
+                    <toolKit:SettingsExpander Header="{x:Bind loc:Localizer.Instance.GetString('labelSynchronisation')}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
                                               Height="32"
@@ -86,11 +86,11 @@
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0"
                                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                        <TextBlock Text="{x:Bind loc:Localizer.GetString('selectFoldersToSync')}"
+                                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('selectFoldersToSync')}"
                                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                                    TextWrapping="Wrap" />
 
-                                        <TextBlock Text="{x:Bind loc:Localizer.GetString('selectFoldersToSyncDescription')}"
+                                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    TextWrapping="Wrap" />
@@ -106,7 +106,7 @@
 
                     <!-- Lite Sync -->
                     <toolKit:SettingsExpander x:Name="SyncTypeExpander"
-                                              Header="{x:Bind loc:Localizer.GetString('fileSyncModeDescription')}"
+                                              Header="{x:Bind loc:Localizer.Instance.GetString('fileSyncModeDescription')}"
                                               Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.cog}"
@@ -126,7 +126,7 @@
 
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
-                                                          Header="{x:Bind loc:Localizer.GetString('storedOnline')}"
+                                                          Header="{x:Bind loc:Localizer.Instance.GetString('storedOnline')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -155,7 +155,7 @@
 
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
-                                                          Header="{x:Bind loc:Localizer.GetString('availableOffline')}"
+                                                          Header="{x:Bind loc:Localizer.Instance.GetString('availableOffline')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -172,8 +172,8 @@
                                 </Grid>
                             </toolKit:SettingsCard>
 
-                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('applyingChange')}"
-                                                  Description="{x:Bind loc:Localizer.GetString('syncModeApplying')}"
+                            <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('applyingChange')}"
+                                                  Description="{x:Bind loc:Localizer.Instance.GetString('syncModeApplying')}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                             </toolKit:SettingsCard>
@@ -186,7 +186,7 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Remove sync -->
-                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('removeSync')}"
+                    <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('removeSync')}"
                                           IsClickEnabled="True"
                                           Foreground="{ThemeResource SystemErrorTextColor}"
                                           PointerExited="FixForegroundOnPointerExited"
@@ -195,17 +195,17 @@
                 </StackPanel>
 
                 <!-- Main sync is not setted -->
-                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('synchronizationSettings')}"
+                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('synchronizationSettings')}"
                                       Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
                                       IsClickEnabled="False">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('notSynced')}"
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('notSynced')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorSecondary}" />
 
-                        <Button Content="{x:Bind loc:Localizer.GetString('buttonConfigureMainSync')}"
+                        <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonConfigureMainSync')}"
                                 Click="SetupMainSyncButton_Click" />
                     </StackPanel>
                     <toolKit:SettingsCard.HeaderIcon>
@@ -216,7 +216,7 @@
                 </toolKit:SettingsCard>
 
                 <!-- Advanced syncs -->
-                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.GetString('advancedSync')}"
+                <toolKit:SettingsCard Header="{x:Bind loc:Localizer.Instance.GetString('advancedSync')}"
                                       IsClickEnabled="True"
                                       Click="AdvancedSyncsSettingsCard_Click">
                     <toolKit:SettingsCard.HeaderIcon>

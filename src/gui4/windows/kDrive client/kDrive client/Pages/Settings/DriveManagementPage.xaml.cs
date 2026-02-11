@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar(string driveName)
         {
-            NavBar.ItemsSource = new string[] { Localizer.Localizer.GetString("settingsTitle"), Localizer.Localizer.GetString("labelkDriveManagement"), driveName };
+            NavBar.ItemsSource = new string[] { Localizer.Localizer.Instance.GetString("settingsTitle"), Localizer.Localizer.Instance.GetString("labelkDriveManagement"), driveName };
         }
 
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)

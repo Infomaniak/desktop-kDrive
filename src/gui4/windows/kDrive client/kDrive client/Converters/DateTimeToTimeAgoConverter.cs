@@ -16,11 +16,11 @@ namespace Infomaniak.kDrive.Converters
             }
             else if (parser.KeyEquals("Format", "Since"))
             {
-                format = Localizer.Localizer.GetString("labelSince");
+                format = Localizer.Localizer.Instance.GetString("labelSince");
             }
             else if (parser.KeyEquals("Format", "Ago"))
             {
-                format = Localizer.Localizer.GetString("labelAgo");
+                format = Localizer.Localizer.Instance.GetString("labelAgo");
             }
             else
             {
@@ -34,23 +34,23 @@ namespace Infomaniak.kDrive.Converters
 
                 if (timeSpan.TotalSeconds < 30)
                 {
-                    return Localizer.Localizer.GetString("labelJustNow");
+                    return Localizer.Localizer.Instance.GetString("labelJustNow");
                 }
                 if (timeSpan.TotalSeconds < 60)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalSeconds)} {Localizer.Localizer.GetString("labelShortSecond")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalSeconds)} {Localizer.Localizer.Instance.GetString("labelShortSecond")}");
                 }
                 if (timeSpan.TotalMinutes < 60)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalMinutes)} {Localizer.Localizer.GetString("labelShortMinute")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalMinutes)} {Localizer.Localizer.Instance.GetString("labelShortMinute")}");
                 }
                 if (timeSpan.TotalHours < 24)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Localizer.Localizer.GetString("labelShortHour")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Localizer.Localizer.Instance.GetString("labelShortHour")}");
                 }
                 if (timeSpan.TotalDays < 6)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Localizer.Localizer.GetString("labelShortDay")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Localizer.Localizer.Instance.GetString("labelShortDay")}");
                 }
                 else
                 {

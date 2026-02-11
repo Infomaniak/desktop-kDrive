@@ -24,7 +24,7 @@
         <DataTemplate x:Key="UpToDateTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTitleIdle')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTitleIdle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                 <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
@@ -35,7 +35,7 @@
         <DataTemplate x:Key="InProgressTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTitleInProgress')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTitleInProgress')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -43,7 +43,7 @@
         <DataTemplate x:Key="InPauseTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTitlePause')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTitlePause')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                 <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
@@ -54,7 +54,7 @@
         <DataTemplate x:Key="OfflineTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTitleOffline')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTitleOffline')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -62,7 +62,7 @@
         <DataTemplate x:Key="NoActivityTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTitleNoActivity')}"
+                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTitleNoActivity')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -115,7 +115,7 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTypeMyActivity')}" />
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTypeMyActivity')}" />
                     </StackPanel>
                 </ComboBoxItem>
                 <ComboBoxItem>
@@ -124,7 +124,7 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="{x:Bind loc:Localizer.GetString('activitiesTypeAllActivities')}" />
+                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('activitiesTypeAllActivities')}" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox.Items>
