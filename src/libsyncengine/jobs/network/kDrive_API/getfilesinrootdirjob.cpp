@@ -53,6 +53,7 @@ ExitInfo GetFilesInRootDirJob::runJob() {
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
+        getRootListJob->setListingConf(_listingConf);
         if (const auto exitInfo = getRootListJob->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
 
@@ -68,7 +69,6 @@ ExitInfo GetFilesInRootDirJob::runJob() {
                                  getRootListJob->nodeInfoList().end());
         }
     }
-
 
     return ExitCode::Ok;
 }
