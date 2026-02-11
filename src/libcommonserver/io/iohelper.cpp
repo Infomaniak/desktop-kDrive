@@ -18,6 +18,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include <mutex>
 #include "libcommonserver/utility/utility.h" // Path2WStr
 
 #include "config.h" // APPLICATION
@@ -652,6 +653,8 @@ class CacheDirectoryHandler {
             return instance;
         }
         const SyncPath &directoryPath() noexcept {
+            std::lock_guard<std::mutex> lock(_mutex);
+            
             bool exists = false;
             auto ioError = IoError::Unknown;
             if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError)) {
@@ -659,7 +662,9 @@ class CacheDirectoryHandler {
                                                 CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
             }
 
-            if (_directoryPath.empty() || !exists) resetDirectoryPath();
+            if (_directoryPath.empty() || !exists) {
+                resetDirectoryPathInternal();
+            }
             return _directoryPath;
         }
         void setDirectoryPath(const SyncPath &newPath) {
@@ -668,14 +673,20 @@ class CacheDirectoryHandler {
             createDirectoryPath();
         }
         void resetDirectoryPath() noexcept {
-            deleteDirectoryPath();
-            initDirectoryPath();
-            if (!_directoryPath.empty()) createDirectoryPath();
+            std::lock_guard<std::mutex> lock(_mutex);
+            resetDirectoryPathInternal();
         }
         ~CacheDirectoryHandler() { deleteDirectoryPath(); }
 
     private:
+        mutable std::mutex _mutex;
         SyncPath _directoryPath;
+        
+        void resetDirectoryPathInternal() noexcept {
+            deleteDirectoryPath();
+            initDirectoryPath();
+            if (!_directoryPath.empty()) createDirectoryPath();
+        }
 
         CacheDirectoryHandler() {
             if (_directoryPath.empty()) initDirectoryPath();
