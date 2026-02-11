@@ -9,6 +9,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
              xmlns:loc="using:Infomaniak.kDrive.Localizer"
+             xmlns:kdrive="using:Infomaniak.kDrive"
+             xmlns:types="using:Infomaniak.kDrive.Types"
              mc:Ignorable="d"
              Unloaded="SyncActivityTable_Unloaded">
     <UserControl.Resources>
@@ -183,7 +185,7 @@
                                 <ProgressRing Height="16"
                                               Width="16"
                                               IsIndeterminate="False"
-                                              local:AncestorSource.AncestorType="ContentControl"
+                                              kdrive:AncestorSource.AncestorType="ContentControl"
                                               Value="{Binding DataContext.ProgressPercent, Mode=OneWay}"
                                               Loaded="SynchronizingProgressRing_Loaded"
                                               Unloaded="SynchronizingProgressRing_Unloaded">
@@ -191,6 +193,7 @@
                                         <ToolTip x:Name="ItemErrorToolTip"
                                                  Content="{x:Bind loc:Localizer.GetString('syncInProgressTooltip')}" />
                                     </ToolTipService.ToolTip>
+                                </ProgressRing>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizedFlyoutTemplate"

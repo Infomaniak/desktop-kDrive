@@ -11,6 +11,7 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:loc="using:Infomaniak.kDrive.Localizer"
+      xmlns:kdrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
