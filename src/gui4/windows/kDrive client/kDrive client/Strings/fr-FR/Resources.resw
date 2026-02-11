@@ -479,21 +479,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
   </data>
-  <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
-    <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.  Veuillez vérifier vos droits ou contacter votre administrateur.</value>
-  </data>
-  <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
-    <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
-  </data>
-  <data name="Page_MaintenanceErrorPage_Subtitle.Text" xml:space="preserve">
-    <value>Le Drive est temporairement indisponible pour maintenance.  Réessayez dans quelques minutes.</value>
-  </data>
-  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
-    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Contactez votre administrateur pour réactiver le service.</value>
-  </data>
-  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
-    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Renouvelez votre abonnement pour réactiver le service.</value>
-  </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
   </data>
@@ -609,7 +594,13 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_Settings_DriveManagementPage_Location.Header" xml:space="preserve">
     <value>Emplacement</value>
   </data>
+  <data name="labelSyncLocation" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
+    <value>Synchronisation</value>
+  </data>
+  <data name="labelSynchronisation" xml:space="preserve">
     <value>Synchronisation</value>
   </data>
   <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Header" xml:space="preserve">
