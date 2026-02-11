@@ -25,6 +25,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:loc="using:Infomaniak.kDrive.Localizer"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
@@ -65,7 +66,7 @@
                            Style="{ThemeResource SubtitleTextBlockStyle}" />
                 <TextBlock Text="{x:Bind PageViewModel.MissingDiskSubtitle, Mode=OneWay}"
                            TextAlignment="Center" />
-                <Button x:Uid="Page_StoragePage_Disconnected_RetryButton"
+                <Button Content="{x:Bind loc:Localizer.GetString('buttonRetry')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource TextBlockButtonStyle}"
                         Click="RetryButton_click" />
@@ -96,13 +97,9 @@
                             <TextBlock Text="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}" />
                         </ToolTip>
                     </ToolTipService.ToolTip>
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-                        <Run x:Uid="Page_StoragePage_ThisComputer" />
-                        <Run Text="-" />
-                        <Run Text="{x:Bind PageViewModel.DiskRoot}" />
-                        <Run Text="-" />
-                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
-                    </TextBlock>
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}"
+                               Text="{x:Bind GetThisComputerTitle(PageViewModel.DiskRoot, PageViewModel.DiskSize), Mode=OneWay}" />
+
                     <ProgressRing Height="8"
                                   Width="8"
                                   Visibility="{x:Bind PageViewModel.Loading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -115,16 +112,11 @@
                                                 Color3="{ThemeResource AccentAAFillColorDisabledBrush}" />
                 <Grid>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               Foreground="{ThemeResource TextFillColorSecondary}">
-                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
-                        <Run x:Uid="Page_StoragePage_Used" />
-                    </TextBlock>
+                               Foreground="{ThemeResource TextFillColorSecondary}"
+                               Text="{x:Bind GetStorageUsedLabel(PageViewModel.DiskUsedSize), Mode=OneWay}" />
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               HorizontalAlignment="Right"
-                               Foreground="{ThemeResource TextFillColorSecondary}">
-                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
-                        <Run x:Uid="Page_StoragePage_Free" />
-                    </TextBlock>
+                               Foreground="{ThemeResource TextFillColorSecondary}"
+                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.DiskFreeSize), Mode=OneWay}" />
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="1">
@@ -141,7 +133,7 @@
                              Width="8"
                              Fill="{ThemeResource AccentAAFillColorDefaultBrush}" />
 
-                    <TextBlock x:Uid="Page_StoragePage_OfflineFiles"
+                    <TextBlock Text="{x:Bind loc:Localizer.GetString('storageComputerUsedByKDrive')}"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
@@ -159,7 +151,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -202,7 +194,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -244,7 +236,7 @@
                         <ProgressRing Height="8"
                                       Width="8" />
 
-                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                        <TextBlock Text="{x:Bind loc:Localizer.GetString('labelStorageLoading')}"
                                    HorizontalAlignment="Right"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

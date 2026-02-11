@@ -443,6 +443,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
     <value>Calcul...</value>
   </data>
+  <data name="labelStorageLoading" xml:space="preserve">
+    <value>Calcul...</value>
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value>Ce PC</value>
   </data>
@@ -1514,6 +1517,9 @@ Renouvelez votre abonnement pour réactiver le service.</value>
   <data name="storageMacUsedByKDrive" xml:space="preserve"> 
     <value>Fichiers kDrive stockés sur votre Mac</value> 
   </data> 
+  <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
+    <value>Fichiers kDrive stockés sur votre ordinateur</value> 
+  </data> 
   <data name="storageMacUsedByComputer" xml:space="preserve"> 
     <value>Autres fichiers du Mac</value> 
   </data> 
@@ -2017,4 +2023,13 @@ The source code of this application can be reviewed, the collected information i
   <data name="buttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
     <value>Remove (%@ rules)</value> 
   </data> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
+    <value>Ce PC -  %@ - %@</value> 
+  </data>
+	<data name="storageUsedLabel" xml:space="preserve"> 
+    <value>%@ utilisés</value> 
+  </data>
+	<data name="storageFreeLabel" xml:space="preserve"> 
+    <value>%@ libres</value> 
+  </data>
 </root>
