@@ -41,21 +41,29 @@ extension VisibleActivities {
 }
 
 struct ActivityHeaderView: View {
+    @StateObject private var networkObserver = NetworkObserver()
+
     @Binding var visibleActivities: VisibleActivities
 
     let synchroStatus: UISynchroStatus
     let hasAnyActivity: Bool
 
     var title: String {
+        guard networkObserver.isConnected else {
+            return KDriveLocalizable.activitiesTitleOffline
+        }
+
         guard hasAnyActivity else {
             return KDriveLocalizable.activitiesTitleNoActivity
         }
 
         switch synchroStatus {
+        case .idle:
+            return KDriveLocalizable.activitiesTitleIdle
         case .starting, .running:
             return KDriveLocalizable.activitiesTitleInProgress
-        case .idle, .paused, .stopped, .error:
-            return KDriveLocalizable.activitiesTitleIdle
+        case .paused, .stopped, .error:
+            return KDriveLocalizable.activitiesTitlePause
         case .pauseAsked, .stopAsked:
             return "Placeholder string for loading"
         }
@@ -71,7 +79,7 @@ struct ActivityHeaderView: View {
     }
 
     var body: some View {
-        HStack(spacing: AppPadding.padding8) {
+        HStack(alignment: .top, spacing: AppPadding.padding8) {
             Text(title)
                 .font(.Tokens.title2)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
@@ -107,6 +115,12 @@ struct ActivityHeaderView: View {
 #Preview("Idle") {
     @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
     ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .idle, hasAnyActivity: true)
+}
+
+@available(macOS 14.0, *)
+#Preview("Pause") {
+    @Previewable @State var visibleActivities: VisibleActivities = .myActivityOnly
+    ActivityHeaderView(visibleActivities: $visibleActivities, synchroStatus: .paused, hasAnyActivity: true)
 }
 
 @available(macOS 14.0, *)

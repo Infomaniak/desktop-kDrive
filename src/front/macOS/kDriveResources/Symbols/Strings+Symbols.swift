@@ -20,6 +20,10 @@ public enum KDriveLocalizable {
   public static let activitiesTitleInProgress = KDriveLocalizable.tr("Localizable", "activitiesTitleInProgress", fallback: "Synchronization in progress")
   /// loco:6981cb9319de989ec9033882
   public static let activitiesTitleNoActivity = KDriveLocalizable.tr("Localizable", "activitiesTitleNoActivity", fallback: "No recent activity")
+  /// loco:698c2d6ab41c289de2072ab2
+  public static let activitiesTitleOffline = KDriveLocalizable.tr("Localizable", "activitiesTitleOffline", fallback: "You are offline")
+  /// loco:698c1fa979440e4f370444a2
+  public static let activitiesTitlePause = KDriveLocalizable.tr("Localizable", "activitiesTitlePause", fallback: "Synchronisation paused")
   /// loco:6981b68a251c4a36c1078274
   public static let activitiesTypeAllActivities = KDriveLocalizable.tr("Localizable", "activitiesTypeAllActivities", fallback: "All activities")
   /// loco:6981b68a1e51fbe933040213
