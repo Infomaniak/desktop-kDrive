@@ -1183,12 +1183,15 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(std::nullopt);
+    bool integrityExceptionCaught = false;
     try {
         (void) _localUpdateTreeWorker->checkTreeIntegrity();
-        CPPUNIT_ASSERT(false); // Should not happen because the previous call should assert
-    } catch (...) {
-        // expected behavior
+        CPPUNIT_ASSERT(false); // Should not happen because the previous call should throw an exception
+    } catch (UpdateTreeWorker::IntegrityError &) {
+        // Expected behavior
+        integrityExceptionCaught = true;
     }
+    CPPUNIT_ASSERT(integrityExceptionCaught);
 
     newNode->setId(NodeId{});
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
@@ -1209,12 +1212,15 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->parentNode()->setId(NodeId{"tmp_123"});
+    integrityExceptionCaught = false;
     try {
         (void) _localUpdateTreeWorker->checkTreeIntegrity();
-        CPPUNIT_ASSERT(false); // Should not happen because the previous call should assert
-    } catch (...) {
-        // expected behavior
+        CPPUNIT_ASSERT(false); // Should not happen because the previous call should throw an exception
+    } catch (UpdateTreeWorker::IntegrityError &) {
+        // Expected behavior
+        integrityExceptionCaught = true;
     }
+    CPPUNIT_ASSERT(integrityExceptionCaught);
 }
 
 } // namespace KDC
