@@ -250,9 +250,8 @@ namespace Infomaniak.kDrive.Pages
             if (AppViewModel.SelectedSync == null)
                 return;
 
-            MissingDiskTitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Title/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-            MissingDiskSubtitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Subtitle/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-
+            MissingDiskTitle = Localizer.Localizer.GetString("storageMissingDiskTitle", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+            MissingDiskSubtitle = Localizer.Localizer.GetString("storageMissingDiskDescription", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
         }
 
         public async Task UpdateDiskSizeAsync()

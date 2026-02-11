@@ -159,7 +159,7 @@
                                 </ListView>
                                 <HyperlinkButton Grid.Row="2"
                                                  x:Name="DeleteButton"
-                                                 Content="{x:Bind loc:Localizer.GetString('buttonRemoveFileExclusionRule')}"
+                                                 Content="{x:Bind loc:Localizer.GetStringWithPlural1i('buttonRemoveFileExclusionRule', _templateListModel.SelectedCount, _templateListModel.SelectedCount)}"
                                                  Foreground="{ThemeResource SystemErrorTextColor}"
                                                  Visibility="{x:Bind _templateListModel.HasSelectedTemplates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                  Click="DeleteButton_Click" />

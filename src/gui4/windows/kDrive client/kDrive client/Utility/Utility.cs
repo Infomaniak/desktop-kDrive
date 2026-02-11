@@ -166,39 +166,6 @@ namespace Infomaniak.kDrive
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
-        public static string GetLocalizedString(string key)
-        {
-            return GetLocalizedString(key, null);
-        }
-
-        public static string GetLocalizedString(string key, params object?[]? args)
-        {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            string? localizedString = resourceLoader.GetString(key);
-
-            if (localizedString is null || localizedString.Length == 0)
-            {
-                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-            }
-
-            // Replace literal \r\n with real newlines
-            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
-
-            // Format the string if arguments are provided
-            if (args != null && args.Length > 0)
-            {
-                try
-                {
-                    localizedString = string.Format(localizedString, args);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(Logger.Level.Error, $"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}");
-                }
-            }
-
-            return localizedString;
-        }
 
         // Convert any enum value to a string
         public static string ToString(Enum value)
@@ -218,22 +185,22 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
             dialog.XamlRoot = xamlRoot;
-            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
-            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
-            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.Title = Localizer.Localizer.GetString($"{translationKeyPreffix}Title");
+            dialog.PrimaryButtonText = Localizer.Localizer.GetString($"{translationKeyPreffix}PrimaryButtonText");
+            dialog.SecondaryButtonText = Localizer.Localizer.GetString($"{translationKeyPreffix}SecondaryButtonText");
             dialog.DefaultButton = defaultButton;
-            dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
+            dialog.Content = Localizer.Localizer.GetString($"{translationKeyPreffix}Content");
             return dialog;
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            var result = await GetContentDialog(xamlRoot, xuid, defaultButton).ShowAsync();
+            var result = await GetContentDialog(xamlRoot, translationKeyPreffix, defaultButton).ShowAsync();
             return result;
         }
 
@@ -323,7 +290,17 @@ namespace Infomaniak.kDrive
         }
 
         private static TeachingTip? _currentTeachingTip;
-        public static void ShowTeachingTipFromxUid(string xuid)
+
+        /*
+         *  This method shows a TeachingTip with localized content based on the provided translation key prefix.
+         *  The Following keys are expected to be defined in the resource files:
+         *     {translationKeyPreffix}Title
+         *     
+         *  The following keys are optional, but if provided, they will be used to populate the corresponding fields in the TeachingTip:
+         *     {translationKeyPreffix}Subtitle
+         *     {translationKeyPreffix}Content
+         */
+        public static void ShowTeachingTipFromxUid(string translationKeyPreffix)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -336,16 +313,18 @@ namespace Infomaniak.kDrive
 
             XamlRoot xamlRoot = app.CurrentWindow.Content.XamlRoot;
 
+            string subtitleKey = $"{translationKeyPreffix}Subtitle";
+            string contentKey = $"{translationKeyPreffix}Content";
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = GetLocalizedString($"{xuid}/Title"),
-                Subtitle = GetLocalizedString($"{xuid}/Subtitle"),
-                Content = new TextBlock
+                Title = Localizer.Localizer.GetString($"{translationKeyPreffix}Title"),
+                Subtitle = Localizer.Localizer.IsValidKey(subtitleKey) ? Localizer.Localizer.GetString(subtitleKey) : "",
+                Content = Localizer.Localizer.IsValidKey(contentKey) ? new TextBlock
                 {
-                    Text = GetLocalizedString($"{xuid}/Content"),
+                    Text = Localizer.Localizer.GetString(contentKey),
                     TextWrapping = TextWrapping.Wrap
-                },
+                } : "",
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };
@@ -387,6 +366,18 @@ namespace Infomaniak.kDrive
             }
         }
 
+        public static string GetTwoLetterIsoLanguageName()
+        {
+            try
+            {
+                return System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to get two-letter ISO language name: {ex.Message}");
+                return "en"; // Default to English if we fail to get the language
+            }
+        }
     }
 }
 

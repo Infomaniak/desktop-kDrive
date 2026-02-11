@@ -11,7 +11,7 @@
         <StackPanel VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-            <TextBlock Text="{x:Bind loc:Localizer.GetString('filesToExclude')}"
+            <TextBlock Text="{x:Bind loc:Localizer.GetString('dialogNewExclusionRuleTitle')}"
                        Style="{StaticResource SubtitleTextBlockStyle}" />
             <TextBlock Text="{x:Bind loc:Localizer.GetString('excludeRuleDescription')}"
                        TextWrapping="WrapWholeWords"

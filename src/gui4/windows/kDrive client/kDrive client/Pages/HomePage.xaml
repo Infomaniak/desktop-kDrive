@@ -290,9 +290,10 @@
             <controls:QuickAccess Grid.Row="1"
                                   Grid.Column="1" />
         </Grid>
+        <!-- Make conditionally visible once we fetch the offer type -->
         <controls:KSuiteUpgradeBar Grid.Row="2"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsFreeOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                   Visibility="Collapsed"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
     </Grid>
 </Page>

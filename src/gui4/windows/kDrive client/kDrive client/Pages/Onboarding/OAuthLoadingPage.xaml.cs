@@ -92,14 +92,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.WaitingForUserAction:
-                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title/Text");
-                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle/Text");
+                    TitleTextBlock.Text = Localizer.Localizer.GetString("signInBrowser");
+                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("browserSignInInstruction");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
                 case OAuth2State.ProcessingResponse:
-                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Title/Text");
-                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Subtitle/Text");
+                    TitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginProcessingTitle");
+                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginProcessingDescription");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
@@ -123,8 +123,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
-                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Title/Text");
-                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Subtitle/Text");
+                    TitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginErrorTitle");
+                    SubtitleTextBlock.Text = Localizer.Localizer.GetString("onboardingLoginErrorDescription");
                     RestartOAuthButton.IsEnabled = true;
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     await _enableRestartCts.CancelAsync();

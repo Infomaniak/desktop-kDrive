@@ -7,6 +7,7 @@ namespace Infomaniak.kDrive
         ISentryConstants Sentry { get; }
         IGitHubConstants GitHub { get; }
         IDriveConstants Drive { get; }
+        IkSuiteConstants kSuite { get; }
         IStorageConstants Storage { get; }
     }
 
@@ -40,6 +41,12 @@ namespace Infomaniak.kDrive
         Uri SharedUrl(DriveId? driveId);
         Uri itemUri(DriveId? driveId, NodeId nodeId);
         Uri ChangeOfferUri(DriveId? driveId);
+        public Uri StartFreeUri { get; }
+    }
+    internal interface IkSuiteConstants
+    {
+        public Uri HomeUri { get; }
+        public Uri TarrifsUri { get; }
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
@@ -47,6 +54,7 @@ namespace Infomaniak.kDrive
         public ISentryConstants Sentry { get; } = new ProductionSentry();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
         public IDriveConstants Drive { get; } = new ProductionDrive();
+        public IkSuiteConstants kSuite { get; } = new ProductionKSuite();
         public IStorageConstants Storage { get; } = new ProductionStorage();
 
         private sealed class ProductionSentry : ISentryConstants
@@ -79,7 +87,15 @@ namespace Infomaniak.kDrive
             public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
             public Uri ChangeOfferUri(DriveId? driveId) =>
                 new($"https://shop.infomaniak.com/order/drive/{driveId}");
+            public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
         }
+
+        private sealed class ProductionKSuite : IkSuiteConstants
+        {
+            public Uri HomeUri { get; } = new Uri("https://www.infomaniak.com/fr/ksuite");
+            public Uri TarrifsUri { get; } = new Uri("https://www.infomaniak.com/gtl/myksuite#prices");
+        }
+
         private sealed class ProductionStorage : IStorageConstants
         {
             public Uri DownloadUrl { get; } =

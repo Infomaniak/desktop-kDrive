@@ -79,5 +79,11 @@ namespace Infomaniak.kDrive.Localizer
 
             return localizedString;
         }
+
+        public static bool IsValidKey(string key)
+        {
+            string localizedString = GetString(key);
+            return !localizedString.StartsWith("!") && !localizedString.EndsWith("!");
+        }
     }
 }

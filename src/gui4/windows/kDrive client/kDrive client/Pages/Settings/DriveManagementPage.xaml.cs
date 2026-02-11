@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar(string driveName)
         {
-            NavBar.ItemsSource = new string[] { Utility.GetLocalizedString("Page_SettingsPage_Title/Text"), Utility.GetLocalizedString("Page_DriveManagement_Title/Text"), driveName };
+            NavBar.ItemsSource = new string[] { Localizer.Localizer.GetString("settingsTitle"), Localizer.Localizer.GetString("labelkDriveManagement"), driveName };
         }
 
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -111,7 +111,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
+            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeWarning") == ContentDialogResult.Primary;
             if (canceledByUser)
             {
                 Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
@@ -137,7 +137,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
             if (!success)
-                await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
+                await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
         }
 
         private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -167,8 +167,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             control.IsEnabled = false;
             bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
-            
-            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+
+            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncDeletionWarning");
             if (dialogResult != ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User canceled sync removal");
