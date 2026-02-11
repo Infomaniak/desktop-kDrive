@@ -1470,6 +1470,9 @@ Réessayez dans quelques minutes.</value>
   <data name="buttonClose" xml:space="preserve"> 
     <value>Fermer</value> 
   </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>Fermer kDrive</value> 
+  </data> 
   <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
     <value>Votre kDrive est plein</value> 
   </data> 
