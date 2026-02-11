@@ -365,19 +365,6 @@ namespace Infomaniak.kDrive
                 _currentTeachingTip = null;
             }
         }
-
-        public static string GetTwoLetterIsoLanguageName()
-        {
-            try
-            {
-                return System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to get two-letter ISO language name: {ex.Message}");
-                return "en"; // Default to English if we fail to get the language
-            }
-        }
     }
 }
 
