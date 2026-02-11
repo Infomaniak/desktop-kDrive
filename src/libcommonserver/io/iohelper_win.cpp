@@ -206,8 +206,8 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
     } else {
         DWORD dwError = GetLastError();
         ioError = dWordError2ioError(dwError, logger());
-        if (ioError != IoError::NoSuchFileOrDirectory) {
-            return false;
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            ioError = IoError::Success;
         }
     }
 
@@ -223,7 +223,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
         return false;
     }
     if (!exists) {
-        ioError = IoError::NoSuchFileOrDirectory;
+        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
         return true;
     }
 
