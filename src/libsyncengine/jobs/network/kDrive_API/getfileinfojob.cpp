@@ -29,6 +29,7 @@ GetFileInfoJob::GetFileInfoJob(const int userDbId, const int driveId, const Node
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
+    _apiVersion = 3;
 }
 
 GetFileInfoJob::GetFileInfoJob(const int driveDbId, const NodeId &nodeId) :
@@ -36,6 +37,7 @@ GetFileInfoJob::GetFileInfoJob(const int driveDbId, const NodeId &nodeId) :
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
+    _apiVersion = 3;
 }
 
 ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
