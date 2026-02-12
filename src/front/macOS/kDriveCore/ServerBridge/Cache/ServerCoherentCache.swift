@@ -95,8 +95,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw CacheError.userNotFound(userDbId)
         }
 
-        let indexedDrives: IndexedAvailableDrives = Dictionary(uniqueKeysWithValues:
-            drives.map { drive in (drive.driveId, drive) })
+        let indexedDrives = IndexedAvailableDrives(
+            uniqueKeysWithValues: drives.map { ($0.driveId, $0) }
+        )
 
         user.availableDrives = indexedDrives
 

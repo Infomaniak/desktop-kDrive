@@ -59,7 +59,7 @@ public struct Drive: DriveRepresentation {
     }
 }
 
-public typealias IndexedAvailableDrives = [Int32: AvailableDrive]
+public typealias IndexedAvailableDrives = OrderedDictionary<Int32, AvailableDrive>
 
 public struct AvailableDrive: DriveRepresentation {
     public var id: Int32 {
