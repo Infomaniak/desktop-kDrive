@@ -92,6 +92,7 @@ class AddDriveWizard : public CustomDialog {
     private slots:
         void onStepTerminated(bool next = true);
         void onExit();
+        void onAuthorizationCodeReceived(const QString &code, const QString &state);
 };
 
 } // namespace KDC

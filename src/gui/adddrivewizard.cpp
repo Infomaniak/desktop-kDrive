@@ -91,8 +91,7 @@ void AddDriveWizard::initUI() {
     _stepStackedWidget->insertWidget(Confirmation, _addDriveConfirmationWidget);
 
     connect(_addDriveLoginWidget, &AddDriveLoginWidget::terminated, this, &AddDriveWizard::onStepTerminated);
-    connect(_gui.get(), &ClientGui::authorizationCodeReceived, _addDriveLoginWidget,
-            &AddDriveLoginWidget::onAuthorizationCodeReceived);
+    connect(_gui.get(), &ClientGui::authorizationCodeReceived, this, &AddDriveWizard::onAuthorizationCodeReceived);
     connect(_addDriveListWidget, &AddDriveListWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveLiteSyncWidget, &AddDriveLiteSyncWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveServerFoldersWidget, &AddDriveServerFoldersWidget::terminated, this, &AddDriveWizard::onStepTerminated);
@@ -316,6 +315,15 @@ void AddDriveWizard::onStepTerminated(bool next) {
 
 void AddDriveWizard::onExit() {
     reject();
+}
+
+void AddDriveWizard::onAuthorizationCodeReceived(const QString &code, const QString &state) {
+    _addDriveLoginWidget->onAuthorizationCodeReceived(code, state);
+
+    // Show wizard window on top
+    show();
+    raise();
+    activateWindow();
 }
 
 } // namespace KDC
