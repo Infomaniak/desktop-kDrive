@@ -58,9 +58,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     public let status: UISynchroFileStatus?
     public let instruction: UISynchroFileInstruction?
     public let size: Int64
-
-    // FIXME: Fake properties while waiting on server update
-    public let syncDate: Date = .now.addingTimeInterval(-60 * 5)
+    public let syncDate: Date
 
     public var relevantPath: URL {
         return updatedPath ?? path
@@ -91,7 +89,8 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         direction: UISynchroDirection?,
         status: UISynchroFileStatus?,
         instruction: UISynchroFileInstruction?,
-        size: Int64
+        size: Int64,
+        synDate: Date
     ) {
         self.id = id
         self.remoteID = remoteID
@@ -102,6 +101,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         self.status = status
         self.instruction = instruction
         self.size = size
+        self.syncDate = synDate
     }
 
     public static func == (lhs: UISynchroNode, rhs: UISynchroNode) -> Bool {

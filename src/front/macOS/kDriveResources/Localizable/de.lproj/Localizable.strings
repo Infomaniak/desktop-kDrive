@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 10 Feb 2026 14:18:09 +0100
+ * Exported at: Thu, 12 Feb 2026 15:35:42 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -210,6 +210,8 @@
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Mappe";
 
+/* loco:698c656e3e4e4bbf4f02bde2 */
+"labelJustNow" = "Gerade jetzt";
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Name";
 

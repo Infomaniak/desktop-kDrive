@@ -154,6 +154,8 @@ public enum KDriveLocalizable {
   public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:6989ff5b78003eb4e20e2652
   public static let labelFolder = KDriveLocalizable.tr("Localizable", "labelFolder", fallback: "Folder")
+  /// loco:698c656e3e4e4bbf4f02bde2
+  public static let labelJustNow = KDriveLocalizable.tr("Localizable", "labelJustNow", fallback: "Just now")
   /// loco:6989fec57ca0d7305008b1e2
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:6989ff974ef31503cb002e23
