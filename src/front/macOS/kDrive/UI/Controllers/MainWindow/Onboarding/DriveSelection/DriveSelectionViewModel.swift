@@ -47,8 +47,9 @@ final class DriveSelectionViewModel: ObservableObject {
 
     private func observeAvailableDrives() {
         coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
-            .receiveOnMain(store: &bindStore) { [weak self] availableDriveContext in
-                self?.availableDrives = availableDriveContext.map { UIAvailableDrive(availableDrive: $0.availableDrive) }
+            .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
+            .receiveOnMain(store: &bindStore) { [weak self] availableDrive in
+                self?.availableDrives = availableDrive
             }
     }
 
