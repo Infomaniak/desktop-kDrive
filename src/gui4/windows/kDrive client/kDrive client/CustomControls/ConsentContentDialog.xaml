@@ -24,8 +24,8 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive">
     <ContentDialog x:Name="Dialog"
-                   PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('save')}"
-                   SecondaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('cancel')}"
+                   PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonSave')}"
+                   SecondaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                    DefaultButton="Primary">
 
         <ContentDialog.TitleTemplate>

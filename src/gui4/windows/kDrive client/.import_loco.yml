@@ -1,0 +1,3 @@
+platform: windows
+localizable_path: kDrive client\Strings
+languages: [ en, fr, de, es, it ]

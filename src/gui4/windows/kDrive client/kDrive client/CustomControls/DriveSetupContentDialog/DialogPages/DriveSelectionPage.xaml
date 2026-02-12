@@ -93,19 +93,19 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <!-- Local path -->
-                                <TextBlock Grid.Column="1"
+                                <TextBlock Grid.Row="1"
                                            Text="{x:Bind local:DriveSelectionPage.GetLoacationSummary(IsDefaultLocalPath,  LocalPath), Mode=OneWay}"
                                            FontSize="12"
-                                           FontWeight="Bold"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           TextTrimming="CharacterEllipsis">
+                                           FontWeight="Normal"
+                                           TextTrimming="WordEllipsis"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
                                         </ToolTipService.ToolTip>
                                 </TextBlock>
 
                                 <!-- Exclusions -->
-                                <TextBlock Grid.Column="0"
+                                <TextBlock Grid.Row="0"
                                            Text="{x:Bind local:DriveSelectionPage.GetExclusionsSummary(ExcludedNodeIds.Count), Mode=OneWay}"
                                            FontSize="12"
                                            FontWeight="Normal"

@@ -103,6 +103,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionExclusion", exclusionText);
         }
+
         public static string GetLoacationSummary(bool isDefaultLocation, string location)
         {
             string locationText = isDefaultLocation ? Localizer.Instance.GetString("buttonDefaultLocation") : location;

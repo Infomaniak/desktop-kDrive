@@ -838,8 +838,7 @@ The source code of this application can be reviewed, the collected information i
     <value>When this option is enabled, kDrive runs more slowly.</value>
   </data>
   <data name="logLevelExtended" xml:space="preserve">
-    <value>Extended
-</value>
+    <value>Extended</value>
   </data>
   <data name="logLevelDebug" xml:space="preserve">
     <value>Debug</value>
@@ -1006,7 +1005,7 @@ Make sure it still exists and that you have permission to access it.</value>
   <data name="buttonConfigure" xml:space="preserve">
     <value>Configure</value>
   </data>
-  <data name=" onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve">
+  <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve">
     <value>Synchronized content: %@</value>
   </data>
   <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve">
@@ -1127,13 +1126,13 @@ Before continuing, make sure all your files are up to date and fully synchronize
 
 Do not close the application during the process.</value>
   </data>
-  <data name=" dialogSyncModeChangeWarningTitle" xml:space="preserve">
+  <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve">
     <value>Change the synchronization mode?</value>
   </data>
-  <data name=" dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve">
+  <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve">
     <value>Continue</value>
   </data>
-  <data name=" dialogSyncModeChangeWarningPrimaryButton" xml:space="preserve">
+  <data name="dialogSyncModeChangeWarningPrimaryButton" xml:space="preserve">
     <value>Cancel</value>
   </data>
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve">

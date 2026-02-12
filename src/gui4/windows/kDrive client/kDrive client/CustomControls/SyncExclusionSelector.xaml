@@ -173,7 +173,7 @@
                                 Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                                 Visibility="{x:Bind ShowSaveMenu, Mode=OneWay}">
                         <Button Click="CancelSyncSelection_click"
-                                Content="{x:Bind kDrive:Localizer.Instance.GetString('cancel')}"
+                                Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                         <Button Style="{ThemeResource AccentButtonStyle}"
                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('saveMyChoices')}"

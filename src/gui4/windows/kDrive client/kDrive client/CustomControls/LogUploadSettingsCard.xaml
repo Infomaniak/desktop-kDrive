@@ -126,7 +126,7 @@
 
             <Button x:Name="CancelButton"
                     VerticalAlignment="Center"
-                    Content="{x:Bind kDrive:Localizer.Instance.GetString('cancel')}"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                     Style="{ThemeResource DefaultButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                     Click="CancelButton_Click" />

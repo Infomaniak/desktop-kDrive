@@ -344,7 +344,7 @@
                                             Style="{StaticResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="SaveProxySettingsButton_Click" />
-                                    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('cancel'), Mode=OneWay}"
+                                    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel'), Mode=OneWay}"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="CancelProxySettingsButton_Click" />
                                 </StackPanel>

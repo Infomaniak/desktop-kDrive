@@ -25,7 +25,11 @@ namespace Infomaniak.kDrive.ViewModels
         public Language Language
         {
             get => _language;
-            set => SetPropertyInUIThread(ref _language, value);
+            set
+            {
+                SetPropertyInUIThread(ref _language, value);
+                Localizer.Instance.SetCulture(value);
+            }
         }
         public bool AutoStart
         {
@@ -230,7 +234,6 @@ namespace Infomaniak.kDrive.ViewModels
                 Language = previousLanguage;
                 return false;
             }
-            Localizer.Instance.SetCulture(newLanguage);
             return true;
         }
     }
