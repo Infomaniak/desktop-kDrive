@@ -259,14 +259,15 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (const auto exitInfo = getItemsInDir(commonDocumentsRemoteId, true); !exitInfo) return exitInfo;
 
     const auto &sharedRemoteId = ApiTranslator::getSharedRemoteId(_driveDbId);
+    const auto &exitInfo = getItemsInDir(sharedRemoteId, true);
 
-    return getItemsInDir(sharedRemoteId, true);
+    deleteOrphans();
+
+    return exitInfo;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
-    if (stopAsked()) {
-        return ExitCode::Ok;
-    }
+    if (stopAsked()) return ExitCode::Ok;
 
     return getItemsInDir(nodeId, false);
 }
@@ -406,8 +407,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
-
-    deleteOrphans();
 
     LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for "
                                                        << iterationState.itemCount << " items");
