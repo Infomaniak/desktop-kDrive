@@ -59,22 +59,33 @@
                     <!-- General - Update -->
                     <controls:UpdateExpander />
                     <!-- General - Language -->
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('languageSetting'), Mode=OneWay}"
-                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('languageSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
+                        <toolKit:SettingsCard.Description>
+                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                        </toolKit:SettingsCard.Description>
                         <ComboBox SelectedValuePath="Tag"
                                   SelectedValue="{x:Bind ViewModel.Settings.Language, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="LanguageComboBox_Changed">
-                            <ComboBoxItem Content="System"
+                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('labelSameAsSystem'), Mode=OneWay}"
                                           Tag="SystemDefault" />
-                            <ComboBoxItem Content="Francais"
+                            <ComboBoxItem Content="Français"
                                           Tag="FR" />
-                            <ComboBoxItem Content="Anglais"
+                            <ComboBoxItem Content="English"
                                           Tag="EN" />
+                            <ComboBoxItem Content="Deutsch"
+                                          Tag="DE" />
+                            <ComboBoxItem Content="Español"
+                                          Tag="ES" />
+                            <ComboBoxItem Content="Italiano"
+                                          Tag="IT" />
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - Auto start -->
@@ -283,7 +294,7 @@
                                           Tag="HTTP" />
                             <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('proxyTypeNone'), Mode=OneWay}"
                                           Tag="None" />
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('proxyTypeSameAsSystem'), Mode=OneWay}"
+                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('labelSameAsSystem'), Mode=OneWay}"
                                           Tag="System" />
                         </ComboBox>
                         <toolKit:SettingsExpander.Items>

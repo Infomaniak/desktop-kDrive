@@ -9,6 +9,7 @@ namespace Infomaniak.kDrive.ViewModels
     public class Settings : UISafeObservableObject
     {
         private Language _language = Language.SystemDefault;
+        private bool _restartRequiredForLanguageChange = false;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
         private NotificationsDisabled _notificationsDisabled;
@@ -31,6 +32,13 @@ namespace Infomaniak.kDrive.ViewModels
                 Localizer.Instance.SetCulture(value);
             }
         }
+
+        public bool RestartRequiredForLanguageChange
+        {
+            get => _restartRequiredForLanguageChange;
+            set => SetPropertyInUIThread(ref _restartRequiredForLanguageChange, value);
+        }
+
         public bool AutoStart
         {
             get => _autoStart;
@@ -234,6 +242,7 @@ namespace Infomaniak.kDrive.ViewModels
                 Language = previousLanguage;
                 return false;
             }
+            RestartRequiredForLanguageChange = true;
             return true;
         }
     }

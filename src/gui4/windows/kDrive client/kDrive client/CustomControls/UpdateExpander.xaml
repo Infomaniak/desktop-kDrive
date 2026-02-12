@@ -19,7 +19,7 @@
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
-        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('updateSettings')}" />
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('updateSettings'), Mode=OneWay}" />
     </toolKit:SettingsExpander.Header>
 
     <toolKit:SettingsExpander.HeaderIcon>
@@ -28,7 +28,7 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
 
-    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate')}"
+    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate'), Mode=OneWay}"
             Style="{ThemeResource AccentButtonStyle}"
             Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
             Click="UpdateButton_Click" />
@@ -40,10 +40,10 @@
             <toolKit:SettingsCard.Description>
                 <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
             </toolKit:SettingsCard.Description>
-            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonReleaseNotes')}"
+            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonReleaseNotes'), Mode=OneWay}"
                              NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('automaticUpdatesSetting')}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('automaticUpdatesSetting'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}"
                               Visibility="Collapsed">
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
@@ -57,20 +57,20 @@
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('joinBetaProgram')}"
-                              Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription')}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('joinBetaProgram'), Mode=OneWay}"
+                              Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
                       SelectedValuePath="Tag"
                       SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
-                              Content="{x:Bind kDrive:Localizer.Instance.GetString('doNotJoin')}" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('doNotJoin'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Beta"
-                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelbeta')}" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelbeta'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
-                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal')}"
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
                               Foreground="{ThemeResource SystemErrorTextColor}"
                               Visibility="Collapsed" />
             </ComboBox>
