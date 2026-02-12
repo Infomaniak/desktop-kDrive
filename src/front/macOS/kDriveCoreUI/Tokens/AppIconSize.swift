@@ -20,6 +20,7 @@ import Foundation
 import SwiftUI
 
 public enum AppIconSize {
+    public static let iconSize16 = CGSize(width: 16, height: 16)
     public static let iconSize12 = CGSize(width: 12, height: 12)
 }
 
