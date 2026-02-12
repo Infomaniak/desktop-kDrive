@@ -26,6 +26,7 @@ InitFileListWithCursorJob::InitFileListWithCursorJob(const int driveDbId, const 
     AbstractListingJob(ApiType::Drive, driveDbId),
     _dirId(dirId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 std::string InitFileListWithCursorJob::getSpecificUrl() {

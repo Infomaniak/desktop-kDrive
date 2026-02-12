@@ -30,7 +30,7 @@ std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
     str += _remoteDirId;
-    str += "listing/continue";
+    str += "/listing/continue";
 
     return str;
 }
