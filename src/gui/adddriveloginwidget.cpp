@@ -63,11 +63,13 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     // Left part
     auto *leftPartLayout = new QVBoxLayout(this);
     mainLayout->addItem(leftPartLayout);
-    leftPartLayout->addStretch();
+    leftPartLayout->addStretch(10);
 
     auto *titleLabel = new QLabel(tr("Log in to your browser"), this);
     titleLabel->setObjectName("titleLabel");
     leftPartLayout->addWidget(titleLabel);
+
+    leftPartLayout->addStretch(1);
 
     auto *subTitleLabel = new QLabel(tr("Your browser should open automatically to complete the connection. Once connected, you "
                                         "will automatically return to kDrive."),
@@ -77,6 +79,8 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     subTitleLabel->setMinimumWidth(400);
     leftPartLayout->addWidget(subTitleLabel);
 
+    leftPartLayout->addStretch(1);
+
     auto *connectButton = new QPushButton(tr("Open the login page"), this);
     connectButton->setObjectName("nondefaultbutton");
     connectButton->setFlat(true);
@@ -84,7 +88,7 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     leftPartLayout->addWidget(connectButton);
     (void) connect(connectButton, &CustomPushButton::clicked, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
 
-    leftPartLayout->addStretch();
+    leftPartLayout->addStretch(10);
 
     mainLayout->addStretch();
     mainLayout->addStretch();
