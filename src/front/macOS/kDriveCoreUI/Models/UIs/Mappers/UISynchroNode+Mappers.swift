@@ -125,7 +125,8 @@ public extension UISynchroNode {
             updatedPath: updatedLocalPath,
             direction: UISynchroDirection(syncDirection: synchroNode.direction),
             status: UISynchroFileStatus(syncFileStatus: synchroNode.status),
-            instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction)
+            instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction),
+            size: synchroNode.size
         )
     }
 }
