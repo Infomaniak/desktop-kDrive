@@ -100,7 +100,6 @@ class SnapshotItem {
         void setPath(const SyncPath &path) const { _path = path; }
 
         friend class Snapshot;
-        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC
