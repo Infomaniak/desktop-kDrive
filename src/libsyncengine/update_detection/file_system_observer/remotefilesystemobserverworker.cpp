@@ -851,7 +851,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
     SyncPath remotePath_{remotePath};
     ApiTranslator::translateV3ToV2(remotePath_);
-    _path = remotePath_.filename();
+    _path = remotePath_.string();
 }
 
 } // namespace KDC

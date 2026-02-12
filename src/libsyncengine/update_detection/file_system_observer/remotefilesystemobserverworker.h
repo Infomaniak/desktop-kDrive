@@ -50,7 +50,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
                 SnapshotItem snapshotItem;
                 const SyncName &path() const { return _path; };
-                void setPath(const SyncName &p);
+                void setPath(const SyncName &remotePath);
 
             private:
                 SyncName _path;
