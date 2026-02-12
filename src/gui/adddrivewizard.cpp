@@ -169,20 +169,15 @@ void AddDriveWizard::startNextStep(bool backward) {
     _stepStackedWidget->setCurrentIndex(_currentStep);
 
     if (_currentStep == Login) {
-        setBackgroundForcedColor(Qt::white);
         _addDriveLoginWidget->init();
     } else if (_currentStep == ListDrives) {
-        setBackgroundForcedColor(QColor());
         _addDriveListWidget->setUserDbId(_userDbId);
         _addDriveListWidget->setDrivesData();
         _addDriveListWidget->setUsersData();
     } else if (_currentStep == LiteSync) {
-        setBackgroundForcedColor(QColor());
     } else if (_currentStep == RemoteFolders) {
-        setBackgroundForcedColor(QColor());
         _addDriveServerFoldersWidget->init(_userDbId, _driveInfo);
     } else if (_currentStep == LocalFolder) {
-        setBackgroundForcedColor(QColor());
         _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
         QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
@@ -199,9 +194,7 @@ void AddDriveWizard::startNextStep(bool backward) {
 
         _addDriveLocalFolderWidget->setLocalFolderPath(goodLocalFolderPath);
     } else if (_currentStep == ExtensionSetup) {
-        setBackgroundForcedColor(QColor());
     } else if (_currentStep == Confirmation) {
-        setBackgroundForcedColor(QColor());
         _addDriveConfirmationWidget->setFolderPath(_localFolderPath);
     }
 

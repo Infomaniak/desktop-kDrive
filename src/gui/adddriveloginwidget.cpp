@@ -55,13 +55,49 @@ Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     QWidget(parent) {
-    auto *const mainLayout = new QVBoxLayout();
+    auto *const mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
+    mainLayout->addStretch();
 
-    auto *connectButton = new CustomPushButton(tr("Connect"), this);
-    mainLayout->addWidget(connectButton);
+    // Left part
+    auto *leftPartLayout = new QVBoxLayout(this);
+    mainLayout->addItem(leftPartLayout);
+    leftPartLayout->addStretch();
+
+    auto *titleLabel = new QLabel(tr("Log in to your browser"), this);
+    titleLabel->setObjectName("titleLabel");
+    leftPartLayout->addWidget(titleLabel);
+
+    auto *subTitleLabel = new QLabel(tr("Your browser should open automatically to complete the connection. Once connected, you "
+                                        "will automatically return to kDrive."),
+                                     this);
+    subTitleLabel->setObjectName("textLabel");
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setMinimumWidth(400);
+    leftPartLayout->addWidget(subTitleLabel);
+
+    auto *connectButton = new QPushButton(tr("Open the login page"), this);
+    connectButton->setObjectName("nondefaultbutton");
+    connectButton->setFlat(true);
+    connectButton->setMaximumWidth(200);
+    leftPartLayout->addWidget(connectButton);
     (void) connect(connectButton, &CustomPushButton::clicked, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
+
+    leftPartLayout->addStretch();
+
+    mainLayout->addStretch();
+    mainLayout->addStretch();
+
+    // Right part
+    auto *logoIconLabel = new QLabel(this);
+    // logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-loader-stroke.svg")
+    //                                  .pixmap(QSize(logoIconSize, logoIconSize)));
+    logoIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-loader-stroke.svg").pixmap(150, 130));
+    mainLayout->addWidget(logoIconLabel);
+
+    mainLayout->addStretch();
 }
 
 void AddDriveLoginWidget::init() {
@@ -70,11 +106,6 @@ void AddDriveLoginWidget::init() {
 
 void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const QString &state) {
     Q_UNUSED(state)
-
-    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-    show();
-    raise(); // for MacOS
-    activateWindow(); // for Windows
 
     QString error;
     QString errorDescr;
