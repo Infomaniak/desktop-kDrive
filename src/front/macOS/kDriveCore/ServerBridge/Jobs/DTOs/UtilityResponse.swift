@@ -20,7 +20,6 @@ import Foundation
 
 struct UtilityBestVFSQuery: Codable, Sendable {
     @Base64CodedString var path: String
-    let driveDbId: Int32
 }
 
 struct UtilityBestVFSResponse: Codable, Sendable {
@@ -29,7 +28,6 @@ struct UtilityBestVFSResponse: Codable, Sendable {
 
 struct UtilityGoodPathNewSyncQuery: Codable, Sendable {
     @Base64CodedString var basePath: String
-    let driveDbId: Int32
 }
 
 struct UtilityGoodPathNewSyncResponse: Codable, Sendable {

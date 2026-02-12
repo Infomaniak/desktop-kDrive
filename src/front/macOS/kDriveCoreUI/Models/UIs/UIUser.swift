@@ -23,7 +23,9 @@ import kDriveCore
 import SwiftUI
 
 public struct UIUser: Sendable, Equatable, Hashable {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         dbId
     }
 

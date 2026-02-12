@@ -223,6 +223,21 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateAccount(account)
     }
 
+    // MARK: - AVAILABLE DRIVE
+
+    public func getAvailableDrive(driveDb: Int32, userDbId: Int32) async -> AvailableDrive? {
+        users[userDbId]?.availableDrives[driveDb]
+    }
+
+    public func getAvailableDrive(driveDb: Int32) async -> AvailableDrive? {
+        for user in users.values {
+            if let availableDrive = user.availableDrives[driveDb] {
+                return availableDrive
+            }
+        }
+        return nil
+    }
+
     // MARK: - SYNCHRO
 
     public func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) -> Synchro? {

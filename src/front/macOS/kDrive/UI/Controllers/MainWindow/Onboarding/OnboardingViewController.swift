@@ -19,6 +19,7 @@
 import Cocoa
 import Combine
 import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 
 final class OnboardingViewController: NSViewController {
@@ -33,9 +34,9 @@ final class OnboardingViewController: NSViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
-    init(initialStep: OnboardingStep?) {
+    init(user: UIUser?, initialStep: OnboardingStep?) {
         shouldGuessInitialStep = initialStep == nil
-        flowCoordinator = OnboardingFlowCoordinator(initialStep: initialStep)
+        flowCoordinator = OnboardingFlowCoordinator(user: user, initialStep: initialStep)
 
         contentView = NSView()
         animationsView = OnboardingAnimationsView(flowCoordinator: flowCoordinator)

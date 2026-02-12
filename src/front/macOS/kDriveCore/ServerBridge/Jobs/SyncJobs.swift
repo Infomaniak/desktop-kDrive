@@ -35,7 +35,6 @@ public struct NewSyncMetadata: Sendable {
     let serverFolderNodeId: String
     let liteSync: Bool
     let blackList: [String]
-    let whiteList: [String]
 
     public init(
         userDbId: Int32,
@@ -45,8 +44,7 @@ public struct NewSyncMetadata: Sendable {
         serverFolderPath: String,
         serverFolderNodeId: String,
         liteSync: Bool,
-        blackList: [String],
-        whiteList: [String]
+        blackList: [String]
     ) {
         self.userDbId = userDbId
         self.accountId = accountId
@@ -56,7 +54,6 @@ public struct NewSyncMetadata: Sendable {
         self.serverFolderNodeId = serverFolderNodeId
         self.liteSync = liteSync
         self.blackList = blackList
-        self.whiteList = whiteList
     }
 }
 
