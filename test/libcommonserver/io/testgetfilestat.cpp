@@ -156,7 +156,11 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
+#end
     }
 
     // A non-existing file with a very long path
