@@ -79,10 +79,20 @@ void RemoteFileSystemObserverWorker::execute() {
             }
         }
 
-        if (exitInfo = processEvents(); !exitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: " << exitInfo);
-            break;
+        const std::vector<std::string> mainDirectoriesRemoteIds{ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId),
+                                                                ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
+                                                                ApiTranslator::getSharedRemoteId(_driveDbId)};
+
+        for (const auto &remoteDirId: mainDirectoriesRemoteIds) {
+            exitInfo = processEvents(remoteDirId);
+            if (!exitInfo) {
+                LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << " ExitInfo: " << exitInfo);
+                break;
+            }
         }
+
+        if (!exitInfo) break;
+
         _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
