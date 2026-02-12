@@ -71,7 +71,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
             for user in usersDict.values {
                 for account in user.accounts.values {
                     for drive in account.drives.values {
-                        for synchro in drive.synchros.values where synchro.dbId == synchroDbId {
+                        if let synchro = drive.synchros[synchroDbId] {
                             for node in synchro.synchNodes.values {
                                 let context = SynchroNodeContext(
                                     node: node,
