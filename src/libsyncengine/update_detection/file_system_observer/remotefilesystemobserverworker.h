@@ -55,7 +55,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 bool eof{false};
                 uint64_t itemCount{0};
         };
-        ExitInfo handleSnapshotItem(SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+        ExitInfo handleSnapshotItem(const SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
                                     sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
         ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
 

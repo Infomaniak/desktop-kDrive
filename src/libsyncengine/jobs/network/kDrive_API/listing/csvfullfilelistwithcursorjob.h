@@ -25,7 +25,7 @@ namespace KDC {
 
 class CsvFullFileListWithCursorJob final : public AbstractListingJob {
     public:
-        CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, const NodeSet &blacklist = {}, bool zip = true);
+        CsvFullFileListWithCursorJob(int driveDbId, NodeId dirId, const NodeSet &blacklist = {}, bool zip = true);
 
         /**
          * @brief getItem

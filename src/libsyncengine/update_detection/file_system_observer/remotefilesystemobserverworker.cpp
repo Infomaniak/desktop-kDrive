@@ -252,11 +252,17 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
-    if (stopAsked()) {
-        return ExitCode::Ok;
-    }
+    if (stopAsked()) return ExitCode::Ok;
 
-    return getItemsInDir(_liveSnapshot.rootFolderId(), true);
+    const auto &userPrivateDirRemoteId = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId);
+    if (const auto exitInfo = getItemsInDir(userPrivateDirRemoteId, true); !exitInfo) return exitInfo;
+
+    const auto &commonDocumentsRemoteId = ApiTranslator::getCommonDocumentsRemoteId(_driveDbId);
+    if (const auto exitInfo = getItemsInDir(commonDocumentsRemoteId, true); !exitInfo) return exitInfo;
+
+    const auto &sharedRemoteId = ApiTranslator::getSharedRemoteId(_driveDbId);
+
+    return getItemsInDir(sharedRemoteId, true);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
@@ -268,7 +274,7 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
-        SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+        const SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
         sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
     if (iterationState.ignore) return ExitCode::Ok; // continue
     if (iterationState.eof) return ExitCode::Ok; // break

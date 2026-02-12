@@ -24,6 +24,9 @@ namespace KDC {
 std::mutex ApiTranslator::_mutex;
 
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
+ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_commonDocumentsNodeIdCache = {};
+ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_sharedNodeIdCache = {};
+
 
 ApiTranslator::ApiTranslator() {}
 
@@ -42,22 +45,36 @@ ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     return drive.driveId();
 }
 
-ApiTranslator::RemoteNodeId ApiTranslator::getPrivateFolderRemoteId(const DriveDbId driveDbId, const NodeInfoList &nodeInfoList) {
-    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                                 [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+void ApiTranslator::updateCache(const DriveDbId driveDbId) {
+    constexpr auto maxNumberOfItems = 1000;
 
-    if (it != nodeInfoList.cend()) {
-        const std::scoped_lock lock(_mutex);
-        _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
+    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
+    fileListJob.setListingConf({.dirOnly = true, .limit = maxNumberOfItems});
+    fileListJob.runSynchronously();
 
-        return _rootNodeIdCache[driveDbId];
-    }
+    const auto &nodeInfoList = fileListJob.nodeInfoList();
 
-    return {};
+    const std::scoped_lock lock(_mutex);
+
+    auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                           [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+
+
+    if (it != nodeInfoList.cend()) _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
+
+    it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Shared"; });
+
+    if (it != nodeInfoList.cend()) _sharedNodeIdCache[driveDbId] = it->nodeId().toStdString();
+
+
+    it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Common documents"; });
+
+    if (it != nodeInfoList.cend()) _commonDocumentsNodeIdCache[driveDbId] = it->nodeId().toStdString();
 }
 
 ApiTranslator::RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const DriveDbId driveDbId) {
-    constexpr auto maxNumberOfItems = 1000;
     {
         const std::scoped_lock lock(_mutex);
         if (const auto it = _rootNodeIdCache.find(driveDbId); it != _rootNodeIdCache.cend()) {
@@ -65,14 +82,35 @@ ApiTranslator::RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const Dr
         }
     }
 
-    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
-    fileListJob.setListingConf({.limit = maxNumberOfItems});
-    fileListJob.runSynchronously();
+    updateCache(driveDbId);
 
-    const auto &nodeInfoList = fileListJob.nodeInfoList();
-    if (const auto rootFolderId = getPrivateFolderRemoteId(driveDbId, nodeInfoList); !rootFolderId.empty()) return rootFolderId;
+    return _rootNodeIdCache[driveDbId];
+}
 
-    return {};
+ApiTranslator::RemoteNodeId ApiTranslator::getCommonDocumentsRemoteId(KDC::ApiTranslator::DriveDbId driveDbId) {
+    {
+        const std::scoped_lock lock(_mutex);
+        if (const auto it = _commonDocumentsNodeIdCache.find(driveDbId); it != _commonDocumentsNodeIdCache.cend()) {
+            return it->second;
+        }
+    }
+
+    updateCache(driveDbId);
+
+    return _commonDocumentsNodeIdCache[driveDbId];
+}
+
+ApiTranslator::RemoteNodeId ApiTranslator::getSharedRemoteId(KDC::ApiTranslator::DriveDbId driveDbId) {
+    {
+        const std::scoped_lock lock(_mutex);
+        if (const auto it = _sharedNodeIdCache.find(driveDbId); it != _sharedNodeIdCache.cend()) {
+            return it->second;
+        }
+    }
+
+    updateCache(driveDbId);
+
+    return _sharedNodeIdCache[driveDbId];
 }
 
 void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId) {

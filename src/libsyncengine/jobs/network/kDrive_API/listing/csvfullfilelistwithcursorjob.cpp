@@ -26,10 +26,10 @@ namespace KDC {
 
 static const uint32_t apiTimout = 900;
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, const NodeId &dirId,
-                                                           const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, NodeId dirId, const NodeSet &blacklist /*= {}*/,
+                                                           const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist),
-    _dirId(dirId),
+    _dirId(std::move(dirId)),
     _zip(zip),
     _snapshotItemHandler(driveDbId, _logger) {
     _customTimeout = apiTimout + 15;
@@ -52,7 +52,10 @@ std::string CsvFullFileListWithCursorJob::getCursor() {
 
 std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/full";
+    str += "/files/";
+    str += _dirId;
+    str += "/listing/full";
+
     return str;
 }
 

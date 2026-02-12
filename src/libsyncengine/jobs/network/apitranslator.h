@@ -34,13 +34,17 @@ class ApiTranslator {
         static void translateV3ToV2(SyncPath &remotePath);
         static void translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
         static RemoteNodeId getUserPrivateFolderRemoteId(DriveDbId driveDbId);
+        static RemoteNodeId getCommonDocumentsRemoteId(DriveDbId driveDbId);
+        static RemoteNodeId getSharedRemoteId(DriveDbId driveDbId);
 
     private:
         static DriveId getDriveId(DriveDbId driveDbId);
-        static RemoteNodeId getPrivateFolderRemoteId(DriveDbId driveDbId, const NodeInfoList &nodeInfoList);
+        static void updateCache(DriveDbId driveDbId);
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
         static RemoteNodeIdCacheMap _rootNodeIdCache;
+        static RemoteNodeIdCacheMap _commonDocumentsNodeIdCache;
+        static RemoteNodeIdCacheMap _sharedNodeIdCache;
 
         static std::mutex _mutex;
 };
