@@ -51,7 +51,7 @@ class SentryNativeConan(ConanFile):
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
         # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
-        self.requires("qt/[>=6.2.3 <7.0.0]", headers=True, libs=False, visible=False)
+        self.requires("qt/[>=6 <7]", headers=True, libs=False, visible=False)
 
         # On Linux non-ARM: use Conan packages for c-ares and libcurl
         # On Linux ARM: use system packages (installed via system_requirements())
