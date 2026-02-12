@@ -37,8 +37,8 @@ struct SyncFileItemInfo: Codable, Sendable {
     let inconsistency: KDC.InconsistencyType
     let cancelType: KDC.CancelType
     let date = Date()
-    @Base64CodedString var error: String
     let size: Int64
+    @Base64CodedString var error: String
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -52,6 +52,7 @@ struct SyncFileItemInfo: Codable, Sendable {
         case conflict
         case inconsistency
         case cancelType
+        case size
         case error
         // Note: date is intentionally excluded to preserve the runtime default value
     }
@@ -70,8 +71,8 @@ extension SyncFileItemInfo {
                     conflict: conflict,
                     inconsistency: inconsistency,
                     cancelType: cancelType,
-                    size: size,
                     date: date,
+                    size: size,
                     error: error)
     }
 }

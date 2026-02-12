@@ -110,8 +110,8 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Comparable, Sendable
     public let inconsistency: KDC.InconsistencyType
     public let cancelType: KDC.CancelType
     public let date: Date
-    public let error: String
     public let size: Int64
+    public let error: String
 
     public static func < (lhs: SynchroNode, rhs: SynchroNode) -> Bool {
         lhs.date < rhs.date
@@ -134,7 +134,8 @@ extension SynchroNode {
             inconsistency: node.inconsistency,
             cancelType: node.cancelType,
             date: date,
-            error: node.error
+            size: node.size,
+            error: node.error,
         )
     }
 }
