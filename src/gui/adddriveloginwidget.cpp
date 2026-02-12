@@ -65,7 +65,7 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     mainLayout->addItem(leftPartLayout);
     leftPartLayout->addStretch(10);
 
-    auto *titleLabel = new QLabel(tr("Log in to your browser"), this);
+    auto *titleLabel = new QLabel(tr("Log in from your browser"), this);
     titleLabel->setObjectName("titleLabel");
     leftPartLayout->addWidget(titleLabel);
 
@@ -84,7 +84,7 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     auto *connectButton = new QPushButton(tr("Open the login page"), this);
     connectButton->setObjectName("nondefaultbutton");
     connectButton->setFlat(true);
-    connectButton->setMaximumWidth(200);
+    connectButton->setMaximumWidth(250);
     leftPartLayout->addWidget(connectButton);
     (void) connect(connectButton, &CustomPushButton::clicked, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
 
