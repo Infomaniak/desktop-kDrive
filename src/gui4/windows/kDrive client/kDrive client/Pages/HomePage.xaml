@@ -28,7 +28,7 @@
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
-      xmlns:loc="using:Infomaniak.kDrive.Localizer"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:types="using:Infomaniak.kDrive.Types"
       mc:Ignorable="d">
     <Page.Resources>
@@ -55,18 +55,18 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusUpToDateTitle')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
-                                     Content="{x:Bind loc:Localizer.Instance.GetString('buttonClose')}"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonClose')}"
                                      Click="HideButton_Click" />
                 </StackPanel>
             </Grid>
@@ -90,18 +90,18 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusInProgressTitle')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
 
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
-                                     Content="{x:Bind loc:Localizer.Instance.GetString('buttonSeeActivities')}"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
                                      Click="SyncInProgressHyperlinkButton_Click" />
                 </StackPanel>
             </Grid>
@@ -125,18 +125,18 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusPausedTitle')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusPausedTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroPaused')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroPaused')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
-                                     Content="{x:Bind loc:Localizer.Instance.GetString('buttonRestartSynchro')}"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRestartSynchro')}"
                                      Click="RestartButton_Click" />
                 </StackPanel>
             </Grid>
@@ -160,18 +160,18 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusOfflineTitle')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind loc:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
-                                     Content="{x:Bind loc:Localizer.Instance.GetString('buttonRestartSynchro')}"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRestartSynchro')}"
                                      Click="RestartButton_Click" />
                 </StackPanel>
             </Grid>

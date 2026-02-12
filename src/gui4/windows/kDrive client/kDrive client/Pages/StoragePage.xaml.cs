@@ -97,7 +97,7 @@ namespace Infomaniak.kDrive.Pages
                 prettySize = $"{diskSize} bytes";
             }
 
-            return Localizer.Localizer.Instance.GetString("storageThisComputerTitle", diskRoot, prettySize);
+            return Localizer.Instance.GetString("storageThisComputerTitle", diskRoot, prettySize);
         }
 
         private string GetStorageUsedLabel(Int64? usedSize)
@@ -111,7 +111,7 @@ namespace Infomaniak.kDrive.Pages
                 prettySize = $"{usedSize} bytes";
             }
 
-            return Localizer.Localizer.Instance.GetString("storageUsedLabel", prettySize);
+            return Localizer.Instance.GetString("storageUsedLabel", prettySize);
         }
 
         private string GetStorageFreeLabel(Int64? usedSize)
@@ -125,7 +125,7 @@ namespace Infomaniak.kDrive.Pages
                 prettySize = $"{usedSize} bytes";
             }
 
-            return Localizer.Localizer.Instance.GetString("storageFreeLabel", prettySize);
+            return Localizer.Instance.GetString("storageFreeLabel", prettySize);
         }
     }
 
@@ -250,8 +250,8 @@ namespace Infomaniak.kDrive.Pages
             if (AppViewModel.SelectedSync == null)
                 return;
 
-            MissingDiskTitle = Localizer.Localizer.Instance.GetString("storageMissingDiskTitle", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-            MissingDiskSubtitle = Localizer.Localizer.Instance.GetString("storageMissingDiskDescription", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+            MissingDiskTitle = Localizer.Instance.GetString("storageMissingDiskTitle", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+            MissingDiskSubtitle = Localizer.Instance.GetString("storageMissingDiskDescription", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
         }
 
         public async Task UpdateDiskSizeAsync()

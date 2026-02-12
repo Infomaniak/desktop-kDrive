@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.Converters
             ParameterParser parser = new(parameter);
             string key = parser.Get("key") ?? string.Empty;
 
-            return Localizer.Localizer.Instance.GetString(key);
+            return Localizer.Instance.GetString(key);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

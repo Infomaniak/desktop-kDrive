@@ -10,7 +10,7 @@
                       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
                       xmlns:converters="using:Infomaniak.kDrive.Converters"
                       xmlns:types="using:Infomaniak.kDrive.Types"
-                      xmlns:loc="using:Infomaniak.kDrive.Localizer"
+                      xmlns:kDrive="using:Infomaniak.kDrive"
                       mc:Ignorable="d">
     <toolKit:SettingsCard.Resources>
         <!-- Converters -->
@@ -27,7 +27,7 @@
                       x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('logsStatusCompression')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('logsStatusCompression')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -43,7 +43,7 @@
                       x:DataType="types:LogUploadState">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('logsStatusUpload')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('logsStatusUpload')}"
                            VerticalAlignment="Center" />
 
                 <ProgressRing VerticalAlignment="Center"
@@ -75,7 +75,7 @@
                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind loc:Localizer.Instance.GetString('logsUploadErrorTooltip')}" />
+                    <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('logsUploadErrorTooltip')}" />
                 </ToolTipService.ToolTip>
             </local:SvgIcon>
         </DataTemplate>
@@ -102,7 +102,7 @@
     </toolKit:SettingsCard.Resources>
 
     <toolKit:SettingsCard.Header>
-        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('infomaniakSupport')}" />
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('infomaniakSupport')}" />
     </toolKit:SettingsCard.Header>
 
     <toolKit:SettingsCard.HeaderIcon>
@@ -119,14 +119,14 @@
                             VerticalContentAlignment="Center" />
 
             <Button x:Name="SendLogsButton"
-                    Content="{x:Bind loc:Localizer.Instance.GetString('buttonSendLog')}"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSendLog')}"
                     Style="{ThemeResource AccentButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                     Click="SendLogsButton_Click" />
 
             <Button x:Name="CancelButton"
                     VerticalAlignment="Center"
-                    Content="{x:Bind loc:Localizer.Instance.GetString('cancel')}"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('cancel')}"
                     Style="{ThemeResource DefaultButtonStyle}"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                     Click="CancelButton_Click" />

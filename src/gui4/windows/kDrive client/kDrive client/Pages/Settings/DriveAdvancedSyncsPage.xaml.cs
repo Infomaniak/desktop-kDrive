@@ -62,7 +62,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private void SetupNavBar(string driveName)
     {
-        NavBar.ItemsSource = new string[] { Localizer.Localizer.Instance.GetString("settingsTitle"), Localizer.Localizer.Instance.GetString("labelkDriveManagement"), driveName, Localizer.Localizer.Instance.GetString("advancedSyncTitle") };
+        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
     }
 
     private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)

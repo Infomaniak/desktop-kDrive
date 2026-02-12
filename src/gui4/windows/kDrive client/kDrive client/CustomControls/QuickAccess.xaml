@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
-             xmlns:loc="using:Infomaniak.kDrive.Localizer"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -68,7 +68,7 @@
                                                   HorizontalAlignment="Right"
                                                   UriString="{StaticResource Infomaniak.Custom.Icons.folder-star}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('folderFavorites')}"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderFavorites')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
                             <controls:SvgIcon Height="12"
@@ -87,7 +87,7 @@
                                 <controls:SvgIcon Height="16"
                                                   UriString="{StaticResource Infomaniak.Custom.Icons.folder-share}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('folderShares')}"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderShares')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 
@@ -107,7 +107,7 @@
                                 <controls:SvgIcon Height="16"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
-                                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('buttonKDriveOnline')}"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonKDriveOnline')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 
@@ -131,7 +131,7 @@
                                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}"
                                           Foreground="{ThemeResource SystemAccentColor}" />
 
-                        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('folderTrash')}"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderTrash')}"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     </StackPanel>
                     <controls:SvgIcon Height="12"

@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.ApplicationModel.Resources;
 
-namespace Infomaniak.kDrive.Localizer
+namespace Infomaniak.kDrive
 {
     internal class Localizer : UISafeObservableObject
     {

@@ -1,24 +1,23 @@
 <Page x:Class="Infomaniak.kDrive.Pages.Onboarding.FinishingPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:Infomaniak.kDrive"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
-      xmlns:loc="using:Infomaniak.kDrive.Localizer"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center">
 
         <!-- Titre -->
-        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingDriveSelectionSyncInProgress')}"
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingDriveSelectionSyncInProgress')}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Sous-titre -->
-        <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('onboardingSynchronizationInProgressDescription')}"
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingSynchronizationInProgressDescription')}"
                    MaxWidth="350"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    TextWrapping="WrapWholeWords"

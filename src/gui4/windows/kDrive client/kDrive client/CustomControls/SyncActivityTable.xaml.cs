@@ -198,19 +198,19 @@ namespace Infomaniak.kDrive.CustomControls
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("creatingShareLink"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), false);
                 return;
             }
 
             // Find parrent button to anchor teaching tip
-            DisplayTeachingTip(Localizer.Localizer.Instance.GetString("creatingShareLink"), true);
+            DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), true);
 
 
             var activity = element.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLink"), false);
                 return;
             }
 
@@ -223,12 +223,12 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("linkCopiedToClipboard"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboard"), false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip(Localizer.Localizer.Instance.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLink"), false);
             }
         }
 
@@ -266,8 +266,8 @@ namespace Infomaniak.kDrive.CustomControls
             return direction switch
             {
 
-                SyncDirection.Up => Localizer.Localizer.Instance.GetString("syncedFromThisDevice"),
-                SyncDirection.Down => Localizer.Localizer.Instance.GetString("syncedFromKDriveWeb"),
+                SyncDirection.Up => Localizer.Instance.GetString("syncedFromThisDevice"),
+                SyncDirection.Down => Localizer.Instance.GetString("syncedFromKDriveWeb"),
                 _ => ""
             };
         }

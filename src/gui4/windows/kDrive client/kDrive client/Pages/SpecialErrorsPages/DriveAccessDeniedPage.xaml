@@ -25,7 +25,7 @@
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:controls="using:Infomaniak.kDrive.CustomControls"
                            xmlns:converters="using:Infomaniak.kDrive.Converters"
-                           xmlns:loc="using:Infomaniak.kDrive.Localizer"
+                           xmlns:kDrive="using:Infomaniak.kDrive"
                            mc:Ignorable="d">
     <local:SpecialErroBasePage.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -43,15 +43,15 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('driveAccessDeniedErrorTitle')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveAccessDeniedErrorTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('driveAccessDeniedErrorDescription')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveAccessDeniedErrorDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
-                <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonRetry')}"
+                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRetry')}"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource AccentButtonStyle}"
                         Click="RetryButton_Click" />

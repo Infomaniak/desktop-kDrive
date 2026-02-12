@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
-             xmlns:loc="using:Infomaniak.kDrive.Localizer"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
@@ -43,13 +43,13 @@
                 <controls:SvgIcon Height="16"
                                   HorizontalAlignment="Left"
                                   UriString="{ThemeResource Infomaniak.Custom.Icons.logo-myksuiteplus}" />
-                <TextBlock Text="{x:Bind loc:Localizer.Instance.GetString('Plus d’espace, plus de fonctionnalités, avec my kSuite+')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('Plus d’espace, plus de fonctionnalités, avec my kSuite+')}"
                            HorizontalAlignment="Left"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
             </StackPanel>
 
             <HyperlinkButton x:Name="UpgradeHyperLinkButton"
-                             Content="{x:Bind loc:Localizer.Instance.GetString('buttonUpgradeOffer')}"
+                             Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpgradeOffer')}"
                              HorizontalAlignment="Right"
                              HorizontalContentAlignment="Right"
                              Grid.Column="1" />

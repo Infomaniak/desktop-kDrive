@@ -10,7 +10,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
-      xmlns:loc="using:Infomaniak.kDrive.Localizer"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -34,11 +34,11 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionTitle')}"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionTitle')}"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <TextBlock Grid.Row="1"
-                   Text="{x:Bind loc:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionDescription')}"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionDescription')}"
                    TextTrimming="WordEllipsis"
                    Style="{StaticResource BodyTextBlockStyle}" />
 
@@ -116,7 +116,7 @@
                             <!-- Edit button -->
                             <HyperlinkButton Grid.Column="2"
                                              Grid.RowSpan="2"
-                                             Content="{x:Bind loc:Localizer.Instance.GetString('buttonConfigure')}"
+                                             Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConfigure')}"
                                              Click="EditButton_Click" />
                         </Grid>
                     </Border>

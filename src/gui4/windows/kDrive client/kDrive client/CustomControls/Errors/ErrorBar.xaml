@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
-             xmlns:loc="using:Infomaniak.kDrive.Localizer"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -15,14 +15,14 @@
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
     <InfoBar x:Name="InfoBar_"
-             Title="{x:Bind loc:Localizer.Instance.GetStringWithPlural1i('winInformationBlockSynchroErrorTitle', ViewModel.SelectedSync.SyncErrors.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}"
-             Message="{x:Bind loc:Localizer.Instance.GetString('informationBlockSynchroErrorSubtitle')}"
+             Title="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('winInformationBlockSynchroErrorTitle', ViewModel.SelectedSync.SyncErrors.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}"
+             Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockSynchroErrorSubtitle')}"
              Severity="Informational"
              IsIconVisible="False"
              IsClosable="False"
              IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter='{StaticResource IntegerToBooleanConverter}', Mode=OneWay}">
         <InfoBar.ActionButton>
-            <Button Content="{x:Bind loc:Localizer.Instance.GetString('buttonFixErrors')}"
+            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonFixErrors')}"
                     HorizontalAlignment="Right"
                     Style="{ThemeResource AccentButtonStyle}"
                     Click="InfoBarButton_Click" />

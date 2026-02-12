@@ -12,8 +12,8 @@ namespace Infomaniak.kDrive.Converters
             {
                 return syncDirection switch
                 {
-                    SyncDirection.Up => Localizer.Localizer.Instance.GetString("labelSyncDirectionOutgoing"),
-                    SyncDirection.Down => Localizer.Localizer.Instance.GetString("labelSyncDirectionIncoming"),
+                    SyncDirection.Up => Localizer.Instance.GetString("labelSyncDirectionOutgoing"),
+                    SyncDirection.Down => Localizer.Instance.GetString("labelSyncDirectionIncoming"),
                     _ => ""
                 };
             }

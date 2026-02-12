@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive.Converters
         {
             if (value is null)
             {
-                return $"? {Localizer.Localizer.Instance.GetString("labelMegaBytes")}";
+                return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
             }
 
             long byteCount;
@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Converters
 
             if (byteCount < 0)
             {
-                return $"? {Localizer.Localizer.Instance.GetString("labelMegaBytes")}";
+                return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
             }
 
             var units = new (long Threshold, string ResourceKey)[]
@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.Converters
                 template = template.TrimEnd('.');
             }
 
-            return $"{displayValue.ToString(template)} {Localizer.Localizer.Instance.GetString(unitKey)}";
+            return $"{displayValue.ToString(template)} {Localizer.Instance.GetString(unitKey)}";
 
         }
 

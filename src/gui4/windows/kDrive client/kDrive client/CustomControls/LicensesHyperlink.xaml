@@ -7,11 +7,10 @@
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
             xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
             xmlns:converters="using:Infomaniak.kDrive.Converters"
-            xmlns:loc="using:Infomaniak.kDrive.Localizer"
             xmlns:kDrive="using:Infomaniak.kDrive"
             mc:Ignorable="d">
 
     <TextBlock x:Name="ExpandedTextBox" />
-    <HyperlinkButton Content="{x:Bind loc:Localizer.Instance.GetString('LicensesHyperLink')}"
+    <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('LicensesHyperLink')}"
                      NavigateUri="{x:Bind kDrive:App.Constants.GitHub.LicenseUrl}" />
 </StackPanel>
