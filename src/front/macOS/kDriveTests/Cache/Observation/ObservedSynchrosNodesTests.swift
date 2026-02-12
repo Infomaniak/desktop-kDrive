@@ -185,6 +185,7 @@ struct ObservedSynchrosNodesTests {
             inconsistency: .None,
             cancelType: .None,
             date: Date(),
+            size: 7_000_000,
             error: "Some error"
         )
 

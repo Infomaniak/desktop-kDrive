@@ -222,6 +222,7 @@ public enum ObservableData {
             inconsistency: .None,
             cancelType: .None,
             date: Date(timeIntervalSince1970: 0),
+            size: 7_000_000,
             error: ""
         )
     }
@@ -243,6 +244,7 @@ public enum ObservableData {
             inconsistency: .None,
             cancelType: .None,
             date: Date(timeIntervalSince1970: 1337),
+            size: 7_000_000,
             error: ""
         )
     }

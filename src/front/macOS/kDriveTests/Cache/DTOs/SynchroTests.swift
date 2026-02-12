@@ -91,8 +91,8 @@ struct SynchroTests {
                                conflict: .None,
                                inconsistency: .None,
                                cancelType: .None,
-                               size: 7_000_000,
                                date: Date(),
+                               size: 7_000_000,
                                error: "")
 
         // WHEN
@@ -125,8 +125,8 @@ struct SynchroTests {
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
-                                       size: 7_000_000),
                                        date: Date(),
+                                       size: 7_000_000,
                                        error: "")
 
         synchro.addOrUpdateSynchNode(originalNode)
@@ -142,8 +142,8 @@ struct SynchroTests {
                                       conflict: .None,
                                       inconsistency: .None,
                                       cancelType: .None,
-                                      size: 7_000_000,
                                       date: Date(),
+                                      size: 7_000_000,
                                       error: "")
 
         // WHEN
@@ -180,8 +180,8 @@ struct SynchroTests {
                                    conflict: .None,
                                    inconsistency: .None,
                                    cancelType: .None,
-                                   size: 7_000_000,
                                    date: Date(timeIntervalSince1970: TimeInterval(i)),
+                                   size: 7_000_000,
                                    error: "")
             synchro.addOrUpdateSynchNode(node)
         }
@@ -198,8 +198,8 @@ struct SynchroTests {
                                     conflict: .None,
                                     inconsistency: .None,
                                     cancelType: .None,
-                                    size: 7_000_000,
                                     date: Date(timeIntervalSince1970: 1337),
+                                    size: 7_000_000,
                                     error: "")
         synchro.addOrUpdateSynchNode(extraNode)
 
@@ -231,8 +231,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(),
+                                size: 7_000_000,
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -246,8 +246,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000
                                 date: Date(),
+                                size: 7_000_000,
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
@@ -288,6 +288,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 1),
+                                size: 1234,
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -302,6 +303,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 2),
+                                size: 1234,
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -316,6 +318,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 3),
+                                size: 1234,
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
@@ -354,6 +357,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 1),
+                                size: 1234,
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -368,6 +372,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 2),
+                                size: 1234,
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -382,6 +387,7 @@ struct SynchroTests {
                                 inconsistency: .None,
                                 cancelType: .None,
                                 date: Date(timeIntervalSince1970: 3),
+                                size: 1234,
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node3)
@@ -418,8 +424,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 1),
+                                size: 7_000_000,
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -433,8 +439,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 2),
+                                size: 7_000_000,
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -448,8 +454,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 3),
+                                size: 7_000_000,
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
@@ -468,8 +474,8 @@ struct SynchroTests {
                                        conflict: .None,
                                        inconsistency: .None,
                                        cancelType: .None,
-                                       size: 7_000_000,
                                        date: Date(timeIntervalSince1970: 4),
+                                       size: 7_000_000,
                                        error: "")
 
         synchro.addOrUpdateSynchNode(updatedNode2)
@@ -506,8 +512,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 1),
+                                size: 7_000_000,
                                 error: "")
 
         let node2 = SynchroNode(type: .File,
@@ -521,8 +527,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 2),
+                                size: 7_000_000,
                                 error: "")
 
         let node3 = SynchroNode(type: .File,
@@ -536,8 +542,8 @@ struct SynchroTests {
                                 conflict: .None,
                                 inconsistency: .None,
                                 cancelType: .None,
-                                size: 7_000_000,
                                 date: Date(timeIntervalSince1970: 3),
+                                size: 7_000_000,
                                 error: "")
 
         synchro.addOrUpdateSynchNode(node1)
