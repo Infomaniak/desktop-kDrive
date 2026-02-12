@@ -18,17 +18,22 @@
 
 import Foundation
 
-struct PublicLinkQuery: Codable, Sendable {
+struct LinkQuery: Codable, Sendable {
     let driveDbId: Int32
     @Base64CodedString var nodeId: String
 }
 
-struct PublicLinkResponse: Codable, Sendable {
+struct LinkResponse: Codable, Sendable {
     @Base64CodedURL var linkUrl: URL
 }
 
 struct SyncQuery: Codable, Sendable {
     let syncDbId: Int32
+}
+
+struct SetSupportsVirtualFilesQuery: Codable, Sendable {
+    let syncDbId: Int32
+    let value: Bool
 }
 
 struct SyncInfoList: Codable, Sendable {

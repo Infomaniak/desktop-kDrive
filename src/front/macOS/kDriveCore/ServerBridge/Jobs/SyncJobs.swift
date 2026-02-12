@@ -101,9 +101,6 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncStatusResponse>.self)
 
         return decodedMessage.body.syncStatus
-
-        // TODO: update existing sync state in cache
-        // await coherentCache.updateSynchroState(syncDbId / newSyncState)
     }
 
     public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
@@ -135,7 +132,6 @@ public struct SyncJobs: Sendable {
     private func addSyncQuery<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> SyncInfo {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
 
-        // TODO: bump cache / listen signal
         return decodedMessage.body.syncInfo
     }
 
@@ -154,16 +150,43 @@ public struct SyncJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-        // TODO: clear cache based only on syncDbId
-        // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userDbId: <#T##Int32#>)
+        await try? coherentCache.removeSynchro(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
         IKLogger.data.log("Query to syncGetPublicLinkUrl")
-        let query = PublicLinkQuery(driveDbId: driveDbId, nodeId: nodeId)
-        let request = await RequestMessage<PublicLinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
+        let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
+        let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<PublicLinkResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LinkResponse>.self)
         return decodedMessage.body.linkUrl
+    }
+
+    public func getPrivateLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
+        IKLogger.data.log("Query to syncGetPrivateLinkUrl")
+        let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
+        let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPRIVATELINKURL, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LinkResponse>.self)
+        return decodedMessage.body.linkUrl
+    }
+
+    public func triggerSyncProgressUpdate() async throws {
+        IKLogger.data.log("Query to triggerSyncProgressUpdate")
+        let query = EmptyQuery()
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
+
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
+
+    public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
+        IKLogger.data.log("Query to setSupportsVirtualFiles")
+        let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
+        let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
+            num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
+            body: query
+        )
+
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 }
