@@ -43,18 +43,26 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     private static let maxSynchNodesCount = 100
 
     public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
-        synchNodes[node.localNodeId] = node
-
-        guard synchNodes.count > Self.maxSynchNodesCount else {
+        guard node.status != .Ignored else {
             return
         }
+
+        // FIXME: Remove stopgap once server has implemented a stable identifier
+        guard node.status != .Syncing else {
+            IKLogger.data.log("[KD] Skip a Syncing activity")
+            return
+        }
+
+        let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
+        synchNodes[node.localNodeId] = nodeToStore
+        synchNodes.sort { $0.value.date > $1.value.date }
 
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
         guard itemsToRemove > 0 else {
             return
         }
 
-        synchNodes.removeFirst(itemsToRemove)
+        synchNodes.removeLast(itemsToRemove)
     }
 
     public func getSynchNode(by localNodeId: String) -> SynchroNode? {
@@ -101,8 +109,31 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let conflict: KDC.ConflictType
     public let inconsistency: KDC.InconsistencyType
     public let cancelType: KDC.CancelType
-    public let error: String
+    public let date: Date
     public let size: Int64
+    public let error: String
+}
+
+extension SynchroNode {
+    /// Returns a new SynchroNode updated with values from the provided node, preserving this node's original date.
+    func updating(with node: SynchroNode) -> SynchroNode {
+        SynchroNode(
+            type: node.type,
+            path: node.path,
+            newPath: node.newPath,
+            localNodeId: node.localNodeId,
+            remoteNodeId: node.remoteNodeId,
+            direction: node.direction,
+            instruction: node.instruction,
+            status: node.status,
+            conflict: node.conflict,
+            inconsistency: node.inconsistency,
+            cancelType: node.cancelType,
+            date: date,
+            size: node.size,
+            error: node.error,
+        )
+    }
 }
 
 public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
