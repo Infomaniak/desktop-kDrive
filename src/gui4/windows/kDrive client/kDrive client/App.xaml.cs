@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new ProductionAppConstants();
+        internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin());
         internal App()
         {
             InitializeComponent();

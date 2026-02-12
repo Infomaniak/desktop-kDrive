@@ -9,10 +9,6 @@ namespace Infomaniak.kDrive
 {
     static class OAuthHelper
     {
-        private static readonly string _clientId = "5EA39279-FF64-4BB8-A872-4A40B5786317";
-        private static readonly Uri _redirectUri = new Uri("kdrive://auth-desktop");
-        private static readonly Uri _authorizationEndpoint = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
-
         public struct OAuthResult
         {
             public string Code;
@@ -23,12 +19,12 @@ namespace Infomaniak.kDrive
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).CurrentWindow);
             var parentWindowId = Win32Interop.GetWindowIdFromWindow(hWnd);
 
-            var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(_clientId, _redirectUri);
+            var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(App.Constants.Login.OAtuhClientId, App.Constants.Login.OAtuhRedirectUri);
             authRequestParams.CodeChallengeMethod = CodeChallengeMethodKind.S256;
             try
             {
                 var authRequestResult = await OAuth2Manager
-                    .RequestAuthWithParamsAsync(parentWindowId, _authorizationEndpoint, authRequestParams)
+                    .RequestAuthWithParamsAsync(parentWindowId, App.Constants.Login.OAtuhAuthorizationEndpoint, authRequestParams)
                     .AsTask(cancellationToken);
 
                 if (authRequestResult.Response is AuthResponse authResponse)

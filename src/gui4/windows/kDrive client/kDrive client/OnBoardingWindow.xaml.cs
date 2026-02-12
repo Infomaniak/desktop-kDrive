@@ -50,6 +50,7 @@ namespace Infomaniak.kDrive.OnBoarding
         private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
             LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
+            _onBoardingViewModel.Dispose();
         }
 
         private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)
@@ -57,11 +58,6 @@ namespace Infomaniak.kDrive.OnBoarding
             UpdateLottieSource(_lottieRessourceKey);
 
             Closed += OnBoardingWindow_Closed;
-        }
-
-        private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
-        {
-            _onBoardingViewModel.Dispose();
         }
 
         public void UpdateLottieSource(string ressourceKey, int? height = null)
