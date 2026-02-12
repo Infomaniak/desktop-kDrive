@@ -160,7 +160,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
-#end
+#endif
     }
 
     // A non-existing file with a very long path

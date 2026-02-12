@@ -51,13 +51,15 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
 
     std::error_code ec;
     (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
-    ioError = stdError2ioError(ec);
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::Success;
-        return true;
+    if (ec) {
+        ioError = stdError2ioError(ec);
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            ioError = IoError::Success;
+        }
+    } else {
+        exists = true;
     }
 
-    exists = (ioError != IoError::FileNameTooLong);
     return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
