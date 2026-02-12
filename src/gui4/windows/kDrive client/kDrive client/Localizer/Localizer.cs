@@ -1,15 +1,50 @@
-﻿using System;
-using Windows.ApplicationModel.Resources;
+﻿using Microsoft.Windows.Globalization;
+using System;
+using System.Globalization;
+using System.Linq;
+using Windows.ApplicationModel.Resources.Core;
 
 namespace Infomaniak.kDrive
 {
     internal class Localizer : UISafeObservableObject
     {
-        private static readonly ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
         public static Localizer Instance { get; } = new Localizer();
+        private static ResourceContext context = ResourceContext.GetForViewIndependentUse();
+
+        public void SetCulture(Types.Language language)
+        {
+            CultureInfo.CurrentCulture.ClearCachedData();
+            string cultureName = language switch
+            {
+                Types.Language.SystemDefault => CultureInfo.CurrentCulture.TwoLetterISOLanguageName,
+                _ => language.ToString().ToLower()
+            };
+
+            var supportedLanguages = new[] { "fr", "it", "de", "es", "en" };
+            if (!supportedLanguages.Contains(cultureName))
+            {
+                Logger.Log(Logger.Level.Warning, $"Unsupported language {cultureName}, falling back to english.");
+                cultureName = "en";
+            }
+
+            try
+            {
+                ApplicationLanguages.PrimaryLanguageOverride = cultureName;
+                context.QualifierValues["language"] = cultureName;
+                Logger.Log(Logger.Level.Info, $"Culture set to {cultureName}");
+                TriggerRefresh();
+            }
+            catch (Exception e)
+            {
+                Logger.Log(Logger.Level.Error,
+                    $"Failed to set culture to {cultureName}. Error: {e.Message}");
+            }
+        }
+
 
         public void TriggerRefresh()
         {
+            OnPropertyChanged(nameof(GetString));
             OnPropertyChanged(nameof(GetString1s));
             OnPropertyChanged(nameof(GetStringWithPlural1i));
             OnPropertyChanged(nameof(GetStringWithPlural));
@@ -49,8 +84,22 @@ namespace Infomaniak.kDrive
         public string GetString(string key, params object?[]? args)
         {
             key = key.Replace(".", "/");
+            string localizedString = "";
 
-            string? localizedString = resourceLoader.GetString(key);
+            var ressources = ResourceManager.Current.MainResourceMap.GetSubtree("Resources");
+            NamedResource namedResource;
+            if (ressources.TryGetValue(key, out namedResource))
+            {
+                var resourceCandidate = namedResource.Resolve(context);
+                if (resourceCandidate is not null)
+                    localizedString = resourceCandidate.ValueAsString;
+            }
+
+            if (localizedString.Length == 0)
+            {
+                Logger.Log(Logger.Level.Error, $"Missing resource for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                return $"!{key}!"; // Return the key wrapped in exclamation marks to indicate a missing localization
+            }
 
             if (localizedString is null || localizedString.Length == 0)
             {

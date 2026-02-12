@@ -442,6 +442,47 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             control.IsEnabled = true;
         }
+
+        private async void LanguageComboBox_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
+            }
+
+            if (!control.IsEnabled)
+            {
+                Logger.Log(Logger.Level.Error, "control is disabled");
+                return;
+            }
+
+            control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (!Enum.TryParse<Language>(selectedItem.Tag as string, out Language selectedLanguage))
+            {
+                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                control.IsEnabled = true;
+                return;
+            }
+
+            await ViewModel.Settings.ChangeLanguage(selectedLanguage);
+            Frame.BackStack.Clear(); // Prevent user from going back to a page with the old language
+            Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
+            control.IsEnabled = true;
+        }
     }
 
     // templateSelector for the drives listview

@@ -191,7 +191,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeLogLevel(Logger.Level newLevel)
         {
-            if(LogLevel == newLevel)
+            if (LogLevel == newLevel)
                 return true;
 
             var previousLogLevel = LogLevel;
@@ -206,7 +206,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangePurgeOldLog(bool enabled)
         {
-            if(PurgeOldLogs == enabled)
+            if (PurgeOldLogs == enabled)
                 return true;
 
             PurgeOldLogs = enabled;
@@ -215,6 +215,22 @@ namespace Infomaniak.kDrive.ViewModels
                 PurgeOldLogs = !enabled;
                 return false;
             }
+            return true;
+        }
+
+        public async Task<bool> ChangeLanguage(Language newLanguage)
+        {
+            if (Language == newLanguage)
+                return true;
+
+            var previousLanguage = Language;
+            Language = newLanguage;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                Language = previousLanguage;
+                return false;
+            }
+            Localizer.Instance.SetCulture(newLanguage);
             return true;
         }
     }

@@ -60,16 +60,21 @@
                     <controls:UpdateExpander />
                     <!-- General - Language -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('languageSetting'), Mode=OneWay}"
-                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
-                                          IsEnabled="False">
+                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0">
-                            <ComboBoxItem Content="System" />
-                            <!-- TODO: Add language options here (Not needed for beta release)-->
+                        <ComboBox SelectedValuePath="Tag"
+                                  SelectedValue="{x:Bind ViewModel.Settings.Language, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
+                                  SelectionChanged="LanguageComboBox_Changed">
+                            <ComboBoxItem Content="System"
+                                          Tag="SystemDefault" />
+                            <ComboBoxItem Content="Francais"
+                                          Tag="FR" />
+                            <ComboBoxItem Content="Anglais"
+                                          Tag="EN" />
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - Auto start -->

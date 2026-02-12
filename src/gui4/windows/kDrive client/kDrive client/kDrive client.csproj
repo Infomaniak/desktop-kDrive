@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.2.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -257,6 +257,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings\de-DE\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\en-US\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\es-ES\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\it-IT\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />

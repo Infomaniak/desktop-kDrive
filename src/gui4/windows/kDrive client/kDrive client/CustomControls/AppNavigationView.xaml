@@ -39,7 +39,7 @@
     </NavigationView.PaneCustomContent>
 
     <NavigationView.MenuItems>
-        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleHome')}"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleHome'), Mode=OneWay}"
                             Tag="HomePage"
                             MinHeight="30"
                             IsSelected="True"
@@ -48,7 +48,7 @@
                 <SymbolIcon Symbol="Home" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities')}"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities'), Mode=OneWay}"
                             Tag="ActivityPage"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
@@ -56,7 +56,7 @@
                 <SymbolIcon Symbol="Sync" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage')}"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"
                             Tag="StoragePage"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
@@ -67,7 +67,7 @@
     </NavigationView.MenuItems>
 
     <NavigationView.PaneFooter>
-        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenExplorer')}"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenExplorer'), Mode=OneWay}"
                             Tapped="NavigationViewItem_Tapped"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
