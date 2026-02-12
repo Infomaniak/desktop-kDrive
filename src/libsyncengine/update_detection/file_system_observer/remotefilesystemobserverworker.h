@@ -43,7 +43,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo generateInitialSnapshot() override;
 
     private:
-        ExitInfo processEvents() override;
+        ExitInfo processEvents(const NodeId &remoteDirId = {}) override;
         [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
         ExitInfo initWithCursor();

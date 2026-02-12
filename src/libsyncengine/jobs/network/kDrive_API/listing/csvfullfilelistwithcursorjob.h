@@ -25,7 +25,7 @@ namespace KDC {
 
 class CsvFullFileListWithCursorJob final : public AbstractListingJob {
     public:
-        CsvFullFileListWithCursorJob(int driveDbId, NodeId dirId, const NodeSet &blacklist = {}, bool zip = true);
+        CsvFullFileListWithCursorJob(int driveDbId, NodeId remoteDirId, const NodeSet &blacklist = {}, bool zip = true);
 
         /**
          * @brief getItem
@@ -46,7 +46,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
         ExitInfo handleResponse(std::istream &is) override;
 
-        NodeId _dirId;
+        NodeId _remoteDirId;
         bool _zip = true;
 
         std::stringstream _ss;

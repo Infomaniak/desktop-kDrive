@@ -133,10 +133,8 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::processEvents() {
-    if (stopAsked()) {
-        return ExitCode::Ok;
-    }
+ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId) {
+    if (stopAsked()) return ExitCode::Ok;
 
     // Get last listing cursor used
     int64_t timestamp = 0;
@@ -177,7 +175,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
         }
 
         try {
-            job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor, _blackList);
+            job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, _cursor, _blackList);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());

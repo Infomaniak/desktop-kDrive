@@ -26,10 +26,10 @@ namespace KDC {
 
 static const uint32_t apiTimout = 900;
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, NodeId dirId, const NodeSet &blacklist /*= {}*/,
-                                                           const bool zip /*= true*/) :
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, NodeId remoteDirId,
+                                                           const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist),
-    _dirId(std::move(dirId)),
+    _remoteDirId(std::move(remoteDirId)),
     _zip(zip),
     _snapshotItemHandler(driveDbId, _logger) {
     _customTimeout = apiTimout + 15;
@@ -53,7 +53,7 @@ std::string CsvFullFileListWithCursorJob::getCursor() {
 std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
-    str += _dirId;
+    str += _remoteDirId;
     str += "/listing/full";
 
     return str;
@@ -68,7 +68,6 @@ std::string CsvFullFileListWithCursorJob::acceptHeader() {
 }
 
 void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     uri.addQueryParameter("with", "files.is_link");
