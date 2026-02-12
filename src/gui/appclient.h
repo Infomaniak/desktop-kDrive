@@ -82,6 +82,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
+        // Login
+        void authorizationCodeReceived(const QString &code, const QString &state);
         // Utility
         void showNotification(const QString &title, const QString &message);
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);

@@ -156,6 +156,9 @@ AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
+    installEventFilter(&_eventFilter);
+    (void) connect(&_eventFilter, &AuthorizationCodeEventFilter::authorizationCodeReceived, this,
+                   &AppServer::onAuthorizationCodeReceived);
 }
 
 AppServer::~AppServer() {
@@ -2576,6 +2579,16 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
 void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
+}
+
+void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
+    int id = 0;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << code;
+    paramsStream << state;
+    (void) OldCommServer::instance()->sendSignal(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, params, id);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) const {

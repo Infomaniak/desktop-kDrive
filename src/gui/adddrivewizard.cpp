@@ -91,6 +91,8 @@ void AddDriveWizard::initUI() {
     _stepStackedWidget->insertWidget(Confirmation, _addDriveConfirmationWidget);
 
     connect(_addDriveLoginWidget, &AddDriveLoginWidget::terminated, this, &AddDriveWizard::onStepTerminated);
+    connect(_gui.get(), &ClientGui::authorizationCodeReceived, _addDriveLoginWidget,
+            &AddDriveLoginWidget::onAuthorizationCodeReceived);
     connect(_addDriveListWidget, &AddDriveListWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveLiteSyncWidget, &AddDriveLiteSyncWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveServerFoldersWidget, &AddDriveServerFoldersWidget::terminated, this, &AddDriveWizard::onStepTerminated);
@@ -114,6 +116,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     if (_currentStep == Login && backward) {
         if (!_addDriveListWidget->isAddUserClicked()) {
             exit();
+            return;
         } else {
             _addDriveListWidget->setAddUserClicked(false);
         }

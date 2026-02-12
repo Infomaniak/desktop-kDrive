@@ -83,6 +83,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
     connect(_app, &AppClient::updateStateChanged, this, &ClientGui::updateStateChanged);
     connect(_app, &AppClient::showWindowsUpdateDialog, this, &ClientGui::onShowWindowsUpdateDialog, Qt::QueuedConnection);
+    connect(_app, &AppClient::authorizationCodeReceived, this, &ClientGui::authorizationCodeReceived);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
@@ -791,7 +792,6 @@ void ClientGui::onNewDriveWizard() {
 
     raiseDialog(_addDriveWizard.get());
 }
-
 
 void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
     static std::mutex mutex;

@@ -19,6 +19,10 @@
 #pragma once
 
 #include "qtsingleapplication.h"
+
+#include <QFileOpenEvent>
+#include <QUrl>
+#include <QUrlQuery>
 #if defined(KD_WINDOWS)
 #include "navigationpanehelper.h"
 #endif
@@ -52,6 +56,30 @@ class Theme;
  * @ingroup gui
  */
 
+class AuthorizationCodeEventFilter : public QObject {
+        Q_OBJECT
+
+    signals:
+        void authorizationCodeReceived(const QString &code, const QString &state);
+
+    private:
+        bool eventFilter(QObject *obj, QEvent *event) override {
+            if (event->type() == QEvent::FileOpen) {
+                const QFileOpenEvent *openEvent = static_cast<const QFileOpenEvent *>(event);
+                const QUrl url = openEvent->url();
+
+                if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
+                    const QUrlQuery query(url);
+                    const QString code = query.queryItemValue("code");
+                    const QString state = query.queryItemValue("state");
+
+                    emit authorizationCodeReceived(code, state);
+                    return true;
+                }
+            }
+            return QObject::eventFilter(obj, event);
+        }
+};
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
@@ -193,6 +221,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
     private:
+        AuthorizationCodeEventFilter _eventFilter;
+
         QStringList _arguments;
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
@@ -325,5 +355,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
+        void onAuthorizationCodeReceived(const QString &code, const QString &state);
 };
 } // namespace KDC

@@ -22,6 +22,7 @@
 #include "config.h"
 #include "guirequests.h"
 #include "custommessagebox.h"
+#include "custompushbutton.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -29,7 +30,7 @@
 
 #include <QBoxLayout>
 #include <QLabel>
-#include <QLoggingCategory>
+#include <QProcessEnvironment>
 #include <QProcessEnvironment>
 #include <QUrlQuery>
 
@@ -41,6 +42,7 @@ const QString redirectUriKey = "redirect_uri";
 const QString codeChallengeMethodKey = "code_challenge_method";
 const QString codeChallengeKey = "code_challenge";
 const QString stateKey = "state";
+const QString skipAutoRedirectKey = "skipAutoRedirect";
 
 const QString hashMode = "S256"; // SHA-256
 const QString responseType = "code";
@@ -56,35 +58,33 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     auto *const mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
-    refreshPage();
-}
 
-void AddDriveLoginWidget::init(const QString &serverUrl) {
-    QString loginUrl(serverUrl);
-    if (!loginUrl.endsWith(dirSeparator)) {
-        loginUrl += dirSeparator;
-    }
-
-    _webView->setUrl(QUrl(loginUrl));
+    auto *connectButton = new CustomPushButton(tr("Connect"), this);
+    mainLayout->addWidget(connectButton);
+    (void) connect(connectButton, &CustomPushButton::clicked, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
 }
 
 void AddDriveLoginWidget::init() {
-    refreshPage();
-    _webView->setUrl(generateUrl());
+    onOpenLoginInBrowser();
 }
 
-void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const QString state) {
+void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const QString &state) {
     Q_UNUSED(state)
+
+    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+    show();
+    raise(); // for MacOS
+    activateWindow(); // for Windows
 
     QString error;
     QString errorDescr;
-    ExitCode exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
+    const auto exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
                                 QMessageBox::Ok);
-        msgBox.exec();
+        (void) msgBox.exec();
 
         emit terminated(false);
     } else {
@@ -97,12 +97,16 @@ void AddDriveLoginWidget::onErrorReceived(const QString error, const QString err
                                      << errorDescr.toStdString().c_str();
 
     CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok);
-    msgBox.exec();
+    (void) msgBox.exec();
 
     emit terminated(false);
 }
 
-QUrl AddDriveLoginWidget::generateUrl() {
+void AddDriveLoginWidget::onOpenLoginInBrowser() {
+    (void) QDesktopServices::openUrl(generateAuthorizeUrl());
+}
+
+QUrl AddDriveLoginWidget::generateAuthorizeUrl() {
     QUrl url(UrlHelper::loginApiUrl().c_str());
     url.setPath(authorizePath);
 
@@ -113,33 +117,25 @@ QUrl AddDriveLoginWidget::generateUrl() {
     query.addQueryItem(responseTypeKey, responseType);
     query.addQueryItem(clientIdKey, CLIENT_ID);
     query.addQueryItem(redirectUriKey, REDIRECT_URI);
-    query.addQueryItem(codeChallengeMethodKey,
-                       hashMode); // TODO : server return an error : invalid_request - invalid+challenge_code+format
+    query.addQueryItem(codeChallengeMethodKey, hashMode);
     query.addQueryItem(codeChallengeKey, codeChallenge);
     query.addQueryItem(stateKey, CommonUtility::generateRandomStringAlphaNum(stateStringLength).c_str());
+    query.addQueryItem(skipAutoRedirectKey, "true");
 
     url.setQuery(query);
 
     return url;
 }
 
-const QString AddDriveLoginWidget::generateCodeVerifier() {
-    std::string str = CommonUtility::generateRandomStringPKCE(32);
+QString AddDriveLoginWidget::generateCodeVerifier() const {
+    const std::string str = CommonUtility::generateRandomStringPKCE(32);
     return QByteArray::fromStdString(str).toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 }
 
-const QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVerifier) {
+QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVerifier) const {
     QCryptographicHash hash(QCryptographicHash::Sha256);
     hash.addData(codeVerifier.toUtf8());
     return hash.result().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
-}
-
-void AddDriveLoginWidget::refreshPage() {
-    delete _webView;
-    _webView = new WebView(this);
-    layout()->addWidget(_webView);
-    connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
-    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
 }
 
 } // namespace KDC

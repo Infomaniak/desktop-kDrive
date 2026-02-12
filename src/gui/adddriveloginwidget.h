@@ -23,9 +23,44 @@
 
 #include <QRadioButton>
 #include <QString>
+#include <QUrlQuery>
 #include <QWidget>
 
 namespace KDC {
+
+class OAuthUrlHandler : public QObject {
+        Q_OBJECT
+
+    public:
+        explicit OAuthUrlHandler(QObject *parent = nullptr) :
+            QObject(parent) {}
+
+        // À connecter au signal de QOAuth2AuthorizationCodeFlow
+        void handleUrl(const QUrl &url);
+
+    signals:
+        void authorizationCodeReceived(const QString &code, const QString &state);
+
+    protected:
+        bool eventFilter(QObject *obj, QEvent *event) {
+            if (event->type() == QEvent::FileOpen) {
+                QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
+                QUrl url = openEvent->url();
+
+                if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
+                    // Extraire code et state des query parameters
+                    QUrlQuery query(url);
+                    QString code = query.queryItemValue("code");
+                    QString state = query.queryItemValue("state");
+
+                    emit authorizationCodeReceived(code, state);
+                    return true; // Événement consommé
+                }
+            }
+            return QObject::eventFilter(obj, event);
+        }
+};
+
 
 class AddDriveLoginWidget : public QWidget {
         Q_OBJECT
@@ -33,10 +68,12 @@ class AddDriveLoginWidget : public QWidget {
     public:
         explicit AddDriveLoginWidget(QWidget *parent = nullptr);
 
-        void init(const QString &serverUrl);
         void init();
 
         inline int userDbId() const { return _userDbId; }
+
+    public slots:
+        void onAuthorizationCodeReceived(const QString &code, const QString &state);
 
     signals:
         void terminated(bool next = true);
@@ -44,19 +81,16 @@ class AddDriveLoginWidget : public QWidget {
     private:
         QString _codeVerifier;
         int _userDbId{0};
+        OAuthUrlHandler _urlHandler;
 
-        WebView *_webView{nullptr};
+        QUrl generateAuthorizeUrl();
 
-        void refreshPage();
-
-        QUrl generateUrl();
-
-        const QString generateCodeVerifier();
-        const QString generateCodeChallenge(const QString &codeVerifier);
+        QString generateCodeVerifier() const;
+        QString generateCodeChallenge(const QString &codeVerifier) const;
 
     private slots:
-        void onAuthorizationCodeReceived(const QString code, const QString state);
         void onErrorReceived(const QString error, const QString errorDescr);
+        void onOpenLoginInBrowser();
 };
 
 } // namespace KDC
