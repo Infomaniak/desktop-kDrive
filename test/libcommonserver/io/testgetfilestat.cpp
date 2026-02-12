@@ -533,11 +533,19 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_GREATER(int64_t{0}, fileStat.size);
         CPPUNIT_ASSERT_GREATER(SyncTime{0}, fileStat.creationTime);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+#endif
     }
 
     // A regular file within a subdirectory that misses owner search/exec permission:

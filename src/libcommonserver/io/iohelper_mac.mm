@@ -312,33 +312,19 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
     exists = false;
     ioError = IoError::Success;
 
-    // Case-sensitive and encoding-accurate checking
-    assert(!path.empty());
-    auto *_Nonnull parentPathStr = (NSString *_Nonnull) [NSString stringWithCString:path.parent_path().c_str()
-                                                                           encoding:NSUTF8StringEncoding];
-    auto *_Nonnull parentPathURL = [NSURL fileURLWithPath:parentPathStr];
-    NSError *error = nil;
-    auto *parentFileWrapper = [[NSFileWrapper alloc] initWithURL:parentPathURL
-                                                         options:NSFileWrapperReadingWithoutMapping
-                                                           error:&error];
-    if (parentFileWrapper) {
-        NSDictionary<NSString *, NSFileWrapper *> *fileWrappers = nil;
-        @try {
-            fileWrappers = [parentFileWrapper fileWrappers];
-        } @catch (NSException *e) {
-            // The file wrapper object is not a directory file wrapper (=> exists == false)
-            return true;
+    auto filename = path.filename();
+    std::error_code ec;
+    for (auto const &dir_entry: std::filesystem::directory_iterator{path.parent_path(), ec}) {
+        if (dir_entry.path().filename() == filename) {
+            exists = true;
+            break;
         }
-
-        if (fileWrappers) {
-            auto *_Nonnull fileNameStr = (NSString *_Nonnull) [NSString stringWithCString:path.filename().c_str()
-                                                                                 encoding:NSUTF8StringEncoding];
-            exists = [fileWrappers objectForKey:fileNameStr] != nil;
-        } else {
-            ioError = IoError::AccessDenied;
+    }
+    if (ec) {
+        ioError = stdError2ioError(ec);
+        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::FileNameTooLong) {
+            ioError = IoError::Success;
         }
-    } else {
-        exists = (error.code == NSFileReadNoPermissionError) || (error.code == NSFileReadTooLargeError);
     }
 
     return true;

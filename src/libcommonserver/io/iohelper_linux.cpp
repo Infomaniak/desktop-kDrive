@@ -66,8 +66,17 @@ bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    struct statx sb;
+    // Case-sensitive and encoding-accurate existence checking
+    bool exists = false;
+    if (!_checkIfPathExistsFn(path, exists, ioError)) {
+        return false;
+    }
+    if (!exists) {
+        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
+        return true;
+    }
 
+    struct statx sb;
     if (statx(AT_FDCWD, path.string().c_str(), AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
