@@ -185,4 +185,67 @@ public enum ObservableData {
                                           targetNodeId: secondaryTargetNodeId,
                                           supportVfs: secondarySupportVFS,
                                           virtualFileMode: secondaryVirtualFileMode)
+
+    static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.Server,
+                                               functionName: "main.swift",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.DbError,
+                                               exitCause: KDC.ExitCause.DbEntryNotFound,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let expectedNodeLocalId = "node-123"
+    static let expectedNodePath = "/Documents/test.txt"
+
+    static var firstSynchroNode: SynchroNode {
+        SynchroNode(
+            type: .File,
+            path: expectedNodePath,
+            newPath: "",
+            localNodeId: expectedNodeLocalId,
+            remoteNodeId: "remote-123",
+            direction: .Down,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 0),
+            size: 7_000_000,
+            error: ""
+        )
+    }
+
+    static let secondaryNodeLocalId = "node-456"
+    static let secondaryNodePath = "/Documents/folder/other.txt"
+
+    static var secondSynchroNode: SynchroNode {
+        SynchroNode(
+            type: .File,
+            path: secondaryNodePath,
+            newPath: "",
+            localNodeId: secondaryNodeLocalId,
+            remoteNodeId: "remote-456",
+            direction: .Up,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 1337),
+            size: 7_000_000,
+            error: ""
+        )
+    }
 }

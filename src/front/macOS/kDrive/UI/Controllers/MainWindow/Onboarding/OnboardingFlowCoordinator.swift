@@ -20,8 +20,9 @@ import Combine
 import Foundation
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
-enum OnboardingStep: Sendable {
+enum OnboardingStep: Sendable, Equatable {
     case login
     case drivesSelection
     case permissions(MacOSPermission)
@@ -31,13 +32,13 @@ enum OnboardingStep: Sendable {
 
 @MainActor
 final class OnboardingFlowCoordinator: ObservableObject {
+    @Published var currentUser: UIUser?
     @Published private(set) var currentStep: OnboardingStep
-
-    @Published var targetUser: UIUser?
 
     var synchronizations = [NewSyncCandidate]()
 
-    init(initialStep: OnboardingStep?) {
+    init(user: UIUser?, initialStep: OnboardingStep?) {
+        currentUser = user
         currentStep = initialStep ?? .login
     }
 
@@ -88,7 +89,7 @@ final class OnboardingFlowCoordinator: ObservableObject {
                 return
             }
 
-            targetUser = UIUser(user: user)
+            currentUser = UIUser(user: user)
             await navigateToNextStep()
         }
     }

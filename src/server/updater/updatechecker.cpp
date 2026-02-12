@@ -23,7 +23,7 @@
 #include "jobs/network/abstractnetworkjob.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 #include "utility/utility.h"
 
 namespace KDC {

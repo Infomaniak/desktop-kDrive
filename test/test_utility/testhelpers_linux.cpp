@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,11 +77,11 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
         const auto p = dirIt->path();
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
         // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
-        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
-        if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
+        const auto suffixFreeDirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreeDirectorEntryPath) itemsToErase.push_back(dirIt->path());
     }
 
-    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase, ec);
+    for (const auto &pathToErase: itemsToErase) (void) IoHelper::deleteItem(pathToErase);
 }
 
 bool isInTrash(const SyncPath &relativePath) {

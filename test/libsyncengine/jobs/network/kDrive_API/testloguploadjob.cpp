@@ -15,14 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libparms/db/parmsdb.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
+
 #include "mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
 #include "testloguploadjob.h"
+
+#include "libparms/db/parmsdb.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <iostream>
 #include <zip.h>
@@ -292,7 +295,7 @@ void TestLogUploadJob::deleteFakeFiles() {
         const std::string entryName = entryPath.filename().string();
         if (entryName.find("_kDrive_fake") != std::string::npos || entryPath.extension() == ".zip" ||
             entryName.find("tmpLog") != std::string::npos) {
-            std::filesystem::remove_all(entryPath);
+            (void) IoHelper::deleteItem(entryPath);
         }
     }
 }

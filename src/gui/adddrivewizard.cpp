@@ -32,7 +32,6 @@
 
 namespace KDC {
 
-static const QSize windowSize(625, 800);
 static const int boxHMargin = 40;
 static const int boxVTMargin = 20;
 static const int boxVBMargin = 40;
@@ -62,8 +61,7 @@ void AddDriveWizard::setButtonIcon(const QColor &value) {
 }
 
 void AddDriveWizard::initUI() {
-    setMinimumSize(windowSize);
-    setMaximumSize(windowSize);
+    setResizable(true);
 
     QVBoxLayout *mainLayout = this->mainLayout();
     mainLayout->setContentsMargins(boxHMargin, boxVTMargin, boxHMargin, boxVBMargin);

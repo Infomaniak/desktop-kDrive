@@ -17,8 +17,8 @@
  */
 #pragma once
 #include <string>
-#include "libcommon/utility/types.h"
-#include "libcommon/log/sentry/ptraces.h"
+#include "utility/types.h"
+#include "log/sentry/ptraces.h"
 
 namespace KDC::sentry {
 static inline std::unique_ptr<AbstractPTrace> syncStepToPTrace(SyncStep step, int syncDbId) {

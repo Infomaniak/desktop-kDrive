@@ -18,7 +18,6 @@
 
 import Cocoa
 import Combine
-import kDriveCore
 import kDriveResources
 
 final class SynchronizationViewController: OnboardingStepViewController {
@@ -49,14 +48,6 @@ final class SynchronizationViewController: OnboardingStepViewController {
         descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressDescription
 
         primaryButton.isHidden = true
-        secondaryButton.isHidden = true
-    }
-
-    private func updateUIForAppReady() {
-        titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyTitle
-        descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyDescription
-
-        primaryButton.isHidden = false
         secondaryButton.isHidden = true
     }
 }

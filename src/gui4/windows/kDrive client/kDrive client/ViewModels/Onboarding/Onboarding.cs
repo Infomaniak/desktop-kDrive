@@ -130,20 +130,17 @@ namespace Infomaniak.kDrive.ViewModels
                     Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
                     CurrentOAuth2State = OAuth2State.ProcessingResponse;
                     User? user = await _serverCommService.AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, cancelationToken);
-                    if(user is null || user.DbId == 0)
+                    if (user is not null)
                     {
-                        CurrentOAuth2State = OAuth2State.Error;
-                        Logger.Log(Logger.Level.Warning, "Authentication process failed: unable to add or relog user.");
+                        SelectedUser = user;
+                        CurrentOAuth2State = OAuth2State.Success;
+                        Logger.Log(Logger.Level.Info, $"User {user.Name} successfully connected.");
                         return;
                     }
-                    SelectedUser = user;
-                    CurrentOAuth2State = OAuth2State.Success;
                 }
-                else
-                {
-                    CurrentOAuth2State = OAuth2State.Error;
-                    Logger.Log(Logger.Level.Warning, "Authentication process failed");
-                }
+
+                CurrentOAuth2State = OAuth2State.Error;
+                Logger.Log(Logger.Level.Warning, "Authentication process failed");
             }
             catch (OperationCanceledException)
             {
@@ -171,15 +168,25 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             Logger.Log(Logger.Level.Info, $"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
-            var commService = _serverCommService;
+            int successCount = 0;
             foreach (NewSync sync in NewSyncs)
             {
-                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync?.Drive?.Name ?? "unknown"}");
-                await _serverCommService.AddSync(sync!, CancellationToken.None);
-            }
+                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive?.Name ?? "unknown"}");
+                bool result = await _serverCommService.AddSync(sync, CancellationToken.None);
+                if (!result)
+                    Logger.Log(Logger.Level.Warning, $"Failed to set up sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}");
 
-            Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
-            return true;
+                successCount += result ? 1 : 0;
+            }
+            Logger.Log(Logger.Level.Info, $"Onboarding sync setup completed: {successCount}/{NewSyncs.Count} syncs successfully set up.");
+            return successCount == NewSyncs.Count;
+        }
+
+        public void Reset()
+        {
+            SelectedUser = null;
+            NewSyncs.Clear();
+            CurrentOAuth2State = OAuth2State.None;
         }
     }
 }

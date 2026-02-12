@@ -8,7 +8,10 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
-             mc:Ignorable="d">
+             xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+             xmlns:types="using:Infomaniak.kDrive.Types"
+             mc:Ignorable="d"
+             Unloaded="SyncActivityTable_Unloaded">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
@@ -17,6 +20,13 @@
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
+
+        <!-- Activity columns width -->
+        <GridLength x:Key="NameGridLength">204*</GridLength>
+        <GridLength x:Key="LocationGridLength">204</GridLength>
+        <GridLength x:Key="SizeGridLength">92</GridLength>
+        <GridLength x:Key="StateGridLength">80</GridLength>
+
     </UserControl.Resources>
     <Grid>
         <!--  Empty list  -->
@@ -57,14 +67,22 @@
         <!--  Non empty list  -->
         <ListView x:Name="ActivityList"
                   SelectionMode="None"
-                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                  Background="{ThemeResource LayerFillColorDefault}"
+                  BorderBrush="{ThemeResource SubtleFillColorSecondary}"
+                  BorderThickness="1"
+                  CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
             <ListView.Header>
-                <Grid Height="40">
+                <Grid Height="40"
+                      Background="{ThemeResource LayerFillColorAltBrush}"
+                      BorderThickness="0,0,0,1"
+                      BorderBrush="{ThemeResource SubtleFillColorSecondary}"
+                      CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Top.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="204*" />
-                        <ColumnDefinition Width="204*" />
-                        <ColumnDefinition Width="92*" />
-                        <ColumnDefinition Width="72*" />
+                        <ColumnDefinition Width="{StaticResource NameGridLength}" />
+                        <ColumnDefinition Width="{StaticResource LocationGridLength}" />
+                        <ColumnDefinition Width="{StaticResource SizeGridLength}" />
+                        <ColumnDefinition Width="{StaticResource StateGridLength}" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_Name"
                                Grid.Column="0"
@@ -105,9 +123,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:SyncFileItem">
-                    <Grid MinHeight="34"
-                          Background="{ThemeResource LayerFillColorAlt}"
-                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}">
+                    <Grid MinHeight="34">
                         <Grid.Resources>
                             <DataTemplate x:Key="FileSizeTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
@@ -140,71 +156,193 @@
                                                                 FileTemplate="{StaticResource FileIconTemplate}" />
 
                             <DataTemplate x:Key="SynchronizationErrorTemplate"
-                                          x:DataType="viewmodels:SyncFileItem">
+                                          x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon Height="16"
                                                   PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.warning}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ItemErrorToolTip"
+                                                 x:Uid="CC_SyncActivityTable_ItemErrorStatus_Tooltip" />
+                                    </ToolTipService.ToolTip>
+                                </controls:SvgIcon>
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizedTemplate"
-                                          x:DataType="viewmodels:SyncFileItem">
+                                          x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon Height="16"
-                                                  PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.success}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ItemErrorToolTip"
+                                                 x:Uid="CC_SyncActivityTable_ItemSyncedStatus_Tooltip" />
+                                    </ToolTipService.ToolTip>
+                                </controls:SvgIcon>
+
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizingTemplate"
-                                          x:DataType="viewmodels:SyncFileItem">
-                                <controls:SvgIcon Height="16"
-                                                  PointerPressed="ItemErrorIcon_PointerPressed"
-                                                  Foreground="{StaticResource Infomaniak.Style.Color.Product.Default}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}" />
+                                          x:DataType="types:SyncFileStatus">
+                                <ProgressRing Height="16"
+                                              Width="16"
+                                              IsIndeterminate="False"
+                                              local:AncestorSource.AncestorType="ContentControl"
+                                              Value="{Binding DataContext.ProgressPercent, Mode=OneWay}"
+                                              Loaded="SynchronizingProgressRing_Loaded"
+                                              Unloaded="SynchronizingProgressRing_Unloaded" />
+                            </DataTemplate>
+
+                            <DataTemplate x:Key="SynchronizedFlyoutTemplate"
+                                          x:DataType="types:SyncFileStatus">
+                                <Button Grid.Column="2"
+                                        Padding="0"
+                                        BorderThickness="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent">
+                                    <Button.Content>
+                                        <controls:SvgIcon Width="14"
+                                                          Height="14"
+                                                          UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                          HorizontalAlignment="Right" />
+                                    </Button.Content>
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="RightEdgeAlignedTop">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_OpenExplorer"
+                                                            Click="OpenInExplorer_Click">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_OpenOnline"
+                                                            Click="OpenOnline_Click">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_CopyLink"
+                                                            Click="CopyPublicLink_Click">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </DataTemplate>
+
+                            <DataTemplate x:Key="SynchronizationErrorFlyoutTemplate"
+                                          x:DataType="types:SyncFileStatus">
+                                <Button Grid.Column="2"
+                                        Padding="0"
+                                        BorderThickness="0"
+                                        Height="32"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent">
+                                    <Button.Content>
+                                        <controls:SvgIcon Width="14"
+                                                          Height="14"
+                                                          UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                          HorizontalAlignment="Right" />
+                                    </Button.Content>
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="RightEdgeAlignedTop">
+                                            <MenuFlyoutItem x:Uid="CC_SyncActivityTable_ItemMenu_FixErrors"
+                                                            Click="NavigateToErrorPageButton_Click">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </DataTemplate>
+
+                            <DataTemplate x:Key="SynchronizingFlyoutTemplate"
+                                          x:DataType="types:SyncFileStatus">
+                                <!-- The flyout is only available for synchronized items -->
+                                <Grid />
                             </DataTemplate>
 
                             <local:ActivityStatusDataTemplateSelector x:Key="ActivityStatusIconTemplateSelector"
                                                                       SynchronizationErrorTemplate="{StaticResource SynchronizationErrorTemplate}"
                                                                       SynchronizedTemplate="{StaticResource SynchronizedTemplate}"
                                                                       SynchronizingTemplate="{StaticResource SynchronizingTemplate}" />
+
+                            <local:ActivityStatusDataTemplateSelector x:Key="ActivityFlyoutTemplateSelector"
+                                                                      SynchronizationErrorTemplate="{StaticResource SynchronizationErrorFlyoutTemplate}"
+                                                                      SynchronizedTemplate="{StaticResource SynchronizedFlyoutTemplate}"
+                                                                      SynchronizingTemplate="{StaticResource SynchronizingFlyoutTemplate}" />
                         </Grid.Resources>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="204*" />
-                            <ColumnDefinition Width="204*" />
-                            <ColumnDefinition Width="92*" />
-                            <ColumnDefinition Width="72*" />
+                            <ColumnDefinition Width="{StaticResource NameGridLength}" />
+                            <ColumnDefinition Width="{StaticResource LocationGridLength}" />
+                            <ColumnDefinition Width="{StaticResource SizeGridLength}" />
+                            <ColumnDefinition Width="{StaticResource StateGridLength}" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0"
-                                    Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
-                                    VerticalAlignment="Center"
-                                    Orientation="Horizontal"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-
+                        <Grid Grid.Column="0"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                              VerticalAlignment="Center"
+                              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <ContentControl Grid.Column="0"
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ItemTypeIconDataTemplateSelector}" />
-                            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                            <TextBlock Grid.Column="1"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                        Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Orientation="Horizontal">
-                            <HyperlinkButton VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </Grid>
+
+                        <Grid Grid.Column="1"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                              VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <HyperlinkButton Grid.Column="0"
+                                             VerticalAlignment="Center"
                                              Click="SyncActivityParent_Click"
-                                             Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                                             Tag="{x:Bind ParentFolderPath}" />
-                            <TextBlock VerticalAlignment="Center"
-                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                                <Run Text=" - " />
+                                             Tag="{x:Bind ParentFolderPath}"
+                                             Style="{ThemeResource TextBlockButtonStyle}"
+                                             MaxWidth="100">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                </ToolTipService.ToolTip>
+                                <TextBlock Text="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           HorizontalAlignment="Left" />
+                            </HyperlinkButton>
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                       TextTrimming="CharacterEllipsis">
+                                <Run Text="-" />
                                 <Run Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
                             </TextBlock>
-                        </StackPanel>
+                        </Grid>
 
                         <ContentControl Grid.Column="2"
                                         VerticalAlignment="Center"
                                         Content="{x:Bind}"
                                         ContentTemplateSelector="{StaticResource ItemTypeSizeDataTemplateSelector}" />
-
-                        
 
                         <Grid Grid.Column="3"
                               VerticalAlignment="Center"
@@ -212,25 +350,54 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <ContentControl VerticalAlignment="Center"
-                                            Content="{x:Bind}"
-                                            ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}">
-                            </ContentControl>
-                            <controls:SvgIcon Grid.Column="1"
+
+                            <controls:SvgIcon Grid.Column="0"
                                               Width="16"
                                               HorizontalAlignment="Left"
                                               VerticalAlignment="Center"
                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                              UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}" />
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
-                            </ToolTipService.ToolTip>
+                                              UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
+                                </ToolTipService.ToolTip>
+                            </controls:SvgIcon>
 
+                            <ContentControl Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind Status, Mode=OneWay}"
+                                            ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}" />
+
+                            <ContentControl Grid.Column="2"
+                                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Stretch"
+                                            Content="{x:Bind Status, Mode=OneWay}"
+                                            ContentTemplateSelector="{StaticResource ActivityFlyoutTemplateSelector}" />
                         </Grid>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <TeachingTip x:Name="NotificationTeachingTip"
+                     IsLightDismissEnabled="True"
+                     PreferredPlacement="Bottom"
+                     ShouldConstrainToRootBounds="True"
+                     HorizontalContentAlignment="Center">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+                <ProgressRing x:Name="NotificationRing"
+                              Width="16"
+                              Height="16"
+                              Visibility="Collapsed" />
+
+                <TextBlock x:Name="NotificationText"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </TeachingTip>
+
     </Grid>
 </UserControl>

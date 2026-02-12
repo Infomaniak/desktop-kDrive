@@ -25,13 +25,15 @@ public extension Font {
     enum Tokens {
         public static let largeTitleEmphasized: Font = .largeTitle.weight(.emphasized)
 
+        public static let titleEmphasized: Font = .title.weight(.emphasized)
+
         public static let title2: Font = .title2
         public static let title2Emphasized: Font = .title2.weight(.emphasized)
 
         public static let title3: Font = .title3
         public static let title3Emphasized: Font = .title3.weight(.emphasized)
 
-        public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
+        public static let headline: Font = .headline
 
         public static let body: Font = .body
         public static let bodyEmphasized: Font = .body.weight(.emphasized)
@@ -46,8 +48,8 @@ extension Font.Weight {
 
 // MARK: - NSFont
 
-extension NSFont.Weight {
-    public static let emphasized = NSFont.Weight.semibold
+public extension NSFont.Weight {
+    static let emphasized = NSFont.Weight.semibold
 }
 
 public extension NSFont {

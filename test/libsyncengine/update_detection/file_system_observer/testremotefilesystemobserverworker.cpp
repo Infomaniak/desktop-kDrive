@@ -19,15 +19,19 @@
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "requests/syncnodecache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/upload/uploadjob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/localtemporarydirectory.h"

@@ -17,7 +17,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock Text="{Binding LocalPath}" />
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                   Height="16" />
                 <TextBlock Text="{Binding Drive.Name}"
@@ -30,15 +30,19 @@
                       x:DataType="viewmodel:Sync">
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <ToolTipService.ToolTip>
-                    <TextBlock Text="{Binding LocalPath}" />
+                <ToolTipService.ToolTip> <!-- TODO: Validate the tooltip with UI/UX team -->
+                    <TextBlock>
+                        <Run Text="{Binding LocalPath}" />
+                        <Run Text=" -> " />
+                        <Run Text="{Binding RemotePath}" />
+                    </TextBlock>
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Height="16" 
-                                  VerticalAlignment="Center"/>
+                                  Height="16"
+                                  VerticalAlignment="Center" />
                 <StackPanel Spacing="0">
-                    <TextBlock Text="{Binding RemotePath, Converter={StaticResource StringPathToFileNameConverter}}"
+                    <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Text="{Binding Drive.Name}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"

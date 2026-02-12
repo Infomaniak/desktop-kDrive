@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 #include "utility.h"
 #include "Poco/URI.h"
 #include "config.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "test_utility/localtemporarydirectory.h"
+#include "io/iohelper.h"
 
 #include "utility/utility_base.h"
+
+#include "libcommon/utility/utility.h"
 
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
@@ -151,89 +151,8 @@ bool Utility::isCreationDateValid(int64_t creationDate) {
     return true;
 }
 
-void Utility::msleep(int msec) {
-    std::chrono::milliseconds dura(msec);
-    std::this_thread::sleep_for(dura);
-}
-
 std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
-}
-
-std::wstring Utility::quotedSyncName(const SyncName &name) {
-    return L"'" + SyncName2WStr(name) + L"'";
-}
-
-std::wstring Utility::formatSyncName(const SyncName &name) {
-    std::wstringstream ss;
-    ss << L"name=" << quotedSyncName(name);
-
-    return ss.str();
-}
-
-std::wstring Utility::formatSyncPath(const SyncPath &path) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"'";
-
-    return ss.str();
-}
-
-
-std::wstring Utility::formatPath(const QString &path) {
-    std::wstringstream ss;
-    ss << L"path='" << QStr2WStr(path) << L"'";
-
-    return ss.str();
-}
-
-std::wstring Utility::formatStdError(const std::error_code &ec) {
-#if defined(KD_WINDOWS)
-    std::stringstream ss;
-    ss << ec.message() << " (code: " << ec.value() << ")";
-    return CommonUtility::s2ws(ss.str());
-#elif defined(KD_LINUX)
-    std::stringstream ss;
-    ss << ec.message() << ". (code: " << ec.value() << ")";
-    return CommonUtility::s2ws(ss.str());
-#elif defined(KD_MACOS)
-    return CommonUtility::s2ws(ec.message());
-#endif
-}
-
-std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code &ec) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << formatStdError(ec) << L"'";
-
-    return ss.str();
-}
-
-std::wstring Utility::formatIoError(const IoError ioError) {
-    std::wstringstream ss;
-    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
-
-    return ss.str();
-}
-
-std::wstring Utility::formatIoError(const SyncPath &path, const IoError ioError) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
-
-    return ss.str();
-}
-
-std::wstring Utility::formatIoError(const QString &path, const IoError ioError) {
-    return formatIoError(QStr2Path(path), ioError);
-}
-
-std::wstring Utility::formatErrno(const SyncPath &path, long cError) {
-    std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
-
-    return ss.str();
-}
-
-std::wstring Utility::formatErrno(const QString &path, long cError) {
-    return formatErrno(QStr2Path(path), cError);
 }
 
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
@@ -261,13 +180,6 @@ std::string Utility::formatGenericServerError(const std::string &replyBody, cons
     }
 
     return errorStream.str(); // str() return a copy of the underlying string
-}
-
-std::wstring Utility::formatSystemError(const std::system_error &exception) {
-    std::wstringstream ss;
-    ss << L"code=" << exception.code() << L", error=" << exception.what();
-
-    return ss.str();
 }
 
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, const std::string &replyBody,
@@ -307,12 +219,12 @@ bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath 
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
     if (!normalizedSyncName(a, aNormalized)) {
-        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(a));
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
         return false;
     }
     SyncName bNormalized;
     if (!normalizedSyncName(b, bNormalized)) {
-        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(b));
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -322,12 +234,12 @@ bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, boo
 bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
     SyncPath aNormalized;
     if (!normalizedSyncPath(a, aNormalized)) {
-        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(a));
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
         return false;
     }
     SyncPath bNormalized;
     if (!normalizedSyncPath(b, bNormalized)) {
-        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(b));
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -474,7 +386,7 @@ std::string Utility::_errId(const char *file, int line) {
 bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                  const UnicodeNormalization normalization) noexcept {
     bool success = CommonUtility::normalizedSyncName(name, normalizedName, normalization);
-    std::wstring errorMessage = L"Failed to normalize " + formatSyncName(name);
+    std::wstring errorMessage = L"Failed to normalize " + Utility::formatSyncName(name);
     if (!success) {
 #if defined(KD_WINDOWS)
         const DWORD dwError = GetLastError();
@@ -495,7 +407,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
         if (!normalizedSyncName(segment, normalizedName, normalization)) {
-            LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
+            LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
             return false;
         }
         segment = normalizedName;
@@ -507,7 +419,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
             if (!normalizedSyncName(*segmentIt, normalizedName, normalization)) {
-                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
+                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
                 return false;
             }
             normalizedPath /= normalizedName;
@@ -522,8 +434,8 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     isManaged = false;
     ioError = IoError::Success;
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
-        LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
+        LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path()) << L" because size > "
+                                       << CommonUtility::maxPathLength());
         return true;
     }
 
@@ -532,7 +444,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     const bool isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
 
     if (isSymLinkWithTooManyLevels) {
-        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << formatSyncPath(dirEntry.path())
+        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << Utility::formatSyncPath(dirEntry.path())
                                                                           << L" although it has too many levels of indirection.")
     }
 
@@ -546,17 +458,17 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
         bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
         ioError = tmpItemType.ioError;
         if (!result) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
             return false;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
             return true;
         }
     }
     if (tmpItemType.linkType == LinkType::None) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+        LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path())
                                        << L" because it is not a directory, a regular file or a symlink.");
         return true;
     }
@@ -573,23 +485,6 @@ bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
 #else
     return false;
 #endif
-}
-
-bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
-    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
-    if (xdgCurrentDesktop.empty()) {
-        return false;
-    }
-
-    // ':' is the separator in the env variable, like "ubuntu:GNOME"
-    size_t colon_pos = xdgCurrentDesktop.find(':');
-
-    if (colon_pos != std::string::npos) {
-        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
-        return true;
-    }
-
-    return false;
 }
 
 #if defined(KD_WINDOWS)
@@ -694,7 +589,7 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     SyncPath tmpPath = tmpDirPath / name;
     std::error_code ec;
-    auto retries = 0;
+    uint64_t retries = 0;
     bool directoryCreated = false;
     do {
         directoryCreated = std::filesystem::create_directory(tmpPath, ec);
@@ -710,11 +605,13 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     if (ec.value()) return IoHelper::stdError2ioError(ec);
 
-    std::filesystem::remove_all(tmpPath, ec);
+    auto ioError = IoError::Unknown;
+    (void) IoHelper::deleteItem(tmpPath, ioError);
+    return ioError;
 #else
     (void) name;
-#endif
     return IoError::Success;
+#endif
 }
 
 IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
@@ -724,7 +621,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     }
 
     SyncPath tmpPath = tmpDirPath / name;
-    auto retries = 0;
+    uint64_t retries = 0;
     bool ok = false;
     do {
         bool exists = false;
@@ -774,9 +671,125 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         ok = true;
     } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
-    std::error_code ec;
-    (void) std::filesystem::remove_all(tmpPath, ec);
-    return IoError::Success;
+    auto ioError = IoError::Unknown;
+    (void) IoHelper::deleteItem(tmpPath, ioError);
+    return ioError;
+}
+
+void Utility::msleep(int msec) {
+    std::chrono::milliseconds dura(msec);
+    std::this_thread::sleep_for(dura);
+}
+
+bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
+    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
+    if (xdgCurrentDesktop.empty()) {
+        return false;
+    }
+
+    // ':' is the separator in the env variable, like "ubuntu:GNOME"
+    size_t colon_pos = xdgCurrentDesktop.find(':');
+
+    if (colon_pos != std::string::npos) {
+        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
+        return true;
+    }
+
+    return false;
+}
+
+#ifdef KD_MACOS
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
+        return {};
+    }
+
+    return SyncPath(homePathEnv) / ".Trash";
+}
+#endif
+
+std::wstring Utility::formatStdError(const std::error_code &ec) {
+#if defined(KD_WINDOWS)
+    std::stringstream ss;
+    ss << ec.message() << " (code: " << ec.value() << ")";
+    return CommonUtility::s2ws(ss.str());
+#elif defined(KD_LINUX)
+    std::stringstream ss;
+    ss << ec.message() << ". (code: " << ec.value() << ")";
+    return CommonUtility::s2ws(ss.str());
+#elif defined(KD_MACOS)
+    return CommonUtility::s2ws(ec.message());
+#endif
+}
+
+std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code &ec) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatStdError(ec) << L"'";
+
+    return ss.str();
+}
+
+std::wstring Utility::formatIoError(const IoError ioError) {
+    std::wstringstream ss;
+    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
+
+    return ss.str();
+}
+
+std::wstring Utility::formatIoError(const SyncPath &path, const IoError ioError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
+
+    return ss.str();
+}
+
+std::wstring Utility::formatIoError(const QString &path, const IoError ioError) {
+    return formatIoError(QStr2Path(path), ioError);
+}
+
+std::wstring Utility::formatErrno(const SyncPath &path, long cError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
+
+    return ss.str();
+}
+
+std::wstring Utility::formatErrno(const QString &path, long cError) {
+    return formatErrno(QStr2Path(path), cError);
+}
+
+std::wstring Utility::quotedSyncName(const SyncName &name) {
+    return L"'" + SyncName2WStr(name) + L"'";
+}
+
+std::wstring Utility::formatSyncName(const SyncName &name) {
+    std::wstringstream ss;
+    ss << L"name=" << quotedSyncName(name);
+
+    return ss.str();
+}
+
+std::wstring Utility::formatSyncPath(const SyncPath &path) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"'";
+
+    return ss.str();
+}
+
+std::wstring Utility::formatPath(const QString &path) {
+    std::wstringstream ss;
+    ss << L"path='" << QStr2WStr(path) << L"'";
+
+    return ss.str();
+}
+
+std::wstring Utility::formatSystemError(const std::system_error &exception) {
+    std::wstringstream ss;
+    ss << L"code=" << exception.code() << L", error=" << exception.what();
+
+    return ss.str();
 }
 
 } // namespace KDC

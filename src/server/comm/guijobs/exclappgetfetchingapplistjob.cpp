@@ -44,13 +44,13 @@ ExitInfo ExclAppGetFetchingAppListJob::serializeOutputParms() {
 }
 
 ExitInfo ExclAppGetFetchingAppListJob::process() {
-    const std::scoped_lock lock(AppServer::vfsMapMutex);
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
 
-    if (const auto it = std::find_if(AppServer::vfsMap.cbegin(), AppServer::vfsMap.cend(),
+    if (const auto it = std::find_if(_commManager->appServer().vfsMap.cbegin(), _commManager->appServer().vfsMap.cend(),
                                      [](const auto &pair) { return pair.second->mode() == VirtualFileMode::Mac; });
-        it != AppServer::vfsMap.cend() && !it->second->getFetchingAppList(_applicationTable)) {
+        it != _commManager->appServer().vfsMap.cend() && !it->second->getFetchingAppList(_applicationTable)) {
         LOG_WARN(_logger, "Error in Vfs::getFetchingAppList!");
-        AppServer::addError(Error(ERR_ID, ExitCode::SystemError));
+        addError(Error(ERR_ID, ExitCode::SystemError));
 
         return ExitCode::SystemError;
     }

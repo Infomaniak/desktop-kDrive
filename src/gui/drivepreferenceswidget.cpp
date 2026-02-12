@@ -33,10 +33,13 @@
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/utility/qlogiffail.h"
+
 #include "libcommonserver/io/iohelper.h"
 
 #include <QDesktopServices>

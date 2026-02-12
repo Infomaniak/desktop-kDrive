@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "db/error.h"
 #include "jobs/syncjob.h"
 
 #include <chrono>
@@ -26,7 +27,7 @@ namespace KDC {
 
 class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUploadJob> {
     public:
-        LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
+        LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressStatusCallback,
                      const std::function<void(const Error &error)> &addErrorCallback);
 
         ExitInfo runJob() override;
@@ -39,6 +40,10 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
          * \return True if the size was retrieved successfully, false otherwise.
          */
         static bool getLogDirEstimatedSize(uint64_t &size, IoError &ioError);
+
+        void addErrorCallback(const Error &error) {
+            if (_addErrorCallback) _addErrorCallback(error);
+        }
 
     protected:
         virtual ExitInfo init();
@@ -55,11 +60,9 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
         SyncPath _tmpJobWorkingDir;
         SyncPath _generatedArchivePath;
 
-        std::function<void(LogUploadState, int)> _progressCallback;
+        std::function<void(LogUploadState, int)> _progressStatusCallback;
         std::function<void(const Error &error)> _addErrorCallback;
-        std::chrono::time_point<std::chrono::system_clock> _lastProgressUpdateTimeStamp;
-        LogUploadState _previousState{LogUploadState::None};
-        int _previousProgress{-1};
+        LogUploadState _lastState{LogUploadState::None};
 
         /* Return the path to a temporary directory where the job can work.
          * The directory will be created if it does not exist.
@@ -94,7 +97,7 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
         LogUploadState getDbUploadState() const;
         void updateDbUploadState(LogUploadState newState) const;
 
-        ExitInfo notifyLogUploadProgress(LogUploadState newState, int progressPercent);
+        ExitInfo notifyLogUploadProgress(LogUploadState state, int progressPercent);
 
         // Handle job failure.
         void handleJobFailure(const ExitInfo &exitInfo, bool clearTmpDir = false);

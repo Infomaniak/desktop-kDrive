@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Data;
-using WinRT;
+﻿using Microsoft.UI.Xaml.Data;
+using System;
 
 namespace Infomaniak.kDrive.Converters
 {
@@ -13,20 +7,24 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value == null)
+            if (value is null)
             {
                 return new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
             }
 
             try
             {
-                return new Microsoft.UI.Xaml.GridLength(System.Convert.ToDouble(value), Microsoft.UI.Xaml.GridUnitType.Star);
+                double lenght = System.Convert.ToDouble(value);
+                if (lenght < 0)
+                    lenght = 0;
+
+                return new Microsoft.UI.Xaml.GridLength(lenght, Microsoft.UI.Xaml.GridUnitType.Star);
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Fatal,
+                Logger.Log(Logger.Level.Error,
                     $"NumberToGridLengthConverter: Unable to convert value '{value}' of type '{value.GetType()}' to double. Exception: {ex}");
-                throw;
+                return new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
             }
         }
 

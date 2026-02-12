@@ -25,6 +25,7 @@ public class ColoredMenuItem: NSMenuItem {
         self.image = image
     }
 
+    @available(*, unavailable)
     public required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

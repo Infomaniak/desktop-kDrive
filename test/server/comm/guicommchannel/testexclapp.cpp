@@ -23,7 +23,7 @@
 #include "comm/guijobs/exclappsetlistjob.h"
 #include "comm/guijobs/exclappgetfetchingapplistjob.h"
 #include "libcommon/comm.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 

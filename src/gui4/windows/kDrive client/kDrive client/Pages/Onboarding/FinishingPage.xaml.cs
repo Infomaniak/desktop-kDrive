@@ -40,6 +40,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 else
                 {
                     Logger.Log(Logger.Level.Info, "Finishing onboarding failed. Returning to previous page.");
+                    _onBoardingViewModel.NewSyncs.Clear();
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     Frame.GoBack();
                 }
             }

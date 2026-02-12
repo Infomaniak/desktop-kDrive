@@ -44,6 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public event EventHandler<SignalEventArgs>? SignalReceived;
+        public event EventHandler? ConnectionLost;
         private Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
@@ -214,7 +215,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "notifications", true },
                     { "maintenance", false },
                     { "locked", false },
-                    { "accessDenied", false }
+                    { "accessDenied", false },
+                    { "size", 0 },
+                    { "usedSize", 0 }
                 };
                 if (!result.ContainsKey(JsonKeys.DriveInfoList))
                 {
@@ -416,19 +419,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task SimulateSignals()
         {
-            long updaterStateChangeCounter = 0;
-            while (true)
-            {
-                updaterStateChangeCounter++;
-                await Task.Delay(100);
-                if (updaterStateChangeCounter % 600 == 0)
-                {
-                    if (!_mockData.VersionsByChannel.ContainsKey(VersionChannel.Internal)) continue;
-                    string oldTag = _mockData.VersionsByChannel[VersionChannel.Internal]?.Tag ?? "0.0.0";
-                    _mockData.VersionsByChannel[VersionChannel.Internal]!.Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
-                    EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
-                }
-            }
         }
     }
 
@@ -500,42 +490,42 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             // Create mock syncs
             List<Sync> syncs = new List<Sync>();
 
-            syncs.Add(new Sync(1, drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\Etik corp sync1", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(1, drives[0]) { LocalPath = "C:\\Users\\John\\Etik corp sync1", RemotePath = "", SupportOnlineMode = false });
             drives[0].Syncs.Add(syncs[0]);
 
-            syncs.Add(new Sync(2, drives[1]) { Id = 1001, LocalPath = "D:\\Users\\John\\CH corp\\kDrive Metier", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(2, drives[1]) { LocalPath = "D:\\Users\\John\\CH corp\\kDrive Metier", RemotePath = "", SupportOnlineMode = false });
             drives[1].Syncs.Add(syncs[1]);
 
-            syncs.Add(new Sync(3, drives[2]) { Id = 1002, LocalPath = "F:\\Users\\John\\CH corp\\kDrive Adminstration", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(4, drives[2]) { Id = 1003, LocalPath = "F:\\Users\\John\\Music", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(3, drives[2]) { LocalPath = "F:\\Users\\John\\CH corp\\kDrive Adminstration", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(4, drives[2]) { LocalPath = "F:\\Users\\John\\Music", RemotePath = "", SupportOnlineMode = false });
             drives[2].Syncs.Add(syncs[2]);
             drives[2].Syncs.Add(syncs[3]);
 
-            syncs.Add(new Sync(5, drives[3]) { Id = 1004, LocalPath = "F:\\Users\\John\\Photos", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(6, drives[3]) { Id = 1005, LocalPath = "F:\\Users\\John\\Famille\\Photos", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(7, drives[3]) { Id = 1006, LocalPath = "F:\\Users\\John\\vidéo", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(5, drives[3]) { LocalPath = "F:\\Users\\John\\Photos", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(6, drives[3]) { LocalPath = "F:\\Users\\John\\Famille\\Photos", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(7, drives[3]) { LocalPath = "F:\\Users\\John\\vidéo", RemotePath = "", SupportOnlineMode = false });
             drives[3].Syncs.Add(syncs[4]);
             drives[3].Syncs.Add(syncs[5]);
             drives[3].Syncs.Add(syncs[6]);
 
 
-            syncs.Add(new Sync(8, drives[4]) { Id = 1007, LocalPath = "F:\\Users\\John\\Film", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(9, drives[5]) { Id = 1008, LocalPath = "F:\\Users\\John\\Pro\\Comptabilité", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(10, drives[6]) { Id = 1009, LocalPath = "F:\\Users\\John\\Pro\\Rh", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(11, drives[7]) { Id = 1010, LocalPath = "F:\\Users\\John\\The cloud sync8", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(8, drives[4]) { LocalPath = "F:\\Users\\John\\Film", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(9, drives[5]) { LocalPath = "F:\\Users\\John\\Pro\\Comptabilité", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(10, drives[6]) { LocalPath = "F:\\Users\\John\\Pro\\Rh", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(11, drives[7]) { LocalPath = "F:\\Users\\John\\The cloud sync8", RemotePath = "", SupportOnlineMode = false });
             drives[4].Syncs.Add(syncs[7]);
             drives[5].Syncs.Add(syncs[8]);
             drives[6].Syncs.Add(syncs[9]);
             drives[7].Syncs.Add(syncs[10]);
 
 
-            syncs.Add(new Sync(13, drives[4]) { Id = 1013, LocalPath = "F:\\Users\\John\\SwissCloud 1", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(14, drives[4]) { Id = 1014, LocalPath = "F:\\Users\\John\\SwissCloud 2", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(15, drives[4]) { Id = 1015, LocalPath = "F:\\Users\\John\\SwissCloud 3", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(16, drives[4]) { Id = 1016, LocalPath = "F:\\Users\\John\\SwissCloud 4", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(17, drives[4]) { Id = 1017, LocalPath = "F:\\Users\\John\\SwissCloud 5", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(18, drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 6", RemotePath = "", SupportOnlineMode = false });
-            syncs.Add(new Sync(19, drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 7", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(13, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 1", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(14, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 2", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(15, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 3", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(16, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 4", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(17, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 5", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(18, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 6", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(19, drives[4]) { LocalPath = "F:\\Users\\John\\SwissCloud 7", RemotePath = "", SupportOnlineMode = false });
             drives[4].Syncs.Add(syncs[11]);
             drives[4].Syncs.Add(syncs[12]);
             drives[4].Syncs.Add(syncs[13]);

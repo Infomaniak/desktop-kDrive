@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "libcommon/utility/types.h"
-#import "libcommonserver/io/iohelper.h"
-#import "libcommonserver/utility/utility.h"
+#import "iohelper.h"
+
+#import "utility/utility.h"
+#import "utility/types.h"
+
+#import "libcommon/utility/utility.h"
 
 #import "config.h"
 

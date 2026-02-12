@@ -17,7 +17,7 @@
  */
 
 #include "performancewatcher.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 #include <cmath>

@@ -51,7 +51,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
 #else
 class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWorker_unix {
     public:
-        MockLocalFileSystemObserverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
+        MockLocalFileSystemObserverWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                           const std::string &shortName) :
             LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
 

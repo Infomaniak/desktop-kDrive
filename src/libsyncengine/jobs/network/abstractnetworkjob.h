@@ -53,7 +53,7 @@ class AbstractNetworkJob : public SyncJob {
 
         [[nodiscard]] const BackError &backError() const { return _backError; }
 
-        int32_t trials() const noexcept { return _trials; };
+        int32_t trials() const noexcept { return _trials; }
 
     protected:
         ExitInfo runJob() noexcept override;
@@ -112,8 +112,7 @@ class AbstractNetworkJob : public SyncJob {
         ExitInfo receiveResponse(const Poco::URI &uri);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
-        }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }

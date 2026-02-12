@@ -21,6 +21,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/io/permissionsholder.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -28,9 +29,7 @@
 #include <unistd.h>
 #endif
 
-#include "libcommonserver/io/permissionsholder.h"
 #include "utility/timerutility.h"
-
 
 #include <fstream>
 
@@ -46,7 +45,7 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const NodeId &remoteFileId,
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const NodeId &remoteFileId,
                          const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
                          const SyncTime modificationTime, const bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
@@ -62,7 +61,7 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, c
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                          int64_t expectedSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
@@ -325,8 +324,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
 
 ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     // Delete in case it already exists (EDIT operation)
-    std::error_code ec;
-    std::filesystem::remove_all(_localpath, ec);
+    (void) IoHelper::deleteItem(_localpath);
 
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
@@ -356,6 +354,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
                                                         << Utility::formatSyncPath(_localpath));
 
+        std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec) {
             LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
@@ -431,13 +430,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    std::error_code ec;
-    std::filesystem::remove_all(_tmpPath, ec);
-    if (ec.value()) {
-        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
+    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpPath, ioError)) {
+        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatIoError(_tmpPath, ioError));
         return false;
     }
-
     return true;
 }
 
@@ -597,7 +593,10 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     std::streamsize expectedSize = 0;
     if (istr) {
         expectedSize = httpResponse().getContentLength();
+
+        setProgressExpectedFinalValue(expectedSize);
         setProgress(0);
+
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {
                 writeError = true;

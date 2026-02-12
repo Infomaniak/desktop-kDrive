@@ -32,7 +32,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
-#include "utility/jsonparserutility.h"
+#include "../../../src/libcommonserver/utility/jsonparserutility.h"
 
 
 using namespace CppUnit;

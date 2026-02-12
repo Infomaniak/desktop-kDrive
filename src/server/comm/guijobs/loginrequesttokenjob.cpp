@@ -79,7 +79,7 @@ ExitInfo LoginRequestTokenJob::process() {
     }
 
     _userDbId = userInfo.dbId();
-    AppServer::updateSentryUser();
+    _commManager->appServer().updateSentryUser();
     if (userCreated) {
         auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(userInfo);
         _commManager->sendGuiSignal(signalUserAddedJob);

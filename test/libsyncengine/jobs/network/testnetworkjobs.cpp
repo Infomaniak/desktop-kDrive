@@ -33,7 +33,6 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
-#include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
@@ -44,11 +43,15 @@
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+
 #include "libparms/db/parmsdb.h"
+
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -135,7 +138,7 @@ void TestNetworkJobs::tearDown() {
         job.setBypassCheck(true);
         job.runSynchronously();
     }
-    if (!_dummyLocalFilePath.empty()) std::filesystem::remove_all(_dummyLocalFilePath);
+    if (!_dummyLocalFilePath.empty()) (void) IoHelper::deleteItem(_dummyLocalFilePath);
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -1038,8 +1041,9 @@ void TestNetworkJobs::testGetInfoDrive() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
+    CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
+    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name);
+    CPPUNIT_ASSERT(!job.packInfo().isFree);
 }
 
 void TestNetworkJobs::testThumbnail() {
@@ -1559,7 +1563,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);

@@ -1,4 +1,7 @@
 [tools]
-swiftformat = "0.57.2"
-swiftlint = "0.59.1"
-swiftgen = "latest"
+swiftformat = { version = "0.58.7", os = ["macos", "linux"] }
+swiftlint = { version = "0.63.0", os = ["macos", "linux"] }
+swiftgen = { version = "6.6.3", os = ["macos"] }
+periphery = { version = "3.4.0", os = ["macos"] }
+pipx = "latest"
+"pipx:infomaniak/importloco" = "2.0"

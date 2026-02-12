@@ -40,7 +40,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -78,8 +78,6 @@ void ExecutorWorker::execute() {
                 cancelAllOngoingJobs();
                 break;
             }
-
-            sendProgress();
 
             if (stopAsked()) {
                 cancelAllOngoingJobs();
@@ -155,7 +153,18 @@ void ExecutorWorker::execute() {
 
             if (job) {
                 job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
-                SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+
+                const auto progressPercentCallback = [job, this](UniqueId,
+                                                                 int progress // %
+                                                     ) {
+                    if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
+                        LOGW_SYNCPAL_WARN(_logger,
+                                          L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+                    }
+                };
+                job->setProgressPercentCallback(progressPercentCallback);
+
+                SyncJobManagerSingleton::instance()->queueAsyncJob(job);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {
@@ -286,8 +295,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
-                                              << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
             return exitInfo;
         }
 
@@ -370,8 +378,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
-                                                          << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger,
+                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -1265,8 +1273,6 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             cancelAllOngoingJobs();
             return exitInfo;
         }
-
-        sendProgress();
     }
     return ExitCode::Ok;
 }
@@ -1501,19 +1507,6 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         }
     }
     return exitInfo;
-}
-
-void ExecutorWorker::sendProgress() {
-    if (_timer.elapsed<DoubleSeconds>().count() > SEND_PROGRESS_DELAY) {
-        _timer.restart();
-
-        for (const auto &jobInfo: _ongoingJobs) {
-            if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
-                                                   << Utility::formatSyncPath(jobInfo.second->affectedFilePath()));
-            }
-        }
-    }
 }
 
 ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange) {

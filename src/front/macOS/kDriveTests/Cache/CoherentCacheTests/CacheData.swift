@@ -64,7 +64,7 @@ enum CacheData {
 
     static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
     static let expectedDriveId = Int32.random(in: 0 ... 10000)
-    static let expectedDriveName: String = "My Drive"
+    static let expectedDriveName = "My Drive"
     static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
     static var expectedDrive = Drive.some(
         driveDbId: expectedDriveDbId,
@@ -79,7 +79,7 @@ enum CacheData {
     )
 
     static let updatedDriveId = Int32.random(in: 0 ... 10000)
-    static let updatedDriveName: String = "My Drive Pro Max"
+    static let updatedDriveName = "My Drive Pro Max"
     static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
     static var updatedDrive = Drive.some(
         driveDbId: expectedDriveDbId,
@@ -116,4 +116,119 @@ enum CacheData {
                                         targetNodeId: expectedTargetNodeId,
                                         supportVfs: expectedSupportVFS,
                                         virtualFileMode: expectedVirtualFileMode)
+
+    static let expectedLoginErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Date().timeIntervalSince1970,
+                                              level: KDC.ErrorLevel.SyncPal,
+                                              functionName: "",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.InvalidToken,
+                                              exitCause: KDC.ExitCause.LoginError,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
+    static let updatedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                             synchroDbId: expectedSynchroDbId,
+                                             time: Date().timeIntervalSince1970,
+                                             level: KDC.ErrorLevel.SyncPal,
+                                             functionName: "some update",
+                                             workerName: "",
+                                             exitCode: KDC.ExitCode.InvalidToken,
+                                             exitCause: KDC.ExitCause.LoginError,
+                                             localNodeId: "",
+                                             remoteNodeId: "",
+                                             nodeType: KDC.NodeType.Unknown,
+                                             path: "",
+                                             conflictType: KDC.ConflictType.None,
+                                             cancelType: KDC.CancelType.None,
+                                             inconsistencyType: KDC.InconsistencyType.None,
+                                             destinationPath: "",
+                                             autoResolved: false)
+
+    static let expectedAsleepErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAsleepError = ErrorInfo(dbId: expectedAsleepErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.SyncPal,
+                                               functionName: "",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.Unknown,
+                                               exitCause: KDC.ExitCause.DriveAsleep,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.Server,
+                                               functionName: "main.swift",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.NetworkError,
+                                               exitCause: KDC.ExitCause.NetworkTimeout,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let updatedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Date().timeIntervalSince1970,
+                                              level: KDC.ErrorLevel.Server,
+                                              functionName: "main_updated.swift",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.DbError,
+                                              exitCause: KDC.ExitCause.DbEntryNotFound,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
+    static let expectedFileSyncErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedFileSyncErrorLocalNodeId = UUID().uuidString
+    static let expectedFileSyncErrorRemoteNodeId = UUID().uuidString
+    static let expectedFileSyncErrorPath = "/dev/null"
+    static let expectedFileSyncError = ErrorInfo(dbId: expectedFileSyncErrorDbId,
+                                                 synchroDbId: expectedSynchroDbId,
+                                                 time: Date().timeIntervalSince1970 + 1,
+                                                 level: KDC.ErrorLevel.Node,
+                                                 functionName: "",
+                                                 workerName: "",
+                                                 exitCode: KDC.ExitCode.Ok,
+                                                 exitCause: KDC.ExitCause.Unknown,
+                                                 localNodeId: expectedFileSyncErrorLocalNodeId,
+                                                 remoteNodeId: expectedFileSyncErrorRemoteNodeId,
+                                                 nodeType: KDC.NodeType.File,
+                                                 path: expectedFileSyncErrorPath,
+                                                 conflictType: KDC.ConflictType.CreateCreate,
+                                                 cancelType: KDC.CancelType.None,
+                                                 inconsistencyType: KDC.InconsistencyType.None,
+                                                 destinationPath: "",
+                                                 autoResolved: false)
 }

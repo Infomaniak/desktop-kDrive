@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             // Track Loaded state
             Loaded += OnLoaded;
-            Unloaded += (s, e) => _isLoaded = false;
+            Unloaded += OnUnloaded;
         }
 
         public static readonly DependencyProperty UriSourceProperty =
@@ -71,6 +71,11 @@ namespace Infomaniak.kDrive.CustomControls
             ScheduleRefresh();
         }
 
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _isLoaded = false;
+        }
+
         private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)
         {
             if (_isLoaded)
@@ -81,13 +86,14 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (UriString != UriSource?.ToString())
             {
-                if (UriString.Count() == 0)
+                try
                 {
-                    Visibility = Visibility.Collapsed;
-                    return;
+                    UriSource = new Uri(UriString);
                 }
-
-                UriSource = new Uri(UriString);
+                catch
+                {
+                    UriSource = null;
+                }
                 return; // UriSource changed will trigger Refresh
             }
             // Cancel any previous refresh
@@ -158,7 +164,6 @@ namespace Infomaniak.kDrive.CustomControls
                 token.ThrowIfCancellationRequested();
 
                 Source = svgImage;
-                Visibility = Visibility.Visible;
             }
             catch (OperationCanceledException)
             {

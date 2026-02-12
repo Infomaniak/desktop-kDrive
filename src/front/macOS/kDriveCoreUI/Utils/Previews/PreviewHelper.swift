@@ -19,6 +19,8 @@
 import Cocoa
 import Foundation
 import kDriveCore
+import OrderedCollections
+import SwiftUI
 
 private final class PreviewBundle {
     /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
@@ -27,6 +29,14 @@ private final class PreviewBundle {
 public enum PreviewHelper {
     public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
 
+    public static let context = UISynchroContext(
+        synchro: PreviewHelper.synchro,
+        drive: PreviewHelper.drive1,
+        account: PreviewHelper.account,
+        user: PreviewHelper.user,
+        blockingError: nil
+    )
+
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
@@ -34,6 +44,12 @@ public enum PreviewHelper {
         email: "tim@apple.com",
         avatar: PreviewHelper.userImage,
         accounts: [:]
+    )
+
+    public static let account = UIAccount(
+        dbId: 1,
+        name: "Tim Cook",
+        drives: [:]
     )
 
     public static let drive1 = UIDrive(
@@ -65,4 +81,51 @@ public enum PreviewHelper {
         name: "Drive Pro Max",
         color: .red
     )
+
+    public static let synchro = UISynchro(
+        dbId: 0,
+        driveDbId: 0,
+        localPath: URL(fileURLWithPath: "~/kDrive"),
+        progressInfo: nil,
+        nodes: [:],
+        errorCount: 0
+    )
+
+    public static let synchroNode1 = UISynchroNode(
+        id: "1",
+        remoteID: "1",
+        type: .file,
+        path: URL(fileURLWithPath: "/Documents/Report.pdf"),
+        updatedPath: nil,
+        direction: .up,
+        status: .syncing,
+        instruction: .update,
+        size: 7_000_000
+    )
+    public static let synchroNode2 = UISynchroNode(
+        id: "2",
+        remoteID: "2",
+        type: .directory,
+        path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
+        updatedPath: nil,
+        direction: .down,
+        status: .done,
+        instruction: .update,
+        size: 12_000_000
+    )
+    public static let synchroNode3 = UISynchroNode(
+        id: "3",
+        remoteID: "3",
+        type: .file,
+        path: URL(fileURLWithPath: "/Presentation.pptx"),
+        updatedPath: nil,
+        direction: .up,
+        status: .error,
+        instruction: .update,
+        size: 300_000
+    )
+
+    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
+        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+    }
 }

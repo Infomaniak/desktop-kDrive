@@ -17,9 +17,11 @@
  */
 
 #include "updatetree.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
 #include "requests/parameterscache.h"
+
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 

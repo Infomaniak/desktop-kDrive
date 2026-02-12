@@ -29,21 +29,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
-#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -54,6 +39,24 @@
 #include "test_utility/remotetemporarydirectory.h"
 #include "update_detection/blacklist_changes_propagator/blacklistpropagator.h"
 
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
+
+#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
+#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
+
 using namespace CppUnit;
 using namespace std::chrono;
 
@@ -61,6 +64,7 @@ namespace KDC {
 
 // Temporary test in drive "kDrive Desktop Team"
 const NodeId testCiFolderId = "56850";
+const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
@@ -114,7 +118,9 @@ void TestIntegration::setUp() {
     IoError ioError = IoError::Unknown;
     (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError);
 
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode), "/", _remoteSyncDir.id());
+    // This is an advanced sync. Define remote target path and remote target node ID.
+    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
+                    remoteTestCiDirPath / _remoteSyncDir.name(), _remoteSyncDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -282,7 +288,7 @@ void TestIntegration::testBreakCycle() {
 static const auto maxNbBlacklistedFiles = 3000;
 void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testBlacklistDir");
     const auto filename = Str("testBlacklist");
     const auto fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -309,7 +315,7 @@ void TestIntegration::testBlacklist() {
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
@@ -882,7 +888,7 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return {};

@@ -164,8 +164,35 @@
   <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
   </data>
-  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
-    <value>Statut</value>
+  <data name="CC_SyncActivityTable_ItemErrorStatus_Tooltip.Content" xml:space="preserve">
+    <value>Erreur de synchronisation</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncingStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="CC_SyncActivityTable_FetchingLink.Text" xml:space="preserve">
+    <value>Création du lien de partage…</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFetched.Text" xml:space="preserve">
+    <value>Lien copié dans le presse-papiers</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFaillure.Text" xml:space="preserve">
+    <value>La création du lien de partage a échoué</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenExplorer.Text" xml:space="preserve">
+    <value>Ouvrir dans l'explorateur</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenOnline.Text" xml:space="preserve">
+    <value>Ouvrir dans kDrive en ligne</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_FixErrors.Text" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_CopyLink.Text" xml:space="preserve">
+    <value>Copier le lien de partage</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncedStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisé</value>
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
     <value>Synchronisé depuis votre ordinateur</value>
@@ -178,6 +205,9 @@
   </data>
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
+  </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value>Statut</value>
   </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value>Dernier emplacement</value>
@@ -199,13 +229,13 @@
     <value>sec</value>
   </data>
   <data name="Global_Day" xml:space="preserve">
-    <value>jour</value>
+    <value>j</value>
   </data>
   <data name="Global_JustNow" xml:space="preserve">
     <value>À l'instant</value>
   </data>
   <data name="Global_Hour" xml:space="preserve">
-    <value>heure</value>
+    <value>heure(s)</value>
   </data>
   <data name="Global_Minute" xml:space="preserve">
     <value>min</value>
@@ -278,10 +308,22 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Fichier inaccessible</value>
   </data>
   <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Vous avez {0} erreurs de synchronisation</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar.Message" xml:space="preserve">
+    <value>Libérez de l’espace ou faites évoluer votre offre  pour continuer à synchroniser vos fichiers.</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar.Title" xml:space="preserve">
+    <value>Votre kDrive est plein</value>
+  </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
     <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar_Button.Content" xml:space="preserve">
+    <value>Ajouter du stockage</value>
   </data>
   <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
     <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
@@ -520,7 +562,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Mise à jour</value>
   </data>
   <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
-    <value>kDrive build {0} disponible</value>
+    <value>kDrive {0} disponible</value>
     <comment>{0} version tag (ie 3.7.6)</comment>
   </data>
   <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
@@ -538,7 +580,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Général</value>
   </data>
   <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
-    <value>Mettre à jour kDrive automatiquement</value>
+    <value>Mises à jour automatiques</value>
   </data>
   <data name="Page_SettingsPage_AutoStart.Header" xml:space="preserve">
     <value>Ouvrir kDrive au démarrage de l’ordinateur</value>
@@ -569,6 +611,21 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
     <value>Synchronisation</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Header" xml:space="preserve">
+    <value>Exclus automatiquement</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Header" xml:space="preserve">
+    <value>Règles d’exclusion personnalisées</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddButton.Content" xml:space="preserve">
+    <value>Ajouter une règle</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_DefaultExclusion.Description" xml:space="preserve">
+    <value>Ces fichiers sont ignorés par défaut et ne peuvent pas être modifiés.</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion.Description" xml:space="preserve">
+    <value>Ajoutez des fichiers à exclure de la synchronisation.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" xml:space="preserve">
     <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value>
@@ -841,12 +898,6 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
     <value>Personnaliser</value>
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value>Ce dossier ne peut pas être sélectionné</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
-  </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
@@ -864,8 +915,11 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_DriveManagement_Title.Text" xml:space="preserve">
     <value>Gestion du kDrive</value>
   </data>
+  <data name="Page_TemplateExclusionPage_Title.Text" xml:space="preserve">
+    <value>Fichiers à exclure</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
-    <value>Synchronisation avancée</value>
+    <value>Synchronisations avancées</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" xml:space="preserve">
     <value>Supprimer la synchronisation</value>
@@ -888,6 +942,36 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.Title" xml:space="preserve">
+    <value>Nouvelle règle</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_Title.Text" xml:space="preserve">
+    <value>Ajouter une règle d’exclusion</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_Description.Text" xml:space="preserve">
+    <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Ajouter la règle</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_Remove.Content" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_RemoveMany.Text" xml:space="preserve">
+    <value>Supprimer ({0} éléments)</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_CheckBox.Content" xml:space="preserve">
+    <value>Règles</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Header_Notification.Text" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_List_Notification_Tooltip.Content" xml:space="preserve">
+    <value>Une notification vous informe lorsqu’un fichier est exclu par cette règle.</value>
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>
@@ -955,16 +1039,195 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
-    <value>Le disque de stockage {0} n’est pas accessible</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
+  <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
+    <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
-    <value>Réessayer</value>
+  <data name="Page_ActivityPage_Filter_All.Text" xml:space="preserve">
+    <value>Toutes les activités</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
-    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
-déverrouillé et accessible depuis votre ordinateur.</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
+  <data name="Page_ActivityPage_Filter_My.Text" xml:space="preserve">
+    <value>Mon activité uniquement</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Finished.Text" xml:space="preserve">
+    <value>Synchronisation terminée</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_InProgress.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Paused.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_NoActivity.Text" xml:space="preserve">
+    <value>Aucune activité récente</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Error.Text" xml:space="preserve">
+    <value>Erreurs de synchronisation</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
+    <value>Hors ligne</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Title.Text" xml:space="preserve">
+    <value>Synchronisations avancées</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_AddSyncButton.Content" xml:space="preserve">
+    <value>Synchroniser un dossier</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeCaption.Text" xml:space="preserve">
+    <value>Définissez comment vos fichiers sont stockés et accessibles.</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_SyncModeHeader.Text" xml:space="preserve">
+    <value>Mode de synchronisation des fichiers</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle.Text" xml:space="preserve">
+    <value>Synchroniser un dossier avec kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoteFolder.Header" xml:space="preserve">
+    <value>Emplacement sur kDrive</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_LocalFolder.Header" xml:space="preserve">
+    <value>Emplacement sur mon PC</value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_Subtitle_Caption.Text" xml:space="preserve">
+    <value>Sélectionnez un dossier de votre ordinateur à synchroniser avec kDrive. Vous pourrez acceder a vos synchronisations avancées depuis le selecteur de drive sur la page d’accueil </value>
+  </data>
+  <data name="Page_DriveAdvancedSyncsPage_RemoveSyncButton.Header" xml:space="preserve">
+    <value>Supprimer la synchronisation</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Header.Text" xml:space="preserve">
+    <value>Support infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_SendButton.Content" xml:space="preserve">
+    <value>Envoyer le dossier de débogage</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Canceled_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a été annulé</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Archiving.Text" xml:space="preserve">
+    <value>Compression des logs en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Uploading.Text" xml:space="preserve">
+    <value>Transfert des logs vers le support en cours…</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Error_Tooltip.Content" xml:space="preserve">
+    <value>Le dernier transfert a échoué. Vérifiez votre connexion Internet et assurez-vous qu’au moins un utilisateur kDrive est connecté. Les transferts sont limités à 10 par jour.</value>
+  </data>
+  <data name="Pages_LogUploadPopup.Text" xml:space="preserve">
+    <value>Le dossier complet est volumineux. Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.</value>
+  </data>
+  <data name="Pages_LogUploadPopup_CheckBox.Content" xml:space="preserve">
+    <value>Envoyer uniquement la dernière session</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.Title" xml:space="preserve">
+    <value>Envoyer le dossier de débogage au support
+Infomaniak</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.PrimaryButtonText" xml:space="preserve">
+    <value>Envoyer</value>
+  </data>
+  <data name="CC_LogUploadSettingsCard_Popup.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Configurer vos kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Title.Text" xml:space="preserve">
+    <value>Configurer la synchronisation de ce kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_ConfirmButton.Content" xml:space="preserve">
+    <value>Valider</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Title" xml:space="preserve">
+    <value>Impossible d'ajouter ce drive</value>
+  </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Subtitle" xml:space="preserve">
+    <value>Assurez vous qu'aucune synchronisation n'est configuré sur votre dossier utilisateur.</value>
+  </data>
+  <data name="UnexpectedErrorTeachingTip.Title" xml:space="preserve">
+    <value>Une erreur inattendue est survenue</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder.Content" xml:space="preserve">
+    <value>Veuillez sélectionner un dossier vide qui ne se trouve pas à la racine d’un lecteur.
+
+Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et ne doit pas contenir de sous-dossier de synchronisation.</value>
+  </data>
+  <data name="UnexpectedErrorTeachingTip.Content" xml:space="preserve">
+    <value>Veuillez réessayer dans quelques instants.
+Si le problème persiste, veuillez contacter le support</value>
+  </data>
+  <data name="InvalidDefaultSyncLocationTeachingTip.Content" xml:space="preserve">
+    <value>Si le problème persiste, veuillez contacter le support</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncExclusionPage_Title.Text" xml:space="preserve">
+    <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncExclusionPage_Message.Text" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_DropDown_Default.Content" xml:space="preserve">
+    <value>Emplacement par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Title.Text" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Title.Text" xml:space="preserve">
+    <value>Dossiers synchronisés</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Message.Text" xml:space="preserve">
+    <value>Personnalisez l'emplacement du dossier kDrive sur votre ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Location_Caption.Text" xml:space="preserve">
+    <value>Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Configure.Content" xml:space="preserve">
+    <value>Configurer</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location.Text" xml:space="preserve">
+    <value>Emplacement:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion.Text" xml:space="preserve">
+    <value>Contenu synchronisé:</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Default.Text" xml:space="preserve">
+    <value>Tout le kDrive</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_Content.Text" xml:space="preserve">
+    <value>Vous avez exclus certains dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Location_Default.Text" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Message.Text" xml:space="preserve">
+    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_DriveSelectionPage_Exclusion_ToolTip.Text" xml:space="preserve">
+    <value>dossier(s) exclu(s)</value>
+    <comment>x dossiers exclus</comment>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Message.Text" xml:space="preserve">
+    <value>Choisissez les dossiers à synchronisés sur cet ordinateur :</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Caption.Text" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront accessibles en ligne.</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_Button.Content" xml:space="preserve">
+    <value>Sélectionner des dossiers</value>
+  </data>
+  <data name="CC_DriveSetupContentDialog_SyncSetupPage_Exclusions_AllkDrive.Text" xml:space="preserve">
+    <value>Tous les dossiers du kDrive</value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_CheckBox.Content" xml:space="preserve">
+    <value>Recevoir une notification lorsqu’un fichier est exclu </value>
+  </data>
+  <data name="Pages_AddExclusionRulePopup_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Fichiers à exclure</value>
   </data>
 </root>

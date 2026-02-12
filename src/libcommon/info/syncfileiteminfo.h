@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include <QDataStream>
 #include <QString>
@@ -60,6 +60,8 @@ class SyncFileItemInfo {
         inline void setError(const QString &newError) { _error = newError; }
         inline int64_t size() const { return _size; }
         inline void setSize(const int64_t newSize) { _size = newSize; }
+        inline int progress() const { return _progress; }
+        inline void setProgress(const int newProgress) { _progress = newProgress; }
 
         friend QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info);
@@ -68,6 +70,7 @@ class SyncFileItemInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list);
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+
     private:
         NodeType _type;
         QString _path; // Sync folder relative filesystem path
@@ -82,6 +85,7 @@ class SyncFileItemInfo {
         CancelType _cancelType;
         QString _error;
         int64_t _size{0};
+        int _progress{0}; // %
 };
 
 } // namespace KDC

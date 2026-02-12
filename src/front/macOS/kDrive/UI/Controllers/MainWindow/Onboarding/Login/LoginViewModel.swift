@@ -22,6 +22,7 @@ import Foundation
 import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class LoginViewModel: ObservableObject {
@@ -64,8 +65,10 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
+        flowCoordinator.currentUser = UIUser(user: user)
+
         Task {
-            flowCoordinator.targetUser = UIUser(user: user)
+            guard flowCoordinator.currentStep == .login else { return }
             await flowCoordinator.navigateToNextStep()
         }
     }
@@ -77,12 +80,7 @@ extension LoginViewModel: InfomaniakLoginDelegate {
             do {
                 loginState = .loadingUser
                 let userDbId = try await LoginJob().login(code: code, verifier: verifier)
-
-                @InjectService var coherentCacheObservable: CoherentCacheObservable
-                coherentCacheObservable.usersPublisher.userPublisher(userDbId: userDbId)
-                    .receiveOnMain(store: &bindStore) { [weak self] user in
-                        self?.handleConnectedUser(user)
-                    }
+                observeUser(for: userDbId)
             } catch {
                 loginState = .idle
                 handleLoginFailure(error: error)
@@ -98,6 +96,14 @@ extension LoginViewModel: InfomaniakLoginDelegate {
         }
 
         handleLoginFailure(error: error)
+    }
+
+    private func observeUser(for userDbId: Int32) {
+        @InjectService var coherentCacheObservable: CoherentCacheObservable
+        coherentCacheObservable.usersPublisher.userPublisher(userDbId: userDbId)
+            .receiveOnMain(store: &bindStore) { [weak self] user in
+                self?.handleConnectedUser(user)
+            }
     }
 
     private func handleLoginFailure(error: Error) {

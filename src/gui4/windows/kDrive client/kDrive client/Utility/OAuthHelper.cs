@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive
     {
         private static readonly string _clientId = "5EA39279-FF64-4BB8-A872-4A40B5786317";
         private static readonly Uri _redirectUri = new Uri("kdrive://auth-desktop");
-        private static readonly Uri _authorizationEndpoint = new Uri("https://login.staging-login-kdrive-oauth.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
+        private static readonly Uri _authorizationEndpoint = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
 
         public struct OAuthResult
         {

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "utility.h"
 #include "utility_base.h"
-#include "libcommon/log/sentry/handler.h"
+#include "log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 
@@ -1148,7 +1148,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        std::filesystem::remove(sigFilePath, ec);
+        (void) std::filesystem::remove(sigFilePath);
     }
 }
 
@@ -1392,30 +1392,6 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
-bool CommonUtility::isWindows() {
-#ifdef _WIN32
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isMac() {
-#ifdef __APPLE__
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isLinux() {
-#if defined(__unix__)
-    return true;
-#else
-    return false;
-#endif
-}
-
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);
@@ -1463,6 +1439,30 @@ void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64
     (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     (void) b64out.close();
     base64Str = ostr.str();
+}
+
+bool CommonUtility::isWindows() {
+#if defined(KD_WINDOWS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#if defined(KD_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(KD_LINUX)
+    return true;
+#else
+    return false;
+#endif
 }
 
 } // namespace KDC

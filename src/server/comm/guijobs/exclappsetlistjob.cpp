@@ -50,17 +50,17 @@ ExitInfo ExclAppSetListJob::deserializeInputParms() {
 ExitInfo ExclAppSetListJob::process() {
     if (const auto exitCode = ServerRequests::setExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionAppList: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
 
         return exitCode;
     }
 
-    const std::scoped_lock lock(AppServer::vfsMapMutex);
-    const auto it = std::find_if(AppServer::vfsMap.cbegin(), AppServer::vfsMap.cend(),
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto it = std::find_if(_commManager->appServer().vfsMap.cbegin(), _commManager->appServer().vfsMap.cend(),
                                  [](const auto &pair) { return pair.second->mode() == VirtualFileMode::Mac; });
-    if (it != AppServer::vfsMap.cend() && !it->second->setAppExcludeList()) {
+    if (it != _commManager->appServer().vfsMap.cend() && !it->second->setAppExcludeList()) {
         LOG_WARN(_logger, "Error in Vfs::setAppExcludeList!");
-        AppServer::addError(Error(ERR_ID, ExitCode::SystemError));
+        addError(Error(ERR_ID, ExitCode::SystemError));
 
         return ExitCode::SystemError;
     }

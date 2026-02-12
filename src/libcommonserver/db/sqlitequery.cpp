@@ -17,9 +17,12 @@
  */
 
 #include "sqlitequery.h"
+
 #include "utility/utility.h"
 #include "utility/logiffail.h"
 #include "log/log.h"
+
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 

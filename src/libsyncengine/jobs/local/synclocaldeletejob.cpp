@@ -20,10 +20,11 @@
 
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
+#include "requests/parameterscache.h"
+
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -36,7 +37,7 @@
 namespace KDC {
 
 SyncLocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path){};
+    _path(path) {};
 
 bool SyncLocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;

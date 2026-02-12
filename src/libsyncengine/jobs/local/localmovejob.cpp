@@ -18,6 +18,8 @@
 
 #include "localmovejob.h"
 
+#include "libcommon/utility/utility.h"
+
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"

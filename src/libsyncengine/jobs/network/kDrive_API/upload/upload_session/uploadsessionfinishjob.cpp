@@ -20,13 +20,13 @@
 
 #include "jobs/network/kDrive_API/upload/uploadjobreplyhandler.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
+UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, const UploadSessionType uploadType,
                                                const int driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,

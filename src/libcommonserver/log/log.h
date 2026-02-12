@@ -18,15 +18,12 @@
 
 #pragma once
 
-#include "libcommonserver/commonserverlib.h"
-
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
-
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/customlogstreams.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
+
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
@@ -217,7 +214,7 @@ namespace KDC {
 
 #endif
 
-class COMMONSERVER_EXPORT Log {
+class Log {
     public:
         ~Log();
         static std::shared_ptr<Log> instance(const log4cplus::tstring &filePath = log4cplus::tstring());

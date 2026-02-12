@@ -20,6 +20,7 @@ import Cocoa
 import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
+import kDriveCoreUI
 
 final class DriveTargetAssembly: TargetAssembly {
     static let loginConfig = InfomaniakLogin.Config(
@@ -32,8 +33,14 @@ final class DriveTargetAssembly: TargetAssembly {
             Factory(type: WindowRouter.self) { _, _ in
                 MainWindowRouter()
             },
+            Factory(type: MainViewRouter.self) { _, _ in
+                MainViewRouter()
+            },
             Factory(type: InfomaniakLoginable.self) { _, _ in
                 InfomaniakLogin(config: Self.loginConfig)
+            },
+            Factory(type: SidebarNotificationPresenting.self) { _, _ in
+                SidebarNotificationPresenter()
             }
         ]
     }

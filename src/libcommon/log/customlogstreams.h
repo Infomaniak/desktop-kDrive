@@ -21,7 +21,7 @@
 
 #include <QIODevice>
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 class CustomLogStream : private std::stringstream {
     public:

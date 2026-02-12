@@ -80,7 +80,7 @@
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander IsEnabled="False" />
+                    <controls:UpdateExpander />
 
                     <!-- General - Language -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
@@ -230,7 +230,8 @@
                                                                   Click="ManageDriveButton_Click"
                                                                   Tag="{x:Bind}">
                                                 <toolKit:SettingsCard.HeaderIcon>
-                                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom }"
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive }"
                                                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
                                                 <ContentControl Content="{x:Bind}"
@@ -260,8 +261,7 @@
                     <!-- Advanced - Sync rules -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_SyncRules"
                                           IsClickEnabled="True"
-                                          Click="SyncRulesCard_Clicked"
-                                          IsEnabled="False">
+                                          Click="SyncRulesCard_Clicked">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.list-bullets}"
                                               Height="32"
@@ -288,7 +288,7 @@
                                                   IsClickEnabled="True"
                                                   Click="MatomoButton_Click"
                                                   IsEnabled="False" />
-                            
+
                             <!-- Sentry -->
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sentry"
                                                   Background="{ThemeResource LayerFillColorDefault}"
@@ -307,7 +307,7 @@
                                 </toolKit:SettingsCard.ActionIcon>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
-                        
+
                     </toolKit:SettingsExpander>
                     <controls:ConsentDialog x:Name="SentryContentDialog"
                                             x:Uid="Page_SettingsPage_Privacy_Sentry_ConsentDialog"
@@ -349,14 +349,14 @@
                                 <TextBox x:Name="ProxyHostTextBox"
                                          PlaceholderText="0.0.0.0"
                                          TextChanged="ProxyConfig_Changed"
-                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName}"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName, Mode=OneWay}"
                                          Width="200" />
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Port"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyPortTextBox"
                                          PlaceholderText="443"
-                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.Port}"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.Port, Mode=OneWay}"
                                          TextChanged="ProxyConfig_Changed"
                                          Width="200" />
                             </toolKit:SettingsCard >
@@ -474,70 +474,12 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Advanced - Send log -->
-                    <toolKit:SettingsCard Header="Support infomaniak"
-                                          IsEnabled="False">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}"
-                                              Height="16"
-                                              Foreground="{ThemeResource SystemFillColorSuccess}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Votre dossier de logs a été partagé avec succés le xxxxxx à xxhxx et xxs." />
-                                    <!-- TODO: Replace with actual values once linked to the server -->
-                                </ToolTipService.ToolTip>
-                            </controls:SvgIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert}"
-                                              Height="16"
-                                              Foreground="{ThemeResource SystemErrorTextColor}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="L'envoi de votre dossier de logs a échoué. Veuillez réessayer." />
-                                </ToolTipService.ToolTip>
-                            </controls:SvgIcon>
-                            <ProgressRing x:Name="SendLogsProgressRing"
-                                          Height="16"
-                                          Width="Auto"
-                                          IsIndeterminate="False"
-                                          Visibility="Collapsed" />
-                            <Button x:Name="SendLogButton"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Click="SendLogButton_Click">
-                                <Grid>
-                                    <TextBlock Text="Envoyer le dossier de débogage" />
-                                </Grid>
-                            </Button>
-                            <Button x:Name="CancelSendLogButton"
-                                    Content="Annuler"
-                                    Click="CancelSendLogButton_Click" />
-                            <ContentDialog x:Name="SendLogDialog"
-                                           Title="Envoyer le dossier de débogage au support Infomaniak"
-                                           PrimaryButtonText="Envoyer"
-                                           CloseButtonText="Annuler"
-                                           DefaultButton="Primary">
-
-                                <ContentDialog.Content>
-                                    <StackPanel Spacing="12">
-                                        <TextBlock Text="Le dossier complet est volumineux.Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive."
-                                                   TextWrapping="WrapWholeWords"
-                                                   TextAlignment="Justify"
-                                                   Margin="0,0,0,8" />
-                                        <CheckBox Content="Envoyer uniquement la dernière session"
-                                                  IsChecked="True" />
-                                    </StackPanel>
-                                </ContentDialog.Content>
-                            </ContentDialog>
-                        </StackPanel>
-
-                    </toolKit:SettingsCard>
+                    <controls:LogUploadSettingsCard LogUploadManager="{x:Bind ViewModel.Settings.LogUploadManager}" />
 
                     <!-- About - Privacy -->
                     <toolKit:SettingsExpander Header="À propos de kDrive">
                         <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>

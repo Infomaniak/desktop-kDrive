@@ -29,12 +29,20 @@ public sealed partial class SyncStartPauseButton : UserControl
         if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))
         {
             Logger.Log(Logger.Level.Info, "Pausing sync...");
-            await ViewModel.SelectedSync.Pause();
+            if (!await ViewModel.SelectedSync.Pause())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to pause sync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
         else if (ViewModel?.SelectedSync is not null)
         {
             Logger.Log(Logger.Level.Info, "Starting sync...");
-            await ViewModel.SelectedSync.Start();
+            if (!await ViewModel.SelectedSync.Start())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }
@@ -76,7 +84,7 @@ public class SyncToButtonEnabledConverter : IValueConverter
     {
         if (value is Sync sync)
         {
-            SyncStatus syncStatus = sync.SyncStatus; ;
+            SyncStatus syncStatus = sync.SyncStatus;
             return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error);
         }
         return false;

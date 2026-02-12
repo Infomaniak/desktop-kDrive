@@ -13,6 +13,7 @@
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
+		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -121,6 +122,7 @@
 				Cache/CoherentCacheTests/CacheData.swift,
 				Cache/CoherentCacheTests/CoherentCacheAccountTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheDriveTests.swift,
+				Cache/CoherentCacheTests/CoherentCacheErrorTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheSynchroTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
 				Cache/DTOs/SynchroTests.swift,
@@ -129,13 +131,53 @@
 				Cache/Observation/ObservedAccountTests.swift,
 				Cache/Observation/ObservedDrivesTests.swift,
 				Cache/Observation/ObservedDriveTests.swift,
+				Cache/Observation/ObservedSynchroNodesTests.swift,
 				Cache/Observation/ObservedSynchrosTests.swift,
 				Cache/Observation/ObservedSynchroTests.swift,
 				Cache/Observation/ObservedUserTests.swift,
+				Jobs/LoginJobTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/HexColorTests.swift,
+				Parsing/Jobs/BlacklistedNodeListTest.swift,
+				Parsing/Jobs/JSON/BLACKLISTED_NODE_LIST.json,
+				Parsing/Jobs/JSON/NODE_CREATEMISSINGFOLDERS.json,
+				Parsing/Jobs/JSON/NODE_FOLDER_SIZE.json,
+				Parsing/Jobs/JSON/NODE_INFO.json,
+				Parsing/Jobs/JSON/NODE_PATH.json,
+				Parsing/Jobs/JSON/NODE_SUBFOLDERS.json,
+				Parsing/Jobs/JSON/SYNC_GETPUBLICLINKURL.json,
+				"Parsing/Jobs/JSON/UTILITY_ACTIVATELOADINFO-success.json",
+				Parsing/Jobs/JSON/UTILITY_BESTVFSAVAILABLEMODE.json,
+				Parsing/Jobs/JSON/UTILITY_CHECKCOMMSTATUS.json,
+				"Parsing/Jobs/JSON/UTILITY_FINDGOODPATHFORNEWSYNC-error.json",
+				"Parsing/Jobs/JSON/UTILITY_FINDGOODPATHFORNEWSYNC-success.json",
+				Parsing/Jobs/JSON/UTILITY_HASLAUNCHONSTARTUP.json,
+				Parsing/Jobs/JSON/UTILITY_HASSYSTEMLAUNCHONSTARTUP.json,
+				Parsing/Jobs/JSON/UTILITY_ISPATHVALIDFORNEWSYNC.json,
+				Parsing/Jobs/NodeCreateMissingFolders.swift,
+				Parsing/Jobs/NodeFolderSize.swift,
+				Parsing/Jobs/NodeInfoTest.swift,
+				Parsing/Jobs/NodePathTest.swift,
+				Parsing/Jobs/NodeSubfoldersTest.swift,
+				Parsing/Jobs/SyncGetPublicLinkUrlTest.swift,
+				Parsing/Jobs/UtilityActivateLoadInfoTest.swift,
+				Parsing/Jobs/UtilityBestVFSTest.swift,
+				Parsing/Jobs/UtilityCheckCommStatusTest.swift,
+				Parsing/Jobs/UtilityFindPathTest.swift,
+				Parsing/Jobs/UtilityHasLaunchOnStartupTest.swift,
+				Parsing/Jobs/UtilityHasSystemLaunchOnStartupTest.swift,
+				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
+				Parsing/Signals/JSON/USER_ADDED.json,
+				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
+				Parsing/Signals/UserAddedParsingTest.swift,
+				Parsing/Signals/UtilityErrorAddedTest.swift,
+				Router/MainViewRouterTests.swift,
+				XPC/JSON/AnyValidJobResponse.json,
+				XPC/JSON/ParsingError.json,
+				XPC/JSON/QuotaExceededError.json,
+				XPC/XPCQueryFetcherTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
@@ -219,6 +261,7 @@
 				7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */,
 				7A97962C2F0EB51100E36DDE /* Collections in Frameworks */,
 				F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */,
+				A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +421,7 @@
 				7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */,
 				F97590BB2ECC7A8A002CC428 /* Sentry */,
 				7A97962B2F0EB51100E36DDE /* Collections */,
+				A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */,
 			);
 			productName = kDriveCore;
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
@@ -477,6 +521,7 @@
 				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
 				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				7A97962A2F0EB51100E36DDE /* XCRemoteSwiftPackageReference "swift-collections" */,
+				A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -664,7 +709,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = CZLT48TREY;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -730,7 +775,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = CZLT48TREY;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -998,14 +1043,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 864VDCS2QY;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.helloXPC.ik.kDriveTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.driveTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1019,14 +1067,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 864VDCS2QY;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.helloXPC.ik.kDriveTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.driveTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1060,7 +1111,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.kDriveResources;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.driveResources;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1099,7 +1150,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.kDriveResources;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.driveResources;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1190,6 +1241,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Infomaniak/swift-foundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
 		F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
@@ -1234,6 +1293,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
 			productName = InfomaniakConcurrency;
+		};
+		A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */;
+			productName = InfomaniakFoundation;
 		};
 		F967FC8B2E8BC9FE00EDD4D7 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;

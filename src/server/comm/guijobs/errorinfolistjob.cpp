@@ -56,7 +56,7 @@ ExitInfo ErrorInfolistJob::process() {
     ExitInfo exitInfo = ServerRequests::getErrorInfoList(_limit, _errorInfoList);
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in ServerRequests::getErrorInfoList: " << exitInfo);
-        AppServer::addError(Error(ERR_ID, exitInfo));
+        addError(Error(ERR_ID, exitInfo));
         return exitInfo;
     }
 

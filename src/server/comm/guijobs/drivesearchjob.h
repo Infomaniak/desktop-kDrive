@@ -30,7 +30,7 @@ class DriveSearchJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _driveDbId = 0;
+        int _syncDbId = 0;
         CommString _searchString;
 
         // Output parameters

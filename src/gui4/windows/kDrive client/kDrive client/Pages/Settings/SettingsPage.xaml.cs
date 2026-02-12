@@ -22,11 +22,11 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Settings
@@ -55,40 +55,70 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
+
             if (sender is ToggleSwitch toggleSwitch)
             {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+
                 toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn);
+                if (!await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change AutoStart setting");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
                 toggleSwitch.IsEnabled = true;
             }
         }
 
         private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
+
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
+                if (!comboBox.IsEnabled)
+                    return;
+
+                comboBox.IsEnabled = false;
+
                 string? selection = selectedItem.Tag as string;
-                if (Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
+                if (!Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
                 {
-                    await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled);
-                    Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                    Logger.Log(Logger.Level.Error, $"Invalid selection for NotificationsDisabled: {selection}");
+                    comboBox.IsEnabled = true;
+                    return;
                 }
-                else
+
+                if (!await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled))
                 {
-                    Logger.Log(Logger.Level.Error, $"Update notifications disabled changed to  {selectedNotificationsDisabled}");
+                    Logger.Log(Logger.Level.Error, $"Failed to change update notifications disabled to {selectedNotificationsDisabled}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    comboBox.IsEnabled = true;
+                    return;
                 }
+
+                Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                comboBox.IsEnabled = true;
             }
         }
 
         private async void MoveToTrashToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
             if (sender is ToggleSwitch toggleSwitch)
             {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+
                 toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn);
+                if (!await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change MoveToTrash setting");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
                 toggleSwitch.IsEnabled = true;
             }
         }
@@ -96,25 +126,28 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
             User? user = (sender as FrameworkElement)?.DataContext as User;
-            if (user is not null)
+            if (user is null)
             {
-                await user.RefreshAvailableDrives();
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
             }
-            else
+
+            if (!await user.RefreshAvailableDrives(CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Warning, "Unable to find the user from DataContext. Refreshing for all users.");
-                await RefreshAvailableDrivesForAllUsers();
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+                Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
         }
 
         private async Task RefreshAvailableDrivesForAllUsers()
         {
-            List<Task> loadAvailableDrivesTasks = new List<Task>();
+            List<Task<bool>> loadAvailableDrivesTasks = new List<Task<bool>>();
             foreach (var user in ViewModel.Users)
             {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
+                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
+            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
@@ -125,9 +158,11 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
                 return;
             }
-            ContentDialog dialog = new ContentDialog();
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
 
-            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = this.XamlRoot;
             dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
@@ -138,35 +173,30 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
-                if (user is not null)
+                if (!await _viewModel.DisconnectUserAsync(user.DbId))
                 {
-                    var control = sender as Control;
+                    Logger.Log(Logger.Level.Error, "Failed to disconnect user");
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     if (control is not null)
-                    {
-                        control.IsEnabled = false;
-                    }
-                    await _viewModel.DisconnectUserAsync(user.DbId);
-                    await Task.Delay(5000);
-                    if (control is not null)
-                    {
                         control.IsEnabled = true;
-                    }
+                    return;
                 }
             }
+            else
+            {
+                Logger.Log(Logger.Level.Info, "User disconnection cancelled by user");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
         }
 
         private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
         {
             IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
-            if (drive is Drive)
+            if (drive is not null)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
                 Frame.Navigate(typeof(DriveManagementPage), drive);
-            }
-            else if (drive is DriveAvailable)
-            {
-                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for unconfigured drive {drive.Name}, going to onboarding page");
-                // TODO: Implement navigation to Onboarding Page
             }
             else
             {
@@ -177,60 +207,36 @@ namespace Infomaniak.kDrive.Pages.Settings
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
-            // TODO: Implement navigation to Sync Rules Page
+            Frame.Navigate(typeof(TemplateExclusionPage));
         }
 
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
-            if (result == ConsentResult.Cancelled) return;
-            await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed);
+            if (result == ConsentResult.Cancelled)
+                return;
+            if (!await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change Matomo enabled setting");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
 
         private async void SentryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
             ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
-            if (result == ConsentResult.Cancelled) return;
-            await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed);
-        }
+            if (result == ConsentResult.Cancelled)
+                return;
 
-        private async void MatomoToogleSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ToggleSwitch toggleSwitch)
+            if (!await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed))
             {
-                toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.ChangeMatomoEnabled(toggleSwitch.IsOn);
-                toggleSwitch.IsEnabled = true;
+                Logger.Log(Logger.Level.Error, "Failed to change Sentry enabled setting");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "MatomoToogleSwitch_Toggled: sender is not a ToggleSwitch");
-            }
-        }
-
-        private async void SentryeSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ToggleSwitch toggleSwitch)
-            {
-                toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.ChangeSentryEnabled(toggleSwitch.IsOn);
-                toggleSwitch.IsEnabled = true;
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "SentryeSwitch_Toggled: sender is not a ToggleSwitch");
-            }
-
         }
 
         private async void PrivacySeeSourcesButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
-
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
@@ -243,27 +249,47 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void ProxyTypeComboBox_Changed(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
-            var control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
+            if (!IsLoaded)
+                return;
 
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
+            }
+
+            if (!control.IsEnabled)
+                return;
+
+            control.IsEnabled = false;
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
-            if (selectedItem is not null && Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            if (selectedItem is null)
             {
-                await ViewModel.Settings.ChangeProxyType(selectedProxyType);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "ProxyTypeComboBox_Changed: selected item is null or invalid");
-            }
-            if (control is not null)
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
                 control.IsEnabled = true;
+                return;
+            }
+
+            if (!Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            {
+                control.IsEnabled = true;
+                Logger.Log(Logger.Level.Error, "selected item is null or invalid");
+            }
+
+
+            if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change proxy type");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            control.IsEnabled = true;
         }
 
         private void ProxyConfig_Changed(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (ProxyHostTextBox.Text != ViewModel.Settings.ProxyConfig.HostName ||
                ProxyPortTextBox.Text != ViewModel.Settings.ProxyConfig.Port.ToString() ||
                ProxyNeedsAuthToggleSwitch.IsOn != ViewModel.Settings.ProxyConfig.NeedsAuth ||
@@ -280,9 +306,18 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!ProxySettingsExpander.IsEnabled)
+                return;
+
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
-            await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
+
+            if (!await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change proxy configuration");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+
             ProxySettingsExpander.IsEnabled = true;
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
             ProxySaveProgressRing.Visibility = Visibility.Collapsed;
@@ -306,100 +341,106 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-
-            if (toggleSwitch is null)
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
-
-            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
-
-            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn) return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
-
-            LogSettingsExpander.IsEnabled = false;
-            await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None);
-            LogSettingsExpander.IsEnabled = true;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
+                if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Debug : Logger.Level.None))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
+            }
         }
 
         private async void PurgeOldLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-            if (toggleSwitch is null)
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
-
-            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
-            LogSettingsExpander.IsEnabled = false;
-            await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch?.IsOn ?? false);
-            LogSettingsExpander.IsEnabled = true;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
+                if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
+            }
         }
 
         private async void ExtendedLogToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-            if (toggleSwitch is null)
-                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                if (!toggleSwitch.IsEnabled)
+                    return;
+                LogSettingsExpander.IsEnabled = false;
+                toggleSwitch.IsEnabled = false;
 
-            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
-            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn) return; // No change needed
-            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn) return; // No change needed
-            LogSettingsExpander.IsEnabled = false;
-            await ViewModel.Settings.ChangeLogLevel(toggleSwitch?.IsOn ?? false ? Logger.Level.Extended : Logger.Level.Debug);
-            LogSettingsExpander.IsEnabled = true;
+                if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleSwitch.IsOn || ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleSwitch.IsOn)
+                {
+                    toggleSwitch.IsEnabled = true;
+                    LogSettingsExpander.IsEnabled = true;
+                    return; // No change needed
+                }
+
+                if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Extended : Logger.Level.Debug))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                toggleSwitch.IsEnabled = true;
+                LogSettingsExpander.IsEnabled = true;
+            }
         }
 
         private async void LogLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             var control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
+            }
+
+            if (!control.IsEnabled)
+            {
+                Logger.Log(Logger.Level.Error, "control is disabled");
+                return;
+            }
+
+            control.IsEnabled = false;
 
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
-            if (selectedItem is not null && Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            if (selectedItem is null)
             {
-                await ViewModel.Settings.ChangeLogLevel(selectedLevel);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Selected item is null or invalid");
-            }
-            if (control is not null)
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
                 control.IsEnabled = true;
-        }
-
-        bool _logUploadCancelled = false;
-        private async void SendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await SendLogDialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
-
-            // !!! Simulate log upload progress
-            // TODO: Implement actual log upload once linked with the server side
-
-            _logUploadCancelled = false;
-            SendLogsProgressRing.Value = 0;
-            SendLogsProgressRing.Visibility = Visibility.Visible;
-            SendLogButton.IsEnabled = false;
-            CancelSendLogButton.Visibility = Visibility.Visible;
-            while (SendLogsProgressRing.Value < 100 && !_logUploadCancelled)
-            {
-                await Task.Delay(Random.Shared.Next(200, 800));
-                SendLogsProgressRing.Value += Random.Shared.Next(1, 20);
+                return;
             }
-            SendLogsProgressRing.Value = 100;
-            await Task.Delay(500);
-            SendLogsProgressRing.Visibility = Visibility.Collapsed;
-            SendLogButton.IsEnabled = true;
-            CancelSendLogButton.Visibility = Visibility.Collapsed;
-            _logUploadCancelled = false;
-        }
 
-        private void CancelSendLogButton_Click(object sender, RoutedEventArgs e)
-        {
-            _logUploadCancelled = true;
+            if (!Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            {
+                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to change log level");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            control.IsEnabled = true;
         }
     }
 
@@ -410,7 +451,8 @@ namespace Infomaniak.kDrive.Pages.Settings
         public DataTemplate? UnconfiguredTemplate { get; set; }
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is null) return base.SelectTemplateCore(item);
+            if (item is null)
+                return base.SelectTemplateCore(item);
             if (item is DriveAvailable)
                 return UnconfiguredTemplate;
             else if (item is Drive)
@@ -420,8 +462,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             return base.SelectTemplateCore(item);
         }
-
-
     }
 
 }

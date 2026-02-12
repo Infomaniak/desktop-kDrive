@@ -67,7 +67,6 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
     jobs/network/kDrive_API/getinfodrivejob.h jobs/network/kDrive_API/getinfodrivejob.cpp
-    jobs/network/kDrive_API/getinfodriveuserjob.h jobs/network/kDrive_API/getinfodriveuserjob.cpp
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
     jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp

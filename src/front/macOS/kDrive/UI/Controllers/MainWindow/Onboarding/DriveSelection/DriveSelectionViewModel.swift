@@ -22,32 +22,44 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
-    @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var syncCreator: SyncCreator
+
+    @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var coherentCacheObservable: CoherentCacheObservable
 
     private let flowCoordinator: OnboardingFlowCoordinator
 
+    private var bindStore = Set<AnyCancellable>()
+
     @Published private(set) var isLoading = false
 
-    @Published private(set) var availableDrives: [UIAvailableDrive]?
+    @Published private(set) var availableDrives = [UIAvailableDrive]()
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
+        observeAvailableDrives()
+    }
+
+    private func observeAvailableDrives() {
+        coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
+            .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
+            .receiveOnMain(store: &bindStore) { [weak self] availableDrive in
+                self?.availableDrives = availableDrive
+            }
     }
 
     func loadAvailableDrives() async throws {
-        guard let targetUser = flowCoordinator.targetUser else {
+        guard let user = flowCoordinator.currentUser else {
             flowCoordinator.navigate(to: .login)
             return
         }
 
-        let drivesResponse = try await DriveJobs().availableDrives(userDbId: Int32(targetUser.dbId))
-        let availableDrives = drivesResponse.asAvailableDrives
-        self.availableDrives = availableDrives.map { UIAvailableDrive(availableDrive: $0) }
+        _ = try await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
     }
 
     func toggleDriveSelection(_ drive: UIAvailableDrive) {
@@ -59,17 +71,16 @@ final class DriveSelectionViewModel: ObservableObject {
     }
 
     func startSynchronization() {
-        guard !selectedDrives.isEmpty, let targetUser = flowCoordinator.targetUser else { return }
+        guard !selectedDrives.isEmpty else { return }
 
         Task {
             isLoading = true
 
             do {
-                // TODO: Use the cache property when available (next XPC PR)
-                let availableDrives = try await DriveJobs().availableDrives(userDbId: Int32(targetUser.dbId)).asAvailableDrives
-
                 let syncCandidates: [NewSyncCandidate] = try await selectedDrives.concurrentCompactMap { selectedDrive in
-                    guard let availableDrive = availableDrives.first(where: { $0.id == selectedDrive.id }) else {
+                    guard let uiAvailableDrive = await self.availableDrives.first(where: { $0.id == selectedDrive.id }),
+                          let availableDrive = await self.coherentCache.getAvailableDrive(driveDb: Int32(uiAvailableDrive.id))
+                    else {
                         return nil
                     }
 

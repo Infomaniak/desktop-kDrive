@@ -17,7 +17,6 @@
  */
 
 import Cocoa
-import kDriveCore
 import kDriveCoreUI
 
 final class NonInteractiveButton: NSButton {
@@ -35,12 +34,12 @@ final class DriveCellView: NSView {
     let drive: UIAvailableDrive
     var toggleDrive: ((UIAvailableDrive) -> Void)?
 
-    public var state: NSControl.StateValue {
+    var state: NSControl.StateValue {
         get { checkbox.state }
         set { checkbox.state = newValue }
     }
 
-    public var isEnabled = true {
+    var isEnabled = true {
         didSet {
             checkbox.isEnabled = isEnabled
         }
@@ -50,7 +49,7 @@ final class DriveCellView: NSView {
         return drive.nsColor ?? ColorToken.Drive.defaultColor.asNSColor
     }
 
-    private var isActivated: Bool = false
+    private var isActivated = false
 
     private var backgroundColor: NSColor {
         isActivated ? Tokens.activatedBackgroundColor : Tokens.backgroundColor

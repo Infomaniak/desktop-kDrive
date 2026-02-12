@@ -17,12 +17,28 @@ namespace Infomaniak.kDrive.CustomControls
         public UpdateExpander()
         {
             InitializeComponent();
+
+        }
+        private void UpdateExpander_Loaded(object sender, RoutedEventArgs e)
+        {
             RegisterPropertyChangedHandlers();
+            UpdateInternalChannelComboBoxVisibility();
         }
 
-        ~UpdateExpander()
+        private void UpdateExpander_Unloaded(object sender, RoutedEventArgs e)
         {
             UnregisterPropertyChangedHandlers();
+        }
+
+        private bool IsStaffUserConnected()
+        {
+            return ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
+        }
+
+        private void UpdateInternalChannelComboBoxVisibility()
+        {
+            UpdateChannelComboBox_Internal.Visibility =
+                IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()
@@ -40,9 +56,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs? e)
         {
-            if (e is null || e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-                Utility.SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
-
             if (e is null || e.PropertyName == nameof(UpdateManager.AvailableUpdate) || e.PropertyName == nameof(Settings.AppVersion))
                 Refresh();
         }
@@ -80,20 +93,25 @@ namespace Infomaniak.kDrive.CustomControls
                 this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_Description/Text");
                 DisplayedVersion = AppVersionInfo;
             }
-            // check if any of the users is staff to show the internal update channel combobox
-            bool staffUserExists = App.ServiceProvider.GetRequiredService<AppModel>().Users.Any(user => user.IsStaff && user.IsConnected);
-            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
+            UpdateInternalChannelComboBoxVisibility();
         }
 
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
+
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? channelString = selectedItem.Tag as string;
                 if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
-                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
+                    if (!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
+                    {
+                        Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
+                        Utility.ShowUnexpectedErrorTeachingTip();
+                        return;
+                    }
                     Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
                 }
                 else
@@ -118,9 +136,10 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Info, "User clicked on Update button, starting update process.");
             }
 
-            if (!await ViewModel.Settings.UpdateManager.StartUpdate())
+            if (!await UpdateManager.StartUpdate())
             {
                 Logger.Log(Logger.Level.Error, "Update process failed to start.");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
 
             if (btn is not null)
@@ -129,9 +148,10 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private async void AutoUpdateToggleSwitch_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;
@@ -141,7 +161,11 @@ namespace Infomaniak.kDrive.CustomControls
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
-                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
+                if (!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
+                {
+                    Logger.Log(Logger.Level.Error, "Failed to change auto-update setting.");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
                 toggleSwitch.IsEnabled = true;
             }
         }

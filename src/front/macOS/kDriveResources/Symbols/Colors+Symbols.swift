@@ -22,10 +22,32 @@ public typealias AssetColorTypeAlias = ColorAsset.Color
 
 // swiftlint:disable identifier_name line_length nesting type_body_length type_name
 public enum KDriveColors {
+  public static let blue100 = ColorAsset(name: "Blue100")
+  public static let blue400 = ColorAsset(name: "Blue400")
+  public static let blue500 = ColorAsset(name: "Blue500")
+  public static let blue600 = ColorAsset(name: "Blue600")
+  public static let blue950 = ColorAsset(name: "Blue950")
   public static let infomaniak = ColorAsset(name: "Infomaniak")
-  public static let drive400 = ColorAsset(name: "Drive400")
-  public static let drive500 = ColorAsset(name: "Drive500")
-  public static let drive600 = ColorAsset(name: "Drive600")
+  public static let brown950 = ColorAsset(name: "Brown950")
+  public enum FileTypes {
+    public static let fileArchive = ColorAsset(name: "FileTypes/fileArchive")
+    public static let fileAudio = ColorAsset(name: "FileTypes/fileAudio")
+    public static let fileCode = ColorAsset(name: "FileTypes/fileCode")
+    public static let fileDoc = ColorAsset(name: "FileTypes/fileDoc")
+    public static let fileFolder = ColorAsset(name: "FileTypes/fileFolder")
+    public static let fileFont = ColorAsset(name: "FileTypes/fileFont")
+    public static let fileGrid = ColorAsset(name: "FileTypes/fileGrid")
+    public static let fileIcs = ColorAsset(name: "FileTypes/fileIcs")
+    public static let fileImage = ColorAsset(name: "FileTypes/fileImage")
+    public static let filePdf = ColorAsset(name: "FileTypes/filePdf")
+    public static let filePoint = ColorAsset(name: "FileTypes/filePoint")
+    public static let fileUnknown = ColorAsset(name: "FileTypes/fileUnknown")
+    public static let fileVcard = ColorAsset(name: "FileTypes/fileVcard")
+    public static let fileVideo = ColorAsset(name: "FileTypes/fileVideo")
+  }
+  public static let gray400 = ColorAsset(name: "Gray400")
+  public static let gray500 = ColorAsset(name: "Gray500")
+  public static let gray950 = ColorAsset(name: "Gray950")
   public static let green400 = ColorAsset(name: "Green400")
   public static let green500 = ColorAsset(name: "Green500")
   public static let neutralBlue100 = ColorAsset(name: "NeutralBlue100")
@@ -36,10 +58,13 @@ public enum KDriveColors {
   public static let neutralBlue600 = ColorAsset(name: "NeutralBlue600")
   public static let neutralBlue700 = ColorAsset(name: "NeutralBlue700")
   public static let neutralBlue800 = ColorAsset(name: "NeutralBlue800")
+  public static let orange100 = ColorAsset(name: "Orange100")
   public static let orange300 = ColorAsset(name: "Orange300")
   public static let orange400 = ColorAsset(name: "Orange400")
   public static let orange500 = ColorAsset(name: "Orange500")
   public static let orange800 = ColorAsset(name: "Orange800")
+  public static let kDrive500 = ColorAsset(name: "kDrive500")
+  public static let kDrive600 = ColorAsset(name: "kDrive600")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 

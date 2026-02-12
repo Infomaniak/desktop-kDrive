@@ -104,7 +104,7 @@ final class DriveSelectionViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        flowCoordinator.$targetUser
+        flowCoordinator.$currentUser
             .receiveOnMain(store: &bindStore) { [weak self] user in
                 guard let user else { return }
                 self?.labeledUserView.user = user
@@ -112,11 +112,9 @@ final class DriveSelectionViewController: OnboardingStepViewController {
 
         viewModel.$availableDrives
             .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
-                guard let availableDrives else { return }
                 self?.handleUpdatedDrivesList(availableDrives)
             }
 
-        handleSelectedDrivesChanged(viewModel.selectedDrives)
         viewModel.$selectedDrives
             .receiveOnMain(store: &bindStore) { [weak self] selectedDrives in
                 self?.handleSelectedDrivesChanged(selectedDrives)
@@ -151,6 +149,7 @@ extension DriveSelectionViewController {
         if drives.count == 1, let singleDrive = drives.first {
             drivesListView.cells[singleDrive.id]?.state = .on
             drivesListView.cells[singleDrive.id]?.isEnabled = false
+            viewModel.toggleDriveSelection(singleDrive)
         }
 
         primaryButton.title = KDriveLocalizable.buttonContinue

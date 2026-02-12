@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -27,16 +28,16 @@ extension SidebarItem {
         icon: KDriveResources.house.image,
         title: KDriveLocalizable.tabTitleHome
     )
-    static let activity = SidebarItem(
+    static let activities = SidebarItem(
         icon: KDriveResources.circularArrowsClockwise.image,
-        title: KDriveLocalizable.tabTitleActivity
+        title: KDriveLocalizable.tabTitleActivities
     )
     static let storage = SidebarItem(
         icon: KDriveResources.hardDiskDrive.image,
         title: KDriveLocalizable.tabTitleStorage
     )
     static let openInFinder = SidebarItem(
-        icon: KDriveResources.folderCircleArrowRight.image,
+        icon: KDriveResources.finder.image,
         title: KDriveLocalizable.buttonOpenInFinder,
         type: .action
     )
@@ -45,12 +46,19 @@ extension SidebarItem {
 final class MainSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
-    weak var delegate: NavigableSidebarViewControllerDelegate?
+    @LazyInjectService private var router: MainViewRouter
+    @LazyInjectService private var loadingIndicatorShower: SidebarNotificationPresenting
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+    private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
+
+    private lazy var sidebarNotificationView: SidebarNotificationView = {
+        let view = SidebarNotificationView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()
@@ -115,7 +123,16 @@ final class MainSidebarViewController: NSViewController {
         mainViewModel.$availableSynchros
             .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
                 self?.updateSynchrosList(synchrosContext)
+                self?.updateSidebar()
             }
+
+        loadingIndicatorShower.statePublisher
+            .receive(on: RunLoop.main)
+            .throttle(for: 0.5, scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] state in
+                self?.sidebarNotificationView.configure(with: state)
+            }
+            .store(in: &bindStore)
     }
 
     private func setupView() {
@@ -125,6 +142,7 @@ final class MainSidebarViewController: NSViewController {
 
         view.addSubview(popUpButton)
         setupScrollAndOutlineView()
+        view.addSubview(sidebarNotificationView)
 
         NSLayoutConstraint.activate([
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -144,7 +162,20 @@ final class MainSidebarViewController: NSViewController {
             scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: AppPadding.padding16),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+
+            sidebarNotificationView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            sidebarNotificationView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: AppPadding.padding16
+            ),
+            sidebarNotificationView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
+            sidebarNotificationView.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -AppPadding.padding16
+            )
         ])
     }
 
@@ -189,6 +220,16 @@ final class MainSidebarViewController: NSViewController {
         }
     }
 
+    private func updateSidebar() {
+        let previousSelectedRow = outlineView.selectedRow == -1 ? 0 : outlineView.selectedRow
+        outlineView.reloadData()
+        if mainViewModel.currentBlockingError != nil {
+            outlineView.selectRowIndexes([], byExtendingSelection: false)
+        } else {
+            outlineView.selectRowIndexes([previousSelectedRow], byExtendingSelection: false)
+        }
+    }
+
     private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
         var title: String
         if displaySynchroPath {
@@ -228,7 +269,7 @@ extension MainSidebarViewController: NSOutlineViewDataSource {
 extension MainSidebarViewController: ClickableOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
-        return item.canBeSelected
+        return item.canBeSelected && mainViewModel.currentBlockingError == nil
     }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -240,16 +281,18 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        cell?.setupForItem(item)
+        let enabled = !item.canBeSelected || mainViewModel.currentBlockingError == nil
+        cell?.setupForItem(item, enabled: enabled)
         return cell
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
-        delegate?.sidebarViewController(self, didSelectItem: selectedItem)
+        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem,
+              let path = selectedItem.tab else { return }
+        router.setCurrentTab(path)
     }
 
-    func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
+    func outlineView(_: NSOutlineView, didClick item: Any?) {
         guard let item = item as? SidebarItem, item.type == .action else {
             return
         }

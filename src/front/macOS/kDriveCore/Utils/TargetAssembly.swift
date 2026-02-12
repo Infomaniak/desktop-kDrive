@@ -34,7 +34,7 @@ open class TargetAssembly {
 
     open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
-           Factory(type: CoherentCache.self) { _, _ in
+            Factory(type: CoherentCache.self) { _, _ in
                 ServerCoherentCache()
             },
             Factory(type: CoherentCacheObservable.self) { _, resolver in
@@ -64,6 +64,9 @@ open class TargetAssembly {
             },
             Factory(type: MacOSPermissionHandling.self) { _, _ in
                 MacOSPermissionHandler()
+            },
+            Factory(type: NodeURLGenerator.self) { _, _ in
+                DriveNodeURLGenerator()
             }
         ]
     }

@@ -8,11 +8,14 @@
                           xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
                           xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
                           xmlns:converters="using:Infomaniak.kDrive.Converters"
+                          Loaded="UpdateExpander_Loaded"
+                          Unloaded="UpdateExpander_Unloaded"
                           mc:Ignorable="d">
     <toolKit:SettingsExpander.Resources>
         <!-- Converters -->
         <converters:DateToStringConverter x:Key="DateToStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:ToStringConverter x:Key="ToStringConverter" />
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
@@ -50,16 +53,23 @@
                              NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                              IsEnabled="False"
                               Background="{ThemeResource LayerFillColorDefault}">
+            <toolKit:SettingsCard.HeaderIcon>
+                <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
+                               Height="32"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            </toolKit:SettingsCard.HeaderIcon>
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
-                          Toggled="AutoUpdateToggleSwitch_Toggled" />
+                          Tapped="AutoUpdateToggleSwitch_Tapped"
+                          IsEnabled="False" />
         </toolKit:SettingsCard>
 
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
+                      SelectedValuePath="Tag"
+                      SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
                               x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />

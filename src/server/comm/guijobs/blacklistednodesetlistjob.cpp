@@ -62,13 +62,13 @@ ExitInfo BlacklistedNodeSetListJob::process() {
     nodeIdSet.insert(_nodeIdList.begin(), _nodeIdList.end());
     if (ExitInfo exitInfo = it->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
         LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: setSyncIdSet failed for syncDbId=" << _syncDbId);
-        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
 
     if (ExitInfo exitInfo = it->second->syncListUpdated(it->second->isRunning()); !exitInfo) {
         LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: syncListUpdated failed for syncDbId=" << _syncDbId);
-        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
     return ExitCode::Ok;

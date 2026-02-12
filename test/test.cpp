@@ -18,10 +18,13 @@
 
 #include "testincludes.h"
 
-#include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/log/log.h"
-#include "libcommon/utility/utility.h"
 #include "test_utility/testhelpers.h"
+
+#include "libcommon/log/sentry/handler.h"
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/log/log.h"
+
 #include <log4cplus/initializer.h>
 
 int runTestSuite(const std::string &logFileName) {
@@ -36,7 +39,6 @@ int runTestSuite(const std::string &logFileName) {
     } else {
         KDC::sentry::Handler::init(KDC::AppType::None); // Disable Sentry.
     }
-
 
     // Setup log4cplus
     log4cplus::Initializer initializer;

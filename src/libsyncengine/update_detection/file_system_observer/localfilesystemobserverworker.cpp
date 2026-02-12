@@ -17,15 +17,17 @@
  */
 
 #include "localfilesystemobserverworker.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/ptraces.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "snapshot/snapshotitem.h"
 #include "utility/timerutility.h"
+
+#include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/ptraces.h"
+
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -606,7 +608,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
-        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
             auto entryIoError = IoError::Success;
             perfMonitor.start();
 

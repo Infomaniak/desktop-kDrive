@@ -30,7 +30,7 @@
 #include "comm/guijobs/driveupdatejob.h"
 
 #include "libcommon/comm.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
@@ -69,7 +69,7 @@ void TestGuiCommChannel::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
+    (void) IoHelper::deleteItem(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
@@ -697,52 +697,75 @@ void TestGuiCommChannel::testDriveSearchJob() {
     // "toto" <=> "dG90bw=="
     // "titi" <=> "dGl0aQ=="
 
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","name":"dG90bw==","type":1},{"id":"MjAwMA==","name":"dGl0aQ==","type":2}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_SEARCH));
 
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                         R"(,)"
-                         R"( "params": {)"
-                         R"( "hasMore": false,)"
-                         R"( "searchInfoList": [)"
-                         R"( { "id": "MTAwMA==", "name": "dG90bw==", "type": 1 },)"
-                         R"( { "id": "MjAwMA==", "name": "dGl0aQ==", "type": 2 } ] },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 1);
+    (void) queryParamsObj.set("searchString", "aW5mbyo=");
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("hasMore", false);
+    Poco::JSON::Array searchInfoListObj;
+    Poco::JSON::Object searchInfoObj1;
+    (void) searchInfoObj1.set("id", "MTAwMA==");
+    (void) searchInfoObj1.set("isAvailableLocally", true);
+    (void) searchInfoObj1.set("modifiedTime", 10);
+    (void) searchInfoObj1.set("name", "dG90bw==");
+    (void) searchInfoObj1.set("path", "dG90bw==");
+    (void) searchInfoObj1.set("size", 10);
+    (void) searchInfoObj1.set("type", 1);
+    Poco::JSON::Object searchInfoObj2;
+    (void) searchInfoObj2.set("id", "MjAwMA==");
+    (void) searchInfoObj2.set("isAvailableLocally", false);
+    (void) searchInfoObj2.set("modifiedTime", 100);
+    (void) searchInfoObj2.set("name", "dGl0aQ==");
+    (void) searchInfoObj2.set("path", "dGl0aQ==");
+    (void) searchInfoObj2.set("size", 100);
+    (void) searchInfoObj2.set("type", 2);
+    (void) searchInfoListObj.add(searchInfoObj1);
+    (void) searchInfoListObj.add(searchInfoObj2);
+    (void) paramsObj.set("searchInfoList", searchInfoListObj);
+    (void) answerObj.set("params", paramsObj);
+
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
+        CPPUNIT_ASSERT(driveSearchJob);
 
 
-        const SearchInfo si1("1000", Str("toto"), NodeType::File);
-        const SearchInfo si2("2000", Str("titi"), NodeType::Directory);
+        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true);
+        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false);
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;
     };
 
+
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

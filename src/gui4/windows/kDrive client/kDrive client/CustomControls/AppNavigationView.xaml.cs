@@ -24,25 +24,28 @@ namespace Infomaniak.kDrive.CustomControls
             { "HomePage", new List<Type>() {
                 typeof(Pages.HomePage),
                 typeof(Pages.DriveAccessDeniedPage),
-                typeof(Pages.LoggingErrorPage),
+                typeof(Pages.LogginErrorPage),
                 typeof(Pages.NotRenewErrorPage),
                 typeof(Pages.MaintenanceErrorPage),
                 typeof(Pages.AsleepErrorPage)
             } },
             { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
-            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
+            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage), typeof(Pages.Settings.TemplateExclusionPage) } },
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
         };
 
         public AppNavigationView()
         {
             InitializeComponent();
-            Loaded += AppNavigationView_Loaded;
         }
 
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+        }
+        private void AppNavigationView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigated -= Frame_Navigated;
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -95,9 +98,9 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
+            await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
         }
     }
 }

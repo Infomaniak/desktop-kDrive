@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
-    public sealed partial class OAuthLoadingPage : Page, IDisposable
+    public sealed partial class OAuthLoadingPage : Page
     {
         private static TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
@@ -61,19 +61,28 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
-            Dispose();
+            if (_onboardingViewModel is not null)
+            {
+                _onboardingViewModel.PropertyChanged -= OnOnboardingViewModelPropertyChanged;
+            }
+
+            _oauthCts.Cancel();
+            _oauthCts.Dispose();
+
+            _enableRestartCts.Cancel();
+            _enableRestartCts.Dispose();
         }
 
-        private void OnOnboardingViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private async void OnOnboardingViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModels.Onboarding.CurrentOAuth2State) &&
                 _onboardingViewModel is not null)
             {
-                HandleOAuth2StateChanged(_onboardingViewModel.CurrentOAuth2State);
+                await HandleOAuth2StateChanged(_onboardingViewModel.CurrentOAuth2State);
             }
         }
 
-        private async void HandleOAuth2StateChanged(OAuth2State state)
+        private async Task HandleOAuth2StateChanged(OAuth2State state)
         {
             switch (state)
             {
@@ -95,12 +104,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Success:
-                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
-                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
-                    RestartOAuthButton.Visibility = Visibility.Collapsed;
-                    if (_onboardingViewModel?.SelectedUser is not null)
+                    if (_onboardingViewModel?.SelectedUser is not null && await _onboardingViewModel.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                     {
-                        await _onboardingViewModel.SelectedUser.RefreshAvailableDrives();
                         if (_onboardingViewModel.SelectedUser.AllDrives.Any())
                         {
                             Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
@@ -113,7 +118,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     else
                     {
                         Logger.Log(Logger.Level.Error, "SelectedUser is not set after a successful oAuth");
-                        HandleOAuth2StateChanged(OAuth2State.Error);
+                        _onboardingViewModel!.CurrentOAuth2State = OAuth2State.Error;
                     }
                     break;
 
@@ -191,20 +196,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private void ScheduleRestartButtonEnableAsync()
         {
             _enableRestartTask = TemporarilyDisableRestartButtonAsync();
-        }
-
-        public void Dispose()
-        {
-            if (_onboardingViewModel is not null)
-            {
-                _onboardingViewModel.PropertyChanged -= OnOnboardingViewModelPropertyChanged;
-            }
-
-            _oauthCts.Cancel();
-            _oauthCts.Dispose();
-
-            _enableRestartCts.Cancel();
-            _enableRestartCts.Dispose();
         }
     }
 }

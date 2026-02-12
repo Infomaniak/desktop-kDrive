@@ -19,7 +19,7 @@
 #include "abstractloginjob.h"
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>

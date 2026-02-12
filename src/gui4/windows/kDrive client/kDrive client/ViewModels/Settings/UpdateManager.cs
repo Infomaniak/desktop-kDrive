@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private bool _autoUpdateEnabled = false;
         private VersionChannel _currentChannel = VersionChannel.Beta;
-        private AppVersion? _updateData;
+        private AppVersion? _availableUpdate;
 
         public bool AutoUpdateEnabled
         {
@@ -25,25 +25,38 @@ namespace Infomaniak.kDrive.ViewModels
         }
         public AppVersion? AvailableUpdate
         {
-            get => _updateData;
-            set => SetPropertyInUIThread(ref _updateData, value);
+            get => _availableUpdate;
+            set => SetPropertyInUIThread(ref _availableUpdate, value);
         }
 
-        public async Task<bool> StartUpdate()
+        public static async Task<bool> StartUpdate()
         {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
+            return await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
+        }
+
+        public async Task<bool> ChangeChannel(VersionChannel newChannel)
+        {
+            var previousChannel = CurrentChannel;
+            CurrentChannel = newChannel;
+            AvailableUpdate = null;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                CurrentChannel = previousChannel;
+                return false;
+            }
+
             return true;
         }
 
-        public async Task ChangeChannel(VersionChannel newChannel)
-        {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, CancellationToken.None);
-        }
-
-        public async Task ChangeAutoUpdate(bool activated)
+        public async Task<bool> ChangeAutoUpdate(bool activated)
         {
             AutoUpdateEnabled = activated;
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                AutoUpdateEnabled = !activated;
+                return false;
+            }
+            return true;
         }
     }
 }
