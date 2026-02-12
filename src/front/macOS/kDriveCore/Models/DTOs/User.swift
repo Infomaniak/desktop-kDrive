@@ -95,7 +95,7 @@ public extension User {
             name: other.name.isEmpty ? name : other.name,
             email: other.email.isEmpty ? email : other.email,
             accounts: other.accounts.isEmpty ? accounts : other.accounts,
-            availableDrives: other.availableDrives.isEmpty ? availableDrives : other.availableDrives,
+            availableDrives: other.availableDrives,
             avatar: other.avatar,
             isConnected: other.isConnected,
             isStaff: other.isStaff
