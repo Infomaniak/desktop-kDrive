@@ -55,7 +55,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
 
         let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
         synchNodes[node.localNodeId] = nodeToStore
-        synchNodes.sort { $0.value > $1.value }
+        synchNodes.sort { $0.value.date > $1.value.date }
 
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
         guard itemsToRemove > 0 else {
@@ -92,7 +92,7 @@ public struct SyncProgress: Hashable, Sendable {
     }
 }
 
-public struct SynchroNode: Identifiable, Codable, Hashable, Comparable, Sendable {
+public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public var id: String {
         localNodeId
     }
@@ -112,10 +112,6 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Comparable, Sendable
     public let date: Date
     public let size: Int64
     public let error: String
-
-    public static func < (lhs: SynchroNode, rhs: SynchroNode) -> Bool {
-        lhs.date < rhs.date
-    }
 }
 
 extension SynchroNode {
