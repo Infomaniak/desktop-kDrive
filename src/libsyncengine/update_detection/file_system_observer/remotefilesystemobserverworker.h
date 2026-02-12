@@ -28,6 +28,10 @@ namespace KDC {
 
 class CsvFullFileListWithCursorJob;
 
+namespace sentry::pTraces::counterScoped {
+struct RFSOExploreItem;
+}
+
 class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
@@ -44,6 +48,15 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
+
+        struct ParsingIterationState {
+                bool error{false};
+                bool ignore{false};
+                bool eof{false};
+                uint64_t itemCount{0};
+        };
+        ExitInfo handleSnapshotItem(SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+                                    sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
         ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
 
         struct ActionInfo {
@@ -68,6 +81,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
         void countListingRequests();
+        void deleteOrphans();
 
         int _driveDbId = -1;
         std::string _cursor;

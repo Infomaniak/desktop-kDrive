@@ -32,6 +32,7 @@ class ApiTranslator {
 
         static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
+        static void translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
         static RemoteNodeId getUserPrivateFolderRemoteId(DriveDbId driveDbId);
 
     private:

@@ -87,4 +87,10 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     remotePath = std::filesystem::relative(remotePath, "Private");
 }
 
+void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNodeId) {
+    if (remoteNodeId != getUserPrivateFolderRemoteId(driveDbId)) return;
+
+    remoteNodeId = NodeId{"1"};
+}
+
 } // namespace KDC

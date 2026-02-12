@@ -18,6 +18,8 @@
 
 #include "snapshotitem.h"
 
+#include "jobs/network/apitranslator.h"
+
 namespace KDC {
 
 SnapshotItem::SnapshotItem(const NodeId &id) :
@@ -43,13 +45,15 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
-void SnapshotItem::setId(const NodeId &id) {
+void SnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
     _id = id;
+    ApiTranslator::translateV3ToV2(driveDbId, _id);
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
-void SnapshotItem::setParentId(const NodeId &newParentId) {
+void SnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
     _parentId = newParentId;
+    ApiTranslator::translateV3ToV2(driveDbId, _parentId);
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 

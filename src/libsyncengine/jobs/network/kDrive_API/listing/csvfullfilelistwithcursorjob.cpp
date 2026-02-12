@@ -31,7 +31,7 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, 
     AbstractListingJob(driveDbId, blacklist),
     _dirId(dirId),
     _zip(zip),
-    _snapshotItemHandler(_logger) {
+    _snapshotItemHandler(driveDbId, _logger) {
     _customTimeout = apiTimout + 15;
 
     if (_zip) {

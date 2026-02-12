@@ -267,6 +267,77 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
     return getItemsInDir(nodeId, false);
 }
 
+ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
+        SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+        sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
+    if (iterationState.ignore) return ExitCode::Ok; // continue
+    if (iterationState.eof) return ExitCode::Ok; // break
+
+    itemHandlingMonitor.start();
+
+    ++iterationState.itemCount;
+    if (iterationState.error) {
+        LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
+
+        return {ExitCode::LogicError, ExitCause::FullListParsingError};
+    }
+
+    if (stopAsked()) return ExitCode::Ok;
+
+    if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
+        return ExitCode::Ok;
+    }
+
+    // Check unsupported characters
+    if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
+
+        return ExitCode::Ok;
+    }
+
+    if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
+        // An item with the exact same name already exists in the parent folder.
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item with " << Utility::formatSyncName(item.name()) << L" already exists in directory with "
+                                                  << Utility::formatSyncName(_liveSnapshot.name(item.parentId())));
+
+        SyncPath path;
+        _liveSnapshot.path(item.parentId(), path, iterationState.ignore);
+        path /= item.name();
+
+        Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
+                  CancelType::TmpBlacklisted);
+        _syncPal->addError(err);
+
+        return ExitCode::Ok;
+    }
+
+    if (_liveSnapshot.updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
+                                            << Utility::quotedSyncName(item.name()) << L", inode:"
+                                            << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                            << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                            << L", modtime:" << item.lastModified() << L", isDir:"
+                                            << (item.type() == NodeType::Directory) << L", size:" << item.size() << L", isLink:"
+                                            << item.isLink());
+    }
+
+    return ExitCode::Ok;
+}
+
+void RemoteFileSystemObserverWorker::deleteOrphans() {
+    NodeSet nodeIds;
+    _liveSnapshot.ids(nodeIds);
+
+    for (auto nodeIdIt = nodeIds.begin(); nodeIdIt != nodeIds.end(); ++nodeIdIt) {
+        if (!_liveSnapshot.isOrphan(*nodeIdIt)) continue;
+
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncName(_liveSnapshot.name(*nodeIdIt)) << L" ("
+                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is an orphan. Removing it from "
+                                                  << _liveSnapshot.side() << L" snapshot.");
+        _liveSnapshot.removeItem(*nodeIdIt);
+    }
+}
+
 ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, const bool saveCursor) {
     // Send request
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
@@ -296,13 +367,11 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     if (saveCursor) {
-        const std::string cursor = job->getCursor();
-        if (cursor != _cursor) {
+        if (const std::string cursor = job->getCursor(); cursor != _cursor) {
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor);
-            int64_t timestamp = static_cast<long int>(time(0));
-            const ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp);
-            if (!exitInfo) {
+            const int64_t timestamp = static_cast<long int>(time(0));
+            if (const ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
 
                 return exitInfo;
@@ -314,95 +383,34 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     LOG_SYNCPAL_DEBUG(_logger, "Begin parsing of the CSV reply");
     const TimerUtility timer;
     SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
     SyncNameSet existingFiles;
-    uint64_t itemCount = 0;
+    ParsingIterationState iterationState;
+
     perfMonitorBackRequest.stop();
-    sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
-    while (job->getItem(item, error, ignore, eof)) {
-        if (ignore) continue;
-        if (eof) break;
 
-        perfMonitorExploreItem.start();
-
-        itemCount++;
-        if (error) {
-            LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
-
-            return {ExitCode::LogicError, ExitCause::FullListParsingError};
+    sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(!saveCursor, syncDbId());
+    while (job->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
+        if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo) {
+            return exitInfo;
         }
 
-        if (stopAsked()) {
-            return ExitCode::Ok;
-        }
 
-        bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
-            continue;
-        }
-
-        // Check unsupported characters
-        if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
-            if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
-
-            continue;
-        }
-
-        if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
-            // An item with the exact same name already exists in the parent folder.
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
-                                                   << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
-
-            SyncPath path;
-            _liveSnapshot.path(item.parentId(), path, ignore);
-            path /= item.name();
-
-            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
-                      CancelType::TmpBlacklisted);
-            _syncPal->addError(err);
-
-            continue;
-        }
-
-        if (_liveSnapshot.updateItem(item)) {
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
-                                                    << CommonUtility::s2ws(item.id()) << L", parent inode:"
-                                                    << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
-                                                    << L", modtime:" << item.lastModified() << L", isDir:"
-                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size()
-                                                    << L", isLink:" << item.isLink());
-            }
-        }
+        if (iterationState.eof) break;
+        if (stopAsked()) return ExitCode::Ok;
     }
 
-    if (!eof) {
-        const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
+    if (!iterationState.eof) {
+        constexpr auto msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg);
         sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
 
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
 
-    // Delete orphans
-    NodeSet nodeIds;
-    _liveSnapshot.ids(nodeIds);
-    auto nodeIdIt = nodeIds.begin();
-    while (nodeIdIt != nodeIds.end()) {
-        if (_liveSnapshot.isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
-                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
-                                                  << _liveSnapshot.side() << L" snapshot.");
-            _liveSnapshot.removeItem(*nodeIdIt);
-        }
-        nodeIdIt++;
-    }
+    deleteOrphans();
 
-    LOG_SYNCPAL_DEBUG(_logger,
-                      "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for "
+                                                       << iterationState.itemCount << " items");
 
     return ExitCode::Ok;
 }
@@ -486,6 +494,10 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             return exitInfo;
         }
 
+        // The relative path "Private" from API v3 is translated into the empty relative path "" via ActionInfo::setPath.
+        // We do not record the ActionInfo in this case.
+        if (actionInfo.path().empty()) continue;
+
         // Check unsupported characters
         if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
                                                                 actionInfo.snapshotItem.type());
@@ -553,12 +565,12 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setId(std::to_string(tmpInt));
+    actionInfo.snapshotItem.setId(_driveDbId, std::to_string(tmpInt));
 
     if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setParentId(std::to_string(tmpInt));
+    actionInfo.snapshotItem.setParentId(_driveDbId, std::to_string(tmpInt));
 
     SyncName tmpDestPathStr;
     if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpDestPathStr, false)) {
