@@ -41,6 +41,10 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
         void testUpdateItem();
         void testToCsvString();
         void testGetItem();
+
+    private:
+        using DriveDbId = int32_t;
+        const DriveDbId _driveDbId{1};
 };
 
 namespace snapshotitem_checker {

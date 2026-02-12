@@ -225,8 +225,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
         if (cursor != _cursor) {
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _cursor);
-            int64_t timestamp = static_cast<long int>(time(0));
-            if (exitInfo = _syncPal->setListingCursor(_cursor, timestamp); !exitInfo) {
+            const auto cursorTimestamp = static_cast<int64_t>(time(0));
+            exitInfo = _syncPal->setListingCursor(_cursor, cursorTimestamp);
+            if (!exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor: " << exitInfo);
                 break;
             }
@@ -365,8 +366,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (const auto &cursor = job->getCursor(); cursor != _cursor) {
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor);
-            const int64_t timestamp = static_cast<long int>(time(0));
-            if (const ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, timestamp); !exitInfo) {
+            const auto cursorTimestamp = static_cast<int64_t>(time(0));
+            if (const ExitInfo exitInfo = _syncPal->setListingCursor(_cursor, cursorTimestamp); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
 
                 return exitInfo;

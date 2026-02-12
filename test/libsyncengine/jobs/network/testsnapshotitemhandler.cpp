@@ -59,7 +59,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
 } // namespace snapshotitem_checker
 
 void TestSnapshotItemHandler::testUpdateItem() {
-    SnapshotItemHandler handler(Log::instance()->getLogger());
+    SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
     // Regular cases.
     {
         SnapshotItem item;
@@ -219,7 +219,7 @@ void TestSnapshotItemHandler::testGetItem() {
         bool eof = true;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(!handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -234,7 +234,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString("kDrive2") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -255,7 +255,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1,";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -276,7 +276,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(""kDrive2"")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -292,7 +292,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive
 2)") << ",dir,1000,123,124,1,0,";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -314,7 +314,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive
     )");
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(error);
@@ -329,7 +329,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive2)") << ",dir,1000,123,124,";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
@@ -344,7 +344,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("test"test")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -359,7 +359,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -374,7 +374,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
@@ -391,7 +391,7 @@ void TestSnapshotItemHandler::testGetItem() {
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1\n"
            << "0,1," << toCsvString(R"("coucou")") << ",dir,1000,123,124,0,1\n"
            << "0,1,coucou2,dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
 
         // First line should be ignored because of parsing issue
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
@@ -417,7 +417,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str();
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         while (handler.getItem(item, ss, error, ignore, eof)) {
             // Nothing to do, just read the whole file
         }
@@ -441,7 +441,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         while (handler.getItem(item, ss, error, ignore, eof)) {
             // Nothing to do, just read the whole file
         }
@@ -467,7 +467,7 @@ void TestSnapshotItemHandler::testGetItem() {
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str() << "\n"
            << "2,0,test2,dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -504,7 +504,7 @@ void TestSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString("kDrive2") << ",dir,1000,,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItemHandler handler(_driveDbId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
