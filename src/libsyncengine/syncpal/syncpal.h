@@ -397,8 +397,23 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted);
-        ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
+
         ExitInfo listingCursor(std::string &value, int64_t &timestamp);
+
+        ExitInfo selectSync(Sync &sync);
+        ExitInfo updateSync(const Sync &sync);
+
+        ExitInfo setUserPrivateFolderCursor(const Cursor &listingCursor, TimeStamp timestamp);
+        ExitInfo setCommonDocumentsFolderCursor(const Cursor &listingCursor, TimeStamp timestamp);
+        ExitInfo setSharedFolderCursor(const Cursor &listingCursor, TimeStamp timestamp);
+        ExitInfo setLongPollCursor(const Cursor &listingCursor, TimeStamp timestamp);
+
+        ExitInfo userPrivateFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
+        ExitInfo commonDocumentsFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
+        ExitInfo sharedFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
+        ExitInfo longPollCursor(Cursor &listingCursor, TimeStamp &timestamp);
+
+
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;

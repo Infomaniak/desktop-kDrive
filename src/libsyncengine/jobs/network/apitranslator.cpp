@@ -27,12 +27,11 @@ ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_commonDocumentsNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_sharedNodeIdCache = {};
 
-
 ApiTranslator::ApiTranslator() {}
 
 ApiTranslator::~ApiTranslator() {}
 
-ApiTranslator::DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
+DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -74,7 +73,7 @@ void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     if (it != nodeInfoList.cend()) _commonDocumentsNodeIdCache[driveDbId] = it->nodeId().toStdString();
 }
 
-ApiTranslator::RemoteNodeId ApiTranslator::getValue(const DriveDbId driveDbId, const ApiTranslator::RemoteNodeIdCacheMap &cache) {
+RemoteNodeId ApiTranslator::getValue(const DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache) {
     {
         const std::scoped_lock lock(_mutex);
         if (const auto it = cache.find(driveDbId); it != cache.cend()) {
@@ -85,7 +84,7 @@ ApiTranslator::RemoteNodeId ApiTranslator::getValue(const DriveDbId driveDbId, c
     return {};
 }
 
-ApiTranslator::RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const DriveDbId driveDbId) {
+RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const DriveDbId driveDbId) {
     if (const auto value = getValue(driveDbId, _rootNodeIdCache); value.empty())
         updateCache(driveDbId);
     else
@@ -94,7 +93,7 @@ ApiTranslator::RemoteNodeId ApiTranslator::getUserPrivateFolderRemoteId(const Dr
     return getValue(driveDbId, _rootNodeIdCache);
 }
 
-ApiTranslator::RemoteNodeId ApiTranslator::getCommonDocumentsRemoteId(KDC::ApiTranslator::DriveDbId driveDbId) {
+RemoteNodeId ApiTranslator::getCommonDocumentsRemoteId(DriveDbId driveDbId) {
     if (const auto value = getValue(driveDbId, _commonDocumentsNodeIdCache); value.empty())
         updateCache(driveDbId);
     else
@@ -103,7 +102,7 @@ ApiTranslator::RemoteNodeId ApiTranslator::getCommonDocumentsRemoteId(KDC::ApiTr
     return getValue(driveDbId, _commonDocumentsNodeIdCache);
 }
 
-ApiTranslator::RemoteNodeId ApiTranslator::getSharedRemoteId(KDC::ApiTranslator::DriveDbId driveDbId) {
+RemoteNodeId ApiTranslator::getSharedRemoteId(DriveDbId driveDbId) {
     if (const auto value = getValue(driveDbId, _sharedNodeIdCache); value.empty())
         updateCache(driveDbId);
     else

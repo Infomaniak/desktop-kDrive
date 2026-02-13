@@ -26,9 +26,6 @@ class ApiTranslator {
     public:
         ApiTranslator();
         ~ApiTranslator();
-        using DriveId = int32_t;
-        using DriveDbId = int32_t;
-        using RemoteNodeId = NodeId;
 
         static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
@@ -41,12 +38,12 @@ class ApiTranslator {
         static DriveId getDriveId(DriveDbId driveDbId);
         static void updateCache(DriveDbId driveDbId);
 
-        using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, NodeId>;
+        using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
         static RemoteNodeIdCacheMap _rootNodeIdCache;
         static RemoteNodeIdCacheMap _commonDocumentsNodeIdCache;
         static RemoteNodeIdCacheMap _sharedNodeIdCache;
 
-        static RemoteNodeId getValue(const DriveDbId driveDbId, const ApiTranslator::RemoteNodeIdCacheMap &cache);
+        static RemoteNodeId getValue(const DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };

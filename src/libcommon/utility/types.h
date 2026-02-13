@@ -48,15 +48,30 @@ namespace KDC {
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using DriveDbId = int32_t;
+using DriveId = int64_t;
 using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
+using RemoteNodeId = NodeId;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
 using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
+using Cursor = std::string;
+using TimeStamp = int64_t;
+struct CursorData {
+        Cursor cursor;
+        TimeStamp timeStamp{0};
+};
+struct CursorStore {
+        CursorData commonDocumentsFolderCursor;
+        CursorData sharedFolderCursor;
+        CursorData userPrivateFolderCursor;
+        CursorData longPollCursor;
+};
 
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
@@ -643,5 +658,6 @@ struct NodeIds {
             return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
         }
 };
+
 
 } // namespace KDC
