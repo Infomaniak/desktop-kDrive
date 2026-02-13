@@ -48,7 +48,8 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       MaxWidth="230"
+                                       PlayCount="1"
+                                       MaxWidth="180"
                                        Padding="50" />
 
                 <StackPanel Grid.Row="1"
@@ -84,7 +85,7 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.sync}"
-                                       MaxWidth="230" />
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -118,8 +119,9 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
+                                       PlayCount="1"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.pause}"
-                                       MaxWidth="230" />
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -154,7 +156,8 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.offline}"
-                                       MaxWidth="230" />
+                                       PlayCount="1"
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -190,8 +193,8 @@
                 <controls:ContentLoader Grid.Row="0"
                                         IsLoading="True"
                                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
-                                        Height="130"
-                                        Width="180" />
+                                        Height="100"
+                                        Width="150" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
