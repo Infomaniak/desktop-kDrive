@@ -29,7 +29,7 @@ struct CoherentCacheAvailableDriveTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        
+
         // Add available drives to the user
         let availableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(availableDrives, forUserDbId: CacheData.expectedUserDbId)
@@ -51,7 +51,7 @@ struct CoherentCacheAvailableDriveTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        
+
         // Add available drives to the user
         let availableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(availableDrives, forUserDbId: CacheData.expectedUserDbId)
@@ -73,7 +73,7 @@ struct CoherentCacheAvailableDriveTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        
+
         // Add available drives to the user
         let availableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(availableDrives, forUserDbId: CacheData.expectedUserDbId)
@@ -95,7 +95,7 @@ struct CoherentCacheAvailableDriveTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        
+
         // Add available drives to the user
         let availableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(availableDrives, forUserDbId: CacheData.expectedUserDbId)
@@ -114,7 +114,7 @@ struct CoherentCacheAvailableDriveTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        
+
         // Add available drives to the user
         let availableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(availableDrives, forUserDbId: CacheData.expectedUserDbId)
@@ -130,13 +130,13 @@ struct CoherentCacheAvailableDriveTests {
     func getAvailableDriveWithoutUserDbIdAcrossMultipleUsers() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
-        
+
         // Add first user with available drive
         let firstUser = CacheData.expectedUser
         await cache.addUser(firstUser)
         let firstAvailableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(firstAvailableDrives, forUserDbId: CacheData.expectedUserDbId)
-        
+
         // Add second user with available drive
         let secondUser = CacheData.secondUser
         await cache.addUser(secondUser)
@@ -145,7 +145,7 @@ struct CoherentCacheAvailableDriveTests {
 
         // WHEN - Fetch first drive without specifying userDbId
         let fetchedFirstDrive = await cache.getAvailableDrive(driveDb: CacheData.expectedAvailableDriveId)
-        
+
         // WHEN - Fetch second drive without specifying userDbId
         let fetchedSecondDrive = await cache.getAvailableDrive(driveDb: CacheData.secondAvailableDriveId)
 
@@ -158,13 +158,13 @@ struct CoherentCacheAvailableDriveTests {
     func getAvailableDriveWithUserDbIdIsolation() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
-        
+
         // Add first user with available drive
         let firstUser = CacheData.expectedUser
         await cache.addUser(firstUser)
         let firstAvailableDrives = [CacheData.expectedAvailableDrive]
         try await cache.updateAvailableDrives(firstAvailableDrives, forUserDbId: CacheData.expectedUserDbId)
-        
+
         // Add second user with available drive
         let secondUser = CacheData.secondUser
         await cache.addUser(secondUser)
