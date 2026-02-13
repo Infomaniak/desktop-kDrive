@@ -222,6 +222,8 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
+    ioError = IoError::Success;
+
     // Get parent folder handle
     HANDLE hParent;
     bool retry = true;

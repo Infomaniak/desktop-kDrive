@@ -53,7 +53,11 @@ void TestIo::testGetFileStat() {
         IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+#endif
 
         CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError, true));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);

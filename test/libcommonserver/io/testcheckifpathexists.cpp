@@ -45,7 +45,11 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         path = _localTestDirPath / "test_pictures/Picture-1.jpg";
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
+#else
+        CPPUNIT_ASSERT(!exists);
+#endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
@@ -71,7 +75,11 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         path = _localTestDirPath / "test_Pictures";
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
+#else
+        CPPUNIT_ASSERT(!exists);
+#endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
@@ -101,7 +109,11 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         path = temporaryDirectory.path() / "Regular_file_symbolic_link";
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
+#else
+        CPPUNIT_ASSERT(!exists);
+#endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
@@ -131,7 +143,11 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         path = temporaryDirectory.path() / "Regular_dir_symbolic_link";
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
+#else
+        CPPUNIT_ASSERT(!exists);
+#endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));

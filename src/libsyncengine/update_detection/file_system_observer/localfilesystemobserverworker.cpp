@@ -112,7 +112,8 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
         FileStat fileStat;
         auto ioError = IoError::Success;
-        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
+        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError,
+                                   true)) { // Sensitive existence check is needed for MOVE operation
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
             return ExitCode::SystemError;
