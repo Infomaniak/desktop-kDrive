@@ -150,13 +150,13 @@ struct ObservedAvailableDrivesTests {
         #expect(cachedDrive == expectedDrive, "The cache should have been updated with an AvailableDrive")
 
         // WHEN
-        let updatedDrive = AvailableDrive(
+        let updatedDrive = try AvailableDrive(
             driveId: CacheData.expectedAvailableDriveId,
             accountId: CacheData.expectedAccountId,
             userDbId: CacheData.expectedUserDbId,
             userId: CacheData.expectedUserAPIId,
             name: "Updated Available Drive",
-            color: HexColor(hex: "00ff00")!
+            color: #require(HexColor(hex: "00ff00"))
         )
         try await cache.updateAvailableDrives([updatedDrive], forUserDbId: CacheData.expectedUserDbId)
 
@@ -175,7 +175,10 @@ struct ObservedAvailableDrivesTests {
             return
         }
 
-        #expect(firstDrive.availableDrive.name == "Updated Available Drive", "The AvailableDrive in the array should match the updated one")
+        #expect(
+            firstDrive.availableDrive.name == "Updated Available Drive",
+            "The AvailableDrive in the array should match the updated one"
+        )
         #expect(firstDrive.availableDrive.driveId == expectedDrive.driveId, "The drive should match the one we just added")
         #expect(firstDrive.user.dbId == CacheData.expectedUserDbId, "The user should match the one we just added")
     }
@@ -217,7 +220,7 @@ struct ObservedAvailableDrivesTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func testRemoveOneAvailableDrive() async throws {
+    func removeOneAvailableDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: CacheData.expectedUserDbId)
