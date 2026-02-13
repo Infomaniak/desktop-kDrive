@@ -16,8 +16,7 @@
                 OpenPaneLength="280"
                 CompactPaneLength="52"
                 Loaded="AppNavigationView_Loaded"
-                Unloaded="AppNavigationView_Unloaded"
-                >
+                Unloaded="AppNavigationView_Unloaded">
     <!--
     CompactPaneLength must be overridden (default is 48px) due to the following issue:
     https://github.com/microsoft/microsoft-ui-xaml/issues/10415
