@@ -94,7 +94,7 @@
                                 </Grid.RowDefinitions>
                                 <!-- Local path -->
                                 <TextBlock Grid.Row="1"
-                                           Text="{x:Bind local:DriveSelectionPage.GetLoacationSummary(IsDefaultLocalPath,  LocalPath), Mode=OneWay}"
+                                           Text="{x:Bind local:DriveSelectionPage.GetLocationSummary(IsDefaultLocalPath,  LocalPath), Mode=OneWay}"
                                            FontSize="12"
                                            FontWeight="Normal"
                                            TextTrimming="WordEllipsis"

@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.ViewModels
             set
             {
                 SetPropertyInUIThread(ref _language, value);
-                Localizer.Instance.SetCulture(value);
+                Localizer.Instance.SetLanguage(value);
             }
         }
 

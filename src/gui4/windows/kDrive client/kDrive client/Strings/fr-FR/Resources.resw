@@ -72,7 +72,7 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>French</value>
   </metadata> 
-  <data name="DebugLogsDescription" xml:space="preserve"> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
     <value>Ils permettent au support d'Infomaniak d'identifier la source d'un problème.</value> 
   </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 

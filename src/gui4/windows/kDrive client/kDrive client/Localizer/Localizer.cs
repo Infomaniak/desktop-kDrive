@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive
         public static Localizer Instance { get; } = new Localizer();
         private static ResourceContext context = ResourceContext.GetForViewIndependentUse();
 
-        public void SetCulture(Types.Language language)
+        public void SetLanguage(Types.Language language)
         {
             CultureInfo.CurrentCulture.ClearCachedData();
             string cultureName = language switch
@@ -65,7 +65,7 @@ namespace Infomaniak.kDrive
         // The singularKey is the key for the singular form of the string, and the plural form is expected to be defined in the resource file with the key singularKey + "-plural".
         public string GetStringWithPlural(string singularKey, int count, params object?[]? args)
         {
-            // Compute wich form to use based on the count and the pluralization rules of the current culture
+            // Compute which form to use based on the count and the pluralization rules of the current culture
             bool usePluralForm = System.Globalization.CultureInfo.CurrentUICulture.Name switch
             {
                 "en-EN" => count != 1,
