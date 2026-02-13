@@ -79,6 +79,7 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["OfflineTitleTemplate"];
                     break;
                 case SyncStatus.Stopped:
+                case SyncStatus.Error:
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InPauseTitleTemplate"];
                     break;
                 default:

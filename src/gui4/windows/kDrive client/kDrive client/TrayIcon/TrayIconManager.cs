@@ -20,14 +20,14 @@ using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
-using Microsoft.UI.Windowing;
+using Microsoft.UI.System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Drawing;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
+using Windows.UI.ViewManagement;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -35,6 +35,8 @@ namespace Infomaniak.kDrive.TrayIcon
     {
         private TaskbarIcon? _trayIcon;
         private bool _handleClosedEvents = true;
+        private string _currentIcon = "taskbar-ico";
+        private UISettings? _uiSettings;
 
         public void Initialize()
         {
@@ -67,7 +69,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 _trayIcon.ForceCreate();
 
                 // Set initial icon
-                SetIcon_neutral();
+                SetIconNeutral();
             }
             else
             {
@@ -80,8 +82,11 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void ConfigureWindowEventHandler()
         {
-            if (Application.Current is App app && app.CurrentWindow != null)
+            if (Application.Current is App app && app.CurrentWindow is not null)
             {
+                _uiSettings = new UISettings();
+                _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
+
                 app.CurrentWindow.Closed += (sender, args) =>
                 {
                     if (_handleClosedEvents)
@@ -92,25 +97,37 @@ namespace Infomaniak.kDrive.TrayIcon
                 };
             }
         }
-        public void SetIcon_ok()
+
+        private async void UISettings_ColorValuesChanged(UISettings sender, object args)
+        {
+            Logger.Log(Logger.Level.Extended, "System theme or color changed, updating tray icon.");
+            await Utility.RunOnUIThread(() => RefreshTheme());
+        }
+
+        public void SetIconOk()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'ok' state.");
-            SetIcon("state-ok.ico");
+            SetIcon("taskbar-ico");
         }
-        public void SetIcon_sync()
+        public void SetIconSync()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
-            SetIcon("state-sync.ico");
+            SetIcon("taskbar-ico-sync");
         }
-        public void SetIcon_error()
+        public void SetIconError()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("state-error.ico");
+            SetIcon("taskbar-ico-error");
         }
-        public void SetIcon_neutral()
+        public void SetIconPause()
+        {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
+            SetIcon("taskbar-ico-pause");
+        }
+        public void SetIconNeutral()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
-            SetIcon("state-neutral.ico");
+            SetIcon("taskbar-ico");
         }
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -118,8 +135,6 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
             Utility.BringCurrentWindowToFront();
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
-
-            SetIcon_neutral();
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -132,12 +147,13 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private void SetIcon(string fileName)
         {
-            if (_trayIcon == null)
+            if (_trayIcon is null)
                 return;
 
             try
             {
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "StatusIcons", fileName);
+                _currentIcon = fileName;
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.png");
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
@@ -147,6 +163,18 @@ namespace Infomaniak.kDrive.TrayIcon
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
             }
+        }
+
+        private void RefreshTheme()
+        {
+            Logger.Log(Logger.Level.Info, "Refreshing tray icon theme due to theme change");
+            SetIcon(_currentIcon);
+        }
+
+        private static string GetThemeSuffix()
+        {
+            bool isDark = App.Current.RequestedTheme == ApplicationTheme.Dark;
+            return isDark ? "-dark" : "-light";
         }
     }
 }

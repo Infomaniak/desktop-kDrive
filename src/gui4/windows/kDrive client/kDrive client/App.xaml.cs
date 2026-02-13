@@ -19,6 +19,7 @@
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
+using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
@@ -29,7 +30,6 @@ using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json.Nodes;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 
@@ -46,10 +46,9 @@ namespace Infomaniak.kDrive
             private set
             {
                 _currentWindow = value;
-                TrayIcoManager.ConfigureWindowEventHandler();
+                ServiceProvider.GetRequiredService<TrayIconManager>().ConfigureWindowEventHandler();
             }
         }
-        public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
 
         private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
@@ -58,11 +57,12 @@ namespace Infomaniak.kDrive
         internal static IAppConstants Constants => new ProductionAppConstants();
         internal App()
         {
-            TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _services.AddSingleton<UserDefaults>();
+            _services.AddSingleton<TrayIconManager>();
+            _services.AddSingleton<TrayIconUpdater>();
             _serviceProvider = _services.BuildServiceProvider();
 
             Logger.StartSentry();
@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, "Application started");
         }       
 
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             string[] arguments = Environment.GetCommandLineArgs();
             if (arguments.Length > 1)
@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive
 
             // Display splash screen
             CurrentWindow.Content = new CustomControls.SplashScreen();
-            TrayIcoManager.Initialize();
+            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
 
