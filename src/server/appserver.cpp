@@ -760,7 +760,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     // Propagate language change
     if (oldParametersInfo.language() != newParametersInfo.language()) {
         Language language = newParametersInfo.language();
-        QTimer::singleShot(100, [this, language]() { CommonUtility::setupTranslations(this, language); });
+        QTimer::singleShot(100, this, [this, language]() { CommonUtility::setupTranslations(this, language); });
     }
 
     // Propagate ProxyConfig change
