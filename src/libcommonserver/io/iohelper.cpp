@@ -653,7 +653,7 @@ class CacheDirectoryHandler {
             return instance;
         }
         const SyncPath &directoryPath() noexcept {
-            std::lock_guard<std::mutex> lock(_mutex);
+            std::scoped_lock lock(_mutex);
             
             bool exists = false;
             auto ioError = IoError::Unknown;
