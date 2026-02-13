@@ -68,11 +68,9 @@ runs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           IF "${{ inputs.release_build }}"=="true" (
             powershell "certutil -scinfo -Silent"
-            IF "${{ inputs.build_new_client }}"=="true" (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} -newGui $true
-            ) ELSE (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
-            )
+            SET "NEW_GUI_PARAM="
+            IF "${{ inputs.build_new_client }}"=="true" SET "NEW_GUI_PARAM=-newGui $true"
+            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} %NEW_GUI_PARAM%
           ) ELSE (
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
           )
