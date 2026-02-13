@@ -70,8 +70,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     }
 
     public var fileType: UTType? {
-        return UTType(
-            filenameExtension: relevantPath.pathExtension)
+        return UTType(filenameExtension: relevantPath.pathExtension)
     }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
