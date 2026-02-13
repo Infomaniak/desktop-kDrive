@@ -280,14 +280,14 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     if (itemPath.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
+        LOG_WARN(logger(), "Path is empty");
         return false;
     }
 
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 
     if (filePath == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(),
+        LOGW_WARN(logger(),
                   L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
         return false;
     }
@@ -301,7 +301,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     if (error != nil) {
         const auto wcharError = reinterpret_cast<const wchar_t *>(
                 [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
+        LOGW_WARN(logger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
     }
 
     return success;

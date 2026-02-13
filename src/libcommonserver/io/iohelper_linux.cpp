@@ -147,18 +147,18 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            LOGW_WARN(logger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
             return false;
         }
 
         if (!std::filesystem::create_directories(trashPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
+            LOGW_WARN(logger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
             return false;
         }
     }
 
     if (const auto result = system(command.c_str()); result) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
+        LOG_WARN(logger(), "Failed to move item to trash - err=" << std::to_string(result));
         return false;
     }
 
