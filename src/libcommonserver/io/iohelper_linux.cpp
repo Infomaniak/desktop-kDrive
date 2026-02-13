@@ -45,37 +45,16 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
-bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
-    exists = false;
-    ioError = IoError::Success;
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+    (void) path;
+    (void) exists;
+    (void) ioError;
 
-    std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
-    if (ec) {
-        ioError = stdError2ioError(ec);
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            ioError = IoError::Success;
-        }
-    } else {
-        exists = true;
-    }
-
-    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
+    // NB: The check done by the caller is already case & encoding sensitive
+    return true;
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoError::Success;
-
-    // Case-sensitive and encoding-accurate existence checking
-    bool exists = false;
-    if (!_checkIfPathExistsFn(path, exists, ioError)) {
-        return false;
-    }
-    if (!exists) {
-        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
-        return true;
-    }
-
     struct statx sb;
     if (statx(AT_FDCWD, path.string().c_str(), AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &sb) < 0) {
         ioError = posixError2ioError(errno);

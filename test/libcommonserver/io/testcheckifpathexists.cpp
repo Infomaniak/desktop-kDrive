@@ -43,6 +43,10 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         bool exists = false;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -102,7 +106,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
@@ -513,11 +517,13 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && exists);
 
-#if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && !exists);
-#else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, true) && !exists);
+#else
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, true) && exists);
 #endif
 
         NodeId nfcNodeId, nfdNodeId;
@@ -549,10 +555,11 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         bool exists = false;
         IoError ioError = IoError::Unknown;
 
-#if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && !exists);
-#else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && !exists);
+#else
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && exists);
 #endif
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);

@@ -308,26 +308,20 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     return success;
 }
 
-bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoError::Success;
 
-    auto filename = path.filename();
     std::error_code ec;
-    for (auto const &dir_entry: std::filesystem::directory_iterator{path.parent_path(), ec}) {
-        if (dir_entry.path().filename() == filename) {
-            exists = true;
-            break;
-        }
-    }
+    auto p = std::filesystem::canonical(path, ec);
     if (ec) {
         ioError = stdError2ioError(ec);
-        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::FileNameTooLong) {
-            ioError = IoError::Success;
-        }
+        exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    } else {
+        exists = p.filename() == path.filename();
     }
 
-    return true;
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 } // namespace KDC

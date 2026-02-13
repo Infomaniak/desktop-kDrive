@@ -193,40 +193,32 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::_checkIfPathExistsFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoError::Success;
 
-    // Case-sensitive and encoding-accurate checking
+    // NB: The check done by the caller is already case sensitive
     WIN32_FIND_DATAW findFileData;
     if (HANDLE h = FindFirstFile(path.c_str(), &findFileData); h != INVALID_HANDLE_VALUE) {
-        SyncName fileName{findFileData.cFileName};
+        do {
+            // Loop through the variants up to the encoding
+            SyncName fileName{findFileData.cFileName};
+            if (fileName == path.filename()) {
+                exists = true;
+                break;
+            }
+        } while (FindNextFileA(h, &findFileData));
         FindClose(h);
-        exists = (fileName == path.filename());
     } else {
         DWORD dwError = GetLastError();
         ioError = dWordError2ioError(dwError, logger());
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            ioError = IoError::Success;
-        }
+        exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
     }
 
-    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
-    ioError = IoError::Success;
-
-    // Case-sensitive and encoding-accurate existence checking
-    bool exists = false;
-    if (!_checkIfPathExistsFn(path, exists, ioError)) {
-        return false;
-    }
-    if (!exists) {
-        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
-        return true;
-    }
-
     // Get parent folder handle
     HANDLE hParent;
     bool retry = true;

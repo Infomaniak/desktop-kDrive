@@ -143,18 +143,6 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoError::Success;
-
-    // Case-sensitive and encoding-accurate existence checking
-    bool exists = false;
-    if (!_checkIfPathExistsFn(path, exists, ioError)) {
-        return false;
-    }
-    if (!exists) {
-        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
-        return true;
-    }
-
     struct stat sb;
     if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
