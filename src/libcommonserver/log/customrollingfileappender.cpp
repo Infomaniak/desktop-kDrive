@@ -185,7 +185,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     if (useLockFile) out.seekp(0, std::ios_base::end);
 
     // Rotate log file if needed before appending to it.
-    if (out.tellp() > _maxFileSize) customRollover(true);
+    if (out.tellp() > _maxFileSize) customRollover();
 
     try {
         RollingFileAppender::append(event);
@@ -197,10 +197,10 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     }
 
     // Rotate log file if needed after appending to it.
-    if (out.tellp() > _maxFileSize) customRollover(true);
+    if (out.tellp() > _maxFileSize) customRollover();
 }
 
-void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
+void CustomRollingFileAppender::customRollover() {
     log4cplus::helpers::LogLog &loglog = log4cplus::helpers::getLogLog();
     log4cplus::helpers::LockFileGuard guard;
 
@@ -210,20 +210,18 @@ void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
     // should remain unchanged on a close.
     out.clear();
 
-    if (useLockFile) {
-        if (!alreadyLocked) {
-            try {
-                guard.attach_and_lock(*lockFile);
-            } catch (std::runtime_error const &) {
-                return;
-            }
+    if (useLockFile && lockFile) {
+        try {
+            guard.attach_and_lock(*lockFile);
+        } catch (std::runtime_error const &) {
+            return;
         }
 
         // Recheck the condition as there is a window where another
         // process can rollover the file before us.
 
         log4cplus::helpers::FileInfo fi;
-        if (getFileInfo(&fi, filename) == -1 || fi.size < maxFileSize) {
+        if (getFileInfo(&fi, filename) == -1 || fi.size < _maxFileSize) {
             // The file has already been rolled by another
             // process. Just reopen with the new file.
 
