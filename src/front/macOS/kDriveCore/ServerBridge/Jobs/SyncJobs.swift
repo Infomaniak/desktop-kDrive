@@ -189,4 +189,14 @@ public struct SyncJobs: Sendable {
 
         _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
+        IKLogger.data.log("Query for offlineFilesSize")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_OFFLINE_FILES_SIZE, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<OfflineFilesSizeResponse>.self)
+
+        return decodedMessage.body.size
+    }
 }
