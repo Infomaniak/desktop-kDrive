@@ -262,18 +262,22 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
-    const auto &userPrivateDirRemoteId = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId);
-    if (const auto exitInfo = getItemsInDir(userPrivateDirRemoteId, true); !exitInfo) return exitInfo;
+    const std::vector<NodeId> mainFolderIds{ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId),
+                                            ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
+                                            ApiTranslator::getSharedRemoteId(_driveDbId)};
 
-    const auto &commonDocumentsRemoteId = ApiTranslator::getCommonDocumentsRemoteId(_driveDbId);
-    if (const auto exitInfo = getItemsInDir(commonDocumentsRemoteId, true); !exitInfo) return exitInfo;
+    ExitInfo exitInfo;
+    for (const auto &mainFolderRemoteId: mainFolderIds) {
+        if (_blackList.contains(mainFolderRemoteId)) continue;
 
-    const auto &sharedRemoteId = ApiTranslator::getSharedRemoteId(_driveDbId);
-    const auto &exitInfo = getItemsInDir(sharedRemoteId, true);
+        constexpr bool saveCursor = true;
+        exitInfo = getItemsInDir(mainFolderRemoteId, saveCursor);
+        if (!exitInfo) return exitInfo;
+    }
 
     deleteOrphans();
 
-    return exitInfo;
+    return ExitCode::Ok;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
@@ -358,7 +362,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
-        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, _blackList, true);
+        constexpr bool zip = true;
+        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, _blackList, zip);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << e.what());
