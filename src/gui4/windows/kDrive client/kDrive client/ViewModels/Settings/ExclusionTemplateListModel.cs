@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,31 +93,35 @@ namespace Infomaniak.kDrive.ViewModels
             }
             _templates.Clear();
             _templates.AddRange(res);
+            UpdateSelectedCount();
             return true;
         }
 
         public async Task AddTemplate(ExclusionTemplate template)
         {
             _templates.Add(template);
+            UpdateSelectedCount();
             await SaveUserTemplates();
         }
 
         public async Task RemoveTemplate(ExclusionTemplate template)
         {
             _templates.Remove(template);
+            UpdateSelectedCount();
             await SaveUserTemplates();
         }
 
         public async Task RemoveTemplates(IEnumerable<ExclusionTemplate> templates)
         {
             _templates.RemoveMany(templates);
+            UpdateSelectedCount();
             await SaveUserTemplates();
         }
 
-        public void UpdateSelectedCount(int count)
+        public void UpdateSelectedCount()
         {
-            SelectedCount = count;
-            HasSelectedTemplates = count > 0;
+            SelectedCount = UserDefinedTemplates.Count(t => t.IsSelected);
+            HasSelectedTemplates = SelectedCount > 0;
         }
 
         public async Task SaveUserTemplates()
