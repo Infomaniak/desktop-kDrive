@@ -1,7 +1,9 @@
+using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
