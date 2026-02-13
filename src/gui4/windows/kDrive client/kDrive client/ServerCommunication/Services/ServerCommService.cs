@@ -972,7 +972,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!CheckJobResultAndLogIfError(data2, parms))
                 return false;
 
-            if (!HasRequiredParam(data, JsonKeys.VersionInfo))
+            if (!HasRequiredParam(data2, JsonKeys.VersionInfo))
                 return false;
 
             var options = new JsonSerializerOptions
