@@ -3,6 +3,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,33 @@ namespace Infomaniak.kDrive.CustomControls
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+
+            // Add an infobadge to SettingsItem
+            var infoBadge = new InfoBadge()
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            // Bind the visibility of the infobadge to the HasAvailableUpdates property of the ViewModel
+            infoBadge.SetBinding(InfoBadge.VisibilityProperty, new Binding()
+            {
+                Source = ViewModel.Settings.UpdateManager,
+                Path = new PropertyPath(nameof(ViewModel.Settings.UpdateManager.AvailableUpdate)),
+                Converter = new Converters.IsNullToBoolOrVisibilityConverter(),
+                ConverterParameter = "Inverted=True",
+                Mode = BindingMode.OneWay
+            });
+
+            NavigationViewItem? settingItem = SettingsItem as NavigationViewItem;
+            if (settingItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
+                return;
+            }
+
+            settingItem.InfoBadge = infoBadge;
+
         }
         private void AppNavigationView_Unloaded(object sender, RoutedEventArgs e)
         {
