@@ -23,7 +23,7 @@ import Testing
 
 struct CoherentCacheUserTests {
     @Test(.timeLimit(.minutes(1)))
-    func getUserInCache() async throws {
+    func getUserInCache() async {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -38,7 +38,7 @@ struct CoherentCacheUserTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func removeUserInCacheFromDbId() async throws {
+    func removeUserInCacheFromDbId() async {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -54,7 +54,7 @@ struct CoherentCacheUserTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func updateUserInCache() async throws {
+    func updateUserInCache() async {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
