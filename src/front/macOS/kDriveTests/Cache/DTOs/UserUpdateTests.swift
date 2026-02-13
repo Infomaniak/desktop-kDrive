@@ -232,17 +232,17 @@ struct UserUpdateTests {
     }
 
     @Test("Update availableDrives with .availableDrives option")
-    func updateAvailableDrives() {
+    func updateAvailableDrives() throws {
         // GIVEN
         let original = createUser()
         var drives: IndexedAvailableDrives = [:]
-        drives[1] = AvailableDrive(
+        drives[1] = try AvailableDrive(
             driveId: 1,
             accountId: 1,
             userDbId: UserUpdateTests.dbId,
             userId: UserUpdateTests.userId,
             name: "Test Drive",
-            color: HexColor(hex: "FF0000")!
+            color: #require(HexColor(hex: "FF0000"))
         )
         let other = createUser(availableDrives: drives)
 
