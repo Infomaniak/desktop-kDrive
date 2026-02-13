@@ -46,6 +46,8 @@ class ApiTranslator {
         static RemoteNodeIdCacheMap _commonDocumentsNodeIdCache;
         static RemoteNodeIdCacheMap _sharedNodeIdCache;
 
+        static RemoteNodeId getValue(const DriveDbId driveDbId, const ApiTranslator::RemoteNodeIdCacheMap &cache);
+
         static std::mutex _mutex;
 };
 
