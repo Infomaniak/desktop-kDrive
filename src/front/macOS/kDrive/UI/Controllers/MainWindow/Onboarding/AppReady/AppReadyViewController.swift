@@ -23,7 +23,7 @@ import kDriveCoreUI
 import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
-    @LazyInjectService private var windowRouter: WindowRouter
+    @LazyInjectService private var windowRouter: MainWindowRouter
 
     override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -47,7 +47,7 @@ final class AppReadyViewController: OnboardingStepViewController {
     }
 
     @objc private func didTapOpenApp() {
-        windowRouter.navigate(to: .mainWindow)
+        windowRouter.navigate(to: .mainWindow())
         UserDefaults.standard.shouldPresentOnboarding = false
     }
 }

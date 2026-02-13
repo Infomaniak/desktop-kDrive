@@ -17,35 +17,20 @@
  */
 
 import Cocoa
+import Combine
 import kDriveCoreUI
 
 enum WindowRoute {
     case preloading
     case onboarding(UIUser? = nil, OnboardingStep? = nil)
-    case mainWindow
+    case mainWindow(MainViewTab? = nil)
 }
 
-final class MainWindowRouter: WindowRouter {
-    @MainActor
-    private lazy var mainWindowController: MainWindowController? = {
-        let mainWindow = NSApplication.shared.windows.first { $0.windowController is MainWindowController }
-        return mainWindow?.windowController as? MainWindowController
-    }()
+final class MainWindowRouter {
+    @Published private(set) var currentRoute: WindowRoute = .preloading
 
     @MainActor
     func navigate(to route: WindowRoute) {
-        guard let mainWindowController else { return }
-
-        switch route {
-        case .preloading:
-            let viewController = PreloadingViewController()
-            mainWindowController.setViewController(viewController)
-        case .onboarding(let user, let step):
-            let viewController = OnboardingViewController(user: user, initialStep: step)
-            mainWindowController.setViewController(viewController)
-        case .mainWindow:
-            let viewController = MainViewController()
-            mainWindowController.setViewController(viewController)
-        }
+        currentRoute = route
     }
 }
