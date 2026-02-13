@@ -18,8 +18,8 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _logEnbaled = false;
         private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool _matomoEnabled = true;
-        private bool _sentryEnabled = true;
+        private bool _matomoEnabled = false;
+        private bool _sentryEnabled = false;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 
@@ -83,13 +83,25 @@ namespace Infomaniak.kDrive.ViewModels
         public bool MatomoEnabled
         {
             get => _matomoEnabled;
-            set => SetPropertyInUIThread(ref _matomoEnabled, value);
+            set
+            {
+                App.ServiceProvider.GetRequiredService<UserDefaults>().SetValue(nameof(MatomoEnabled), value);
+                SetPropertyInUIThread(ref _matomoEnabled, value);
+            }
         }
 
         public bool SentryEnabled
         {
             get => _sentryEnabled;
-            set => SetPropertyInUIThread(ref _sentryEnabled, value);
+            set
+            {
+                App.ServiceProvider.GetRequiredService<UserDefaults>().SetValue(nameof(SentryEnabled), value);
+                if (SetPropertyInUIThread(ref _sentryEnabled, value))
+                    if (value)
+                        Logger.StartSentry();
+                    else
+                        Logger.StopSentry();
+            }
         }
 
         public async Task<bool> ChangeAutoStart(bool activated)
