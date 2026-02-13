@@ -916,13 +916,58 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
+            // First check if the updateState
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, new JsonObject(), cancellationToken);
+            if (!CheckJobResultAndLogIfError(data))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.UpdateState))
+                return false;
+
+            UpdateState? updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
+            if (updateState is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                return false;
+            }
+
+            if (updateState == UpdateState.NoUpdate)
+            {
+                _viewModel.Settings.UpdateManager.UpdateEnabled = false;
+                return true;
+            }
+            _viewModel.Settings.UpdateManager.UpdateEnabled = true;
+
+            List<UpdateState> notReadyStates = new List<UpdateState>
+            {
+                UpdateState.Available,
+                UpdateState.Downloading,
+                UpdateState.CheckError,
+                UpdateState.DownloadError,
+                UpdateState.UpdateError
+            };
+
+            if (notReadyStates.Contains(updateState.Value))
+            {
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
+                return true;
+            }
+
+            if (updateState == UpdateState.Checking && _viewModel.Settings.UpdateManager.AvailableUpdate is not null)
+            {
+                // If we are currently checking for updates but we already have update info, we can keep showing the update info without refreshing it to avoid UI flickering.
+                // We will refresh the update info once the state changes to something other than checking.
+                return true;
+            }
+
+            // If we are here, it means we are in a state where an update is available but not being checked for, which means we should have the update info available and can refresh it.
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
             {
                 [JsonKeys.UpdateChannel] = (int)channel
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, parms))
+            CommData data2 = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data2, parms))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.VersionInfo))
@@ -933,15 +978,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
+            AppVersion? versionInfo = data2.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
             if (versionInfo is null || versionInfo.Tag == "")
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data.Params[JsonKeys.VersionInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data2.Params[JsonKeys.VersionInfo]}.");
                 return false;
             }
 
             if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
+            {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+            }
             else
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
 

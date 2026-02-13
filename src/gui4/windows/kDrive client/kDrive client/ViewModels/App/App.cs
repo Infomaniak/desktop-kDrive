@@ -275,6 +275,11 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
+                    if (!await serverCommService.RefreshUpdaterVersionInfo(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
+                        // This is not critical, we can continue without this info
+                    }
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
                     IsInitialized = true;
                     return true;

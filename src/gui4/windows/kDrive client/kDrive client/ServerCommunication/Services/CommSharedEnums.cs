@@ -18,6 +18,22 @@
 
 namespace Infomaniak.kDrive.Types
 {
+    public enum UpdateState
+    {
+        UpToDate,
+        Checking,
+        Available,
+        ManualUpdateAvailable,
+        Downloading,
+        Ready,
+        CheckError,
+        DownloadError,
+        UpdateError,
+        NoUpdate,
+        Unknown
+    };
+
+
     public enum RequestNum
     {
         Unknown = 0,

@@ -20,6 +20,21 @@
 
 namespace KDC {
 
+enum class UpdateState {
+    UpToDate,
+    Checking,
+    Available,
+    ManualUpdateAvailable,
+    Downloading,
+    Ready,
+    CheckError,
+    DownloadError,
+    UpdateError,
+    NoUpdate,
+    Unknown,
+    EnumEnd
+};
+
 enum class CancelType {
     None,
     Create,

@@ -57,7 +57,7 @@
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemGeneral'), Mode=OneWay}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander />
+                    <controls:UpdateExpander Visibility="{x:Bind ViewModel.Settings.UpdateManager.UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                     <!-- General - Language -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('languageSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
