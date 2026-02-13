@@ -79,6 +79,7 @@
 #include "updaterstatejob.h"
 #include "updaterstartinstallerjob.h"
 #include "updaterskipversionjob.h"
+#include "log/log.h"
 
 namespace KDC {
 
@@ -150,8 +151,11 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
                                                     std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
-    else
+    else 
+    {
+        LOG_WARN(Log::instance()->getLogger(), "Received unknown request " << requestNum << " with id " << requestId);
         return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
+    }
 }
 
 } // namespace KDC

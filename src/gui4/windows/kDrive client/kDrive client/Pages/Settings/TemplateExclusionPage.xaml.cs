@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             SetupNavBar();
             _templateListModel = new ExclusionTemplateListModel();
-            if(!await _templateListModel.LoadTemplates())
+            if (!await _templateListModel.LoadTemplates())
             {
                 Logger.Log(Logger.Level.Error, "Failed to load exclusion templates. The template list will be empty.");
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar()
         {
-            NavBar.ItemsSource = new string[] { Utility.GetLocalizedString("Page_SettingsPage_Title/Text"), Utility.GetLocalizedString("Page_TemplateExclusionPage_Title/Text") };
+            NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("filesToExclude") };
         }
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
         {
@@ -58,8 +58,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
-                PrimaryButtonText = Utility.GetLocalizedString("Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog/PrimaryButtonText"),
-                SecondaryButtonText = Utility.GetLocalizedString("Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog/SecondaryButtonText"),
+                PrimaryButtonText = Localizer.Instance.GetString("dialogNewExclusionRulePrimaryButton"),
+                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel"),
                 DefaultButton = ContentDialogButton.Primary
             };
 
@@ -137,9 +137,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             int selectedCount = _templateListModel.UserDefinedTemplates.Count(t => t.IsSelected);
             _templateListModel.UpdateSelectedCount(selectedCount);
-
-            // Update the delete button text
-            DeleteButton.Content = selectedCount > 0 ? Utility.GetLocalizedString("Page_Settings_ExclusionManagementPage_UserExclusion_RemoveMany/Text", selectedCount) : Utility.GetLocalizedString("Page_Settings_ExclusionManagementPage_UserExclusion_Remove/Text");
 
             // Update the select all checkbox state
             int totalCount = _templateListModel.UserDefinedTemplates.Count;

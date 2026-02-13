@@ -2,7 +2,6 @@
 <Page x:Class="Infomaniak.kDrive.Pages.Settings.DriveManagementPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:Infomaniak.kDrive"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
@@ -10,6 +9,7 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:settings="using:Infomaniak.kDrive.Pages.Settings"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
 
     <Page.Resources>
@@ -17,7 +17,6 @@
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
-
     </Page.Resources>
     <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -32,7 +31,7 @@
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock x:Uid="Page_SettingsPage_Title"
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settings')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -56,7 +55,7 @@
                             Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay, FallbackValue='Collapsed'}">
 
                     <!-- Location -->
-                    <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_Location">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncLocation')}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open}"
                                               Height="20"
@@ -67,7 +66,7 @@
                     </toolKit:SettingsCard>
 
                     <!-- Folder Selection -->
-                    <toolKit:SettingsExpander x:Uid="Page_Settings_DriveManagementPage_FolderSelection">
+                    <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSynchronisation')}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
                                               Height="32"
@@ -86,11 +85,11 @@
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0"
                                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header"
+                                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
                                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                                    TextWrapping="Wrap" />
 
-                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description"
+                                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    TextWrapping="Wrap" />
@@ -106,7 +105,7 @@
 
                     <!-- Lite Sync -->
                     <toolKit:SettingsExpander x:Name="SyncTypeExpander"
-                                              x:Uid="Page_Settings_DriveManagementPage_SyncMode"
+                                              Header="{x:Bind kDrive:Localizer.Instance.GetString('fileSyncModeDescription')}"
                                               Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.cog}"
@@ -126,7 +125,7 @@
 
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
-                                                          x:Uid="Page_Settings_DriveManagementPage_SyncMode_Online"
+                                                          Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -155,7 +154,7 @@
 
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
-                                                          x:Uid="Page_Settings_DriveManagementPage_SyncMode_Offline"
+                                                          Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -172,7 +171,8 @@
                                 </Grid>
                             </toolKit:SettingsCard>
 
-                            <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_SyncMode_InProgress"
+                            <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('applyingChange')}"
+                                                  Description="{x:Bind kDrive:Localizer.Instance.GetString('syncModeApplying')}"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                             </toolKit:SettingsCard>
@@ -185,7 +185,7 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Remove sync -->
-                    <toolKit:SettingsCard Header="Supprimer la synchronisation"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
                                           IsClickEnabled="True"
                                           Foreground="{ThemeResource SystemErrorTextColor}"
                                           PointerExited="FixForegroundOnPointerExited"
@@ -194,17 +194,17 @@
                 </StackPanel>
 
                 <!-- Main sync is not setted -->
-                <toolKit:SettingsCard Header="Synchronisation"
+                <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('synchronizationSettings')}"
                                       Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
                                       IsClickEnabled="False">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                        <TextBlock x:Uid="Page_SettingsPage_Drive_Unconfigured"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('notSynced')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorSecondary}" />
 
-                        <Button Content="Activer"
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConfigureMainSync')}"
                                 Click="SetupMainSyncButton_Click" />
                     </StackPanel>
                     <toolKit:SettingsCard.HeaderIcon>
@@ -215,7 +215,7 @@
                 </toolKit:SettingsCard>
 
                 <!-- Advanced syncs -->
-                <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_AdvancedSyncs"
+                <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('advancedSync')}"
                                       IsClickEnabled="True"
                                       Click="AdvancedSyncsSettingsCard_Click">
                     <toolKit:SettingsCard.HeaderIcon>

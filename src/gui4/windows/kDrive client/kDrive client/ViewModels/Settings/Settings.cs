@@ -9,6 +9,7 @@ namespace Infomaniak.kDrive.ViewModels
     public class Settings : UISafeObservableObject
     {
         private Language _language = Language.SystemDefault;
+        private bool _restartRequiredForLanguageChange = false;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
         private NotificationsDisabled _notificationsDisabled;
@@ -25,8 +26,19 @@ namespace Infomaniak.kDrive.ViewModels
         public Language Language
         {
             get => _language;
-            set => SetPropertyInUIThread(ref _language, value);
+            set
+            {
+                SetPropertyInUIThread(ref _language, value);
+                Localizer.Instance.SetLanguage(value);
+            }
         }
+
+        public bool RestartRequiredForLanguageChange
+        {
+            get => _restartRequiredForLanguageChange;
+            set => SetPropertyInUIThread(ref _restartRequiredForLanguageChange, value);
+        }
+
         public bool AutoStart
         {
             get => _autoStart;
@@ -191,7 +203,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeLogLevel(Logger.Level newLevel)
         {
-            if(LogLevel == newLevel)
+            if (LogLevel == newLevel)
                 return true;
 
             var previousLogLevel = LogLevel;
@@ -206,7 +218,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangePurgeOldLog(bool enabled)
         {
-            if(PurgeOldLogs == enabled)
+            if (PurgeOldLogs == enabled)
                 return true;
 
             PurgeOldLogs = enabled;
@@ -215,6 +227,22 @@ namespace Infomaniak.kDrive.ViewModels
                 PurgeOldLogs = !enabled;
                 return false;
             }
+            return true;
+        }
+
+        public async Task<bool> ChangeLanguage(Language newLanguage)
+        {
+            if (Language == newLanguage)
+                return true;
+
+            var previousLanguage = Language;
+            Language = newLanguage;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                Language = previousLanguage;
+                return false;
+            }
+            RestartRequiredForLanguageChange = true;
             return true;
         }
     }

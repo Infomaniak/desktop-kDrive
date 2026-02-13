@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.Pages
                 ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
         }
 
-        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private void HideButton_Click(object sender, RoutedEventArgs e)
         {
             ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
         }
@@ -126,14 +126,34 @@ namespace Infomaniak.kDrive.Pages
             Frame.Navigate(typeof(ActivityPage));
         }
 
-        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private async void RestartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedSync == null)
+            if (ViewModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
                 return;
             }
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
+            await ViewModel.SelectedSync.Start();
+        }
+
+        public string GetGreetingLabel(string userName, SyncStatus status)
+        {
+            const string transitionStr = "...";
+            string syncStateStr = status switch
+            {
+                SyncStatus.Undefined => transitionStr,
+                SyncStatus.Starting => transitionStr,
+                SyncStatus.Running => Localizer.Instance.GetString("synchroInProgress"),
+                SyncStatus.Idle => Localizer.Instance.GetString("synchroUpToDate"),
+                SyncStatus.PauseAsked => transitionStr,
+                SyncStatus.Paused => Localizer.Instance.GetString("synchroPaused"),
+                SyncStatus.StopAsked => transitionStr,
+                SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
+                SyncStatus.Error => transitionStr,
+                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused")
+            };
+
+            return Localizer.Instance.GetString("greetingLabel", userName, syncStateStr);
         }
     }
 }

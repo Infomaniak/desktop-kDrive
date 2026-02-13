@@ -6,8 +6,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -82,7 +83,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async Task CheckAvailableDrives(CancellationToken cancellationToken)
         {
-            if(OnboardingViewModel?.SelectedUser is null)
+            if (OnboardingViewModel?.SelectedUser is null)
             {
                 Logger.Log(Logger.Level.Warning, "SelectedUser is null or OnboardingViewModel is null - Cannot check available drives");
                 return;
@@ -99,12 +100,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void OnStartFreeButtonClick(object sender, RoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveShopUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.StartFreeUri);
         }
 
         private async void OnOffersButtonClick(object sender, RoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.TarrifsUri);
         }
     }
 }

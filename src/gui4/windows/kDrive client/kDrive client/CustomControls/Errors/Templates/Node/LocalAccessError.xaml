@@ -6,12 +6,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     x:Uid="ERR_LocalFileAccessError"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errLocalFileAccessErrorTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errLocalFileAccessErrorDescription')}"
                      ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
                      ItemPath="{x:Bind _error.Path}" />
 </UserControl>

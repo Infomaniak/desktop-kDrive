@@ -620,13 +620,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
         {
-            DbId driveDbId = -1;
-            if (drive is Drive inDbDrive)
-                driveDbId = inDbDrive.DbId;
-
             var parms = new JsonObject
             {
-                [JsonKeys.DriveDbId] = driveDbId,
                 [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
             };
 
@@ -939,7 +934,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
-            if (versionInfo is null)
+            if (versionInfo is null || versionInfo.Tag == "")
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data.Params[JsonKeys.VersionInfo]}.");
                 return false;
