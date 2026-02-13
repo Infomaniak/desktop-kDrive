@@ -83,8 +83,25 @@
                 </toolKit:SettingsExpander>
 
                 <!-- User Exclusion -->
+                <!-- User Exclusion - No template-->
+                <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListHeader')}"
+                                      Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}"
+                                      Visibility="{x:Bind _templateListModel.UserDefinedTemplates.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                    <toolKit:SettingsCard.HeaderIcon>
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-plus}"
+                                          Height="32"
+                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+
+                    </toolKit:SettingsCard.HeaderIcon>
+                    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddFileExclusionRule')}"
+                            Click="AddRuleButton_Click" />
+                </toolKit:SettingsCard>
+
+                <!-- User Exclusion - At least one template-->
                 <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListHeader')}"
-                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}">
+                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}"
+                                          Visibility="{x:Bind _templateListModel.UserDefinedTemplates.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+
                     <toolKit:SettingsExpander.HeaderIcon>
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-plus}"
                                           Height="32"
@@ -158,7 +175,7 @@
                                 </ListView>
                                 <HyperlinkButton Grid.Row="2"
                                                  x:Name="DeleteButton"
-                                                 Content="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('buttonRemoveFileExclusionRule', _templateListModel.SelectedCount, _templateListModel.SelectedCount)}"
+                                                 Content="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('winbuttonRemoveFileExclusionRule', _templateListModel.SelectedCount, _templateListModel.SelectedCount), Mode=OneWay}"
                                                  Foreground="{ThemeResource SystemErrorTextColor}"
                                                  Visibility="{x:Bind _templateListModel.HasSelectedTemplates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                  Click="DeleteButton_Click" />

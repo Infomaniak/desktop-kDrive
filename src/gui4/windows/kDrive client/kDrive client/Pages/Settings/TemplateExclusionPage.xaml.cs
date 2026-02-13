@@ -135,8 +135,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (_templateListModel is null)
                 return;
 
-            int selectedCount = _templateListModel.UserDefinedTemplates.Count(t => t.IsSelected);
-            _templateListModel.UpdateSelectedCount(selectedCount);
+            _templateListModel.UpdateSelectedCount();
+            int selectedCount = _templateListModel.SelectedCount;
 
             // Update the select all checkbox state
             int totalCount = _templateListModel.UserDefinedTemplates.Count;
