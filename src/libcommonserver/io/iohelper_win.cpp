@@ -193,7 +193,10 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                             IoError &ioError) noexcept {
+    (void) status;
+
     exists = false;
     ioError = IoError::Success;
 
@@ -207,7 +210,7 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists,
                 exists = true;
                 break;
             }
-        } while (FindNextFileA(h, &findFileData));
+        } while (FindNextFile(h, &findFileData));
         FindClose(h);
     } else {
         DWORD dwError = GetLastError();

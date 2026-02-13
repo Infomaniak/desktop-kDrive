@@ -48,8 +48,8 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
-std::function<bool(const SyncPath &path, bool &exists, IoError &ioError)> IoHelper::_checkIfPathExistsSensitive =
-        IoHelper::_checkIfPathExistsSensitiveFn;
+std::function<bool(const SyncPath &path, const std::filesystem::file_status &status, bool &exists, IoError &ioError)>
+        IoHelper::_checkIfPathExistsSensitive = IoHelper::_checkIfPathExistsSensitiveFn;
 bool IoHelper::_unsuportedFSLogged = false;
 #if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
@@ -774,7 +774,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
@@ -804,7 +804,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
         // NB:
         // - On Windows, the standard check is encoding insensitive
         // - On macOS, the standard check is case & encoding insensitive
-        return _checkIfPathExistsSensitive(path, exists, ioError);
+        return _checkIfPathExistsSensitive(path, status, exists, ioError);
     } else {
         return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
     }

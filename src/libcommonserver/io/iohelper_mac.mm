@@ -308,17 +308,31 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     return success;
 }
 
-bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                             IoError &ioError) noexcept {
     exists = false;
     ioError = IoError::Success;
 
     std::error_code ec;
-    auto p = std::filesystem::canonical(path, ec);
+    auto filename = path.filename();
+    if (status.type() == std::filesystem::file_type::symlink) {
+        // Used only for symlinks because it can be long
+        for (auto const &dir_entry: std::filesystem::directory_iterator{path.parent_path(), ec}) {
+            if (dir_entry.path().filename() == filename) {
+                exists = true;
+                break;
+            }
+        }
+    } else {
+        auto p = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
+        if (!ec) {
+            exists = p.filename() == filename;
+        }
+    }
+
     if (ec) {
         ioError = stdError2ioError(ec);
         exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
-    } else {
-        exists = p.filename() == path.filename();
     }
 
     return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);

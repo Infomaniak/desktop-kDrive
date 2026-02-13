@@ -29,19 +29,21 @@ namespace KDC {
 void TestIo::testCheckIfPathExistsSimpleCases() {
     // A regular file
     {
-        const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
+        // The file exists
+        SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         bool exists = false;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
-    }
 
-    // A regular file whose name exists with a different capitalization
-    {
-        const SyncPath path = _localTestDirPath / "test_pictures/Picture-1.jpg";
-        bool exists = false;
-        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        // The file exists with a different capitalization
+        path = _localTestDirPath / "test_pictures/Picture-1.jpg";
+
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -53,19 +55,36 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A regular directory
     {
-        const SyncPath path = _localTestDirPath / "test_pictures";
+        // The directory exists
+        SyncPath path = _localTestDirPath / "test_pictures";
         bool exists = false;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        // The directory exists with a different capitalization
+        path = _localTestDirPath / "test_Pictures";
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a file
     {
+        // The symbolic link exists
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
+        SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool exists = false;
@@ -73,19 +92,50 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        // The symbolic link exists with a different capitalization
+        path = temporaryDirectory.path() / "Regular_file_symbolic_link";
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     // A regular symbolic link on a folder
     {
+        // The symbolic link exists
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
+        SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        // The symbolic link exists with a different capitalization
+        path = temporaryDirectory.path() / "Regular_dir_symbolic_link";
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
