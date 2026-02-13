@@ -95,8 +95,6 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
 
     // Right part
     auto *logoIconLabel = new QLabel(this);
-    // logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-loader-stroke.svg")
-    //                                  .pixmap(QSize(logoIconSize, logoIconSize)));
     logoIconLabel->setPixmap(
             KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-loader-stroke.svg").pixmap(150, 130));
     mainLayout->addWidget(logoIconLabel);
