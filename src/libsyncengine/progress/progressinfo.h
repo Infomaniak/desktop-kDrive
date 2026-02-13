@@ -49,23 +49,23 @@ class ProgressInfo {
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         [[nodiscard]] int64_t totalFiles() const {
-            std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex);
             return _fileProgress.total();
         }
         [[nodiscard]] int64_t completedFiles() const {
-            std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex);
             return _fileProgress.completed();
         }
         [[nodiscard]] int64_t totalSize() const {
-            std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex);
             return _sizeProgress.total();
         }
         [[nodiscard]] int64_t completedSize() const {
-            std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex);
             return _sizeProgress.completed();
         }
         [[nodiscard]] int64_t currentFile() const {
-            std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex);
             return completedFiles();
         }
         [[nodiscard]] Estimates totalProgress() const;
