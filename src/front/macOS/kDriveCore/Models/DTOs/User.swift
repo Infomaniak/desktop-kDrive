@@ -84,21 +84,43 @@ extension User {
 }
 
 public extension User {
-    func updated(with other: User) -> User? {
+    struct UpdateOptions: OptionSet {
+        public let rawValue: Int
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+
+        @usableFromInline static let userId = UpdateOptions(rawValue: 1 << 0)
+        @usableFromInline static let name = UpdateOptions(rawValue: 1 << 1)
+        @usableFromInline static let email = UpdateOptions(rawValue: 1 << 2)
+        @usableFromInline static let avatar = UpdateOptions(rawValue: 1 << 3)
+        @usableFromInline static let isConnected = UpdateOptions(rawValue: 1 << 4)
+        @usableFromInline static let isStaff = UpdateOptions(rawValue: 1 << 5)
+        @usableFromInline static let accounts = UpdateOptions(rawValue: 1 << 6)
+        @usableFromInline static let availableDrives = UpdateOptions(rawValue: 1 << 7)
+
+        @usableFromInline
+        static let updateSignal: UpdateOptions = [.userId, .name, .email, .avatar, .isConnected, .isStaff]
+
+        @usableFromInline
+        static let all: UpdateOptions = [.userId, .name, .email, .avatar, .isConnected, .isStaff, .accounts, .availableDrives]
+    }
+
+    func updated(with other: User, updateOptions: UpdateOptions) -> User? {
         guard other.dbId == dbId else {
             return nil
         }
 
         return User(
             dbId: dbId,
-            userId: other.userId,
-            name: other.name.isEmpty ? name : other.name,
-            email: other.email.isEmpty ? email : other.email,
-            accounts: other.accounts.isEmpty ? accounts : other.accounts,
-            availableDrives: other.availableDrives,
-            avatar: other.avatar,
-            isConnected: other.isConnected,
-            isStaff: other.isStaff
+            userId: updateOptions.contains(.userId) ? other.userId : userId,
+            name: updateOptions.contains(.name) ? other.name : name,
+            email: updateOptions.contains(.email) ? other.email : email,
+            accounts: updateOptions.contains(.accounts) ? other.accounts : accounts,
+            availableDrives: updateOptions.contains(.availableDrives) ? other.availableDrives : availableDrives,
+            avatar: updateOptions.contains(.avatar) ? other.avatar : avatar,
+            isConnected: updateOptions.contains(.isConnected) ? other.isConnected : isConnected,
+            isStaff: updateOptions.contains(.isStaff) ? other.isStaff : isStaff
         )
     }
 }

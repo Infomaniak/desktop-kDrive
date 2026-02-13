@@ -63,7 +63,7 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
 
         // WHEN
-        await cache.updateUser(CacheData.updatedUser)
+        await cache.updateUser(CacheData.updatedUser, updateOptions: .all)
 
         // THEN
         guard let userByDbId = await cache.getUser(dbId: CacheData.expectedUserDbId) else {
