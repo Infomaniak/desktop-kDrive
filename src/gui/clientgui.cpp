@@ -1558,7 +1558,7 @@ bool ClientGui::loadInfoMaps() {
 
 void ClientGui::openLoginDialog(int userDbId, bool invalidTokenError) {
     bool accepted = false;
-    _loginDialog.reset(new LoginDialog(userDbId));
+    _loginDialog.reset(new LoginDialog(userDbId, shared_from_this()));
     _loginDialog->setAttribute(Qt::WA_DeleteOnClose);
 
     QEventLoop loop;

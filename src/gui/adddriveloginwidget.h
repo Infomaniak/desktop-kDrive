@@ -66,7 +66,7 @@ class AddDriveLoginWidget : public QWidget {
         Q_OBJECT
 
     public:
-        explicit AddDriveLoginWidget(QWidget *parent = nullptr);
+        explicit AddDriveLoginWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
         void init();
 
@@ -82,6 +82,8 @@ class AddDriveLoginWidget : public QWidget {
         QString _codeVerifier;
         int _userDbId{0};
         OAuthUrlHandler _urlHandler;
+
+        std::shared_ptr<ClientGui> _gui;
 
         QUrl generateAuthorizeUrl();
 
