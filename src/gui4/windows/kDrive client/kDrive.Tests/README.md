@@ -12,9 +12,15 @@ The test project uses MSTest framework with the following NuGet packages:
 
 ## Test Coverage
 
-### SocketServerCommProtocolTests
+### SocketServerCommProtocolTests (21 tests)
+Core functionality tests for the SocketServerCommProtocol component.
 
-Comprehensive test suite for `SocketServerCommProtocol` class covering:
+### SocketServerCommProtocolExtendedTests (14 tests)
+Extended tests for message handling, signal processing, and edge cases.
+
+**Total: 35 comprehensive test methods**
+
+For a detailed breakdown of all tests, see [SUMMARY.md](SUMMARY.md).
 
 #### UpdateJsonBalance Tests
 - Empty string handling
@@ -45,9 +51,24 @@ Comprehensive test suite for `SocketServerCommProtocol` class covering:
 - SignalReceived event subscription/unsubscription
 - ConnectionLost event subscription/unsubscription
 
-#### SendRequestAsync Tests
+#### SendRequestAsync Tests (2 tests)
 - Cancellation token handling
 - Behavior without connection
+
+#### HandleServerMessageAsync Tests (5 tests)
+- Request message handling
+- Signal message handling
+- Unknown message handling
+- Null parameter handling
+- Unknown request ID handling
+
+#### RaiseSignal Tests (3 tests)
+- Single subscriber
+- No subscribers
+- Multiple subscribers
+
+#### Concurrent Request Handling (1 test)
+- Thread-safe concurrent operations
 
 ## Building the Tests
 
