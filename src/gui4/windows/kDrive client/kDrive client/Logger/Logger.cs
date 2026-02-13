@@ -25,7 +25,6 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Nodes;
 
 namespace Infomaniak.kDrive
 {
@@ -41,7 +40,6 @@ namespace Infomaniak.kDrive
             None,
             Extended
         }
-        private static IDisposable? _sentryHandler;
 
         private static readonly string _logFolder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -108,7 +106,7 @@ namespace Infomaniak.kDrive
             if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
                 return false;
 
-            if (level <= Level.Info)
+            if (level <= Level.Info && level != Level.Extended)
                 return false; // Only send Warning and above
 
             int hash = HashCode.Combine(filePath, lineNumber);
@@ -141,79 +139,6 @@ namespace Infomaniak.kDrive
             }
         }
 
-
-        public static void StartSentry([CallerMemberName] string memberName = "?")
-        {
-            if (_sentryHandler is not null)
-                return;
-
-            // Don't call from OnLaunched as stated in Sentry documentation -> https://docs.sentry.io/platforms/dotnet/guides/winui/#install
-            if (memberName == "OnLaunched")
-            {
-                Logger.Log(Logger.Level.Error, "Skipping Sentry initialization in OnLaunched to avoid potential issues with Sentry's WinUI integration.");
-#if DEBUG
-                throw new InvalidOperationException("Sentry should not be initialized in OnLaunched. Please call Logger.StartSentry() from a earlier/later point in the application lifecycle, such as after the main window has been created.");
-#endif
-                return;
-            }
-            // Check if sentry is allowed by the user settings before initializing
-            AppModel appModel = App.ServiceProvider.GetRequiredService<AppModel>();
-            if (appModel.IsInitialized)
-            {
-                if (!appModel.Settings.SentryEnabled)
-                {
-                    Logger.Log(Logger.Level.Info, "Sentry is disabled by user settings, skipping initialization.");
-                    return;
-                }
-            }
-            else
-            {
-                UserDefaults userDefaults = App.ServiceProvider.GetRequiredService<UserDefaults>();
-                var sentryEnabledNode = userDefaults.GetValue(nameof(AppModel.Settings.SentryEnabled));
-                if (sentryEnabledNode is null)
-                {
-                    Logger.Log(Logger.Level.Info, "Sentry enabled setting not found in user defaults, skipping initialization.");
-                    return;
-                }
-
-                if (sentryEnabledNode is JsonValue sentryEnabledValue && sentryEnabledValue.TryGetValue<bool>(out bool sentryEnabled))
-                {
-                    if (!sentryEnabled)
-                    {
-                        Logger.Log(Logger.Level.Info, "Sentry is disabled by user defaults, skipping initialization.");
-                        return;
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Warning, "Failed to parse Sentry enabled setting from user defaults, skipping initialization.");
-                    return;
-                }
-            }
-
-            // Initialize Sentry
-            StopSentry();
-            _sentryHandler = SentrySdk.Init(options =>
-            {
-                options.Dsn = App.Constants.Sentry.Dsn;
-                options.SendDefaultPii = true;
-                options.AutoSessionTracking = true;
-                options.IsGlobalModeEnabled = true;
-                options.Environment = App.Constants.Sentry.Environment;
-            });
-
-        }
-
-        public static void StopSentry()
-        {
-            Sentry.SentrySdk.Close();
-
-            if (_sentryHandler is not null)
-            {
-                _sentryHandler.Dispose();
-                _sentryHandler = null;
-            }
-        }
         private static LogEventLevel ToSerilogLevel(Level level) => level switch
         {
             Level.Extended => LogEventLevel.Verbose,
