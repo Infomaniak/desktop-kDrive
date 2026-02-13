@@ -35,32 +35,30 @@ final class PreloadingViewController: NSViewController {
 
     override func viewDidAppear() {
         super.viewDidAppear()
-
         configureWindowAppearance()
-        preloadApp()
     }
 
-    private func preloadApp() {
-        Task {
-            let connectedUsers = try? await UserJobs().userInfoList().filter { $0.isConnected == true }
-            let hasAtLeastOneConnectedUser = connectedUsers?.isEmpty == false
-
-            if UserDefaults.standard.isFirstLaunch {
-                let availableSync = try? await SyncJobs().availableSync()
-                let hasAtLeastOneSync = availableSync?.isEmpty == false
-
-                UserDefaults.standard.shouldPresentOnboarding = !hasAtLeastOneConnectedUser || !hasAtLeastOneSync
-                UserDefaults.standard.isFirstLaunch = false
-            }
-
-            @InjectService var windowRouter: WindowRouter
-            if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
-                windowRouter.navigate(to: .mainWindow)
-            } else {
-                windowRouter.navigate(to: .onboarding())
-            }
-        }
-    }
+//    private func preloadApp() {
+//        Task {
+//            let connectedUsers = try? await UserJobs().userInfoList().filter { $0.isConnected == true }
+//            let hasAtLeastOneConnectedUser = connectedUsers?.isEmpty == false
+//
+//            if UserDefaults.standard.isFirstLaunch {
+//                let availableSync = try? await SyncJobs().availableSync()
+//                let hasAtLeastOneSync = availableSync?.isEmpty == false
+//
+//                UserDefaults.standard.shouldPresentOnboarding = !hasAtLeastOneConnectedUser || !hasAtLeastOneSync
+//                UserDefaults.standard.isFirstLaunch = false
+//            }
+//
+//            @InjectService var windowRouter: WindowRouter
+//            if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
+//                windowRouter.navigate(to: .mainWindow)
+//            } else {
+//                windowRouter.navigate(to: .onboarding())
+//            }
+//        }
+//    }
 }
 
 // MARK: - Set up UI

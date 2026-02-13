@@ -17,28 +17,36 @@
  */
 
 import Cocoa
+import Combine
 import InfomaniakDI
+import kDriveCore
 
 final class MainWindowController: NSWindowController {
+    enum WindowConstants {
+        static let frameName = "kDriveMainWindow"
+        static let initialSize = NSRect(origin: .zero, size: CGSize(width: 900, height: 600))
+        static let properties: NSWindow.StyleMask = [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView]
+    }
+
+    @LazyInjectService private var router: MainWindowRouter
+
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
-
-    private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
+    private var bindStore = Set<AnyCancellable>()
 
     init() {
         let window = NSWindow(
-            contentRect: Self.contentRect,
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
+            contentRect: WindowConstants.initialSize,
+            styleMask: WindowConstants.properties,
             backing: .buffered,
             defer: true
         )
         super.init(window: window)
 
         window.center()
-        window.setFrameAutosaveName("kDriveMainWindow")
+        window.setFrameAutosaveName(WindowConstants.frameName)
 
-        @InjectService var windowRouter: WindowRouter
-        windowRouter.navigate(to: .preloading)
+        observeRouter()
     }
 
     @available(*, unavailable)
@@ -46,7 +54,29 @@ final class MainWindowController: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setViewController(_ viewController: NSViewController) {
+    private func observeRouter() {
+        router.$currentRoute
+            .receiveOnMain(store: &bindStore) { [weak self] route in
+                self?.onRouteChange(route: route)
+            }
+    }
+
+    private func onRouteChange(route: WindowRoute) {
+        switch route {
+        case .preloading:
+            setViewController(PreloadingViewController())
+        case .onboarding(let user, let onboardingStep):
+            setViewController(OnboardingViewController(user: user, initialStep: onboardingStep))
+        case .mainWindow(let tab):
+            setViewController(MainViewController())
+            if let tab {
+                @InjectService var mainViewRouter: MainViewRouter
+                mainViewRouter.setCurrentTab(tab)
+            }
+        }
+    }
+
+    private func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
     }
