@@ -797,11 +797,16 @@ void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const 
     static std::mutex mutex;
     const std::unique_lock lock(mutex, std::try_to_lock);
     if (!lock.owns_lock()) return;
+#if defined(KD_MACOS)
+    // On macOS we do not show UpdateDialog since it is handled by Sparkle.
+    (void) GuiRequests::startInstaller();
+#else
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
-        GuiRequests::startInstaller();
+        (void) GuiRequests::startInstaller();
     } else if (dialog.skip()) {
-        GuiRequests::skipUpdate(versionInfo.fullVersion());
+        (void) GuiRequests::skipUpdate(versionInfo.fullVersion());
     }
+#endif
 }
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {

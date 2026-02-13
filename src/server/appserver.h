@@ -106,6 +106,9 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showHint(std::string errorHint);
 
+        void stopAllSyncPals();
+        void stopAllVfs();
+
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
         void addError(const Error &error) const;
@@ -315,6 +318,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartSyncs();
         void onScheduleAppRestart();
         void onShowWindowsUpdateDialog();
+        void onUpdateRequired();
         void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
