@@ -916,7 +916,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
-            // First check if the updateState
+            // First check the update state
             CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, new JsonObject(), cancellationToken);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
@@ -934,12 +934,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (updateState == UpdateState.NoUpdate)
             {
                 _viewModel.Settings.UpdateManager.UpdateEnabled = false;
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
                 return true;
             }
             _viewModel.Settings.UpdateManager.UpdateEnabled = true;
 
             List<UpdateState> notReadyStates = new List<UpdateState>
             {
+                UpdateState.UpToDate,
                 UpdateState.Available,
                 UpdateState.Downloading,
                 UpdateState.CheckError,
@@ -953,7 +955,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             }
 
-            if (updateState == UpdateState.Checking && _viewModel.Settings.UpdateManager.AvailableUpdate is not null)
+            if (updateState == UpdateState.Checking)
             {
                 // If we are currently checking for updates but we already have update info, we can keep showing the update info without refreshing it to avoid UI flickering.
                 // We will refresh the update info once the state changes to something other than checking.
