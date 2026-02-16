@@ -642,7 +642,7 @@ void TestExecutorWorker::testFixModificationDate() {
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
-    IoHelper::getFileStat(path, &filestat, ioError);
+    IoHelper::getFileStat(path, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modificationTime);

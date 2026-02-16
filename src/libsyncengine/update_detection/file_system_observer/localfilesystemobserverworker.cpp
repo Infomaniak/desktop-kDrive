@@ -97,8 +97,8 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 bool existsWithSameId = false;
                 NodeId otherNodeId;
                 if (auto checkError = IoError::Success;
-                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
-                                                              checkError) &&
+                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, checkError,
+                                                              IoHelper::PathCheckOption::Insensitive) &&
                     !existsWithSameId) {
                     if (_liveSnapshot.removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
@@ -112,8 +112,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
         FileStat fileStat;
         auto ioError = IoError::Success;
-        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError,
-                                   true)) { // Sensitive existence check is needed for MOVE operation
+        if (!IoHelper::getFileStat(
+                    absolutePath, &fileStat, ioError,
+                    IoHelper::PathCheckOption::Sensitive)) { // Sensitive existence check is needed for MOVE operation
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
             return ExitCode::SystemError;
@@ -677,7 +678,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             FileStat fileStat;
             NodeId nodeId;
             if (!toExclude) {
-                if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError)) {
+                if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
                     dirIt.disableRecursionPending();
@@ -711,7 +712,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = _liveSnapshot.itemId(relativePath.parent_path());
                 if (parentNodeId.empty()) {
                     FileStat parentFileStat;
-                    if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, entryIoError)) {
+                    if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, entryIoError,
+                                               IoHelper::PathCheckOption::Insensitive)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                    << Utility::formatIoError(absolutePath.parent_path(), entryIoError));
                         return {ExitCode::SystemError, ExitCause::FileAccessError};

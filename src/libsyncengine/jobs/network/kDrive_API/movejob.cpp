@@ -60,7 +60,7 @@ ExitInfo MoveJob::canRun() {
     // Check that we still have to move the folder
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError));
         return ExitCode::SystemError;
     }

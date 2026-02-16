@@ -79,6 +79,13 @@ struct IoHelper {
                 SyncPath _directoryPath;
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
+
+        enum class PathCheckOption {
+            Sensitive = 0,
+            Insensitive,
+            EnumEnd
+        };
+
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
@@ -156,11 +163,11 @@ struct IoHelper {
          \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, bool sensitive = false) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
-        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, bool sensitive = false);
+        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
@@ -205,7 +212,7 @@ struct IoHelper {
          \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, bool sensitive = false) noexcept;
+        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Checks if the item indicated by the specified path exists and has the specified node identifier.
         /*!
@@ -218,7 +225,7 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
-                                                    NodeId &otherNodeId, IoError &ioError, bool sensitive = false) noexcept;
+                                                    NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!

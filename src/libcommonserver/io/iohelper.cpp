@@ -167,7 +167,7 @@ bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioEr
         file.open(path.native(), std::ifstream::binary);
         if (!file.is_open()) {
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
                 return isExpectedError(ioError);
             }
@@ -282,7 +282,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     FileStat filestat;
-    if (!getFileStat(path, &filestat, ioError)) {
+    if (!getFileStat(path, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
         return false;
     }
@@ -384,7 +384,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
         // Get target type
         FileStat filestat;
-        if (!getFileStat(path, &filestat, itemType.ioError)) {
+        if (!getFileStat(path, &filestat, itemType.ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, itemType.ioError));
             return false;
         }
@@ -770,7 +770,7 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 }
 
 
-bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, bool sensitive) noexcept {
+bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept {
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
@@ -799,7 +799,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
 
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
 
-    if (exists && sensitive) {
+    if (exists && option == PathCheckOption::Sensitive) {
         // Case & encoding check
         // NB:
         // - On Windows, the standard check is encoding insensitive
@@ -811,13 +811,13 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
-                                               NodeId &otherNodeId, IoError &ioError, bool sensitive) noexcept {
+                                               NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept {
     existsWithSameId = false;
     otherNodeId.clear();
     ioError = IoError::Success;
 
     bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError, sensitive)) {
+    if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
 
@@ -833,11 +833,11 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, bool sensitive) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 
     bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError, sensitive)) {
+    if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
     if (!exists) {
@@ -848,10 +848,10 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, bool sensitive) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, PathCheckOption option) {
     exists = true;
     IoError ioError = IoError::Success;
-    if (!getFileStat(path, buf, ioError, sensitive)) {
+    if (!getFileStat(path, buf, ioError, option)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
@@ -863,7 +863,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
     changed = false;
 
     FileStat fileStat;
-    if (!getFileStat(path, &fileStat, ioError)) {
+    if (!getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
         return false;
     }

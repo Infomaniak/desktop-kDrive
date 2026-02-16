@@ -181,7 +181,7 @@ IoError IoHelper::lock(const SyncPath &path) noexcept {
 IoError IoHelper::unlock(const SyncPath &path) noexcept {
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(path, &filestat, found);
+    IoHelper::getFileStat(path, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     if (!found) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;
@@ -200,7 +200,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
 IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(path, &filestat, found);
+    IoHelper::getFileStat(path, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     if (!found) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;

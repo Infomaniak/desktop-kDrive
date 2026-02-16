@@ -128,7 +128,7 @@ ExitInfo DownloadJob::canRun() {
     // Check that we can create the item here
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_localpath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
@@ -152,7 +152,7 @@ ExitInfo DownloadJob::runJob() noexcept {
         // Update size on file system
         FileStat filestat;
         IoError ioError = IoError::Success;
-        if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
+        if (!IoHelper::getFileStat(_localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
             return ExitCode::SystemError;
         }
@@ -284,7 +284,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
     // Retrieve inode
     FileStat filestat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
+    if (!IoHelper::getFileStat(_localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
         return ExitCode::SystemError;
     }
@@ -515,7 +515,8 @@ ExitInfo DownloadJob::moveTmpFile() {
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
+                if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError,
+                                                 IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(_localpath.parent_path(), ioError));
                     return ExitCode::SystemError;

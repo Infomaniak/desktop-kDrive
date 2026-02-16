@@ -314,7 +314,7 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
     ioError = IoError::Success;
 
     std::error_code ec;
-    auto filename = path.filename();
+    const auto filename = path.filename();
     if (status.type() == std::filesystem::file_type::symlink) {
         // Used only for symlinks because it can be long
         for (auto const &dir_entry: std::filesystem::directory_iterator{path.parent_path(), ec}) {
@@ -324,9 +324,9 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
             }
         }
     } else {
-        auto p = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
+        const auto canonicalPath = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
         if (!ec) {
-            exists = p.filename() == filename;
+            exists = canonicalPath.filename() == filename;
         }
     }
 

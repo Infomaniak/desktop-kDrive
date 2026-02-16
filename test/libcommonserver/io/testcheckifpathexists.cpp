@@ -33,18 +33,18 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // The file exists with a different capitalization
         path = _localTestDirPath / "test_pictures/Picture-1.jpg";
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
 #else
@@ -52,7 +52,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 #endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -63,18 +63,18 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         SyncPath path = _localTestDirPath / "test_pictures";
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // The directory exists with a different capitalization
         path = _localTestDirPath / "test_Pictures";
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
 #else
@@ -82,7 +82,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 #endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -97,18 +97,18 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // The symbolic link exists with a different capitalization
         path = temporaryDirectory.path() / "Regular_file_symbolic_link";
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
 #else
@@ -116,7 +116,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 #endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -131,18 +131,18 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // The symbolic link exists with a different capitalization
         path = temporaryDirectory.path() / "Regular_dir_symbolic_link";
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT(exists);
 #else
@@ -150,7 +150,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 #endif
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, true));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Sensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -160,7 +160,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath path = _localTestDirPath / "non_existing.jpg";
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -170,7 +170,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath path = std::string(1000, 'a');
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(!exists);
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -188,7 +188,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -205,7 +205,8 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
         bool exists = false;
-        const bool checkIfPathExistsResult = IoHelper::checkIfPathExists(path, exists, ioError);
+        const bool checkIfPathExistsResult =
+                IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
         IoHelper::setRights(path, true, true, true, ioError);
 
         CPPUNIT_ASSERT(checkIfPathExistsResult);
@@ -219,7 +220,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath path = _localTestDirPath / "test_pictures" / "picture-1.jpg" / "A";
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
@@ -236,7 +237,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -259,7 +260,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -277,7 +278,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool exists = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -293,7 +294,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         bool exists = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -309,7 +310,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
         bool exists = false;
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -326,7 +327,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -340,7 +342,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -358,7 +361,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -376,7 +380,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -390,7 +395,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -408,7 +414,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -421,7 +428,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoError ioError = IoError::Unknown;
         NodeId nodeId = "wrong_node_id";
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -444,8 +452,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
             IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
-        bool checkIfPathExistsResult =
-                IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError);
+        bool checkIfPathExistsResult = IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId,
+                                                                                 ioError, IoHelper::PathCheckOption::Insensitive);
         IoHelper::setRights(path, true, true, true, ioError);
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(existsWithSameId);
@@ -468,7 +476,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -492,7 +501,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -514,7 +524,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -534,7 +545,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -554,7 +566,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                                 IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -582,14 +595,14 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         bool exists = false;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, true) && !exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && !exists);
 #else
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, true) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 #endif
 
         NodeId nfcNodeId, nfdNodeId;
@@ -621,14 +634,14 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
         bool exists = false;
         IoError ioError = IoError::Unknown;
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && !exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && !exists);
 #else
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, true) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 #endif
 
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 
         NodeId nfcNodeId, nfdNodeId;
         IoHelper::getNodeId(nfcPath, nfcNodeId);
@@ -667,19 +680,19 @@ void TestIo::testCheckIfPathExistsMixedSeparators(void) {
 
     // Checked that CheckIfPathExist can handle all the directory separators
     bool exist = false;
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirForward, exist, ioError));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirForward, exist, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exist);
 
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileForward, exist, ioError));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileForward, exist, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exist);
 
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirBackward, exist, ioError));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subDirBackward, exist, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exist);
 
-    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileBackward, exist, ioError));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(subFileBackward, exist, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exist);
 }

@@ -39,7 +39,7 @@ ExitInfo LocalCreateDirJob::canRun() {
     // Check that we can create the directory here
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
     }
@@ -80,7 +80,7 @@ ExitInfo LocalCreateDirJob::runJob() {
     }
 
     FileStat filestat;
-    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
+    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
     }

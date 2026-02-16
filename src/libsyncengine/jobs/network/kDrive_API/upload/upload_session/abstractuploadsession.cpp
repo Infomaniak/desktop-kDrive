@@ -162,7 +162,7 @@ ExitInfo AbstractUploadSession::canRun() {
     // Check that the item still exist
     bool exists = false;
     auto ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_filePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
         return ExitCode::SystemError;
     }

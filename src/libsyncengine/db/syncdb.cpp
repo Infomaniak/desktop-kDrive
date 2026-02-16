@@ -2563,7 +2563,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     bool exists = false;
     IoError existenceCheckError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError)) {
+    if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localDrivePath, existenceCheckError));
         return false;

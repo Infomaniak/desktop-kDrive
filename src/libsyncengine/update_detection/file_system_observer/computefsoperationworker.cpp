@@ -234,7 +234,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             if (!nodeExistsInSnapshot) {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(localPath, exists, ioError) || ioError == IoError::AccessDenied) {
+                if (!IoHelper::checkIfPathExists(localPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+                    ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
                     return ExitCode::SystemError;
@@ -783,7 +784,8 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
     bool existsWithSameId = false;
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError)) {
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                   IoHelper::PathCheckOption::Insensitive)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
                                            << Utility::formatIoError(absolutePath, ioError));
 

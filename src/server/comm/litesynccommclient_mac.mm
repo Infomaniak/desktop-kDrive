@@ -1158,7 +1158,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
             // Get file dates
             IoError ioError = IoError::Success;
             FileStat filestat;
-            if (!IoHelper::getFileStat(filePath, &filestat, ioError)) {
+            if (!IoHelper::getFileStat(filePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filePath, ioError));
                 return false;
             }

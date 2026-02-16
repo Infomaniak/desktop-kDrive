@@ -730,7 +730,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         bool exists = false;
         auto ioError = IoError::Unknown;
         // Check if item already exist (it should not exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
@@ -761,7 +761,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         output.close();
 
         // Check again if item already exist (it should exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
