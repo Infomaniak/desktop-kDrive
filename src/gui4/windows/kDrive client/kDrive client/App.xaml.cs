@@ -56,7 +56,8 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin(), new ProductionKSuite());
+        // internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin(), new ProductionKSuite());
+        internal static IAppConstants Constants => new ProductionAppConstants();
         internal App()
         {
             TrayIcoManager = new TrayIcon.TrayIconManager();
@@ -69,7 +70,7 @@ namespace Infomaniak.kDrive
             Logger.StartSentry();
             InitializeComponent();
             Logger.Log(Logger.Level.Info, "Application started");
-        }       
+        }
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
