@@ -1107,7 +1107,7 @@ void CommonUtility::initAppImageEnvironment() {
             const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
             if (setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1) == -1) {
                 const int err = errno;
-                qWarning() << "Failed to set GIO_MODULE_DIR to " << gioModuleDir << " (errno " << err << ": "
+                qWarning() << "Failed to set GIO_MODULE_DIR to " << gioModuleDir.c_str() << " (errno " << err << ": "
                           << strerror(err) << ")";
             }
         } else {
