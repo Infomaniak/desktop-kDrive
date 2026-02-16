@@ -17,25 +17,32 @@
  */
 
 #include "keychainmanager.h"
-#include "keychain/keychain.h"
-#include "log/log.h"
+#include "keychainstore.h"
+#include "log/sentry/handler.h"
 
 #include <log4cplus/loggingmacros.h>
 
-#define PACKAGE "com.infomaniak.drive"
-#define SERVICE "desktopclient"
-
 namespace KDC {
 
-static const std::string dummyKeychainKey("dummy_kdrive_keychain_key");
-static const std::string dummyData("dummy");
+const std::string KeyChainManager::dummyKeychainKey("dummy_kdrive_keychain_key");
+const std::string KeyChainManager::dummyData("dummy");
 
 std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
-std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
+KeyChainManager::KeyChainManager(std::unique_ptr<IKeychainStore> store) :
+    _store(std::move(store)),
+    _package(KeyChainManager::DEFAULT_PACKAGE),
+    _service(KeyChainManager::DEFAULT_SERVICE) {
+    if (!_store) {
+        throw std::invalid_argument("KeychainStore cannot be null");
+    }
+}
+
+std::shared_ptr<KeyChainManager> KeyChainManager::instance() {
     if (_instance == nullptr) {
         try {
-            _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+            auto store = std::make_unique<KeychainStore>();
+            _instance = std::make_shared<KeyChainManager>(std::move(store));
         } catch (...) {
             return nullptr;
         }
@@ -44,96 +51,57 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     return _instance;
 }
 
-KeyChainManager::KeyChainManager(bool testing) :
-    _testing(testing),
-    _testingMap(std::unordered_map<std::string, std::string>()) {}
-
 bool KeyChainManager::writeDummyTest() {
-    // First, we check that we can write into the keychain
-    if (!KeyChainManager::instance()->writeToken(dummyKeychainKey, dummyData)) {
-        std::string error = "Test writing into the keychain failed. Token not refreshed.";
-        LOG_WARN(Log::instance()->getLogger(), error);
+    std::string error;
+    if (!_store->setPassword(_package, _service, dummyKeychainKey, dummyData, error)) {
+        std::string errorMsg = "Test writing into the keychain failed. Token not refreshed.";
+        LOG_WARN(Log::instance()->getLogger(), errorMsg);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
-
         return false;
     }
     return true;
 }
 
 void KeyChainManager::clearDummyTest() {
-    KeyChainManager::instance()->deleteToken(dummyKeychainKey);
+    std::string error;
+    _store->deletePassword(_package, _service, dummyKeychainKey, error);
 }
 
 bool KeyChainManager::writeToken(const std::string &keychainKey, const std::string &rawData) {
-    if (_testing) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Testing");
-        _testingMap[keychainKey] = rawData;
-        return true;
-    }
-
-    keychain::Error error{};
-    keychain::setPassword(PACKAGE, SERVICE, keychainKey, rawData, error);
-    if (error) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to save authentication info to keychain: " << error.code << " - " << error.message);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeToken", error.message);
-
+    std::string error;
+    if (!_store->setPassword(_package, _service, keychainKey, rawData, error)) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Failed to save authentication info to keychain: " << error);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeToken", error);
         return false;
     }
-
     return true;
 }
 
 bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found) {
-    keychain::Error error{};
-    data = keychain::getPassword(PACKAGE, SERVICE, keychainKey, error);
-    if (error.type == keychain::ErrorType::NotFound) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Could not find data in keychain for key " << keychainKey << ": " << error.code << " - " << error.message);
-        found = false;
-        return true;
-    } else if (error) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to retrieve data from keychain: " << error.code << " - " << error.message);
+    std::string error;
+    if (!_store->getPassword(_package, _service, keychainKey, data, found, error)) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Failed to retrieve data from keychain: " << error);
         return false;
     }
-
-    found = true;
     return true;
 }
 
 bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
-    if (_testing) {
-        if (_testingMap.find(keychainKey) != _testingMap.end()) {
-            apiToken = _testingMap[keychainKey];
-            found = true;
-        } else {
-            found = false;
-        }
-        return true;
-    }
-
     std::string token;
     const bool returnValue = readDataFromKeystore(keychainKey, token, found);
     if (returnValue && found) {
         apiToken = ApiToken(token);
     }
-
     return returnValue;
 }
 
-bool KeyChainManager::deleteToken(const std::string &keychainKey) const {
-    keychain::Error error{};
-    keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
-    if (error) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to delete authentication info to keychain: " << error.code << " - " << error.message);
-
-        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::deleteToken", error.message);
-
+bool KeyChainManager::deleteToken(const std::string &keychainKey) {
+    std::string error;
+    if (!_store->deletePassword(_package, _service, keychainKey, error)) {
+        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Failed to delete authentication info from keychain: " << error);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::deleteToken", error);
         return false;
     }
-
     return true;
 }
 

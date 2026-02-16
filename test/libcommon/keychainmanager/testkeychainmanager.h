@@ -26,15 +26,12 @@ namespace KDC {
 
 class TestKeyChainManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestKeyChainManager);
-        // The next three tests have been deactivated because
-        // they are not compatible with the current implementation.
-        // A mock of keychainmanager should be implemented.
-        // CPPUNIT_TEST(testWriteAndReadToken);
-        // CPPUNIT_TEST(testDeleteToken);
-        // CPPUNIT_TEST(testReadTokenNotFound);
-        // CPPUNIT_TEST(testReadWriteData);
-        CPPUNIT_TEST(testSingletonPattern);
+        CPPUNIT_TEST(testWriteAndReadToken);
+        CPPUNIT_TEST(testDeleteToken);
+        CPPUNIT_TEST(testReadTokenNotFound);
+        CPPUNIT_TEST(testReadWriteData);
         CPPUNIT_TEST(testWriteDummyTest);
+        CPPUNIT_TEST(testNullStoreThrows);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -46,8 +43,8 @@ class TestKeyChainManager : public CppUnit::TestFixture, public TestBase {
         void testDeleteToken();
         void testReadTokenNotFound();
         void testReadWriteData();
-        void testSingletonPattern();
         void testWriteDummyTest();
+        void testNullStoreThrows();
 };
 
 } // namespace KDC

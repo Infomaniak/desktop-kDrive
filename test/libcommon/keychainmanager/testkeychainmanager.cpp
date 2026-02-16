@@ -18,31 +18,49 @@
 
 #include "testkeychainmanager.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/keychainmanager/keychainstore.h"
+#include "mockkeychainstore.h"
 
 namespace KDC {
 
 void TestKeyChainManager::testWriteAndReadToken() {
-    auto instance = KeyChainManager::instance(true); // Testing mode
-    CPPUNIT_ASSERT_MESSAGE("KeyChainManager instance should not be null", instance != nullptr);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    auto *mockPtr = mockStore.get();
+    KeyChainManager manager(std::move(mockStore));
+
+    ApiToken apiToken;
+    apiToken.setAccessToken("access_token:1");
+    apiToken.setRefreshToken("refresh_token:2");
+    apiToken.setTokenType("special_token_type");
+    apiToken.setExpiresIn(3600);
+    apiToken.setUserId(1);
+    apiToken.setScope("token_scope");
 
     std::string testKey = "test_key_1";
-    std::string testData = "test_data_123";
+    std::string testData = apiToken.reconstructJsonString();
+
     bool found = false;
     ApiToken readToken;
 
     // Write token
-    bool writeResult = instance->writeToken(testKey, testData);
+    bool writeResult = manager.writeToken(testKey, testData);
     CPPUNIT_ASSERT_MESSAGE("Write token should succeed", writeResult);
 
+    // Verify mock has the data
+    CPPUNIT_ASSERT_MESSAGE("Mock store should contain the key",
+                           mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
+
     // Read token back
-    bool readResult = instance->readApiToken(testKey, readToken, found);
+    bool readResult = manager.readApiToken(testKey, readToken, found);
     CPPUNIT_ASSERT_MESSAGE("Read token should succeed", readResult);
     CPPUNIT_ASSERT_MESSAGE("Token should be found", found);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Token data should match", std::string(readToken.refreshToken()), testData);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Token data should match", testData, readToken.reconstructJsonString());
 }
 
 void TestKeyChainManager::testDeleteToken() {
-    auto instance = KeyChainManager::instance(true);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    auto *mockPtr = mockStore.get();
+    KeyChainManager manager(std::move(mockStore));
 
     std::string testKey = "test_delete_key";
     std::string testData = "delete_me";
@@ -50,29 +68,38 @@ void TestKeyChainManager::testDeleteToken() {
     ApiToken readToken;
 
     // Write then delete
-    instance->writeToken(testKey, testData);
-    bool deleteResult = instance->deleteToken(testKey);
+    manager.writeToken(testKey, testData);
+    CPPUNIT_ASSERT_MESSAGE("Key should exist before deletion",
+                           mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
+
+    bool deleteResult = manager.deleteToken(testKey);
     CPPUNIT_ASSERT_MESSAGE("Delete should succeed", deleteResult);
 
-    // Verify deleted
-    instance->readApiToken(testKey, readToken, found);
+    // Verify deleted via mock
+    CPPUNIT_ASSERT_MESSAGE("Key should not exist after deletion",
+                           !mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
+
+    // Verify via manager
+    CPPUNIT_ASSERT(manager.readApiToken(testKey, readToken, found));
     CPPUNIT_ASSERT_MESSAGE("Token should not be found after deletion", !found);
 }
 
 void TestKeyChainManager::testReadTokenNotFound() {
-    auto instance = KeyChainManager::instance(true);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManager manager(std::move(mockStore));
 
     std::string nonExistentKey = "non_existent_key_xyz";
     bool found = false;
     ApiToken readToken;
 
-    bool readResult = instance->readApiToken(nonExistentKey, readToken, found);
+    bool readResult = manager.readApiToken(nonExistentKey, readToken, found);
     CPPUNIT_ASSERT_MESSAGE("Read should succeed even for missing key", readResult);
     CPPUNIT_ASSERT_MESSAGE("Token should not be found", !found);
 }
 
 void TestKeyChainManager::testReadWriteData() {
-    auto instance = KeyChainManager::instance(true);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManager manager(std::move(mockStore));
 
     std::string testKey = "test_data_key";
     std::string testData = "raw_data_content";
@@ -80,38 +107,46 @@ void TestKeyChainManager::testReadWriteData() {
     bool found = false;
 
     // Write data
-    bool writeResult = instance->writeToken(testKey, testData);
+    bool writeResult = manager.writeToken(testKey, testData);
     CPPUNIT_ASSERT_MESSAGE("Write should succeed", writeResult);
 
-    // Read data back
-    bool readResult = instance->readDataFromKeystore(testKey, readData, found);
+    // Read data back using readDataFromKeystore
+    bool readResult = manager.readDataFromKeystore(testKey, readData, found);
     CPPUNIT_ASSERT_MESSAGE("Read data should succeed", readResult);
     CPPUNIT_ASSERT_MESSAGE("Data should be found", found);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Data should match", testData, readData);
 }
 
-void TestKeyChainManager::testSingletonPattern() {
-    // Get first instance
-    auto instance1 = KeyChainManager::instance(true);
-    CPPUNIT_ASSERT_MESSAGE("First instance should not be null", instance1 != nullptr);
-
-    // Get second instance
-    auto instance2 = KeyChainManager::instance(true);
-    CPPUNIT_ASSERT_MESSAGE("Second instance should not be null", instance2 != nullptr);
-
-    // Should be the same instance
-    CPPUNIT_ASSERT_MESSAGE("Instances should be identical", instance1.get() == instance2.get());
-}
-
 void TestKeyChainManager::testWriteDummyTest() {
-    auto instance = KeyChainManager::instance(true);
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    auto *mockPtr = mockStore.get();
+    KeyChainManager manager(std::move(mockStore));
 
-    // In testing mode, this should succeed
-    bool result = instance->writeDummyTest();
-    CPPUNIT_ASSERT_MESSAGE("Write dummy test should succeed in testing mode", result);
+    // Should succeed with mock
+    bool result = manager.writeDummyTest();
+    CPPUNIT_ASSERT_MESSAGE("Write dummy test should succeed with mock", result);
+
+    // Verify the dummy key was written
+    CPPUNIT_ASSERT_MESSAGE("Dummy key should be in mock store",
+                           mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE,
+                                           KeyChainManager::dummyKeychainKey));
 
     // Clean up
-    instance->clearDummyTest();
+    manager.clearDummyTest();
+    CPPUNIT_ASSERT_MESSAGE("Dummy key should be removed after clear",
+                           !mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE,
+                                            KeyChainManager::dummyKeychainKey));
+}
+
+void TestKeyChainManager::testNullStoreThrows() {
+    // Test that passing nullptr throws an exception
+    try {
+        KeyChainManager manager(nullptr);
+        CPPUNIT_FAIL("KeyChainManager constructor should throw for null store");
+    } catch (const std::invalid_argument &e) {
+        // Expected
+        CPPUNIT_ASSERT_MESSAGE("Exception message should mention null", std::string(e.what()).find("null") != std::string::npos);
+    }
 }
 
 } // namespace KDC

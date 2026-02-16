@@ -6,7 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
-find_package(log4cplus 2.1.2 REQUIRED)
+find_package(log4cplus 2.1.1 REQUIRED)
 find_package(sentry REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
@@ -30,6 +30,7 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+
     info/userinfo.h info/userinfo.cpp
     info/accountinfo.h info/accountinfo.cpp
     info/driveinfo.h info/driveinfo.cpp
@@ -45,6 +46,7 @@ set(libcommon_SRCS
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
+
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h
     log/sentry/abstractscopedptrace.h 
@@ -52,6 +54,7 @@ set(libcommon_SRCS
     log/sentry/ptracedescriptor.h
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
+    
     theme/theme.h theme/theme.cpp
 )
 
