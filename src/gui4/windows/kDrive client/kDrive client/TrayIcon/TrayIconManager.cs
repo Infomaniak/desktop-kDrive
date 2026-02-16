@@ -19,8 +19,6 @@
 using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI;
-using Microsoft.UI.System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
@@ -153,7 +151,7 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.png");
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.ico");
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
