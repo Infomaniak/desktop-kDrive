@@ -21,6 +21,7 @@
 #include "libcommon/utility/types.h"
 
 #include <QIcon>
+#include <QGuiApplication>
 
 namespace KDC {
 
@@ -71,10 +72,28 @@ void TestTheme::testUrls() {
 }
 
 void TestTheme::testSystrayIcons() {
+    int argc = 1;
+    char *argv[] = {const_cast<char *>("test")};
+    QGuiApplication app(argc, argv);
+
     Theme *const theme = Theme::instance();
 
-    // Test theme icon getter doesn't crash
+    // Test that the theme icon getter returns a valid icon
     QIcon icon = theme->syncStateIcon(SyncStatus::Running, false, false, false);
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT_MESSAGE("Icon should be null", icon.isNull());
+#else
+    CPPUNIT_ASSERT_MESSAGE("Icon should be valid", !icon.isNull());
+#endif
+
+    icon = theme->syncStateIcon(SyncStatus::Running, true, false, true);
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT_MESSAGE("Icon should be null", icon.isNull());
+#else
+    CPPUNIT_ASSERT_MESSAGE("Icon should be valid", !icon.isNull());
+#endif
+
+    icon = theme->syncStateIcon(SyncStatus::Running, true, true, true);
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT_MESSAGE("Icon should be null", icon.isNull());
 #else

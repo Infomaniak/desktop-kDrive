@@ -9,6 +9,17 @@ find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
+set(CMAKE_AUTORCC TRUE)
+
+set(KDRIVE_RC_SRC ../../client.qrc)
+if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
+    list(APPEND KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
+    set(theme_dir ${KDRIVE_THEME_DIR}/theme)
+else()
+    list(APPEND KDRIVE_RC_SRC ../../theme.qrc)
+    set(theme_dir ${CMAKE_SOURCE_DIR}/theme)
+endif()
+
 set(testcommon_SRCS
          ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
          ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
@@ -52,7 +63,21 @@ else()
     include_directories("/usr/local/include")
 endif()
 
-add_executable(${testcommon_NAME} ${testcommon_SRCS})
+set(final_src
+    ${KDRIVE_RC_SRC}
+    ${testcommon_SRCS}
+)
+# add executable icon on windows and osx
+
+# UPSTREAM our ECMAddAppIcon.cmake then require that version here
+# find_package(ECM 1.7.0 REQUIRED NO_MODULE)
+# list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+include(ECMAddAppIcon)
+
+file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
+ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
+
+add_executable(${testcommon_NAME} ${final_src})
 
 # Precompiled headers
 set(PC_HEADER_FILES
