@@ -2236,6 +2236,7 @@ void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, Sy
     itemInfo.setError(QString::fromStdString(item.error()));
     itemInfo.setSize(item.size());
     itemInfo.setProgress(item.progress());
+    itemInfo.setOperationId(item.operationId());
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {

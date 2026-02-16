@@ -233,6 +233,7 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     syncItem.setConflict(syncOp->conflict().type());
     syncItem.setInconsistency(syncOp->affectedNode()->inconsistencyType());
     syncItem.setSize(syncOp->affectedNode()->size());
+    syncItem.setOperationId(syncOp->id());
     syncItem.setModTime(syncOp->affectedNode()->modificationTime().value_or(0));
     syncItem.setCreationTime(syncOp->affectedNode()->createdAt().value_or(0));
 
