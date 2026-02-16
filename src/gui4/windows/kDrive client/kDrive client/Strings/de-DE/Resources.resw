@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Feb 2026 12:42:12 +0100 
+  Exported at: Mon, 16 Feb 2026 11:13:48 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>German</value>
   </metadata> 
-  <data name="debugLogsDescription" xml:space="preserve"> 
-    <value>Sie ermöglichen es dem Infomaniak-Support, die Ursache eines Problems zu ermitteln.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@ (build %@)
 © 2019-%@ Infomaniak Network SA</value> 
@@ -186,8 +183,14 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Standard-Speicherort</value> 
   </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Eine Idee teilen</value> 
+  </data> 
   <data name="buttonFixErrors" xml:space="preserve"> 
     <value>Fehler beheben</value> 
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Unterstützung</value> 
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
     <value>kDrive Online</value> 
@@ -230,7 +233,7 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
     <value>Wiederholung</value> 
   </data> 
   <data name="buttonSave" xml:space="preserve"> 
-    <value>Speichern Sie</value> 
+    <value>Sparen</value> 
     <comment>Save</comment> 
   </data> 
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
@@ -250,6 +253,9 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   </data> 
   <data name="buttonShowOffers" xml:space="preserve"> 
     <value>Zu den Angeboten</value> 
+  </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Abmelden</value> 
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Kostenlos anfangen</value> 
@@ -273,7 +279,7 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
     <value>Freigabelink erstellen…</value> 
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
-    <value>Sie können die von Infomaniak gesammelten Nutzungs- und Betriebsdaten individuell anpassen, um Fehler zu beheben und die Anwendung zu verbessern. Beide verwendeten Tools werden ausschließlich von uns gehostet und verwaltet.
+    <value>Sie können die von Infomaniak gesammelten Nutzungs- und Betriebsdaten individuell anpassen, um Fehler zu beheben und die Anwendung zu verbessern. Beide verwendeten Tools werden ausschliesslich von uns gehostet und verwaltet.
 
 Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informationen sind anonym, und Ihre persönlichen Daten bleiben streng vertraulich und werden niemals an Dritte weitergegeben.</value> 
   </data> 
@@ -288,6 +294,9 @@ Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informati
   </data> 
   <data name="debugLevelSetting" xml:space="preserve"> 
     <value>Debug-Ebene</value> 
+  </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>Sie ermöglichen es dem Infomaniak-Support, die Ursache eines Problems zu ermitteln.</value> 
   </data> 
   <data name="debugLogsSettings" xml:space="preserve"> 
     <value>Debug-Protokolle</value> 
@@ -304,9 +313,6 @@ Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informati
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Eine Ausschlussregel hinzufügen</value> 
   </data> 
-  <data name="dialogRemoveAccountCancelButton" xml:space="preserve"> 
-    <value>Abmelden</value> 
-  </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
     <value>Sie sind dabei, sich von der App abzumelden {0}.
 Dateien, die von allen kDrives dieses Kontos synchronisiert wurden, werden von Ihrem Computer entfernt.
@@ -315,6 +321,9 @@ Alle Ihre Daten bleiben online auf kDrive zugänglich.</value>
   </data> 
   <data name="dialogRemoveAccountPrimaryButton" xml:space="preserve"> 
     <value>Behalten Sie das Konto</value> 
+  </data> 
+  <data name="dialogRemoveAccountSecondaryButton" xml:space="preserve"> 
+    <value>Abmelden</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
     <value>Von diesem Konto abmelden?</value> 
@@ -328,9 +337,6 @@ Bevor Sie fortfahren, stellen Sie sicher, dass alle Ihre Dateien auf dem neueste
   </data> 
   <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
     <value>Synchronisierung entfernen</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningSecondaryButton" xml:space="preserve"> 
-    <value>Abbrechen</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Synchronisierung entfernen?</value> 
@@ -352,9 +358,6 @@ Die aktuelle Synchronisierung bleibt unverändert. Wenn jedoch ein abnormales Ve
 Bevor Sie fortfahren, vergewissern Sie sich, dass alle Dateien auf dem neuesten Stand und vollständig synchronisiert sind.
 
 Schliessen Sie die Anwendung während des Vorgangs nicht.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningPrimaryButton" xml:space="preserve"> 
-    <value>Abbrechen</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
     <value>Weiter</value> 
@@ -430,16 +433,6 @@ Bitte versuchen Sie es in ein paar Minuten erneut.</value>
   <data name="errFrobiddenCharDescription" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von Ihrem Gerät nicht unterstützt werden</value> 
   </data> 
-  <data name="errFrobiddenCharTitle" xml:space="preserve"> 
-    <value>Nicht unterstützte Zeichen</value> 
-  </data> 
-  <data name="errLocalFileAccessErrorDescription" xml:space="preserve"> 
-    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden.
-Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berechtigung haben, auf sie zuzugreifen.</value> 
-  </data> 
-  <data name="errLocalFileAccessErrorTitle" xml:space="preserve"> 
-    <value>Datei unzugänglich</value> 
-  </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>Dateien, die dieser Regel entsprechen, werden nicht synchronisiert.</value> 
   </data> 
@@ -454,6 +447,9 @@ Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berech
   </data> 
   <data name="failedToCreateShareLinkError" xml:space="preserve"> 
     <value>Freigabelink konnte nicht erstellt werden</value> 
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Helfen Sie uns, kDrive zu verbessern</value> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Datei-Synchronisationsmodus</value> 
@@ -481,6 +477,9 @@ Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berech
   </data> 
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Drei Tage lang</value> 
+  </data> 
+  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+    <value>Nicht unterstützte Zeichen</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hallo %@, %@</value> 
@@ -602,6 +601,13 @@ Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berech
   <data name="linkCopiedToClipboard" xml:space="preserve"> 
     <value>Link in die Zwischenablage kopiert</value> 
   </data> 
+  <data name="localFileAccessDescription" xml:space="preserve"> 
+    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden.
+Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berechtigung haben, auf sie zuzugreifen.</value> 
+  </data> 
+  <data name="localFileAccessErrorTitle" xml:space="preserve"> 
+    <value>Datei unzugänglich</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Standort auf meinem PC</value> 
   </data> 
@@ -646,6 +652,12 @@ Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berech
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Mehr Speicherplatz, mehr Funktionen mit meiner kSuite+</value> 
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Brauchen Sie Hilfe?</value> 
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>Sie haben kein angemeldetes Konto</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>Keine Ergebnisse gefunden"</value> 
