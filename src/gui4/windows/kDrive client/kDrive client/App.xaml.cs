@@ -56,8 +56,25 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        // internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin(), new ProductionKSuite());
+        /* 
+         * Application-wide constants instance.
+         * 
+         * By default, the app uses ProductionAppConstants. For testing purposes, you can switch to a custom instance 
+         * with mock or staging values by returning a CustomAppConstants instead.
+         * 
+         * Example for testing:
+         * internal static IAppConstants Constants => new CustomAppConstants(
+         *     new ProductionSentry(),
+         *     new ProductionGitHub(),
+         *     new ProductionDrive(),
+         *     new ProductionStorage(),
+         *     new PreProdLogin(),
+         *     new ProductionKSuite());
+         */
+
         internal static IAppConstants Constants => new ProductionAppConstants();
+
+
         internal App()
         {
             TrayIcoManager = new TrayIcon.TrayIconManager();
