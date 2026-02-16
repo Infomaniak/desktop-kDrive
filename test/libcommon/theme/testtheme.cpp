@@ -25,53 +25,53 @@
 namespace KDC {
 
 void TestTheme::testSingleton() {
-    Theme *instance1 = Theme::instance();
+    const Theme *const instance1 = Theme::instance();
     CPPUNIT_ASSERT_MESSAGE("Theme instance should not be null", instance1 != nullptr);
 
-    Theme *instance2 = Theme::instance();
+    const Theme *const instance2 = Theme::instance();
     CPPUNIT_ASSERT_MESSAGE("Second instance should be same", instance1 == instance2);
 }
 
 void TestTheme::testAppNames() {
-    Theme *theme = Theme::instance();
+    const Theme *const theme = Theme::instance();
 
-    std::string appName = theme->appName();
+    const std::string appName = theme->appName();
     CPPUNIT_ASSERT_MESSAGE("App name should not be empty", !appName.empty());
 
-    std::string clientName = theme->appClientName();
+    const std::string clientName = theme->appClientName();
     CPPUNIT_ASSERT_MESSAGE("Client name should not be empty", !clientName.empty());
 }
 
 void TestTheme::testVersion() {
-    Theme *theme = Theme::instance();
+    const Theme *const theme = Theme::instance();
 
-    std::string version = theme->version();
+    const std::string version = theme->version();
     CPPUNIT_ASSERT_MESSAGE("Version should not be empty", !version.empty());
 
-    auto versionOutput = theme->versionSwitchOutput();
-    // Should contain version info
+    const auto versionOutput = theme->versionSwitchOutput();
+    CPPUNIT_ASSERT_MESSAGE("Version switch output should not be empty", !versionOutput.isEmpty());
 }
 
 void TestTheme::testUrls() {
-    Theme *theme = Theme::instance();
+    const Theme *theme = Theme::instance();
 
-    QString helpUrl = theme->helpUrl();
+    const QString helpUrl = theme->helpUrl();
     CPPUNIT_ASSERT_MESSAGE("Help URL should not be empty", !helpUrl.isEmpty());
 
-    QString conflictUrl = theme->conflictHelpUrl();
+    const QString conflictUrl = theme->conflictHelpUrl();
     CPPUNIT_ASSERT_MESSAGE("Conflict URL should not be empty", !conflictUrl.isEmpty());
 
-    QString debugUrl = theme->debugReporterUrl();
+    const QString debugUrl = theme->debugReporterUrl();
     CPPUNIT_ASSERT_MESSAGE("Debug URL should not be empty", !debugUrl.isEmpty());
 
     // Test with different languages
-    QString feedbackEn = theme->feedbackUrl(Language::English);
-    QString feedbackFr = theme->feedbackUrl(Language::French);
+    const QString feedbackEn = theme->feedbackUrl(Language::English);
+    const QString feedbackFr = theme->feedbackUrl(Language::French);
     CPPUNIT_ASSERT_MESSAGE("Feedback URLs should differ by language", feedbackEn != feedbackFr);
 }
 
 void TestTheme::testSystrayIcons() {
-    Theme *theme = Theme::instance();
+    Theme *const theme = Theme::instance();
 
     // Test theme icon getter doesn't crash
     try {
@@ -90,13 +90,10 @@ void TestTheme::testSystrayIcons() {
 }
 
 void TestTheme::testSharingConfig() {
-    Theme *theme = Theme::instance();
+    const Theme *const theme = Theme::instance();
 
-    bool linkSharing = theme->linkSharing();
-    bool userGroupSharing = theme->userGroupSharing();
-
-    // Just verify these return valid bool values, actual values depend on configuration
-    // But they shouldn't crash or throw
+    CPPUNIT_ASSERT(theme->linkSharing());
+    CPPUNIT_ASSERT(!theme->userGroupSharing());
 }
 
 } // namespace KDC

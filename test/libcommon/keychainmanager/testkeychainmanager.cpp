@@ -28,6 +28,7 @@ void TestKeyChainManager::testWriteAndReadToken() {
     auto *mockPtr = mockStore.get();
     KeyChainManager manager(std::move(mockStore));
 
+    // Generate test token data string
     ApiToken apiToken;
     apiToken.setAccessToken("access_token:1");
     apiToken.setRefreshToken("refresh_token:2");
@@ -36,14 +37,13 @@ void TestKeyChainManager::testWriteAndReadToken() {
     apiToken.setUserId(1);
     apiToken.setScope("token_scope");
 
-    std::string testKey = "test_key_1";
     std::string testData = apiToken.reconstructJsonString();
 
     bool found = false;
-    ApiToken readToken;
+    std::string testKey = "test_key_1";
 
     // Write token
-    bool writeResult = manager.writeToken(testKey, testData);
+    const bool writeResult = manager.writeToken(testKey, testData);
     CPPUNIT_ASSERT_MESSAGE("Write token should succeed", writeResult);
 
     // Verify mock has the data
@@ -51,7 +51,8 @@ void TestKeyChainManager::testWriteAndReadToken() {
                            mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
 
     // Read token back
-    bool readResult = manager.readApiToken(testKey, readToken, found);
+    ApiToken readToken;
+    const bool readResult = manager.readApiToken(testKey, readToken, found);
     CPPUNIT_ASSERT_MESSAGE("Read token should succeed", readResult);
     CPPUNIT_ASSERT_MESSAGE("Token should be found", found);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Token data should match", testData, readToken.reconstructJsonString());
@@ -62,17 +63,15 @@ void TestKeyChainManager::testDeleteToken() {
     auto *mockPtr = mockStore.get();
     KeyChainManager manager(std::move(mockStore));
 
-    std::string testKey = "test_delete_key";
-    std::string testData = "delete_me";
-    bool found = false;
-    ApiToken readToken;
+    const std::string testKey = "test_delete_key";
+    const std::string testData = "delete_me";
 
     // Write then delete
     manager.writeToken(testKey, testData);
     CPPUNIT_ASSERT_MESSAGE("Key should exist before deletion",
                            mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
 
-    bool deleteResult = manager.deleteToken(testKey);
+    const bool deleteResult = manager.deleteToken(testKey);
     CPPUNIT_ASSERT_MESSAGE("Delete should succeed", deleteResult);
 
     // Verify deleted via mock
@@ -80,6 +79,8 @@ void TestKeyChainManager::testDeleteToken() {
                            !mockPtr->hasKey(KeyChainManager::DEFAULT_PACKAGE, KeyChainManager::DEFAULT_SERVICE, testKey));
 
     // Verify via manager
+    bool found = false;
+    ApiToken readToken;
     CPPUNIT_ASSERT(manager.readApiToken(testKey, readToken, found));
     CPPUNIT_ASSERT_MESSAGE("Token should not be found after deletion", !found);
 }
@@ -88,11 +89,11 @@ void TestKeyChainManager::testReadTokenNotFound() {
     auto mockStore = std::make_unique<MockKeychainStore>();
     KeyChainManager manager(std::move(mockStore));
 
-    std::string nonExistentKey = "non_existent_key_xyz";
+    const std::string nonExistentKey = "non_existent_key_xyz";
     bool found = false;
     ApiToken readToken;
 
-    bool readResult = manager.readApiToken(nonExistentKey, readToken, found);
+    const bool readResult = manager.readApiToken(nonExistentKey, readToken, found);
     CPPUNIT_ASSERT_MESSAGE("Read should succeed even for missing key", readResult);
     CPPUNIT_ASSERT_MESSAGE("Token should not be found", !found);
 }
@@ -103,15 +104,15 @@ void TestKeyChainManager::testReadWriteData() {
 
     std::string testKey = "test_data_key";
     std::string testData = "raw_data_content";
-    std::string readData;
-    bool found = false;
 
     // Write data
-    bool writeResult = manager.writeToken(testKey, testData);
+    const bool writeResult = manager.writeToken(testKey, testData);
     CPPUNIT_ASSERT_MESSAGE("Write should succeed", writeResult);
 
     // Read data back using readDataFromKeystore
-    bool readResult = manager.readDataFromKeystore(testKey, readData, found);
+    std::string readData;
+    bool found = false;
+    const bool readResult = manager.readDataFromKeystore(testKey, readData, found);
     CPPUNIT_ASSERT_MESSAGE("Read data should succeed", readResult);
     CPPUNIT_ASSERT_MESSAGE("Data should be found", found);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Data should match", testData, readData);
@@ -123,7 +124,7 @@ void TestKeyChainManager::testWriteDummyTest() {
     KeyChainManager manager(std::move(mockStore));
 
     // Should succeed with mock
-    bool result = manager.writeDummyTest();
+    const bool result = manager.writeDummyTest();
     CPPUNIT_ASSERT_MESSAGE("Write dummy test should succeed with mock", result);
 
     // Verify the dummy key was written

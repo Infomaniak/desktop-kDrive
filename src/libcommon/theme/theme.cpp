@@ -28,6 +28,8 @@
 
 namespace KDC {
 
+
+
 Theme *Theme::instance() {
     return &_instance;
 }
