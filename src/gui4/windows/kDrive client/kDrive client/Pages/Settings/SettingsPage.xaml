@@ -466,11 +466,11 @@
                 </StackPanel>
                 <controls:ConsentDialog x:Name="SentryContentDialog"
                                         Description="{x:Bind kDrive:Localizer.Instance.GetString('sentryDescription'), Mode=OneWay}"
-                                        LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
+                                        LogoUriStr="{ThemeResource Infomaniak.Custom.Icons.logo-sentry}"
                                         CurrentValue="{x:Bind ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
                 <controls:ConsentDialog x:Name="MatomoContentDialog"
                                         Description="{x:Bind kDrive:Localizer.Instance.GetString('matomoDescription'), Mode=OneWay}"
-                                        LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
+                                        LogoUriStr="{ThemeResource Infomaniak.Custom.Icons.logo-matomo}"
                                         CurrentValue="{x:Bind ViewModel.Settings.MatomoEnabled, Mode=OneWay}" />
             </StackPanel>
         </ScrollView>

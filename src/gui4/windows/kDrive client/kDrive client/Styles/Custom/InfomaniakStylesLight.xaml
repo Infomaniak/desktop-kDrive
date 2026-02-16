@@ -23,6 +23,10 @@
     <x:String x:Key="Infomaniak.Custom.Images.servin">ms-appx:///Assets/Custom/Images/servin-light.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus-light.svg</x:String>
 
+    <!-- Icons -->
+    <x:String x:Key="Infomaniak.Custom.Icons.logo-matomo">ms-appx:///Assets/Custom/Icons/logo-matomo-light.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Icons.logo-sentry">ms-appx:///Assets/Custom/Icons/logo-sentry-light.svg</x:String>
+    
     <!-- Animations -->
     <x:String x:Key="Infomaniak.Custom.Animations.check">ms-appx:///Assets/Custom/Animations/check-light.json</x:String>
     <x:String x:Key="Infomaniak.Custom.Animations.loader-stroke">ms-appx:///Assets/Custom/Animations/loader-stroke-light.json</x:String>
