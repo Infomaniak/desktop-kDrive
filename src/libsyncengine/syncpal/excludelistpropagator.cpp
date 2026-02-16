@@ -60,10 +60,8 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
     if (!isExcluded) return ExitCode::Ok;
 
     if (isWarning) {
-        IoError ioError = IoError::Success;
         NodeId localNodeId;
         ItemType localNodeType;
-        bool found = false;
 
         if (IoHelper::getNodeId(entry.path(), localNodeId) && IoHelper::getItemType(entry.path(), localNodeType)) {
             Error error(_syncPal->syncDbId(), localNodeId, NodeId(), localNodeType.nodeType, relativePath, ConflictType::None,

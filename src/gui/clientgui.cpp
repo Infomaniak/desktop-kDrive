@@ -799,6 +799,8 @@ void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const 
     if (!lock.owns_lock()) return;
 #if defined(KD_MACOS)
     // On macOS we do not show UpdateDialog since it is handled by Sparkle.
+    (void) versionInfo;
+
     (void) GuiRequests::startInstaller();
 #else
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
