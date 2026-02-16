@@ -3553,8 +3553,9 @@ bool AppServer::startClient() {
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
-                ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }
