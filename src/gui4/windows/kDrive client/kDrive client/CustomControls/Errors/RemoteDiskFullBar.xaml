@@ -7,13 +7,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
-    <InfoBar x:Uid="CC_RemoteDiskFullBar"
+    <InfoBar Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullTitle')}"
+             Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullSubtitle')}"
              Severity="Informational"
              IsOpen="{x:Bind Drive.DisplayRemoteSpaceWarning, Mode=OneWay}"
              IsClosable="True"
@@ -26,7 +28,7 @@
             </ImageIconSource>
         </InfoBar.IconSource>
         <InfoBar.ActionButton>
-            <Button x:Uid="CC_RemoteDiskFullBar_Button"
+            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddStorage')}"
                     HorizontalAlignment="Right"
                     Click="InfoBarButton_Click"
                     Style="{ThemeResource AccentButtonStyle}"

@@ -66,6 +66,8 @@ void AbstractUpdater::onAppVersionReceived() {
         setState(UpdateState::UpToDate);
     }
 
+    _appShouldBeBlocked = _updateChecker->appShouldBeBlocked();
+
     const bool newVersionAvailable = CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.fullVersion());
     setState(newVersionAvailable ? UpdateState::Available : UpdateState::UpToDate);
     if (newVersionAvailable) {

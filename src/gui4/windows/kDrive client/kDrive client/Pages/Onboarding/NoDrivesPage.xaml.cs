@@ -64,12 +64,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void OnStartFreeButtonClick(object sender, RoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveShopUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.StartFreeUri);
         }
 
         private async void OnOffersButtonClick(object sender, RoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.TarrifsUri);
         }
     }
 }

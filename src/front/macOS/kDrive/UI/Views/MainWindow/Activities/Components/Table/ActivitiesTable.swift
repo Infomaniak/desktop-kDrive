@@ -67,7 +67,7 @@ struct ActivitiesTable: View {
             }
 
             TableColumn(KDriveLocalizable.labelTime) { node in
-                Text(node.syncDate, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
+                Text(node.syncDate, format: .friendlyRelative)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             .width(ideal: 50)

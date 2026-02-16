@@ -24,13 +24,12 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void SendLogsButton_Click(object sender, RoutedEventArgs e)
         {
-            const string xuid = "CC_LogUploadSettingsCard_Popup";
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = XamlRoot;
-            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
+            dialog.Title = Localizer.Instance.GetString("logUploadPopupTitle");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
-            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonSend");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonCancel");
             var popupPage = new Pages.Popup.LogUploadPopup();
             dialog.Content = popupPage;
 

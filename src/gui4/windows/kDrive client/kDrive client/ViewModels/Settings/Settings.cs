@@ -9,6 +9,7 @@ namespace Infomaniak.kDrive.ViewModels
     public class Settings : UISafeObservableObject
     {
         private Language _language = Language.SystemDefault;
+        private bool _restartRequiredForLanguageChange = false;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
         private NotificationsDisabled _notificationsDisabled;
@@ -17,16 +18,27 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _logEnbaled = false;
         private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool _matomoEnabled = true;
-        private bool _sentryEnabled = true;
+        private bool _matomoEnabled = false;
+        private bool _sentryEnabled = false;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 
         public Language Language
         {
             get => _language;
-            set => SetPropertyInUIThread(ref _language, value);
+            set
+            {
+                SetPropertyInUIThread(ref _language, value);
+                Localizer.Instance.SetLanguage(value);
+            }
         }
+
+        public bool RestartRequiredForLanguageChange
+        {
+            get => _restartRequiredForLanguageChange;
+            set => SetPropertyInUIThread(ref _restartRequiredForLanguageChange, value);
+        }
+
         public bool AutoStart
         {
             get => _autoStart;
@@ -71,13 +83,25 @@ namespace Infomaniak.kDrive.ViewModels
         public bool MatomoEnabled
         {
             get => _matomoEnabled;
-            set => SetPropertyInUIThread(ref _matomoEnabled, value);
+            set
+            {
+                App.ServiceProvider.GetRequiredService<UserDefaults>().SetValue(nameof(MatomoEnabled), value);
+                SetPropertyInUIThread(ref _matomoEnabled, value);
+            }
         }
 
         public bool SentryEnabled
         {
             get => _sentryEnabled;
-            set => SetPropertyInUIThread(ref _sentryEnabled, value);
+            set
+            {
+                App.ServiceProvider.GetRequiredService<UserDefaults>().SetValue(nameof(SentryEnabled), value);
+                if (SetPropertyInUIThread(ref _sentryEnabled, value))
+                    if (value)
+                        Logger.StartSentry();
+                    else
+                        Logger.StopSentry();
+            }
         }
 
         public async Task<bool> ChangeAutoStart(bool activated)
@@ -191,7 +215,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeLogLevel(Logger.Level newLevel)
         {
-            if(LogLevel == newLevel)
+            if (LogLevel == newLevel)
                 return true;
 
             var previousLogLevel = LogLevel;
@@ -206,7 +230,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangePurgeOldLog(bool enabled)
         {
-            if(PurgeOldLogs == enabled)
+            if (PurgeOldLogs == enabled)
                 return true;
 
             PurgeOldLogs = enabled;
@@ -215,6 +239,22 @@ namespace Infomaniak.kDrive.ViewModels
                 PurgeOldLogs = !enabled;
                 return false;
             }
+            return true;
+        }
+
+        public async Task<bool> ChangeLanguage(Language newLanguage)
+        {
+            if (Language == newLanguage)
+                return true;
+
+            var previousLanguage = Language;
+            Language = newLanguage;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                Language = previousLanguage;
+                return false;
+            }
+            RestartRequiredForLanguageChange = true;
             return true;
         }
     }

@@ -52,21 +52,30 @@ namespace Infomaniak.kDrive.ViewModels
             if (other == null)
                 return true;
 
-            var thisTagParts = Tag.Split('.').Select(int.Parse).ToArray();
-            var otherTagParts = other.Tag.Split('.').Select(int.Parse).ToArray();
-
-            for (int i = 0; i < Math.Min(thisTagParts.Length, otherTagParts.Length); i++)
+            try
             {
-                if (thisTagParts[i] > otherTagParts[i])
-                    return true;
-                else if (thisTagParts[i] < otherTagParts[i])
-                    return false;
+                var thisTagParts = Tag.Split('.').Select(int.Parse).ToArray();
+                var otherTagParts = other.Tag.Split('.').Select(int.Parse).ToArray();
+
+
+                for (int i = 0; i < Math.Min(thisTagParts.Length, otherTagParts.Length); i++)
+                {
+                    if (thisTagParts[i] > otherTagParts[i])
+                        return true;
+                    else if (thisTagParts[i] < otherTagParts[i])
+                        return false;
+                }
+
+                if (thisTagParts.Length != otherTagParts.Length)
+                {
+                    Logger.Log(Logger.Level.Error, $"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.");
+                    return thisTagParts.Length > otherTagParts.Length;
+                }
             }
-
-            if (thisTagParts.Length != otherTagParts.Length)
+            catch (System.FormatException ex)
             {
-                Logger.Log(Logger.Level.Error, $"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.");
-                return thisTagParts.Length > otherTagParts.Length;
+                Logger.Log(Logger.Level.Error, "Unable to parse the version tag");
+                return false;
             }
 
             return this.BuildVersion > other.BuildVersion;

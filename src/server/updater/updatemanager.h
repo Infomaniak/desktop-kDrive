@@ -61,6 +61,7 @@ class UpdateManager final : public QObject {
         void requestRestart();
         void updateStateChanged(KDC::UpdateState mewState);
         void showUpdateDialog();
+        void requireUpdate();
 
     private slots:
         void slotTimerFired() const;

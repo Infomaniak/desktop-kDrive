@@ -29,6 +29,7 @@ using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 
@@ -57,37 +58,17 @@ namespace Infomaniak.kDrive
         internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin());
         internal App()
         {
-            InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
+            _services.AddSingleton<UserDefaults>();
             _serviceProvider = _services.BuildServiceProvider();
+
+            Logger.StartSentry();
+            InitializeComponent();
             Logger.Log(Logger.Level.Info, "Application started");
-        }
-
-        private IDisposable? _sentryHandler;
-        public void StartSentry()
-        {
-            StopSentry();
-            _sentryHandler = SentrySdk.Init(options =>
-                    {
-                        options.Dsn = Constants.Sentry.Dsn;
-                        options.SendDefaultPii = true;
-                        options.AutoSessionTracking = true;
-                        options.IsGlobalModeEnabled = true;
-                        options.Environment = Constants.Sentry.Environment;
-                    });
-        }
-
-        public void StopSentry()
-        {
-            if (_sentryHandler is not null)
-            {
-                _sentryHandler.Dispose();
-                _sentryHandler = null;
-            }
-        }
+        }       
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
@@ -119,7 +100,6 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
                 }
             }
-            StartSentry();
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();

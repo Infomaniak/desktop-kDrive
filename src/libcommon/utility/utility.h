@@ -139,6 +139,12 @@ struct COMMON_EXPORT CommonUtility {
          */
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
+        /**
+         * @brief Compare versions.
+         * @param currentVersion
+         * @param targetVersion
+         * @return return true if currentVersion < targetVersion.
+         */
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
 #if defined(KD_MACOS)

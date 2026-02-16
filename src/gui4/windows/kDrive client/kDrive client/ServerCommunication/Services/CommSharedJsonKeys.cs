@@ -91,6 +91,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string DriveAvailableInfoList = "driveAvailableInfoList";
 
         static public string UpdateChannel = "channel";
+        static public string UpdateState = "updateState";
         static public string State = "state";
         static public string Percentage = "percentage";
 

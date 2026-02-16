@@ -20,54 +20,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             InitializeComponent();
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
-            if (ViewModel.SelectedSync?.SyncErrors is not null)
-                ViewModel.SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
-            UpdateInfoBar();
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DetachEventHandlers();
-        }
-
-        private void DetachEventHandlers()
-        {
-            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
-            if (ViewModel.SelectedSync?.SyncErrors is not null)
-                ViewModel.SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
-        }
-
-        private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
-        {
-            if (e.OldValue is not null)
-                e.OldValue.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
-            if (e.NewValue is not null)
-                e.NewValue.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
-            UpdateInfoBar();
-        }
-
-        private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            UpdateInfoBar();
-        }
-
-        private void UpdateInfoBar()
-        {
-            if (ViewModel.SelectedSync is null)
-                return;
-            if (ViewModel.SelectedSync.SyncErrors.Count == 0)
-            {
-                InfoBar_.IsOpen = false;
-            }
-            else
-            {
-                InfoBar_.IsOpen = true;
-                InfoBar_.Title = Utility.GetLocalizedString("CC_ErrorBar/Title", ViewModel.SelectedSync.SyncErrors.Count);
-            }
-        }
 
         public static readonly DependencyProperty FrameProperty =
             DependencyProperty.Register(nameof(Frame), typeof(Frame), typeof(ErrorBar), new PropertyMetadata(null));

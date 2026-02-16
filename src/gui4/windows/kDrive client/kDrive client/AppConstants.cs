@@ -10,6 +10,7 @@ namespace Infomaniak.kDrive
         ISentryConstants Sentry { get; }
         IGitHubConstants GitHub { get; }
         IDriveConstants Drive { get; }
+        IkSuiteConstants kSuite { get; }
         IStorageConstants Storage { get; }
         ILoginConstants Login { get; }
     }
@@ -40,7 +41,6 @@ namespace Infomaniak.kDrive
         string OAtuhClientId { get; }
     }
 
-
     internal interface IDriveConstants
     {
         Uri RenewUrl(DriveId? driveId);
@@ -51,6 +51,12 @@ namespace Infomaniak.kDrive
         Uri SharedUrl(DriveId? driveId);
         Uri itemUri(DriveId? driveId, NodeId nodeId);
         Uri ChangeOfferUri(DriveId? driveId);
+        public Uri StartFreeUri { get; }
+    }
+    internal interface IkSuiteConstants
+    {
+        public Uri HomeUri { get; }
+        public Uri TarrifsUri { get; }
     }
 
 

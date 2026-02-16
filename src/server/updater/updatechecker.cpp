@@ -70,9 +70,9 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel
     const VersionInfo &internalVersion =
             _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
-    sortedVersionList.insert(prodVersion);
-    sortedVersionList.insert(betaVersion);
-    sortedVersionList.insert(internalVersion);
+    (void) sortedVersionList.insert(prodVersion);
+    (void) sortedVersionList.insert(betaVersion);
+    (void) sortedVersionList.insert(internalVersion);
     for (const auto &versionInfo: sortedVersionList) {
         if (versionInfo.get().channel <= chosenChannel) return versionInfo;
     }
@@ -80,7 +80,7 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel
     return _defaultVersionInfo;
 }
 
-void UpdateChecker::versionInfoReceived(UniqueId jobId) {
+void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
     // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
     const std::scoped_lock<std::mutex> lock(_mutex);
     _isVersionReceived = false;
@@ -107,6 +107,16 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         _versionsInfo = getAppVersionJobPtr->versionsInfo();
         _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
         _isVersionReceived = true;
+    }
+
+    // Check if app should be blocked
+    _appShouldBeBlocked = false;
+    if (_isVersionReceived &&
+        CommonUtility::isVersionLower(CommonUtility::currentVersion(), getAppVersionJobPtr->minAppVersion())) {
+        LOG_WARN(Log::instance()->getLogger(), "The current version needs to be updated. Current version: "
+                                                       << CommonUtility::currentVersion()
+                                                       << ", min version: " << getAppVersionJobPtr->minAppVersion());
+        _appShouldBeBlocked = true;
     }
 
     _callback();

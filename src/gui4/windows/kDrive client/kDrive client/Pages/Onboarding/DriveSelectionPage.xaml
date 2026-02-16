@@ -10,6 +10,7 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
 
     <Page.Resources>
@@ -95,7 +96,7 @@
             <StackPanel Grid.Row="0"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                 <!-- Title -->
-                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_Title"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingDriveSelectionTitle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                            Foreground="{ThemeResource TextFillColorPrimary}" />
 
@@ -123,7 +124,7 @@
 
                 <!-- Subtitle -->
                 <TextBlock Grid.Row="0"
-                           x:Uid="Page_Onboarding_DriveSelectionPage_Subtitle"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingDriveSelectionSelectTitle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}" />
 
                 <!-- List of drives -->
@@ -147,7 +148,7 @@
                         <DataTemplate x:DataType="types:IDrive">
                             <Grid>
                                 <ToolTipService.ToolTip>
-                                    <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
+                                    <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAlreadySyncedDriveTooltip')}"
                                              VerticalOffset="-80"
                                              IsEnabled="{x:Bind IsConfigured, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
@@ -175,13 +176,13 @@
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
             <Button x:Name="AdvancedButton"
-                    x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedButton"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAdvancedParameters')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource SubtleButtonStyle}"
                     IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
                     Click="AdvancedSettingsButton_Click" />
 
-            <Button x:Uid="Page_Onboarding_DriveSelectionPage_FinishButton"
+            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConfirm')}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource AccentButtonStyle}"
                     IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"

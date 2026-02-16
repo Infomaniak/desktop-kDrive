@@ -164,11 +164,11 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = this.XamlRoot;
-            dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
-            dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
-            dialog.SecondaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/SecondaryButtonText");
+            dialog.Title = Localizer.Instance.GetString("dialogRemoveAccountTitle");
+            dialog.PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountCancelButton");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Content", user.Name);
+            dialog.Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name);
 
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
@@ -440,6 +440,47 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Failed to change log level");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+            control.IsEnabled = true;
+        }
+
+        private async void LanguageComboBox_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Error, "control is null");
+                return;
+            }
+
+            if (!control.IsEnabled)
+            {
+                Logger.Log(Logger.Level.Error, "control is disabled");
+                return;
+            }
+
+            control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (!Enum.TryParse<Language>(selectedItem.Tag as string, out Language selectedLanguage))
+            {
+                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                control.IsEnabled = true;
+                return;
+            }
+
+            await ViewModel.Settings.ChangeLanguage(selectedLanguage);
+            Frame.BackStack.Clear(); // Prevent user from going back to a page with the old language
+            Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
             control.IsEnabled = true;
         }
     }

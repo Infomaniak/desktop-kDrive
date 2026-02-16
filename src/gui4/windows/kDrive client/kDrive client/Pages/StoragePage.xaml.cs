@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ViewModels;
@@ -25,7 +26,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -84,6 +84,48 @@ namespace Infomaniak.kDrive.Pages
                 btn.Visibility = Visibility.Visible;
                 RetryProgressRing.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private string GetThisComputerTitle(string diskRoot, Int64? diskSize)
+        {
+            BytesToHumanReadableStringConverter converter = new BytesToHumanReadableStringConverter();
+
+            string? prettySize = converter.Convert(diskSize ?? -1, typeof(string), "Decimals = 0", "") as string;
+            if (prettySize is null)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to convert disk size {diskSize} to human readable string");
+                prettySize = $"{diskSize} bytes";
+            }
+
+            return Localizer.Instance.GetString("storageThisComputerTitle", diskRoot, prettySize);
+        }
+
+        private string GetStorageUsedLabel(Int64? usedSize)
+        {
+            BytesToHumanReadableStringConverter converter = new BytesToHumanReadableStringConverter();
+
+            string? prettySize = converter.Convert(usedSize ?? -1, typeof(string), "Decimals = 0", "") as string;
+            if (prettySize is null)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to convert usedSize size {usedSize} to human readable string");
+                prettySize = $"{usedSize} bytes";
+            }
+
+            return Localizer.Instance.GetString("storageUsedLabel", prettySize);
+        }
+
+        private string GetStorageFreeLabel(Int64? usedSize)
+        {
+            BytesToHumanReadableStringConverter converter = new BytesToHumanReadableStringConverter();
+
+            string? prettySize = converter.Convert(usedSize ?? -1, typeof(string), "Decimals = 0", "") as string;
+            if (prettySize is null)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to convert usedSize size {usedSize} to human readable string");
+                prettySize = $"{usedSize} bytes";
+            }
+
+            return Localizer.Instance.GetString("storageFreeLabel", prettySize);
         }
     }
 
@@ -208,9 +250,8 @@ namespace Infomaniak.kDrive.Pages
             if (AppViewModel.SelectedSync == null)
                 return;
 
-            MissingDiskTitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Title/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-            MissingDiskSubtitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Subtitle/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-
+            MissingDiskTitle = Localizer.Instance.GetString("storageMissingDiskTitle", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+            MissingDiskSubtitle = Localizer.Instance.GetString("storageMissingDiskDescription", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
         }
 
         public async Task UpdateDiskSizeAsync()
