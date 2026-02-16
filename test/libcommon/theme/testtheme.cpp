@@ -75,6 +75,7 @@ void TestTheme::testSystrayIcons() {
     int argc = 1;
     char *argv[] = {const_cast<char *>("test")};
     QGuiApplication app(argc, argv);
+    setlocale(LC_ALL, "C"); // QGuiApplication changes the locale
 
     Theme *const theme = Theme::instance();
 
