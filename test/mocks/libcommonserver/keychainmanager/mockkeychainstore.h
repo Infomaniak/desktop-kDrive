@@ -18,7 +18,10 @@
 
 #pragma once
 
+
 #include "libcommonserver/keychainmanager/ikeychainstore.h"
+#include "libcommon/utility/types.h"
+
 #include <unordered_map>
 
 namespace KDC {
@@ -96,7 +99,8 @@ class MockKeychainStore : public IKeychainStore {
         }
 
     private:
-        std::unordered_map<std::string, std::string> _data;
+        using StringMap = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
+        StringMap _data;
         bool _failNext = false;
         std::string _errorMessage;
 
