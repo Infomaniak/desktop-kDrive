@@ -31,7 +31,8 @@
         <ContentDialog.TitleTemplate>
             <DataTemplate>
                 <local:SvgIcon UriString="{Binding ElementName=Root,Path=LogoUriStr}"
-                               MaxWidth="120" />
+                               Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                               HorizontalAlignment="Left"/>
             </DataTemplate>
         </ContentDialog.TitleTemplate>
 
@@ -39,7 +40,8 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                            TextWrapping="WrapWholeWords"
-                           TextAlignment="Justify" />
+                           TextAlignment="Justify"
+                           Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}" />
                 <ToggleSwitch x:Name="Toggle"
                               OnContent="{x:Bind kDrive:Localizer.Instance.GetString('allowTrackingLabel')}"
                               OffContent="{x:Bind kDrive:Localizer.Instance.GetString('allowTrackingLabel')}"
