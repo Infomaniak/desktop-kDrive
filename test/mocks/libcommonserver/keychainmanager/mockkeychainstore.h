@@ -84,7 +84,8 @@ class MockKeychainStore : public IKeychainStore {
         /**
          * @brief Pre-populate with data for testing
          */
-        void setData(const std::string &package, const std::string &service, const std::string &key, const std::string &value) {
+        void setData(const std::string &package, const std::string &service, const std::string &key,
+                     const std::string_view value) {
             const std::string fullKey = package + "/" + service + "/" + key;
 
             _data[fullKey] = value;
