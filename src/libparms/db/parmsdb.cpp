@@ -3216,7 +3216,7 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
             continue;
         }
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(longPathName, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(longPathName, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(sync.dbPath(), ioError));
             continue;
         } else if (!exists) {

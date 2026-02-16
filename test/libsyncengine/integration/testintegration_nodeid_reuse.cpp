@@ -216,7 +216,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError, IoHelper::PathCheckOption::Insensitive);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
@@ -247,7 +247,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError, IoHelper::PathCheckOption::Insensitive);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
@@ -278,7 +278,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError, IoHelper::PathCheckOption::Insensitive);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
