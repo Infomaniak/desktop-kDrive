@@ -193,32 +193,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Update="Strings\de-DE\Resources.resw">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </PRIResource>
-    <PRIResource Update="Strings\en-US\Resources.resw">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </PRIResource>
-    <PRIResource Update="Strings\es-ES\Resources.resw">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </PRIResource>
-    <PRIResource Update="Strings\fr-FR\Resources.resw">
-      <Generator>
-      </Generator>
-    </PRIResource>
-    <PRIResource Update="Strings\it-IT\Resources.resw">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </PRIResource>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
     <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
