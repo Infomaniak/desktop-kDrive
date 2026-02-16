@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 11:13:48 +0100 
+  Exported at: Mon, 16 Feb 2026 10:18:53 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -183,14 +183,8 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Standard-Speicherort</value> 
   </data> 
-  <data name="buttonFeedback" xml:space="preserve"> 
-    <value>Eine Idee teilen</value> 
-  </data> 
   <data name="buttonFixErrors" xml:space="preserve"> 
     <value>Fehler beheben</value> 
-  </data> 
-  <data name="buttonHelpdesk" xml:space="preserve"> 
-    <value>Unterstützung</value> 
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
     <value>kDrive Online</value> 
@@ -448,9 +442,6 @@ Bitte versuchen Sie es in ein paar Minuten erneut.</value>
   <data name="failedToCreateShareLinkError" xml:space="preserve"> 
     <value>Freigabelink konnte nicht erstellt werden</value> 
   </data> 
-  <data name="feedbackSetting" xml:space="preserve"> 
-    <value>Helfen Sie uns, kDrive zu verbessern</value> 
-  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Datei-Synchronisationsmodus</value> 
   </data> 
@@ -652,9 +643,6 @@ Vergewissern Sie sich, dass die Datei noch vorhanden ist und dass Sie die Berech
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Mehr Speicherplatz, mehr Funktionen mit meiner kSuite+</value> 
-  </data> 
-  <data name="needHelpSetting" xml:space="preserve"> 
-    <value>Brauchen Sie Hilfe?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Sie haben kein angemeldetes Konto</value> 

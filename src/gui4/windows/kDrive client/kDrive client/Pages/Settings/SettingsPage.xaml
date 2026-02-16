@@ -189,11 +189,44 @@
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                         <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
                                          HorizontalAlignment="Right"
+                                         Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                          Click="CreateAccountButton_Click" />
                     </Grid>
+
+                    <!-- Account - No account case -->
+                    <toolKit:SettingsCard Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                        <toolKit:SettingsCard.Header>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                                <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
+                                        BorderThickness="1"
+                                        Height="28"
+                                        Width="28"
+                                        BorderBrush="{ThemeResource ButtonBorderThemeBrush}"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
+                                                      Height="14"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Center" />
+                                </Border>
+
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('noAccountConnected'), Mode=OneWay}"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                           VerticalAlignment="Center" />
+
+                            </StackPanel>
+                        </toolKit:SettingsCard.Header>
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
+                                HorizontalAlignment="Right"
+                                Click="CreateAccountButton_Click" />
+                    </toolKit:SettingsCard>
+
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
-                              SelectionMode="None">
+                              SelectionMode="None"
+                              Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Padding"

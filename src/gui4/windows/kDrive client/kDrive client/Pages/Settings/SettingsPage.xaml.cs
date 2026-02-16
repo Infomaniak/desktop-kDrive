@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             dialog.XamlRoot = this.XamlRoot;
             dialog.Title = Localizer.Instance.GetString("dialogRemoveAccountTitle");
             dialog.PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountCancelButton");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton");
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name);
 
@@ -483,6 +483,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
             control.IsEnabled = true;
         }
+        
         private async void HelpDeskButton_Click(object sender, RoutedEventArgs e)
         {
             Control? control = sender as Control;
