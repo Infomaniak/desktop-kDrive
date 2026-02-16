@@ -62,7 +62,6 @@ namespace Infomaniak.kDrive
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _services.AddSingleton<UserDefaults>();
             _services.AddSingleton<TrayIconManager>();
-            _services.AddSingleton<TrayIconUpdater>();
             _serviceProvider = _services.BuildServiceProvider();
 
             Logger.StartSentry();

@@ -16,25 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
+using DynamicData.Binding;
 using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Windows.UI.ViewManagement;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
-    public class TrayIconManager
+    public partial class TrayIconManager : IDisposable
     {
         private TaskbarIcon? _trayIcon;
         private bool _handleClosedEvents = true;
         private string _currentIcon = "taskbar-ico";
         private UISettings? _uiSettings;
+        private readonly AppModel _appModel;
+        private readonly IDisposable _subscription;
 
         public void Initialize()
         {
@@ -76,6 +83,35 @@ namespace Infomaniak.kDrive.TrayIcon
             }
 
             ConfigureWindowEventHandler();
+        }
+
+        public TrayIconManager(TrayIconManager trayIconManager, AppModel appModel)
+        {
+            _appModel = appModel;
+
+            // Subscribe to changes in the syncs collection and their statuses
+            _subscription = _appModel.AllSyncs
+                .ToObservableChangeSet()
+                .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
+                .Subscribe(_ => UpdateTrayIcon());
+        }
+
+        private void UpdateTrayIcon()
+        {
+
+            if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
+            {
+                SetIconSync();
+                return;
+            }
+
+            if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Paused || sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
+            {
+                SetIconPause();
+                return;
+            }
+
+            SetIconOk();
         }
 
         public void ConfigureWindowEventHandler()
@@ -173,6 +209,11 @@ namespace Infomaniak.kDrive.TrayIcon
         {
             bool isDark = App.Current.RequestedTheme == ApplicationTheme.Dark;
             return isDark ? "-dark" : "-light";
+        }
+
+        public void Dispose()
+        {
+            _subscription.Dispose();
         }
     }
 }
