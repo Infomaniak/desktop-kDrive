@@ -18,7 +18,6 @@
 
 using DynamicData;
 using DynamicData.Binding;
-using DynamicData.Kernel;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,14 +25,11 @@ using Microsoft.UI.Dispatching;
 using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Networking.Connectivity;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infomaniak.kDrive.ViewModels
 

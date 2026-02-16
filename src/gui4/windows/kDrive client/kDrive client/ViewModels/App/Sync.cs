@@ -58,8 +58,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     return SyncStatus.Offline;
                 }
-                if (_syncStatus == SyncStatus.Error)
-                    return SyncStatus.Paused;
+
                 return _syncStatus;
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
