@@ -67,14 +67,16 @@ namespace Infomaniak.kDrive
         public IDriveConstants Drive { init; get; }
         public IStorageConstants Storage { init; get; }
         public ILoginConstants Login { init; get; }
+        public IkSuiteConstants kSuite { init; get; }
 
-        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth)
+        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
         {
             Sentry = sentry;
             GitHub = gitHub;
             Drive = drive;
             Storage = storage;
             Login = oAuth;
+            this.kSuite = kSuite;
         }
     }
 
@@ -108,8 +110,8 @@ namespace Infomaniak.kDrive
         public Uri FavoriteUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/favorites");
         public Uri SharedUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/shared-with-me");
         public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
-        public Uri ChangeOfferUri(DriveId? driveId) =>
-            new($"https://shop.infomaniak.com/order/drive/{driveId}");
+        public Uri ChangeOfferUri(DriveId? driveId) => new($"https://shop.infomaniak.com/order/drive/{driveId}");
+        public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
     }
 
     internal sealed class ProductionStorage : IStorageConstants
@@ -125,6 +127,11 @@ namespace Infomaniak.kDrive
         public string OAtuhClientId { get; } = "5EA39279-FF64-4BB8-A872-4A40B5786317";
     }
 
+    internal sealed class ProductionKSuite : IkSuiteConstants
+    {
+        public Uri HomeUri { get; } = new Uri("https://www.infomaniak.com/fr/ksuite");
+        public Uri TarrifsUri { get; } = new Uri("https://www.infomaniak.com/gtl/myksuite#prices");
+    }
 
     internal sealed class ProductionAppConstants : IAppConstants
     {
@@ -133,6 +140,7 @@ namespace Infomaniak.kDrive
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new ProductionLogin();
+        public IkSuiteConstants kSuite { get; } = new ProductionKSuite();
     }
 
 
@@ -152,6 +160,7 @@ namespace Infomaniak.kDrive
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new PreProdLogin();
+        public IkSuiteConstants kSuite { get; } = new ProductionKSuite();
     }
 
 }

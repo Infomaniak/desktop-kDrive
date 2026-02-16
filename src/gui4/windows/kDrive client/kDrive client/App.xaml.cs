@@ -17,6 +17,7 @@
  */
 
 using DynamicData;
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.ViewModels;
@@ -55,7 +56,7 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin());
+        internal static IAppConstants Constants => new CustomAppConstants(new ProductionSentry(), new ProductionGitHub(), new ProductionDrive(), new ProductionStorage(), new PreProdLogin(), new ProductionKSuite());
         internal App()
         {
             TrayIcoManager = new TrayIcon.TrayIconManager();
