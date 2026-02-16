@@ -701,7 +701,7 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     // VfsWin::convertToPlaceholder needs only SyncFileItem::_localNodeId
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
         return ExitCode::SystemError;
     }
