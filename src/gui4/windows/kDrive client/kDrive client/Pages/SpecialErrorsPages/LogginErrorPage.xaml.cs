@@ -40,11 +40,6 @@ namespace Infomaniak.kDrive.Pages
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
             Control? control = sender as Control;
-            if (control is not null)
-            {
-                control.Visibility = Visibility.Collapsed;
-                OAuthProgressRing.Visibility = Visibility.Visible;
-            }
 
             try
             {
@@ -86,14 +81,6 @@ namespace Infomaniak.kDrive.Pages
             {
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
                 Utility.ShowUnexpectedErrorTeachingTip();
-            }
-            finally
-            {
-                if (control is not null)
-                {
-                    control.Visibility = Visibility.Visible;
-                    OAuthProgressRing.Visibility = Visibility.Collapsed;
-                }
             }
         }
 
