@@ -85,7 +85,7 @@ namespace Infomaniak.kDrive.TrayIcon
             ConfigureWindowEventHandler();
         }
 
-        public TrayIconManager(TrayIconManager trayIconManager, AppModel appModel)
+        public TrayIconManager(AppModel appModel)
         {
             _appModel = appModel;
 
