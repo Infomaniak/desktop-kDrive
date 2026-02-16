@@ -47,7 +47,7 @@ class ProgressInfo {
         [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
         [[nodiscard]] bool setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId);
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
-
+        [[nodiscard]] auto GetItemIterator(const SyncPath &path);
         [[nodiscard]] int64_t totalFiles() const {
             const std::scoped_lock lock(_mutex);
             return _fileProgress.total();
