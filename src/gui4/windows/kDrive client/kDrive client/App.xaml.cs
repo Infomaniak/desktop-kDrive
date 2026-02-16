@@ -17,7 +17,6 @@
  */
 
 using DynamicData;
-using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
@@ -112,6 +111,7 @@ namespace Infomaniak.kDrive
                 try
                 {
                     LegacyCommPort = Int32.Parse(arguments[1]);
+                    Logger.Log(Logger.Level.Info, $"Parsed legacy communication port from arguments: {LegacyCommPort}");
                 }
                 catch (Exception ex)
                 {

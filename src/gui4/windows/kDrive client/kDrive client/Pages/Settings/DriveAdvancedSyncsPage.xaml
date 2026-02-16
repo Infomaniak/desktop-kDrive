@@ -154,7 +154,7 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settings')}"
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource TitleTextBlockStyle}" />
 
             <BreadcrumbBar x:Name="NavBar"

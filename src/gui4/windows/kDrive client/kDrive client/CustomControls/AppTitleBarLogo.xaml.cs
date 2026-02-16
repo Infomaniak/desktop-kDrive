@@ -23,12 +23,12 @@ namespace Infomaniak.kDrive.CustomControls
                 if (legacyCommPort <= 0)
                 {
                     Logger.Log(Logger.Level.Warning, "Legacy communication port not set, starting legacy kDrive client without port argument.");
-                    System.Diagnostics.Process.Start("kDrive_client.exe");
+                    System.Diagnostics.Process.Start("..\\kDrive_client.exe");
                 }
                 else
                 {
                     Logger.Log(Logger.Level.Info, $"Starting legacy kDrive client with communication port: {legacyCommPort}");
-                    System.Diagnostics.Process.Start("kDrive_client.exe", legacyCommPort.ToString());
+                    System.Diagnostics.Process.Start("..\\kDrive_client.exe", legacyCommPort.ToString());
                 }
 
                 App.ExitApplication(); // If the legacy client starts successfully, exit the current application
