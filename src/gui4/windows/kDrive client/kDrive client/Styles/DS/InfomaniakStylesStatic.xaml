@@ -31,12 +31,14 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-minus-outline">ms-appx:///Assets/DS/Icons/Actions/circle-minus-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-block">ms-appx:///Assets/DS/Icons/Actions/circle-block.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-maybe-check">ms-appx:///Assets/DS/Icons/Actions/circle-maybe-check.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-question">ms-appx:///Assets/DS/Icons/Actions/circle-question.svg</x:String>
 
     <!-- Books -->
     <x:String x:Key="Infomaniak.DS.Icons.Books.book">ms-appx:///Assets/DS/Icons/Books/book.svg</x:String>
 
     <!-- Communication -->
     <x:String x:Key="Infomaniak.DS.Icons.Communication.translate">ms-appx:///Assets/DS/Icons/Communication/translate.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Communication.bubble-speech">ms-appx:///Assets/DS/Icons/Communication/bubble-speech.svg</x:String>
 
     <!-- Edition -->
     <x:String x:Key="Infomaniak.DS.Icons.Edition.list-bullets">ms-appx:///Assets/DS/Icons/Edition/list-bullets.svg</x:String>

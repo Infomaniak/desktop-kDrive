@@ -483,6 +483,27 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
             control.IsEnabled = true;
         }
+        private async void HelpDeskButton_Click(object sender, RoutedEventArgs e)
+        {
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.HelpDeskUri);
+            await Task.Delay(1000);
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+
+        private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.FeedbackUri);
+            await Task.Delay(1000);
+            if (control is not null)
+                control.IsEnabled = true;
+        }
     }
 
     // templateSelector for the drives listview

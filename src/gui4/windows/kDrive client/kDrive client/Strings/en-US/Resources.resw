@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Feb 2026 12:42:12 +0100 
+  Exported at: Mon, 16 Feb 2026 11:13:48 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>English</value>
   </metadata> 
-  <data name="debugLogsDescription" xml:space="preserve"> 
-    <value>They allow Infomaniak support to identify the source of an issue.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@ (build %@)
 © 2019–%@ Infomaniak Network SA</value> 
@@ -110,7 +107,7 @@
     <value>My activity only</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
-    <value>Select a folder on your computer to synchronize with kDrive. 
+    <value>Select a folder on your computer to synchronize with kDrive.
 You can access your advanced synchronizations from the drive selector on the home page.</value> 
   </data> 
   <data name="advancedSyncSubtitle" xml:space="preserve"> 
@@ -166,7 +163,7 @@ You can access your advanced synchronizations from the drive selector on the hom
     <value>Close</value> 
   </data> 
   <data name="buttonCloseKDrive" xml:space="preserve"> 
-    <value>close kDrive</value> 
+    <value>Close kDrive</value> 
   </data> 
   <data name="buttonConfigure" xml:space="preserve"> 
     <value>Configure</value> 
@@ -186,8 +183,14 @@ You can access your advanced synchronizations from the drive selector on the hom
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Default location</value> 
   </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Share an idea</value> 
+  </data> 
   <data name="buttonFixErrors" xml:space="preserve"> 
     <value>Fix errors</value> 
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Support</value> 
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
     <value>kDrive Online</value> 
@@ -251,6 +254,9 @@ You can access your advanced synchronizations from the drive selector on the hom
   <data name="buttonShowOffers" xml:space="preserve"> 
     <value>Show offers</value> 
   </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Sign out</value> 
+  </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Get started for free</value> 
   </data> 
@@ -289,6 +295,9 @@ The source code of this application can be reviewed, the collected information i
   <data name="debugLevelSetting" xml:space="preserve"> 
     <value>Debug level</value> 
   </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>They allow Infomaniak support to identify the source of an issue.</value> 
+  </data> 
   <data name="debugLogsSettings" xml:space="preserve"> 
     <value>Debug logs</value> 
   </data> 
@@ -304,9 +313,6 @@ The source code of this application can be reviewed, the collected information i
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Add an exclusion rule</value> 
   </data> 
-  <data name="dialogRemoveAccountCancelButton" xml:space="preserve"> 
-    <value>Sign out</value> 
-  </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
     <value>You are about to sign out {0} from the app.
 Files synced from all kDrives on this account will be removed from your computer.
@@ -315,6 +321,9 @@ All your data will remain accessible online on kDrive.</value>
   </data> 
   <data name="dialogRemoveAccountPrimaryButton" xml:space="preserve"> 
     <value>Keep the account</value> 
+  </data> 
+  <data name="dialogRemoveAccountSecondaryButton" xml:space="preserve"> 
+    <value>Sign out</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
     <value>Sign out of this account?</value> 
@@ -328,9 +337,6 @@ Before continuing, make sure all your files are up to date and fully synchronize
   </data> 
   <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
     <value>Remove synchronization</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningSecondaryButton" xml:space="preserve"> 
-    <value>Cancel</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Remove synchronization?</value> 
@@ -352,9 +358,6 @@ The current synchronization remains unchanged. However, if any abnormal behavior
 Before continuing, make sure all your files are up to date and fully synchronized.
 
 Do not close the application during the process.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningPrimaryButton" xml:space="preserve"> 
-    <value>Cancel</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
     <value>Continue</value> 
@@ -430,16 +433,6 @@ Please try again in a few minutes.</value>
   <data name="errFrobiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
   </data> 
-  <data name="errFrobiddenCharTitle" xml:space="preserve"> 
-    <value>Unsupported character</value> 
-  </data> 
-  <data name="errLocalFileAccessErrorDescription" xml:space="preserve"> 
-    <value>Unable to access this file on your computer.
-Make sure it still exists and that you have permission to access it.</value> 
-  </data> 
-  <data name="errLocalFileAccessErrorTitle" xml:space="preserve"> 
-    <value>File inaccessible</value> 
-  </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>Files matching this rule will not be synchronized.</value> 
   </data> 
@@ -454,6 +447,9 @@ Make sure it still exists and that you have permission to access it.</value>
   </data> 
   <data name="failedToCreateShareLinkError" xml:space="preserve"> 
     <value>Failed to create share link</value> 
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Help us improve kDrive</value> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>File synchronization mode</value> 
@@ -481,6 +477,9 @@ Make sure it still exists and that you have permission to access it.</value>
   </data> 
   <data name="forThreeDays" xml:space="preserve"> 
     <value>For three days</value> 
+  </data> 
+  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+    <value>Unsupported character</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hello %@, %@</value> 
@@ -602,6 +601,13 @@ Make sure it still exists and that you have permission to access it.</value>
   <data name="linkCopiedToClipboard" xml:space="preserve"> 
     <value>Link copied to clipboard</value> 
   </data> 
+  <data name="localFileAccessDescription" xml:space="preserve"> 
+    <value>Unable to access this file on your computer.
+Make sure it still exists and that you have permission to access it.</value> 
+  </data> 
+  <data name="localFileAccessErrorTitle" xml:space="preserve"> 
+    <value>File inaccessible</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Location on my PC</value> 
   </data> 
@@ -646,6 +652,12 @@ Make sure it still exists and that you have permission to access it.</value>
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>More storage, more features with my kSuite+</value> 
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Need help?</value> 
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>You are not logged in</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>No results found”</value> 
