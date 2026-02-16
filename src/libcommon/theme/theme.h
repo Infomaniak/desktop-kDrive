@@ -70,8 +70,7 @@ class Theme : public QObject {
     private:
         Theme(Theme const &);
 
-        static Theme *_instance;
-        bool _mono;
+        bool _mono{false};
         mutable QHash<QString, QIcon> _iconCache;
 };
 } // namespace KDC

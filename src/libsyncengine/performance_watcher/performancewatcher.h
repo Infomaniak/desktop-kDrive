@@ -49,7 +49,6 @@ class PerformanceWatcher {
 
         static void run();
 
-        static PerformanceWatcher *_instance;
         static bool _stop;
 
         log4cplus::Logger _logger = Log::instance()->getLogger();

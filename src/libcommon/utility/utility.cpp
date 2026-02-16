@@ -1161,6 +1161,7 @@ bool CommonUtility::isLiteSyncExtEnabled() {
     process.waitForStarted();
     process.waitForFinished();
     QByteArray result = process.readAll();
+ opencode fixes for potential memory leaks)
 
     return result.trimmed().toInt() == 1;
 }

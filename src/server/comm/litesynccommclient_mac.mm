@@ -762,6 +762,11 @@ LiteSyncCommClient::~LiteSyncCommClient() {
     _private = nullptr;
 }
 
+LiteSyncCommClient *LiteSyncCommClient::instance(log4cplus::Logger logger, ExecuteCommand executeCommand) {
+    static LiteSyncCommClient instance(logger, executeCommand);
+    return &instance;
+}
+
 bool LiteSyncCommClient::install(bool &activationDone) {
     if (!_private) {
         return false;

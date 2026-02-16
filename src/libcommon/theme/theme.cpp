@@ -28,14 +28,9 @@
 
 namespace KDC {
 
-Theme *Theme::_instance = 0;
-
 Theme *Theme::instance() {
-    if (!_instance) {
-        _instance = new Theme;
-        _instance->_mono = false;
-    }
-    return _instance;
+    static Theme instance;
+    return &instance;
 }
 
 Theme::~Theme() {}

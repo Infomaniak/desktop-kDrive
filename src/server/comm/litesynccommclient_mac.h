@@ -70,8 +70,6 @@ class LiteSyncCommClient {
     protected:
         LiteSyncCommClient(log4cplus::Logger logger, ExecuteCommand executeCommand);
 
-        static LiteSyncCommClient *_Nullable _liteSyncCommClient;
-
     private:
         log4cplus::Logger _logger;
         LiteSyncCommClientPrivate *_Nullable _private{nullptr};

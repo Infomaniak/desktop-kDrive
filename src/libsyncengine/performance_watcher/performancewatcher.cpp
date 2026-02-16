@@ -42,20 +42,15 @@ uint64_t PerformanceWatcher::_ramAvailable = 0;
 uint64_t PerformanceWatcher::_ramCurrentlyUsed = 0;
 uint64_t PerformanceWatcher::_ramCurrentlyUsedByProcess = 0;
 
-PerformanceWatcher *PerformanceWatcher::_instance = nullptr;
 bool PerformanceWatcher::_stop = false;
 
 PerformanceWatcher *PerformanceWatcher::instance() {
-    if (!_instance) {
-        _instance = new PerformanceWatcher();
-    }
-    return _instance;
+    static PerformanceWatcher instance;
+    return &instance;
 }
 
 void PerformanceWatcher::stop() {
-    if (_instance) {
-        _stop = true;
-    }
+    _stop = true;
 }
 
 PerformanceWatcher::PerformanceWatcher() {
