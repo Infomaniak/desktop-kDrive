@@ -46,7 +46,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(true);
         (void) testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
@@ -56,7 +56,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(false);
         (void) testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }
@@ -139,7 +139,7 @@ void TestUpdateChecker::testAppIsBlocked() {
         MockUpdateChecker testObj;
         UniqueId jobId = 0;
         (void) testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
         CPPUNIT_ASSERT(!testObj.appShouldBeBlocked());
     }
@@ -150,7 +150,7 @@ void TestUpdateChecker::testAppIsBlocked() {
         testObj.setBigMinAppVersion(true);
         UniqueId jobId = 0;
         (void) testObj.checkUpdateAvailability(&jobId);
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) CommonUtility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.appShouldBeBlocked());
     }
 }
