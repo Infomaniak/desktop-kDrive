@@ -172,14 +172,15 @@ class KDriveDesktop(ConanFile):
 
             string(TOUPPER ${CMAKE_BUILD_TYPE} _CONAN_BUILD_TYPE_UPPER)
 
-            # List of packages to normalize
-            set(_CONAN_PACKAGES log4cplus xxhash openssl sentry poco)
+            if(NOT DEFINED _CONAN_PACKAGES)
+                message(FATAL_ERROR "No packages defined for Conan variable normalization")
+            endif()
 
             foreach(_pkg ${_CONAN_PACKAGES})
                 # Check if the build-type specific variable exists
                 if(DEFINED ${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER})
                     set(${_pkg}_LIB_DIRS "${${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER}}")
-                    message(STATUS "Normalized ${_pkg}_LIB_DIRS from ${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER}")
+                    message(STATUS "Normalized ${_pkg}_LIB_DIRS from ${_pkg}_LIB_DIRS_${_CONAN_BUILD_TYPE_UPPER} ('${${_pkg}_LIB_DIRS}')")
                 # Fallback to RELEASE if current build type not found
                 elseif(DEFINED ${_pkg}_LIB_DIRS_RELEASE)
                     set(${_pkg}_LIB_DIRS "${${_pkg}_LIB_DIRS_RELEASE}")

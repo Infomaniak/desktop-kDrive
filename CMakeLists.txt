@@ -357,6 +357,7 @@ if(UNIX AND NOT APPLE)
             set(CONAN_GEN_DIR "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
         endif()
         if(EXISTS "${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
+            set(_CONAN_PACKAGES log4cplus xxhash sentry poco openssl)
             include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
         endif()
 
