@@ -43,6 +43,7 @@ endif()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
+target_compile_options(keychain PRIVATE -Wno-uninitialized) # Fix keychain problems with gcc 15
 
 #####
 
