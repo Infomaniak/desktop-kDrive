@@ -80,100 +80,49 @@ The project uses multiple programming languages, each serving specific purposes:
 
 ## Building the Application
 
-### Prerequisites
-All platforms require:
-- Git
-- CMake 3.16 or later
-- Qt 6.2.3
-- Conan 2.x package manager
-- Platform-specific compilers (see below)
-
 ### Quick Start
+```bash
+# Clone repository
+git clone https://github.com/Infomaniak/desktop-kDrive.git
+cd desktop-kDrive
+git submodule update --init --recursive
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Infomaniak/desktop-kDrive.git
-   cd desktop-kDrive
-   git submodule update --init --recursive
-   ```
+# Install dependencies (requires Conan 2.x)
+./infomaniak-build-tools/conan/build_dependencies.sh Release  # Linux/macOS
+./infomaniak-build-tools/conan/build_dependencies.ps1 Release # Windows
 
-2. **Install dependencies via Conan**
-   ```bash
-   # Linux/macOS
-   ./infomaniak-build-tools/conan/build_dependencies.sh Release
-   
-   # Windows (PowerShell)
-   ./infomaniak-build-tools/conan/build_dependencies.ps1 Release
-   ```
+# Build
+cmake -S . -B build -G Ninja
+cmake --build build
+```
 
-3. **Build the project**
-   ```bash
-   cmake -S . -B build -G Ninja
-   cmake --build build
-   ```
+**Prerequisites:** Git, CMake 3.16+, Qt 6.2.3, Conan 2.x, and platform-specific compilers.
 
-### Platform-Specific Instructions
+### Platform-Specific Builds
 
 #### :penguin: Linux (Ubuntu 22.04+)
-**Requirements:**
-- Clang 18+ compiler
-- Qt 6.2.3 (Desktop gcc 64-bit)
-- Poco, Sentry, CppUnit, libzip libraries
-
-**Detailed build instructions:**  
-See [infomaniak-build-tools/linux/Readme.md](infomaniak-build-tools/linux/Readme.md) for:
-- Complete dependency installation
-- IDE setup (CLion, Qt Creator)
-- Debug and release builds
-- AppImage packaging
-
-**Quick release build:**
+Requires Clang 18+, Qt 6.2.3, Poco, Sentry, CppUnit, libzip.  
+See [infomaniak-build-tools/linux/Readme.md](infomaniak-build-tools/linux/Readme.md) for detailed instructions.
 ```bash
 ./infomaniak-build-tools/linux/build-release.sh
 ```
 
 #### :apple: macOS (10.15+)
-**Requirements:**
-- Xcode with command-line tools
-- Qt 6.2.3 (macOS)
-- Poco, Sentry, CppUnit, libzip, Sparkle libraries
-
-**Detailed build instructions:**  
-See [infomaniak-build-tools/macos/Readme.md](infomaniak-build-tools/macos/Readme.md) for:
-- Complete dependency installation (universal binaries)
-- IDE setup (CLion, Qt Creator, Xcode)
-- Code signing and notarization
-- Debug and release builds
-
-**Quick release build:**
+Requires Xcode, Qt 6.2.3, Poco, Sentry, CppUnit, libzip, Sparkle.  
+See [infomaniak-build-tools/macos/Readme.md](infomaniak-build-tools/macos/Readme.md) for detailed instructions.
 ```bash
 ./infomaniak-build-tools/macos/build-release.sh
 ```
 
 #### :window: Windows (10+)
-**Requirements:**
-- Visual Studio 2019 (for C++ compilation)
-- Visual Studio 2022/2025 (for WinUI 3 / .NET 9)
-- Qt 6.2.3 (MSVC 2019 64-bit)
-- Poco, Sentry, CppUnit, libzip, zlib libraries
-- NSIS 3.03 (for installer creation)
-
-**Detailed build instructions:**  
-See [infomaniak-build-tools/windows/Readme.md](infomaniak-build-tools/windows/Readme.md) for:
-- Complete dependency installation
-- Windows extension (VFS) setup
-- IDE setup (CLion, Qt Creator, Visual Studio)
-- Debug and release builds
-- Code signing and packaging
-
-**Quick release build (PowerShell):**
+Requires Visual Studio 2019/2022+, Qt 6.2.3, Poco, Sentry, CppUnit, libzip, zlib, NSIS.  
+See [infomaniak-build-tools/windows/Readme.md](infomaniak-build-tools/windows/Readme.md) for detailed instructions.
 ```powershell
 ./infomaniak-build-tools/windows/build-drive.ps1
 ```
 
-### Running Tests
+### Testing
 ```bash
 ./infomaniak-build-tools/run-tests.sh
 ```
-
-For more information about testing, see the [test/](test/) directory.
+See [test/](test/) for more information.
