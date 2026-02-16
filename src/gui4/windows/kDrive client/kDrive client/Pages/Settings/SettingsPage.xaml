@@ -158,6 +158,28 @@
                             </StackPanel>
                         </toolKit:SettingsCard.Description>
                     </toolKit:SettingsCard>
+
+                    <!-- General - Need help -->
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('needHelpSetting'), Mode=OneWay}">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-question}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonHelpdesk'), Mode=OneWay}"
+                                Click="HelpDeskButton_Click" />
+                    </toolKit:SettingsCard>
+                    
+                    <!-- General - Feedback -->
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('feedbackSetting'), Mode=OneWay}">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Communication.bubble-speech}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonFeedback'), Mode=OneWay}"
+                                Click="FeedbackButton_Click" />
+                    </toolKit:SettingsCard>
                 </StackPanel>
                 <!-- Account -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
