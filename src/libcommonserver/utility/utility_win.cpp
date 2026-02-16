@@ -357,6 +357,16 @@ void Utility::removeLegacySyncRootKeys(const std::wstring &clsid) {
     }
 }
 
+void Utility::registerLoginRedirection() {
+    const std::wstring clsidPath = L"Software\\Classes\\kDrive\\shell\\open\\command";
+    const QString pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
+
+    std::wstring error;
+    if (Utility::registryExistKeyTree(HKEY_CURRENT_USER, clsidPath)) {
+        Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_DWORD, pathToExecutable.toStdWString(), error);
+    }
+}
+
 bool Utility::registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey) {
     HKEY hKey;
 

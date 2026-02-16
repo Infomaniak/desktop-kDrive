@@ -499,6 +499,8 @@ void AppServer::init() {
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
 
+    Utility::registerLoginRedirection();
+
     // Start client
     if (!startClient()) {
         LOG_ERROR(_logger, "Error in startClient");
