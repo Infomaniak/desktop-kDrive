@@ -71,6 +71,7 @@ class LiteSyncCommClient {
         LiteSyncCommClient(log4cplus::Logger logger, ExecuteCommand executeCommand);
 
     private:
+        static LiteSyncCommClient *_Nullable _liteSyncCommClient;
         log4cplus::Logger _logger;
         LiteSyncCommClientPrivate *_Nullable _private{nullptr};
         std::unordered_map<int, SyncPath> _folders;
