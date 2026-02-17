@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Tue, 17 Feb 2026 09:49:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -307,6 +307,14 @@ El código fuente de esta aplicación puede revisarse, la información recopilad
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Excluidos automáticamente</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Seleccione una carpeta vacía que no esté en la raíz de una unidad.
+
+Esta carpeta no debe estar incluida en ninguna otra carpeta de sincronización y no debe contener ninguna subcarpeta de sincronización.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>No se puede seleccionar esta carpeta</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Añadir regla</value> 
   </data> 
@@ -401,11 +409,11 @@ Póngase en contacto con su administrador para reactivar el servicio.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>Ha sido desconectado</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>La cuenta utilizada para este inicio de sesión no coincide con la de este kDrive.
 Por favor, inicie sesión de nuevo con la dirección de correo electrónico correcta %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Esta cuenta no coincide</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 

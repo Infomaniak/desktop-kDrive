@@ -12,8 +12,8 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errLocalFileAccessErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errLocalFileAccessErrorDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessDescription')}"
                      ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
                      ItemPath="{x:Bind _error.Path}" />
 </UserControl>

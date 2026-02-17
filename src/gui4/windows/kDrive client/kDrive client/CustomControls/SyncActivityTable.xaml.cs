@@ -210,7 +210,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
                 return;
             }
 
@@ -228,7 +228,7 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLink"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
             }
         }
 
@@ -266,7 +266,7 @@ namespace Infomaniak.kDrive.CustomControls
             return direction switch
             {
 
-                SyncDirection.Up => Localizer.Instance.GetString("syncedFromThisDevice"),
+                SyncDirection.Up => Localizer.Instance.GetString("syncedFromComputer"),
                 SyncDirection.Down => Localizer.Instance.GetString("syncedFromKDriveWeb"),
                 _ => ""
             };

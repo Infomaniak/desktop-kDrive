@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Tue, 17 Feb 2026 09:49:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -307,6 +307,14 @@ Il codice sorgente di questa applicazione può essere rivisto, le informazioni r
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Escluso automaticamente</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Selezionare una cartella vuota che non si trovi nella radice dell’unità.
+
+Questa cartella non deve essere inclusa in altre cartelle di sincronizzazione e non deve contenere sottocartelle di sincronizzazione.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Questa cartella non può essere selezionata</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Aggiungi regola</value> 
   </data> 
@@ -401,11 +409,11 @@ Contattare l’amministratore per riattivare il servizio.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>Siete stati disconnessi</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>L’account utilizzato per questo accesso non corrisponde a quello di questo kDrive.
 Effettuare nuovamente l’accesso con l’indirizzo e-mail corretto %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Questo conto non corrisponde</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 

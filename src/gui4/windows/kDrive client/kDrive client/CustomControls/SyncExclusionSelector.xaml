@@ -176,7 +176,7 @@
                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                         <Button Style="{ThemeResource AccentButtonStyle}"
-                                Content="{x:Bind kDrive:Localizer.Instance.GetString('saveMyChoices')}"
+                                Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSaveMyChoices')}"
                                 Click="SaveSyncSelection_click"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                     </StackPanel>
