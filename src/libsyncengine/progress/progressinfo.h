@@ -27,6 +27,7 @@
 #include <map>
 #include <queue>
 #include <list>
+#include <mutex>
 
 namespace KDC {
 
@@ -46,16 +47,32 @@ class ProgressInfo {
         [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
         [[nodiscard]] bool setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId);
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
-
-        [[nodiscard]] int64_t totalFiles() const { return _fileProgress.total(); }
-        [[nodiscard]] int64_t completedFiles() const { return _fileProgress.completed(); }
-        [[nodiscard]] int64_t totalSize() const { return _sizeProgress.total(); }
-        [[nodiscard]] int64_t completedSize() const { return _sizeProgress.completed(); }
-        [[nodiscard]] int64_t currentFile() const { return completedFiles(); }
+        [[nodiscard]] auto GetItemIterator(const SyncPath &path);
+        [[nodiscard]] int64_t totalFiles() const {
+            const std::scoped_lock lock(_mutex);
+            return _fileProgress.total();
+        }
+        [[nodiscard]] int64_t completedFiles() const {
+            const std::scoped_lock lock(_mutex);
+            return _fileProgress.completed();
+        }
+        [[nodiscard]] int64_t totalSize() const {
+            const std::scoped_lock lock(_mutex);
+            return _sizeProgress.total();
+        }
+        [[nodiscard]] int64_t completedSize() const {
+            const std::scoped_lock lock(_mutex);
+            return _sizeProgress.completed();
+        }
+        [[nodiscard]] int64_t currentFile() const {
+            const std::scoped_lock lock(_mutex);
+            return completedFiles();
+        }
         [[nodiscard]] Estimates totalProgress() const;
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
+        mutable std::recursive_mutex _mutex;
         std::map<SyncPath, std::queue<ProgressItem>>
                 _currentItems; // Use a queue here because in a few cases, we can have several operations on the same path (e.g.:
                                // DELETE a file and CREATE a directory with exact same name)

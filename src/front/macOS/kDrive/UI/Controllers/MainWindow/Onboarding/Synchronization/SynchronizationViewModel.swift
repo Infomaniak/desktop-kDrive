@@ -38,8 +38,6 @@ final class SynchronizationViewModel: ObservableObject {
             try? await syncCandidates.asyncForEach { syncCandidate in
                 let syncInfo = try await self.syncCreator.create(from: syncCandidate)
                 try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
-
-                print("New Synchro Created ->", syncCandidate.localFolder)
             }
 
             await flowCoordinator.navigateToNextStep()

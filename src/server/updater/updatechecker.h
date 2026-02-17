@@ -53,6 +53,7 @@ class UpdateChecker {
 
         [[nodiscard]] const std::unordered_map<VersionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
+        [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
 
     private:
         /**
@@ -87,6 +88,7 @@ class UpdateChecker {
         const VersionInfo _defaultVersionInfo;
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};
+        bool _appShouldBeBlocked{false};
         std::mutex _mutex;
 
         friend class MockUpdateChecker;

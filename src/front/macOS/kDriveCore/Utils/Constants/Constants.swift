@@ -23,3 +23,9 @@ public enum Constants {
     public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
     public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
 }
+
+public enum URLConstants {
+    public static func kDrive(for driveID: Int) -> URL {
+        return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
+    }
+}

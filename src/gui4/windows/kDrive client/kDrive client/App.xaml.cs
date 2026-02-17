@@ -17,8 +17,10 @@
  */
 
 using DynamicData;
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
+using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
@@ -45,51 +47,48 @@ namespace Infomaniak.kDrive
             private set
             {
                 _currentWindow = value;
-                TrayIcoManager.ConfigureWindowEventHandler();
+                ServiceProvider.GetRequiredService<TrayIconManager>().ConfigureWindowEventHandler();
             }
         }
-        public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
 
         private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
+        /* 
+         * Application-wide constants instance.
+         * 
+         * By default, the app uses ProductionAppConstants. For testing purposes, you can switch to a custom instance 
+         * with mock or staging values by returning a CustomAppConstants instead.
+         * 
+         * Example for testing:
+         * internal static IAppConstants Constants => new CustomAppConstants(
+         *     new ProductionSentry(),
+         *     new ProductionGitHub(),
+         *     new ProductionDrive(),
+         *     new ProductionStorage(),
+         *     new PreProdLogin(),
+         *     new ProductionKSuite());
+         */
+
         internal static IAppConstants Constants => new ProductionAppConstants();
+
+
         internal App()
         {
-            InitializeComponent();
-            TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
+            _services.AddSingleton<UserDefaults>();
+            _services.AddSingleton<TrayIconManager>();
             _serviceProvider = _services.BuildServiceProvider();
+
+            Logger.StartSentry();
+            InitializeComponent();
             Logger.Log(Logger.Level.Info, "Application started");
         }
 
-        private IDisposable? _sentryHandler;
-        public void StartSentry()
-        {
-            StopSentry();
-            _sentryHandler = SentrySdk.Init(options =>
-                    {
-                        options.Dsn = Constants.Sentry.Dsn;
-                        options.SendDefaultPii = true;
-                        options.AutoSessionTracking = true;
-                        options.IsGlobalModeEnabled = true;
-                        options.Environment = Constants.Sentry.Environment;
-                    });
-        }
-
-        public void StopSentry()
-        {
-            if (_sentryHandler is not null)
-            {
-                _sentryHandler.Dispose();
-                _sentryHandler = null;
-            }
-        }
-
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             string[] arguments = Environment.GetCommandLineArgs();
             if (arguments.Length > 1)
@@ -119,7 +118,6 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
                 }
             }
-            StartSentry();
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
@@ -129,7 +127,7 @@ namespace Infomaniak.kDrive
 
             // Display splash screen
             CurrentWindow.Content = new CustomControls.SplashScreen();
-            TrayIcoManager.Initialize();
+            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
 
@@ -158,7 +156,7 @@ namespace Infomaniak.kDrive
                 return;
             }
             CurrentWindow.Content = currentWindowContent;
-            (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
+            (CurrentWindow as MainWindow)?.AppNavView?.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>

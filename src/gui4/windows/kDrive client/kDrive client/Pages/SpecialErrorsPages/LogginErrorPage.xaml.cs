@@ -40,11 +40,6 @@ namespace Infomaniak.kDrive.Pages
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
             Control? control = sender as Control;
-            if (control is not null)
-            {
-                control.Visibility = Visibility.Collapsed;
-                OAuthProgressRing.Visibility = Visibility.Visible;
-            }
 
             try
             {
@@ -87,21 +82,12 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
-            finally
-            {
-                if (control is not null)
-                {
-                    control.Visibility = Visibility.Visible;
-                    OAuthProgressRing.Visibility = Visibility.Collapsed;
-                }
-            }
         }
 
         private void DisplayUserMismatchContent()
         {
-            TitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Title/Text");
-            SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Subtitle/Text", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));
-            ConnectionButton.Content = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Button/Content");
+            TitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMissmatchTitlet");
+            SubtitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMissmatchDescription", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));
         }
     }
 }

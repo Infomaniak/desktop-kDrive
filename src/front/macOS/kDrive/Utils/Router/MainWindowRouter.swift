@@ -17,10 +17,11 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 enum WindowRoute {
     case preloading
-    case onboarding(OnboardingStep? = nil)
+    case onboarding(UIUser? = nil, OnboardingStep? = nil)
     case mainWindow
 }
 
@@ -39,8 +40,8 @@ final class MainWindowRouter: WindowRouter {
         case .preloading:
             let viewController = PreloadingViewController()
             mainWindowController.setViewController(viewController)
-        case .onboarding(let step):
-            let viewController = OnboardingViewController(initialStep: step)
+        case .onboarding(let user, let step):
+            let viewController = OnboardingViewController(user: user, initialStep: step)
             mainWindowController.setViewController(viewController)
         case .mainWindow:
             let viewController = MainViewController()

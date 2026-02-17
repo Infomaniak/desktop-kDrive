@@ -62,7 +62,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private void SetupNavBar(string driveName)
     {
-        NavBar.ItemsSource = new string[] { Utility.GetLocalizedString("Page_SettingsPage_Title/Text"), Utility.GetLocalizedString("Page_DriveManagement_Title/Text"), driveName, Utility.GetLocalizedString("Page_DriveAdvancedSyncsPage_Title/Text") };
+        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
     }
 
     private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -128,7 +128,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
+        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncDeletionWarning");
         if (dialogResult != ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -165,7 +165,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
+        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeWarning") == ContentDialogResult.Primary;
         if (canceledByUser)
         {
             Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
@@ -191,7 +191,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
         if (!success)
-            await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
+            await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
     }
 
     private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

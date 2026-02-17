@@ -110,9 +110,6 @@
     <Page Update="CustomControls\DriveSetupContentDialog\SyncSetupPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\DynamicTextBlock.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\ErrorBar.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -196,12 +193,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Update="Strings\fr-FR\Resources.resw">
-      <Generator>
-      </Generator>
-    </PRIResource>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
     <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
@@ -241,6 +232,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings\de-DE\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\en-US\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\es-ES\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
+    <Compile Update="Strings\it-IT\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resw</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />

@@ -203,3 +203,6 @@ DerivedData/
 PROXYAI.md
 /src/server/vfs/win/vfs.h
 enc_temp_folder
+
+# ImportLoco
+.import_loco_api

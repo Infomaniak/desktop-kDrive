@@ -28,16 +28,16 @@ extension SidebarItem {
         icon: KDriveResources.house.image,
         title: KDriveLocalizable.tabTitleHome
     )
-    static let activity = SidebarItem(
+    static let activities = SidebarItem(
         icon: KDriveResources.circularArrowsClockwise.image,
-        title: KDriveLocalizable.tabTitleActivity
+        title: KDriveLocalizable.tabTitleActivities
     )
     static let storage = SidebarItem(
         icon: KDriveResources.hardDiskDrive.image,
         title: KDriveLocalizable.tabTitleStorage
     )
     static let openInFinder = SidebarItem(
-        icon: KDriveResources.folderCircleArrowRight.image,
+        icon: KDriveResources.finder.image,
         title: KDriveLocalizable.buttonOpenInFinder,
         type: .action
     )
@@ -47,11 +47,18 @@ final class MainSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     @LazyInjectService private var router: MainViewRouter
+    @LazyInjectService private var loadingIndicatorShower: SidebarNotificationPresenting
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+    private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
+
+    private lazy var sidebarNotificationView: SidebarNotificationView = {
+        let view = SidebarNotificationView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()
@@ -118,6 +125,14 @@ final class MainSidebarViewController: NSViewController {
                 self?.updateSynchrosList(synchrosContext)
                 self?.updateSidebar()
             }
+
+        loadingIndicatorShower.statePublisher
+            .receive(on: RunLoop.main)
+            .throttle(for: 0.5, scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] state in
+                self?.sidebarNotificationView.configure(with: state)
+            }
+            .store(in: &bindStore)
     }
 
     private func setupView() {
@@ -127,6 +142,7 @@ final class MainSidebarViewController: NSViewController {
 
         view.addSubview(popUpButton)
         setupScrollAndOutlineView()
+        view.addSubview(sidebarNotificationView)
 
         NSLayoutConstraint.activate([
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -146,7 +162,20 @@ final class MainSidebarViewController: NSViewController {
             scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: AppPadding.padding16),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+
+            sidebarNotificationView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            sidebarNotificationView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: AppPadding.padding16
+            ),
+            sidebarNotificationView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
+            sidebarNotificationView.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -AppPadding.padding16
+            )
         ])
     }
 

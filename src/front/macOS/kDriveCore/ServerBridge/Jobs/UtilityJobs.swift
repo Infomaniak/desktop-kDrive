@@ -28,9 +28,9 @@ public struct UtilityJobs: Sendable {
 
     public init() {}
 
-    public func getBestVirtualFileSystemMode(path: String, driveDbId: Int32) async throws -> KDC.VirtualFileMode {
+    public func getBestVirtualFileSystemMode(path: String) async throws -> KDC.VirtualFileMode {
         IKLogger.data.log("Query for best VFS mode")
-        let query = UtilityBestVFSQuery(path: path, driveDbId: driveDbId)
+        let query = UtilityBestVFSQuery(path: path)
         let request = await RequestMessage<UtilityBestVFSQuery>(num: RequestNum.UTILITY_BESTVFSAVAILABLEMODE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UtilityBestVFSResponse>.self)
@@ -38,9 +38,9 @@ public struct UtilityJobs: Sendable {
         return decodedMessage.body.bestMode
     }
 
-    public func getGoodPathForNewSynchro(basePath: String, driveDbId: Int32) async throws -> String {
+    public func getGoodPathForNewSynchro(basePath: String) async throws -> String {
         IKLogger.data.log("Query for good Path for new Synchro")
-        let query = UtilityGoodPathNewSyncQuery(basePath: basePath, driveDbId: driveDbId)
+        let query = UtilityGoodPathNewSyncQuery(basePath: basePath)
         let request = await RequestMessage<UtilityGoodPathNewSyncQuery>(
             num: RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC,
             body: query

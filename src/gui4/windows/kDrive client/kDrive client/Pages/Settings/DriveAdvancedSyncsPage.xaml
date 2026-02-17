@@ -9,6 +9,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -22,21 +23,22 @@
             <toolKit:SettingsExpander Header="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}">
                 <toolKit:SettingsExpander.HeaderIcon>
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
                 <toolKit:SettingsExpander.Items>
-                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_LocalFolder">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('localLocation')}">
                         <HyperlinkButton Content="{x:Bind LocalPath}"
                                          Click="LocalPathLink_Click" />
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_RemoteFolder">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('remoteLocation')}">
                         <HyperlinkButton Content="{x:Bind RemotePath}"
                                          Click="RemotePathLink_Click" />
                     </toolKit:SettingsCard>
 
                     <!-- Lite sync -->
-
-                    <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_SyncMode_InProgress"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('applyingChange')}"
+                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('syncModeApplying')}"
                                           Visibility="{x:Bind SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                     </toolKit:SettingsCard>
 
@@ -57,15 +59,15 @@
                             <StackPanel Grid.Row="0"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="2">
-                                <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_SyncModeHeader" />
-                                <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_SyncModeCaption"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('fileSyncMode')}" />
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('fileSyncModeDescription')}"
                                            Style="{StaticResource CaptionTextBlockStyle}" />
 
                             </StackPanel>
                             <!-- Card content -->
                             <toolKit:SettingsCard Grid.Row="1"
                                                   Grid.Column="1"
-                                                  x:Uid="Page_Settings_DriveManagementPage_SyncMode_Online"
+                                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -84,7 +86,7 @@
                             <!-- Card content -->
                             <toolKit:SettingsCard Grid.Column="1"
                                                   Grid.Row="2"
-                                                  x:Uid="Page_Settings_DriveManagementPage_SyncMode_Offline"
+                                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -114,11 +116,11 @@
                             </Grid.RowDefinitions>
                             <StackPanel Grid.Row="0"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                            TextWrapping="Wrap" />
 
-                                <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap" />
@@ -129,7 +131,7 @@
                                                             HorizontalAlignment="Stretch" />
                         </Grid>
                     </toolKit:SettingsCard>
-                    <toolKit:SettingsCard x:Uid="Page_DriveAdvancedSyncsPage_RemoveSyncButton"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
                                           IsClickEnabled="True"
@@ -152,7 +154,7 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock x:Uid="Page_SettingsPage_Title"
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settings')}"
                        Style="{StaticResource TitleTextBlockStyle}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -164,13 +166,13 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <StackPanel>
                     <!-- Subtitle -->
-                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Title"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncTitle')}"
                                Style="{StaticResource BodyLargeStrongTextBlockStyle}"
                                Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
-                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncSubtitle')}"
                                Style="{StaticResource BodyTextBlockStyle}" />
-                    <TextBlock x:Uid="Page_DriveAdvancedSyncsPage_Subtitle_Caption"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncDescription')}"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
                 <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"
@@ -191,7 +193,7 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
-                <Button x:Uid="Page_DriveAdvancedSyncsPage_AddSyncButton" />
+                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddAdvancedSync')}" />
                 <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>

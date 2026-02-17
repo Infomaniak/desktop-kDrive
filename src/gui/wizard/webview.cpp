@@ -22,6 +22,7 @@
 #include "ui_webview.h"
 #include "libcommongui/matomoclient.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/urlhelper.h"
 
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
@@ -138,8 +139,8 @@ void WebView::loadFinished(bool ok) {
 
     if (ok) { // Send Matomo visitPage
         const QString host = _webview->url().host();
-
-        if (host.contains("login.infomaniak.com", Qt::CaseSensitive)) { // Login Webview
+        const QUrl loginUrl(QString::fromStdString(UrlHelper::loginApiUrl()));
+        if (host.contains(loginUrl.host(), Qt::CaseSensitive)) { // Login Webview
             MatomoClient::sendVisit(MatomoNameField::WV_LoginPage);
         } else { // Other Webview, shouldn't happen, there is no other Qt webview in the codebase.
             MatomoClient::sendVisit(MatomoNameField::Unknown);

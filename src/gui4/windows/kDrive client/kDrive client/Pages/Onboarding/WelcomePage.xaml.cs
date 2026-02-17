@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 _onBoardingViewModel = obvm;
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 1);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 btn.IsEnabled = false;
 
-                await Windows.System.Launcher.LaunchUriAsync(new System.Uri(Utility.GetLocalizedString("Global_SignUpUrl")));
+                await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HomeUri);
                 Logger.Log(Logger.Level.Debug, "Create account URL opened");
 
                 await Task.Delay(2000);

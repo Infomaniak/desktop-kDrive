@@ -70,9 +70,6 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InProgressTitleTemplate"];
                     break;
                 case SyncStatus.Idle:
-                    /* if (ViewModel.SelectedSync.SyncErrors.Any())
-                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["ErrorTitleTemplate"];
-                     else*/
                     if (!ViewModel.SelectedSync.SyncActivities.Any())
                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["NoActivityTitleTemplate"];
                     else
@@ -82,6 +79,7 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["OfflineTitleTemplate"];
                     break;
                 case SyncStatus.Stopped:
+                case SyncStatus.Error:
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InPauseTitleTemplate"];
                     break;
                 default:

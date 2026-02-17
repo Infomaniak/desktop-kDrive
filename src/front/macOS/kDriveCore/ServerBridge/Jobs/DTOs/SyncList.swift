@@ -18,17 +18,22 @@
 
 import Foundation
 
-struct PublicLinkQuery: Codable, Sendable {
+struct LinkQuery: Codable, Sendable {
     let driveDbId: Int32
     @Base64CodedString var nodeId: String
 }
 
-struct PublicLinkResponse: Codable, Sendable {
+struct LinkResponse: Codable, Sendable {
     @Base64CodedURL var linkUrl: URL
 }
 
 struct SyncQuery: Codable, Sendable {
     let syncDbId: Int32
+}
+
+struct SetSupportsVirtualFilesQuery: Codable, Sendable {
+    let syncDbId: Int32
+    let value: Bool
 }
 
 struct SyncInfoList: Codable, Sendable {
@@ -62,7 +67,6 @@ public struct NewSyncQuery: Codable, Sendable {
     @Base64CodedString var serverFolderNodeId: String
     let liteSync: Bool
     @Base64CodedStrings var blackList: [String]
-    @Base64CodedStrings var whiteList: [String]
 
     public init(userDbId: Int32, accountId: Int32, driveId: Int32, metadata: NewSyncMetadata) {
         self.userDbId = userDbId
@@ -74,7 +78,6 @@ public struct NewSyncQuery: Codable, Sendable {
         _serverFolderNodeId = Base64CodedString(wrappedValue: metadata.serverFolderNodeId)
         liteSync = metadata.liteSync
         _blackList = Base64CodedStrings(wrappedValue: metadata.blackList)
-        _whiteList = Base64CodedStrings(wrappedValue: metadata.whiteList)
     }
 }
 
@@ -85,7 +88,6 @@ public struct NewSyncQueryAlternate: Codable, Sendable {
     @Base64CodedString var serverFolderNodeId: String
     let liteSync: Bool
     @Base64CodedStrings var blackList: [String]
-    @Base64CodedStrings var whiteList: [String]
 
     init(driveDbId: Int32, metadata: NewSyncMetadata) {
         self.driveDbId = driveDbId
@@ -95,7 +97,6 @@ public struct NewSyncQueryAlternate: Codable, Sendable {
         _serverFolderNodeId = Base64CodedString(wrappedValue: metadata.serverFolderNodeId)
         liteSync = metadata.liteSync
         _blackList = Base64CodedStrings(wrappedValue: metadata.blackList)
-        _whiteList = Base64CodedStrings(wrappedValue: metadata.whiteList)
     }
 }
 

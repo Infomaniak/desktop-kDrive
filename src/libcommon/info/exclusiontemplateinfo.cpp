@@ -114,9 +114,9 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionTemplateInfo> &list) {
     auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        ExclusionTemplateInfo *exclusionTemplateInfo = new ExclusionTemplateInfo();
-        in >> *exclusionTemplateInfo;
-        list.push_back(*exclusionTemplateInfo);
+        ExclusionTemplateInfo exclusionTemplateInfo;
+        in >> exclusionTemplateInfo;
+        list.push_back(exclusionTemplateInfo);
     }
     return in;
 }
