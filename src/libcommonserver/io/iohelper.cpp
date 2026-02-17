@@ -48,9 +48,14 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
 std::function<bool(const SyncPath &path, const std::filesystem::file_status &status, bool &exists, IoError &ioError)>
         IoHelper::_checkIfPathExistsSensitive = IoHelper::_checkIfPathExistsSensitiveFn;
+#endif
+
 bool IoHelper::_unsuportedFSLogged = false;
+
 #if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
