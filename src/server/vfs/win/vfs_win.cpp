@@ -351,7 +351,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
         if (!isPlaceholder) {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            if (!IoHelper::getFileStat(fullPath, &fileStat, ioError)) {
+            if (!IoHelper::getFileStat(fullPath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError));
                 break;
             }
@@ -457,7 +457,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
     if (!isPlaceholder) {
         FileStat filestat;
         auto ioError = IoError::Success;
-        if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError)) {
+        if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePathStd, ioError));
             return ExitCode::SystemError;
         }

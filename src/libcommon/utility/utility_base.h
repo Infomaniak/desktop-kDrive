@@ -55,9 +55,10 @@ inline std::wstring getErrorMessage(DWORD errorMessageID) {
 inline std::wstring getLastErrorMessage() {
     return getErrorMessage(GetLastError());
 }
+
 inline bool isLikeFileNotFoundError(const DWORD dwError) noexcept {
     return (dwError == ERROR_FILE_NOT_FOUND) || (dwError == ERROR_PATH_NOT_FOUND) || (dwError == ERROR_INVALID_DRIVE) ||
-           (dwError == ERROR_BAD_NETPATH);
+           (dwError == ERROR_BAD_NETPATH) || (dwError == ERROR_INVALID_NAME) || (dwError == ERROR_DIRECTORY);
 }
 
 inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {

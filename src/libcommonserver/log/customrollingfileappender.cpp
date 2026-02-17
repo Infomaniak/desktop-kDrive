@@ -257,7 +257,7 @@ void CustomRollingFileAppender::customRollover() {
 
         bool exists;
         IoError ioError = IoError::Success;
-        const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError);
+        const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError, IoHelper::PathCheckOption::Insensitive);
         if (!success) {
             loglog.debug(filename + LOG4CPLUS_TEXT(" failed to check if path exists"));
         }
@@ -293,7 +293,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         FileStat fileStat;
-        IoHelper::getFileStat(entry.path(), &fileStat, ioError);
+        IoHelper::getFileStat(entry.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
         if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
             continue;
         }

@@ -1730,7 +1730,8 @@ bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
 
         auto ioError = IoError::Success;
         const SyncPath dest = sync.localPath() / error.destinationPath();
-        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
+        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError, IoHelper::PathCheckOption::Insensitive);
+            !success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
             exitInfo = ExitCode::SystemError;
@@ -2141,7 +2142,7 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
     // Check if the local directory already exists
     IoError ioError = IoError::Success;
     bool found = false;
-    const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError);
+    const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError, IoHelper::PathCheckOption::Insensitive);
     if (!success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
         error = QObject::tr("An error occurred while checking the local folder. Please try again.");

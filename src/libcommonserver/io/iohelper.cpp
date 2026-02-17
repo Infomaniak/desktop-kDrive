@@ -49,7 +49,14 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+std::function<bool(const SyncPath &path, const std::filesystem::file_status &status, bool &exists, IoError &ioError)>
+        IoHelper::_checkIfPathExistsSensitive = IoHelper::_checkIfPathExistsSensitiveFn;
+#endif
+
 bool IoHelper::_unsuportedFSLogged = false;
+
 #if defined(KD_MACOS)
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
@@ -166,7 +173,7 @@ bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioEr
         file.open(path.native(), std::ifstream::binary);
         if (!file.is_open()) {
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
                 return isExpectedError(ioError);
             }
@@ -281,7 +288,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     FileStat filestat;
-    if (!getFileStat(path, &filestat, ioError)) {
+    if (!getFileStat(path, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
         return false;
     }
@@ -383,8 +390,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
         // Get target type
         FileStat filestat;
-        if (!getFileStat(path, &filestat, itemType.ioError)) {
-            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec));
+        if (!getFileStat(path, &filestat, itemType.ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, itemType.ioError));
             return false;
         }
 
@@ -792,16 +799,17 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 }
 
 
-bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
+bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept {
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
         return true;
     }
+
 #if defined(KD_WINDOWS) // TODO: Remove this block when migrating the release process to Visual Studio 2022.
     // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
     // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
@@ -819,17 +827,28 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
 #endif
 
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (exists && option == PathCheckOption::Sensitive) {
+        // Case & encoding check
+        // NB:
+        // - On Windows, the standard check is encoding insensitive
+        // - On macOS, the standard check is case & encoding insensitive
+        return _checkIfPathExistsSensitive(path, status, exists, ioError);
+    }
+#endif
+
     return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
-                                               NodeId &otherNodeId, IoError &ioError) noexcept {
+                                               NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept {
     existsWithSameId = false;
     otherNodeId.clear();
     ioError = IoError::Success;
 
     bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError)) {
+    if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
 
@@ -845,14 +864,25 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept {
+    ioError = IoError::Success;
+
+    bool exists = false;
+    if (!checkIfPathExists(path, exists, ioError, option)) {
+        return false;
+    }
+    if (!exists) {
+        if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
+        return true;
+    }
+
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, PathCheckOption option) {
     exists = true;
     IoError ioError = IoError::Success;
-    if (!getFileStat(path, buf, ioError)) {
+    if (!getFileStat(path, buf, ioError, option)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
@@ -864,9 +894,8 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, Sy
     changed = false;
 
     FileStat fileStat;
-    if (!getFileStat(path, &fileStat, ioError)) {
-        LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError));
-
+    if (!getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
         return false;
     }
 

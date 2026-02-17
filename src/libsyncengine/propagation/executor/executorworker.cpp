@@ -322,7 +322,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         if (!isValidDestination(syncOp)) {
             if (syncOp->targetSide() == ReplicaSide::Remote) {
                 bool exists = false;
-                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError,
+                                                                                  IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger,
                               L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
                     return ExitCode::SystemError;
@@ -492,7 +493,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
                 return ExitCode::SystemError;
@@ -526,7 +527,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+                if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError,
+                                                 IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(absoluteLocalFilePath, ioError));
                     return ExitCode::SystemError;
@@ -699,7 +701,7 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     // VfsWin::convertToPlaceholder needs only SyncFileItem::_localNodeId
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
         return ExitCode::SystemError;
     }
@@ -2172,7 +2174,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     if (opsExitInfo.cause() == ExitCause::NotFound || opsExitInfo.cause() == ExitCause::FileAccessError) {
         // Check that the root of the sync folder is still accessible
         bool exists = false;
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError)) {
+        if (IoError ioError = IoError::Success;
+            !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_syncPal->localPath(), ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};

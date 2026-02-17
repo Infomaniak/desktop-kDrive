@@ -755,7 +755,7 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
                                              const Sync &sync) {
     bool exists = false;
     auto ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
+    if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive) || !exists) {
         return;
     }
 

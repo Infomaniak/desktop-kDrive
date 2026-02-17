@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
-
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/utility.h"
 
 #include "log/log.h"
 
@@ -66,11 +65,12 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
             return IoError::FileNameTooLong;
-        case ERROR_BAD_NETPATH:
         case ERROR_FILE_NOT_FOUND:
-        case ERROR_INVALID_DRIVE:
-        case ERROR_INVALID_NAME:
         case ERROR_PATH_NOT_FOUND:
+        case ERROR_INVALID_DRIVE:
+        case ERROR_BAD_NETPATH:
+        case ERROR_INVALID_NAME:
+        case ERROR_DIRECTORY:
             return IoError::NoSuchFileOrDirectory;
         case ERROR_NOT_SAME_DEVICE:
             return IoError::CrossDeviceLink;
@@ -191,6 +191,34 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 
     (void) CloseHandle(hParent);
     return true;
+}
+
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                             IoError &ioError) noexcept {
+    (void) status;
+
+    exists = false;
+    ioError = IoError::Success;
+
+    // NB: The check done by the caller is already case sensitive
+    WIN32_FIND_DATAW findFileData;
+    if (HANDLE h = FindFirstFile(path.c_str(), &findFileData); h != INVALID_HANDLE_VALUE) {
+        do {
+            // Loop through the variants up to the encoding
+            SyncName fileName{findFileData.cFileName};
+            if (fileName == path.filename()) {
+                exists = true;
+                break;
+            }
+        } while (FindNextFile(h, &findFileData));
+        FindClose(h);
+    } else {
+        DWORD dwError = GetLastError();
+        ioError = dWordError2ioError(dwError, logger());
+        exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    }
+
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {

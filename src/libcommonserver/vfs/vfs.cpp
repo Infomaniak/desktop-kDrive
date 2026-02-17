@@ -132,7 +132,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
 
     bool exists = false;
     IoError ioError = IoError::Unknown;
-    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError};
     }

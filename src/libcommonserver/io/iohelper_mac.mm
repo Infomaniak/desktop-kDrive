@@ -18,6 +18,7 @@
 
 #import "libcommon/utility/types.h"
 #import "libcommonserver/io/iohelper.h"
+#import "libcommonserver/io/filestat.h"
 #import "libcommonserver/utility/utility.h"
 
 #import "config.h"
@@ -233,9 +234,9 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
-    NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
-    NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
-    NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
+    NSDate *_Nonnull cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
+    NSDate *_Nonnull mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
+    NSString *_Nonnull filePathStr = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.native().c_str()];
     NSError *error = nil;
     bool ret = false;
     if (symlink) {
@@ -305,6 +306,36 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     }
 
     return success;
+}
+
+bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                             IoError &ioError) noexcept {
+    exists = false;
+    ioError = IoError::Success;
+
+    std::error_code ec;
+    const auto filename = path.filename();
+    if (status.type() != std::filesystem::file_type::symlink) {
+        const auto canonicalPath = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
+        if (!ec) {
+            exists = canonicalPath.filename() == filename;
+        }
+    } else {
+        // Inefficient method used only for symlinks
+        for (auto const &dir_entry: std::filesystem::directory_iterator{path.parent_path(), ec}) {
+            if (dir_entry.path().filename() == filename) {
+                exists = true;
+                break;
+            }
+        }
+    }
+
+    if (ec) {
+        ioError = stdError2ioError(ec);
+        exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    }
+
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 } // namespace KDC

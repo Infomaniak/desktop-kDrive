@@ -22,7 +22,6 @@
 #include "requests/serverrequests.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
 static const auto inParamsBasePath = "basePath";
 
 // Output parameters keys

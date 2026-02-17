@@ -1390,7 +1390,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed with: " << Utility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
             }
