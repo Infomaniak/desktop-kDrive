@@ -193,11 +193,6 @@ class QtConan(ConanFile):
         it will try to fall back to 'envvars' login type and if that is not possible, it will set the login type to 'cli'.
         :return: None
         """
-        # Automatically enable debug symbols when building in Debug mode
-        if self.settings.build_type == "Debug":
-            self.options.debug_symbols = True
-            self.output.info("Debug build detected: automatically enabling debug_symbols=True")
-
         if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
             self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
             if self._check_envvars_login_type(check_option=False, raise_error=False):
@@ -247,25 +242,43 @@ class QtConan(ConanFile):
         self.output.highlight("Mounting Qt installer DMG...")
         mount_point = pjoin(self.source_folder, "mnt")
         os.makedirs(mount_point, exist_ok=False)
-        self.run(
-            f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_point}' -nobrowse -readonly -noautoopen",
-            stdout=output
-        )
 
-        self.output.highlight("Qt installer DMG mounted at: " + mount_point)
-        app_bundles = glob.glob(pjoin(mount_point, "*.app"))
-        if not app_bundles:
-            raise ConanException("Failed to find app folder for DMG file")
-        if len(app_bundles) > 1:
-            raise ConanException(f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
-        mounted_bundle = app_bundles[0]
+        app_bundle = ""
 
-        app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
-        from shutil import copytree
-        # Copy the bundle from the mounted DMG to the build folder so we can umount the DMG.
-        copytree(src=mounted_bundle, dst=app_bundle)
-        self._detach_on_macos(mount_point)
-        os.rmdir(mount_point)
+        mounted = False
+        try:
+            self.run(
+                f"hdiutil attach '{downloaded_file_name}' -mountpoint '{mount_point}' -nobrowse -readonly -noautoopen",
+                stdout=output
+            )
+            mounted = True
+
+            self.output.highlight("Qt installer DMG mounted at: " + mount_point)
+            app_bundles = glob.glob(pjoin(mount_point, "*.app"))
+            if not app_bundles:
+                raise ConanException("Failed to find app folder for DMG file")
+            if len(app_bundles) > 1:
+                raise ConanException(f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
+            mounted_bundle = app_bundles[0]
+
+            app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
+            from shutil import copytree
+            # Copy the bundle from the mounted DMG to the build folder so we can umount the DMG.
+            copytree(src=mounted_bundle, dst=app_bundle)
+
+        finally:
+            # Ensure cleanup happens even if an error occurs
+            if mounted:
+                try:
+                    self._detach_on_macos(mount_point)
+                except Exception as e:
+                    self.output.warning(f"Failed to unmount DMG: {e}")
+
+            if os.path.exists(mount_point):
+                try:
+                    os.rmdir(mount_point)
+                except Exception as e:
+                    self.output.warning(f"Failed to remove mount point: {e}")
 
         exec_folder = pjoin(app_bundle, "Contents", "MacOS")
         exec_files = glob.glob(pjoin(exec_folder, "qt-online-installer-macOS*")) # Find the executable file in the MacOS folder of the app bundle.
@@ -306,10 +319,10 @@ class QtConan(ConanFile):
         mkdir(self, cache_path)
 
         args = [
-            "--confirm-command",     # Confirms starting of installation
-            "--accept-obligations",  # Accepts Qt Open Source usage obligations without user input
-            "--accept-licenses",     # Accepts all licenses without user input.
-            "--default-answer",      # Automatically answers to message queries with their default values.
+            "--confirm-command",        # Confirms starting of installation
+            "--accept-obligations",     # Accepts Qt Open Source usage obligations without user input
+            "--accept-licenses",        # Accepts all licenses without user input.
+            "--default-answer",         # Automatically answers to message queries with their default values.
             "--cache-path", cache_path  # Set cache path to build folder to avoid polluting system
         ]
 
@@ -331,6 +344,8 @@ class QtConan(ConanFile):
         self.output.highlight(f"Login method: '{self.options.qt_login_type}'")
 
         self.run(f"{quoted_installer} {' '.join(args)}")
+
+        rmdir(self, cache_path)
 
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
