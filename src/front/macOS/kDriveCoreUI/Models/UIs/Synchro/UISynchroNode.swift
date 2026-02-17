@@ -58,6 +58,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     public let status: UISynchroFileStatus?
     public let instruction: UISynchroFileInstruction?
     public let size: Int64
+    public let progress: Int32
     public let syncDate: Date
 
     public var relevantPath: URL {
@@ -90,6 +91,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         status: UISynchroFileStatus?,
         instruction: UISynchroFileInstruction?,
         size: Int64,
+        progress: Int32,
         synDate: Date
     ) {
         self.id = id
@@ -101,6 +103,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         self.status = status
         self.instruction = instruction
         self.size = size
+        self.progress = progress
         self.syncDate = synDate
     }
 

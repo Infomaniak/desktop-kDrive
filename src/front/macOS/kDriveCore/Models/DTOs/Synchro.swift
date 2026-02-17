@@ -111,6 +111,7 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let cancelType: KDC.CancelType
     public let date: Date
     public let size: Int64
+    public let progress: Int32
     public let error: String
 }
 
@@ -131,7 +132,8 @@ extension SynchroNode {
             cancelType: node.cancelType,
             date: date,
             size: node.size,
-            error: node.error,
+            progress: node.progress,
+            error: node.error
         )
     }
 }
