@@ -3,7 +3,14 @@
 ## Project Snapshot
 C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. Ships two processes: a background **server** daemon (`src/server/`) and a **Qt Widgets GUI** (`src/gui/`). All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
-All code is in the `KDC` namespace. See sub-AGENTS.md files linked below for component-specific guidance.
+All code is in the `KDC` namespace.
+
+## How to Use These Files
+At the start of every session:
+1. **Read this file** — universal conventions, security rules, and the component index below.
+2. **Read the sub-AGENTS.md for each component you'll touch** — e.g. editing `src/libsyncengine/` → read [`src/libsyncengine/AGENTS.md`](src/libsyncengine/AGENTS.md) before writing any code.
+
+Nearest file wins: the sub-AGENTS.md closest to the file you're editing takes precedence over this root file.
 
 ## Setup & Build
 ```bash
