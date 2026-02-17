@@ -793,12 +793,12 @@ void ClientGui::onNewDriveWizard() {
 }
 
 
-void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
+void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &) const {
     static std::mutex mutex;
     const std::unique_lock lock(mutex, std::try_to_lock);
     if (!lock.owns_lock()) return;
 #if defined(KD_MACOS)
-    // On macOS we do not show UpdateDialog since it is handled by Sparkle.
+    // On macOS, we do not show UpdateDialog since it is handled by Sparkle.
     (void) GuiRequests::startInstaller();
 #else
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
