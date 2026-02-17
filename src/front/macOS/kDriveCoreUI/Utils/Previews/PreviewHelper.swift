@@ -101,6 +101,7 @@ public enum PreviewHelper {
         status: .syncing,
         instruction: .update,
         size: 7_000_000,
+        progress: 99,
         synDate: .now
     )
     public static let synchroNode2 = UISynchroNode(
@@ -113,6 +114,7 @@ public enum PreviewHelper {
         status: .done,
         instruction: .update,
         size: 12_000_000,
+        progress: 1,
         synDate: .now.addingTimeInterval(-3600)
     )
     public static let synchroNode3 = UISynchroNode(
@@ -125,6 +127,7 @@ public enum PreviewHelper {
         status: .error,
         instruction: .update,
         size: 300_000,
+        progress: 10,
         synDate: .now.addingTimeInterval(-3600)
     )
 
