@@ -4743,7 +4743,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(syncPalMapMutex);
-    for (const auto &[_, syncPal]: syncPalMap) {
+    for (const auto [_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
