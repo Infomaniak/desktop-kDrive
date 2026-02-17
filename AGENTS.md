@@ -58,7 +58,8 @@ clang-format -i <file>
 - Server utilities + platform I/O: `src/libcommonserver/` → [see AGENTS.md](src/libcommonserver/AGENTS.md)
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
-- GUI (Qt Widgets): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
+- GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
+- GUI (macOS Swift redesign for v4): `src/front/macOS/` → [see AGENTS.md](src/front/macOS/AGENTS.md)
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
