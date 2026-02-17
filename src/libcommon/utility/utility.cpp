@@ -1034,10 +1034,6 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
-    if (currTabVersion.size() != targetTabVersion.size()) {
-        return false; // Should not happen
-    }
-
     return std::lexicographical_compare(currTabVersion.begin(), currTabVersion.end(), targetTabVersion.begin(),
                                         targetTabVersion.end());
 }

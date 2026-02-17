@@ -76,7 +76,7 @@ std::string extractOSInfo(const std::string &key) {
         std::string line;
         while (std::getline(osRelease, line)) {
             if (line.find(key) == 0) {
-                value = line.substr(key.length());
+                value = line.substr(key.length() + 1); // +1 because the file is formatted "key=value"
                 // Remove quotes if present
                 if (!value.empty() && value.front() == '"') {
                     value = value.substr(1);
