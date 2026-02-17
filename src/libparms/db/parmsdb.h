@@ -162,6 +162,10 @@ class PARMS_EXPORT ParmsDb : public Db {
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
+        static CursorStore extractCursors(const Sync &sync);
+        bool bindQueryToSyncValues(const Sync &sync, const char *requestId);
+        bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
+
 #if defined(KD_MACOS)
         bool updateExclusionApps();
 #endif

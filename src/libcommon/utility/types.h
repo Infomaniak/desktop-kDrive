@@ -67,9 +67,9 @@ struct CursorData {
         TimeStamp timeStamp{0};
 };
 struct CursorStore {
+        CursorData userPrivateFolderCursor;
         CursorData commonDocumentsFolderCursor;
         CursorData sharedFolderCursor;
-        CursorData userPrivateFolderCursor;
         CursorData longPollCursor;
 };
 
