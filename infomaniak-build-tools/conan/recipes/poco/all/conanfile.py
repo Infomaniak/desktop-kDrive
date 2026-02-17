@@ -126,7 +126,7 @@ class PocoConan(ConanFile):
         self.requires("pcre2/[>=10.42 <11]")
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         if self.options.enable_xml:
-            self.requires("expat/[>=2.6.2 <3]", transitive_headers=True)
+            self.requires("expat/[>=2.6.2 <2.7.4]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
                 self.requires("openssl-macos/3.2.4", options={ "shared": True })
