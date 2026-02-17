@@ -76,7 +76,7 @@ Defines every request/signal between GUI and server:
 - `SignalNum` — ~30 async server→client notifications
 - Timeout constants: `COMM_SHORT_TIMEOUT` (1s), `COMM_AVERAGE_TIMEOUT` (10s), `COMM_LONG_TIMEOUT` (60s)
 
-**Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/commserver.cpp` and `src/gui/commclient.cpp`.
+**Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
 
 ## Type Aliases to Know
 ```cpp

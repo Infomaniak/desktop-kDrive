@@ -4,8 +4,8 @@
 Long-running background daemon that owns all sync state. Communicates with the GUI process via IPC (Unix sockets on Linux/macOS, named pipes on Windows, XPC on macOS). Loads the VFS plugin, manages auto-updates, and dispatches GUI-requested operations via typed job objects.
 
 ## Key Files
-- IPC communication manager: `src/server/commserver.h`
-- GUI job dispatcher: `src/server/requests/`
+- IPC communication manager: `src/server/comm/guicommserver.h` (GUI socket layer), `src/server/comm/socketcommserver.h` (low-level socket)
+- GUI job dispatcher: `src/server/comm/guijobs/`
 - VFS plugin manager: `src/server/vfs/`
 - Auto-updater (macOS Sparkle): `src/server/updater/sparkleupdater.h`
 - Auto-updater (Windows): `src/server/updater/windowsupdater.h`
@@ -23,7 +23,7 @@ rg -n "class .*Job" src/server/requests/ -g "*.h"
 Pattern: `src/server/requests/SyncAddJob.{h,cpp}` — each job has a `run()` method that performs the operation and sends a typed response back to the GUI.
 
 ## Patterns & Conventions
-- **IPC messages** are defined in `src/libcommon/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/commserver.cpp` and `src/gui/commclient.cpp`.
+- **IPC messages** are defined in `src/libcommon/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
 - **VFS plugin** is loaded dynamically at runtime. VFS-related code must guard against the plugin being absent (`if (_vfs)`).
 - **Platform-specific server code** follows the `_mac.mm` / `_win.cpp` / `_linux.cpp` suffix convention (see `src/server/appserver_mac.mm`).
 - **Logging:** use `LOG_*` macros with the `server` logger name.
