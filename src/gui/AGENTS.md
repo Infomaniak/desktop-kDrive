@@ -4,17 +4,16 @@
 200+ file Qt 6 Widgets application. Provides the tray icon, all dialogs, and the add-drive/add-sync wizards. Communicates with the server process over IPC. No sync logic here — all state lives in the server process.
 
 ## Key Files
-- Application entry point: `src/gui/application.h`
+- Application entry point: `src/gui/mainclient.cpp`
 - Tray icon + menu: `src/gui/systray.h`
-- IPC client (talks to server): `src/gui/commclient.h`
+- IPC client (talks to server): `src/libcommongui/commclient.h`
 - Add drive wizard: `src/gui/wizard/`
-- Drive management dialog: `src/gui/driveselectiondialog.h`
-- Sync folder management: `src/gui/folderman.h`
-- Preferences dialog: `src/gui/preferencesdialog.h`
+- Drive management dialog: `src/gui/driveselectionwidget.h`
+- Preferences dialog: `src/gui/preferenceswidget.h`
 - Theme/style engine: `src/gui/guiutility.h`, `resources/style/`
 
 ## Patterns & Conventions
-- **No sync logic in the GUI.** All operations are dispatched to the server via IPC jobs (`src/gui/requests/`). The GUI only displays state.
+- **No sync logic in the GUI.** All operations are dispatched to the server via IPC requests defined in `src/gui/guirequests.h`, executed through `libcommongui::CommClient`. The GUI only displays state.
 - **Qt signals/slots** for all async communication. Use `connect()` with `Qt::QueuedConnection` for cross-thread signals.
 - **Dialogs** inherit `QDialog`. Use `exec()` for modal, `show()` for non-modal. See `src/gui/adddrivestepdialog.h` for a reference dialog.
 - **Wizards** inherit `QWizard`. Reference: `src/gui/wizard/owssetuppage.h`.

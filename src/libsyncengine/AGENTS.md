@@ -34,7 +34,7 @@ All stages are `ISyncWorker` subclasses managed by `SyncPalWorker`. Each stage r
 
 ## Key Files
 - Pipeline orchestrator: `src/libsyncengine/syncpal/syncpalworker.h`
-- Worker interface: `src/libsyncengine/workers/isyncworker.h`
+- Worker interface: `src/libsyncengine/syncpal/isyncworker.h`
 - Conflict finder: `src/libsyncengine/reconciliation/conflict_finder/conflictfinderworker.h`
 - Conflict resolver: `src/libsyncengine/reconciliation/conflict_resolver/conflictresolverworker.h`
 - Operation executor: `src/libsyncengine/propagation/executor/executorworker.h`
