@@ -23,7 +23,7 @@
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "keychainmanager/keychainmanager.h"
-#include "mocks/libcommon/keychainmanager/mockkeychainstore.h"
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
