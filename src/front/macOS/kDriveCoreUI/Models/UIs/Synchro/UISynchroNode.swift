@@ -103,7 +103,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         self.status = status
         self.instruction = instruction
         self.size = size
-        self.progress = progress
+        self.progress = min(max(progress, 0), 100)
         self.syncDate = synDate
     }
 
