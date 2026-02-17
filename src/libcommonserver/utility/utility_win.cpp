@@ -358,13 +358,20 @@ void Utility::removeLegacySyncRootKeys(const std::wstring &clsid) {
 }
 
 void Utility::registerLoginRedirection() {
-    const std::wstring clsidPath = L"Software\\Classes\\kDrive\\shell\\open\\command";
-    const QString pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
-
+    std::wstring clsidPath = L"Software\\Classes\\kDrive";
     std::wstring error;
-    if (Utility::registryExistKeyTree(HKEY_CURRENT_USER, clsidPath)) {
-        Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_DWORD, pathToExecutable.toStdWString(), error);
-    }
+    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, L"URL:kDrive protocol", error);
+    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, L"URL Protocol", REG_SZ, L"", error);
+
+    clsidPath = L"Software\\Classes\\kDrive\\DefaultIcon";
+    QString pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
+    pathToExecutable = QDir::toNativeSeparators(pathToExecutable);
+    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, pathToExecutable.toStdWString() + L",1", error);
+
+    clsidPath = L"Software\\Classes\\kDrive\\shell\\open\\command";
+    QString value = QString("\"%1\"").arg(pathToExecutable);
+    value += " \"%1\"";
+    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, value.toStdWString(), error);
 }
 
 bool Utility::registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey) {
