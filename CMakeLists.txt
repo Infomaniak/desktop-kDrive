@@ -43,7 +43,9 @@ endif()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
-target_compile_options(keychain PRIVATE -Wno-uninitialized) # Fix keychain problems with gcc 15
+if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
+    target_compile_options(keychain PRIVATE -Wno-uninitialized)
+endif()
 
 #####
 
