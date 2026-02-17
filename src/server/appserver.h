@@ -121,6 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool clearSyncNodesAsked() { return _clearSyncNodesAsked; }
         inline bool settingsAsked() { return _settingsAsked; }
         inline bool synthesisAsked() { return _synthesisAsked; }
+        inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
 
         void showHelp();
@@ -129,6 +130,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
         void sendRestartClientMsg();
+        void sendAuthorizationCode();
 
         void clearKeychainKeys();
 
@@ -234,6 +236,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _clearSyncNodesAsked{false};
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
+        QString _authorizationCodeStr;
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
         bool _vfsActivationDone{false};

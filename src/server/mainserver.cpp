@@ -169,6 +169,7 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     // If the application is already running, notify it.
     if (appPtr->isRunning()) {
         std::cout << "Server already running" << std::endl;
+
         if (appPtr->isSessionRestored()) {
             // This call is mirrored with the one in Application::slotParseMessage
             std::cout << "Session was restored, don't notify app!" << std::endl;
@@ -182,6 +183,11 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 
         if (appPtr->synthesisAsked()) {
             appPtr->sendShowSynthesisMsg();
+            return 0;
+        }
+
+        if (appPtr->authorizationCodeReceived()) {
+            appPtr->sendAuthorizationCode();
             return 0;
         }
 
