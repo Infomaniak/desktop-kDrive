@@ -24,6 +24,7 @@
 #include <memory>
 
 namespace KDC {
+log4cplus::Logger PerformanceWatcher::_logger;
 
 int PerformanceWatcher::_cpuUsagePercent = 0;
 int PerformanceWatcher::_cpuUsageByProcessPercent = 0;
@@ -52,9 +53,13 @@ void PerformanceWatcher::stop() {
     _stop = true;
 }
 
+void PerformanceWatcher::setLogger(const log4cplus::Logger &logger) {
+    _logger = logger;
+    LOG_DEBUG(_logger, "Performance Watcher started");
+}
+
 PerformanceWatcher::PerformanceWatcher() {
     _thread = std::make_unique<StdLoggingThread>(run);
-    LOG_DEBUG(_logger, "Performance Watcher started");
 }
 
 void PerformanceWatcher::run() {
@@ -107,17 +112,17 @@ double PerformanceWatcher::calculatePercent(uint64_t value, uint64_t total) {
 }
 
 void PerformanceWatcher::logHardwareResources() {
-    LOG_DEBUG(_logger, " CPU         : " << _cpuUsagePercent << " %");
-    LOG_DEBUG(_logger, " CPU process : " << _cpuUsageByProcessPercent << " %");
-    LOG_DEBUG(_logger, "~CPU process : " << _movingAverageCpuUsagePercent << " %");
+    LOG_DEBUG(logger(), " CPU         : " << _cpuUsagePercent << " %");
+    LOG_DEBUG(logger(), " CPU process : " << _cpuUsageByProcessPercent << " %");
+    LOG_DEBUG(logger(), "~CPU process : " << _movingAverageCpuUsagePercent << " %");
     std::string unit;
 
     uint64_t ra = getRamAvailable();
-    LOG_DEBUG(_logger, "RAM Available : " << bytesToBetterUnit(ra, unit) << " " << unit);
+    LOG_DEBUG(logger(), "RAM Available : " << bytesToBetterUnit(ra, unit) << " " << unit);
     uint64_t rcu = getRamCurrentlyUsed();
-    LOG_DEBUG(_logger, "RAM Used : " << calculatePercent(rcu, ra) << " %");
+    LOG_DEBUG(logger(), "RAM Used : " << calculatePercent(rcu, ra) << " %");
     uint64_t rcup = getRamCurrentlyUsedByProcess();
-    LOG_DEBUG(_logger, "RAM Used by kDrive : " << calculatePercent(rcup, ra) << " %");
+    LOG_DEBUG(logger(), "RAM Used by kDrive : " << calculatePercent(rcup, ra) << " %");
 }
 
 bool PerformanceWatcher::updateRAMAvailable() {

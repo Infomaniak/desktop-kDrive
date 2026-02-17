@@ -21,7 +21,6 @@
 #include "jobs/network/abstractnetworkjob.h"
 #include "network/kDrive_API/downloadjob.h"
 #include "network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/log/log.h"

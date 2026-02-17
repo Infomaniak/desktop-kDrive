@@ -33,7 +33,11 @@ namespace KDC {
 
 class PerformanceWatcher {
     public:
+        ~PerformanceWatcher() {
+            if (_thread->joinable()) _thread->join();
+        };
         static PerformanceWatcher *instance();
+        inline static void setLogger(const log4cplus::Logger &logger);
         static void stop();
 
         void logHardwareResources();
@@ -53,8 +57,9 @@ class PerformanceWatcher {
 
         static bool _stop;
 
-        log4cplus::Logger _logger = Log::instance()->getLogger();
-        std::unique_ptr<StdLoggingThread> _thread = nullptr;
+        static log4cplus::Logger _logger;
+        static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
+        std::unique_ptr<StdLoggingThread> _thread{nullptr};
 
         static void updateAllStats();
 
