@@ -20,6 +20,8 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 
+#include "test_utility/testhelpers.h"
+
 #include <QIcon>
 #include <QGuiApplication>
 
@@ -72,6 +74,12 @@ void TestTheme::testUrls() {
 }
 
 void TestTheme::testSystrayIcons() {
+#if defined(KD_WINDOWS)
+    // Skipped on Windows CI runner: it requires the current CI Windows build to be adapted
+    // so that Qt icons can be retrieved automatically.
+    if (testhelpers::isRunningOnCI(false)) return;
+#endif
+
     int argc = 1;
     QGuiApplication app(argc, nullptr);
     (void) setlocale(LC_ALL, "C"); // QGuiApplication changes the locale
