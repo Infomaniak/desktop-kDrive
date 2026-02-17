@@ -258,6 +258,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
 
     _testObj->freeRequest("update_node_name_local"); // Request created within init() call.
+    _testObj->freeRequest("select_sync_node"); // Request created within init() call.
     _testObj->upgrade("3.6.4", "3.6.5");
 
     CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localCreationFileNames.size());
