@@ -22,7 +22,7 @@ cmake -B build-macos -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON
 cmake --build build-macos --parallel
 
 # Run a test binary
-./build-macos/test/libsyncengine/kDrive_test_syncengine
+./build-macos/bin/kDrive_test_syncengine
 
 # Format code (auto-applied by pre-commit hook)
 clang-format -i <file>

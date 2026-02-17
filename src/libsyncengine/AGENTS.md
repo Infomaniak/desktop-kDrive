@@ -9,10 +9,10 @@ Core sync library implementing the **Syncpal algorithm** (Shekow, 2019). Orchest
 cmake --build build-macos --target kDrivesyncengine --parallel
 
 # Run sync engine tests
-./build-macos/test/libsyncengine/kDrive_test_syncengine
+./build-macos/bin/kDrive_test_syncengine
 
 # Run a single test suite
-./build-macos/test/libsyncengine/kDrive_test_syncengine --suite=TestSyncOpExecutor
+./build-macos/bin/kDrive_test_syncengine --suite=TestSyncOpExecutor
 ```
 
 ## Architecture: The Syncpal Pipeline
@@ -80,5 +80,5 @@ rg -n "CREATE TABLE|INSERT INTO|UPDATE.*SET" src/libsyncengine/db/
 
 ## Pre-PR Checks
 ```bash
-cmake --build build-macos --target kDrive_test_syncengine && ./build-macos/test/libsyncengine/kDrive_test_syncengine
+cmake --build build-macos --target kDrive_test_syncengine && ./build-macos/bin/kDrive_test_syncengine
 ```

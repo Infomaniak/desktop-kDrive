@@ -52,5 +52,5 @@ rg -n "vfs|Vfs|VFS" src/server/ -g "*.h" -l
 
 ## Pre-PR Checks
 ```bash
-cmake --build build-macos --target kDrive_test_server && ./build-macos/test/server/kDrive_test_server
+cmake --build build-macos --target kDrive_test_server && ./build-macos/bin/kDrive_test_server
 ```

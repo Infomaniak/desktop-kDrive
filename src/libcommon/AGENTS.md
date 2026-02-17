@@ -128,5 +128,5 @@ rg -n "PTraceName::" src/libcommon/log/sentry/
 
 ## Pre-PR Checks
 ```bash
-cmake --build build-macos --target kDrive_test_common && ./build-macos/test/libcommon/kDrive_test_common
+cmake --build build-macos --target kDrive_test_common && ./build-macos/bin/kDrive_test_common
 ```

@@ -45,5 +45,5 @@ rg -n "virtual" src/libcommonserver/vfs/vfs.h
 
 ## Pre-PR Checks
 ```bash
-cmake --build build-macos --target kDrive_test_common_server && ./build-macos/test/libcommonserver/kDrive_test_common_server
+cmake --build build-macos --target kDrive_test_common_server && ./build-macos/bin/kDrive_test_common_server
 ```

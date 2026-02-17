@@ -6,19 +6,19 @@ Test suite for `libsyncengine`. Contains unit tests, integration tests (require 
 ## Run Tests
 ```bash
 # Run all sync engine tests
-./build-macos/test/libsyncengine/kDrive_test_syncengine
+./build-macos/bin/kDrive_test_syncengine
 
 # Run a single test suite
-./build-macos/test/libsyncengine/kDrive_test_syncengine --suite=TestConflictFinder
+./build-macos/bin/kDrive_test_syncengine --suite=TestConflictFinderWorker
 
 # Run extended/integration tests (requires credentials)
 KDRIVE_TEST_CI_RUNNING_ON_CI=true \
 KDRIVE_TEST_CI_API_TOKEN=<token> \
 KDRIVE_TEST_CI_DRIVE_ID=<id> \
-./build-macos/test/libsyncengine/kDrive_test_syncengine
+./build-macos/bin/kDrive_test_syncengine
 
 # Extended nightly tests
-KDRIVE_TEST_CI_EXTENDED_TEST=true ./build-macos/test/libsyncengine/kDrive_test_syncengine
+KDRIVE_TEST_CI_EXTENDED_TEST=true ./build-macos/bin/kDrive_test_syncengine
 ```
 
 ## Test Structure
