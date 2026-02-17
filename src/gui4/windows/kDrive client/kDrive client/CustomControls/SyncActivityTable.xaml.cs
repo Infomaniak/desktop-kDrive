@@ -162,7 +162,8 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
@@ -181,7 +182,8 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
@@ -205,8 +207,8 @@ namespace Infomaniak.kDrive.CustomControls
             // Find parrent button to anchor teaching tip
             DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), true);
 
-
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");

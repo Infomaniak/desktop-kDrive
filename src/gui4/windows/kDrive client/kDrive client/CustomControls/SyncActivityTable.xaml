@@ -20,6 +20,7 @@
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BindingLocalizerHelper x:Key="BindingLocalizerHelper" />
 
         <!-- Activity columns width -->
@@ -193,14 +194,14 @@
                                 </ProgressRing>
                             </DataTemplate>
 
-                            <DataTemplate x:Key="SynchronizedFlyoutTemplate"
-                                          x:DataType="types:SyncFileStatus">
+                            <DataTemplate x:Key="SynchronizedFlyoutTemplate">
                                 <Button Grid.Column="2"
                                         Padding="0"
                                         BorderThickness="0"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
-                                        Background="Transparent">
+                                        Background="Transparent"
+                                        kDrive:AncestorSource.AncestorType="ContentControl">
                                     <Button.Content>
                                         <controls:SvgIcon Width="14"
                                                           Height="14"
@@ -210,7 +211,8 @@
                                     </Button.Content>
                                     <Button.Flyout>
                                         <MenuFlyout Placement="RightEdgeAlignedTop">
-                                            <MenuFlyoutItem Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenInExplorer')}"
+                                            <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonOpenInExplorer'}"
+                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="OpenInExplorer_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
@@ -218,7 +220,8 @@
                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenInKDrive')}"
+                                            <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonOpenInKDrive'}"
+                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="OpenOnline_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
@@ -226,7 +229,8 @@
                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonCopyShareLink')}"
+                                            <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonCopyShareLink'}"
+                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="CopyPublicLink_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon Height="16"
