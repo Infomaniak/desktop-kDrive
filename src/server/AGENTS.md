@@ -23,7 +23,7 @@ rg -n "class .*Job" src/server/requests/ --include="*.h"
 Pattern: `src/server/requests/SyncAddJob.{h,cpp}` — each job has a `run()` method that performs the operation and sends a typed response back to the GUI.
 
 ## Patterns & Conventions
-- **IPC messages** are defined in `src/common/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/commserver.cpp` and `src/gui/commclient.cpp`.
+- **IPC messages** are defined in `src/libcommon/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/commserver.cpp` and `src/gui/commclient.cpp`.
 - **VFS plugin** is loaded dynamically at runtime. VFS-related code must guard against the plugin being absent (`if (_vfs)`).
 - **Platform-specific server code** follows the `_mac.mm` / `_win.cpp` / `_linux.cpp` suffix convention (see `src/server/appserver_mac.mm`).
 - **Logging:** use `LOG_*` macros with the `server` logger name.
@@ -33,7 +33,7 @@ Pattern: `src/server/requests/SyncAddJob.{h,cpp}` — each job has a `run()` met
 ## JIT Index Hints
 ```bash
 # Find IPC message definitions
-rg -n "enum.*Msg|struct.*Msg" src/common/comm.h
+rg -n "enum.*Msg|struct.*Msg" src/libcommon/comm.h
 
 # Find XPC-specific code
 rg -ln "xpc" src/server/ -g "*.mm" -g "*.h"

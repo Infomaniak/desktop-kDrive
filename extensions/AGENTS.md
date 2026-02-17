@@ -43,7 +43,7 @@ Key files:
 
 ## Patterns & Conventions
 - **Language:** Objective-C/Objective-C++ for macOS; C++ for Windows CFAPI.
-- **IPC with server:** Use XPC (macOS) or named pipes (Windows) to communicate extension status back to the server process. Mirror the comm protocol in `src/common/comm.h`.
+- **IPC with server:** Use XPC (macOS) or named pipes (Windows) to communicate extension status back to the server process. Mirror the comm protocol in `src/libcommon/comm.h`.
 - **Signing:** Extensions must be signed and notarized on macOS for Gatekeeper. Signing is handled by CI; never disable code signing for a release build.
 - **System Extension vs App Extension:** LiteSync uses a System Extension (privileged). Any API changes require re-approval from Apple.
 - DO: Test Finder Sync badge changes on a real macOS machine; simulator doesn't support Finder extensions.
