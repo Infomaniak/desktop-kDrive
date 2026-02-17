@@ -31,8 +31,8 @@ rg -n "class .*Dialog.*: public QDialog" src/gui/ -g "*.h"
 # Find all wizard pages
 rg -n "class .*Page.*: public QWizardPage" src/gui/ -g "*.h"
 
-# Find IPC request job classes in GUI
-rg -n "class .*Job" src/gui/requests/ -g "*.h"
+# Find IPC request definitions in GUI
+rg -n "GuiRequests\|RequestNum::\|CommClient::execute" src/gui/
 
 # Find tray menu actions
 rg -n "addAction\|QAction" src/gui/systray.cpp

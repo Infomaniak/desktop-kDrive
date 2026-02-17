@@ -17,17 +17,17 @@ The GUI sends typed **job requests** to the server over the IPC channel. Each ca
 
 ```bash
 # Find all GUI-facing job classes
-rg -n "class .*Job" src/server/requests/ -g "*.h"
+rg -n "class .*Job" src/server/comm/guijobs/ -g "*.h"
 ```
 
-Pattern: `src/server/requests/SyncAddJob.{h,cpp}` — each job has a `run()` method that performs the operation and sends a typed response back to the GUI.
+Pattern: `src/server/comm/guijobs/abstractguijob.{h,cpp}` — each job has a `run()` method that performs the operation and sends a typed response back to the GUI.
 
 ## Patterns & Conventions
 - **IPC messages** are defined in `src/libcommon/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
 - **VFS plugin** is loaded dynamically at runtime. VFS-related code must guard against the plugin being absent (`if (_vfs)`).
 - **Platform-specific server code** follows the `_mac.mm` / `_win.cpp` / `_linux.cpp` suffix convention (see `src/server/appserver_mac.mm`).
 - **Logging:** use `LOG_*` macros with the `server` logger name.
-- DO: Add new server-side features as a new `Job` class in `src/server/requests/`.
+- DO: Add new server-side features as a new `Job` class in `src/server/comm/guijobs/`.
 - DON'T: Call sync engine internals directly from IPC handlers. Use the `SyncPal` public API.
 
 ## JIT Index Hints

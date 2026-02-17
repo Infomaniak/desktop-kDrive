@@ -34,12 +34,12 @@ KDRIVE_TEST_CI_EXTENDED_TEST=true ./build-macos/bin/kDrive_test_syncengine
 | `test/libsyncengine/benchmark/` | Performance benchmarks |
 
 ## Patterns & Conventions
-- All test classes inherit `CppUnit::TestCase`. Register with `CPPUNIT_TEST_SUITE` / `CPPUNIT_TEST_SUITE_END`.
+- All test classes inherit `CppUnit::TestFixture`. Register with `CPPUNIT_TEST_SUITE` / `CPPUNIT_TEST_SUITE_END`.
 - Use `CPPUNIT_ASSERT`, `CPPUNIT_ASSERT_EQUAL`, `CPPUNIT_ASSERT_THROW` macros.
 - **Shared helpers:** `test/test_utility/testbase.h` — `TestBase` provides `setUp`/`tearDown` with temp dirs and log init. Inherit from it.
 - **Sync situations:** Use `TestSituationGenerator` (`test/test_classes/`) to set up complex sync states instead of manual DB insertion.
 - **Mocks:** Use interfaces from `test/mocks/` — `MockSyncDb`, `MockVfs`, etc. — for unit tests that shouldn't hit real I/O.
-- **Integration tests** must guard network calls with `if (CommonUtility::envVarValue("KDRIVE_TEST_CI_RUNNING_ON_CI") != "true") CPPUNIT_SKIP()`.
+- **Integration tests** must guard network calls. Two equivalent patterns coexist: `if (CommonUtility::envVarValue("KDRIVE_TEST_CI_RUNNING_ON_CI") != "true") CPPUNIT_SKIP()` or `if (!testhelpers::isRunningOnCI()) CPPUNIT_SKIP()`. Extended tests use `if (!testhelpers::isExtendedTest()) return;`.
 - DO: Co-locate unit tests with the feature they test (mirrors `src/libsyncengine/` layout).
 - DON'T: Hard-code absolute paths or drive IDs in test files. Use env vars or `TestBase` temp dir utilities.
 

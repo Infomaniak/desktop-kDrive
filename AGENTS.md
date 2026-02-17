@@ -66,7 +66,7 @@ clang-format -i <file>
 
 ### Infrastructure
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
-- Build scripts + Conan recipes: `infomaniak-build-tools/` → [see AGENTS.md](infomaniak-build-tools/AGENTS.md)
+- Build scripts + Conan recipes: `infomaniak-build-tools/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
 
 ### Quick Find Commands
 ```bash
@@ -77,7 +77,7 @@ rg -n "class ClassName" src/
 rg -n "TypeName" src/ -g "*.h" -g "*.cpp"
 
 # Find IPC job for a feature
-rg -n "class .*Job" src/server/requests/ src/gui/
+rg -n "class .*Job" src/server/comm/guijobs/ src/gui/ -g "*.h"
 
 # Find platform-specific implementation
 rg -ln "platform" src/ -g "*_mac.mm" -g "*_win.cpp"
