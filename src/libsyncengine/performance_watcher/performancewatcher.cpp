@@ -45,8 +45,7 @@ uint64_t PerformanceWatcher::_ramCurrentlyUsedByProcess = 0;
 bool PerformanceWatcher::_stop = false;
 
 PerformanceWatcher *PerformanceWatcher::instance() {
-    static PerformanceWatcher instance;
-    return &instance;
+    return &_instance;
 }
 
 void PerformanceWatcher::stop() {

@@ -47,6 +47,8 @@ class PerformanceWatcher {
     private:
         PerformanceWatcher();
 
+        static PerformanceWatcher _instance;
+
         static void run();
 
         static bool _stop;
@@ -84,5 +86,7 @@ class PerformanceWatcher {
         static uint64_t bytesToGb(uint64_t bytes);
         static uint64_t bytesToMb(uint64_t bytes);
 };
+
+inline PerformanceWatcher PerformanceWatcher::_instance;
 
 } // namespace KDC

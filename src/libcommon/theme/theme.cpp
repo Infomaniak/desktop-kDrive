@@ -29,8 +29,7 @@
 namespace KDC {
 
 Theme *Theme::instance() {
-    static Theme instance;
-    return &instance;
+    return &_instance;
 }
 
 Theme::~Theme() {}
