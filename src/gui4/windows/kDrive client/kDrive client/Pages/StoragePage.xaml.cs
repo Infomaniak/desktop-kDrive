@@ -300,7 +300,7 @@ namespace Infomaniak.kDrive.Pages
                     Loading = false;
                     HydratedFileSize = -1;
                     OtherFileSize = -1;
-                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                    if (!_cancellationTokenSource.IsCancellationRequested)
                     {
                         Utility.ShowUnexpectedErrorTeachingTip();
                         Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
