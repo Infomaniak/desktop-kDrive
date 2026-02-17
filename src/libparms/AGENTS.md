@@ -6,7 +6,7 @@ Persistent configuration store for all application-level state: users, accounts,
 ## Key Files
 - Main DB class: `src/libparms/db/parmsdb.h`
 - DB implementation: `src/libparms/db/parmsdb.cpp`
-- Schema version management: `src/libparms/db/parmsdb.h` (look for `_schemaVersion`)
+- Schema version management: `src/libparms/db/parmsdb.h` (versioning via `version` parameter passed to `instance()` and validated in `checkConnect(version)`)
 
 ## Data Model
 Key entities and their primary key:
@@ -19,8 +19,8 @@ Key entities and their primary key:
 - **UploadSessionToken** — resumable upload state
 
 ## Patterns & Conventions
-- All public methods on `ParmsDb` follow the pattern: `bool getXxx(DbId id, Xxx &out)` and `bool insertXxx(Xxx &inOut)` (where `dbId` is set on the out-param after insert).
-- **Never** modify `ParmsDb` schema without incrementing `_schemaVersion` and adding a migration in the upgrade path.
+- All public methods on `ParmsDb` follow the pattern: `bool insertXxx(const Xxx &entity)` / `bool selectXxx(DbId id, Xxx &out, bool &found)` / `bool updateXxx(const Xxx &entity, bool &found)` / `bool deleteXxx(DbId id, bool &found)`.
+- **Never** modify `ParmsDb` schema without incrementing the schema version (passed as `version` to `instance()` and validated in `checkConnect(version)`) and adding a migration in the upgrade path.
 - Use `ParmsDb::instance()` singleton accessor from server/syncengine code.
 - `ParmsDb` is distinct from `SyncDb` (per-sync file tree in `libsyncengine/db/`). Don't confuse them.
 - DO: Add new entities following the existing CRUD pattern — see `src/libparms/db/parmsdb.h` for reference signatures.
@@ -35,7 +35,7 @@ rg -n "struct .* \{" src/libcommon/info/ -g "*.h"
 rg -n "bool ParmsDb::" src/libparms/db/parmsdb.cpp | head -60
 
 # Find schema version and migration
-rg -n "_schemaVersion|upgradeDb|migration" src/libparms/db/parmsdb.cpp
+rg -n "upgradeDb|upgrade\|migration\|checkConnect" src/libparms/db/parmsdb.cpp
 
 # Find tests for a specific entity
 rg -rn "TestParmsDb\|testUser\|testDrive" test/libparms/
@@ -48,5 +48,5 @@ rg -rn "TestParmsDb\|testUser\|testDrive" test/libparms/
 
 ## Pre-PR Checks
 ```bash
-cmake --build build-macos --target kDrive_test_parms && ./build-macos/test/libparms/kDrive_test_parms
+cmake --build build-macos --target kDrive_test_parms && ./build-macos/bin/kDrive_test_parms
 ```
