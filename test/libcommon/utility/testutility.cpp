@@ -144,11 +144,11 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
 
     // With an invalid version
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("155.75.0", ".156.75.0"));
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.x.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.x.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "1.x.0"));
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("a.0.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("a.0.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "a.0.0"));
 }
 
