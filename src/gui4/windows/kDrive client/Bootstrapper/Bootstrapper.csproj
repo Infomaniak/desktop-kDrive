@@ -9,4 +9,7 @@
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(SolutionDir)fetchVersion.ps1&quot; -CsProjPath &quot;$(SolutionDir)/kDrive client/kDrive client.csproj&quot; -RepositoryRootPath &quot;$(SolutionDir)..\..\..\..\&quot;" />
 	</Target>
+	<Target Name="CleanOutputAfterBuild" AfterTargets="Build">
+		<RemoveDir Directories="$(OutputPath)" />
+	</Target>
 </Project>
