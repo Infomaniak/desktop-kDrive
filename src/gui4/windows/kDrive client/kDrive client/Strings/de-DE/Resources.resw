@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 17 Feb 2026 09:49:18 +0100 
+  Exported at: Tue, 17 Feb 2026 10:16:12 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Offline verfügbar</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien werden auf Ihren Computer kopiert.
+Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.</value> 
@@ -890,6 +894,10 @@ Vergewissern Sie sich, dass das Laufwerk richtig angeschlossen, entsperrt und vo
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Online gespeichert</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien bleiben in der Cloud und nehmen keinen Platz auf Ihrem Computer ein.
+Für den Zugriff ist eine Internetverbindung erforderlich.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Sync-Fehler</value> 

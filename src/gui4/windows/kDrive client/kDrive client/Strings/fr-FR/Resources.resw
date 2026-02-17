@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 17 Feb 2026 09:49:18 +0100 
+  Exported at: Tue, 17 Feb 2026 10:16:12 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Disponible hors ligne</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Vos fichiers sont copiés sur votre ordinateur.
+Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.</value> 
@@ -890,6 +894,10 @@ Assurez-vous qu’il est correctement connecté, déverrouillé et accessible de
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Stocké en ligne</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Vos fichiers restent dans le nuage et n’occupent pas d’espace sur votre ordinateur.
+Une connexion internet est nécessaire pour y accéder.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Erreur de synchronisation</value> 

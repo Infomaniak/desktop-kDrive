@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 17 Feb 2026 09:49:18 +0100 
+  Exported at: Tue, 17 Feb 2026 10:16:12 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ You can access your advanced synchronizations from the drive selector on the hom
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Available offline</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Your files are copied to your computer. 
+You can open them at any time, even without Internet access.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.</value> 
@@ -890,6 +894,10 @@ Make sure it is properly connected, unlocked, and accessible from your computer.
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Stored online</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Your files stay in the cloud and don’t take up space on your computer.
+Internet connection required for access.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Sync error</value> 

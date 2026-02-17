@@ -126,6 +126,7 @@
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
                                                           Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
+                                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('storedOnlineDescription')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -155,6 +156,7 @@
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
                                                           Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
+                                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('availableOfflineDescription')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />

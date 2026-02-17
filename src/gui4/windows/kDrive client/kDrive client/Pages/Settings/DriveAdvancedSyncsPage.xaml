@@ -68,6 +68,7 @@
                             <toolKit:SettingsCard Grid.Row="1"
                                                   Grid.Column="1"
                                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
+                                                  Description="{x:Bind kDrive:Localizer.Instance.GetString('storedOnlineDescription')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -87,6 +88,7 @@
                             <toolKit:SettingsCard Grid.Column="1"
                                                   Grid.Row="2"
                                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
+                                                  Description="{x:Bind kDrive:Localizer.Instance.GetString('availableOfflineDescription')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
