@@ -45,17 +45,6 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
-bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
-                                             IoError &ioError) noexcept {
-    (void) path;
-    (void) status;
-    (void) exists;
-    (void) ioError;
-
-    // NB: The check done by the caller is already case & encoding sensitive
-    return true;
-}
-
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 

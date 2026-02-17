@@ -799,15 +799,17 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
 
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
 
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (exists && option == PathCheckOption::Sensitive) {
         // Case & encoding check
         // NB:
         // - On Windows, the standard check is encoding insensitive
         // - On macOS, the standard check is case & encoding insensitive
         return _checkIfPathExistsSensitive(path, status, exists, ioError);
-    } else {
-        return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
     }
+#endif
+
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
