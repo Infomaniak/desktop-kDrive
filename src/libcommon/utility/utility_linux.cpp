@@ -68,8 +68,8 @@ bool CommonUtility::hasDarkSystray() {
     return true;
 }
 
-std::string CommonUtility::osVersion() {
-    std::string versionId;
+std::string extractOSInfo(const std::string &key) {
+    std::string value;
     // Try to get version from /etc/os-release (standard on modern Linux distributions)
     std::ifstream osRelease("/etc/os-release");
     if (osRelease.is_open()) {
