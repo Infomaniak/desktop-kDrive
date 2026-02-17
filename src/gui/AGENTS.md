@@ -39,7 +39,7 @@ rg -n "class .*Job" src/gui/requests/ -g "*.h"
 rg -n "addAction\|QAction" src/gui/systray.cpp
 
 # Find stylesheet files
-find resources/style -name "*.qss"
+rg --files resources/style/ -g "*.qss"
 ```
 
 ## Common Gotchas
@@ -53,5 +53,5 @@ find resources/style -name "*.qss"
 # Build GUI only
 cmake --build build-macos --target kDrive --parallel
 # Check for missing Qt resources
-rg -n ":/[a-zA-Z]" src/gui/ --include="*.cpp" | grep -v ".qrc"
+rg -n ":/[a-zA-Z]" src/gui/ -g "*.cpp" | grep -v ".qrc"
 ```

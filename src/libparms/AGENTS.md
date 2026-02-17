@@ -29,7 +29,7 @@ Key entities and their primary key:
 ## JIT Index Hints
 ```bash
 # Find all entity types
-rg -n "struct .* \{" src/libcommon/info/ --include="*.h"
+rg -n "struct .* \{" src/libcommon/info/ -g "*.h"
 
 # Find all ParmsDb CRUD methods
 rg -n "bool ParmsDb::" src/libparms/db/parmsdb.cpp | head -60

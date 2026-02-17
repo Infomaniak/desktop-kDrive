@@ -29,7 +29,7 @@ Shared library providing server-process utilities: platform-abstracted filesyste
 rg -n "static.*IoHelper::" src/libcommonserver/io/iohelper.h
 
 # Find platform-specific IO implementations
-ls src/libcommonserver/io/iohelper_*.{cpp,mm}
+rg --files src/libcommonserver/io/ -g "iohelper_*"
 
 # Find DB schema for a table
 rg -n "CREATE TABLE" src/libcommonserver/db/

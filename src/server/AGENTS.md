@@ -17,7 +17,7 @@ The GUI sends typed **job requests** to the server over the IPC channel. Each ca
 
 ```bash
 # Find all GUI-facing job classes
-rg -n "class .*Job" src/server/requests/ --include="*.h"
+rg -n "class .*Job" src/server/requests/ -g "*.h"
 ```
 
 Pattern: `src/server/requests/SyncAddJob.{h,cpp}` — each job has a `run()` method that performs the operation and sends a typed response back to the GUI.

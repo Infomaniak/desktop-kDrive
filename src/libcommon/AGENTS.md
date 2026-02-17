@@ -85,7 +85,7 @@ using SyncName    = std::filesystem::path::string_type; // std::string (Unix) | 
 using NodeId      = std::string;   // server-assigned, stable across renames
 using DbNodeId    = int64_t;       // internal SQLite ROWID
 using SyncTime    = int64_t;
-using ExitInfo    = ...;           // see above
+// ExitInfo is a struct{ExitCode, ExitCause, SourceLocation} — see "Error Propagation" section above
 ```
 
 Platform string helpers — always use these, never raw casts:
