@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 17 Feb 2026 10:16:12 +0100 
+  Exported at: Wed, 18 Feb 2026 09:22:54 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -490,7 +490,7 @@ Please try again in a few minutes.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>For three days</value> 
   </data> 
-  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Unsupported character</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
