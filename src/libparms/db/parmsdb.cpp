@@ -2202,12 +2202,15 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetPath().native()));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetNodeId()));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbPath().native()));
+
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.paused())));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.supportVfs())));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.virtualFileMode())));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.notificationsDisabled())));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.hasFullyCompleted())));
+
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.navigationPaneClsid()));
+
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timeStamp));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.cursor));
@@ -2332,67 +2335,69 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
            std::string(requestId) == std::string(SELECT_ALL_SYNCS_REQUEST_ID) ||
            std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 
+    uint16_t fieldIndex = 0;
+
     int intResult = -1;
-    LOG_IF_FAIL(queryIntValue(requestId, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setDbId(intResult);
 
     if (driveDbId) {
         assert(std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
         sync.setDriveDbId(*driveDbId);
     } else {
-        LOG_IF_FAIL(queryIntValue(requestId, 1, intResult));
+        LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
         sync.setDriveDbId(intResult);
     }
 
     SyncName syncNameResult;
-    LOG_IF_FAIL(querySyncNameValue(requestId, 2, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
     std::string strResult;
-    LOG_IF_FAIL(queryStringValue(requestId, 3, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setLocalNodeId(strResult);
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 4, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
     sync.setTargetPath(SyncPath(syncNameResult));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 5, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setTargetNodeId(strResult);
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 6, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 8, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 11, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setNavigationPaneClsid(strResult);
 
     // Cursors
     CursorStore cursorStore;
 
-    LOG_IF_FAIL(queryStringValue(requestId, 13, cursorStore.userPrivateFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, 14, cursorStore.userPrivateFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timeStamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 15, cursorStore.commonDocumentsFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, 16, cursorStore.commonDocumentsFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.timeStamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 17, cursorStore.sharedFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, 18, cursorStore.sharedFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timeStamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 19, cursorStore.longPollCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, 20, cursorStore.longPollCursor.timeStamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.longPollCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.longPollCursor.timeStamp));
 
     sync.setCursorStore(cursorStore);
 }
