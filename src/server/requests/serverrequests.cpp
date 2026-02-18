@@ -1033,8 +1033,9 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
 
 ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &accountInfo) {
     // Load account info
+    bool updated = false;
     Account updatedAccount(account);
-    ExitCode exitCode = loadAccountInfo(updatedAccount);
+    ExitCode exitCode = loadAccountInfo(updatedAccount, updated);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::loadAccountInfo");
         return exitCode;
@@ -1712,7 +1713,9 @@ ExitCode ServerRequests::deleteLiteSyncErrors() {
 }
 #endif
 
-ExitInfo ServerRequests::loadAccountInfo(Account &account) {
+ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated) {
+    updated = false;
+
     // Get drive data
     std::shared_ptr<GetAccountInfoJob> job = nullptr;
     try {
@@ -1725,7 +1728,10 @@ ExitInfo ServerRequests::loadAccountInfo(Account &account) {
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) return exitInfo;
 
-    account.setName(job->name());
+    if (account.name() != job->name()) {
+        account.setName(job->name());
+        updated = true;
+    }
     return ExitCode::Ok;
 }
 

@@ -2804,7 +2804,28 @@ ExitInfo AppServer::updateUserInfo(User &user) {
         return ExitCode::DbError;
     }
 
-    for (const auto &account: accounts) {
+    for (auto &account: accounts) {
+        bool accountUpdated = false;
+        if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
+            LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+            return exitInfo;
+        }
+        if (accountUpdated) {
+            AccountInfo accountInfo;
+            ServerRequests::accountToAccountInfo(account, accountInfo);
+            sendAccountUpdated(accountInfo);
+
+            bool found = false;
+            if (!ParmsDb::instance()->updateAccount(account, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+                return ExitCode::DbError;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+                return ExitCode::DataError;
+            }
+        }
+
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
@@ -2813,10 +2834,10 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
         for (auto &drive: drives) {
             bool quotaUpdated = false;
-            bool accountUpdated = false;
+            bool accountChanged = false;
             Account modifiedAccount = account;
             if (const auto exitInfo =
-                        ServerRequests::loadDriveInfo(drive, modifiedAccount, updated, quotaUpdated, accountUpdated);
+                        ServerRequests::loadDriveInfo(drive, modifiedAccount, updated, quotaUpdated, accountChanged);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
                 return exitInfo;
@@ -2866,7 +2887,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             }
 
             bool accountRemoved = false;
-            if (accountUpdated) {
+            if (accountChanged) {
                 bool accountIdAlreadyExists = false;
                 Account dummyAccount;
                 bool found = false;
