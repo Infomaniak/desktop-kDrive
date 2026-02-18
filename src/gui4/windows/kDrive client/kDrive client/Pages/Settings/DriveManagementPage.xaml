@@ -31,7 +31,7 @@
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settings')}"
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
             <BreadcrumbBar x:Name="NavBar"
@@ -126,6 +126,7 @@
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
                                                           Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
+                                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('storedOnlineDescription')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -155,6 +156,7 @@
                                     <!-- Card content -->
                                     <toolKit:SettingsCard Grid.Column="1"
                                                           Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
+                                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('availableOfflineDescription')}"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0" />
@@ -199,7 +201,7 @@
                                       IsClickEnabled="False">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('notSynced')}"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('notSyncedDrive')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorSecondary}" />
@@ -215,7 +217,7 @@
                 </toolKit:SettingsCard>
 
                 <!-- Advanced syncs -->
-                <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('advancedSync')}"
+                <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncTitle')}"
                                       IsClickEnabled="True"
                                       Click="AdvancedSyncsSettingsCard_Click">
                     <toolKit:SettingsCard.HeaderIcon>

@@ -300,7 +300,11 @@ namespace Infomaniak.kDrive.Pages
                     Loading = false;
                     HydratedFileSize = -1;
                     OtherFileSize = -1;
-                    Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
+                    if (!_cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Utility.ShowUnexpectedErrorTeachingTip();
+                        Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
+                    }
                     return;
                 }
                 OtherFileSize = DiskUsedSize - HydratedFileSize;
@@ -323,8 +327,8 @@ namespace Infomaniak.kDrive.Pages
 
             if (res is null)
             {
-                Logger.Log(Logger.Level.Warning, "GetSyncOfflineFilesSize returned null");
-                Utility.ShowUnexpectedErrorTeachingTip();
+                if (!cancellationToken.IsCancellationRequested)
+                    Logger.Log(Logger.Level.Warning, "GetSyncOfflineFilesSize returned null");
                 return null;
             }
 

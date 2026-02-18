@@ -79,6 +79,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _instruction;
             set => SetPropertyInUIThread(ref _instruction, value);
         }
+
+        public bool IsDeletion
+        {
+            get => Instruction == SyncFileInstruction.Remove;
+        }
+
         public SyncFileStatus Status
         {
             get => _status;

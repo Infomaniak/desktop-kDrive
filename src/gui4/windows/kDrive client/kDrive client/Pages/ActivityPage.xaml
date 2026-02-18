@@ -24,9 +24,6 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleIdle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 
@@ -43,9 +40,6 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitlePause')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 

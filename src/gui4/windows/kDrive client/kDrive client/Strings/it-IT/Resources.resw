@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Disponibile offline</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>I file vengono copiati sul computer.
+È possibile aprirli in qualsiasi momento, anche senza accesso a Internet.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Ottenete l’accesso anticipato alle nuove versioni dell’applicazione prima che vengano rilasciate al pubblico e contribuite a migliorare l’applicazione condividendo con noi le vostre idee di miglioramento.</value> 
@@ -307,6 +311,14 @@ Il codice sorgente di questa applicazione può essere rivisto, le informazioni r
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Escluso automaticamente</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Selezionare una cartella vuota che non si trovi nella radice dell’unità.
+
+Questa cartella non deve essere inclusa in altre cartelle di sincronizzazione e non deve contenere sottocartelle di sincronizzazione.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Questa cartella non può essere selezionata</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Aggiungi regola</value> 
   </data> 
@@ -401,11 +413,11 @@ Contattare l’amministratore per riattivare il servizio.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>Siete stati disconnessi</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>L’account utilizzato per questo accesso non corrisponde a quello di questo kDrive.
 Effettuare nuovamente l’accesso con l’indirizzo e-mail corretto %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Questo conto non corrisponde</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
@@ -430,7 +442,7 @@ Riprovare tra qualche minuto.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Inserire la password</value> 
   </data> 
-  <data name="errFrobiddenCharDescription" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Il nome del file contiene uno o più caratteri non supportati dal dispositivo in uso</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
@@ -478,7 +490,7 @@ Riprovare tra qualche minuto.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Per tre giorni</value> 
   </data> 
-  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Carattere non supportato</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
@@ -882,6 +894,10 @@ Assicurarsi che sia collegata correttamente, sbloccata e accessibile dal compute
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Archiviato online</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>I file rimangono nel cloud e non occupano spazio sul computer.
+Per l’accesso è necessaria una connessione a Internet.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Errore di sincronizzazione</value> 

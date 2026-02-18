@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Offline verfügbar</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien werden auf Ihren Computer kopiert.
+Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.</value> 
@@ -307,6 +311,14 @@ Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informati
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Automatisch ausgeschlossen</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Bitte wählen Sie einen leeren Ordner, der sich nicht im Stammverzeichnis eines Laufwerks befindet.
+
+Dieser Ordner darf nicht in einem anderen Synchronisationsordner enthalten sein und darf keine Unterordner für die Synchronisation enthalten.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Dieser Ordner kann nicht ausgewählt werden</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Regel hinzufügen</value> 
   </data> 
@@ -401,11 +413,11 @@ Wenden Sie sich an Ihren Administrator, um den Dienst zu reaktivieren.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>Sie wurden abgemeldet</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>Das für diese Anmeldung verwendete Konto stimmt nicht mit dem Konto für dieses kDrive überein.
 Bitte melden Sie sich erneut mit der richtigen E-Mail-Adresse an %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Dieses Konto stimmt nicht überein</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
@@ -430,7 +442,7 @@ Bitte versuchen Sie es in ein paar Minuten erneut.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Geben Sie Ihr Passwort ein</value> 
   </data> 
-  <data name="errFrobiddenCharDescription" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von Ihrem Gerät nicht unterstützt werden</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
@@ -478,7 +490,7 @@ Bitte versuchen Sie es in ein paar Minuten erneut.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Drei Tage lang</value> 
   </data> 
-  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Nicht unterstützte Zeichen</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
@@ -882,6 +894,10 @@ Vergewissern Sie sich, dass das Laufwerk richtig angeschlossen, entsperrt und vo
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Online gespeichert</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien bleiben in der Cloud und nehmen keinen Platz auf Ihrem Computer ein.
+Für den Zugriff ist eine Internetverbindung erforderlich.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Sync-Fehler</value> 

@@ -86,8 +86,8 @@ namespace Infomaniak.kDrive.Pages
 
         private void DisplayUserMismatchContent()
         {
-            TitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMissmatchTitlet");
-            SubtitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMissmatchDescription", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));
+            TitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMismatchTitle");
+            SubtitleTextBlock.Text = Localizer.Instance.GetString("driveLoggingErrorUserMismatchDescription", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));
         }
     }
 }

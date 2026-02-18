@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ Puede acceder a sus sincronizaciones avanzadas desde el selector de unidades de 
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Disponible sin conexión</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Tus archivos se copian en tu ordenador.
+Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Obtenga acceso anticipado a las nuevas versiones de la aplicación antes de que se lancen al público en general y ayude a mejorar la aplicación compartiendo con nosotros sus ideas de mejora.</value> 
@@ -307,6 +311,14 @@ El código fuente de esta aplicación puede revisarse, la información recopilad
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Excluidos automáticamente</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Seleccione una carpeta vacía que no esté en la raíz de una unidad.
+
+Esta carpeta no debe estar incluida en ninguna otra carpeta de sincronización y no debe contener ninguna subcarpeta de sincronización.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>No se puede seleccionar esta carpeta</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Añadir regla</value> 
   </data> 
@@ -401,11 +413,11 @@ Póngase en contacto con su administrador para reactivar el servicio.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>Ha sido desconectado</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>La cuenta utilizada para este inicio de sesión no coincide con la de este kDrive.
 Por favor, inicie sesión de nuevo con la dirección de correo electrónico correcta %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Esta cuenta no coincide</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
@@ -430,7 +442,7 @@ Por favor, inténtelo de nuevo en unos minutos.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Introduzca su contraseña</value> 
   </data> 
-  <data name="errFrobiddenCharDescription" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>El nombre de este archivo contiene uno o más caracteres que no son compatibles con su dispositivo</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
@@ -478,7 +490,7 @@ Por favor, inténtelo de nuevo en unos minutos.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Durante tres días</value> 
   </data> 
-  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Carácter no admitido</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
@@ -882,6 +894,10 @@ Asegúrese de que está correctamente conectada, desbloqueada y accesible desde 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Almacenado en línea</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Tus archivos permanecen en la nube y no ocupan espacio en tu ordenador.
+Se requiere conexión a Internet para acceder.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Error de sincronización</value> 

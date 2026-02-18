@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 16 Feb 2026 12:14:56 +0100 
+  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -137,6 +137,10 @@ You can access your advanced synchronizations from the drive selector on the hom
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Available offline</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Your files are copied to your computer. 
+You can open them at any time, even without Internet access.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.</value> 
@@ -307,6 +311,14 @@ The source code of this application can be reviewed, the collected information i
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Automatically excluded</value> 
   </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Please select an empty folder that is not in the root of a drive.
+
+This folder must not be included in any other synchronization folder and must not contain any synchronization subfolders.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>This folder cannot be selected</value> 
+  </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
     <value>Add rule</value> 
   </data> 
@@ -401,11 +413,11 @@ Contact your administrator to reactivate the service.</value>
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
     <value>You have been disconnected</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchDescription" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
     <value>The account used for this sign-in does not match the one for this kDrive.
 Please sign in again with the correct email address %@</value> 
   </data> 
-  <data name="driveLoggingErrorUserMissmatchTitle" xml:space="preserve"> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>This account does not match</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
@@ -430,7 +442,7 @@ Please try again in a few minutes.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Enter your password</value> 
   </data> 
-  <data name="errFrobiddenCharDescription" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
@@ -478,7 +490,7 @@ Please try again in a few minutes.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>For three days</value> 
   </data> 
-  <data name="frobiddenCharErrorTitle" xml:space="preserve"> 
+  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Unsupported character</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
@@ -882,6 +894,10 @@ Make sure it is properly connected, unlocked, and accessible from your computer.
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Stored online</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Your files stay in the cloud and don’t take up space on your computer.
+Internet connection required for access.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Sync error</value> 

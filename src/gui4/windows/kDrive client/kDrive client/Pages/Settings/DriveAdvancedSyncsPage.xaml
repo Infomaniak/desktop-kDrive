@@ -68,6 +68,7 @@
                             <toolKit:SettingsCard Grid.Row="1"
                                                   Grid.Column="1"
                                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('storedOnline')}"
+                                                  Description="{x:Bind kDrive:Localizer.Instance.GetString('storedOnlineDescription')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -87,6 +88,7 @@
                             <toolKit:SettingsCard Grid.Column="1"
                                                   Grid.Row="2"
                                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('availableOffline')}"
+                                                  Description="{x:Bind kDrive:Localizer.Instance.GetString('availableOfflineDescription')}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   Padding="0" />
@@ -154,7 +156,7 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settings')}"
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource TitleTextBlockStyle}" />
 
             <BreadcrumbBar x:Name="NavBar"
