@@ -467,14 +467,14 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     Poco::JSON::Array accountArray;
     Poco::JSON::Object account1;
-    (void) account1.set("accountId", 1111);
-    (void) account1.set("accountName", "YWNjb3VudDE=");
+    (void) account1.set("id", 1111);
+    (void) account1.set("name", "YWNjb3VudDE=");
     (void) account1.set("dbId", 1);
     (void) account1.set("userDbId", 1);
     (void) accountArray.add(account1);
     Poco::JSON::Object account2;
-    (void) account2.set("accountId", 2222);
-    (void) account2.set("accountName", "YWNjb3VudDI=");
+    (void) account2.set("id", 2222);
+    (void) account2.set("name", "YWNjb3VudDI=");
     (void) account2.set("dbId", 2);
     (void) account2.set("userDbId", 1);
     (void) accountArray.add(account2);
