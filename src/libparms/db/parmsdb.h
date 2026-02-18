@@ -163,11 +163,11 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
         enum class FieldFilter {
-            KeepAllFields = 0,
-            SkipSyncDbId = 1
+            AllFields = 0,
+            WhereSyncDbId = 1
         };
 
-        bool bindQueryToSyncValues(const Sync &sync, const char *requestId, FieldFilter filter = FieldFilter::KeepAllFields);
+        bool bindQueryToSyncValues(const Sync &sync, const char *requestId, FieldFilter filter = FieldFilter::AllFields);
         bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
 
 #if defined(KD_MACOS)

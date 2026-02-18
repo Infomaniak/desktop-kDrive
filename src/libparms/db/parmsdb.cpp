@@ -2192,9 +2192,10 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
 
     uint16_t fieldIndex = 1;
 
-    if (filter != FieldFilter::SkipSyncDbId) {
+    if (filter != FieldFilter::WhereSyncDbId) {
         LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
     }
+
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.driveDbId()));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localPath().native()));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localNodeId()));
@@ -2216,6 +2217,10 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.cursor));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.timeStamp));
 
+    if (filter == FieldFilter::WhereSyncDbId) {
+        LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
+    }
+
     int errId = -1;
     if (std::string error; !queryExec(requestId, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << requestId << ". Error: " << error);
@@ -2229,7 +2234,7 @@ bool ParmsDb::bindMutatingQueryToSyncValues(const Sync &sync, const char *reques
     found = false;
     const std::scoped_lock lock(_mutex);
 
-    if (const bool result = bindQueryToSyncValues(sync, requestId, FieldFilter::SkipSyncDbId); !result) return false;
+    if (const bool result = bindQueryToSyncValues(sync, requestId, FieldFilter::WhereSyncDbId); !result) return false;
 
     if (numRowsAffected() == 1) {
         found = true;
