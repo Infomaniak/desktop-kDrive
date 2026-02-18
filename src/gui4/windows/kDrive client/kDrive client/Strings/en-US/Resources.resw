@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 09:22:54 +0100 
+  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -442,7 +442,7 @@ Please try again in a few minutes.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Enter your password</value> 
   </data> 
-  <data name="errFrobiddenCharDescription" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
