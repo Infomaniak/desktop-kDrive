@@ -64,6 +64,7 @@ clang-format -i <file>
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
+- Test infrastructure overview: `test/` → [see AGENTS.md](test/AGENTS.md)
 - Sync engine tests: `test/libsyncengine/` → [see AGENTS.md](test/libsyncengine/AGENTS.md)
 
 ### Infrastructure
