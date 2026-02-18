@@ -17,7 +17,7 @@
             <!-- List -->
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Column="0"
+        <TextBlock Grid.Row="0"
                    Style="{ThemeResource SubtitleTextBlockStyle}"
                    Text="{x:Bind Header, Mode=OneWay}" />
 

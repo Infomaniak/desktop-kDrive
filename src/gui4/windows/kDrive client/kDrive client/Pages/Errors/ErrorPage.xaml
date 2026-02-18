@@ -11,9 +11,15 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
 
-    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
+            <!-- Breadcrumb -->
+            <RowDefinition Height="Auto" />
             <!-- Files -->
             <RowDefinition Height="auto" />
             <!-- SyncDir -->
@@ -21,15 +27,47 @@
             <!-- Other -->
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        
-        
 
-        <errors:ErrorList Grid.Row="0"
-                          Header="Fichiers à vérifier"
-                          Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}" />
+        <!-- Custom Breadcrumb -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <errors:ErrorList Grid.Row="2"
-                          Header="Autres"
-                          Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}" />
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities')}"
+                       FontSize="{StaticResource TitleTextBlockFontSize}"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       PointerPressed="BreadcrumbActivity_Click" />
+
+            <FontIcon Grid.Column="1"
+                      Glyph="&#xE76C;"
+                      Width="24"
+                      FontSize="16"
+                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}"
+                      VerticalAlignment="Bottom" />
+
+            <TextBlock Grid.Column="2"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('errorPageTitle')}"
+                       FontSize="{StaticResource TitleTextBlockFontSize}"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                       VerticalAlignment="Center"
+                       PointerPressed="BreadcrumbActivity_Click" />
+        </Grid>
+
+        <errors:ErrorList Grid.Row="1"
+                          Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
+                          Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
+                          Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+        <errors:ErrorList Grid.Row="3"
+                          Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
+                          Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
+                          Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
     </Grid>
 </Page>

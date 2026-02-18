@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
+  Exported at: Wed, 18 Feb 2026 17:40:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -445,6 +445,17 @@ Réessayez dans quelques minutes.</value>
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Le nom de ce fichier contient un ou plusieurs caractères qui ne sont pas pris en charge par votre appareil</value> 
   </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Fichiers à vérifier</value> 
+    <comment>Header for the error list section containing files that need verification</comment> 
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Autres</value> 
+    <comment>Header for the error list section containing other errors</comment> 
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Erreurs à corriger</value> 
+  </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value> 
   </data> 
@@ -614,8 +625,7 @@ Réessayez dans quelques minutes.</value>
     <value>Lien copié dans le presse-papiers</value> 
   </data> 
   <data name="localFileAccessDescription" xml:space="preserve"> 
-    <value>Impossible d’accéder à ce fichier sur votre ordinateur.
-Assurez-vous qu’il existe toujours et que vous avez la permission d’y accéder.</value> 
+    <value>Impossible d'accéder à ce fichier sur votre ordinateur. Vérifiez qu'il existe toujours et que vous disposez des droits pour y accéder.</value> 
   </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Fichier inaccessible</value> 

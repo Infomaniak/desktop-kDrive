@@ -26,8 +26,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
 
         <!-- Title -->
@@ -85,7 +85,7 @@
                 Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}"
+                Margin="{StaticResource Infomaniak.Style.Thickness.Left.XL}"
                 Content="{x:Bind ActionText}"
                 Click="ActionButton_Click"
                 Visibility="{x:Bind ActionText, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />

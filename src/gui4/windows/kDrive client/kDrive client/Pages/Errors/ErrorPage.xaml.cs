@@ -34,6 +34,11 @@ namespace Infomaniak.kDrive.Pages.Errors
             ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
         }
 
+        private void BreadcrumbActivity_Click(object sender, object e)
+        {
+            Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
+            Frame.Navigate(typeof(ActivityPage));
+        }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
         {
