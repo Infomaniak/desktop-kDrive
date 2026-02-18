@@ -259,4 +259,51 @@ SyncPath Utility::getTrashPath() {
     return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
+bool Utility::registerLoginRedirection(const std::string &appName) {
+    // Create file .desktop
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return false;
+    }
+
+    const auto urlSchemeDirPath = SyncPath(std::string(homePathEnv) + "/.local/share/applications");
+    const auto urlSchemeFilePath = urlSchemeDirPath / (appName + ".desktop");
+
+    IoError ioError = IoError::Unknown;
+    if (!std::filesystem::exists(urlSchemeDirPath) && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
+        LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(urlSchemeDirPath, ioError));
+        return false;
+    }
+
+    std::ofstream urlSchemeFile{urlSchemeFilePath};
+    if (!urlSchemeFile.is_open()) {
+        LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(urlSchemeFilePath));
+        return false;
+    }
+
+    SyncPath execPath;
+    const std::string appImageEnv = KDC::CommonUtility::envVarValue("APPIMAGE");
+    if (!appImageEnv.empty()) {
+        execPath = SyncPath(appImageEnv);
+    } else {
+        execPath = KDC::CommonUtility::getAppWorkingDir() / appName;
+    }
+    urlSchemeFile << "[Desktop Entry]" << std::endl;
+    urlSchemeFile << "Name=" << appName << std::endl;
+    urlSchemeFile << "Exec=" << execPath.native() << " %u" << std::endl;
+    urlSchemeFile << "Type=Application" << std::endl;
+    urlSchemeFile << "Terminal=false" << std::endl;
+    urlSchemeFile << "MimeType=x-scheme-handler/kdrive;" << std::endl;
+    urlSchemeFile.close();
+
+    // Update database
+    system("update-desktop-database ~/.local/share/applications/");
+
+    // Register scheme
+    system("xdg-mime default kDrive.desktop x-scheme-handler/kdrive");
+
+    return true;
+}
+
 } // namespace KDC

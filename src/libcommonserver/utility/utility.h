@@ -180,8 +180,6 @@ struct COMMONSERVER_EXPORT Utility {
         static void addLegacySyncRootKeys(const std::wstring &clsid, const SyncPath &folderPath, bool show);
         static void removeLegacySyncRootKeys(const std::wstring &clsid);
 
-        static void registerLoginRedirection();
-
         // Possibly refactor to share code with UnixTimevalToFileTime in c_time.c
         static void unixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
@@ -204,6 +202,8 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool getLinuxDesktopType(std::string &currentDesktop);
         static SyncPath getTrashPath();
+
+        static bool registerLoginRedirection(const std::string &appName);
 
         // Format utility functions
         static std::wstring formatStdError(const std::error_code &ec);

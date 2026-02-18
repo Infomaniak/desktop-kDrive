@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -501,7 +501,7 @@ void AppServer::init() {
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
 
-    Utility::registerLoginRedirection();
+    Utility::registerLoginRedirection(Theme::instance()->appName());
 
     // Start client
     if (!startClient()) {
@@ -3478,6 +3478,7 @@ void AppServer::parseOptions(const QStringList &options) {
     it.next(); // File name
     while (it.hasNext()) {
         QString option = it.next();
+        LOG_INFO(_logger, "option: " << option.toStdString());
         if (option.startsWith(REDIRECT_URI)) {
             const QUrl url(option);
 
