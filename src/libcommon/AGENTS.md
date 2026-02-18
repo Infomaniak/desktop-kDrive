@@ -24,7 +24,6 @@ Every enum lives in `namespace KDC`, in `cstypes.h` or `types.h`.
 Rules that **must** be followed:
 - Always add `EnumEnd` as the last sentinel — used for iteration and bounds checking.
 - Add a `toString(EnumType)` overload declared in `types.h`, defined in `utility/utility.cpp`.
-- Use `toStringWithCode(e)` in log macros — produces `"Name(42)"` format.
 
 Key enums to know:
 - `ExitCode` / `ExitCause` — returned by every fallible operation (see `ExitInfo` below)
