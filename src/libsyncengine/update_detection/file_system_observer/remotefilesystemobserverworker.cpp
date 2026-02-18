@@ -87,7 +87,7 @@ void RemoteFileSystemObserverWorker::execute() {
         for (const auto &remoteDirId: mainDirectoriesRemoteIds) {
             exitInfo = processEvents(remoteDirId);
             if (!exitInfo) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << " ExitInfo: " << exitInfo);
+                LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << ", ExitInfo: " << exitInfo);
                 break;
             }
         }
@@ -150,9 +150,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
 
     // Get last listing cursor used
     int64_t timestamp = 0;
-    // ParmsDb should be refactored to store multiple cursors
     if (const auto exitInfo = listingCursor(remoteDirId, _listingCursorMap[remoteDirId], timestamp); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor: " << exitInfo);
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
         return exitInfo;
     }
 
@@ -895,31 +894,31 @@ std::vector<RemoteFileSystemObserverWorker::RemoteNodeId> RemoteFileSystemObserv
 
 ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId, Cursor &cursor, TimeStamp timeStamp) {
     if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
-        _syncPal->userPrivateFolderCursor(cursor, timeStamp);
-    } else if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
-        _syncPal->commonDocumentsFolderCursor(cursor, timeStamp);
-    } else if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
-        _syncPal->sharedFolderCursor(cursor, timeStamp);
-    } else {
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return _syncPal->userPrivateFolderCursor(cursor, timeStamp);
+    }
+    if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
+        return _syncPal->commonDocumentsFolderCursor(cursor, timeStamp);
+    }
+    if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
+        return _syncPal->sharedFolderCursor(cursor, timeStamp);
     }
 
-    return ExitCode::Ok;
+    return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
 ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor,
                                                            const TimeStamp timeStamp) {
     if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
         _syncPal->setUserPrivateFolderCursor(cursor, timeStamp);
-    } else if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
+    }
+    if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
         _syncPal->setCommonDocumentsFolderCursor(cursor, timeStamp);
-    } else if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
+    }
+    if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
         _syncPal->setSharedFolderCursor(cursor, timeStamp);
-    } else {
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    return ExitCode::Ok;
+    return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
 } // namespace KDC
