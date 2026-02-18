@@ -664,7 +664,7 @@ class CacheDirectoryHandler {
             
             bool exists = false;
             auto ioError = IoError::Unknown;
-            if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
                                                 CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
             }
