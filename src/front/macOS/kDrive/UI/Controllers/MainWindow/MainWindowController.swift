@@ -29,6 +29,7 @@ final class MainWindowController: NSWindowController {
     }
 
     @LazyInjectService private var router: MainWindowRouter
+    @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
 
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
@@ -47,6 +48,7 @@ final class MainWindowController: NSWindowController {
         window.setFrameAutosaveName(WindowConstants.frameName)
 
         observeRouter()
+        observeXPConnectionState()
     }
 
     @available(*, unavailable)
@@ -61,10 +63,50 @@ final class MainWindowController: NSWindowController {
             }
     }
 
+    private func observeXPConnectionState() {
+        xpcConnectionProvider.guiConnectionStatePublisher
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.navigateAfterPreloading(state: state)
+            }
+    }
+
+    private func navigateAfterPreloading(state: XPCConnectionState) {
+        switch state {
+        case .notConnected:
+            router.navigate(to: .preloading(isShowingError: false))
+        case .error:
+            router.navigate(to: .preloading(isShowingError: true))
+        case .connected:
+            Task {
+                let route = await guessBestRouteWhenXPCIsConnected()
+                router.navigate(to: route)
+            }
+        }
+    }
+
+    private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
+        guard let connectedUsers = try? await UserJobs().userInfoList().filter({ $0.isConnected }) else {
+            return .onboarding()
+        }
+
+        let hasConnectedUser = connectedUsers.isEmpty == false
+
+        if UserDefaults.standard.isFirstLaunch {
+            UserDefaults.standard.shouldPresentOnboarding = !hasConnectedUser
+            UserDefaults.standard.isFirstLaunch = false
+        }
+
+        if hasConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
+            return .mainWindow()
+        } else {
+            return .onboarding()
+        }
+    }
+
     private func onRouteChange(route: WindowRoute) {
         switch route {
-        case .preloading:
-            setViewController(PreloadingViewController())
+        case .preloading(let isShowingError):
+            setViewController(PreloadingViewController(isShowingError: isShowingError))
         case .onboarding(let user, let onboardingStep):
             setViewController(OnboardingViewController(user: user, initialStep: onboardingStep))
         case .mainWindow(let tab):

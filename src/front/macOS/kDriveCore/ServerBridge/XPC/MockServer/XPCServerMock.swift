@@ -16,10 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 import InfomaniakDI
 import OrderedCollections
-import Combine
 
 public struct RequestMock: Codable, Sendable {
     public let id: Int32

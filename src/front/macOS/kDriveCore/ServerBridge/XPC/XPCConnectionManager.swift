@@ -24,7 +24,7 @@ import InfomaniakDI
     @InjectService var signalHandler: XPCSignalHandlerProtocol
     @LazyInjectService var coherentCache: CoherentCache
 
-    @Published public private(set) var guiConnectionState: XPCConnectionState = .notConnected
+    @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
     let machServiceName: String
 
