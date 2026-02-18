@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.Errors.ErrorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      mc:Ignorable="d">
+
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
+        <Grid.RowDefinitions>
+            <!-- Files -->
+            <RowDefinition Height="auto" />
+            <!-- SyncDir -->
+            <RowDefinition Height="auto" />
+            <!-- Other -->
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        
+        
+
+        <errors:ErrorList Grid.Row="0"
+                          Header="Fichiers à vérifier"
+                          Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}" />
+
+        <errors:ErrorList Grid.Row="2"
+                          Header="Autres"
+                          Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}" />
+    </Grid>
+</Page>

@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(Pages.MaintenanceErrorPage),
                 typeof(Pages.AsleepErrorPage)
             } },
-            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
+            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.Errors.ErrorPage) } },
             { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage), typeof(Pages.Settings.TemplateExclusionPage) } },
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
         };
