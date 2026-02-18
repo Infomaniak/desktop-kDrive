@@ -19,6 +19,7 @@
 import Foundation
 import InfomaniakDI
 import OrderedCollections
+import Combine
 
 public struct RequestMock: Codable, Sendable {
     public let id: Int32
@@ -30,7 +31,9 @@ public struct ReplyMock: Codable, Sendable {
     public let num: RequestNum
 }
 
-public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
+public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvider {
+    public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
     @InjectService var signalHandler: XPCSignalHandlerProtocol
 
     let encoder = JSONEncoder()

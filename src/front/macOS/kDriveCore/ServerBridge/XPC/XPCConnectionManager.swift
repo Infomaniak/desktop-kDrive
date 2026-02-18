@@ -16,12 +16,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 import InfomaniakDI
 
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
     @InjectService var signalHandler: XPCSignalHandlerProtocol
     @LazyInjectService var coherentCache: CoherentCache
+
+    @Published public private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
     let machServiceName: String
 
@@ -155,6 +158,8 @@ import InfomaniakDI
             throw XPCError.noLoginItemAgentConnection
         }
 
+        guiConnectionState = .notConnected
+
         IKLogger.xpc.log("[KD] Setup connection with app")
         appConnection = NSXPCConnection(listenerEndpoint: endpoint)
 
@@ -172,6 +177,7 @@ import InfomaniakDI
             appConnection?.invalidate()
             appConnection = nil
             scheduleRetryToConnectToServer()
+            guiConnectionState = .notConnected
         }
 
         appConnection?.invalidationHandler = { [weak self] in
@@ -180,6 +186,7 @@ import InfomaniakDI
             appConnection?.invalidate()
             appConnection = nil
             scheduleRetryToConnectToServer()
+            guiConnectionState = .error
         }
 
         appConnection?.resume()
@@ -187,6 +194,9 @@ import InfomaniakDI
         Task {
             IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
             try await coherentCache.clearAndRefresh()
+            await MainActor.run {
+                guiConnectionState = .connected
+            }
         }
     }
 }

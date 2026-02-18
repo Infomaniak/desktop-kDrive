@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 @testable import kDriveCore
 import Testing
 
@@ -46,6 +47,8 @@ class MCKXPCGuiProtocol: XPCGuiProtocol {
 }
 
 struct MCKXPCConnectionProvider: XPCConnectionProvider {
+    var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
     let payloadFileName: String
 
     var guiConnection: XPCGuiProtocol {
