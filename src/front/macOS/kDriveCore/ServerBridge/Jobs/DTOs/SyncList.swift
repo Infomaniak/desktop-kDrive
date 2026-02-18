@@ -48,6 +48,10 @@ struct SyncStatusResponse: Codable, Sendable {
     let syncStatus: KDC.SyncFileStatus
 }
 
+struct OfflineFilesSizeResponse: Codable, Sendable {
+    let size: UInt64
+}
+
 public struct SyncInfo: Codable, Sendable {
     public let dbId: Int32
     public let driveDbId: Int32
