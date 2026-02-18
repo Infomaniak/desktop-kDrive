@@ -62,6 +62,9 @@ class PARMS_EXPORT Sync {
         inline void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         inline const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
 
+        CursorStore getCursorStore() const;
+        void setCursorStore(const CursorStore &cursors);
+
         inline void setUserPrivateFolderCursor(const Cursor &listingCursor, TimeStamp timestamp) {
             _cursorStore.userPrivateFolderCursor = {listingCursor, timestamp};
         }

@@ -151,7 +151,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
     // Get last listing cursor used
     int64_t timestamp = 0;
     // ParmsDb should be refactored to store multiple cursors
-    if (const auto exitInfo = _syncPal->listingCursor(_listingCursorMap[remoteDirId], timestamp); !exitInfo) {
+    if (const auto exitInfo = listingCursor(remoteDirId, _listingCursorMap[remoteDirId], timestamp); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor: " << exitInfo);
         return exitInfo;
     }
@@ -240,7 +240,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
             LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _listingCursorMap[remoteDirId]);
             const auto cursorTimestamp = static_cast<int64_t>(time(0));
             // ParmsDb should be refactored to store multiple cursors.
-            exitInfo = _syncPal->setListingCursor(_listingCursorMap[remoteDirId], cursorTimestamp);
+            exitInfo = saveListingCursor(remoteDirId, _listingCursorMap[remoteDirId], cursorTimestamp);
             if (!exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor: " << exitInfo);
                 break;
@@ -396,7 +396,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _listingCursorMap[dirId] = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _listingCursorMap[dirId]);
             const auto cursorTimestamp = static_cast<int64_t>(time(0));
-            if (const ExitInfo exitInfo = _syncPal->setListingCursor(_listingCursorMap[dirId], cursorTimestamp); !exitInfo) {
+            if (const ExitInfo exitInfo = saveListingCursor(dirId, _listingCursorMap[dirId], cursorTimestamp); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
 
                 return exitInfo;
@@ -905,5 +905,21 @@ ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor,
+                                                           const TimeStamp timeStamp) {
+    if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
+        _syncPal->setUserPrivateFolderCursor(cursor, timeStamp);
+    } else if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
+        _syncPal->setCommonDocumentsFolderCursor(cursor, timeStamp);
+    } else if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
+        _syncPal->setSharedFolderCursor(cursor, timeStamp);
+    } else {
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+    }
+
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

@@ -154,7 +154,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool createAppState();
         bool prepareAppState();
 
-        void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+        void fillSyncWithQueryResult(Sync &sync, const char *requestId, const std::optional<DriveDbId> &driveDbId = {});
 
         bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
 
@@ -162,7 +162,6 @@ class PARMS_EXPORT ParmsDb : public Db {
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
-        static CursorStore extractCursors(const Sync &sync);
         bool bindQueryToSyncValues(const Sync &sync, const char *requestId);
         bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
 

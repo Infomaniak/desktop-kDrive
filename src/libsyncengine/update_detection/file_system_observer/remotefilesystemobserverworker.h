@@ -92,6 +92,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         CursorMap _listingCursorMap;
         Cursor _longPollCursor;
         ExitInfo listingCursor(const NodeId &remoteDirId, Cursor &cursor, TimeStamp timeStamp);
+        ExitInfo saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor, const TimeStamp timeStamp);
 
         NodeSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;

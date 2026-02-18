@@ -2183,26 +2183,10 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
     return true;
 }
 
-CursorStore ParmsDb::extractCursors(const Sync &sync) {
-    CursorData userPrivateFolderCursorData;
-    sync.userPrivateFolderCursor(userPrivateFolderCursorData.cursor, userPrivateFolderCursorData.timeStamp);
-
-    CursorData commonDocumentsFolderCursorData;
-    sync.commonDocumentsFolderCursor(commonDocumentsFolderCursorData.cursor, commonDocumentsFolderCursorData.timeStamp);
-
-    CursorData sharedFolderCursorData;
-    sync.commonDocumentsFolderCursor(sharedFolderCursorData.cursor, sharedFolderCursorData.timeStamp);
-
-    CursorData longPollCursorData;
-    sync.longPollCursor(longPollCursorData.cursor, longPollCursorData.timeStamp);
-
-    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData, longPollCursorData};
-}
-
 bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId) {
     const std::scoped_lock lock(_mutex);
 
-    const auto &cursorStore = extractCursors(sync);
+    const auto &cursorStore = sync.getCursorStore();
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
     LOG_IF_FAIL(queryBindValue(requestId, 1, sync.dbId()));
@@ -2333,16 +2317,23 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
     return true;
 }
 
-void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
+void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const std::optional<DriveDbId> &driveDbId) {
     assert(std::string(requestId) == std::string(SELECT_SYNC_BY_PATH_REQUEST_ID) ||
-           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
+           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_ALL_SYNCS_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 
     int intResult = -1;
     LOG_IF_FAIL(queryIntValue(requestId, 0, intResult));
     sync.setDbId(intResult);
 
-    LOG_IF_FAIL(queryIntValue(requestId, 1, intResult));
-    sync.setDriveDbId(intResult);
+    if (driveDbId) {
+        assert(std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+        sync.setDriveDbId(*driveDbId);
+    } else {
+        LOG_IF_FAIL(queryIntValue(requestId, 1, intResult));
+        sync.setDriveDbId(intResult);
+    }
 
     SyncName syncNameResult;
     LOG_IF_FAIL(querySyncNameValue(requestId, 2, syncNameResult));
@@ -2379,11 +2370,22 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
     LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    LOG_IF_FAIL(queryStringValue(requestId, 13, strResult));
+    // Cursors
+    CursorStore cursorStore;
 
-    int64_t int64Result;
-    LOG_IF_FAIL(queryInt64Value(requestId, 14, int64Result));
-    sync.setListingCursor(strResult, int64Result);
+    LOG_IF_FAIL(queryStringValue(requestId, 13, cursorStore.userPrivateFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, 14, cursorStore.userPrivateFolderCursor.timeStamp));
+
+    LOG_IF_FAIL(queryStringValue(requestId, 15, cursorStore.commonDocumentsFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, 16, cursorStore.commonDocumentsFolderCursor.timeStamp));
+
+    LOG_IF_FAIL(queryStringValue(requestId, 17, cursorStore.sharedFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, 18, cursorStore.sharedFolderCursor.timeStamp));
+
+    LOG_IF_FAIL(queryStringValue(requestId, 19, cursorStore.longPollCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, 20, cursorStore.longPollCursor.timeStamp));
+
+    sync.setCursorStore(cursorStore);
 }
 
 bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
@@ -2431,116 +2433,56 @@ bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
 }
 
 bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
+    const char *requestId = SELECT_ALL_SYNCS_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
     bool found;
     for (;;) {
-        if (!queryNext(SELECT_ALL_SYNCS_REQUEST_ID, found)) {
-            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNCS_REQUEST_ID);
+        if (!queryNext(requestId, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
-        if (!found) {
-            break;
-        }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
-        int driveDbId;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
-        SyncName localPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
-        std::string localNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, localNodeId));
-        SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetPath));
-        std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, targetNodeId));
-        SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, dbPath));
-        int paused;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, paused));
-        int supportVfs;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, supportVfs));
-        int virtualFileMode;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, virtualFileMode));
-        int notificationsDisabled;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, notificationsDisabled));
-        int hasFullyCompleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, hasFullyCompleted));
-        std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, navigationPaneClsid));
-        std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursor));
-        int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 14, listingCursorTimestamp));
+        if (!found) break;
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
-                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
-                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
-                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp));
+
+        Sync sync;
+        fillSyncWithQueryResult(sync, requestId);
+        syncList.push_back(sync);
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
+
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
 
 bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
+    const char *requestId = SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID;
     const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, driveDbId));
-    bool found;
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, driveDbId));
+    bool found = false;
     for (;;) {
-        if (!queryNext(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, found)) {
-            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID);
+        if (!queryNext(requestId, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
-        if (!found) {
-            break;
-        }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
-        SyncName localPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
-        std::string localNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, localNodeId));
-        SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetPath));
-        std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, targetNodeId));
-        SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, dbPath));
-        int paused;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, paused));
-        int supportVfs;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, supportVfs));
-        int virtualFileMode;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, virtualFileMode));
-        int notificationsDisabled;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, notificationsDisabled));
-        int hasFullyCompleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, hasFullyCompleted));
-        std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, navigationPaneClsid));
-        std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursor));
-        int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
+        if (!found) break;
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
-                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
-                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
-                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp));
+        Sync sync;
+        fillSyncWithQueryResult(sync, requestId, driveDbId);
+
+        syncList.push_back(sync);
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }

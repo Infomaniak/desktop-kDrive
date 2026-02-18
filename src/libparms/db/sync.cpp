@@ -48,4 +48,27 @@ Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, cons
     _navigationPaneClsid(navigationPaneClsid),
     _cursorStore(std::move(cursorStore)) {}
 
+CursorStore Sync::getCursorStore() const {
+    CursorData userPrivateFolderCursorData;
+    userPrivateFolderCursor(userPrivateFolderCursorData.cursor, userPrivateFolderCursorData.timeStamp);
+
+    CursorData commonDocumentsFolderCursorData;
+    commonDocumentsFolderCursor(commonDocumentsFolderCursorData.cursor, commonDocumentsFolderCursorData.timeStamp);
+
+    CursorData sharedFolderCursorData;
+    sharedFolderCursor(sharedFolderCursorData.cursor, sharedFolderCursorData.timeStamp);
+
+    CursorData longPollCursorData;
+    longPollCursor(longPollCursorData.cursor, longPollCursorData.timeStamp);
+
+    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData, longPollCursorData};
+}
+
+void Sync::setCursorStore(const KDC::CursorStore &cursors) {
+    setUserPrivateFolderCursor(cursors.userPrivateFolderCursor.cursor, cursors.userPrivateFolderCursor.timeStamp);
+    setCommonDocumentsFolderCursor(cursors.commonDocumentsFolderCursor.cursor, cursors.commonDocumentsFolderCursor.timeStamp);
+    setSharedFolderCursor(cursors.sharedFolderCursor.cursor, cursors.sharedFolderCursor.timeStamp);
+    setLongPollCursor(cursors.longPollCursor.cursor, cursors.longPollCursor.timeStamp);
+}
+
 } // namespace KDC
