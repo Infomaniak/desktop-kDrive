@@ -121,9 +121,21 @@ else()
 endif()
 
 #####
+## New Native Swift GUI Option (macOS only)
+# This option enables the new native Swift-based GUI instead of Qt GUI
+if(APPLE)
+    option(BUILD_NEW_MAC_GUI "Build new native Swift GUI (src/front/macOS)" ON)
+endif()
+
+#####
 ## handle BUILD_KDRIVE_OSX_BUNDLE
 # BUILD_KDRIVE_OSX_BUNDLE was not initialized OR set to true on OSX
-if(APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
+# Note: Disabled when building new native Swift GUI (BUILD_NEW_MAC_GUI)
+if(APPLE AND BUILD_NEW_MAC_GUI)
+    # New Swift GUI mode - disable old Qt bundle
+    set(BUILD_KDRIVE_OSX_BUNDLE OFF)
+elseif(APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
+    # Legacy Qt GUI mode
     set(BUILD_KDRIVE_OSX_BUNDLE ON)
     set(KDRIVE_OSX_BUNDLE "${APPLICATION_NAME}.app")
 
@@ -160,8 +172,13 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 # this option needs to be refactored out BUILD_CLIENT needs to be ON.
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
-# this option adds src/gui to the subdirectories when building the src folder 
-option(BUILD_GUI "BUILD_GUI" ON)
+# this option adds src/gui to the subdirectories when building the src folder
+# Note: Disabled on macOS when building new native Swift GUI (BUILD_NEW_MAC_GUI)
+if(APPLE AND BUILD_NEW_MAC_GUI)
+    option(BUILD_GUI "BUILD_GUI" OFF)
+else()
+    option(BUILD_GUI "BUILD_GUI" ON)
+endif()
 
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
@@ -233,6 +250,30 @@ endif()
 
 if(BUILD_EXTENSIONS)
     add_subdirectory(extensions)
+endif()
+
+# Build new native Swift GUI for macOS
+if(APPLE AND BUILD_NEW_MAC_GUI)
+    message(STATUS "Configuring build for new native Swift GUI")
+    
+    # Custom target to build the Swift GUI via xcodebuild
+    add_custom_target(kdrive_swift_gui ALL
+        xcodebuild -project ${CMAKE_SOURCE_DIR}/src/front/macOS/kDrive.xcodeproj
+            -scheme kDrive
+            -configuration ${CMAKE_BUILD_TYPE}
+            -derivedDataPath ${CMAKE_BINARY_DIR}/swift-gui
+            BUILD_DIR=${CMAKE_BINARY_DIR}/swift-gui/Build/Products
+        COMMENT "Building native Swift GUI for macOS"
+        VERBATIM)
+    
+    # Set the new GUI bundle name for installation
+    set(KDRIVE_SWIFT_GUI_BUNDLE "${CMAKE_BINARY_DIR}/swift-gui/Build/Products/${CMAKE_BUILD_TYPE}/kDrive.app")
+    
+    # Install the new GUI app bundle
+    install(DIRECTORY ${KDRIVE_SWIFT_GUI_BUNDLE}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/Applications
+        USE_SOURCE_PERMISSIONS
+        OPTIONAL)
 endif()
 
 if(BUILD_UNINSTALLER)
