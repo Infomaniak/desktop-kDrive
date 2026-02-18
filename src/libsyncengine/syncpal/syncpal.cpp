@@ -901,7 +901,7 @@ ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, TimeSt
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.setUserPrivateFolderCursor(std::move(listingCursor), timestamp);
+    sync.setUserPrivateFolderCursor(listingCursor, timestamp);
 
     return updateSync(sync);
 }
