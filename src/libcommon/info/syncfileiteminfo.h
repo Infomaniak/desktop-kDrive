@@ -62,6 +62,8 @@ class SyncFileItemInfo {
         inline void setSize(const int64_t newSize) { _size = newSize; }
         inline int progress() const { return _progress; }
         inline void setProgress(const int newProgress) { _progress = newProgress; }
+        inline UniqueId operationId() const { return _operationId; }
+        inline void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
 
         friend QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info);
@@ -86,6 +88,7 @@ class SyncFileItemInfo {
         QString _error;
         int64_t _size{0};
         int _progress{0}; // %
+        UniqueId _operationId{0};
 };
 
 } // namespace KDC
