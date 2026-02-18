@@ -60,6 +60,7 @@ clang-format -i <file>
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
 - GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
 - GUI (macOS Swift redesign for v4): `src/front/macOS/` → [see AGENTS.md](src/front/macOS/AGENTS.md)
+- GUI (Windows WinUI3 redesign for v4): `src/gui4/` → [see AGENTS.md](src/gui4/AGENTS.md)
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
