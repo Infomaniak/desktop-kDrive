@@ -23,8 +23,8 @@
 
 static const auto accountInfoDbId = "dbId";
 static const auto accountInfoUserDbId = "userDbId";
-static const auto accountInfoAccountId = "accountId";
-static const auto accountInfoName = "accountName";
+static const auto accountInfoId = "id";
+static const auto accountInfoName = "name";
 
 namespace KDC {
 
@@ -35,14 +35,14 @@ AccountInfo::AccountInfo(int dbId, int userDbId) :
 void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);
-    CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _id);
+    CommonUtility::writeValueToStruct(dstruct, accountInfoId, _id);
     CommonUtility::writeValueToStruct(dstruct, accountInfoName, CommonUtility::str2CommString(_name));
 }
 
 void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::readValueFromStruct(dstruct, accountInfoUserDbId, _userDbId);
-    CommonUtility::readValueFromStruct(dstruct, accountInfoAccountId, _id);
+    CommonUtility::readValueFromStruct(dstruct, accountInfoId, _id);
 
     CommString name;
     CommonUtility::readValueFromStruct(dstruct, accountInfoName, name);
