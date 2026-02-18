@@ -21,13 +21,13 @@ import Combine
 import kDriveCoreUI
 
 enum WindowRoute {
-    case preloading
+    case preloading(isShowingError: Bool = false)
     case onboarding(UIUser? = nil, OnboardingStep? = nil)
     case mainWindow(MainViewTab? = nil)
 }
 
 final class MainWindowRouter {
-    @Published private(set) var currentRoute: WindowRoute = .preloading
+    @Published private(set) var currentRoute: WindowRoute = .preloading()
 
     @MainActor
     func navigate(to route: WindowRoute) {
