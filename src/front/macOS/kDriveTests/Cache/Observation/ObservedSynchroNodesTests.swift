@@ -180,6 +180,7 @@ struct ObservedSynchroNodesTests {
             cancelType: .None,
             date: Date(),
             size: 7_000_000,
+            progress: 10,
             error: "Some error"
         )
 
