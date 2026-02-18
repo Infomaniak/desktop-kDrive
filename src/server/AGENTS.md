@@ -1,7 +1,7 @@
 # server — Background Server Process
 
 ## Package Identity
-Long-running background daemon that owns all sync state. Communicates with the GUI process via IPC (Unix sockets on Linux/macOS, named pipes on Windows, XPC on macOS). Loads the VFS plugin, manages auto-updates, and dispatches GUI-requested operations via typed job objects.
+Long-running background daemon that owns all sync state. Communicates with the GUI process via IPC (XPC on macOS, TCP sockets on Windows/Linux). Communicates with shell extensions via XPC on macOS, named pipes on Windows/Linux. Loads the VFS plugin, manages auto-updates, and dispatches GUI-requested operations via typed job objects.
 
 ## Key Files
 - IPC communication manager: `src/server/comm/guicommserver.h` (GUI socket layer), `src/server/comm/socketcommserver.h` (low-level socket)
@@ -13,7 +13,11 @@ Long-running background daemon that owns all sync state. Communicates with the G
 - Migration from legacy config: `src/server/migration/`
 
 ## IPC Architecture
-The GUI sends typed **job requests** to the server over the IPC channel. Each capability is a separate job class:
+The GUI sends typed **job requests** to the server over the IPC channel. Each capability is a separate job class.
+
+Platform breakdown:
+- **macOS** → XPC (`GuiCommServer extends XPCCommServer`, see `xpccommserver_mac.h`)
+- **Windows / Linux** → TCP socket (`GuiCommServer extends SocketCommServer`, see `socketcommserver.h`)
 
 ```bash
 # Find all GUI-facing job classes
@@ -46,7 +50,7 @@ rg -n "vfs|Vfs|VFS" src/server/ -g "*.h" -l
 ```
 
 ## Common Gotchas
-- macOS uses **XPC** for inter-process communication in addition to the socket layer; changes to IPC on macOS require updating both layers.
+- macOS uses **XPC** exclusively for GUI IPC; Windows/Linux use TCP sockets. They are separate implementations — changes to IPC logic may need to be applied to both `xpccommserver_mac.mm` and `socketcommserver.cpp`.
 - The server process starts before the GUI; never assume GUI is alive when handling server-side events.
 - VFS mode (LiteSync) changes the file representation on disk; IO operations in VFS mode must go through the VFS plugin API, not direct `std::filesystem` calls.
 
