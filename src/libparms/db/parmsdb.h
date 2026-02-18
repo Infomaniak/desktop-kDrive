@@ -162,7 +162,12 @@ class PARMS_EXPORT ParmsDb : public Db {
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
 
-        bool bindQueryToSyncValues(const Sync &sync, const char *requestId);
+        enum class FieldFilter {
+            KeepAllFields = 0,
+            SkipSyncDbId = 1
+        };
+
+        bool bindQueryToSyncValues(const Sync &sync, const char *requestId, FieldFilter filter = FieldFilter::KeepAllFields);
         bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
 
 #if defined(KD_MACOS)

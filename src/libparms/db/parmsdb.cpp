@@ -299,7 +299,7 @@
     "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp=?16, "                                              \
     "sharedFolderCursor=?17, sharedFolderTimestamp=?18, "                                                                \
     "longPollCursor=?19, longPollTimestamp=?20 "                                                                         \
-    "WHERE dbId=?15;"
+    "WHERE dbId=?21;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -2183,38 +2183,42 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
     return true;
 }
 
-bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId) {
+bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, const FieldFilter filter) {
     const std::scoped_lock lock(_mutex);
 
     const auto &cursorStore = sync.getCursorStore();
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
-    LOG_IF_FAIL(queryBindValue(requestId, 1, sync.dbId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 2, sync.driveDbId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 3, sync.localPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 4, sync.localNodeId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 5, sync.targetPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 6, sync.targetNodeId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 7, sync.dbPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 8, static_cast<int>(sync.paused())));
-    LOG_IF_FAIL(queryBindValue(requestId, 9, static_cast<int>(sync.supportVfs())));
-    LOG_IF_FAIL(queryBindValue(requestId, 10, static_cast<int>(sync.virtualFileMode())));
-    LOG_IF_FAIL(queryBindValue(requestId, 11, static_cast<int>(sync.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(requestId, 12, static_cast<int>(sync.hasFullyCompleted())));
-    LOG_IF_FAIL(queryBindValue(requestId, 13, sync.navigationPaneClsid()));
-    LOG_IF_FAIL(queryBindValue(requestId, 14, cursorStore.userPrivateFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 15, cursorStore.userPrivateFolderCursor.timeStamp));
-    LOG_IF_FAIL(queryBindValue(requestId, 16, cursorStore.commonDocumentsFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 17, cursorStore.commonDocumentsFolderCursor.timeStamp));
-    LOG_IF_FAIL(queryBindValue(requestId, 18, cursorStore.sharedFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 19, cursorStore.sharedFolderCursor.timeStamp));
-    LOG_IF_FAIL(queryBindValue(requestId, 20, cursorStore.longPollCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 21, cursorStore.longPollCursor.timeStamp));
+
+    uint16_t fieldIndex = 1;
+
+    if (filter != FieldFilter::SkipSyncDbId) {
+        LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
+    }
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.driveDbId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.hasFullyCompleted())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.navigationPaneClsid()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timeStamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.timeStamp));
 
     int errId = -1;
-    std::string error;
-    if (!queryExec(requestId, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << requestId);
+    if (std::string error; !queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId << ". Error: " << error);
         return false;
     }
 
@@ -2225,7 +2229,7 @@ bool ParmsDb::bindMutatingQueryToSyncValues(const Sync &sync, const char *reques
     found = false;
     const std::scoped_lock lock(_mutex);
 
-    if (const bool result = bindQueryToSyncValues(sync, requestId); !result) return false;
+    if (const bool result = bindQueryToSyncValues(sync, requestId, FieldFilter::SkipSyncDbId); !result) return false;
 
     if (numRowsAffected() == 1) {
         found = true;
