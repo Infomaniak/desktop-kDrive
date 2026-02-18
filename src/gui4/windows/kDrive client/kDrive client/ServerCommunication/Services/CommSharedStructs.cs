@@ -98,7 +98,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         public DbId? DbId { get; set; }
         public DbId? UserDbId { get; set; }
-        public AccountId? AccountId { get; set; }
+        public AccountId? Id { get; set; }
+        public string? Name { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -106,7 +107,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public void CopyToAccount(AccountInfo source, Account target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            CopyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            CopyProperty(source, target, nameof(source.Id), nameof(target.Id));
+			CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
         }
     }
 
@@ -154,6 +156,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public UserId? UserId { get; set; }
         public DbId? UserDbId { get; set; }
         public AccountId? AccountId { get; set; }
+        public string? AccountName { get; set; }
         public string? Name { get; set; }
         public System.Drawing.Color? Color { get; set; }
     }
@@ -164,6 +167,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
             CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
             CopyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+			CopyProperty(source, target, nameof(source.AccountName), nameof(target.AccountName));
             CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
             CopyProperty(source, target, nameof(source.Color), nameof(target.Color));
             CopyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));

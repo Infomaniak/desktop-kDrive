@@ -29,21 +29,24 @@ namespace KDC {
 
 class DriveAvailableInfo {
     public:
-        DriveAvailableInfo(int driveId, int userId, int accountId, const QString &name, const QColor &color);
-        DriveAvailableInfo();
+        DriveAvailableInfo() = default;
+        DriveAvailableInfo(int driveId, int userId, int accountId, const QString &accountName, const QString &name,
+                           const QString &color);
 
-        inline void setDriveId(int driveId) { _driveId = driveId; }
-        inline int driveId() const { return _driveId; }
-        inline void setUserId(int userId) { _userId = userId; }
-        inline int userId() const { return _userId; }
-        inline void setAccountId(int accountId) { _accountId = accountId; }
-        inline int accountId() const { return _accountId; }
-        inline void setColor(QColor color) { _color = color; }
-        inline QColor color() const { return _color; }
-        inline void setName(QString name) { _name = name; }
-        inline QString name() const { return _name; }
-        inline void setUserDbId(int dbId) { _userDbId = dbId; }
-        inline int userDbId() const { return _userDbId; }
+        [[nodiscard]] int driveId() const { return _driveId; }
+        void setDriveId(const int driveId) { _driveId = driveId; }
+        [[nodiscard]] int userId() const { return _userId; }
+        void setUserId(const int userId) { _userId = userId; }
+        [[nodiscard]] int accountId() const { return _accountId; }
+        void setAccountId(const int accountId) { _accountId = accountId; }
+        [[nodiscard]] const QString &accountName() const { return _accountName; }
+        void setAccountName(const QString &accountName) { _accountName = accountName; }
+        [[nodiscard]] const QString &name() const { return _name; }
+        void setName(const QString &name) { _name = name; }
+        [[nodiscard]] const QColor &color() const { return _color; }
+        void setColor(const QColor &color) { _color = color; }
+        [[nodiscard]] int userDbId() const { return _userDbId; }
+        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -58,6 +61,7 @@ class DriveAvailableInfo {
         int _driveId{0};
         int _userId{0};
         int _accountId{0};
+        QString _accountName;
         QString _name;
         QColor _color;
 

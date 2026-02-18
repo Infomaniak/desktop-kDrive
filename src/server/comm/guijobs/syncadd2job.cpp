@@ -53,15 +53,15 @@ ExitInfo SyncAdd2Job::deserializeInputParms() {
 ExitInfo SyncAdd2Job::process() {
     // Add sync in DB
     SyncInfo syncInfo;
-    if (const auto exitCode = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
+    if (const auto exitInfo = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
                                                       liteSync(), syncInfo);
-        exitCode != ExitCode::Ok) {
+        !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
                                    << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
-        addError(Error(ERR_ID, exitCode));
-        return exitCode;
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);

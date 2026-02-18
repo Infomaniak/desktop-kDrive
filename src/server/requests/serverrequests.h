@@ -99,18 +99,18 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
-        static ExitCode getUserAvailableDrives(
-                int userDbId, QHash<int, DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
-        static ExitCode getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+        static ExitInfo getUserAvailableDrives(
+                int userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitInfo getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitCode addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+        static ExitInfo addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
-        static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+        static ExitInfo addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo,
                                     bool withPath = false);
@@ -140,6 +140,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
+        static ExitInfo loadAccountInfo(Account &account, bool &updated);
         static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);

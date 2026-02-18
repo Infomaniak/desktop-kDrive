@@ -20,14 +20,10 @@
 
 namespace KDC {
 
-Account::Account() :
-    _dbId(0),
-    _accountId(0),
-    _userDbId(0) {}
-
-Account::Account(int dbId, int accountId, int userDbId) :
+Account::Account(const int dbId, const int accountId, const int userDbId, const std::string &name) :
     _dbId(dbId),
     _accountId(accountId),
-    _userDbId(userDbId) {}
+    _userDbId(userDbId),
+    _name(name) {}
 
 } // namespace KDC

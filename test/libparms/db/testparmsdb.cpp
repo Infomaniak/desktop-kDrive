@@ -142,9 +142,9 @@ void TestParmsDb::testAccount() {
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user2));
 
-    Account acc1(1, 12345678, user1.dbId());
-    Account acc2(2, 23456789, user1.dbId());
-    Account acc3(3, 34567890, user2.dbId());
+    Account acc1(1, 12345678, user1.dbId(), "account1");
+    Account acc2(2, 23456789, user1.dbId(), "account2");
+    Account acc3(3, 34567890, user2.dbId(), "account3");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc2));
@@ -162,6 +162,7 @@ void TestParmsDb::testAccount() {
     CPPUNIT_ASSERT(accountList.size() == 2);
     CPPUNIT_ASSERT(accountList[0].dbId() == acc1.dbId());
     CPPUNIT_ASSERT(accountList[0].accountId() == acc1.accountId());
+    CPPUNIT_ASSERT(accountList[0].name() == acc1.name());
     CPPUNIT_ASSERT(accountList[0].userDbId() == acc1.userDbId());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteAccount(acc2.dbId(), found) && found);
@@ -175,8 +176,8 @@ void TestParmsDb::testDrive() {
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user2));
 
-    Account acc1(1, 12345678, user1.dbId());
-    Account acc2(2, 23456789, user2.dbId());
+    Account acc1(1, 12345678, user1.dbId(), "account1");
+    Account acc2(2, 23456789, user2.dbId(), "account2");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc2));
@@ -232,7 +233,7 @@ SyncSetupData createSyncs() {
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user1));
 
-    const Account acc1(1, 12345678, user1.dbId());
+    const Account acc1(1, 12345678, user1.dbId(), "account1");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc1));
 
@@ -641,7 +642,7 @@ void TestParmsDb::testUpgradeOfShortPathNames() {
 
     const User user(1, 5555555, "123");
     ParmsDb::instance()->insertUser(user);
-    const Account acc(1, 12345678, user.dbId());
+    const Account acc(1, 12345678, user.dbId(), "account1");
     ParmsDb::instance()->insertAccount(acc);
     const Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
     ParmsDb::instance()->insertDrive(drive);

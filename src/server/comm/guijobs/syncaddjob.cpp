@@ -59,16 +59,16 @@ ExitInfo SyncAddJob::process() {
     SyncInfo syncInfo;
     AccountInfo accountInfo;
     DriveInfo driveInfo;
-    if (const auto exitCode = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
+    if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
                                                       serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
-        exitCode != ExitCode::Ok) {
+        !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
                                    << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
-        addError(Error(ERR_ID, exitCode));
-        return exitCode;
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     if (accountInfo.dbId() != 0) {

@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public AccountId AccountId
         {
-            get => _account.AccountId;
+            get => _account.Id;
         }
 
         public string AccountName

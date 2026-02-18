@@ -1232,7 +1232,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
 
-            QHash<int, DriveAvailableInfo> list;
+            QList<DriveAvailableInfo> list;
             ExitCode exitCode = ServerRequests::getUserAvailableDrives(userDbId, list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
@@ -2805,6 +2805,27 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
+        bool accountUpdated = false;
+        if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
+            LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+            return exitInfo;
+        }
+        if (accountUpdated) {
+            AccountInfo accountInfo;
+            ServerRequests::accountToAccountInfo(account, accountInfo);
+            sendAccountUpdated(accountInfo);
+
+            bool found = false;
+            if (!ParmsDb::instance()->updateAccount(account, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+                return ExitCode::DbError;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+                return ExitCode::DataError;
+            }
+        }
+
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
@@ -2813,8 +2834,10 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
         for (auto &drive: drives) {
             bool quotaUpdated = false;
-            bool accountUpdated = false;
-            if (const auto exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+            bool accountChanged = false;
+            Account modifiedAccount = account;
+            if (const auto exitInfo =
+                        ServerRequests::loadDriveInfo(drive, modifiedAccount, updated, quotaUpdated, accountChanged);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
                 return exitInfo;
@@ -2864,32 +2887,34 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             }
 
             bool accountRemoved = false;
-            if (accountUpdated) {
-                int accountDbId = 0;
-                if (!ParmsDb::instance()->accountDbId(user.dbId(), account.accountId(), accountDbId)) {
+            if (accountChanged) {
+                bool accountIdAlreadyExists = false;
+                Account dummyAccount;
+                bool found = false;
+                if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(user.dbId(), modifiedAccount.accountId(), dummyAccount,
+                                                                          found)) {
                     LOG_WARN(_logger, "Error in ParmsDb::accountDbId");
                     return ExitCode::DbError;
                 }
+                accountIdAlreadyExists = found;
 
-                if (accountDbId == 0) {
-                    // No existing account with the new accountId, update it
-                    bool found = false;
-                    if (!ParmsDb::instance()->updateAccount(account, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
-                        return ExitCode::DbError;
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
-                        return ExitCode::DataError;
-                    }
+                // Update account
+                if (!ParmsDb::instance()->updateAccount(modifiedAccount, found)) {
+                    LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+                    return ExitCode::DbError;
+                }
+                if (!found) {
+                    LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+                    return ExitCode::DataError;
+                }
 
-                    AccountInfo accountInfo;
-                    ServerRequests::accountToAccountInfo(account, accountInfo);
-                    sendAccountUpdated(accountInfo);
-                } else {
+                AccountInfo accountInfo;
+                ServerRequests::accountToAccountInfo(account, accountInfo);
+                sendAccountUpdated(accountInfo);
+
+                if (modifiedAccount.accountId() != account.accountId() && accountIdAlreadyExists) {
                     // An account already exists with the new accountId, link the drive to it
-                    drive.setAccountDbId(accountDbId);
-                    bool found = false;
+                    drive.setAccountDbId(modifiedAccount.dbId());
                     if (!ParmsDb::instance()->updateDrive(drive, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                         return ExitCode::DbError;

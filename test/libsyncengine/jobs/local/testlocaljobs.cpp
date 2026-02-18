@@ -80,7 +80,7 @@ void KDC::TestLocalJobs::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     int driveId = atoi(testVariables.driveId.c_str());

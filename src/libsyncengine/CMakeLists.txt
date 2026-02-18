@@ -29,6 +29,7 @@ set(syncengine_SRCS
     ## Network jobs
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
+    jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/getavatarjob.h jobs/network/getavatarjob.cpp
     jobs/network/login/abstractloginjob.h jobs/network/login/abstractloginjob.cpp
     jobs/network/login/gettokenjob.h jobs/network/login/gettokenjob.cpp
@@ -36,9 +37,10 @@ set(syncengine_SRCS
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
     jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
+    jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
+    jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
-    jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
@@ -68,7 +70,6 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
     jobs/network/kDrive_API/getinfodrivejob.h jobs/network/kDrive_API/getinfodrivejob.cpp
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
-    jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp

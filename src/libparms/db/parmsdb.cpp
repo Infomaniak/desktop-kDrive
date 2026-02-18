@@ -161,18 +161,19 @@
     "dbId INTEGER PRIMARY KEY,"                                                            \
     "accountId INTEGER,"                                                                   \
     "userDbId INTEGER, "                                                                   \
+    "name TEXT, "                                                                          \
     "FOREIGN KEY (userDbId) REFERENCES user(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
 
 #define INSERT_ACCOUNT_REQUEST_ID "insert_account"
-#define INSERT_ACCOUNT_REQUEST                         \
-    "INSERT INTO account (dbId, accountId, userDbId) " \
-    "VALUES (?1, ?2, ?3);"
+#define INSERT_ACCOUNT_REQUEST                               \
+    "INSERT INTO account (dbId, accountId, userDbId, name) " \
+    "VALUES (?1, ?2, ?3, ?4);"
 
 #define UPDATE_ACCOUNT_REQUEST_ID "update_account"
-#define UPDATE_ACCOUNT_REQUEST                      \
-    "UPDATE account SET accountId=?1, userDbId=?2 " \
-    "WHERE dbId=?3;"
+#define UPDATE_ACCOUNT_REQUEST                               \
+    "UPDATE account SET accountId=?1, userDbId=?2, name=?3 " \
+    "WHERE dbId=?4;"
 
 #define DELETE_ACCOUNT_REQUEST_ID "delete_account"
 #define DELETE_ACCOUNT_REQUEST \
@@ -180,19 +181,19 @@
     "WHERE dbId=?1;"
 
 #define SELECT_ACCOUNT_REQUEST_ID "select_account"
-#define SELECT_ACCOUNT_REQUEST                 \
-    "SELECT accountId, userDbId FROM account " \
+#define SELECT_ACCOUNT_REQUEST                       \
+    "SELECT accountId, userDbId, name FROM account " \
     "WHERE dbId=?1;"
 
 #define SELECT_ALL_ACCOUNTS_REQUEST_ID "select_accounts"
-#define SELECT_ALL_ACCOUNTS_REQUEST                  \
-    "SELECT dbId, accountId, userDbId FROM account " \
+#define SELECT_ALL_ACCOUNTS_REQUEST                        \
+    "SELECT dbId, accountId, userDbId, name FROM account " \
     "ORDER BY dbId;"
 
 #define SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID "select_accounts_by_user"
-#define SELECT_ALL_ACCOUNTS_BY_USER_REQUEST \
-    "SELECT dbId, accountId FROM account "  \
-    "WHERE userDbId=?1 "                    \
+#define SELECT_ALL_ACCOUNTS_BY_USER_REQUEST      \
+    "SELECT dbId, accountId, name FROM account " \
+    "WHERE userDbId=?1 "                         \
     "ORDER BY dbId;"
 
 //
@@ -1072,7 +1073,8 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgradeTables() {
-    const std::string tableName = "parameters";
+    // Parameters table
+    std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
         return false;
@@ -1123,8 +1125,10 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    // AppState table
+    tableName = "app_state";
     bool exist = false;
-    if (!tableExists("app_state", exist)) return false;
+    if (!tableExists(tableName, exist)) return false;
     if (!exist) {
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
@@ -1132,8 +1136,15 @@ bool ParmsDb::upgradeTables() {
         }
     }
 
-    // Add localNodeId to sync table
-    if (!addTextColumnIfMissing("sync", "localNodeId")) {
+    // Sync table
+    tableName = "sync";
+    if (!addTextColumnIfMissing(tableName, "localNodeId")) {
+        return false;
+    }
+
+    // Account table
+    tableName = "account";
+    if (!addTextColumnIfMissing(tableName, "name")) {
         return false;
     }
 
@@ -1666,13 +1677,14 @@ bool ParmsDb::getNewUserDbId(int &dbId) {
 bool ParmsDb::insertAccount(const Account &account) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_ACCOUNT_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 1, account.dbId()));
     LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 2, account.accountId()));
     LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 3, account.userDbId()));
+    LOG_IF_FAIL(queryBindValue(INSERT_ACCOUNT_REQUEST_ID, 4, account.name()));
     if (!queryExec(INSERT_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ACCOUNT_REQUEST_ID);
         return false;
@@ -1684,13 +1696,15 @@ bool ParmsDb::insertAccount(const Account &account) {
 bool ParmsDb::updateAccount(const Account &account, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_ACCOUNT_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 1, account.accountId()));
     LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 2, account.userDbId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 3, account.name()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_ACCOUNT_REQUEST_ID, 4, account.dbId()));
+
     if (!queryExec(UPDATE_ACCOUNT_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ACCOUNT_REQUEST_ID);
         return false;
@@ -1708,7 +1722,7 @@ bool ParmsDb::updateAccount(const Account &account, bool &found) {
 bool ParmsDb::deleteAccount(int dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_ACCOUNT_REQUEST_ID));
@@ -1742,12 +1756,16 @@ bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
 
     account.setDbId(dbId);
 
-    int intResult;
+    int intResult = 0;
     LOG_IF_FAIL(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 0, intResult));
     account.setAccountId(intResult);
 
     LOG_IF_FAIL(queryIntValue(SELECT_ACCOUNT_REQUEST_ID, 1, intResult));
     account.setUserDbId(intResult);
+
+    std::string name;
+    LOG_IF_FAIL(queryStringValue(SELECT_ACCOUNT_REQUEST_ID, 2, name));
+    account.setName(name);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
 
@@ -1761,7 +1779,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
 
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_REQUEST_ID);
@@ -1771,14 +1789,16 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
             break;
         }
 
-        int id;
+        int id = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 0, id));
-        int accountId;
+        int accountId = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 1, accountId));
-        int userDbId;
+        int userDbId = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 2, userDbId));
+        std::string name;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 3, name));
 
-        accountList.push_back(Account(id, accountId, userDbId));
+        accountList.push_back(Account(id, accountId, userDbId, name));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
 
@@ -1793,7 +1813,7 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, userDbId));
 
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
@@ -1803,29 +1823,32 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
             break;
         }
 
-        int id;
+        int id = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 0, id));
-        int accountId;
+        int accountId = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 1, accountId));
+        std::string name;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 2, name));
 
-        accountList.push_back(Account(id, accountId, userDbId));
+        accountList.push_back(Account(id, accountId, userDbId, name));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::accountDbId(int userDbId, int accountId, int &dbId) {
+bool ParmsDb::accountFromUserDbIdAndAccountId(int userDbId, int accountId, Account &account, bool &found) {
+    found = false;
     std::vector<Account> accountList;
     if (!selectAllAccounts(userDbId, accountList)) {
         LOG_WARN(_logger, "Error in selectAllAccounts");
         return false;
     }
 
-    dbId = 0;
-    for (const Account &account: accountList) {
-        if (account.accountId() == accountId) {
-            dbId = account.dbId();
+    for (const Account &a: accountList) {
+        if (a.accountId() == accountId) {
+            account = a;
+            found = true;
             break;
         }
     }

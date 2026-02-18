@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,28 +17,23 @@
  */
 
 #pragma once
-#include "utility/types.h"
+
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class Account {
+class GetAccountInfoJob : public AbstractTokenNetworkJob {
     public:
-        Account() = default;
-        Account(int dbId, int accountId, int userDbId, const std::string &name);
+        GetAccountInfoJob(const int userDbId, const uint64_t accountId);
 
-        [[nodiscard]] int dbId() const { return _dbId; }
-        void setDbId(const int dbId) { _dbId = dbId; }
-        [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(const int accountId) { _accountId = accountId; }
-        [[nodiscard]] int userDbId() const { return _userDbId; }
-        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
         [[nodiscard]] std::string name() const { return _name; }
-        void setName(const std::string &name) { _name = name; }
 
     private:
-        int _dbId{0};
-        int _accountId{0};
-        int _userDbId{0};
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
+        std::string getSpecificUrl() override;
+
+        uint64_t _accountId{0};
+
         std::string _name;
 };
 

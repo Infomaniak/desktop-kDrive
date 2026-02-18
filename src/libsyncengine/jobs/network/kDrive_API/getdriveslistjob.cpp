@@ -18,9 +18,13 @@
 
 #include "getdriveslistjob.h"
 
+#include "utility/jsonparserutility.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
+
+const std::string driveKey = "drive";
 
 GetDrivesListJob::GetDrivesListJob(int userDbId) :
     AbstractTokenNetworkJob(ApiType::DriveByUser, userDbId, 0, 0, 0) {
@@ -30,12 +34,78 @@ GetDrivesListJob::GetDrivesListJob(int userDbId) :
 void GetDrivesListJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("roles[]", "admin");
     uri.addQueryParameter("roles[]", "user");
+    uri.addQueryParameter("with", "drive,drive.account");
 }
 
 std::string GetDrivesListJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/users/current/drives";
     return str;
+}
+
+ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
+
+    const auto dataArray = jsonRes()->getArray(dataKey);
+    if (!dataArray) {
+        LOG_ERROR(Log::instance()->getLogger(), "Unable to read available drives info");
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (dataArray->empty()) {
+        LOG_INFO(Log::instance()->getLogger(), "No available drives!");
+        return ExitCode::Ok;
+    }
+
+    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
+        const auto dataObj = it->extract<Poco::JSON::Object::Ptr>();
+
+        int driveId = -1;
+        if (!JsonParserUtility::extractValue(dataObj, driveIdKey, driveId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        int userId = -1;
+        if (!JsonParserUtility::extractValue(dataObj, idKey, userId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        int accountId = -1;
+        std::string accountName;
+        const auto driveObj = dataObj->getObject(driveKey);
+        if (!driveObj) {
+            LOG_ERROR(Log::instance()->getLogger(), "Missing drive info!");
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        const auto accountObj = driveObj->getObject(accountKey);
+        if (!accountObj) {
+            LOG_ERROR(Log::instance()->getLogger(), "Missing account info!");
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+        if (!JsonParserUtility::extractValue(accountObj, idKey, accountId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+        if (!JsonParserUtility::extractValue(accountObj, nameKey, accountName)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        std::string driveName;
+        if (!JsonParserUtility::extractValue(dataObj, driveNameKey, driveName)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferenceKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+        }
+        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(accountName),
+                                     QString::fromStdString(driveName), QString::fromStdString(colorHex));
+        _availableDrives.push_back(driveInfo);
+    }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC
