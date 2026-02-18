@@ -1,6 +1,16 @@
 if(APPLE)
 set(APPLICATION_ICON_PATH "${CMAKE_BINARY_DIR}/src/server/${APPLICATION_ICON_NAME}.icns")
 
+# Determine destination bundle based on whether we're building new Swift GUI or legacy Qt GUI
+if(BUILD_NEW_MAC_GUI AND DEFINED KDRIVE_SWIFT_GUI_BUNDLE)
+    # New Swift GUI mode: install extensions into the Swift GUI bundle
+    set(OSX_EXTENSION_BUNDLE "${KDRIVE_SWIFT_GUI_BUNDLE}")
+    message(STATUS "Extensions will be installed into Swift GUI bundle: ${OSX_EXTENSION_BUNDLE}")
+else()
+    # Legacy Qt GUI mode: install into legacy bundle
+    set(OSX_EXTENSION_BUNDLE "${KDRIVE_OSX_BUNDLE}")
+endif()
+
 # LoginItem Agent
 add_custom_target(mac_loginitemagent ALL
     xcodebuild -project ${CMAKE_SOURCE_DIR}/extensions/MacOSX/kDriveFinderSync/kDriveFinderSync.xcodeproj
@@ -14,7 +24,7 @@ set_property(TARGET mac_loginitemagent APPEND_STRING PROPERTY COMPILE_FLAGS "-fo
 add_dependencies(mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${TEAM_IDENTIFIER_PREFIX}${APPLICATION_REV_DOMAIN}.LoginItemAgent.app
-    DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/LoginItems
+    DESTINATION ${OSX_EXTENSION_BUNDLE}/Contents/Library/LoginItems
     USE_SOURCE_PERMISSIONS)
 
 # FinderSync Ext
@@ -36,7 +46,7 @@ set_property(TARGET mac_findersyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fob
 add_dependencies(mac_findersyncext mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Extension.appex
-    DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/PlugIns
+    DESTINATION ${OSX_EXTENSION_BUNDLE}/Contents/PlugIns
     USE_SOURCE_PERMISSIONS)
 
 # LiteSync Ext
@@ -56,7 +66,13 @@ set_property(TARGET mac_litesyncext APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc
 add_dependencies(mac_litesyncext mac_findersyncext ${APPLICATION_EXECUTABLE})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${APPLICATION_REV_DOMAIN}.LiteSyncExt.systemextension
-    DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/SystemExtensions
+    DESTINATION ${OSX_EXTENSION_BUNDLE}/Contents/Library/SystemExtensions
     USE_SOURCE_PERMISSIONS)
+
+# When building new Swift GUI, ensure extensions are built before the GUI is installed
+if(BUILD_NEW_MAC_GUI AND TARGET kdrive_swift_gui)
+    add_dependencies(kdrive_swift_gui mac_litesyncext)
+    message(STATUS "Added dependency: kdrive_swift_gui depends on mac extensions")
+endif()
 
 endif(APPLE)

@@ -252,29 +252,96 @@ if(BUILD_EXTENSIONS)
     add_subdirectory(extensions)
 endif()
 
-# Build new native Swift GUI for macOS
+#####
+## Build new native Swift GUI for macOS
+# This builds the Xcode project in src/front/macOS/ which replaces the old Qt GUI
 if(APPLE AND BUILD_NEW_MAC_GUI)
-    message(STATUS "Configuring build for new native Swift GUI")
+    message(STATUS "Configuring build for new native Swift GUI from src/front/macOS/")
     
-    # Custom target to build the Swift GUI via xcodebuild
+    # Set paths
+    set(SWIFT_GUI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src/front/macOS")
+    set(SWIFT_GUI_BUILD_DIR "${CMAKE_BINARY_DIR}/swift-gui")
+    set(SWIFT_GUI_DERIVED_DATA_DIR "${SWIFT_GUI_BUILD_DIR}/DerivedData")
+    
+    # Determine Xcode build configuration mapping from CMake build type
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(XCODE_CONFIG "Debug")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        set(XCODE_CONFIG "Release")  # Xcode uses Release for optimized builds with symbols
+    else()
+        set(XCODE_CONFIG "Release")
+    endif()
+    
+    # Make these variables available in parent scope
+    set(SWIFT_GUI_SOURCE_DIR "${SWIFT_GUI_SOURCE_DIR}" CACHE INTERNAL "Swift GUI source directory")
+    set(SWIFT_GUI_BUILD_DIR "${SWIFT_GUI_BUILD_DIR}" CACHE INTERNAL "Swift GUI build directory")
+    
+    # Ensure derived data directory exists
+    file(MAKE_DIRECTORY ${SWIFT_GUI_DERIVED_DATA_DIR})
+    
+    # Determine code signing settings based on build type
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR DEFINED ENV{KDRIVE_DISABLE_CODESIGN})
+        set(XCODE_CODE_SIGNING "CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_ALLOWED=NO")
+    else()
+        set(XCODE_CODE_SIGNING "")  # Use default code signing from Xcode project
+    endif()
+    
+    # Base xcodebuild command
+    set(XCODEBUILD_BASE_ARGS 
+        -project "${SWIFT_GUI_SOURCE_DIR}/kDrive.xcodeproj"
+        -scheme kDrive
+        -configuration "${XCODE_CONFIG}"
+        -derivedDataPath "${SWIFT_GUI_DERIVED_DATA_DIR}"
+        BUILD_DIR="${SWIFT_GUI_BUILD_DIR}/Build"
+    )
+    
+    # Main build target - builds by default with ALL
     add_custom_target(kdrive_swift_gui ALL
-        xcodebuild -project ${CMAKE_SOURCE_DIR}/src/front/macOS/kDrive.xcodeproj
-            -scheme kDrive
-            -configuration ${CMAKE_BUILD_TYPE}
-            -derivedDataPath ${CMAKE_BINARY_DIR}/swift-gui
-            BUILD_DIR=${CMAKE_BINARY_DIR}/swift-gui/Build/Products
-        COMMENT "Building native Swift GUI for macOS"
-        VERBATIM)
+        COMMAND xcodebuild ${XCODEBUILD_BASE_ARGS} build ${XCODE_CODE_SIGNING}
+        WORKING_DIRECTORY "${SWIFT_GUI_SOURCE_DIR}"
+        COMMENT "Building native Swift GUI (kDrive.xcodeproj) - Configuration: ${XCODE_CONFIG}"
+        VERBATIM
+        USES_TERMINAL
+    )
     
-    # Set the new GUI bundle name for installation
-    set(KDRIVE_SWIFT_GUI_BUNDLE "${CMAKE_BINARY_DIR}/swift-gui/Build/Products/${CMAKE_BUILD_TYPE}/kDrive.app")
+    # Additional targets for specific operations
+    add_custom_target(kdrive_swift_gui_clean
+        COMMAND xcodebuild ${XCODEBUILD_BASE_ARGS} clean
+        WORKING_DIRECTORY "${SWIFT_GUI_SOURCE_DIR}"
+        COMMENT "Cleaning native Swift GUI build"
+        VERBATIM
+    )
+    
+    add_custom_target(kdrive_swift_gui_lint
+        COMMAND "${SWIFT_GUI_SOURCE_DIR}/scripts/lint.sh"
+        WORKING_DIRECTORY "${SWIFT_GUI_SOURCE_DIR}"
+        COMMENT "Linting Swift GUI code"
+        VERBATIM
+    )
+    
+    # Set the new GUI app bundle path based on Xcode build settings
+    set(KDRIVE_SWIFT_GUI_BUNDLE "${SWIFT_GUI_BUILD_DIR}/Build/${XCODE_CONFIG}/kDrive.app")
+    set(KDRIVE_SWIFT_GUI_BUNDLE "${KDRIVE_SWIFT_GUI_BUNDLE}" CACHE INTERNAL "Path to built Swift GUI bundle")
+    
+    message(STATUS "Swift GUI source: ${SWIFT_GUI_SOURCE_DIR}")
+    message(STATUS "Swift GUI build directory: ${SWIFT_GUI_BUILD_DIR}")
+    message(STATUS "Swift GUI output: ${KDRIVE_SWIFT_GUI_BUNDLE}")
+    
+    # Add dependency to ensure server is built first
+    # The Swift GUI communicates with the server via XPC
+    if(TARGET ${APPLICATION_EXECUTABLE})
+        add_dependencies(kdrive_swift_gui ${APPLICATION_EXECUTABLE})
+        message(STATUS "Added dependency: kdrive_swift_gui depends on ${APPLICATION_EXECUTABLE}")
+    endif()
     
     # Install the new GUI app bundle
     install(DIRECTORY ${KDRIVE_SWIFT_GUI_BUNDLE}
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/Applications
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications"
         USE_SOURCE_PERMISSIONS
-        OPTIONAL)
+        OPTIONAL
+    )
 endif()
+#####
 
 if(BUILD_UNINSTALLER)
     add_subdirectory(uninstaller)
