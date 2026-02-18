@@ -111,7 +111,6 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::NODE_PATH, makeShared<NodePathJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
