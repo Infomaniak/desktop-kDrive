@@ -36,7 +36,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
-    public var synchNodes: OrderedDictionary<String, SynchroNode> = [:]
+    public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
     public var latestError: SynchroError?
 
@@ -47,8 +47,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
             return
         }
 
-        let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
-        synchNodes[node.localNodeId] = nodeToStore
+        let nodeToStore = synchNodes[node.id]?.updating(with: node) ?? node
+        synchNodes[node.id] = nodeToStore
         synchNodes.sort { $0.value.date > $1.value.date }
 
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
@@ -59,8 +59,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
         synchNodes.removeLast(itemsToRemove)
     }
 
-    public func getSynchNode(by localNodeId: String) -> SynchroNode? {
-        return synchNodes[localNodeId]
+    public func getSynchNode(by operationId: Int32) -> SynchroNode? {
+        return synchNodes[operationId]
     }
 }
 

@@ -92,7 +92,7 @@ public enum PreviewHelper {
     )
 
     public static let synchroNode1 = UISynchroNode(
-        id: "1",
+        id: 1,
         remoteID: "1",
         type: .file,
         path: URL(fileURLWithPath: "/Documents/Report.pdf"),
@@ -105,7 +105,7 @@ public enum PreviewHelper {
         syncDate: .now
     )
     public static let synchroNode2 = UISynchroNode(
-        id: "2",
+        id: 2,
         remoteID: "2",
         type: .directory,
         path: URL(fileURLWithPath: "/Photos/Vacation 2024"),
@@ -118,7 +118,7 @@ public enum PreviewHelper {
         syncDate: .now.addingTimeInterval(-3600)
     )
     public static let synchroNode3 = UISynchroNode(
-        id: "3",
+        id: 3,
         remoteID: "3",
         type: .file,
         path: URL(fileURLWithPath: "/Presentation.pptx"),
