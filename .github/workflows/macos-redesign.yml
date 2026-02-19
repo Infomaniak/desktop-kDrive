@@ -85,5 +85,5 @@ jobs:
         with:
           working_directory: src/front/macOS      
       - name: Periphery
-        run: periphery scan --retain-codable-properties --format github-actions --relative-results --strict
+        run: periphery scan --retain-codable-properties --format github-actions --format json --relative-results --strict
  
