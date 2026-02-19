@@ -9,6 +9,22 @@ else()
   set(MAC_INSTALLER_DO_CUSTOM_BACKGROUND "0")
 endif()
 
+#####
+## Packaging Configuration
+# Configure based on which GUI we're building (new Swift GUI vs legacy Qt GUI)
+if(APPLE AND BUILD_NEW_MAC_GUI)
+    # New Swift GUI mode
+    set(PACKAGE_APP_NAME "kDrive" CACHE STRING "Name of the app bundle in the package")
+    set(PACKAGE_APP_EXECUTABLE "kDrive" CACHE STRING "Name of the executable to launch")
+    message(STATUS "Packaging configured for new Swift GUI: ${PACKAGE_APP_NAME}.app")
+else()
+    # Legacy Qt GUI mode
+    set(PACKAGE_APP_NAME "@APPLICATION_EXECUTABLE@" CACHE STRING "Name of the app bundle in the package")
+    set(PACKAGE_APP_EXECUTABLE "@APPLICATION_EXECUTABLE@" CACHE STRING "Name of the executable to launch")
+    message(STATUS "Packaging configured for legacy Qt GUI: ${PACKAGE_APP_NAME}.app")
+endif()
+#####
+
 find_package(Qt6 6.2 COMPONENTS Core REQUIRED)
 configure_file(create_mac.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/create_mac.sh)
 configure_file(macosx.pkgproj.cmake ${CMAKE_CURRENT_BINARY_DIR}/macosx.pkgproj)

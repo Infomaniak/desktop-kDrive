@@ -28,8 +28,8 @@
 											<array/>
 											<key>GID</key>
 											<integer>80</integer>
-											<key>PATH</key>
-											<string>@APPLICATION_EXECUTABLE@.app</string>
+										<key>PATH</key>
+										<string>@PACKAGE_APP_NAME@.app</string>
 											<key>PATH_TYPE</key>
 											<integer>3</integer>
 											<key>PERMISSIONS</key>
@@ -846,6 +846,8 @@
 						<integer>1</integer>
 						<key>IC_REQUIREMENT_FILES_LIST</key>
 						<array>
+							<string>/Applications/@PACKAGE_APP_NAME@.app</string>
+							<!-- Legacy Qt GUI paths (for upgrade scenarios) -->
 							<string>/Applications/@APPLICATION_EXECUTABLE@.app</string>
 							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app</string>
 							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/kDriveUninstaller.app</string>
