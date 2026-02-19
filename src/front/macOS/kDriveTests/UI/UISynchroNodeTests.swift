@@ -33,7 +33,7 @@ struct UISynchroNodeTests {
             instruction: .put,
             size: 1024,
             progress: progress,
-            synDate: Date()
+            syncDate: Date()
         )
     }
 

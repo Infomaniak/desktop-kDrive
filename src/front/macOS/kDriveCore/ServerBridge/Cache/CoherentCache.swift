@@ -27,7 +27,7 @@ public protocol CoherentCache: Sendable {
     func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
     func removeUser(dbId: Int32) async
-    func updateUser(_ user: User) async
+    func updateUser(_ user: User, updateOptions: User.UpdateOptions) async
     func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId accountId: Int32) async throws
 
     // MARK: - Account

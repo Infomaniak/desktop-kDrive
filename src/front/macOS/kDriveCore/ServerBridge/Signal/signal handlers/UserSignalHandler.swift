@@ -29,7 +29,7 @@ struct UserSignalHandler {
         }
 
         let user = User(userInfoMetadata: userInfoSignal.body.userInfo)
-        await coherentCache.updateUser(user)
+        await coherentCache.updateUser(user, updateOptions: .updateSignal)
     }
 
     func handleUserRemoved(_ signal: Data) async throws {

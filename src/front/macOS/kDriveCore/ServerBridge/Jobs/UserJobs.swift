@@ -44,7 +44,7 @@ public struct UserJobs: Sendable {
 
         let userList = decodedMessage.body.userInfoList
 
-        await userList.asyncForEach { await coherentCache.updateUser($0.userCache) }
+        await userList.asyncForEach { await coherentCache.updateUser($0.userCache, updateOptions: .all) }
 
         return userList
     }
@@ -54,7 +54,7 @@ public struct UserJobs: Sendable {
         let query = UserQuery(userDbId: dbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         await coherentCache.removeUser(dbId: dbId)
     }

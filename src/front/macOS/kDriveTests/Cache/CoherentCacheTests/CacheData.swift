@@ -231,4 +231,46 @@ enum CacheData {
                                                  inconsistencyType: KDC.InconsistencyType.None,
                                                  destinationPath: "",
                                                  autoResolved: false)
+
+    // MARK: - AvailableDrive
+
+    static let expectedAvailableDriveDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAvailableDriveId = Int32.random(in: 0 ... 10000)
+    static let expectedAvailableDriveName = "My Available Drive"
+    static let expectedAvailableDriveColor: HexColor = .init(hex: "ff5733")!
+    static var expectedAvailableDrive = AvailableDrive(
+        driveId: expectedAvailableDriveId,
+        accountId: expectedAccountId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserAPIId,
+        name: expectedAvailableDriveName,
+        color: expectedAvailableDriveColor
+    )
+
+    static let secondUserDbId = Int32.random(in: 0 ... 10000)
+    static let secondUserAPIId = Int32.random(in: 0 ... 10000)
+    static var secondUser = User(
+        dbId: secondUserDbId,
+        userId: secondUserAPIId,
+        name: "seconduser",
+        email: "second@example.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: false
+    )
+
+    static let secondAvailableDriveDbId = Int32.random(in: 0 ... 10000)
+    static let secondAvailableDriveId = Int32.random(in: 0 ... 10000)
+    static let secondAvailableDriveName = "Second Available Drive"
+    static let secondAvailableDriveColor: HexColor = .init(hex: "33ff57")!
+    static var secondAvailableDrive = AvailableDrive(
+        driveId: secondAvailableDriveId,
+        accountId: expectedAccountId,
+        userDbId: secondUserDbId,
+        userId: secondUserAPIId,
+        name: secondAvailableDriveName,
+        color: secondAvailableDriveColor
+    )
 }

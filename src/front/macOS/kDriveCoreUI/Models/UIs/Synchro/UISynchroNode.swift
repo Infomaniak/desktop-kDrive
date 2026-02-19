@@ -70,8 +70,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     }
 
     public var fileType: UTType? {
-        return UTType(
-            filenameExtension: relevantPath.pathExtension)
+        return UTType(filenameExtension: relevantPath.pathExtension)
     }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
@@ -92,7 +91,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         instruction: UISynchroFileInstruction?,
         size: Int64,
         progress: Int32,
-        synDate: Date
+        syncDate: Date
     ) {
         self.id = id
         self.remoteID = remoteID
@@ -104,7 +103,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         self.instruction = instruction
         self.size = size
         self.progress = min(max(progress, 0), 100)
-        self.syncDate = synDate
+        self.syncDate = syncDate
     }
 
     public static func == (lhs: UISynchroNode, rhs: UISynchroNode) -> Bool {

@@ -79,9 +79,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         notifyUpdate()
     }
 
-    public func updateUser(_ user: User) {
+    public func updateUser(_ user: User, updateOptions: User.UpdateOptions) {
         if let existingUser = users[user.dbId],
-           let updatedUser = existingUser.updated(with: user) {
+           let updatedUser = existingUser.updated(with: user, updateOptions: updateOptions) {
             users[user.dbId] = updatedUser
         } else {
             users[user.dbId] = user
@@ -95,12 +95,13 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw CacheError.userNotFound(userDbId)
         }
 
-        let indexedDrives: IndexedAvailableDrives = Dictionary(uniqueKeysWithValues:
-            drives.map { drive in (drive.driveId, drive) })
+        let indexedDrives = IndexedAvailableDrives(
+            uniqueKeysWithValues: drives.map { ($0.driveId, $0) }
+        )
 
         user.availableDrives = indexedDrives
 
-        updateUser(user)
+        updateUser(user, updateOptions: .availableDrives)
     }
 
     // MARK: - ACCOUNT

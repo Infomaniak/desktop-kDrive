@@ -190,7 +190,6 @@ struct ObservedSynchroNodesTests {
         try await cache.updateSynchro(updatedSynchro)
 
         // THEN
-        _ = await receivedValues.dropFirst(2).first(where: { _ in true })
         _ = await receivedValues.dropFirst().first(where: { _ in true })
 
         #expect(observedNodes.count == 2, "We should still have two nodes")
