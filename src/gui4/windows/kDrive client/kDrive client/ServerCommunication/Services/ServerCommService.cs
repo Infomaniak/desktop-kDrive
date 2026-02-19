@@ -1491,7 +1491,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Find existing item
                 var existing = activities.FirstOrDefault(a => a.OperationId == operationId);
 
-                if (existing != null)
+                if (existing is not null)
                 {
                     // Ignore duplicate completion signals
                     if (existing.Status != SyncFileStatus.Syncing)
@@ -1525,19 +1525,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 // Create new item
-                existing = new SyncFileItem(sync);
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, existing);
+                var newItem = new SyncFileItem(sync);
+                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
 
-                if (existing.Status != SyncFileStatus.Syncing)
+                if (newItem.Status != SyncFileStatus.Syncing)
                 {
                     // Insert item after all syncing items
                     int destIndex = activities.TakeWhile(a => a.Status == SyncFileStatus.Syncing).Count();
-                    activities.Insert(destIndex, existing);
+                    activities.Insert(destIndex, newItem);
                 }
                 else
                 {
-                    activities.Insert(0, existing);
+                    activities.Insert(0, newItem);
                 }
+
                 // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
                 var toBeRemoved = activities.Where(a => a.Status != SyncFileStatus.Syncing && a.Status != SyncFileStatus.Success);
                 activities.RemoveMany(toBeRemoved);
