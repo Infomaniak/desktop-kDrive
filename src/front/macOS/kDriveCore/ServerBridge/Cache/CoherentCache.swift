@@ -34,9 +34,8 @@ public protocol CoherentCache: Sendable {
 
     func getAccount(accountDbId: Int32, userDbId: Int32) async -> Account?
     func getAccount(accountDbId: Int32) async -> Account?
-    func addAccount(_ account: Account, userDbId: Int32) async
+    func addOrUpdateAccount(_ account: Account) async throws
     func removeAccount(accountDbId: Int32) async
-    func updateAccount(_ account: Account) async throws
 
     // MARK: - Drive
 

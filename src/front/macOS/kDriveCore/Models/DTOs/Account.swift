@@ -21,7 +21,6 @@ import OrderedCollections
 
 public typealias IndexedAccounts = OrderedDictionary<Int32, Account>
 
-// TODO: Update to track userDbId in Account to match server type
 public struct Account: Identifiable, Hashable, Sendable {
     public let dbId: Int32
     public let userDbId: Int32
@@ -37,5 +36,11 @@ public struct Account: Identifiable, Hashable, Sendable {
         self.userDbId = userDbId
         self.name = name
         self.drives = drives
+    }
+}
+
+extension Account {
+    init(with accountInfo: AccountInfo) {
+        self.init(dbId: accountInfo.dbId, userDbId: accountInfo.userDbId, name: accountInfo.name, drives: [:])
     }
 }

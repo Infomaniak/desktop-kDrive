@@ -20,19 +20,7 @@ import Foundation
 import OrderedCollections
 
 struct AccountInfoSignal: Codable, Sendable {
-    let accountInfo: AccountInfoSignalMetadata
-}
-
-struct AccountInfoSignalMetadata: Codable, Sendable {
-    let dbId: Int32
-    let userDbId: Int32
-    let accountId: Int32
-}
-
-extension AccountInfoSignalMetadata {
-    var asAccount: Account {
-        Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
-    }
+    let accountInfo: AccountInfo
 }
 
 struct AccountRemoveSignal: Codable, Sendable {

@@ -27,7 +27,7 @@ public struct AccountJobs: Sendable {
     public init() {}
 
     @discardableResult
-    public func accountInfoList() async throws -> [AccountInfoResponse] {
+    public func accountInfoList() async throws -> [AccountInfo] {
         IKLogger.data.log("Query for accountInfoList")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.ACCOUNT_INFOLIST, body: query)
@@ -35,9 +35,7 @@ public struct AccountJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<AccountListResponse>.self)
 
         let accountList = decodedMessage.body.accountInfoList
-
-        // TODO: Parse name when available
-        await accountList.asyncForEach { try? await coherentCache.updateAccount($0.asAccount) }
+        await accountList.asyncForEach { try? await coherentCache.addOrUpdateAccount(Account(with: $0)) }
 
         return accountList
     }

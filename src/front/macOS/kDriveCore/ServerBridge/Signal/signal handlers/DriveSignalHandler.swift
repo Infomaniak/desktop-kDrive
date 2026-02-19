@@ -56,6 +56,6 @@ extension CoherentCache {
                                                synchros: existingDrive?.synchros ?? [:])
         account.drives[driveSignal.dbId] = updatedDrive
 
-        try await updateAccount(account)
+        try await addOrUpdateAccount(account)
     }
 }

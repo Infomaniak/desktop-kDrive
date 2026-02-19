@@ -32,7 +32,7 @@ public extension CoherentCache {
                                           userDbId: account.userDbId)
         account.drives[drive.driveDbId] = drive
 
-        try await updateAccount(account)
+        try await addOrUpdateAccount(account)
     }
 }
 

@@ -31,7 +31,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -61,7 +61,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -93,7 +93,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -130,7 +130,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -165,7 +165,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -200,7 +200,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -233,7 +233,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -271,7 +271,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
@@ -307,7 +307,7 @@ struct CoherentCacheErrorTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
                                        userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)

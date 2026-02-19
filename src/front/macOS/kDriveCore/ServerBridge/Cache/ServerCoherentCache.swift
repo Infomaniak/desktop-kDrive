@@ -119,10 +119,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return nil
     }
 
-    public func addAccount(_ account: Account, userDbId: Int32) {
-        guard var user = users[userDbId] else { return }
-        user.accounts[account.id] = account
-        users[userDbId] = user
+    public func addOrUpdateAccount(_ account: Account) throws {
+        guard var user = users[account.userDbId] else {
+            throw CacheError.accountNotFound(account.dbId)
+        }
+        user.accounts[account.dbId] = account
+        users[user.dbId] = user
 
         notifyUpdate()
     }
@@ -136,17 +138,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             user.accounts.removeValue(forKey: accountDbId)
             users[user.dbId] = user
         }
-
-        notifyUpdate()
-    }
-
-    public func updateAccount(_ account: Account) throws {
-        guard var user = users.values.first(where: { $0.dbId == account.userDbId }) else {
-            throw CacheError.accountNotFound(account.dbId)
-        }
-
-        user.accounts[account.dbId] = account
-        users[user.dbId] = user
 
         notifyUpdate()
     }
@@ -203,7 +194,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                     continue
                 }
 
-                try updateAccount(account)
+                try addOrUpdateAccount(account)
                 return
             }
         }
@@ -221,7 +212,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         indexedDrives[drive.driveDbId] = drive
         account.drives = indexedDrives
 
-        try updateAccount(account)
+        try addOrUpdateAccount(account)
     }
 
     // MARK: - AVAILABLE DRIVE

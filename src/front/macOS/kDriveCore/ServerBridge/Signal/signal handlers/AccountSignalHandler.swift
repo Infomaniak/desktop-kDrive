@@ -23,22 +23,13 @@ struct AccountSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
 
-    func handleAccountAdded(_ signal: Data) async throws {
+    func handleAccountAddedOrUpdated(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetAccountFromSignal
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
-        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
-    }
-
-    func handleAccountUpdated(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountFromSignal
-        }
-
-        let accountInfo = accountInfoSignal.body.accountInfo
-        try await coherentCache.updateAccount(accountInfo.asAccount)
+        try await coherentCache.addOrUpdateAccount(Account(with: accountInfo))
     }
 
     func handleAccountRemoved(_ signal: Data) async throws {
