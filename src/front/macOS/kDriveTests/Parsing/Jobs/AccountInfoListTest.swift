@@ -51,7 +51,7 @@ struct AccountInfoListTest {
         #expect(response.cause == .Unknown)
         #expect(response.id == 3)
         #expect(response.body.accountInfoList.count == 1)
-        
+
         let firstAccount = response.body.accountInfoList.first
         #expect(firstAccount?.dbId == 1)
         #expect(firstAccount?.id == 28)
