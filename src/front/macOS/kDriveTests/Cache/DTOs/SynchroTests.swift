@@ -80,7 +80,8 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let node = SynchroNode(type: .File,
+        let node = SynchroNode(operationId: 1234,
+                               type: .File,
                                path: "/file.txt",
                                newPath: "/file.txt",
                                localNodeId: "local-1",
@@ -115,7 +116,8 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let originalNode = SynchroNode(type: .File,
+        let originalNode = SynchroNode(operationId: 1234,
+                                       type: .File,
                                        path: "/file.txt",
                                        newPath: "/file.txt",
                                        localNodeId: "local-1",
@@ -133,7 +135,8 @@ struct SynchroTests {
 
         synchro.addOrUpdateSynchNode(originalNode)
 
-        let updatedNode = SynchroNode(type: .File,
+        let updatedNode = SynchroNode(operationId: 1234,
+                                      type: .File,
                                       path: "/file.txt",
                                       newPath: "/file.txt",
                                       localNodeId: "local-1",
@@ -172,7 +175,8 @@ struct SynchroTests {
 
         // Add 100 nodes (the limit)
         for i in 0 ..< 100 {
-            let node = SynchroNode(type: .File,
+            let node = SynchroNode(operationId: Int32(i),
+                                   type: .File,
                                    path: "/file\(i).txt",
                                    newPath: "/file\(i).txt",
                                    localNodeId: "local-\(i)",
@@ -191,7 +195,8 @@ struct SynchroTests {
         }
 
         // WHEN - Add one more node (should exceed limit)
-        let extraNode = SynchroNode(type: .File,
+        let extraNode = SynchroNode(operationId: 1337,
+                                    type: .File,
                                     path: "/extra.txt",
                                     newPath: "/extra.txt",
                                     localNodeId: "local-extra",
@@ -225,7 +230,8 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let node1 = SynchroNode(type: .File,
+        let node1 = SynchroNode(operationId: 1,
+                                type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
                                 localNodeId: "local-1",
@@ -241,7 +247,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node2 = SynchroNode(type: .File,
+        let node2 = SynchroNode(operationId: 2,
+                                type: .File,
                                 path: "/file2.txt",
                                 newPath: "/file2.txt",
                                 localNodeId: "local-2",
@@ -283,7 +290,8 @@ struct SynchroTests {
                               virtualFileMode: .Mac)
 
         // WHEN
-        let node1 = SynchroNode(type: .File,
+        let node1 = SynchroNode(operationId: 1,
+                                type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
                                 localNodeId: "local-1",
@@ -299,7 +307,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node2 = SynchroNode(type: .File,
+        let node2 = SynchroNode(operationId: 2,
+                                type: .File,
                                 path: "/file2.txt",
                                 newPath: "/file2.txt",
                                 localNodeId: "local-2",
@@ -315,7 +324,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node3 = SynchroNode(type: .File,
+        let node3 = SynchroNode(operationId: 3,
+                                type: .File,
                                 path: "/file3.txt",
                                 newPath: "/file3.txt",
                                 localNodeId: "local-3",
@@ -355,7 +365,8 @@ struct SynchroTests {
                               virtualFileMode: .Mac)
 
         // WHEN
-        let node1 = SynchroNode(type: .File,
+        let node1 = SynchroNode(operationId: 1,
+                                type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
                                 localNodeId: "local-1",
@@ -371,7 +382,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node2 = SynchroNode(type: .File,
+        let node2 = SynchroNode(operationId: 2,
+                                type: .File,
                                 path: "/file2.txt",
                                 newPath: "/file2.txt",
                                 localNodeId: "local-2",
@@ -387,7 +399,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node3 = SynchroNode(type: .File,
+        let node3 = SynchroNode(operationId: 3,
+                                type: .File,
                                 path: "/file3.txt",
                                 newPath: "/file3.txt",
                                 localNodeId: "local-3",
@@ -426,7 +439,8 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let node1 = SynchroNode(type: .File,
+        let node1 = SynchroNode(operationId: 1,
+                                type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
                                 localNodeId: "local-1",
@@ -442,7 +456,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node2 = SynchroNode(type: .File,
+        let node2 = SynchroNode(operationId: 2,
+                                type: .File,
                                 path: "/file2.txt",
                                 newPath: "/file2.txt",
                                 localNodeId: "local-2",
@@ -458,7 +473,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node3 = SynchroNode(type: .File,
+        let node3 = SynchroNode(operationId: 3,
+                                type: .File,
                                 path: "/file3.txt",
                                 newPath: "/file3.txt",
                                 localNodeId: "local-3",
@@ -479,7 +495,8 @@ struct SynchroTests {
         synchro.addOrUpdateSynchNode(node3)
 
         // WHEN - Update node2 (middle node)
-        let updatedNode2 = SynchroNode(type: .File,
+        let updatedNode2 = SynchroNode(operationId: 2,
+                                       type: .File,
                                        path: "/file2_updated.txt",
                                        newPath: "/file2_updated.txt",
                                        localNodeId: "local-2",
@@ -518,7 +535,8 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let node1 = SynchroNode(type: .File,
+        let node1 = SynchroNode(operationId: 1,
+                                type: .File,
                                 path: "/file1.txt",
                                 newPath: "/file1.txt",
                                 localNodeId: "local-1",
@@ -534,7 +552,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node2 = SynchroNode(type: .File,
+        let node2 = SynchroNode(operationId: 2,
+                                type: .File,
                                 path: "/file2.txt",
                                 newPath: "/file2.txt",
                                 localNodeId: "local-2",
@@ -550,7 +569,8 @@ struct SynchroTests {
                                 progress: 10,
                                 error: "")
 
-        let node3 = SynchroNode(type: .File,
+        let node3 = SynchroNode(operationId: 3,
+                                type: .File,
                                 path: "/file3.txt",
                                 newPath: "/file3.txt",
                                 localNodeId: "local-3",

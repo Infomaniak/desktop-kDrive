@@ -93,10 +93,11 @@ public struct SyncProgress: Hashable, Sendable {
 }
 
 public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
-    public var id: String {
-        localNodeId
+    public var id: Int32 {
+        operationId
     }
 
+    public let operationId: Int32
     public let type: KDC.NodeType
     /// Sync folder relative filesystem path
     public let path: String
@@ -119,6 +120,7 @@ extension SynchroNode {
     /// Returns a new SynchroNode updated with values from the provided node, preserving this node's original date.
     func updating(with node: SynchroNode) -> SynchroNode {
         SynchroNode(
+            operationId: node.operationId,
             type: node.type,
             path: node.path,
             newPath: node.newPath,

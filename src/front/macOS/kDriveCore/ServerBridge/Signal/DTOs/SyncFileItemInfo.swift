@@ -24,6 +24,7 @@ struct SyncFileItemInfoSignal: Codable, Sendable {
 }
 
 struct SyncFileItemInfo: Codable, Sendable {
+    let operationId: Int32
     let type: KDC.NodeType
     /// Sync folder relative filesystem path
     @Base64CodedString var path: String
@@ -42,6 +43,7 @@ struct SyncFileItemInfo: Codable, Sendable {
     @Base64CodedString var error: String
 
     enum CodingKeys: String, CodingKey {
+        case operationId
         case type
         case path
         case newPath
@@ -62,7 +64,8 @@ struct SyncFileItemInfo: Codable, Sendable {
 
 extension SyncFileItemInfo {
     var toSynchroFile: SynchroNode {
-        SynchroNode(type: type,
+        SynchroNode(operationId: operationId,
+                    type: type,
                     path: path,
                     newPath: newPath,
                     localNodeId: localNodeId,
