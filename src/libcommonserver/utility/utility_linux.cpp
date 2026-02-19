@@ -38,6 +38,8 @@
 
 namespace KDC {
 
+static const auto mimeType = "x-scheme-handler/kdrive";
+
 namespace {
 int parseLineForRamStatus(char *line) {
     int i = static_cast<int>(strlen(line));
@@ -294,14 +296,15 @@ bool Utility::registerLoginRedirection(const std::string &appName) {
     urlSchemeFile << "Exec=" << execPath.native() << " %u" << std::endl;
     urlSchemeFile << "Type=Application" << std::endl;
     urlSchemeFile << "Terminal=false" << std::endl;
-    urlSchemeFile << "MimeType=x-scheme-handler/kdrive;" << std::endl;
+    urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
     urlSchemeFile.close();
 
     // Update database
     system("update-desktop-database ~/.local/share/applications/");
 
     // Register scheme
-    system("xdg-mime default kDrive.desktop x-scheme-handler/kdrive");
+    const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
+    system(registerSchemeStr.c_str());
 
     return true;
 }

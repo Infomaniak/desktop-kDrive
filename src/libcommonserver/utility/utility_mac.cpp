@@ -141,4 +141,16 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
+bool Utility::registerLoginRedirection(const std::string &appName) {
+    const std::string registerCommand =
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/"
+            "lsregister -f " +
+            // #ifdef _DEBUG
+            //             (CommonUtility::getAppWorkingDir() / appName).native();
+            // #else
+            (CommonUtility::getAppDir() / appName / (appName + ".app")).native();
+    // #endif
+    (void) system(registerCommand.c_str());
+}
+
 } // namespace KDC
