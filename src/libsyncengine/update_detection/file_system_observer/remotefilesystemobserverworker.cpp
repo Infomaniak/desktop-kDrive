@@ -240,7 +240,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
             const auto cursorTimestamp = static_cast<int64_t>(time(0));
             exitInfo = saveListingCursor(remoteDirId, _listingCursorMap[remoteDirId], cursorTimestamp);
             if (!exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor: " << exitInfo);
+                LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
                 break;
             }
         }
@@ -397,7 +397,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
             const auto cursorTimestamp = static_cast<int64_t>(time(0));
             if (const ExitInfo exitInfo = saveListingCursor(remoteDirId, _listingCursorMap[remoteDirId], cursorTimestamp);
                 !exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setListingCursor");
+                LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
 
                 return exitInfo;
             }
@@ -443,6 +443,12 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     std::shared_ptr<LongPollJob> notifyJob = nullptr;
+    const RemoteNodeId remoteDirId = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId);
+    auto timeStamp = 0;
+    if (const auto exitInfo = listingCursor(remoteDirId, _longPollCursor, timeStamp); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
+        return exitInfo;
+    }
     try {
         notifyJob = std::make_shared<LongPollJob>(_driveDbId, _longPollCursor);
     } catch (const std::exception &e) {
