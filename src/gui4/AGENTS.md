@@ -4,7 +4,7 @@
 WinUI3 / Windows App SDK application written in C# (.NET 9), replacing the Qt-based `src/gui/` on Windows.
 Single Visual Studio solution (`kDrive client.sln`) containing two projects:
 - `kDrive client` — the main WinUI3 app (this is the primary project you will edit)
-- `Bootstrapper` — a small C# launcher that starts the C++ server then launches the main app
+- `Bootstrapper` — A small C# project set up as a dependency of the kDrive client project. It is only used to update the version of the project with the one in `version.json` at the root of the repository.
 
 Communicates with the C++ server daemon exclusively over a **TCP socket** (JSON protocol) — no sync logic here.
 Namespace: `Infomaniak.kDrive`.
@@ -175,17 +175,17 @@ Text="{Binding Source={StaticResource Localizer}, Path=GetString[my.key]}"
 
 In C# code:
 ```csharp
-string label = Localizer.Instance.GetString("my.key");
-string withArg = Localizer.Instance.GetString1s("my.key.with.arg", someValue.ToString());
+string label = Localizer.Instance.GetString("mykey");
+string withArg = Localizer.Instance.GetString1s("myKeyWithArg", someValue);
 ```
 
 Missing keys render as `!key!` at runtime — always check both compile and run.
-- DO: Add new strings to all 5 `.resw` files simultaneously
+- DO: Add new strings to all 5 supported languages through the Poco MCP. If they are not available, do not add them manually to the .resw files and warn the user.
 - DON'T: Hardcode any user-visible string in C# or XAML
 
 ### Logging
 Use `Logger.Log(Logger.Level.X, "message")` everywhere. Never use `Console.Write*` or `Debug.Write*`.
-Log levels: `Debug`, `Extended` (verbose), `Info`, `Warning`, `Error`, `Fatal`.
+Log levels: `Extended` (verbose),  `Debug`, `Info`, `Warning`, `Error`, `Fatal`.
 Output: rotating Serilog file at `%LOCALAPPDATA%\temp\kDrive-logdir\` + Sentry breadcrumbs/events.
 
 ```csharp
