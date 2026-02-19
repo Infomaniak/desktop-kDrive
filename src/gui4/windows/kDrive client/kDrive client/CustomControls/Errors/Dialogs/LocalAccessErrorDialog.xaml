@@ -14,14 +14,14 @@
             <TextBlock TextWrapping="Wrap"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}">
             <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogDescription')}" />
-            <Hyperlink NavigateUri="https://support.infomaniak.com/"
+            <!-- <Hyperlink NavigateUri="https://support.infomaniak.com/" TODO: replace with actual FAQ link once available
                        UnderlineStyle="None">
                 <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogFaqLink')}" />
-            </Hyperlink>
+            </Hyperlink> -->
             </TextBlock>
 
             <controls:ItemNamePresenter ItemPath="{x:Bind FilePath}"
-                                        NodeType="{x:Bind _error.NodeType}" />
+                                        NodeType="{x:Bind Error.NodeType}" />
         </StackPanel>
         <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogLocationLabel')}" />

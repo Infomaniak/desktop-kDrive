@@ -22,8 +22,8 @@
           CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>

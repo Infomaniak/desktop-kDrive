@@ -230,20 +230,6 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="CustomControls\Errors\Templates\Server\**" />
-    <Compile Remove="CustomControls\Errors\Templates\SyncPal\**" />
-    <Content Remove="CustomControls\Errors\Templates\Server\**" />
-    <Content Remove="CustomControls\Errors\Templates\SyncPal\**" />
-    <EmbeddedResource Remove="CustomControls\Errors\Templates\Server\**" />
-    <EmbeddedResource Remove="CustomControls\Errors\Templates\SyncPal\**" />
-    <None Remove="CustomControls\Errors\Templates\Server\**" />
-    <None Remove="CustomControls\Errors\Templates\SyncPal\**" />
-    <Page Remove="CustomControls\Errors\Templates\Server\**" />
-    <Page Remove="CustomControls\Errors\Templates\SyncPal\**" />
-    <PRIResource Remove="CustomControls\Errors\Templates\Server\**" />
-    <PRIResource Remove="CustomControls\Errors\Templates\SyncPal\**" />
-  </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />
   </Target>

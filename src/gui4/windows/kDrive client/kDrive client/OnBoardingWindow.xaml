@@ -35,7 +35,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <!-- App title bar -->
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="Auto" />
             <!-- App title bar -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>

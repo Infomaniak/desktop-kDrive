@@ -42,12 +42,12 @@
                       x:DataType="types:IDrive">
             <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
@@ -85,12 +85,12 @@
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
@@ -118,7 +118,7 @@
             <Grid Grid.Row="1"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 

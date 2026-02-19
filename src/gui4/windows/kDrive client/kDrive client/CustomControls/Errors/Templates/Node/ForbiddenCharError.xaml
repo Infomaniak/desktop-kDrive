@@ -14,5 +14,5 @@
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('forbiddenCharErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenCharDescription')}"
-                     Error="{x:Bind _error}" />
+                     Error="{x:Bind Error}" />
 </UserControl>

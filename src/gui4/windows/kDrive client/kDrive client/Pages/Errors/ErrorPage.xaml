@@ -66,8 +66,6 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- Custom Breadcrumb -->
-
                 <errors:ErrorList Grid.Row="0"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
                                   Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
