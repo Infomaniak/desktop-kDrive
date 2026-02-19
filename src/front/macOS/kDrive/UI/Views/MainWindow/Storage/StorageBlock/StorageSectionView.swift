@@ -21,11 +21,13 @@ import kDriveResources
 import SwiftUI
 
 struct StorageSectionView: View {
+    enum StorageData: Sendable {
+        case loading
+        case data(usedBytes: Int64, availableBytes: Int64)
+    }
+
     let title: String
-
-    let usedBytes: Int64
-    let availableBytes: Int64
-
+    let storageData: StorageData
     let items: [StorageItem]
 
     var body: some View {
@@ -36,11 +38,18 @@ struct StorageSectionView: View {
                         .bold()
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text(KDriveLocalizable.storageUsageLabel(
-                        usedBytes.formatted(StorageView.sizeFormatter),
-                        availableBytes.formatted(StorageView.sizeFormatter)
-                    ))
-                    .foregroundStyle(.secondary)
+                    switch storageData {
+                    case .loading:
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .controlSize(.small)
+                    case .data(let usedBytes, let availableBytes):
+                        Text(KDriveLocalizable.storageUsageLabel(
+                            usedBytes.formatted(StorageView.sizeFormatter),
+                            availableBytes.formatted(StorageView.sizeFormatter)
+                        ))
+                        .foregroundStyle(.secondary)
+                    }
                 }
 
                 StorageBarView(items: items)
@@ -57,8 +66,7 @@ struct StorageSectionView: View {
     Form {
         StorageSectionView(
             title: "Mac",
-            usedBytes: 63_000_000_000,
-            availableBytes: 250_000_000_000,
+            storageData: .data(usedBytes: 63_000_000_000, availableBytes: 250_000_000_000),
             items: [
                 StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
                 StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000)

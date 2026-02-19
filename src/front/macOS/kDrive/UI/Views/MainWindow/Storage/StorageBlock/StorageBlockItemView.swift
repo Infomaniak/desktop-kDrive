@@ -19,27 +19,38 @@
 import SwiftUI
 
 struct StorageBlockItemView: View {
+    static let minimumPercentageSize = 0.01
+
     let item: StorageItem
 
     let totalUsedBytes: Int64
     let proxy: GeometryProxy
 
     private var helpfulExplanation: String {
-        return "\(item.title): \(item.usedBytes.formatted(StorageView.sizeFormatter))"
+        if let usedBytes = item.usedBytes {
+            return "\(item.title): \(usedBytes.formatted(StorageView.sizeFormatter))"
+        } else {
+            return "\(item.title): Loading space usage…"
+        }
     }
 
-    private var width: CGFloat {
-        guard totalUsedBytes > 0 else {
-            return proxy.size.width * 0.1
+    private var width: CGFloat? {
+        guard let usedBytes = item.usedBytes else {
+            return item.isDefault ? nil : proxy.size.width * StorageBlockItemView.minimumPercentageSize
         }
 
-        let sizeFraction = CGFloat(item.usedBytes) / CGFloat(totalUsedBytes)
-        return proxy.size.width * max(0.1, sizeFraction)
+        guard totalUsedBytes > 0 else {
+            return proxy.size.width * StorageBlockItemView.minimumPercentageSize
+        }
+
+        let sizeFraction = CGFloat(usedBytes) / CGFloat(totalUsedBytes)
+        return proxy.size.width * max(sizeFraction, StorageBlockItemView.minimumPercentageSize)
     }
 
     var body: some View {
         Rectangle()
             .fill(item.color)
+            .frame(maxWidth: .infinity)
             .frame(width: width)
             .help(helpfulExplanation)
             .accessibilityLabel(Text(helpfulExplanation))
@@ -51,7 +62,7 @@ struct StorageBlockItemView: View {
         StorageBlockItemView(
             item: StorageItem(title: "My Item", color: .blue, usedBytes: 40_000_000_000),
             totalUsedBytes: 80_000_000_000,
-            proxy: proxy
+            proxy: proxy,
         )
     }
 }

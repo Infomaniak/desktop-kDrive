@@ -23,7 +23,7 @@ struct StorageBarView: View {
     let items: [StorageItem]
 
     private var totalUsedBytes: Int64 {
-        return items.reduce(0) { $0 + $1.usedBytes }
+        return items.compactMap { $0.usedBytes }.reduce(0, +)
     }
 
     var body: some View {

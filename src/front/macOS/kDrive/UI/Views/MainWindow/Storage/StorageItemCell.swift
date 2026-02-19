@@ -33,14 +33,23 @@ struct StorageItemCell: View {
                 Text(item.title)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(item.usedBytes, format: StorageView.sizeFormatter)
-                    .foregroundStyle(.secondary)
+                if let usedBytes = item.usedBytes {
+                    Text(usedBytes, format: StorageView.sizeFormatter)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("0 BG")
+                        .redacted(reason: .placeholder)
+                }
             }
             .accessibilityElement()
         }
     }
 }
 
-#Preview {
+#Preview("Real value") {
     StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: 12_000_000_000))
+}
+
+#Preview("Loading") {
+    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: nil))
 }
