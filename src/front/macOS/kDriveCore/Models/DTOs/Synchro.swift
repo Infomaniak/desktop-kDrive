@@ -47,12 +47,6 @@ public struct Synchro: Identifiable, Hashable, Sendable {
             return
         }
 
-        // FIXME: Remove stopgap once server has implemented a stable identifier
-        guard node.status != .Syncing else {
-            IKLogger.data.log("[KD] Skip a Syncing activity")
-            return
-        }
-
         let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
         synchNodes[node.localNodeId] = nodeToStore
         synchNodes.sort { $0.value.date > $1.value.date }
