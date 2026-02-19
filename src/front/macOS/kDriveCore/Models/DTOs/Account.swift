@@ -40,6 +40,10 @@ public struct Account: Identifiable, Hashable, Sendable {
 }
 
 extension Account {
+    init(with response: AccountInfoResponse) {
+        self.init(dbId: response.dbId, userDbId: response.userDbId, name: response.name, drives: [:])
+    }
+
     init(with signal: AccountInfoSignalMetadata) {
         self.init(dbId: signal.dbId, userDbId: signal.userDbId, name: signal.name, drives: [:])
     }
