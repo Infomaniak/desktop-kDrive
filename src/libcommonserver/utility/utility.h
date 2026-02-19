@@ -203,7 +203,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool getLinuxDesktopType(std::string &currentDesktop);
         static SyncPath getTrashPath();
 
-        static bool registerLoginRedirection(const std::string &appName);
+        static bool registerLoginRedirection();
 
         // Format utility functions
         static std::wstring formatStdError(const std::error_code &ec);

@@ -17,10 +17,12 @@
  */
 
 #include "utility.h"
+#include "io/iohelper.h"
 
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
 
+#include <config.h>
 #include <filesystem>
 #include <regex>
 #include <string>
@@ -261,7 +263,7 @@ SyncPath Utility::getTrashPath() {
     return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
-bool Utility::registerLoginRedirection(const std::string &appName) {
+bool Utility::registerLoginRedirection() {
     // Create file .desktop
     const char *homePathEnv = std::getenv("HOME");
     if (!homePathEnv) {
@@ -270,7 +272,7 @@ bool Utility::registerLoginRedirection(const std::string &appName) {
     }
 
     const auto urlSchemeDirPath = SyncPath(std::string(homePathEnv) + "/.local/share/applications");
-    const auto urlSchemeFilePath = urlSchemeDirPath / (appName + ".desktop");
+    const auto urlSchemeFilePath = urlSchemeDirPath / (APPLICATION_EXECUTABLE + ".desktop");
 
     IoError ioError = IoError::Unknown;
     if (!std::filesystem::exists(urlSchemeDirPath) && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {

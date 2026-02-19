@@ -127,6 +127,7 @@ void increaseFileSystemCapacity() {
 }
 #endif
 
+#if defined(KD_LINUX)
 bool isProcessRunning(const std::string &processName) {
     pid_t currentPid = getpid();
     try {
@@ -156,6 +157,7 @@ bool isProcessRunning(const std::string &processName) {
     }
     return false;
 }
+#endif
 
 std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     if (appPtr->helpAsked()) {
@@ -198,7 +200,11 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 #endif
 
     // If the application is already running, notify it.
-    if (appPtr->isRunning() || isProcessRunning("kDrive")) {
+    if (appPtr->isRunning()
+#if defined(KD_LINUX)
+        || isProcessRunning("kDrive")
+#endif
+    ) {
         std::cout << "Server already running" << std::endl;
 
         if (appPtr->isSessionRestored()) {
