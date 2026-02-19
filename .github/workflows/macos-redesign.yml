@@ -55,7 +55,7 @@ jobs:
         with:
           working_directory: src/front/macOS
       - name: SwiftLint
-        run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
+        run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging --reporter json .
 
   swiftformat:
     name: SwiftFormat
