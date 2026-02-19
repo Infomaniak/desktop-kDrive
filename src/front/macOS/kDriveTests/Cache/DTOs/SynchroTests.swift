@@ -102,7 +102,7 @@ struct SynchroTests {
 
         // THEN
         #expect(synchro.synchNodes.count == 1)
-        #expect(synchro.synchNodes[1] == node)
+        #expect(synchro.synchNodes[1234] == node)
     }
 
     @Test("Update existing SynchroNode")
