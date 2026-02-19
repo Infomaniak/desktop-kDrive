@@ -1488,6 +1488,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 var activities = sync.SyncActivities;
                 var operationId = fileItemInfo.OperationId;
 
+                // Store the position of the last syncing item
+                var lastSyncingItem = activities.LastOrDefault(a => a.Status == SyncFileStatus.Syncing);
+                int destIndex = lastSyncingItem is null ? 0 : activities.IndexOf(lastSyncingItem);
+
                 // Find existing item
                 var existing = activities.FirstOrDefault(a => a.OperationId == operationId);
 
@@ -1499,10 +1503,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Warning, $"Received completion for already finished item. OperationId: {existing.OperationId}, Existing: {existing.Status}, New: {fileItemInfo.Status}");
                         return;
                     }
-
-                    // Store the position of the las syncing item
-                    var lastSyncingItem = activities.LastOrDefault(a => a.Status == SyncFileStatus.Syncing);
-                    int destIndex = lastSyncingItem is null ? 0 : activities.IndexOf(lastSyncingItem);
 
                     // Update state
                     CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, existing);
@@ -1524,24 +1524,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
 
+                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                var toBeRemoved = activities.Where(a => (a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                activities.RemoveMany(toBeRemoved);
+
                 // Create new item
                 var newItem = new SyncFileItem(sync);
                 CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
 
-                if (newItem.Status != SyncFileStatus.Syncing)
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < 1000)
                 {
                     // Insert item after all syncing items
-                    int destIndex = activities.TakeWhile(a => a.Status == SyncFileStatus.Syncing).Count();
-                    activities.Insert(destIndex, newItem);
+                    activities.Insert(Math.Max(destIndex + 1, activities.Count), newItem);
                 }
                 else
                 {
                     activities.Insert(0, newItem);
                 }
-
-                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => a.Status != SyncFileStatus.Syncing && a.Status != SyncFileStatus.Success);
-                activities.RemoveMany(toBeRemoved);
 
                 // Enforce max size
                 while (activities.Count > MaxActivities)
