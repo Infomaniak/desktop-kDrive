@@ -35,7 +35,7 @@ public struct AccountJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<AccountListResponse>.self)
 
         let accountList = decodedMessage.body.accountInfoList
-        await accountList.asyncForEach { try? await coherentCache.updateAccount(Account(with: $0)) }
+        await accountList.asyncForEach { try? await coherentCache.addOrUpdateAccount(Account(with: $0)) }
 
         return accountList
     }

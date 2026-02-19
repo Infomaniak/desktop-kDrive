@@ -92,11 +92,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .USER_REMOVED:
             try await userHandler.handleUserRemoved(signal)
 
-        case .ACCOUNT_ADDED:
-            try await accountHandler.handleAccountAdded(signal)
-
-        case .ACCOUNT_UPDATED:
-            try await accountHandler.handleAccountUpdated(signal)
+        case .ACCOUNT_ADDED, .ACCOUNT_UPDATED:
+            try await accountHandler.handleAccountAddedOrUpdated(signal)
 
         case .ACCOUNT_REMOVED:
             try await accountHandler.handleAccountRemoved(signal)
