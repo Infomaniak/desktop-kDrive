@@ -128,7 +128,7 @@ public extension UISynchroNode {
             instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction),
             size: synchroNode.size,
             progress: synchroNode.progress,
-            synDate: synchroNode.date
+            syncDate: synchroNode.date
         )
     }
 }

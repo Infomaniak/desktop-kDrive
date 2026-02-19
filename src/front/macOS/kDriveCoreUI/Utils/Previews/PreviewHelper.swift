@@ -102,7 +102,7 @@ public enum PreviewHelper {
         instruction: .update,
         size: 7_000_000,
         progress: 99,
-        synDate: .now
+        syncDate: .now
     )
     public static let synchroNode2 = UISynchroNode(
         id: "2",
@@ -115,7 +115,7 @@ public enum PreviewHelper {
         instruction: .update,
         size: 12_000_000,
         progress: 1,
-        synDate: .now.addingTimeInterval(-3600)
+        syncDate: .now.addingTimeInterval(-3600)
     )
     public static let synchroNode3 = UISynchroNode(
         id: "3",
@@ -128,7 +128,7 @@ public enum PreviewHelper {
         instruction: .update,
         size: 300_000,
         progress: 10,
-        synDate: .now.addingTimeInterval(-3600)
+        syncDate: .now.addingTimeInterval(-3600)
     )
 
     public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
