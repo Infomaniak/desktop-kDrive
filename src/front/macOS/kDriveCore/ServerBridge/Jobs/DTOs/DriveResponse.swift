@@ -107,9 +107,3 @@ public extension AvailableDriveResponse {
                        color: color)
     }
 }
-
-public extension Collection<AvailableDriveResponse> {
-    var asAvailableDrives: [AvailableDrive] {
-        return map { $0.asAvailableDrive }
-    }
-}
