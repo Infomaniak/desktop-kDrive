@@ -100,7 +100,7 @@ final class MainViewController: IKSplitViewController {
         case .activities:
             contentViewController = ActivitiesViewController(mainViewModel: viewModel)
         case .storage:
-            contentViewController = StorageViewController()
+            contentViewController = StorageViewController(mainViewModel: viewModel)
         case .blockingError:
             if let blockingError = viewModel.currentBlockingError {
                 contentViewController = BlockingErrorViewController(blockingError: blockingError)
