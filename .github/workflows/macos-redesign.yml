@@ -70,7 +70,7 @@ jobs:
         with:
           working_directory: src/front/macOS
       - name: SwiftFormat
-        run: swiftformat --lint . --reporter github-actions-log --reporter json
+        run: swiftformat --lint . --reporter github-actions-log
 
   periphery:
     name: Periphery
