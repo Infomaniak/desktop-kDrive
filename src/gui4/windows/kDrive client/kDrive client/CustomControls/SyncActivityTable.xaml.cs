@@ -225,7 +225,7 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboard"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboardTitle"), false);
             }
             else
             {

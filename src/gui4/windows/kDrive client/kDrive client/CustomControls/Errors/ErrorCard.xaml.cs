@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -19,16 +20,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(TitleProperty, value); }
         }
 
-        public string ItemIconUri
+        public Error? Error
         {
-            get { return (string)GetValue(ItemIconUriProperty); }
-            set { SetValue(ItemIconUriProperty, value); }
-        }
-
-        public string? ItemPath
-        {
-            get { return (string?)GetValue(ItemPathProperty); }
-            set { SetValue(ItemPathProperty, value); }
+            get { return (Error?)GetValue(ErrorProperty); }
+            set
+            {
+                SetValue(ErrorProperty, value);
+                IsNodeError = value?.ErrorLevel == Types.ErrorLevel.Node;
+            }
         }
 
         public string Description
@@ -49,17 +48,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(CustomContentProperty, value); }
         }
 
+        private bool IsNodeError { get; set; } = false;
+
         public delegate void ActionClickEventHandler(object sender, RoutedEventArgs e);
         public event ActionClickEventHandler? ActionClick;
 
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(nameof(Title), typeof(string), typeof(ErrorCard), new PropertyMetadata(false));
 
-        public static readonly DependencyProperty ItemIconUriProperty =
-            DependencyProperty.Register(nameof(ItemIconUri), typeof(string), typeof(ErrorCard), new PropertyMetadata(string.Empty));
-
-        public static readonly DependencyProperty ItemPathProperty =
-            DependencyProperty.Register(nameof(ItemPath), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
+        public static readonly DependencyProperty ErrorProperty =
+            DependencyProperty.Register(nameof(Error), typeof(Error), typeof(ErrorCard), new PropertyMetadata(null));
 
         public static readonly DependencyProperty DescriptionProperty =
             DependencyProperty.Register(nameof(Description), typeof(string), typeof(ErrorCard), new PropertyMetadata(string.Empty));

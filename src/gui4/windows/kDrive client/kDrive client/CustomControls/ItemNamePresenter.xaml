@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.ItemNamePresenter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+    </UserControl.Resources>
+    <Border Grid.Row="1"
+            Grid.Column="0"
+            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+            Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
+            Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top">
+        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind ItemPath, Mode=OneWay}"
+                         Placement="Mouse" />
+            </ToolTipService.ToolTip>
+            <controls:SvgIcon Grid.Column="0"
+                              UriString="{x:Bind ItemPath, Converter={StaticResource FilePathToIconConverter}}"
+                              Width="12"
+                              Height="12"
+                              Visibility="{x:Bind IsFileIconVisible}" />
+            
+            <controls:SvgIcon Grid.Column="0"
+                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                              Width="12"
+                              Height="12"
+                              Visibility="{x:Bind IsDirectoryIconVisible}" />
+
+            <TextBlock Grid.Column="1"
+                       Margin="0"
+                       Padding="0"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{x:Bind ItemPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
+                       Style="{StaticResource BodyTextBlockStyle}" />
+        </Grid>
+    </Border>
+</UserControl>

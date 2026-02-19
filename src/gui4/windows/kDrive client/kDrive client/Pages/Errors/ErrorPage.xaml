@@ -14,22 +14,15 @@
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
-
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
-          RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+          RowSpacing="0">
         <Grid.RowDefinitions>
-            <!-- Breadcrumb -->
             <RowDefinition Height="Auto" />
-            <!-- Files -->
-            <RowDefinition Height="auto" />
-            <!-- SyncDir -->
-            <RowDefinition Height="auto" />
-            <!-- Other -->
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <!-- Custom Breadcrumb -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0"
+              Height="{StaticResource Infomaniak.Style.Spacing.XL}"
+              Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -60,14 +53,31 @@
                        PointerPressed="BreadcrumbActivity_Click" />
         </Grid>
 
-        <errors:ErrorList Grid.Row="1"
-                          Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
-                          Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
-                          Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+        <ScrollView Grid.Row="1"
+                    Padding="0"
+                    Margin="0">
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+                <Grid.RowDefinitions>
+                    <!-- Files -->
+                    <RowDefinition Height="Auto" />
+                    <!-- SyncDir -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Other -->
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-        <errors:ErrorList Grid.Row="3"
-                          Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
-                          Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
-                          Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                <!-- Custom Breadcrumb -->
+
+                <errors:ErrorList Grid.Row="0"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
+                                  Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <errors:ErrorList Grid.Row="2"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
+                                  Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+            </Grid>
+        </ScrollView>
     </Grid>
 </Page>

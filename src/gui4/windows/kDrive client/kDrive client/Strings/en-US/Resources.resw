@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 17:40:15 +0100 
+  Exported at: Thu, 19 Feb 2026 12:15:09 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -621,11 +621,26 @@ Please try again in a few minutes.</value>
   <data name="licensesHyperLink" xml:space="preserve"> 
     <value>LGPL v3 License – Git Sources</value> 
   </data> 
-  <data name="linkCopiedToClipboard" xml:space="preserve"> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link copied to clipboard</value> 
   </data> 
   <data name="localFileAccessDescription" xml:space="preserve"> 
     <value>Unable to access this file on your computer. Check that it still exists and that you have the rights to access it.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
+    <value>Close</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
+    <value>File access permissions have been modified, preventing synchronization.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
+    <value>Check FAQ to restore access</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
+    <value>Last known file location:</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
+    <value>Open Parent Folder</value> 
   </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>File inaccessible</value> 
@@ -798,6 +813,9 @@ Please wait a few moments.</value>
   </data> 
   <data name="openLoginPage" xml:space="preserve"> 
     <value>Open the login page</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Path copied to clipboard</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Define how kDrive connects to the Internet.</value> 

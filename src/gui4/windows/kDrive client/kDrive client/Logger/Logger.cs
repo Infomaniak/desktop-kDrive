@@ -152,8 +152,10 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Error, "Skipping Sentry initialization in OnLaunched to avoid potential issues with Sentry's WinUI integration.");
 #if DEBUG
                 throw new InvalidOperationException("Sentry should not be initialized in OnLaunched. Please call Logger.StartSentry() from a earlier/later point in the application lifecycle, such as after the main window has been created.");
-#endif
+#else
                 return;
+#endif
+
             }
             // Check if sentry is allowed by the user settings before initializing
             AppModel appModel = App.ServiceProvider.GetRequiredService<AppModel>();

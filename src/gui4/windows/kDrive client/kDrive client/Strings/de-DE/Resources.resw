@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 17:40:15 +0100 
+  Exported at: Thu, 19 Feb 2026 12:15:09 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -621,11 +621,26 @@ Bitte versuchen Sie es in ein paar Minuten erneut.</value>
   <data name="licensesHyperLink" xml:space="preserve"> 
     <value>LGPL v3 Lizenz - Git-Quellen</value> 
   </data> 
-  <data name="linkCopiedToClipboard" xml:space="preserve"> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link in die Zwischenablage kopiert</value> 
   </data> 
   <data name="localFileAccessDescription" xml:space="preserve"> 
     <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
+    <value>Schliessen</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
+    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
+    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
+    <value>Letzter Dateispeicherort:</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
+    <value>Übergeordneten Ordner öffnen</value> 
   </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Datei unzugänglich</value> 
@@ -798,6 +813,9 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   </data> 
   <data name="openLoginPage" xml:space="preserve"> 
     <value>Öffnen Sie die Anmeldeseite</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>In die Zwischenablage kopierter Pfad</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Definieren Sie, wie sich kDrive mit dem Internet verbindet.</value> 

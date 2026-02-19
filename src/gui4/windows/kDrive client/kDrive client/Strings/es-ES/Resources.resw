@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 17:40:15 +0100 
+  Exported at: Thu, 19 Feb 2026 12:15:09 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -621,11 +621,26 @@ Por favor, inténtelo de nuevo en unos minutos.</value>
   <data name="licensesHyperLink" xml:space="preserve"> 
     <value>Licencia LGPL v3 - Fuentes Git</value> 
   </data> 
-  <data name="linkCopiedToClipboard" xml:space="preserve"> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Enlace copiado en el portapapeles</value> 
   </data> 
   <data name="localFileAccessDescription" xml:space="preserve"> 
     <value>No se puede acceder a este archivo en su ordenador. Compruebe que todavía existe y que tiene derechos para acceder a él.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
+    <value>Cerrar</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
+    <value>Los permisos de acceso del archivo han sido modificados, lo que impide la sincronización.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
+    <value>Consulte las preguntas frecuentes para restaurar el acceso</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
+    <value>Última ubicación conocida del archivo:</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
+    <value>Abrir carpeta padre</value> 
   </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Fichero inaccesible</value> 
@@ -798,6 +813,9 @@ Espere unos instantes.</value>
   </data> 
   <data name="openLoginPage" xml:space="preserve"> 
     <value>Abrir la página de inicio de sesión</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Ruta copiada en el portapapeles</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Define cómo se conecta kDrive a Internet.</value> 

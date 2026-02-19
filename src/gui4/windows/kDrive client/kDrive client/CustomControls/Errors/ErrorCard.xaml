@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </UserControl.Resources>
     <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
@@ -37,36 +38,10 @@
                    Style="{StaticResource BodyTextBlockStyle}" />
 
         <!-- Item infos -->
-        <Border Grid.Row="1"
-                Grid.Column="0"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
-                Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top">
-            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                  Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind ItemPath, Mode=OneWay}"
-                             Placement="Right" />
-                </ToolTipService.ToolTip>
-                <controls:SvgIcon Grid.Column="0"
-                                  UriString="{x:Bind ItemIconUri, Mode=OneWay}"
-                                  Width="12"
-                                  Height="12" />
-
-                <TextBlock Grid.Column="1"
-                           Margin="0"
-                           Padding="0"
-                           Text="{x:Bind ItemPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
-                           Style="{StaticResource BodyTextBlockStyle}" />
-            </Grid>
-        </Border>
+        <controls:ItemNamePresenter Grid.Row="1"
+                                    ItemPath="{x:Bind Error.Path , Mode=OneWay}"
+                                    NodeType="{x:Bind Error.NodeType}"
+                                    Visibility="{x:Bind IsNodeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
         <!-- Description & CustomContent-->
         <StackPanel Grid.Row="2"

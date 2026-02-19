@@ -302,6 +302,11 @@ namespace Infomaniak.kDrive
          */
         public static void ShowTeachingTipFromxUid(string translationKeyPreffix)
         {
+            ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
+        }
+
+        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null)
+        {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
@@ -313,16 +318,14 @@ namespace Infomaniak.kDrive
 
             XamlRoot xamlRoot = app.CurrentWindow.Content.XamlRoot;
 
-            string subtitleKey = $"{translationKeyPreffix}Subtitle";
-            string contentKey = $"{translationKeyPreffix}Content";
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
-                Subtitle = Localizer.Instance.IsValidKey(subtitleKey) ? Localizer.Instance.GetString(subtitleKey) : "",
+                Title = Localizer.Instance.GetString(titleKey),
+                Subtitle = Localizer.Instance.IsValidKey(subtitleKey) ? Localizer.Instance.GetString(subtitleKey!) : "",
                 Content = Localizer.Instance.IsValidKey(contentKey) ? new TextBlock
                 {
-                    Text = Localizer.Instance.GetString(contentKey),
+                    Text = Localizer.Instance.GetString(contentKey!),
                     TextWrapping = TextWrapping.Wrap
                 } : "",
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,

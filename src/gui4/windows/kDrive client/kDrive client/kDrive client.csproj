@@ -134,6 +134,9 @@
     <Page Update="CustomControls\DriveStatusIndicator.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\ItemPathPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\StatusBadge.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -199,16 +202,7 @@
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
     <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
-    <Folder Include="CustomControls\Errors\Templates\Server\" />
-    <Folder Include="CustomControls\Errors\Templates\SyncPal\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Pages\Onboarding\NoDrivesPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <Page Update="Pages\Settings\DriveAdvancedSyncsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Folder Include="CustomControls\Errors\Dialogs\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">
@@ -237,26 +231,18 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Strings\de-DE\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resw</DependentUpon>
-    </Compile>
-    <Compile Update="Strings\en-US\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resw</DependentUpon>
-    </Compile>
-    <Compile Update="Strings\es-ES\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resw</DependentUpon>
-    </Compile>
-    <Compile Update="Strings\it-IT\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resw</DependentUpon>
-    </Compile>
+    <Compile Remove="CustomControls\Errors\Templates\Server\**" />
+    <Compile Remove="CustomControls\Errors\Templates\SyncPal\**" />
+    <Content Remove="CustomControls\Errors\Templates\Server\**" />
+    <Content Remove="CustomControls\Errors\Templates\SyncPal\**" />
+    <EmbeddedResource Remove="CustomControls\Errors\Templates\Server\**" />
+    <EmbeddedResource Remove="CustomControls\Errors\Templates\SyncPal\**" />
+    <None Remove="CustomControls\Errors\Templates\Server\**" />
+    <None Remove="CustomControls\Errors\Templates\SyncPal\**" />
+    <Page Remove="CustomControls\Errors\Templates\Server\**" />
+    <Page Remove="CustomControls\Errors\Templates\SyncPal\**" />
+    <PRIResource Remove="CustomControls\Errors\Templates\Server\**" />
+    <PRIResource Remove="CustomControls\Errors\Templates\SyncPal\**" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />

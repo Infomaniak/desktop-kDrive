@@ -138,8 +138,9 @@ namespace Infomaniak.kDrive
             return localizedString;
         }
 
-        public bool IsValidKey(string key)
+        public bool IsValidKey(string? key)
         {
+            if (key is null) return false;
             string localizedString = GetString(key);
             return !localizedString.StartsWith("!") && !localizedString.EndsWith("!");
         }
