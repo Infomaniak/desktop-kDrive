@@ -30,12 +30,6 @@ struct AccountInfoSignalMetadata: Codable, Sendable {
     @Base64CodedString var name: String
 }
 
-extension AccountInfoSignalMetadata {
-    var asAccount: Account {
-        Account(dbId: dbId, userDbId: userDbId, name: name, drives: [:])
-    }
-}
-
 struct AccountRemoveSignal: Codable, Sendable {
     let accountDbId: Int32
 }

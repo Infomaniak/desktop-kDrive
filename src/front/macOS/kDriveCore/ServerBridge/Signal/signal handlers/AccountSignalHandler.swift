@@ -29,7 +29,7 @@ struct AccountSignalHandler {
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
-        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
+        await coherentCache.addAccount(Account(with: accountInfo), userDbId: accountInfo.userDbId)
     }
 
     func handleAccountUpdated(_ signal: Data) async throws {
@@ -38,7 +38,7 @@ struct AccountSignalHandler {
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
-        try await coherentCache.updateAccount(accountInfo.asAccount)
+        try await coherentCache.updateAccount(Account(with: accountInfo))
     }
 
     func handleAccountRemoved(_ signal: Data) async throws {
