@@ -36,7 +36,7 @@ extension ObservedAccount {
 @MainActor
 struct ObservedAccountTests_dbIdOnly {
     @Test(.timeLimit(.minutes(1)))
-    func setObservedAccount() async throws {
+    func setObservedAccount() async {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -91,7 +91,7 @@ struct ObservedAccountTests_dbIdOnly {
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
-        try await cache.updateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
 
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
@@ -129,8 +129,8 @@ struct ObservedAccountTests_dbIdOnly {
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
-        try await cache.updateAccount(ObservableData.updatedAccount)
-        try await cache.updateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
 
         // THEN
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
@@ -144,7 +144,7 @@ struct ObservedAccountTests_dbIdOnly {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func deleteObservedAccount() async throws {
+    func deleteObservedAccount() async {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -179,7 +179,7 @@ struct ObservedAccountTests_dbIdOnly {
 @MainActor
 struct ObservedAccountTests_allIds {
     @Test(.timeLimit(.minutes(1)))
-    func setObservedAccount() async throws {
+    func setObservedAccount() async {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -235,7 +235,7 @@ struct ObservedAccountTests_allIds {
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
-        try await cache.updateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
 
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
@@ -274,8 +274,8 @@ struct ObservedAccountTests_allIds {
         #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
-        try await cache.updateAccount(ObservableData.updatedAccount)
-        try await cache.updateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
+        try await cache.addOrUpdateAccount(ObservableData.updatedAccount)
 
         // THEN
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
@@ -289,7 +289,7 @@ struct ObservedAccountTests_allIds {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func deleteObservedAccount() async throws {
+    func deleteObservedAccount() async {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)

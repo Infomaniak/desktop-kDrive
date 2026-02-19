@@ -29,9 +29,9 @@ struct CoherentCacheSynchroTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache
-            .getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
             .expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
@@ -56,9 +56,9 @@ struct CoherentCacheSynchroTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache
-            .getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
             .expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
@@ -88,9 +88,9 @@ struct CoherentCacheSynchroTests {
         let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache
-            .getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
             .expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)

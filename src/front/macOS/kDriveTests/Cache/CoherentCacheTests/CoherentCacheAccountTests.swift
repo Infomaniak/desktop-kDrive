@@ -32,11 +32,11 @@ struct CoherentCacheAccountTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
 
         // WHEN
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
 
         // THEN
         #expect(await cache
-            .getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
             .expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
     }
@@ -50,7 +50,7 @@ struct CoherentCacheAccountTests {
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == nil)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
 
         // WHEN
@@ -70,12 +70,12 @@ struct CoherentCacheAccountTests {
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == nil)
-        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
 
         // WHEN
         do {
-            try await cache.updateAccount(CacheData.updatedAccount)
+            try await cache.addOrUpdateAccount(CacheData.updatedAccount)
 
             // THEN
             guard let accountByDbId = await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) else {
