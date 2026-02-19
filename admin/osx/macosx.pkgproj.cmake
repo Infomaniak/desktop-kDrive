@@ -846,10 +846,11 @@
 						<integer>1</integer>
 						<key>IC_REQUIREMENT_FILES_LIST</key>
 						<array>
-							<string>/Applications/@PACKAGE_APP_NAME@.app</string>
+							<!-- New Swift GUI: /Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app -->
+							<string>/Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app</string>
 							<!-- Legacy Qt GUI paths (for upgrade scenarios) -->
-							<string>/Applications/@APPLICATION_EXECUTABLE@.app</string>
 							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app</string>
+							<string>/Applications/@APPLICATION_EXECUTABLE@.app</string>
 							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/kDriveUninstaller.app</string>
 						</array>
 						<key>IC_REQUIREMENT_FILES_SELECTOR</key>

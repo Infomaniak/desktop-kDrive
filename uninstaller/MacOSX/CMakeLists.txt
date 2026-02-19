@@ -15,9 +15,9 @@ add_dependencies(kdrive_uninstaller mac_litesyncext ${APPLICATION_EXECUTABLE})
 # Determine where to install uninstaller based on GUI type
 if(BUILD_NEW_MAC_GUI AND DEFINED KDRIVE_SWIFT_GUI_BUNDLE)
     # For new Swift GUI: install into the app bundle
-    # The uninstaller is bundled inside the main app for newer macOS apps
-    set(UNINSTALLER_DEST ${KDRIVE_SWIFT_GUI_BUNDLE}/Contents/Frameworks/)
-    message(STATUS "Uninstaller will be installed into Swift GUI bundle")
+    # The bundle is installed at: /Applications/${APPLICATION_NAME}/kDrive.app
+    set(UNINSTALLER_DEST "${CMAKE_INSTALL_PREFIX}/Applications/${APPLICATION_NAME}/kDrive.app/Contents/Frameworks/")
+    message(STATUS "Uninstaller will be installed into Swift GUI bundle: ${UNINSTALLER_DEST}")
 else()
     # For legacy Qt GUI: install into the old bundle structure
     set(UNINSTALLER_DEST ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)

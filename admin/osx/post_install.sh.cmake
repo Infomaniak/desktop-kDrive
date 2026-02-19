@@ -2,23 +2,27 @@
 
 # Post-install script for kDrive macOS installer
 # Works with both New Swift GUI and Legacy Qt GUI
+# Both are installed in nested structure: /Applications/<container>/<app>.app
 
 # Determine app location based on installation
-if [ -d "/Applications/@PACKAGE_APP_NAME@.app" ]; then
-    # New Swift GUI or standard installation
-    KDRIVE_APP_PATH="/Applications/@PACKAGE_APP_NAME@.app"
-elif [ -d "/Applications/@APPLICATION_EXECUTABLE@/@APPLICATION_EXECUTABLE@.app" ]; then
-    # Legacy Qt GUI nested installation
-    KDRIVE_APP_PATH="/Applications/@APPLICATION_EXECUTABLE@/@APPLICATION_EXECUTABLE@.app"
+# New Swift GUI: /Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app
+if [ -d "/Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app" ]; then
+    KDRIVE_APP_PATH="/Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app"
+    echo "Found new Swift GUI at: $KDRIVE_APP_PATH"
+# Legacy Qt GUI: /Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app  
+elif [ -d "/Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app" ]; then
+    KDRIVE_APP_PATH="/Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app"
+    echo "Found legacy Qt GUI at: $KDRIVE_APP_PATH"
+# Fallback for old flat installations
 elif [ -d "/Applications/@APPLICATION_EXECUTABLE@.app" ]; then
-    # Legacy Qt GUI flat installation
     KDRIVE_APP_PATH="/Applications/@APPLICATION_EXECUTABLE@.app"
+    echo "Found flat installation at: $KDRIVE_APP_PATH"
 else
     echo "kDrive app not found in expected locations"
+    echo "Checked: /Applications/@PACKAGE_APP_CONTAINER@/@PACKAGE_APP_NAME@.app"
+    echo "Checked: /Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app"
     exit 1
 fi
-
-echo "Found kDrive at: $KDRIVE_APP_PATH"
 
 # Always enable the finder plugin if available
 if [ -x "$(command -v pluginkit)" ]; then

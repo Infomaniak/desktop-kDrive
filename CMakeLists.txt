@@ -334,12 +334,14 @@ if(APPLE AND BUILD_NEW_MAC_GUI)
         message(STATUS "Added dependency: kdrive_swift_gui depends on ${APPLICATION_EXECUTABLE}")
     endif()
     
-    # Install the new GUI app bundle
+    # Install the new GUI app bundle into /Applications/kDrive/
+    # This maintains the same nested structure as the legacy Qt GUI
     install(DIRECTORY ${KDRIVE_SWIFT_GUI_BUNDLE}
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications/${APPLICATION_NAME}"
         USE_SOURCE_PERMISSIONS
         OPTIONAL
     )
+    message(STATUS "Swift GUI will be installed to: ${CMAKE_INSTALL_PREFIX}/Applications/${APPLICATION_NAME}/kDrive.app")
 endif()
 #####
 

@@ -14,14 +14,18 @@ endif()
 # Configure based on which GUI we're building (new Swift GUI vs legacy Qt GUI)
 if(APPLE AND BUILD_NEW_MAC_GUI)
     # New Swift GUI mode
+    # App is installed at: /Applications/@APPLICATION_NAME_XML_ESCAPED@/kDrive.app
     set(PACKAGE_APP_NAME "kDrive" CACHE STRING "Name of the app bundle in the package")
     set(PACKAGE_APP_EXECUTABLE "kDrive" CACHE STRING "Name of the executable to launch")
-    message(STATUS "Packaging configured for new Swift GUI: ${PACKAGE_APP_NAME}.app")
+    set(PACKAGE_APP_CONTAINER "@APPLICATION_NAME_XML_ESCAPED@" CACHE STRING "Parent directory in /Applications")
+    message(STATUS "Packaging configured for new Swift GUI: ${PACKAGE_APP_CONTAINER}/${PACKAGE_APP_NAME}.app")
 else()
     # Legacy Qt GUI mode
+    # App is installed at: /Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app
     set(PACKAGE_APP_NAME "@APPLICATION_EXECUTABLE@" CACHE STRING "Name of the app bundle in the package")
     set(PACKAGE_APP_EXECUTABLE "@APPLICATION_EXECUTABLE@" CACHE STRING "Name of the executable to launch")
-    message(STATUS "Packaging configured for legacy Qt GUI: ${PACKAGE_APP_NAME}.app")
+    set(PACKAGE_APP_CONTAINER "@APPLICATION_NAME_XML_ESCAPED@" CACHE STRING "Parent directory in /Applications")
+    message(STATUS "Packaging configured for legacy Qt GUI: ${PACKAGE_APP_CONTAINER}/${PACKAGE_APP_NAME}.app")
 endif()
 #####
 

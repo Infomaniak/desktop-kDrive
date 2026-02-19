@@ -4,11 +4,13 @@ set(APPLICATION_ICON_PATH "${CMAKE_BINARY_DIR}/src/server/${APPLICATION_ICON_NAM
 # Determine destination bundle based on whether we're building new Swift GUI or legacy Qt GUI
 if(BUILD_NEW_MAC_GUI AND DEFINED KDRIVE_SWIFT_GUI_BUNDLE)
     # New Swift GUI mode: install extensions into the Swift GUI bundle
-    set(OSX_EXTENSION_BUNDLE "${KDRIVE_SWIFT_GUI_BUNDLE}")
+    # The bundle is installed at: /Applications/${APPLICATION_NAME}/kDrive.app
+    set(OSX_EXTENSION_BUNDLE "${CMAKE_INSTALL_PREFIX}/Applications/${APPLICATION_NAME}/kDrive.app")
     message(STATUS "Extensions will be installed into Swift GUI bundle: ${OSX_EXTENSION_BUNDLE}")
 else()
     # Legacy Qt GUI mode: install into legacy bundle
     set(OSX_EXTENSION_BUNDLE "${KDRIVE_OSX_BUNDLE}")
+    message(STATUS "Extensions will be installed into Qt GUI bundle: ${OSX_EXTENSION_BUNDLE}")
 endif()
 
 # LoginItem Agent
