@@ -102,7 +102,7 @@ struct SynchroTests {
 
         // THEN
         #expect(synchro.synchNodes.count == 1)
-        #expect(synchro.synchNodes["local-1"] == node)
+        #expect(synchro.synchNodes[1] == node)
     }
 
     @Test("Update existing SynchroNode")
@@ -116,7 +116,7 @@ struct SynchroTests {
                               supportVfs: true,
                               virtualFileMode: .Mac)
 
-        let originalNode = SynchroNode(operationId: 1234,
+        let originalNode = SynchroNode(operationId: 1,
                                        type: .File,
                                        path: "/file.txt",
                                        newPath: "/file.txt",
@@ -135,7 +135,7 @@ struct SynchroTests {
 
         synchro.addOrUpdateSynchNode(originalNode)
 
-        let updatedNode = SynchroNode(operationId: 1234,
+        let updatedNode = SynchroNode(operationId: 1,
                                       type: .File,
                                       path: "/file.txt",
                                       newPath: "/file.txt",
@@ -157,9 +157,9 @@ struct SynchroTests {
 
         // THEN
         #expect(synchro.synchNodes.count == 1)
-        #expect(synchro.synchNodes["local-1"]?.direction == .Down)
-        #expect(synchro.synchNodes["local-1"]?.instruction == .Update)
-        #expect(synchro.synchNodes["local-1"]?.status == .Success)
+        #expect(synchro.synchNodes[1]?.direction == .Down)
+        #expect(synchro.synchNodes[1]?.instruction == .Update)
+        #expect(synchro.synchNodes[1]?.status == .Success)
     }
 
     @Test("SynchroNode limit enforcement")
@@ -215,8 +215,8 @@ struct SynchroTests {
 
         // THEN - Should still have only 100 nodes (oldest removed)
         #expect(synchro.synchNodes.count == 100)
-        #expect(synchro.synchNodes["local-0"] == nil) // First node should be removed
-        #expect(synchro.synchNodes["local-extra"] != nil) // New node should be present
+        #expect(synchro.synchNodes[0] == nil) // First node should be removed
+        #expect(synchro.synchNodes[1337] != nil) // New node should be present
     }
 
     @Test("Get SynchroNode by localNodeId")
@@ -268,9 +268,9 @@ struct SynchroTests {
         synchro.addOrUpdateSynchNode(node2)
 
         // WHEN
-        let fetchedNode1 = synchro.getSynchNode(by: "local-1")
-        let fetchedNode2 = synchro.getSynchNode(by: "local-2")
-        let nonExistentNode = synchro.getSynchNode(by: "local-99")
+        let fetchedNode1 = synchro.getSynchNode(by: 1)
+        let fetchedNode2 = synchro.getSynchNode(by: 2)
+        let nonExistentNode = synchro.getSynchNode(by: 99)
 
         // THEN
         #expect(fetchedNode1 == node1)
@@ -591,7 +591,7 @@ struct SynchroTests {
         synchro.addOrUpdateSynchNode(node3)
 
         // WHEN - Delete node2 (middle node)
-        synchro.synchNodes.removeValue(forKey: "local-2")
+        synchro.synchNodes.removeValue(forKey: 2)
 
         // THEN - Verify order is maintained (remaining nodes should keep their positions)
         let nodesArray = Array(synchro.synchNodes.values)
