@@ -68,6 +68,24 @@ bool CommonUtility::hasDarkSystray() {
     return true;
 }
 
+/**
+ * @brief On Linux, version information are extracted from the file /etc/os-release
+ * Example of content:
+ *  PRETTY_NAME="Ubuntu 24.04.3 LTS"
+ *  NAME="Ubuntu"
+ *  VERSION_ID="24.04"
+ *  VERSION="24.04.3 LTS (Noble Numbat)"
+ *  VERSION_CODENAME=noble
+ *  ID=ubuntu
+ *  ID_LIKE=debian
+ *  HOME_URL="https://www.ubuntu.com/"
+ *  SUPPORT_URL="https://help.ubuntu.com/"
+ *  BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+ *  PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+ *  UBUNTU_CODENAME=noble
+ *  LOGO=ubuntu-logo
+ * @return The value associated with the key
+ */
 std::string extractOSInfo(const std::string &key) {
     std::string value;
     // Try to get version from /etc/os-release (standard on modern Linux distributions)
