@@ -204,7 +204,7 @@ import InfomaniakDI
             IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
             try await coherentCache.clearAndRefresh()
             await MainActor.run { [weak self] in
-                guard let self, let conn = self.appConnection else { return }
+                guard let self, let conn = appConnection else { return }
                 let currentId = ObjectIdentifier(conn)
                 if currentId == connectionId {
                     guiConnectionState = .connected
