@@ -91,8 +91,8 @@ void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **
 }
 
 std::string CommonUtility::osVersion() {
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
+    const NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    const NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
     return [@(osVersion.majorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.minorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.patchVersion) stringValue].UTF8String;
