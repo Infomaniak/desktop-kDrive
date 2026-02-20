@@ -67,6 +67,9 @@ open class TargetAssembly {
             },
             Factory(type: NodeURLGenerator.self) { _, _ in
                 DriveNodeURLGenerator()
+            },
+            Factory(type: StorageDataProviding.self) { _, _ in
+                StorageDataService()
             }
         ]
     }

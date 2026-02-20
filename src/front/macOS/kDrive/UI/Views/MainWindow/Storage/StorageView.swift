@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -49,13 +50,15 @@ enum MacStorageItems {
 struct StorageView: View {
     static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
 
-    @ObservedObject var mainViewModel: MainViewModel
+    @InjectService private var storageDataProviding: StorageDataProviding
 
     @State private var macStorageItems: OrderedDictionary<MacStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
         .usedByComputer: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
     ]
+
+    @ObservedObject var mainViewModel: MainViewModel
 
     private var deviceName: String {
         return Host().localizedName ?? KDriveLocalizable.storageDeviceNameMac
@@ -86,8 +89,16 @@ struct StorageView: View {
         }
         .groupedFormatStyle()
         .padding(AppPadding.page)
+        .onReceive(storageDataProviding.storageDataPublisher, perform: handleUpdatedStorageData)
+        .onAppear {
+            getCachedStorageData()
+        }
         .task(id: mainViewModel.currentSynchro?.dbId) {
-            try? await computeStorageData()
+            guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
+                return
+            }
+
+            try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
         }
     }
 
@@ -95,45 +106,25 @@ struct StorageView: View {
         // TODO: Redirect to Settings/Synchro
     }
 
-    private func computeStorageData() async throws {
-        async let macStorage = fetchMacStorage()
-        async let kDriveStorage = fetchSyncStorage()
+    private func getCachedStorageData() {
+        updateMacStorage(from: storageDataProviding.storageData)
+    }
 
-        let resolvedUsedStorage = try await macStorage.usedStorage
-        let resolvedAvailableStorage = try await macStorage.availableStorage
-
+    private func handleUpdatedStorageData(_ indexedStorageData: IndexedStorageData) {
         withAnimation {
-            macStorageItems[.usedByComputer]?.usedBytes = resolvedUsedStorage
-            macStorageItems[.freeSpace]?.usedBytes = resolvedAvailableStorage
-        }
-
-        let resolvedKDriveStorage = try await kDriveStorage
-        let storageNotUsedByKDrive = resolvedUsedStorage - resolvedKDriveStorage
-
-        withAnimation {
-            macStorageItems[.usedByComputer]?.usedBytes = storageNotUsedByKDrive
-            macStorageItems[.usedByKDrive]?.usedBytes = resolvedKDriveStorage
+            updateMacStorage(from: indexedStorageData)
         }
     }
 
-    private func fetchSyncStorage() async throws -> Int64 {
-        guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
-            return 0
+    private func updateMacStorage(from indexedStorageData: IndexedStorageData) {
+        guard let synchroDbId = mainViewModel.currentSynchro?.dbId,
+              let storageData = indexedStorageData[Int32(synchroDbId)] else {
+            return
         }
 
-        let filesSize = try await SyncJobs().getOfflineFilesSize(syncDbId: Int32(synchroDbId))
-        return Int64(filesSize)
-    }
-
-    private func fetchMacStorage() async throws -> (usedStorage: Int64, availableStorage: Int64) {
-        let rootURL = URL(fileURLWithPath: "/")
-        let values = try rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey])
-
-        let totalStorage = Int64(values.volumeTotalCapacity ?? 0)
-        let availableStorage = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
-        let usedStorage = max(0, totalStorage - availableStorage)
-
-        return (usedStorage, availableStorage)
+        macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
+        macStorageItems[.usedByComputer]?.usedBytes = storageData.usedByComputer
+        macStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
     }
 }
 
