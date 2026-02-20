@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,17 +44,6 @@ static bool parseVersion(const std::string &versionStr, int &major, int &minor, 
     }
 
     return false;
-}
-
-static bool compareVersions(int major1, int minor1, int patch1, int major2, int minor2, int patch2) {
-    // Returns true if version1 >= version2
-    if (major1 > major2) return true;
-    if (major1 < major2) return false;
-
-    if (minor1 > minor2) return true;
-    if (minor1 < minor2) return false;
-
-    return patch1 >= patch2;
 }
 
 void LinuxUpdater::onUpdateFound() {
