@@ -164,17 +164,18 @@ import InfomaniakDI
         }
 
         IKLogger.xpc.log("[KD] Setup connection with app")
-        appConnection = NSXPCConnection(listenerEndpoint: endpoint)
+        let newConnection = NSXPCConnection(listenerEndpoint: endpoint)
+        appConnection = newConnection
 
         IKLogger.xpc.log("[KD] Set server -> gui interface")
-        appConnection?.exportedInterface = NSXPCInterface(with: XPCGuiRemoteProtocol.self)
-        appConnection?.exportedObject = self
+        newConnection.exportedInterface = NSXPCInterface(with: XPCGuiRemoteProtocol.self)
+        newConnection.exportedObject = self
 
         IKLogger.xpc.log("[KD] Set gui -> server interface")
-        appConnection?.remoteObjectInterface = NSXPCInterface(with: XPCGuiProtocol.self)
+        newConnection.remoteObjectInterface = NSXPCInterface(with: XPCGuiProtocol.self)
 
         IKLogger.xpc.log("[KD] Setup connection handlers for connection with app")
-        appConnection?.interruptionHandler = { [weak self] in
+        newConnection.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
             guard let self else { return }
             appConnection?.invalidate()
@@ -185,7 +186,7 @@ import InfomaniakDI
             }
         }
 
-        appConnection?.invalidationHandler = { [weak self] in
+        newConnection.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
             guard let self else { return }
             appConnection?.invalidate()
@@ -196,7 +197,7 @@ import InfomaniakDI
             }
         }
 
-        appConnection?.resume()
+        newConnection.resume()
 
         Task {
             IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
