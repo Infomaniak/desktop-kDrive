@@ -76,6 +76,10 @@ struct COMMON_EXPORT CommonUtility {
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
         static QString platformName();
+        static std::string osVersion();
+#ifdef KD_LINUX
+        static std::string distributionName();
+#endif
         static Platform platform();
         static QString platformArch();
         static const std::string &userAgentString();

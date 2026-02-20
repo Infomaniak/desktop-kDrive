@@ -26,26 +26,30 @@ namespace KDC {
 
 class MockUpdater : public AbstractUpdater {
     public:
-        MockUpdater(const std::shared_ptr<UpdateChecker>& customUpdateChecker = std::make_shared<UpdateChecker>()) :
-            AbstractUpdater(customUpdateChecker) {}
+        explicit MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
+            AbstractUpdater(customUpdateChecker) {
+            _currentChannel = VersionChannel::Beta;
+        }
 
         void startInstaller() override {
             if (_startInstallerMock) _startInstallerMock();
         }
+
         void onUpdateFound() override {
             if (_quitCallback) _quitCallback();
         }
+
         std::string getCurrentVersion() const override {
             if (_mockGetCurrentVersion) return _mockGetCurrentVersion();
             return AbstractUpdater::getCurrentVersion();
         }
 
-        void setMockGetCurrentVersion(const std::function<std::string()>& mockGetCurrentVersion) {
+        void setMockGetCurrentVersion(const std::function<std::string()> &mockGetCurrentVersion) {
             _mockGetCurrentVersion = mockGetCurrentVersion;
         }
 
-        void setMockStartInstaller(const std::function<void()>& startInstallerMock) { _startInstallerMock = startInstallerMock; }
-        void setQuitCallback(const std::function<void()>& quitCallback) override { _quitCallback = quitCallback; }
+        void setMockStartInstaller(const std::function<void()> &startInstallerMock) { _startInstallerMock = startInstallerMock; }
+        void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
 
     private:
         std::function<std::string()> _mockGetCurrentVersion;
