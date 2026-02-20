@@ -528,7 +528,8 @@ void AppServer::cleanup() {
     {
         const std::scoped_lock lock(syncPalMapMutex);
         for (const auto &[syncDbId, _]: syncPalMap) {
-            if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+            if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep);
+                !exitInfo) {
                 LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
             }
         }
@@ -590,7 +591,7 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -1310,7 +1311,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=, this]() {
                 // Stop SyncPal
-                if (const auto exitInfo = stopSyncPal(syncDbId, true); !exitInfo) {
+                if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::User); !exitInfo) {
                     LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
                 }
 
@@ -3694,7 +3695,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool clear) {
+ExitInfo AppServer::stopSyncPal(int syncDbId, SyncPal::PauseCaller caller, SyncPal::DbBehaviorAfterStop behavior) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Stop SyncPal
@@ -3711,7 +3712,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool clear) {
     }
 
     unregisterSync(syncPalMapIt->second);
-    syncPalMapIt->second->stop(pausedByUser, clear);
+    syncPalMapIt->second->stop(caller, behavior);
 
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId << " done");
 
