@@ -199,11 +199,16 @@ import InfomaniakDI
 
         newConnection.resume()
 
+        let connectionId = ObjectIdentifier(newConnection)
         Task {
             IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
             try await coherentCache.clearAndRefresh()
-            await MainActor.run {
-                guiConnectionState = .connected
+            await MainActor.run { [weak self] in
+                guard let self, let conn = self.appConnection else { return }
+                let currentId = ObjectIdentifier(conn)
+                if currentId == connectionId {
+                    guiConnectionState = .connected
+                }
             }
         }
     }
