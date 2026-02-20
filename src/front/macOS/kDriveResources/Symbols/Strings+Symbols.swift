@@ -102,6 +102,8 @@ public enum KDriveLocalizable {
   public static let driveWakingUpErrorDescription = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorDescription", fallback: "kDrive is waking up… this may take a few moments.")
   /// loco:6979e389195e90fdc909d252
   public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive waking up")
+  /// loco:6998110a3f9ff4c3230a4eb2
+  public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
   /// loco:695e57f549f806b5ef0a3ac2
   public static let folderFavorites = KDriveLocalizable.tr("Localizable", "folderFavorites", fallback: "Favorites")
   /// loco:695e584bbc7544361b08b832

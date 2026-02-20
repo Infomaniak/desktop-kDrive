@@ -16,10 +16,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
+
+public enum XPCConnectionState {
+    case connected
+    case notConnected
+    case error
+}
 
 public protocol XPCConnectionProvider: Sendable {
     var guiConnection: XPCGuiProtocol { get async throws }
+    var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
 }
 
 extension XPCConnectionManager: XPCConnectionProvider {
@@ -42,5 +50,9 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
             return proxy
         }
+    }
+
+    public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
+        return $guiConnectionState.eraseToAnyPublisher()
     }
 }

@@ -30,7 +30,7 @@ final class DriveTargetAssembly: TargetAssembly {
 
     override static func getTargetServices() -> [Factory] {
         return [
-            Factory(type: WindowRouter.self) { _, _ in
+            Factory(type: MainWindowRouter.self) { _, _ in
                 MainWindowRouter()
             },
             Factory(type: MainViewRouter.self) { _, _ in

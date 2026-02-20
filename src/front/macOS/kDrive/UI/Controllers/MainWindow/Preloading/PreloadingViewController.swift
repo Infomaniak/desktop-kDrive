@@ -18,13 +18,34 @@
 
 import Cocoa
 import InfomaniakDI
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {
-    private var animationView = NSThemedAnimationView()
+    private lazy var animationView: NSThemedAnimationView = {
+        let view = NSThemedAnimationView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private lazy var errorLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: KDriveLocalizable.errorConnectingToXPCServer)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textColor = ColorToken.Text.tertiary.asNSColor
+        textField.font = NSFont.Tokens.body
+        return textField
+    }()
+
+    init(isShowingError: Bool) {
+        super.init(nibName: nil, bundle: nil)
+        errorLabel.isHidden = !isShowingError
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,37 +56,9 @@ final class PreloadingViewController: NSViewController {
 
     override func viewDidAppear() {
         super.viewDidAppear()
-
         configureWindowAppearance()
-        preloadApp()
     }
 
-    private func preloadApp() {
-        Task {
-            let connectedUsers = try? await UserJobs().userInfoList().filter { $0.isConnected == true }
-            let hasAtLeastOneConnectedUser = connectedUsers?.isEmpty == false
-
-            if UserDefaults.standard.isFirstLaunch {
-                let availableSync = try? await SyncJobs().availableSync()
-                let hasAtLeastOneSync = availableSync?.isEmpty == false
-
-                UserDefaults.standard.shouldPresentOnboarding = !hasAtLeastOneConnectedUser || !hasAtLeastOneSync
-                UserDefaults.standard.isFirstLaunch = false
-            }
-
-            @InjectService var windowRouter: WindowRouter
-            if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
-                windowRouter.navigate(to: .mainWindow)
-            } else {
-                windowRouter.navigate(to: .onboarding())
-            }
-        }
-    }
-}
-
-// MARK: - Set up UI
-
-extension PreloadingViewController {
     private func configureWindowAppearance() {
         guard let window = view.window else { return }
         window.titlebarAppearsTransparent = true
@@ -76,7 +69,6 @@ extension PreloadingViewController {
         view.wantsLayer = true
         view.layer?.backgroundColor = ColorToken.Surface.secondary.asCGColor
 
-        animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)
 
         let progressIndicator = NSProgressIndicator()
@@ -86,6 +78,8 @@ extension PreloadingViewController {
         progressIndicator.controlSize = .small
         progressIndicator.startAnimation(nil)
         view.addSubview(progressIndicator)
+
+        view.addSubview(errorLabel)
 
         NSLayoutConstraint.activate([
             animationView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
@@ -100,7 +94,10 @@ extension PreloadingViewController {
 
             progressIndicator.topAnchor.constraint(equalTo: animationView.bottomAnchor, constant: AppPadding.padding48),
             progressIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: AppPadding.padding16)
+
+            errorLabel.topAnchor.constraint(equalTo: progressIndicator.bottomAnchor, constant: AppPadding.padding16),
+            errorLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: errorLabel.bottomAnchor, constant: AppPadding.padding16)
         ])
     }
 
@@ -112,4 +109,14 @@ extension PreloadingViewController {
             animationView.play()
         }
     }
+}
+
+@available(macOS 14.0, *)
+#Preview("Loading") {
+    PreloadingViewController(isShowingError: false)
+}
+
+@available(macOS 14.0, *)
+#Preview("With Error") {
+    PreloadingViewController(isShowingError: true)
 }

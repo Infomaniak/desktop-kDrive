@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 12 Feb 2026 15:35:42 +0100
+ * Exported at: Fri, 20 Feb 2026 08:46:58 +0100
  */
 
 /* loco:698053a65bddc8df790d0212 */
@@ -23,10 +23,10 @@
 "activitiesTitleNoActivity" = "Keine aktuelle Aktivität";
 
 /* loco:698c2d6ab41c289de2072ab2 */
-"activitiesTitleOffline" = "You are offline";
+"activitiesTitleOffline" = "Sie sind offline";
 
 /* loco:698c1fa979440e4f370444a2 */
-"activitiesTitlePause" = "Synchronisation paused";
+"activitiesTitlePause" = "Synchronisation unterbrochen";
 
 /* loco:6981b68a251c4a36c1078274 */
 "activitiesTypeAllActivities" = "Alle Aktivitäten";
@@ -144,6 +144,8 @@
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Aufwecken des kDrive läuft";
 
+/* loco:6998110a3f9ff4c3230a4eb2 */
+"errorConnectingToXPCServer" = "Es scheint, dass wir die App nicht laden können…";
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoriten";
 

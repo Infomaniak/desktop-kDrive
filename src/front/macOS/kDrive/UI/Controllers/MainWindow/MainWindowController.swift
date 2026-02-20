@@ -17,28 +17,38 @@
  */
 
 import Cocoa
+import Combine
 import InfomaniakDI
+import kDriveCore
 
 final class MainWindowController: NSWindowController {
+    enum WindowConstants {
+        static let frameName = "kDriveMainWindow"
+        static let initialSize = NSRect(origin: .zero, size: CGSize(width: 900, height: 600))
+        static let properties: NSWindow.StyleMask = [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView]
+    }
+
+    @LazyInjectService private var router: MainWindowRouter
+    @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
+
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
-
-    private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
+    private var bindStore = Set<AnyCancellable>()
 
     init() {
         let window = NSWindow(
-            contentRect: Self.contentRect,
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
+            contentRect: WindowConstants.initialSize,
+            styleMask: WindowConstants.properties,
             backing: .buffered,
             defer: true
         )
         super.init(window: window)
 
         window.center()
-        window.setFrameAutosaveName("kDriveMainWindow")
+        window.setFrameAutosaveName(WindowConstants.frameName)
 
-        @InjectService var windowRouter: WindowRouter
-        windowRouter.navigate(to: .preloading)
+        observeRouter()
+        observeXPConnectionState()
     }
 
     @available(*, unavailable)
@@ -46,7 +56,69 @@ final class MainWindowController: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setViewController(_ viewController: NSViewController) {
+    private func observeRouter() {
+        router.$currentRoute
+            .receiveOnMain(store: &bindStore) { [weak self] route in
+                self?.onRouteChange(route: route)
+            }
+    }
+
+    private func observeXPConnectionState() {
+        xpcConnectionProvider.guiConnectionStatePublisher
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.navigateAfterPreloading(state: state)
+            }
+    }
+
+    private func navigateAfterPreloading(state: XPCConnectionState) {
+        switch state {
+        case .notConnected:
+            router.navigate(to: .preloading(isShowingError: false))
+        case .error:
+            router.navigate(to: .preloading(isShowingError: true))
+        case .connected:
+            Task {
+                let route = await guessBestRouteWhenXPCIsConnected()
+                router.navigate(to: route)
+            }
+        }
+    }
+
+    private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
+        guard let connectedUsers = try? await UserJobs().userInfoList().filter({ $0.isConnected }) else {
+            return .onboarding()
+        }
+
+        let hasConnectedUser = connectedUsers.isEmpty == false
+
+        if UserDefaults.standard.isFirstLaunch {
+            UserDefaults.standard.shouldPresentOnboarding = !hasConnectedUser
+            UserDefaults.standard.isFirstLaunch = false
+        }
+
+        if hasConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
+            return .mainWindow()
+        } else {
+            return .onboarding()
+        }
+    }
+
+    private func onRouteChange(route: WindowRoute) {
+        switch route {
+        case .preloading(let isShowingError):
+            setViewController(PreloadingViewController(isShowingError: isShowingError))
+        case .onboarding(let user, let onboardingStep):
+            setViewController(OnboardingViewController(user: user, initialStep: onboardingStep))
+        case .mainWindow(let tab):
+            setViewController(MainViewController())
+            if let tab {
+                @InjectService var mainViewRouter: MainViewRouter
+                mainViewRouter.setCurrentTab(tab)
+            }
+        }
+    }
+
+    private func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
     }
