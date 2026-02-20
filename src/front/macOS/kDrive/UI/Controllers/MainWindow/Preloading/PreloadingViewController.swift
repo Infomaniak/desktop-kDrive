@@ -30,7 +30,7 @@ final class PreloadingViewController: NSViewController {
     }()
 
     private lazy var errorLabel: NSTextField = {
-        let textField = NSTextField(labelWithString: "Looks like we cannot load the app…")
+        let textField = NSTextField(labelWithString: KDriveLocalizable.errorConnectingToXPCServer)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.textColor = ColorToken.Text.tertiary.asNSColor
         textField.font = NSFont.Tokens.body
