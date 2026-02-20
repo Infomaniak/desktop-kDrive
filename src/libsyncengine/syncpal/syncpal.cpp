@@ -1185,7 +1185,7 @@ std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
     return std::chrono::steady_clock::now();
 }
 
-void SyncPal::stop(bool pausedByUser, bool clear) {
+void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
             // Stop main worker
@@ -1197,7 +1197,7 @@ void SyncPal::stop(bool pausedByUser, bool clear) {
     // Stop direct download jobs
     (void) cancelAllDlDirectJobs();
 
-    if (pausedByUser) {
+    if (caller == PauseCaller::User) {
         // Set paused flag
 
         if (const auto exitCode = setSyncPaused(true); exitCode != ExitCode::Ok) {
@@ -1212,7 +1212,7 @@ void SyncPal::stop(bool pausedByUser, bool clear) {
     // Free shared objects
     freeSharedObjects();
 
-    _syncDb->setAutoDelete(clear);
+    _syncDb->setAutoDelete(behavior == DbBehaviorAfterStop::Remove);
 }
 
 bool SyncPal::isPaused() const {

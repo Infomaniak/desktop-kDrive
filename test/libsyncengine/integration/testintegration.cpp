@@ -134,7 +134,7 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    if (_syncPal) _syncPal->stop(false, false);
+    if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();

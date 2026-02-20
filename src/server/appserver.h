@@ -126,7 +126,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool clear = false);
+        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, SyncPal::PauseCaller caller = SyncPal::PauseCaller::Sync,
+                                           SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         void clearSyncCacheMap() { _syncCacheMap.clear(); }
         void loadUsersInfo() { onLoadInfo(); }
 
