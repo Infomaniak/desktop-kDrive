@@ -149,6 +149,7 @@ bool Utility::registerLoginRedirection() {
             "lsregister -f " +
             CommonUtility::getAppWorkingDir().parent_path().parent_path().native();
     (void) system(registerCommand.c_str());
+    return true;
 }
 
 } // namespace KDC
