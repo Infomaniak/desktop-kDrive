@@ -28,40 +28,6 @@
 
 namespace KDC {
 
-class OAuthUrlHandler : public QObject {
-        Q_OBJECT
-
-    public:
-        explicit OAuthUrlHandler(QObject *parent = nullptr) :
-            QObject(parent) {}
-
-        // À connecter au signal de QOAuth2AuthorizationCodeFlow
-        void handleUrl(const QUrl &url);
-
-    signals:
-        void authorizationCodeReceived(const QString &code, const QString &state);
-
-    protected:
-        bool eventFilter(QObject *obj, QEvent *event) {
-            if (event->type() == QEvent::FileOpen) {
-                QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-                QUrl url = openEvent->url();
-
-                if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
-                    // Extraire code et state des query parameters
-                    QUrlQuery query(url);
-                    QString code = query.queryItemValue("code");
-                    QString state = query.queryItemValue("state");
-
-                    emit authorizationCodeReceived(code, state);
-                    return true; // Événement consommé
-                }
-            }
-            return QObject::eventFilter(obj, event);
-        }
-};
-
-
 class AddDriveLoginWidget : public QWidget {
         Q_OBJECT
 
@@ -81,7 +47,6 @@ class AddDriveLoginWidget : public QWidget {
     private:
         QString _codeVerifier;
         int _userDbId{0};
-        OAuthUrlHandler _urlHandler;
 
         std::shared_ptr<ClientGui> _gui;
 
