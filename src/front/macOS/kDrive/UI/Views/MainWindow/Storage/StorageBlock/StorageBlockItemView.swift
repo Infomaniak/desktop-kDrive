@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveResources
 import SwiftUI
 
 struct StorageBlockItemView: View {
@@ -30,7 +31,7 @@ struct StorageBlockItemView: View {
         if let usedBytes = item.usedBytes {
             return "\(item.title): \(usedBytes.formatted(StorageView.sizeFormatter))"
         } else {
-            return "\(item.title): Loading space usage…"
+            return KDriveLocalizable.storageLoadingHint
         }
     }
 
@@ -62,7 +63,7 @@ struct StorageBlockItemView: View {
         StorageBlockItemView(
             item: StorageItem(title: "My Item", color: .blue, usedBytes: 40_000_000_000),
             totalUsedBytes: 80_000_000_000,
-            proxy: proxy,
+            proxy: proxy
         )
     }
 }

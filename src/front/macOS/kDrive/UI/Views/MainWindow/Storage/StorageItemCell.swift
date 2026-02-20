@@ -37,7 +37,7 @@ struct StorageItemCell: View {
                     Text(usedBytes, format: StorageView.sizeFormatter)
                         .foregroundStyle(.secondary)
                 } else {
-                    Text("0 BG")
+                    Text("-0 GB-")
                         .redacted(reason: .placeholder)
                 }
             }
