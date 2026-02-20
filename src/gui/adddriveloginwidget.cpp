@@ -54,8 +54,8 @@ Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 
 AddDriveLoginWidget::AddDriveLoginWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    _gui(gui),
-    QWidget(parent) {
+    QWidget(parent),
+    _gui(gui) {
     auto *const mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
