@@ -167,6 +167,7 @@ struct ObservedSynchroNodesTests {
 
         // WHEN - Update the node with a different status
         let updatedNode = SynchroNode(
+            operationId: 1,
             type: .File,
             path: ObservableData.expectedNodePath,
             newPath: "",

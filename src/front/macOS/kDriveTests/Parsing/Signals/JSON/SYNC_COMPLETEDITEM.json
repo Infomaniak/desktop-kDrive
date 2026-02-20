@@ -3,6 +3,7 @@
   "num": 17,
   "params": {
     "itemInfo": {
+      "operationId": 1,
       "cancelType": 0,
       "conflict": 0,
       "direction": 2,

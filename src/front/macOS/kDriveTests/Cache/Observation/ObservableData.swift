@@ -210,6 +210,7 @@ public enum ObservableData {
 
     static var firstSynchroNode: SynchroNode {
         SynchroNode(
+            operationId: 1,
             type: .File,
             path: expectedNodePath,
             newPath: "",
@@ -233,6 +234,7 @@ public enum ObservableData {
 
     static var secondSynchroNode: SynchroNode {
         SynchroNode(
+            operationId: 2,
             type: .File,
             path: secondaryNodePath,
             newPath: "",

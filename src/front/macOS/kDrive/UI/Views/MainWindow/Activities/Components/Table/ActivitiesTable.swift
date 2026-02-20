@@ -102,9 +102,9 @@ struct ActivitiesTable: View {
     ActivitiesTable(
         context: PreviewHelper.context,
         nodes: [
-            "1": PreviewHelper.synchroNode1,
-            "2": PreviewHelper.synchroNode2,
-            "3": PreviewHelper.synchroNode3
+            1: PreviewHelper.synchroNode1,
+            2: PreviewHelper.synchroNode2,
+            3: PreviewHelper.synchroNode3
         ]
     )
 }

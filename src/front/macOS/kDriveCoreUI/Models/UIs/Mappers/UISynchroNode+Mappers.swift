@@ -118,7 +118,7 @@ public extension UISynchroNode {
         }
 
         self.init(
-            id: synchroNode.localNodeId,
+            id: synchroNode.operationId,
             remoteID: synchroNode.remoteNodeId,
             type: UINodeType(synchroNodeType: synchroNode.type),
             path: URL(fileURLWithPath: synchroNode.path),

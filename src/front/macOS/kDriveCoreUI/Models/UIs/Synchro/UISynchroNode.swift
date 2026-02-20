@@ -47,7 +47,7 @@ public enum UISynchroFileInstruction: Sendable {
 }
 
 public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
-    public typealias ID = String
+    public typealias ID = Int32
 
     public let id: ID
     public let remoteID: String

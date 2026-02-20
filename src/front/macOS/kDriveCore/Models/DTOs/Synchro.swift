@@ -36,7 +36,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
-    public var synchNodes: OrderedDictionary<String, SynchroNode> = [:]
+    public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
     public var latestError: SynchroError?
 
@@ -47,14 +47,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
             return
         }
 
-        // FIXME: Remove stopgap once server has implemented a stable identifier
-        guard node.status != .Syncing else {
-            IKLogger.data.log("[KD] Skip a Syncing activity")
-            return
-        }
-
-        let nodeToStore = synchNodes[node.localNodeId]?.updating(with: node) ?? node
-        synchNodes[node.localNodeId] = nodeToStore
+        let nodeToStore = synchNodes[node.id]?.updating(with: node) ?? node
+        synchNodes[node.id] = nodeToStore
         synchNodes.sort { $0.value.date > $1.value.date }
 
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
@@ -65,8 +59,8 @@ public struct Synchro: Identifiable, Hashable, Sendable {
         synchNodes.removeLast(itemsToRemove)
     }
 
-    public func getSynchNode(by localNodeId: String) -> SynchroNode? {
-        return synchNodes[localNodeId]
+    public func getSynchNode(by operationId: Int32) -> SynchroNode? {
+        return synchNodes[operationId]
     }
 }
 
@@ -93,10 +87,11 @@ public struct SyncProgress: Hashable, Sendable {
 }
 
 public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
-    public var id: String {
-        localNodeId
+    public var id: Int32 {
+        operationId
     }
 
+    public let operationId: Int32
     public let type: KDC.NodeType
     /// Sync folder relative filesystem path
     public let path: String
@@ -119,6 +114,7 @@ extension SynchroNode {
     /// Returns a new SynchroNode updated with values from the provided node, preserving this node's original date.
     func updating(with node: SynchroNode) -> SynchroNode {
         SynchroNode(
+            operationId: node.operationId,
             type: node.type,
             path: node.path,
             newPath: node.newPath,

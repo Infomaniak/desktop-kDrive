@@ -23,7 +23,7 @@ import Testing
 struct UISynchroNodeTests {
     private func makeNode(progress: Int32) -> UISynchroNode {
         UISynchroNode(
-            id: "test-id",
+            id: 1,
             remoteID: "remote-id",
             type: .file,
             path: URL(fileURLWithPath: "/test/file.txt"),
