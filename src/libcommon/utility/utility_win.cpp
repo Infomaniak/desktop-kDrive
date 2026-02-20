@@ -150,12 +150,11 @@ std::string CommonUtility::osVersion() {
 
     RTL_OSVERSIONINFOW osInfo;
     osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-    if (rtlGetVersion(&osInfo) == 0) {
-        char versionStr[32];
-        snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
-                 osInfo.dwBuildNumber);
-        return std::string(versionStr);
-    }
+    if (rtlGetVersion(&osInfo) != 0) return {};
+
+    char versionStr[32];
+    snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion, osInfo.dwBuildNumber);
+    return std::string(versionStr);
 }
 
 } // namespace KDC
