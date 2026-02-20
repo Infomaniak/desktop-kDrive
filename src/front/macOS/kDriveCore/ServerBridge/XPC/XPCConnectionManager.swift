@@ -24,6 +24,7 @@ import InfomaniakDI
     @InjectService var signalHandler: XPCSignalHandlerProtocol
     @LazyInjectService var coherentCache: CoherentCache
 
+    @MainActor
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
     let machServiceName: String
@@ -158,7 +159,9 @@ import InfomaniakDI
             throw XPCError.noLoginItemAgentConnection
         }
 
-        guiConnectionState = .notConnected
+        Task { @MainActor in
+            guiConnectionState = .notConnected
+        }
 
         IKLogger.xpc.log("[KD] Setup connection with app")
         appConnection = NSXPCConnection(listenerEndpoint: endpoint)
@@ -177,7 +180,9 @@ import InfomaniakDI
             appConnection?.invalidate()
             appConnection = nil
             scheduleRetryToConnectToServer()
-            guiConnectionState = .notConnected
+            Task { @MainActor [weak self] in
+                self?.guiConnectionState = .notConnected
+            }
         }
 
         appConnection?.invalidationHandler = { [weak self] in
@@ -186,7 +191,9 @@ import InfomaniakDI
             appConnection?.invalidate()
             appConnection = nil
             scheduleRetryToConnectToServer()
-            guiConnectionState = .error
+            Task { @MainActor [weak self] in
+                self?.guiConnectionState = .error
+            }
         }
 
         appConnection?.resume()
