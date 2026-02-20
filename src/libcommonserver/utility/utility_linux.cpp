@@ -272,7 +272,7 @@ bool Utility::registerLoginRedirection() {
     }
 
     const auto urlSchemeDirPath = SyncPath(std::string(homePathEnv) + "/.local/share/applications");
-    const auto urlSchemeFilePath = urlSchemeDirPath / (APPLICATION_EXECUTABLE + ".desktop");
+    const auto urlSchemeFilePath = urlSchemeDirPath / (std::string(APPLICATION_EXECUTABLE) + ".desktop");
 
     IoError ioError = IoError::Unknown;
     if (!std::filesystem::exists(urlSchemeDirPath) && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
@@ -291,10 +291,10 @@ bool Utility::registerLoginRedirection() {
     if (!appImageEnv.empty()) {
         execPath = SyncPath(appImageEnv);
     } else {
-        execPath = KDC::CommonUtility::getAppWorkingDir() / appName;
+        execPath = KDC::CommonUtility::getAppWorkingDir() / APPLICATION_EXECUTABLE;
     }
     urlSchemeFile << "[Desktop Entry]" << std::endl;
-    urlSchemeFile << "Name=" << appName << std::endl;
+    urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
     urlSchemeFile << "Exec=" << execPath.native() << " %u" << std::endl;
     urlSchemeFile << "Type=Application" << std::endl;
     urlSchemeFile << "Terminal=false" << std::endl;
