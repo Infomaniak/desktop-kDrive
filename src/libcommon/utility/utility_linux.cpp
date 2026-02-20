@@ -71,21 +71,20 @@ bool CommonUtility::hasDarkSystray() {
 std::string extractOSInfo(const std::string &key) {
     std::string value;
     // Try to get version from /etc/os-release (standard on modern Linux distributions)
-    std::ifstream osRelease("/etc/os-release");
-    if (osRelease.is_open()) {
+    if (std::ifstream osRelease("/etc/os-release"); osRelease.is_open()) {
         std::string line;
         while (std::getline(osRelease, line)) {
-            if (line.find(key) == 0) {
-                value = line.substr(key.length() + 1); // +1 because the file is formatted "key=value"
-                // Remove quotes if present
-                if (!value.empty() && value.front() == '"') {
-                    value = value.substr(1);
-                }
-                if (!value.empty() && value.back() == '"') {
-                    value.pop_back();
-                }
-                break;
+            if (line.find(key) != 0) continue;
+
+            value = line.substr(key.length() + 1); // +1 because the file is formatted "key=value"
+            // Remove quotes if present
+            if (!value.empty() && value.front() == '"') {
+                value = value.substr(1);
             }
+            if (!value.empty() && value.back() == '"') {
+                value.pop_back();
+            }
+            break;
         }
     }
     return value;
