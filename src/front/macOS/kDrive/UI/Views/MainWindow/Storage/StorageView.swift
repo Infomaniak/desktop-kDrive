@@ -96,16 +96,22 @@ struct StorageView: View {
     }
 
     private func computeStorageData() async throws {
-        async let (usedByComputer, availableStorage) = fetchAvailableStorage()
-        async let kDriveStorage = try fetchSyncStorage()
+        async let macStorage = fetchMacStorage()
+        async let kDriveStorage = fetchSyncStorage()
 
-        let resolvedUsedByComputer = try await usedByComputer
-        let resolvedAvailableStorage = try await availableStorage
-        let resolvedKDriveStorage = try await kDriveStorage
+        let resolvedUsedStorage = try await macStorage.usedStorage
+        let resolvedAvailableStorage = try await macStorage.availableStorage
 
         withAnimation {
-            macStorageItems[.usedByComputer]?.usedBytes = resolvedUsedByComputer
+            macStorageItems[.usedByComputer]?.usedBytes = resolvedUsedStorage
             macStorageItems[.freeSpace]?.usedBytes = resolvedAvailableStorage
+        }
+
+        let resolvedKDriveStorage = try await kDriveStorage
+        let storageNotUsedByKDrive = resolvedUsedStorage - resolvedKDriveStorage
+
+        withAnimation {
+            macStorageItems[.usedByComputer]?.usedBytes = storageNotUsedByKDrive
             macStorageItems[.usedByKDrive]?.usedBytes = resolvedKDriveStorage
         }
     }
@@ -119,13 +125,13 @@ struct StorageView: View {
         return Int64(filesSize)
     }
 
-    private func fetchAvailableStorage() async throws -> (usedByComputer: Int64, availableStorage: Int64) {
+    private func fetchMacStorage() async throws -> (usedStorage: Int64, availableStorage: Int64) {
         let rootURL = URL(fileURLWithPath: "/")
         let values = try rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey])
 
         let totalStorage = Int64(values.volumeTotalCapacity ?? 0)
         let availableStorage = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
-        let usedStorage = totalStorage - availableStorage
+        let usedStorage = max(0, totalStorage - availableStorage)
 
         return (usedStorage, availableStorage)
     }
