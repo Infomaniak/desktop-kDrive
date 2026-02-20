@@ -303,6 +303,9 @@
 /* loco:697b37c632d0fb5b5d0b4db6 */
 "storageDeviceNameMac" = "Macintosh";
 
+/* loco:69981716cfa89b9c940ef652 */
+"storageLoadingHint" = "Utilisation de l'espace de chargement..";
+
 /* loco:697a077ee16575000806de62 */
 "storageMacFreeSpace" = "Espace libre";
 
