@@ -21,6 +21,7 @@
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
 
+#include <config.h>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -141,15 +142,15 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
-bool Utility::registerLoginRedirection(const std::string &appName) {
+bool Utility::registerLoginRedirection() {
     const std::string registerCommand =
             "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/"
             "lsregister -f " +
-            // #ifdef _DEBUG
-            //             (CommonUtility::getAppWorkingDir() / appName).native();
-            // #else
+#ifdef _DEBUG
+            (CommonUtility::getAppWorkingDir() / APPLICATION_EXECUTABLE).native();
+#else
             (CommonUtility::getAppDir() / appName / (appName + ".app")).native();
-    // #endif
+#endif
     (void) system(registerCommand.c_str());
 }
 
