@@ -143,20 +143,19 @@ std::string CommonUtility::osVersion() {
     typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 
     HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
-    if (hMod) {
-        RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr) GetProcAddress(hMod, "RtlGetVersion");
-        if (RtlGetVersion) {
-            RTL_OSVERSIONINFOW osInfo;
-            osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-            if (RtlGetVersion(&osInfo) == 0) {
-                char versionStr[32];
-                snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
-                         osInfo.dwBuildNumber);
-                return std::string(versionStr);
-            }
-        }
+    if (!hMod) return {};
+
+    auto rtlGetVersion = (RtlGetVersionPtr) GetProcAddress(hMod, "RtlGetVersion");
+    if (!rtlGetVersion) return {};
+
+    RTL_OSVERSIONINFOW osInfo;
+    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+    if (rtlGetVersion(&osInfo) == 0) {
+        char versionStr[32];
+        snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
+                 osInfo.dwBuildNumber);
+        return std::string(versionStr);
     }
-    return {};
 }
 
 } // namespace KDC
