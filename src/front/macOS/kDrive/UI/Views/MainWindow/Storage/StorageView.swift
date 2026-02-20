@@ -99,9 +99,15 @@ struct StorageView: View {
         async let (usedByComputer, availableStorage) = fetchAvailableStorage()
         async let kDriveStorage = try fetchSyncStorage()
 
-        macStorageItems[.usedByComputer]?.usedBytes = try await usedByComputer
-        macStorageItems[.freeSpace]?.usedBytes = try await availableStorage
-        macStorageItems[.usedByKDrive]?.usedBytes = try await kDriveStorage
+        let resolvedUsedByComputer = try await usedByComputer
+        let resolvedAvailableStorage = try await availableStorage
+        let resolvedKDriveStorage = try await kDriveStorage
+
+        withAnimation {
+            macStorageItems[.usedByComputer]?.usedBytes = resolvedUsedByComputer
+            macStorageItems[.freeSpace]?.usedBytes = resolvedAvailableStorage
+            macStorageItems[.usedByKDrive]?.usedBytes = resolvedKDriveStorage
+        }
     }
 
     private func fetchSyncStorage() async throws -> Int64 {
