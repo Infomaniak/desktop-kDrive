@@ -22,10 +22,10 @@
             <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0"
@@ -52,7 +52,7 @@
                                   Visibility="{x:Bind IsLoadingChildren, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                   IsIndeterminate="True"
                                   Height="16"
-                                  Width="auto" />
+                                  Width="Auto" />
 
                     <local:ContentLoader Grid.Column="4"
                                          HorizontalAlignment="Right"
@@ -78,10 +78,10 @@
                 </ToolTipService.ToolTip>
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0"
                               IsChecked="False"
@@ -120,13 +120,13 @@
             <ScrollView>
                 <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0"
                           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>

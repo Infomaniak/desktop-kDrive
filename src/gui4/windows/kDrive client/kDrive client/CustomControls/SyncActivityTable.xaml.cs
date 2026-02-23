@@ -144,7 +144,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
-                frame.Navigate(typeof(Pages.ErrorPage));
+                frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
@@ -225,7 +225,7 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboard"), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboardTitle"), false);
             }
             else
             {
@@ -240,7 +240,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
-                frame.Navigate(typeof(Pages.ErrorPage));
+                frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {

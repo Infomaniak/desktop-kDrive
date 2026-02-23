@@ -80,7 +80,7 @@
                                 <!-- Presentation -->
                                 <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0"

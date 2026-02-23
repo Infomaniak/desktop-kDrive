@@ -126,7 +126,7 @@
         <Grid Grid.Row="1"
               Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <controlsErrors:ErrorBar Grid.Row="0"

@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Feb 2026 09:41:47 +0100 
+  Exported at: Thu, 19 Feb 2026 12:15:09 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -445,6 +445,17 @@ Réessayez dans quelques minutes.</value>
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Le nom de ce fichier contient un ou plusieurs caractères qui ne sont pas pris en charge par votre appareil</value> 
   </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Fichiers à vérifier</value> 
+    <comment>Header for the error list section containing files that need verification</comment> 
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Autres</value> 
+    <comment>Header for the error list section containing other errors</comment> 
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Erreurs à corriger</value> 
+  </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value> 
   </data> 
@@ -610,12 +621,26 @@ Réessayez dans quelques minutes.</value>
   <data name="licensesHyperLink" xml:space="preserve"> 
     <value>Licence LGPL v3 - Sources Git</value> 
   </data> 
-  <data name="linkCopiedToClipboard" xml:space="preserve"> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Lien copié dans le presse-papiers</value> 
   </data> 
   <data name="localFileAccessDescription" xml:space="preserve"> 
-    <value>Impossible d’accéder à ce fichier sur votre ordinateur.
-Assurez-vous qu’il existe toujours et que vous avez la permission d’y accéder.</value> 
+    <value>Impossible d'accéder à ce fichier sur votre ordinateur. Vérifiez qu'il existe toujours et que vous disposez des droits pour y accéder.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
+    <value>Fermer</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
+    <value>Les droits d'accès du fichier ont été modifiés, ce qui empêche sa synchronisation.</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
+    <value>Consultez la FAQ pour rétablir l'accès</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
+    <value>Dernier emplacement du fichier :</value> 
+  </data> 
+  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
+    <value>Ouvrir le dossier parent</value> 
   </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Fichier inaccessible</value> 
@@ -788,6 +813,9 @@ Nous vous invitons à patienter quelques instants.</value>
   </data> 
   <data name="openLoginPage" xml:space="preserve"> 
     <value>Ouvrir la page de connexion</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Chemin copié dans le presse-papiers</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Définir comment kDrive se connecte à Internet.</value> 

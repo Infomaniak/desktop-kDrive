@@ -21,11 +21,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class ForbiddenCharError : UserControl
     {
-        private Error _error;
+        private Error Error { get; init; }
         public ForbiddenCharError(Error error)
         {
             this.InitializeComponent();
-            _error = error;
+            Error = error;
         }
     }
 }

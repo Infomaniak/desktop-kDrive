@@ -53,8 +53,8 @@
                Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
                RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <controls:SvgIcon Grid.Row="0"
                               Width="120"
@@ -85,7 +85,7 @@
               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
@@ -126,9 +126,9 @@
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Ellipse Grid.Column="0"
                              Height="8"
@@ -169,9 +169,9 @@
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Ellipse Grid.Column="0"
                              Height="8"
@@ -211,9 +211,9 @@
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Ellipse Grid.Column="0"
                              Height="8"
