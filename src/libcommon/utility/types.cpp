@@ -286,8 +286,6 @@ std::string toString(const InconsistencyType e) {
             return "PathLength";
         case InconsistencyType::NotYetSupportedChar:
             return "NotYetSupportedChar";
-        case InconsistencyType::DuplicateNames:
-            return "DuplicateNames";
         case InconsistencyType::ForbiddenCharOnlySpaces:
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:

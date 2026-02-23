@@ -682,12 +682,6 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
                 tr("The item name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                    "It has been excluded from synchronization.");
     }
-    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::DuplicateNames)) {
-        text += (text.isEmpty() ? "" : "\n");
-        text +=
-                tr("The item name coincides with the name of another item in the same directory.<br>"
-                   "It has been temporarily blacklisted. Consider removing duplicate items.");
-    }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharOnlySpaces)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
