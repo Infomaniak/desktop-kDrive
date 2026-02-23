@@ -208,29 +208,34 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="68"/>
         <source>Log in from your browser</source>
         <translation>Melden Sie sich über Ihren Browser an.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="74"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
         <translation>Ihr Browser sollte sich automatisch öffnen, um die Verbindung herzustellen. Sobald die Verbindung hergestellt ist, kehren Sie automatisch zu kDrive zurück.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="84"/>
         <source>Open the login page</source>
         <translation>Öffnen Sie die Anmeldeseite</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="118"/>
         <source>Token request failed: %1 - %2</source>
         <translation>Token-Anfrage fehlgeschlagen: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="135"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="132"/>
         <source>Login failed: %1 - %2</source>
         <translation>Login fehlgeschlagen: %1 - %2</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="140"/>
+        <source>Failed to open the login page in your web browser</source>
+        <translation>Die Anmeldeseite konnte in Ihrem Webbrowser nicht geöffnet werden</translation>
     </message>
 </context>
 <context>
@@ -305,7 +310,7 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Freigabelink in die Zwischenablage kopiert</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3665"/>
+        <location filename="../src/server/appserver.cpp" line="3666"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -313,13 +318,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3667"/>
+        <location filename="../src/server/appserver.cpp" line="3668"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3672"/>
+        <location filename="../src/server/appserver.cpp" line="3673"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -327,13 +332,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3674"/>
+        <location filename="../src/server/appserver.cpp" line="3675"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3679"/>
+        <location filename="../src/server/appserver.cpp" line="3680"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -341,13 +346,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3681"/>
+        <location filename="../src/server/appserver.cpp" line="3682"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3686"/>
+        <location filename="../src/server/appserver.cpp" line="3687"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -355,12 +360,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3689"/>
+        <location filename="../src/server/appserver.cpp" line="3690"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3697"/>
+        <location filename="../src/server/appserver.cpp" line="3698"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -2911,19 +2916,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
             <numerusform>%n Sekunde(n)</numerusform>
             <numerusform>%n Sekunde(n)</numerusform>
         </translation>
-    </message>
-</context>
-<context>
-    <name>main.cpp</name>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
-        <source>System Tray not available</source>
-        <translation>Systemablage nicht verfügbar</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires on a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 erfordert eine funktionierende Taskleiste. Wenn Sie XFCE verwenden, befolgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diese Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine Taskleistenanwendung wie „trayer” und versuchen Sie es erneut.</translation>
     </message>
 </context>
 <context>
