@@ -146,9 +146,6 @@
     <Page Update="CustomControls\Errors\Templates\Node\NotYetSupportedCharError.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\DuplicateNamesError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharOnlySpacesError.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -192,9 +189,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\FileExistsError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\DriveStatusIndicator.xaml">
@@ -305,7 +299,7 @@
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
+      <RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <RemoveDir Directories="@(RemovingFolders)" />
   </Target>
