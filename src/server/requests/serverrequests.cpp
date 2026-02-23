@@ -1126,7 +1126,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
-                case ExitCause::FileExists:
                 case ExitCause::SyncDirChanged:
                     return true;
                 default:
