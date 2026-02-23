@@ -69,10 +69,7 @@ std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    {
-        const auto logguablePath = Path2Str(KDC::CommonUtility::_workingDirPath);
-        std::cout << "Working dir=" << logguablePath << std::endl;
-    }
+    std::cout << "Working dir=" << KDC::SyncPath(argv[0]).parent_path() << std::endl;
 #if defined(KD_LINUX)
     const KDC::SyncPath appimage = KDC::SyncPath(KDC::CommonUtility::envVarValue("APPIMAGE"));
     std::cout << "APPIMAGE=" << appimage.native() << std::endl;
