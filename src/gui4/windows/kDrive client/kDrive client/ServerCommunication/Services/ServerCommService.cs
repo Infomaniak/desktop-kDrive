@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
@@ -782,7 +783,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return nodes;
         }
-        public async Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
+        public async Task<GetNodeInfoResult> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
@@ -793,10 +794,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
 
             if (!HasRequiredParam(data, JsonKeys.NodeInfo))
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
 
             var options = new JsonSerializerOptions
             {
@@ -807,9 +808,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
             }
-            return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
+            return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
         public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)

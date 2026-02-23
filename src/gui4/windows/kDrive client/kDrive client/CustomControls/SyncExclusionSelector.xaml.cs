@@ -376,13 +376,16 @@ namespace Infomaniak.kDrive.CustomControls
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             async Task<bool> loadPath(NodeId nodeId)
             {
-                var nodeInfo = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
-                if (nodeId is null || nodeInfo is null || nodeInfo.Path == "")
+                var getNodeInfoResult = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
+                if (nodeId is null || !getNodeInfoResult.IsSuccess|| getNodeInfoResult.Node is null)
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
+                    if(getNodeInfoResult.Cause == ExitCause.NotFound)
+                        Logger.Log(Logger.Level.Info, $"Excluded node with id {nodeId} not found on server. It might have been deleted since it was blacklisted.");
+                    else
+                        Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
                     return false;
                 }
-                _excludedNodePathsMap.TryAdd(nodeId, nodeInfo.Path);
+                _excludedNodePathsMap.TryAdd(nodeId, getNodeInfoResult.Node.Path);
                 return true;
             }
             var newExcludedNodePathsMap = _excludedNodePathsMap.Where(pair => _excludedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.

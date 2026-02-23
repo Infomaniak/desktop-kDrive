@@ -70,7 +70,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Node-related requests
         Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);
-        Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
+
+        struct GetNodeInfoResult
+        {
+            public ExitCause Cause { get; private set; }
+            public Node? Node { get; private set; }
+            public bool IsSuccess => Node is not null && Cause == ExitCause.Unknown;
+
+            public GetNodeInfoResult(ExitCause cause, Node? node)
+            {
+                Cause = cause;
+                Node = node;
+            }
+        }
+        Task<GetNodeInfoResult> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
