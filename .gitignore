@@ -195,6 +195,7 @@ cmake-build-debug*
 /infomaniak-build-tools/windows/ksigntool/.vs/ksigntool
 **/BundleArtifactss
 /*build*
+!/infomaniak-build-tools/
 
 # Xcode
 DerivedData/
