@@ -302,11 +302,11 @@ bool Utility::registerLoginRedirection() {
     urlSchemeFile.close();
 
     // Update database
-    system("update-desktop-database ~/.local/share/applications/");
+    (void) system("update-desktop-database ~/.local/share/applications/");
 
     // Register scheme
     const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
-    system(registerSchemeStr.c_str());
+    (void) system(registerSchemeStr.c_str());
 
     return true;
 }

@@ -501,7 +501,7 @@ void AppServer::init() {
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
 
-    Utility::registerLoginRedirection();
+    (void) Utility::registerLoginRedirection();
 
     // Start client
     if (!startClient()) {

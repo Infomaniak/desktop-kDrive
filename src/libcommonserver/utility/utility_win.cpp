@@ -360,18 +360,18 @@ void Utility::removeLegacySyncRootKeys(const std::wstring &clsid) {
 bool Utility::registerLoginRedirection() {
     std::wstring clsidPath = QStr2WStr(QString("Software\\Classes\\%1").arg(APPLICATION_EXECUTABLE));
     std::wstring error;
-    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, L"URL:kDrive protocol", error);
-    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, L"URL Protocol", REG_SZ, L"", error);
+    (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, L"URL:kDrive protocol", error);
+    (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, L"URL Protocol", REG_SZ, L"", error);
 
     clsidPath = QStr2WStr(QString("Software\\Classes\\%1\\DefaultIcon").arg(APPLICATION_EXECUTABLE));
     QString pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
     pathToExecutable = QDir::toNativeSeparators(pathToExecutable);
-    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, pathToExecutable.toStdWString() + L",1", error);
+    (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, pathToExecutable.toStdWString() + L",1", error);
 
     clsidPath = QStr2WStr(QString("Software\\Classes\\%1\\shell\\open\\command").arg(APPLICATION_EXECUTABLE));
     QString value = QString("\"%1\"").arg(pathToExecutable);
     value += " \"%1\"";
-    Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, value.toStdWString(), error);
+    (void) Utility::registrySetKeyValue(HKEY_CURRENT_USER, clsidPath, {}, REG_SZ, value.toStdWString(), error);
 
     return true;
 }

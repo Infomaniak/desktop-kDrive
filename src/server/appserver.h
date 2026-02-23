@@ -66,13 +66,13 @@ class AuthorizationCodeEventFilter : public QObject {
     private:
         bool eventFilter(QObject *obj, QEvent *event) override {
             if (event->type() == QEvent::FileOpen) {
-                const QFileOpenEvent *openEvent = static_cast<const QFileOpenEvent *>(event);
-                const QUrl url = openEvent->url();
+                const auto *openEvent = static_cast<const QFileOpenEvent *>(event);
+                const auto url = openEvent->url();
 
                 if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
                     const QUrlQuery query(url);
-                    const QString code = query.queryItemValue("code");
-                    const QString state = query.queryItemValue("state");
+                    const auto code = query.queryItemValue("code");
+                    const auto state = query.queryItemValue("state");
 
                     emit authorizationCodeReceived(code, state);
                     return true;

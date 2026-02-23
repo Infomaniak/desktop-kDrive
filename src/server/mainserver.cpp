@@ -149,11 +149,9 @@ bool isProcessRunning(const std::string &processName) {
             // Read process name in /proc/[PID]/comm
             std::ifstream commFile(entry.path() / "comm");
             std::string currentProcessName;
-            if (commFile >> currentProcessName) {
-                if (currentProcessName == processName) {
-                    std::cout << "Process " << processName << " is already running!" << std::endl;
-                    return true;
-                }
+            if (commFile >> currentProcessName && currentProcessName == processName) {
+                std::cout << "Process " << processName << " is already running!" << std::endl;
+                return true;
             }
         }
     } catch (const std::exception &e) {
