@@ -295,7 +295,7 @@ bool Utility::registerLoginRedirection() {
     }
     urlSchemeFile << "[Desktop Entry]" << std::endl;
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
-    urlSchemeFile << "Exec=" << execPath.native() << " %u" << std::endl;
+    urlSchemeFile << "Exec=" << execPath.string() << " %u" << std::endl;
     urlSchemeFile << "Type=Application" << std::endl;
     urlSchemeFile << "Terminal=false" << std::endl;
     urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;

@@ -208,7 +208,7 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 #if defined(KD_LINUX)
         // On Linux, we might fail to detect an already running kDrive process using only QSingleApplication. Therefor, check also
         // with a Linux dedicated method.
-        || isProcessRunning("kDrive")
+        || isProcessRunning(APPLICATION_EXECUTABLE)
 #endif
     ) {
         std::cout << "Server already running" << std::endl;

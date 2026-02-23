@@ -69,7 +69,7 @@ void AddDriveWizard::initUI() {
     _stepStackedWidget = new QStackedWidget(this);
     mainLayout->addWidget(_stepStackedWidget);
 
-    _addDriveLoginWidget = new AddDriveLoginWidget(_gui, this);
+    _addDriveLoginWidget = new AddDriveLoginWidget(this);
     _stepStackedWidget->insertWidget(Login, _addDriveLoginWidget);
 
     _addDriveListWidget = new AddDriveListWidget(_gui, this);
@@ -310,11 +310,13 @@ void AddDriveWizard::onExit() {
     reject();
 }
 
-void AddDriveWizard::onAuthorizationCodeReceived(const QString &, const QString &) {
+void AddDriveWizard::onAuthorizationCodeReceived(const QString &code, const QString &state) {
     // Show wizard window on top
     show();
     raise();
     activateWindow();
+
+    _addDriveLoginWidget->onAuthorizationCodeReceived(code, state);
 }
 
 } // namespace KDC

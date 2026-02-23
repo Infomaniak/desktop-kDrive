@@ -47,9 +47,10 @@ void LoginDialog::initUI() {
     QVBoxLayout *mainLayout = this->mainLayout();
     mainLayout->setContentsMargins(boxHMargin, boxVTMargin, boxHMargin, boxVBMargin);
 
-    _loginWidget = new AddDriveLoginWidget(_gui, this);
+    _loginWidget = new AddDriveLoginWidget(this);
     mainLayout->addWidget(_loginWidget);
 
+    connect(_gui.get(), &ClientGui::authorizationCodeReceived, _loginWidget, &AddDriveLoginWidget::onAuthorizationCodeReceived);
     connect(_loginWidget, &AddDriveLoginWidget::terminated, this, &LoginDialog::onTerminated);
     connect(this, &CustomDialog::exit, this, &LoginDialog::onExit);
 

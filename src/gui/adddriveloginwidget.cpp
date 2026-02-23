@@ -53,9 +53,8 @@ const int stateStringLength = 8;
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 
-AddDriveLoginWidget::AddDriveLoginWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
-    QWidget(parent),
-    _gui(gui) {
+AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
+    QWidget(parent) {
     auto *const mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
@@ -101,8 +100,6 @@ AddDriveLoginWidget::AddDriveLoginWidget(std::shared_ptr<ClientGui> gui, QWidget
     mainLayout->addWidget(logoIconLabel);
 
     mainLayout->addStretch();
-
-    connect(_gui.get(), &ClientGui::authorizationCodeReceived, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
 }
 
 void AddDriveLoginWidget::init() {
