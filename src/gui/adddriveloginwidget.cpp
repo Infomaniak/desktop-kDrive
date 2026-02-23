@@ -139,7 +139,12 @@ void AddDriveLoginWidget::onErrorReceived(const QString error, const QString err
 }
 
 void AddDriveLoginWidget::onOpenLoginInBrowser() {
-    (void) QDesktopServices::openUrl(generateAuthorizeUrl());
+    if (!QDesktopServices::openUrl(generateAuthorizeUrl())) {
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to open the login page in your web browser"), QMessageBox::Ok);
+        (void) msgBox.exec();
+
+        emit terminated(false);
+    }
 }
 
 QUrl AddDriveLoginWidget::generateAuthorizeUrl() {
