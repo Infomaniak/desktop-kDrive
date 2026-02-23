@@ -17,6 +17,7 @@
             Grid.Column="0"
             Background="{ThemeResource SubtleFillColorSecondaryBrush}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
+            Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}"
             Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
             HorizontalAlignment="Left"
@@ -48,6 +49,7 @@
                        Margin="0"
                        Padding="0"
                        TextTrimming="CharacterEllipsis"
+                       TextWrapping="NoWrap"
                        Text="{x:Bind ItemPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
                        Style="{StaticResource BodyTextBlockStyle}" />
         </Grid>
