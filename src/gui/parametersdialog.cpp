@@ -730,14 +730,8 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "You are not allowed to delete item.<br>"
                     "It will be restored to its original location.");
         }
-        case CancelType::AlreadyExistRemote: {
-            return tr("This item already exists on remote kDrive. It is not synced.");
-        }
         case CancelType::MoveToBinFailed: {
             return tr("Failed to move this item to trash, it has been blacklisted.");
-        }
-        case CancelType::AlreadyExistLocal: {
-            return tr("This item already exists on local file system. It is not synced.");
         }
         case CancelType::TmpBlacklisted: {
             return tr(

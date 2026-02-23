@@ -1161,8 +1161,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             }
         }
         case ExitCode::Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength &&
-                   error.cancelType() != CancelType::AlreadyExistRemote;
+            return error.inconsistencyType() != InconsistencyType::PathLength;
         }
         default:
             return true;
