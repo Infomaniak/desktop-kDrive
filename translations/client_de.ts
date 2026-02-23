@@ -285,12 +285,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1522"/>
+        <location filename="../src/server/appserver.cpp" line="1527"/>
         <source>Share link copied to clipboard</source>
         <translation>Freigabelink in die Zwischenablage kopiert</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3479"/>
+        <location filename="../src/server/appserver.cpp" line="3486"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -298,13 +298,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3481"/>
+        <location filename="../src/server/appserver.cpp" line="3488"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3486"/>
+        <location filename="../src/server/appserver.cpp" line="3493"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -312,13 +312,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3488"/>
+        <location filename="../src/server/appserver.cpp" line="3495"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3493"/>
+        <location filename="../src/server/appserver.cpp" line="3500"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -326,13 +326,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3495"/>
+        <location filename="../src/server/appserver.cpp" line="3502"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3500"/>
+        <location filename="../src/server/appserver.cpp" line="3507"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -340,12 +340,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3503"/>
+        <location filename="../src/server/appserver.cpp" line="3510"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3511"/>
+        <location filename="../src/server/appserver.cpp" line="3518"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -2731,32 +2731,32 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Kann keinen gültigen Pfad finden</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2103"/>
         <source>No valid folder selected!</source>
         <translation>Kein gültiger Ordner ausgewählt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2114"/>
         <source>The selected path does not exist!</source>
         <translation>Der ausgewählte Pfad existiert nicht!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
         <source>The selected path is not a folder!</source>
         <translation>Der ausgewählte Pfad ist kein Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2147"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2148"/>
         <source>An error occurred while checking the local folder. Please try again.</source>
         <translation>Beim Überprüfen des lokalen Ordners ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2152"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2153"/>
         <source>The local folder %1 already exists. Please pick another one!</source>
         <translation>Der lokale Ordner %1 existiert bereits. Bitte wählen Sie einen anderen!</translation>
     </message>
@@ -2796,47 +2796,47 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Lite Sync ist deaktiviert. Die kDrive-Dateien nutzen den Speicherplatz Ihres Computers.</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1164"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1175"/>
         <source>Make available locally</source>
         <translation>Lokal verfügbar machen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1168"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1179"/>
         <source>Free up local space</source>
         <translation>Lokalen Speicherplatz freigeben</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1172"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1183"/>
         <source>Cancel free up local space</source>
         <translation>Lokalen Speicherplatz freigeben abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1176"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1187"/>
         <source>Cancel make available locally</source>
         <translation>Lokal verfügbar machen abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1180"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1191"/>
         <source>Resharing this file is not allowed</source>
         <translation>Die erneute Freigabe dieser Datei ist nicht erlaubt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1181"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1192"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Die erneute Freigabe dieses Ordners ist nicht erlaubt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1185"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1196"/>
         <source>Copy public share link</source>
         <translation>Öffentlichen Freigabelink kopieren</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1189"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1200"/>
         <source>Copy private share link</source>
         <translation>Link zur privaten Freigabe kopieren</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1193"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1204"/>
         <source>Open in browser</source>
         <translation>Im Browser öffnen</translation>
     </message>
@@ -2852,27 +2852,27 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>Utility</name>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="93"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
         <source>%L1 GB</source>
         <translation>%L1 GB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
         <source>%L1 MB</source>
         <translation>%L1 MB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="105"/>
         <source>%L1 KB</source>
         <translation>%L1 KB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="104"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="108"/>
         <source>%L1 B</source>
         <translation>%L1 B</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="37"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
         <source>%n year(s)</source>
         <translation>
             <numerusform>%n Jahr(e)</numerusform>
@@ -2880,7 +2880,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="38"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
         <source>%n month(s)</source>
         <translation>
             <numerusform>%n Monat(e)</numerusform>
@@ -2888,7 +2888,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="39"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="43"/>
         <source>%n day(s)</source>
         <translation>
             <numerusform>%n Tag(e)</numerusform>
@@ -2896,7 +2896,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="40"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="44"/>
         <source>%n hour(s)</source>
         <translation>
             <numerusform>%n Stunde(n)</numerusform>
@@ -2904,7 +2904,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="45"/>
         <source>%n minute(s)</source>
         <translation>
             <numerusform>%n Minute(n)</numerusform>
@@ -2912,7 +2912,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="46"/>
         <source>%n second(s)</source>
         <translation>
             <numerusform>%n Sekunde(n)</numerusform>

@@ -285,12 +285,12 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1522"/>
+        <location filename="../src/server/appserver.cpp" line="1527"/>
         <source>Share link copied to clipboard</source>
         <translation>Link di condivisione copiato negli appunti</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3479"/>
+        <location filename="../src/server/appserver.cpp" line="3486"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati rimossi.</numerusform>
@@ -298,13 +298,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3481"/>
+        <location filename="../src/server/appserver.cpp" line="3488"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato rimosso.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3486"/>
+        <location filename="../src/server/appserver.cpp" line="3493"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiunti.</numerusform>
@@ -312,13 +312,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3488"/>
+        <location filename="../src/server/appserver.cpp" line="3495"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiunto.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3493"/>
+        <location filename="../src/server/appserver.cpp" line="3500"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiornati.</numerusform>
@@ -326,13 +326,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3495"/>
+        <location filename="../src/server/appserver.cpp" line="3502"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiornato.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3500"/>
+        <location filename="../src/server/appserver.cpp" line="3507"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 è stato spostato in %2 e %n altri file sono stati spostati.</numerusform>
@@ -340,12 +340,12 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3503"/>
+        <location filename="../src/server/appserver.cpp" line="3510"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 è stato spostato in %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3511"/>
+        <location filename="../src/server/appserver.cpp" line="3518"/>
         <source>Sync Activity</source>
         <translation>Sincronizza attività</translation>
     </message>
@@ -2730,32 +2730,32 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Impossibile trovare un percorso valido</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2103"/>
         <source>No valid folder selected!</source>
         <translation>Nessuna cartella valida selezionata!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2114"/>
         <source>The selected path does not exist!</source>
         <translation>Il percorso selezionato non esiste!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
         <source>The selected path is not a folder!</source>
         <translation>Il percorso selezionato non è una cartella!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Non disponi dell&apos;autorizzazione di scrittura per la cartella selezionata!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2147"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2148"/>
         <source>An error occurred while checking the local folder. Please try again.</source>
         <translation>Si è verificato un errore durante il controllo della cartella locale. Riprova.</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2152"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2153"/>
         <source>The local folder %1 already exists. Please pick another one!</source>
         <translation>La cartella locale %1 esiste già. Scegline un’altra!</translation>
     </message>
@@ -2795,47 +2795,47 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Lite sync è disabilitato. I file kDrive utilizzano lo spazio di archiviazione del tuo computer.</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1164"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1175"/>
         <source>Make available locally</source>
         <translation>Rendere disponibile localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1168"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1179"/>
         <source>Free up local space</source>
         <translation>Libera spazio locale</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1172"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1183"/>
         <source>Cancel free up local space</source>
         <translation>Annulla liberazione di spazio locale</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1176"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1187"/>
         <source>Cancel make available locally</source>
         <translation>Annulla rendere disponibile localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1180"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1191"/>
         <source>Resharing this file is not allowed</source>
         <translation>Ricondivisione di questo file non consentita</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1181"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1192"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Ricondivisione di questa cartella non consentita</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1185"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1196"/>
         <source>Copy public share link</source>
         <translation>Copia il collegamento di condivisione pubblica</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1189"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1200"/>
         <source>Copy private share link</source>
         <translation>Copia il collegamento di condivisione privata</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1193"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1204"/>
         <source>Open in browser</source>
         <translation>Apri nel browser</translation>
     </message>
@@ -2851,27 +2851,27 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
 <context>
     <name>Utility</name>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="93"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
         <source>%L1 GB</source>
         <translation>%L1 GB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
         <source>%L1 MB</source>
         <translation>%L1 MB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="105"/>
         <source>%L1 KB</source>
         <translation>%L1 KB</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="104"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="108"/>
         <source>%L1 B</source>
         <translation>%L1 B</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="37"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
         <source>%n year(s)</source>
         <translatorcomment>// QTBUG-3945 and issue #4855: QT_TRANSLATE_NOOP does not work with plural form because lupdate</translatorcomment>
         <translation>
@@ -2880,7 +2880,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="38"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
         <source>%n month(s)</source>
         <translation>
             <numerusform>%n mese/i</numerusform>
@@ -2888,7 +2888,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="39"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="43"/>
         <source>%n day(s)</source>
         <translation>
             <numerusform>%n giorno/i</numerusform>
@@ -2896,7 +2896,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="40"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="44"/>
         <source>%n hour(s)</source>
         <translation>
             <numerusform>%n ora/e</numerusform>
@@ -2904,7 +2904,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="45"/>
         <source>%n minute(s)</source>
         <translation>
             <numerusform>%n minuto/i</numerusform>
@@ -2912,7 +2912,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="46"/>
         <source>%n second(s)</source>
         <translation>
             <numerusform>%n secondo/i</numerusform>
