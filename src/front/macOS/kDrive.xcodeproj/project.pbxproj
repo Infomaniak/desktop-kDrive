@@ -176,8 +176,6 @@
 				Parsing/Jobs/UtilityHasSystemLaunchOnStartupTest.swift,
 				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
-				Parsing/Signals/AccountAddedParsingTest.swift,
-				Parsing/Signals/JSON/ACCOUNT_ADDED.json,
 				Parsing/Signals/JSON/SYNC_COMPLETEDITEM.json,
 				Parsing/Signals/JSON/USER_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
@@ -1075,7 +1073,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive.gui";
 			};
 			name = Debug;
 		};
@@ -1099,7 +1097,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive.gui";
 			};
 			name = Release;
 		};
