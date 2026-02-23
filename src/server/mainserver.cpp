@@ -206,6 +206,8 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     // If the application is already running, notify it.
     if (appPtr->isRunning()
 #if defined(KD_LINUX)
+        // On Linux, we might fail to detect an already running kDrive process using only QSingleApplication. Therefor, check also
+        // with a Linux dedicated method.
         || isProcessRunning("kDrive")
 #endif
     ) {

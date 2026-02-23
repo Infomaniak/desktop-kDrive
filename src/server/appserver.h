@@ -57,6 +57,7 @@ class Theme;
  */
 
 class AuthorizationCodeEventFilter : public QObject {
+        // On macOS, the authorization code is retrieved by catching the `QEvent::FileOpen` and extracting its URL.
         Q_OBJECT
 
     signals:
