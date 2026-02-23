@@ -105,7 +105,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await driveHandler.handleDriveRemoved(signal)
 
         case .SYNC_ADDED, .SYNC_UPDATED:
-            try await synchroHandler.handleSync(signal)
+            try await synchroHandler.handleSyncAddedOrUpdated(signal)
 
         case .SYNC_REMOVED:
             try await synchroHandler.handleSyncRemoved(signal)

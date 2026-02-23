@@ -23,7 +23,7 @@ struct SynchroSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
 
-    func handleSync(_ signal: Data) async throws {
+    func handleSyncAddedOrUpdated(_ signal: Data) async throws {
         guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetSyncFromSignal
         }
