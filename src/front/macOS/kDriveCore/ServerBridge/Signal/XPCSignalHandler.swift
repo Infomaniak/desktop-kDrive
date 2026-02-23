@@ -98,10 +98,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_REMOVED:
             try await accountHandler.handleAccountRemoved(signal)
 
-        case .DRIVE_ADDED:
-            try await driveHandler.handleDrive(signal)
-
-        case .DRIVE_UPDATED:
+        case .DRIVE_ADDED, .DRIVE_UPDATED:
             try await driveHandler.handleDrive(signal)
 
         case .DRIVE_REMOVED:
