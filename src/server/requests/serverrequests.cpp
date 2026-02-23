@@ -1143,7 +1143,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::HttpErrForbidden:
                 case ExitCause::ApiErr:
                 case ExitCause::FileTooBig:
-                case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
                 case ExitCause::FileLocked:
                 case ExitCause::Http5xx:
