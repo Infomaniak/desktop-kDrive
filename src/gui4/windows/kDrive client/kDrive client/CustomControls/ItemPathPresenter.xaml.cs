@@ -57,8 +57,8 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!string.IsNullOrWhiteSpace(AbsoluteItemPath))
             {
-                ToolTipPath = AbsoluteItemPath;
-                DisplayedPath = AbsoluteItemPath;
+                ToolTipPath = AbsoluteItemPath.Replace('\\', '/');
+                DisplayedPath = AbsoluteItemPath.Replace('\\', '/');
                 return;
             }
 
@@ -71,13 +71,13 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (Sync is not null && !string.IsNullOrWhiteSpace(Sync.LocalPath))
             {
-                ToolTipPath = System.IO.Path.Combine(Sync.LocalPath ?? "", RelativeItemPath);
-                DisplayedPath = System.IO.Path.Combine(Path.GetFileName(Sync.LocalPath) ?? "", RelativeItemPath);
+                ToolTipPath = System.IO.Path.Combine(Sync.LocalPath ?? "", RelativeItemPath).Replace('\\', '/');
+                DisplayedPath = System.IO.Path.Combine(Path.GetFileName(Sync.LocalPath) ?? "", RelativeItemPath).Replace('\\', '/');
             }
             else
             {
-                ToolTipPath = RelativeItemPath;
-                DisplayedPath = RelativeItemPath;
+                ToolTipPath = RelativeItemPath.Replace('\\', '/');
+                DisplayedPath = RelativeItemPath.Replace('\\', '/');
             }
         }
 

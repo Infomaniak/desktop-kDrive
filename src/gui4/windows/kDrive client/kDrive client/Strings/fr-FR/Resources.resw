@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 15:48:24 +0100 
+  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -226,6 +226,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Ouvrir kDrive</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Gérer les exclusions</value> 
   </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Actualiser</value> 
@@ -481,19 +484,28 @@ Vos modifications sont disponibles dans un fichier séparé à côté de l’ori
 Veuillez demander l’accès au propriétaire ou à votre administrateur.</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>Ce fichier a été exclu par un modèle de synchronisation.</value> 
+    <value>Cet élément a été exclu de la synchronisation par un modèle personnalisé.
+Vous pouvez désactiver ce type de notification dans les paramètres d'exclusion.
+</value> 
   </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
     <value>Un fichier portant ce nom existe déjà.</value> 
   </data> 
   <data name="errFileLockedDescription" xml:space="preserve"> 
-    <value>Ce fichier est verrouillé et ne peut être consulté.</value> 
+    <value>Ce fichier est verrouillé par un autre utilisateur et ne peut pas être modifié pour le moment.
+Vos modifications seront synchronisées ultérieurement.</value> 
   </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
-    <value>Ce dossier a été déplacé vers le sauvetage.</value> 
+    <value>Le fichier a été modifié localement alors qu’il avait été supprimé sur le kDrive distant.
+La copie locale a été sauvegardée dans le dossier de récupération.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Ce fichier est trop volumineux pour être synchronisé.</value> 
+    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
+Contactez votre administrateur pour augmenter la limite de taille des fichiers.</value> 
+  </data> 
+  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
+    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
+Contactez le support pour débloquer la limite.</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Le nom de ce fichier contient un ou plusieurs caractères qui ne sont pas pris en charge par votre appareil</value> 
@@ -508,11 +520,11 @@ Veuillez demander l’accès au propriétaire ou à votre administrateur.</value
     <value>Les liaisons matérielles ne sont pas prises en charge pour la synchronisation.</value> 
   </data> 
   <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas l’autorisation d’accéder à cette ressource.</value> 
+    <value>L’opération effectuée sur cet élément est interdite.
+Veuillez demander l’accès au propriétaire ou à votre administrateur.</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Vous n'avez pas l'autorisation de déplacer ce fichier ou ce dossier ici,
-il sera restauré à son emplacement d'origine.
+    <value>Vous n'avez pas l'autorisation de déplacer ce fichier ou dossier ici, il sera restauré à son emplacement d'origine.
 Veuillez demander l'accès au propriétaire ou à votre administrateur.
 </value> 
   </data> 
@@ -520,7 +532,7 @@ Veuillez demander l'accès au propriétaire ou à votre administrateur.
     <value>Le nom du fichier ou du dossier est trop long.</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>Il n’y a pas assez d’espace disque pour effectuer cette opération.</value> 
+    <value>Il n’y a plus assez d’espace sur votre ordinateur pour synchroniser ce fichier.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
     <value>Le nom de ce fichier ou de ce dossier contient des caractères non pris en charge.</value> 
@@ -529,7 +541,8 @@ Veuillez demander l'accès au propriétaire ou à votre administrateur.
     <value>Le chemin du fichier est trop long pour votre appareil. Raccourcissez-le puis réessayez.</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre offre pour continuer la synchronisation.</value> 
+    <value>Votre kDrive est plein.
+Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fichier.</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>Ce nom est réservé par le système. Renommez l’élément puis réessayez.</value> 

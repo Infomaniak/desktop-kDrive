@@ -82,7 +82,7 @@ namespace Infomaniak.kDrive.ViewModels
         public string Path
         {
             get => _path;
-            set => SetPropertyInUIThread(ref _path, value);
+            set => SetPropertyInUIThread(ref _path, value.Replace('\\', '/'));
         }
 
         public string DestinationPath

@@ -14,5 +14,7 @@
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('excludedByTemplateErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errExcludedByTemplateDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenSyncExclusionRules')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

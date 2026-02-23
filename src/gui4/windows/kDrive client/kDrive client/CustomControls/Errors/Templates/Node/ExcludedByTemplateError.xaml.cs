@@ -23,5 +23,17 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+
+        private void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
+        {
+            var frame = ((App.Current as App)?.CurrentWindow as MainWindow).AppNavView.Frame;
+            if(frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to fetch main frame");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+            frame.Navigate(typeof(Pages.Settings.TemplateExclusionPage));
+        }
     }
 }

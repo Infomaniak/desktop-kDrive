@@ -8,53 +8,41 @@
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
-    
+
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </UserControl.Resources>
 
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDescription')}">
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('needHelpSetting')}"
+                     ActionClick="ErrorCard_ActionClick"
+                     Error="{x:Bind Error}">
         <local:ErrorCard.CustomContent>
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <!-- Technical Details Expander -->
-                <Expander x:Name="DetailsExpander"
-                          HorizontalAlignment="Stretch"
-                          Visibility="{x:Bind ShowDetails}">
-                    <Expander.Header>
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDetailsLabel')}"
-                                   FontSize="12"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </Expander.Header>
-                    <ScrollViewer MaxHeight="300"
-                                  HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto"
-                                  Margin="{StaticResource Infomaniak.Style.Thickness.Top.S}">
-                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-                              Background="{ThemeResource SubtleFillColorTertiaryBrush}"
-                              CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
-                            <!-- Error details will be added via code-behind -->
-                            <TextBlock x:Name="DetailsTextBlock"
-                                       FontFamily="Consolas"
-                                       FontSize="10"
-                                       TextWrapping="Wrap"
-                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </Grid>
-                    </ScrollViewer>
-                </Expander>
 
-                <!-- Support Link -->
-                <HyperlinkButton x:Name="SupportLink"
-                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('needHelpSetting')}"
-                                 NavigateUri="https://support.infomaniak.com"
-                                 Padding="0"
-                                 Margin="0"
-                                 FontSize="12"
-                                 Visibility="{x:Bind HasError}" />
-            </StackPanel>
+            <!-- Technical Details Expander -->
+            <Expander x:Name="DetailsExpander"
+                      HorizontalAlignment="Stretch"
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Top.L}"
+                      Visibility="{x:Bind ShowDetails}">
+                <Expander.Header>
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDetailsLabel')}"
+                               FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Expander.Header>
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                      RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                      Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                      CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
+                    <!-- Error details will be added via code-behind -->
+                    <TextBlock x:Name="DetailsTextBlock"
+                               FontFamily="Consolas"
+                               FontSize="10"
+                               TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                </Grid>
+            </Expander>
         </local:ErrorCard.CustomContent>
     </local:ErrorCard>
 </UserControl>

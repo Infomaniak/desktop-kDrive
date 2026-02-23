@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 15:48:24 +0100 
+  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -226,6 +226,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Open kDrive</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Managing exclusions</value> 
   </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Refresh</value> 
@@ -483,19 +486,28 @@ Please ask the owner or your administrator for access.
 </value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>This file has been excluded by a synchronization template.</value> 
+    <value>This item has been excluded from synchronization by a custom template.
+You can disable this type of notification in the exclusion parameters.
+</value> 
   </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
     <value>A file with this name already exists.</value> 
   </data> 
   <data name="errFileLockedDescription" xml:space="preserve"> 
-    <value>This file is locked and cannot be accessed.</value> 
+    <value>This file is locked by another user and cannot be modified at the moment.
+Your changes will be synchronized later.</value> 
   </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
-    <value>This file has been moved to rescue.</value> 
+    <value>The file was modified locally when it had been deleted on the remote kDrive.
+The local copy has been saved in the recovery folder.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>This file is too large to be synchronized.</value> 
+    <value>This file exceeds the maximum authorized size (50 GB).
+Contact your administrator to increase the file size limit.</value> 
+  </data> 
+  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
+    <value>This file exceeds the maximum authorized size (50 GB).
+Contact support to unlock the limit.</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
@@ -510,11 +522,11 @@ Please ask the owner or your administrator for access.
     <value>Hard links are not supported for synchronization.</value> 
   </data> 
   <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
-    <value>You do not have permission to access this resource.</value> 
+    <value>The operation performed on this element is forbidden.
+Please request access from the owner or your administrator.</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>You do not have permission to move this file or folder here,
-it will be restored to its original location.
+    <value>You do not have permission to move this file or folder here, it will be restored to its original location.
 Please ask the owner or your administrator for access.
 </value> 
   </data> 
@@ -522,7 +534,7 @@ Please ask the owner or your administrator for access.
     <value>The file or folder name is too long.</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>There is not enough disk space to complete this operation.</value> 
+    <value>There is not enough space on your computer to synchronize this file.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
     <value>This file or folder name contains unsupported characters.</value> 
@@ -531,7 +543,8 @@ Please ask the owner or your administrator for access.
     <value>The file path is too long for your device. Shorten it and try again.</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Your kDrive is full. Free up space or upgrade your plan to continue syncing.</value> 
+    <value>Your kDrive is full.
+Free up space or upgrade your offer to synchronize this file.</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>This name is reserved by the system. Rename the item and try again.</value> 
