@@ -19,6 +19,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     public sealed partial class FileTooBigError : UserControl
     {
         private Error Error { get; init; }
+
+        private string DescriptionKey
+        {
+            get => (Error.Sync?.Drive?.IsAdmin ?? false) ? "errFileTooBigDescriptionAdmin" : "errFileTooBigDescription";
+        }
         public FileTooBigError(Error error)
         {
             this.InitializeComponent();

@@ -14,5 +14,7 @@
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('notEnoughDiskSpaceErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errNotEnoughDiskSpaceDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageDiskSpace')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

@@ -24,5 +24,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+
+        private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
+        {
+            bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
+            if (!result)
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to launch settings for NotEnoughDiskSpaceError");
+                Utility.ShowUnexpectedErrorTeachingTip(); 
+            }
+        }
     }
 }
