@@ -218,6 +218,8 @@ public enum KDriveLocalizable {
   public static let sidebarItemKDriveTitle = KDriveLocalizable.tr("Localizable", "sidebarItemKDriveTitle", fallback: "kDrive folder")
   /// loco:697b37c632d0fb5b5d0b4db6
   public static let storageDeviceNameMac = KDriveLocalizable.tr("Localizable", "storageDeviceNameMac", fallback: "Macintosh")
+  /// loco:69981716cfa89b9c940ef652
+  public static let storageLoadingHint = KDriveLocalizable.tr("Localizable", "storageLoadingHint", fallback: "Loading space usage…")
   /// loco:697a077ee16575000806de62
   public static let storageMacFreeSpace = KDriveLocalizable.tr("Localizable", "storageMacFreeSpace", fallback: "Free space")
   /// loco:697a0768c39a2189f5022564

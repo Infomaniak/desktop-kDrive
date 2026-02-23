@@ -21,7 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 class StorageViewController: TitledViewController<StorageView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.storage.title, contentView: StorageView())
+    init(mainViewModel: MainViewModel) {
+        super.init(toolbarTitle: SidebarItem.storage.title, contentView: StorageView(mainViewModel: mainViewModel))
     }
 }
