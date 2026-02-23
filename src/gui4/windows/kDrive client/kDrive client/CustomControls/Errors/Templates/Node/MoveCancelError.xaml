@@ -6,13 +6,20 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('moveCancelErrorTitle')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('forbiddenActionErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errMoveCancelDescription')}"
-                     Error="{x:Bind Error}" />
+                     Error="{x:Bind Error}">
+        <local:ErrorCard.CustomContent>
+            <controls:ItemPathPresenter RelativeItemPath="{x:Bind Error.DestinationPath}"
+                                        Sync="{x:Bind Error.Sync}"
+                                        Margin="{StaticResource Infomaniak.Style.Thickness.Top.XXS}" />
+        </local:ErrorCard.CustomContent>
+    </local:ErrorCard>
 </UserControl>

@@ -88,7 +88,7 @@ namespace Infomaniak.kDrive.ViewModels
         public string DestinationPath
         {
             get => _destinationPath;
-            set => SetPropertyInUIThread(ref _destinationPath, value);
+            set => SetPropertyInUIThread(ref _destinationPath, value.Replace('\\', '/'));
         }
 
         public ConflictType ConflictType

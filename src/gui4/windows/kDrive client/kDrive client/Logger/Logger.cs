@@ -107,7 +107,7 @@ namespace Infomaniak.kDrive
             if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
                 return false;
 
-            if (level <= Level.Info && level != Level.Extended)
+            if (level <= Level.Info || level == Level.Extended)
                 return false; // Only send Warning and above
 
             int hash = HashCode.Combine(filePath, lineNumber);

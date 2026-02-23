@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.Converters
                 throw new ArgumentException("Invalid item type", nameof(value));
             }
 
-            string extension = System.IO.Path.GetExtension(path).ToLowerInvariant();
+            string extension = System.IO.Path.GetExtension(path).ToLowerInvariant().TrimEnd();
 
             string iconResourceKey = extension.ToLowerInvariant() switch
             {

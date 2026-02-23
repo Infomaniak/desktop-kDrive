@@ -42,9 +42,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(ActionTextProperty, value); }
         }
 
-        public Control? CustomContent
+        public FrameworkElement? CustomContent
         {
-            get { return (Control?)GetValue(CustomContentProperty); }
+            get { return (FrameworkElement?)GetValue(CustomContentProperty); }
             set { SetValue(CustomContentProperty, value); }
         }
 
@@ -66,7 +66,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             DependencyProperty.Register(nameof(ActionText), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
 
         public static readonly DependencyProperty CustomContentProperty =
-            DependencyProperty.Register(nameof(CustomContent), typeof(Control), typeof(ErrorCard), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(CustomContent), typeof(FrameworkElement), typeof(ErrorCard), new PropertyMetadata(null));
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {

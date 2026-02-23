@@ -5,25 +5,56 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
+    
+    <UserControl.Resources>
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+    </UserControl.Resources>
+
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind _error.Path}"
-                     Description="An unexpected error has occurred.">
-        <!-- TODO: Translate once the UI is ready -->
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDescription')}">
         <local:ErrorCard.CustomContent>
-            <Expander x:Name="DetailsExpander"
-                      Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
-                      IsExpanded="False"
-                      Header="+"
-                      HorizontalAlignment="Stretch">
-                <ScrollViewer MaxHeight="240"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto">
-                    <TextBlock x:Name="DetailsTextBlock"
-                               FontFamily="Consolas"
-                               TextWrapping="NoWrap" />
-                </ScrollViewer>
-            </Expander>
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <!-- Technical Details Expander -->
+                <Expander x:Name="DetailsExpander"
+                          HorizontalAlignment="Stretch"
+                          Visibility="{x:Bind ShowDetails}">
+                    <Expander.Header>
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDetailsLabel')}"
+                                   FontSize="12"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </Expander.Header>
+                    <ScrollViewer MaxHeight="300"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Top.S}">
+                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                              Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                              CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
+                            <!-- Error details will be added via code-behind -->
+                            <TextBlock x:Name="DetailsTextBlock"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </Grid>
+                    </ScrollViewer>
+                </Expander>
+
+                <!-- Support Link -->
+                <HyperlinkButton x:Name="SupportLink"
+                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('needHelpSetting')}"
+                                 NavigateUri="https://support.infomaniak.com"
+                                 Padding="0"
+                                 Margin="0"
+                                 FontSize="12"
+                                 Visibility="{x:Bind HasError}" />
+            </StackPanel>
         </local:ErrorCard.CustomContent>
     </local:ErrorCard>
 </UserControl>
