@@ -99,7 +99,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await accountHandler.handleAccountRemoved(signal)
 
         case .DRIVE_ADDED, .DRIVE_UPDATED:
-            try await driveHandler.handleDrive(signal)
+            try await driveHandler.handleDriveAddedOrUpdated(signal)
 
         case .DRIVE_REMOVED:
             try await driveHandler.handleDriveRemoved(signal)

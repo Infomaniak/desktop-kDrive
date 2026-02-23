@@ -24,7 +24,7 @@ struct DriveSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
 
-    func handleDrive(_ signal: Data) async throws {
+    func handleDriveAddedOrUpdated(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetDriveFromSignal
         }
