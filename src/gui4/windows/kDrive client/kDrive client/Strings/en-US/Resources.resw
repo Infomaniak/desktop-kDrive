@@ -1053,4 +1053,142 @@ If the problem persists, please contact support.</value>
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
     <value>Remove (%@ rules)</value> 
   </data> 
+  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve">
+    <value>Name ends with a space</value>
+  </data>
+  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve">
+    <value>The item name ends with a space, which is not supported by your operating system. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="reservedNameErrorTitle" xml:space="preserve">
+    <value>Reserved name</value>
+  </data>
+  <data name="errReservedNameDescription" xml:space="preserve">
+    <value>This item name is reserved by your operating system. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="nameLengthErrorTitle" xml:space="preserve">
+    <value>Name too long</value>
+  </data>
+  <data name="errNameLengthDescription" xml:space="preserve">
+    <value>The item name is too long. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="pathLengthErrorTitle" xml:space="preserve">
+    <value>Path too long</value>
+  </data>
+  <data name="errPathLengthDescription" xml:space="preserve">
+    <value>The item path is too long. It has been ignored.</value>
+  </data>
+  <data name="notYetSupportedCharErrorTitle" xml:space="preserve">
+    <value>Unsupported Unicode character</value>
+  </data>
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve">
+    <value>The item name contains a recent Unicode character not yet supported by your filesystem. It has been excluded from synchronization.</value>
+  </data>
+  <data name="duplicateNamesErrorTitle" xml:space="preserve">
+    <value>Duplicate name</value>
+  </data>
+  <data name="errDuplicateNamesDescription" xml:space="preserve">
+    <value>The item name coincides with the name of another item in the same directory. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve">
+    <value>Name contains only spaces</value>
+  </data>
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve">
+    <value>The item name contains only spaces. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="createCancelErrorTitle" xml:space="preserve">
+    <value>Item creation refused</value>
+  </data>
+  <data name="errCreateCancelDescription" xml:space="preserve">
+    <value>You are not allowed to create an item, or another item already exists with the same name. The item has been excluded from synchronization.</value>
+  </data>
+  <data name="editCancelErrorTitle" xml:space="preserve">
+    <value>Item modification refused</value>
+  </data>
+  <data name="errEditCancelDescription" xml:space="preserve">
+    <value>You are not allowed to edit this item. The file containing your modifications has been renamed and excluded from synchronization.</value>
+  </data>
+  <data name="moveCancelErrorTitle" xml:space="preserve">
+    <value>Item move refused</value>
+  </data>
+  <data name="errMoveCancelDescription" xml:space="preserve">
+    <value>You are not allowed to move or rename this item. It will be restored to its original location.</value>
+  </data>
+  <data name="deleteCancelErrorTitle" xml:space="preserve">
+    <value>Item deletion refused</value>
+  </data>
+  <data name="errDeleteCancelDescription" xml:space="preserve">
+    <value>You are not allowed to delete this item. It will be restored to its original location.</value>
+  </data>
+  <data name="tmpBlacklistedErrorTitle" xml:space="preserve">
+    <value>Synchronization error</value>
+  </data>
+  <data name="errTmpBlacklistedDescription" xml:space="preserve">
+    <value>Failed to synchronize this item. It has been temporarily blacklisted. Another attempt to sync it will be done in one hour or on next application startup.</value>
+  </data>
+  <data name="excludedByTemplateErrorTitle" xml:space="preserve">
+    <value>Excluded by rule</value>
+  </data>
+  <data name="errExcludedByTemplateDescription" xml:space="preserve">
+    <value>This item has been excluded from sync by a custom template. You can disable this type of notification from the Preferences.</value>
+  </data>
+  <data name="hardlinkErrorTitle" xml:space="preserve">
+    <value>Hard link</value>
+  </data>
+  <data name="errHardlinkDescription" xml:space="preserve">
+    <value>This item has been excluded from sync because it is a hard link.</value>
+  </data>
+  <data name="fileRescuedErrorTitle" xml:space="preserve">
+    <value>File rescued</value>
+  </data>
+  <data name="errFileRescuedDescription" xml:space="preserve">
+    <value>The file has been modified locally while it was deleted on the remote kDrive. The local copy has been saved in the rescue folder.</value>
+  </data>
+  <data name="httpErrForbiddenErrorTitle" xml:space="preserve">
+    <value>Operation forbidden</value>
+  </data>
+  <data name="errHttpErrForbiddenDescription" xml:space="preserve">
+    <value>The operation performed on this item is forbidden. The item has been temporarily blacklisted.</value>
+  </data>
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve">
+    <value>Upload failed</value>
+  </data>
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve">
+    <value>The operation performed on this item failed. The item has been temporarily blacklisted.</value>
+  </data>
+  <data name="fileTooBigErrorTitle" xml:space="preserve">
+    <value>File too large</value>
+  </data>
+  <data name="errFileTooBigDescription" xml:space="preserve">
+    <value>The file is too large to be uploaded. It has been temporarily blacklisted.</value>
+  </data>
+  <data name="quotaExceededErrorTitle" xml:space="preserve">
+    <value>Quota exceeded</value>
+  </data>
+  <data name="errQuotaExceededDescription" xml:space="preserve">
+    <value>You have exceeded your quota. Increase your space quota to re-enable file upload.</value>
+  </data>
+  <data name="notFoundErrorTitle" xml:space="preserve">
+    <value>File not found</value>
+  </data>
+  <data name="errNotFoundDescription" xml:space="preserve">
+    <value>Impossible to download the file.</value>
+  </data>
+  <data name="fileLockedErrorTitle" xml:space="preserve">
+    <value>File locked</value>
+  </data>
+  <data name="errFileLockedDescription" xml:space="preserve">
+    <value>This item is currently locked by another user online. We will retry uploading your changes later.</value>
+  </data>
+  <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve">
+    <value>Not enough disk space</value>
+  </data>
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve">
+    <value>There is not enough space on your local disk. Free up space to continue syncing.</value>
+  </data>
+  <data name="fileExistsErrorTitle" xml:space="preserve">
+    <value>Item already exists</value>
+  </data>
+  <data name="errFileExistsDescription" xml:space="preserve">
+    <value>An item with the same name already exists. The item could not be synchronized.</value>
+  </data>
 </root>

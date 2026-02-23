@@ -1053,4 +1053,142 @@ Si el problema persiste, póngase en contacto con el servicio de asistencia.</va
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
     <value>Eliminar (%@ reglas)</value> 
   </data> 
+  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve">
+    <value>El nombre termina con un espacio</value>
+  </data>
+  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve">
+    <value>El nombre de este elemento termina con un espacio, lo cual no es compatible con su sistema operativo. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="reservedNameErrorTitle" xml:space="preserve">
+    <value>Nombre reservado</value>
+  </data>
+  <data name="errReservedNameDescription" xml:space="preserve">
+    <value>Este nombre de elemento está reservado por su sistema operativo. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="nameLengthErrorTitle" xml:space="preserve">
+    <value>Nombre demasiado largo</value>
+  </data>
+  <data name="errNameLengthDescription" xml:space="preserve">
+    <value>El nombre de este elemento es demasiado largo. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="pathLengthErrorTitle" xml:space="preserve">
+    <value>Ruta demasiado larga</value>
+  </data>
+  <data name="errPathLengthDescription" xml:space="preserve">
+    <value>La ruta de este elemento es demasiado larga. Ha sido ignorado.</value>
+  </data>
+  <data name="notYetSupportedCharErrorTitle" xml:space="preserve">
+    <value>Carácter Unicode no compatible</value>
+  </data>
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve">
+    <value>El nombre de este elemento contiene un carácter Unicode reciente aún no compatible con su sistema de archivos. Ha sido excluido de la sincronización.</value>
+  </data>
+  <data name="duplicateNamesErrorTitle" xml:space="preserve">
+    <value>Nombre duplicado</value>
+  </data>
+  <data name="errDuplicateNamesDescription" xml:space="preserve">
+    <value>El nombre de este elemento coincide con el nombre de otro elemento en el mismo directorio. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve">
+    <value>El nombre contiene solo espacios</value>
+  </data>
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve">
+    <value>El nombre de este elemento contiene solo espacios. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="createCancelErrorTitle" xml:space="preserve">
+    <value>Creación de elemento rechazada</value>
+  </data>
+  <data name="errCreateCancelDescription" xml:space="preserve">
+    <value>No tiene permiso para crear un elemento, o ya existe otro elemento con el mismo nombre. El elemento ha sido excluido de la sincronización.</value>
+  </data>
+  <data name="editCancelErrorTitle" xml:space="preserve">
+    <value>Modificación de elemento rechazada</value>
+  </data>
+  <data name="errEditCancelDescription" xml:space="preserve">
+    <value>No tiene permiso para editar este elemento. El archivo con sus modificaciones ha sido renombrado y excluido de la sincronización.</value>
+  </data>
+  <data name="moveCancelErrorTitle" xml:space="preserve">
+    <value>Movimiento de elemento rechazado</value>
+  </data>
+  <data name="errMoveCancelDescription" xml:space="preserve">
+    <value>No tiene permiso para mover o renombrar este elemento. Será restaurado a su ubicación original.</value>
+  </data>
+  <data name="deleteCancelErrorTitle" xml:space="preserve">
+    <value>Eliminación de elemento rechazada</value>
+  </data>
+  <data name="errDeleteCancelDescription" xml:space="preserve">
+    <value>No tiene permiso para eliminar este elemento. Será restaurado a su ubicación original.</value>
+  </data>
+  <data name="tmpBlacklistedErrorTitle" xml:space="preserve">
+    <value>Error de sincronización</value>
+  </data>
+  <data name="errTmpBlacklistedDescription" xml:space="preserve">
+    <value>No se pudo sincronizar este elemento. Ha sido añadido temporalmente a la lista negra. Se realizará otro intento en una hora o en el próximo inicio de la aplicación.</value>
+  </data>
+  <data name="excludedByTemplateErrorTitle" xml:space="preserve">
+    <value>Excluido por una regla</value>
+  </data>
+  <data name="errExcludedByTemplateDescription" xml:space="preserve">
+    <value>Este elemento ha sido excluido de la sincronización por una plantilla personalizada. Puede desactivar este tipo de notificación desde las Preferencias.</value>
+  </data>
+  <data name="hardlinkErrorTitle" xml:space="preserve">
+    <value>Enlace físico</value>
+  </data>
+  <data name="errHardlinkDescription" xml:space="preserve">
+    <value>Este elemento ha sido excluido de la sincronización porque es un enlace físico.</value>
+  </data>
+  <data name="fileRescuedErrorTitle" xml:space="preserve">
+    <value>Archivo rescatado</value>
+  </data>
+  <data name="errFileRescuedDescription" xml:space="preserve">
+    <value>El archivo fue modificado localmente mientras se eliminaba en el kDrive remoto. La copia local se ha guardado en la carpeta de rescate.</value>
+  </data>
+  <data name="httpErrForbiddenErrorTitle" xml:space="preserve">
+    <value>Operación no permitida</value>
+  </data>
+  <data name="errHttpErrForbiddenDescription" xml:space="preserve">
+    <value>La operación realizada en este elemento no está permitida. El elemento ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve">
+    <value>Carga fallida</value>
+  </data>
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve">
+    <value>La operación realizada en este elemento ha fallado. El elemento ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="fileTooBigErrorTitle" xml:space="preserve">
+    <value>Archivo demasiado grande</value>
+  </data>
+  <data name="errFileTooBigDescription" xml:space="preserve">
+    <value>El archivo es demasiado grande para cargarse. Ha sido añadido temporalmente a la lista negra.</value>
+  </data>
+  <data name="quotaExceededErrorTitle" xml:space="preserve">
+    <value>Cuota superada</value>
+  </data>
+  <data name="errQuotaExceededDescription" xml:space="preserve">
+    <value>Ha superado su cuota. Aumente su cuota de espacio para volver a habilitar la carga de archivos.</value>
+  </data>
+  <data name="notFoundErrorTitle" xml:space="preserve">
+    <value>Archivo no encontrado</value>
+  </data>
+  <data name="errNotFoundDescription" xml:space="preserve">
+    <value>Imposible descargar el archivo.</value>
+  </data>
+  <data name="fileLockedErrorTitle" xml:space="preserve">
+    <value>Archivo bloqueado</value>
+  </data>
+  <data name="errFileLockedDescription" xml:space="preserve">
+    <value>Este elemento está actualmente bloqueado por otro usuario en línea. Reintentaremos cargar sus cambios más tarde.</value>
+  </data>
+  <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve">
+    <value>Espacio en disco insuficiente</value>
+  </data>
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve">
+    <value>No hay suficiente espacio en su disco local. Libere espacio para continuar la sincronización.</value>
+  </data>
+  <data name="fileExistsErrorTitle" xml:space="preserve">
+    <value>Elemento ya existente</value>
+  </data>
+  <data name="errFileExistsDescription" xml:space="preserve">
+    <value>Ya existe un elemento con el mismo nombre. El elemento no pudo sincronizarse.</value>
+  </data>
 </root>

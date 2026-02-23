@@ -15,10 +15,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.BackError, ExitCode.SystemError, ExitCode.DataError },
         ExitCauses = new[] { ExitCause.FileExists }
-    // CancelTypes = new[] { CancelType.None },
-    // ConflictTypes = new[] { ConflictType.None },
-    // ExitCodes = new[] { ExitCode.Unknown },
-    // ExitCauses = new[] { ExitCause.Unknown }
     )]
     public sealed partial class FileExistsError : UserControl
     {

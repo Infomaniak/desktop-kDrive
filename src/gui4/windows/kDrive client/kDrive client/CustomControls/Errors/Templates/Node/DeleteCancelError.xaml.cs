@@ -14,10 +14,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         CancelTypes = new[] { CancelType.Delete }
-    // CancelTypes = new[] { CancelType.None },
-    // ConflictTypes = new[] { ConflictType.None },
-    // ExitCodes = new[] { ExitCode.Unknown },
-    // ExitCauses = new[] { ExitCause.Unknown }
     )]
     public sealed partial class DeleteCancelError : UserControl
     {
