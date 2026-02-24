@@ -30,6 +30,7 @@ final class MainWindowController: NSWindowController {
 
     @LazyInjectService private var router: MainWindowRouter
     @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
+    @LazyInjectService private var coherentCache: CoherentCache
 
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
@@ -85,11 +86,7 @@ final class MainWindowController: NSWindowController {
     }
 
     private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
-        guard let connectedUsers = try? await UserJobs().userInfoList().filter({ $0.isConnected }) else {
-            return .onboarding()
-        }
-
-        let hasConnectedUser = connectedUsers.isEmpty == false
+        let hasConnectedUser = await coherentCache.getFirstAvailableUser() != nil
 
         if UserDefaults.standard.isFirstLaunch {
             UserDefaults.standard.shouldPresentOnboarding = !hasConnectedUser
