@@ -81,20 +81,18 @@ public struct UIDrive: UIDriveRepresentation {
     public let userDbId: Int
     public let name: String
     public let nsColor: NSColor?
-    public let synchros: [Int: UISynchro]
 
     public var color: Color? {
         guard let nsColor else { return nil }
         return Color(nsColor: nsColor)
     }
 
-    public init(dbId: Int, driveId: Int, userDbId: Int, name: String, color: NSColor?, synchros: [Int: UISynchro]) {
+    public init(dbId: Int, driveId: Int, userDbId: Int, name: String, color: NSColor?) {
         self.dbId = dbId
         self.driveId = driveId
         self.userDbId = userDbId
         self.name = name
         nsColor = color
-        self.synchros = synchros
     }
 }
 
@@ -105,17 +103,12 @@ public extension UIDrive {
             color = NSColor(hexColor: driveColor)
         }
 
-        let synchros = Dictionary(uniqueKeysWithValues: drive.synchros.map { key, synchro in
-            (Int(key), UISynchro(synchro: synchro))
-        })
-
         self.init(
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
             userDbId: Int(drive.userDbId),
             name: drive.name,
-            color: color,
-            synchros: synchros
+            color: color
         )
     }
 }

@@ -22,23 +22,18 @@ import kDriveCore
 public struct UIAccount: Sendable, Equatable, Hashable {
     public let dbId: Int
     public let name: String
-    public let drives: [Int: UIDrive]
 
-    public init(dbId: Int, name: String, drives: [Int: UIDrive]) {
+    public init(dbId: Int, name: String) {
         self.dbId = dbId
         self.name = name
-        self.drives = drives
     }
 }
 
 public extension UIAccount {
     init(account: Account) {
-        let drives = Dictionary(uniqueKeysWithValues: account.drives.map { key, value in (Int(key), UIDrive(drive: value)) })
-
         self.init(
             dbId: Int(account.dbId),
-            name: account.name,
-            drives: drives
+            name: account.name
         )
     }
 }
