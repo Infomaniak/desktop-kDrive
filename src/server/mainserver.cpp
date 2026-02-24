@@ -39,6 +39,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
+#include <algorithm>
 #endif
 
 #include <log4cplus/loggingmacros.h>

@@ -275,14 +275,19 @@ bool Utility::registerLoginRedirection() {
     const auto urlSchemeFilePath = urlSchemeDirPath / (std::string(APPLICATION_EXECUTABLE) + ".desktop");
 
     IoError ioError = IoError::Unknown;
-    if (!std::filesystem::exists(urlSchemeDirPath) && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
-        LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(urlSchemeDirPath, ioError));
+    bool exists = false;
+    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists:" << Utility::formatIoError(urlSchemeDirPath, ioError));
+        return false;
+    }
+    if (!exists && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
+        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatIoError(urlSchemeDirPath, ioError));
         return false;
     }
 
     std::ofstream urlSchemeFile{urlSchemeFilePath};
     if (!urlSchemeFile.is_open()) {
-        LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(urlSchemeFilePath));
+        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatSyncPath(urlSchemeFilePath));
         return false;
     }
 
@@ -295,20 +300,31 @@ bool Utility::registerLoginRedirection() {
     }
     urlSchemeFile << "[Desktop Entry]" << std::endl;
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
-    urlSchemeFile << "Exec=" << execPath.string() << " %u" << std::endl;
+    urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << std::endl;
     urlSchemeFile << "Type=Application" << std::endl;
     urlSchemeFile << "Terminal=false" << std::endl;
     urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
     urlSchemeFile.close();
 
     // Update database
-    (void) system("update-desktop-database ~/.local/share/applications/");
+    bool res = true;
+    const std::string updateDesktopDbCmd =
+            std::string("update-desktop-database ") + std::string(homePathEnv) + "/.local/share/applications/";
+    if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
+        LOGW_WARN(logger(), L"Failed to update desktop database with command: " << CommonUtility::s2ws(updateDesktopDbCmd)
+                                                                                << L", result: " << updateResult);
+        res = false; // Do not return yet, try to register scheme anyway.
+    }
 
     // Register scheme
     const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
-    (void) system(registerSchemeStr.c_str());
+    if (const int registerResult = system(registerSchemeStr.c_str()); registerResult != 0) {
+        LOGW_WARN(logger(), L"Failed to register URL scheme with command: " << CommonUtility::s2ws(registerSchemeStr)
+                                                                            << L", result: " << registerResult);
+        res = false;
+    }
 
-    return true;
+    return res;
 }
 
 } // namespace KDC

@@ -144,10 +144,11 @@ std::string Utility::userName() {
 
 bool Utility::registerLoginRedirection() {
     // Working directory path is like "<path to the app bundle>/Contents/MacOS"
+    const std::string appBundlePath = CommonUtility::getAppWorkingDir().parent_path().parent_path().native();
     const std::string registerCommand =
             "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/"
-            "lsregister -f " +
-            CommonUtility::getAppWorkingDir().parent_path().parent_path().native();
+            "lsregister -f \"" +
+            appBundlePath + "\"";
     (void) system(registerCommand.c_str());
     return true;
 }

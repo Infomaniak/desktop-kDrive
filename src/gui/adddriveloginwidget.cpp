@@ -26,12 +26,12 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "log/sentry/handler.h"
 #include "utility/urlhelper.h"
 
 #include <QBoxLayout>
 #include <QLabel>
-#include <QProcessEnvironment>
-#include <QProcessEnvironment>
+#include <QDesktopServices>
 #include <QUrlQuery>
 
 namespace KDC {
@@ -137,8 +137,11 @@ void AddDriveLoginWidget::onErrorReceived(const QString error, const QString err
 
 void AddDriveLoginWidget::onOpenLoginInBrowser() {
     if (!QDesktopServices::openUrl(generateAuthorizeUrl())) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to open the login page in your web browser"), QMessageBox::Ok);
+        const auto errorMsg = tr("Failed to open the login page in your web browser");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Login failed", errorMsg.toStdString());
+        CustomMessageBox msgBox(QMessageBox::Warning, errorMsg, QMessageBox::Ok);
         (void) msgBox.exec();
+
 
         emit terminated(false);
     }

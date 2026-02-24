@@ -501,7 +501,11 @@ void AppServer::init() {
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
 
-    (void) Utility::registerLoginRedirection();
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
     // Start client
     if (!startClient()) {
@@ -3478,7 +3482,6 @@ void AppServer::parseOptions(const QStringList &options) {
     it.next(); // File name
     while (it.hasNext()) {
         QString option = it.next();
-        LOG_INFO(_logger, "option: " << option.toStdString());
         if (option.startsWith(REDIRECT_URI)) {
             const QUrl url(option);
 
