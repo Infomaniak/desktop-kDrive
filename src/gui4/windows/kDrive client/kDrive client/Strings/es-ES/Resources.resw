@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
+  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -880,7 +880,7 @@ Por favor, compruebe su conexión a Internet y la configuración del cortafuegos
 Si el problema continúa, póngase en contacto con nuestro equipo de soporte.</value> 
   </data> 
   <data name="networkErrorOtherTitle" xml:space="preserve"> 
-    <value>Connection issue</value> 
+    <value>Problema de conexión</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>No tiene cuenta</value> 

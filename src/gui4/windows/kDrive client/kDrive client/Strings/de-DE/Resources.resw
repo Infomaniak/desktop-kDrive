@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
+  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -880,7 +880,7 @@ Bitte überprüfen Sie Ihre Internetverbindung und Ihre Firewall-Einstellungen.
 Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value> 
   </data> 
   <data name="networkErrorOtherTitle" xml:space="preserve"> 
-    <value>Connection issue</value> 
+    <value>Problem mit der Verbindung</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Sie haben kein angemeldetes Konto</value> 
