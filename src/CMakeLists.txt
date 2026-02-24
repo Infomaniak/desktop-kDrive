@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED Core Concurrent WebEngineCore Core5Compat)
+find_package(Qt6 REQUIRED Core Concurrent Core5Compat)
 
 get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 message(STATUS "Using Qt ${Qt6Core_VERSION} (${QT_QMAKE_EXECUTABLE})")

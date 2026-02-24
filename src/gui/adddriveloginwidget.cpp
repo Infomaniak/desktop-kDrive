@@ -23,6 +23,7 @@
 #include "guirequests.h"
 #include "custommessagebox.h"
 #include "custompushbutton.h"
+#include "matomoclient.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -144,7 +145,9 @@ void AddDriveLoginWidget::onOpenLoginInBrowser() {
 
 
         emit terminated(false);
+        return;
     }
+    MatomoClient::sendVisit(MatomoNameField::WV_LoginPage);
 }
 
 QUrl AddDriveLoginWidget::generateAuthorizeUrl() {

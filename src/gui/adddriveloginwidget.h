@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "wizard/webview.h"
 #include "libcommon/info/userinfo.h"
 
 #include <QRadioButton>
