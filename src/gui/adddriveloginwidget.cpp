@@ -81,7 +81,7 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
 
     leftPartLayout->addStretch(1);
 
-    auto *connectButton = new QPushButton(tr("Open the login page"), this);
+    auto *connectButton = new CustomPushButton(tr("Open the login page"), this);
     connectButton->setObjectName("nondefaultbutton");
     connectButton->setFlat(true);
     connectButton->setMaximumWidth(250);
