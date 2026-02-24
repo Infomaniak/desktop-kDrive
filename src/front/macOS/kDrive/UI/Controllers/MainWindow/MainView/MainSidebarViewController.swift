@@ -22,6 +22,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 
 extension SidebarItem {
     static let home = SidebarItem(
@@ -121,8 +122,8 @@ final class MainSidebarViewController: NSViewController {
 
     private func bindViewModel() {
         mainViewModel.$availableSynchros
-            .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
-                self?.updateSynchrosList(synchrosContext)
+            .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
+                self?.updateSynchrosList(synchroContexts)
                 self?.updateSidebar()
             }
 
@@ -210,13 +211,18 @@ final class MainSidebarViewController: NSViewController {
         NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func updateSynchrosList(_ syncs: [UISynchroContext]) {
+    private func updateSynchrosList(_ synchroContexts: UIIndexedSynchroContext) {
         popUpButton.removeAllItems()
-        for syncContext in syncs {
-            let displayPath = !(syncContext.drive.synchros.count == 1)
-            addPopUpItem(forSynchro: syncContext.synchro,
-                         drive: syncContext.drive,
-                         displaySynchroPath: displayPath)
+        Task {
+            for synchroContext in synchroContexts.values {
+                @InjectService var coherentCache: CoherentCache
+                let driveDbId = Int32(synchroContext.drive.dbId)
+                let synchrosCountForDrive = await coherentCache.getDrive(driveDbId: driveDbId)?.synchros.count ?? 0
+
+                let shouldDisplaySynchroPath = synchrosCountForDrive > 1
+
+                addPopUpItem(forSynchroContext: synchroContext, withSynchroPath: shouldDisplaySynchroPath)
+            }
         }
     }
 
@@ -230,19 +236,19 @@ final class MainSidebarViewController: NSViewController {
         }
     }
 
-    private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
+    private func addPopUpItem(forSynchroContext synchroContext: UISynchroContext, withSynchroPath: Bool) {
         var title: String
-        if displaySynchroPath {
-            title = "\(drive.name) › \(synchro.localPath.lastPathComponent)"
+        if withSynchroPath {
+            title = "\(synchroContext.drive.name) › \(synchroContext.synchro.localPath.lastPathComponent)"
         } else {
-            title = "\(drive.name)"
+            title = "\(synchroContext.drive.name)"
         }
 
         popUpButton.addItem(
             withTitle: title,
             image: KDriveResources.kdriveFoldersStacked.image,
-            color: drive.nsColor,
-            representedObject: synchro
+            color: synchroContext.drive.nsColor,
+            representedObject: synchroContext.synchro
         )
     }
 }
