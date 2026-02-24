@@ -7,7 +7,6 @@ set(CMAKE_AUTOMOC TRUE)
 set(libcommongui_SRCS
     utility/utility.h utility/utility.cpp
     logger.h logger.cpp
-    utility/widgetsignalblocker.h
     ../3rdparty/qt-piwik-tracker/piwiktracker.h
     ../3rdparty/qt-piwik-tracker/piwiktracker.cpp
     matomoclient.cpp

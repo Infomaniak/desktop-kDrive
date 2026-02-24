@@ -197,7 +197,6 @@ ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEB
 # Skip automoc for the files in libcommongui to avoid duplicate moc files since AUTOMOC is already enabled in ../libcommongui/CMakeLists.txt
 set_source_files_properties(
         "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/logger.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/utility/widgetsignalblocker.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/matomoclient.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/qt-piwik-tracker/piwiktracker.h"
         PROPERTIES SKIP_AUTOMOC ON
