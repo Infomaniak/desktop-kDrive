@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
+  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -142,6 +142,13 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
     <value>Ihre Dateien werden auf Ihren Computer kopiert.
 Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value> 
   </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>Sie haben keine Berechtigung, auf diesen kDrive zuzugreifen. Bitte überprüfen Sie Ihre Rechte oder wenden Sie sich an Ihren Administrator.</value> 
+    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>Sie können es über die Weboberfläche aufwecken.</value> 
+  </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.</value> 
   </data> 
@@ -230,6 +237,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Ausschlüsse verwalten</value> 
   </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Synchronisierungseinstellungen öffnen</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Auffrischen</value> 
   </data> 
@@ -312,7 +322,10 @@ Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informati
     <value>Debug-Protokolle</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>Es ist etwas Unerwartetes passiert. Die folgenden technischen Details können helfen, das Problem zu identifizieren. Wenn das Problem weiterhin besteht, wenden Sie sich bitte an den Support.</value> 
+    <value>Die nachstehenden technischen Details können helfen, das Problem zu identifizieren.
+Ihre Synchronisierung wird in wenigen Augenblicken automatisch neu gestartet.
+
+Wenn das Problem weiterhin besteht, wenden Sie sich bitte an unser Support-Team.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
     <value>Technische Details</value> 
@@ -509,6 +522,9 @@ Wenden Sie sich an Ihren Administrator, um das Limit für die Dateigröße zu er
     <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
 Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
   </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Ungenügende Datenmenge</value> 
+  </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von Ihrem Gerät nicht unterstützt werden</value> 
   </data> 
@@ -659,6 +675,19 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Einige Dateien konnten nicht synchronisiert werden.</value> 
   </data> 
+  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Der Synchronisationsordner auf Ihrem kDrive ist nicht mehr verfügbar oder Sie haben keinen Zugriff mehr darauf.
+Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die notwendigen Zugriffsrechte haben, oder löschen Sie die Synchronisation und erstellen Sie sie neu.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Ordner für Remote-Synchronisierung nicht zugänglich</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
+    <value>Es sieht so aus, als befände sich einer Ihrer synchronisierten Ordner innerhalb eines anderen synchronisierten Ordners. Um dies zu beheben, behalten Sie nur eine Synchronisierung für diesen Ort bei und stellen Sie sicher, dass sich Ihre Synchronisierungsordner nicht überlappen oder gegenseitig enthalten.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
+    <value>Verschachtelte Synchronisationen</value> 
+  </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Dieser Artikel ist auf diesem Gerät nicht verfügbar. Er wird in Ihrem Browser geöffnet.</value> 
   </data> 
@@ -806,6 +835,14 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Debug-Ordner an den Infomaniak-Support senden</value> 
   </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Einige Dateinamen können nicht unterstützte Sonderzeichen enthalten (z. B. doppelte Anführungszeichen, Backslashes oder Zeilenumbrüche).
+
+Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie sie um und versuchen Sie es dann erneut.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Ungültiger Dateiname</value> 
+  </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
     <value>Komprimierung von Protokollen..</value> 
   </data> 
@@ -835,6 +872,15 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Brauchen Sie Hilfe?</value> 
+  </data> 
+  <data name="networkErrorOtherDescription" xml:space="preserve"> 
+    <value>Wir haben Probleme mit der Verbindung zu kDrive. Wir werden es automatisch weiter versuchen.
+
+Bitte überprüfen Sie Ihre Internetverbindung und Ihre Firewall-Einstellungen.
+Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value> 
+  </data> 
+  <data name="networkErrorOtherTitle" xml:space="preserve"> 
+    <value>Connection issue</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Sie haben kein angemeldetes Konto</value> 
@@ -1144,6 +1190,28 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
   </data> 
   <data name="synchronizationSettings" xml:space="preserve"> 
     <value>Synchronisierung</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Eine Datei oder ein Ordner in Ihrem Synchronisationsordner scheint beschädigt zu sein.
+Die Synchronisierung wurde angehalten. Bitte überprüfen Sie Ihre Dateien und versuchen Sie es erneut.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Beschädigte Datei entdeckt</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Ihr Computer verfügt nicht über genügend Speicherplatz.
+Die Synchronisierung wurde pausiert. Bitte geben Sie etwas Speicherplatz frei und versuchen Sie es erneut.</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Nicht genügend Festplattenplatz</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Die Lite Sync-Erweiterung ist möglicherweise nicht installiert, oder der Windows-Suchdienst ist deaktiviert.
+
+Wenn das Problem weiterhin besteht, können Sie die Synchronisierung in eine Standardsynchronisierung umwandeln oder unser Support-Team um Hilfe bitten.</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Lite Sync-Plugin kann nicht starten</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Aktivitäten</value> 

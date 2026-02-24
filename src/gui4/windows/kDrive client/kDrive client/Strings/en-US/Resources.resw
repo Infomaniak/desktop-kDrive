@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
+  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -142,6 +142,13 @@ You can access your advanced synchronizations from the drive selector on the hom
     <value>Your files are copied to your computer. 
 You can open them at any time, even without Internet access.</value> 
   </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>You do not have permission to access this kDrive. Please check your rights or contact your administrator.</value> 
+    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>You can wake it up from the web interface.</value> 
+  </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.</value> 
   </data> 
@@ -230,6 +237,9 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Managing exclusions</value> 
   </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Open synchronization settings</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Refresh</value> 
   </data> 
@@ -312,7 +322,10 @@ The source code of this application can be reviewed, the collected information i
     <value>Debug logs</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>Something unexpected happened. The technical details below may help identify the issue. If the problem persists, please contact support.</value> 
+    <value>The technical details below may help identify the issue.
+Your synchronization will restart automatically in a few moments.
+
+If the problem continues, please contact our support team.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
     <value>Technical Details</value> 
@@ -509,6 +522,9 @@ Contact your administrator to increase the file size limit.</value>
     <value>This file exceeds the maximum authorized size (50 GB).
 Contact support to unlock the limit.</value> 
   </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Fichier trop volumineux</value> 
+  </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
   </data> 
@@ -659,6 +675,19 @@ Free up space or upgrade your offer to synchronize this file.</value>
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Some files could not be synchronized.</value> 
   </data> 
+  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>The sync folder on your kDrive is no longer available or you no longer have access to it.
+Please restore the folder, make sure you have the necessary access rights, or delete and recreate the synchronization.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Remote sync folder not accessible</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
+    <value>It looks like one of your synchronized folders is inside another synchronized folder. To fix this, keep only one synchronization for that location and make sure your sync folders do not overlap or contain each other.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
+    <value>Nested synchronizations</value> 
+  </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>This item is not available on this device. It will open in your browser.</value> 
   </data> 
@@ -806,6 +835,14 @@ Free up space or upgrade your offer to synchronize this file.</value>
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Send debug folder to Infomaniak Support</value> 
   </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Some file names may contain unsupported special characters (such as double quotes, backslashes, or line breaks).
+
+Please check and rename any files with unusual characters, then try again.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Invalid file name</value> 
+  </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
     <value>Compressing logs…</value> 
   </data> 
@@ -835,6 +872,15 @@ Free up space or upgrade your offer to synchronize this file.</value>
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Need help?</value> 
+  </data> 
+  <data name="networkErrorOtherDescription" xml:space="preserve"> 
+    <value>We’re having trouble connecting to kDrive. We’ll keep trying automatically.
+
+Please check your Internet connection and firewall settings. 
+If the problem continues, contact our support team.</value> 
+  </data> 
+  <data name="networkErrorOtherTitle" xml:space="preserve"> 
+    <value>Connection issue</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>You are not logged in</value> 
@@ -1144,6 +1190,28 @@ Internet connection required for access.</value>
   </data> 
   <data name="synchronizationSettings" xml:space="preserve"> 
     <value>Synchronization</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>A file or folder in your synchronization folder appears to be corrupted.
+Synchronization has been paused. Please check your files and try again.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Corrupted file detected</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Your computer does not have enough available storage space.
+Synchronization has been paused. Please free up some space and try again.</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Not enough disk space</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>The Lite Sync extension may not be installed, or the Windows Search service might be disabled.
+
+If the problem continues, you can convert the synchronization to a standard sync or contact our support team for help.</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Lite Sync plugin cannot start</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Activities</value> 

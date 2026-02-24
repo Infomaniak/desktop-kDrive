@@ -154,10 +154,10 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public bool IsTypeOnline
-        {
-            get => _isTypeOnline;
-        }
+        public bool IsTypeOnline => _isTypeOnline;
+
+        public bool IsAdvanced => RemoteNodeId.Count() >= 1;
+
 
         public ObservableCollection<SyncFileItem> SyncActivities
         {

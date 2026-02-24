@@ -22,7 +22,6 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -86,9 +85,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await CreateAndEnqueueError(syncDbId, InconsistencyType.NotYetSupportedChar, "file_with_emoji_😀.txt");
             await Task.Delay(300);
 
-            await CreateAndEnqueueError(syncDbId, InconsistencyType.DuplicateNames, "duplicate_file.txt");
-            await Task.Delay(300);
-
             await CreateAndEnqueueError(syncDbId, InconsistencyType.ForbiddenCharOnlySpaces, "     ");
             await Task.Delay(300);
 
@@ -121,19 +117,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.HttpErrForbidden);
             await Task.Delay(300);
 
-            await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.ApiErr);
-            await Task.Delay(300);
-
-            await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.UploadNotTerminated);
-            await Task.Delay(300);
-
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.FileTooBig);
             await Task.Delay(300);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.QuotaExceeded);
-            await Task.Delay(300);
-
-            await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.NotFound);
             await Task.Delay(300);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.FileLocked);
@@ -146,8 +133,53 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.SystemError, exitCause: ExitCause.NotEnoughDiskSpace);
             await Task.Delay(300);
 
-            // DataError errors
-            await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.DataError, exitCause: ExitCause.FileExists);
+            // SyncPal errors
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.NetworkError, ExitCause.SocketsDefuncted);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.NetworkError, ExitCause.NetworkTimeout);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.DataError, ExitCause.SyncDirChanged);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.DataError, ExitCause.InvalidSnapshot);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveMaintenance);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveNotRenew);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveWakingUp);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveAsleep);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveAccessError);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.SyncDirAccessError);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.NotEnoughDiskSpace);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.UnableToStartVfs);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.FileOrDirectoryCorrupted);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.InvalidSync, ExitCause.SyncDirNestingError);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.InvalidSync, ExitCause.SyncDirAccessError);
+            await Task.Delay(300);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.LogicError, ExitCause.FullListParsingError);
             await Task.Delay(300);
         }
 
@@ -173,6 +205,33 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 CancelType = cancelType ?? CancelType.None,
                 ExitCode = exitCode ?? ExitCode.Unknown,
                 ExitCause = exitCause ?? ExitCause.Unknown,
+                AutoResolved = false
+            };
+
+            var errorJson = SerializeErrorInfo(errorInfo);
+            RaiseSignal(SignalNum.UTILITY_ERROR_ADDED, errorJson);
+
+            return Task.CompletedTask;
+        }
+
+        private Task CreateAndEnqueueSyncPalError(
+            DbId syncDbId,
+            ExitCode exitCode,
+            ExitCause exitCause = ExitCause.Unknown)
+        {
+            var errorInfo = new ErrorInfo
+            {
+                DbId = _nextErrorDbId++,
+                Time = DateTime.Now,
+                Level = ErrorLevel.SyncPal,
+                SyncDbId = syncDbId,
+                NodeType = NodeType.Unknown,
+                Path = "",
+                DestinationPath = "",
+                InconsistencyType = InconsistencyType.None,
+                CancelType = CancelType.None,
+                ExitCode = exitCode,
+                ExitCause = exitCause,
                 AutoResolved = false
             };
 

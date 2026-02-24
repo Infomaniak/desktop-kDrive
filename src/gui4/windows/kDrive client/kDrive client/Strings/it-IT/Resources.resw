@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
+  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -142,6 +142,13 @@
     <value>I file vengono copiati sul computer.
 È possibile aprirli in qualsiasi momento, anche senza accesso a Internet.</value> 
   </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>Non hai il permesso di accedere a questo kDrive. Verifica i tuoi diritti o contatta il tuo amministratore.</value> 
+    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>È possibile riattivarlo dall'interfaccia web.</value> 
+  </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Ottenete l’accesso anticipato alle nuove versioni dell’applicazione prima che vengano rilasciate al pubblico e contribuite a migliorare l’applicazione condividendo con noi le vostre idee di miglioramento.</value> 
   </data> 
@@ -230,6 +237,9 @@
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Gestione delle esclusioni</value> 
   </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Aprire le impostazioni di sincronizzazione</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Aggiornare</value> 
   </data> 
@@ -312,7 +322,10 @@ Il codice sorgente di questa applicazione può essere rivisto, le informazioni r
     <value>Registri di debug</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>È successo qualcosa di inaspettato. I dettagli tecnici riportati di seguito possono aiutare a identificare il problema. Se il problema persiste, contattare l’assistenza.</value> 
+    <value>I dettagli tecnici riportati di seguito possono aiutare a identificare il problema.
+La sincronizzazione verrà riavviata automaticamente in pochi istanti.
+
+Se il problema persiste, contattare il nostro team di assistenza.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
     <value>Dettagli tecnici</value> 
@@ -405,8 +418,8 @@ Non chiudere l’applicazione durante il processo.</value>
     <value>Non aderire</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
-    <value>Non si ha l’autorizzazione ad accedere a questo kDrive.
-Controllare le autorizzazioni o contattare l’amministratore.</value> 
+    <value>Non si ha l'autorizzazione ad accedere a questo kDrive.
+Controllare le autorizzazioni o contattare l'amministratore.</value> 
   </data> 
   <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
     <value>Accesso negato a kDrive</value> 
@@ -506,6 +519,9 @@ Contattare l'amministratore per aumentare il limite di dimensione del file.</val
   <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
     <value>Questo file supera la dimensione massima autorizzata (50 GB).
 Contattare l'assistenza per sbloccare il limite.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>File troppo voluminoso</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Il nome del file contiene uno o più caratteri non supportati dal dispositivo in uso</value> 
@@ -657,6 +673,19 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Non è stato possibile sincronizzare alcuni file.</value> 
   </data> 
+  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>La cartella di sincronizzazione sul kDrive non è più disponibile o non si ha più accesso ad essa.
+Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o eliminare e ricreare la sincronizzazione.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>La cartella di sincronizzazione remota non è accessibile</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
+    <value>Sembra che una delle cartelle sincronizzate sia all'interno di un'altra cartella sincronizzata. Per risolvere il problema, mantenere una sola sincronizzazione per quella posizione e assicurarsi che le cartelle sincronizzate non si sovrappongano o si contengano a vicenda.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
+    <value>Sincronizzazioni annidate</value> 
+  </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Questo articolo non è disponibile su questo dispositivo. Si aprirà nel browser.</value> 
   </data> 
@@ -804,6 +833,14 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Inviare la cartella di debug all’assistenza Infomaniak</value> 
   </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Alcuni nomi di file possono contenere caratteri speciali non supportati (come doppi apici, backslash o interruzioni di riga).
+
+Controllare e rinominare i file con caratteri insoliti, quindi riprovare.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Nome file non valido</value> 
+  </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
     <value>Comprimere i log..</value> 
   </data> 
@@ -833,6 +870,15 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Avete bisogno di aiuto?</value> 
+  </data> 
+  <data name="networkErrorOtherDescription" xml:space="preserve"> 
+    <value>Abbiamo problemi di connessione a kDrive. Continueremo a provare automaticamente.
+
+Controllare la connessione a Internet e le impostazioni del firewall.
+Se il problema persiste, contattate il nostro team di assistenza.</value> 
+  </data> 
+  <data name="networkErrorOtherTitle" xml:space="preserve"> 
+    <value>Connection issue</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Non si dispone di un account</value> 
@@ -1142,6 +1188,28 @@ Per l’accesso è necessaria una connessione a Internet.</value>
   </data> 
   <data name="synchronizationSettings" xml:space="preserve"> 
     <value>Sincronizzazione</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Un file o una cartella nella cartella di sincronizzazione sembra essere danneggiato.
+La sincronizzazione è stata sospesa. Controllare i file e riprovare.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Rilevato un file corrotto</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Il computer non dispone di spazio di archiviazione sufficiente.
+La sincronizzazione è stata messa in pausa. Liberare spazio e riprovare.</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Spazio su disco insufficiente</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>È possibile che l'estensione Lite Sync non sia installata o che il servizio di ricerca di Windows sia disattivato.
+
+Se il problema persiste, è possibile convertire la sincronizzazione in una sincronizzazione standard o contattare il nostro team di assistenza per ottenere aiuto.</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Il plugin Lite Sync non può essere avviato</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Attività</value> 

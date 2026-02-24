@@ -23,40 +23,39 @@
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0"
+                    Grid.Column="0"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <!-- Title -->
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}"
+                       Style="{StaticResource BodyTextBlockStyle}" />
 
-        <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0"
-                   Text="{x:Bind Title, Mode=OneWay}"
-                   Style="{StaticResource BodyTextBlockStyle}" />
-
-        <!-- Item infos -->
-        <controls:ItemNamePresenter Grid.Row="1"
-                                    ItemPath="{x:Bind Error.Path , Mode=OneWay}"
-                                    NodeType="{x:Bind Error.NodeType}"
-                                    Visibility="{x:Bind IsNodeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
-
+            <!-- Item infos -->
+            <controls:ItemNamePresenter ItemPath="{x:Bind Error.Path , Mode=OneWay}"
+                                        NodeType="{x:Bind Error.NodeType}"
+                                        Visibility="{x:Bind IsNodeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        </StackPanel>
         <!-- Description & CustomContent-->
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="1"
                     Grid.Column="0">
             <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                        TextWrapping="Wrap"
                        Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Visibility="{x:Bind HasDescription}"/>
 
             <ContentPresenter Content="{x:Bind CustomContent, Mode=OneWay}" />
         </StackPanel>
 
         <!-- Action button -->
         <Button Grid.Row="0"
-                Grid.RowSpan="3"
+                Grid.RowSpan="2"
                 Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"

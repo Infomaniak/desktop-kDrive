@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Feb 2026 17:06:50 +0100 
+  Exported at: Tue, 24 Feb 2026 16:28:18 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -142,6 +142,13 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Vos fichiers sont copiés sur votre ordinateur.
 Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value> 
   </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>Vous n'avez pas l'autorisation d'accéder à ce kDrive. Veuillez vérifier vos droits ou contacter votre administrateur.</value> 
+    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>Vous pouvez le réveiller à partir de l'interface web.</value> 
+  </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.</value> 
   </data> 
@@ -230,8 +237,11 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Gérer les exclusions</value> 
   </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Ouvrir les paramètres de synchronisation</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
-    <value>Actualiser</value> 
+    <value>Rafraîchir</value> 
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Notes de mise à jour</value> 
@@ -280,7 +290,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
     <value>Mise à niveau</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
-    <value>Sortir de veille</value> 
+    <value>Réveil</value> 
   </data> 
   <data name="connectAccount" xml:space="preserve"> 
     <value>Connecter un compte</value> 
@@ -312,7 +322,10 @@ Le code source de cette application peut être consulté, les informations colle
     <value>Journaux de débogage</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>Un événement inattendu s’est produit. Les détails techniques ci-dessous peuvent aider à identifier le problème. Si le problème persiste, veuillez contacter le service d’assistance.</value> 
+    <value>Les détails techniques ci-dessous peuvent aider à identifier le problème.
+Votre synchronisation redémarrera automatiquement dans quelques instants.
+
+Si le problème persiste, veuillez contacter notre équipe de support.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
     <value>Détails techniques</value> 
@@ -402,11 +415,11 @@ Ne fermez pas l’application pendant la procédure.</value>
     <value>Déconnecter ce compte</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
-    <value>Ne pas adhérer</value> 
+    <value>Ne pas rejoindre</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.
-Veuillez vérifier vos droits ou contacter votre administrateur.</value> 
+    <value>Vous n'avez pas la permission d'accéder à ce kDrive.
+Veuillez vérifier vos autorisations ou contacter votre administrateur.</value> 
   </data> 
   <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
     <value>Accès refusé au kDrive</value> 
@@ -439,8 +452,8 @@ Veuillez vous connecter à nouveau avec l’adresse électronique correcte %@</v
     <value>Ce compte ne correspond pas</value> 
   </data> 
   <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
-    <value>Le kDrive est temporairement indisponible pour maintenance.
-Réessayez dans quelques minutes.</value> 
+    <value>Ce kDrive est temporairement indisponible pour cause de maintenance.
+Veuillez réessayer dans quelques minutes.</value> 
   </data> 
   <data name="driveMaintenanceErrorTitle" xml:space="preserve"> 
     <value>Maintenance en cours</value> 
@@ -506,6 +519,9 @@ Contactez votre administrateur pour augmenter la limite de taille des fichiers.<
   <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
     <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
 Contactez le support pour débloquer la limite.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Fichier trop volumineux</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Le nom de ce fichier contient un ou plusieurs caractères qui ne sont pas pris en charge par votre appareil</value> 
@@ -657,6 +673,19 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Certains fichiers n’ont pas pu être synchronisés.</value> 
   </data> 
+  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Le dossier de synchronisation sur votre kDrive n'est plus disponible ou vous n'y avez plus accès.
+Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès nécessaires, ou supprimer et recréer la synchronisation.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Le dossier de synchronisation à distance n'est pas accessible</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
+    <value>Il semble qu'un de vos dossiers synchronisés se trouve à l'intérieur d'un autre dossier synchronisé. Pour résoudre ce problème, ne conservez qu'une seule synchronisation pour cet emplacement et assurez-vous que vos dossiers synchronisés ne se chevauchent pas et ne se contiennent pas l'un l'autre.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
+    <value>Synchronisations imbriquées</value> 
+  </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Cet élément n’est pas disponible sur cet appareil. Il s’ouvrira dans votre navigateur.</value> 
   </data> 
@@ -804,6 +833,14 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Envoyer le dossier de débogage au support Infomaniak</value> 
   </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Certains noms de fichiers peuvent contenir des caractères spéciaux non pris en charge (tels que des guillemets doubles, des barres obliques inversées ou des sauts de ligne).
+
+Veuillez vérifier et renommer les fichiers contenant des caractères inhabituels, puis réessayez.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Nom de fichier invalide</value> 
+  </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
     <value>Compression des journaux..</value> 
   </data> 
@@ -833,6 +870,15 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Besoin d’aide ?</value> 
+  </data> 
+  <data name="networkErrorOtherDescription" xml:space="preserve"> 
+    <value>Nous avons des difficultés à nous connecter à kDrive. Nous continuerons à essayer automatiquement.
+
+Veuillez vérifier votre connexion Internet et les paramètres de votre pare-feu.
+Si le problème persiste, contactez notre équipe d'assistance.</value> 
+  </data> 
+  <data name="networkErrorOtherTitle" xml:space="preserve"> 
+    <value>Connection issue</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Vous n’avez aucun compte connecté</value> 
@@ -1142,6 +1188,28 @@ Une connexion internet est nécessaire pour y accéder.</value>
   </data> 
   <data name="synchronizationSettings" xml:space="preserve"> 
     <value>Synchronisation</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Un fichier ou un dossier dans votre dossier de synchronisation semble être corrompu.
+La synchronisation a été interrompue. Veuillez vérifier vos fichiers et réessayer.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Fichier corrompu détecté</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Votre ordinateur ne dispose pas de suffisamment d'espace de stockage.
+La synchronisation a été interrompue. Veuillez libérer de l'espace et réessayer.</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Espace disque insuffisant</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>L'extension Lite Sync n'est peut-être pas installée, ou le service Windows Search est peut-être désactivé.
+
+Si le problème persiste, vous pouvez convertir la synchronisation en une synchronisation standard ou contacter notre équipe d'assistance pour obtenir de l'aide.</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Le plugin Lite Sync ne peut pas démarrer</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Activités</value> 

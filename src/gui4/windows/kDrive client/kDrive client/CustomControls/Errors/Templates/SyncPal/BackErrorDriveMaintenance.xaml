@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal.BackErrorDriveMaintenance"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:kDrive="using:Infomaniak.kDrive"
+             mc:Ignorable="d">
+  <local:ErrorCard x:Name="ErrorCard"
+                   Title="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorTitle')}"
+                   Description="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorDescription')}"
+                   ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonRefresh')}"
+                   ActionClick="OnRefreshClick"
+                   Error="{x:Bind Error}" />
+</UserControl>
