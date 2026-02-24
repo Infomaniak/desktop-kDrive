@@ -29,7 +29,7 @@ private final class PreviewBundle {
 public enum PreviewHelper {
     public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
 
-    public static let context = UISynchroContext(
+    public static let synchroContext = UISynchroContext(
         synchro: PreviewHelper.synchro,
         drive: PreviewHelper.drive1,
         account: PreviewHelper.account,
@@ -37,19 +37,25 @@ public enum PreviewHelper {
         blockingError: nil
     )
 
+    public static let synchroNodeContext = UISynchroNodeContext(
+        user: PreviewHelper.user,
+        account: PreviewHelper.account,
+        drive: PreviewHelper.drive1,
+        synchro: PreviewHelper.synchro,
+        node: PreviewHelper.synchroNode1
+    )
+
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
         email: "tim@apple.com",
-        avatar: PreviewHelper.userImage,
-        accounts: [:]
+        avatar: PreviewHelper.userImage
     )
 
     public static let account = UIAccount(
         dbId: 1,
-        name: "Tim Cook",
-        drives: [:]
+        name: "Tim Cook"
     )
 
     public static let drive1 = UIDrive(
@@ -57,16 +63,14 @@ public enum PreviewHelper {
         driveId: 1,
         userDbId: 1,
         name: "Tim Drive",
-        color: .blue,
-        synchros: [:]
+        color: .blue
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
         userDbId: 1,
         name: "Drive Pro Max",
-        color: .red,
-        synchros: [:]
+        color: .red
     )
 
     public static let availableDrive1 = UIAvailableDrive(
