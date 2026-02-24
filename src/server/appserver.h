@@ -74,7 +74,11 @@ class AuthorizationCodeEventFilter : public QObject {
                     const auto code = query.queryItemValue("code");
                     const auto state = query.queryItemValue("state");
 
-                    emit authorizationCodeReceived(code, state);
+                    if (!code.isEmpty() && !state.isEmpty()) {
+                        // We cannot log errors here. We forward the authorization code to the client only if values are
+                        // non-empty.
+                        emit authorizationCodeReceived(code, state);
+                    }
                     return true;
                 }
             }
