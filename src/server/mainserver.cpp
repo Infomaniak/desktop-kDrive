@@ -61,18 +61,21 @@ void signalHandler(int signum) {
     exit(signum);
 }
 
-std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr) {
+std::int32_t init(int &argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr) {
     // KDC::CommonUtility::handleSignals(signalHandler); // !!! The signal handler interferes with Sentry !!!
 
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
-    KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #if defined(KD_LINUX)
-    const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
-    if (!value.empty()) {
-        KDC::CommonUtility::_workingDirPath /= "usr/bin";
+    if (!KDC::CommonUtility::envVarValue("APPDIR").empty()) {
+        const KDC::SyncPath appdir = KDC::SyncPath(KDC::CommonUtility::envVarValue("APPDIR"));
+        KDC::CommonUtility::_workingDirPath = appdir / "usr/bin";
+    } else {
+        KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
     }
+#else
+    KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #endif
 
     KDC::sentry::Handler::init(KDC::AppType::Server);
