@@ -100,7 +100,7 @@ struct ActivitiesTable: View {
 
 #Preview {
     ActivitiesTable(
-        context: PreviewHelper.context,
+        context: PreviewHelper.synchroContext,
         nodes: [
             1: PreviewHelper.synchroNode1,
             2: PreviewHelper.synchroNode2,

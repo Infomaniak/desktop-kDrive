@@ -202,6 +202,6 @@ struct ActivitiesTableStatusView: View {
 }
 
 #Preview {
-    ActivitiesTableStatusView(context: PreviewHelper.context, node: PreviewHelper.synchroNode1)
+    ActivitiesTableStatusView(context: PreviewHelper.synchroContext, node: PreviewHelper.synchroNode1)
         .padding()
 }
