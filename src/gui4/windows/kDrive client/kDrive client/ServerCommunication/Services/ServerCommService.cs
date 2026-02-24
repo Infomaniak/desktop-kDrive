@@ -1482,45 +1482,71 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            SyncFileItem syncFileItem = new SyncFileItem(sync);
             await Utility.RunOnUIThread(() =>
             {
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
+                const int MaxActivities = 500;
 
-                var existingItems = sync.SyncActivities.Where(item => (item.LocalNodeId == syncFileItem.LocalNodeId && item.LocalNodeId.Length > 0) || (item.RemoteNodeId == syncFileItem.RemoteNodeId && item.RemoteNodeId.Length > 0));
+                var activities = sync.SyncActivities;
+                var operationId = fileItemInfo.OperationId;
 
-                // Remove existing items with same LocalNodeId and RemoteNodeId that are not successful or are still syncing
-                var itemsToRemove = existingItems.Where(item => item.Status != SyncFileStatus.Success && item.Status != SyncFileStatus.Syncing);
-                sync.SyncActivities.RemoveMany(itemsToRemove);
+                // Store the position of the last syncing item
+                var lastSyncingItem = activities.LastOrDefault(a => a.Status == SyncFileStatus.Syncing);
+                int destIndex = lastSyncingItem is null ? 0 : activities.IndexOf(lastSyncingItem);
 
-                // update existing item if it is syncing
-                var syncingItem = existingItems.FirstOrDefault(item => item.Status == SyncFileStatus.Syncing);
-                if (syncingItem is not null)
+                // Find existing item
+                var existing = activities.FirstOrDefault(a => a.OperationId == operationId);
+
+                if (existing is not null)
                 {
-                    ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncingItem);
-
-                    // Move the updated item just before the first item that is not 
-                    var firstNonSyncingItem = sync.SyncActivities.FirstOrDefault(item => item.Status != SyncFileStatus.Syncing);
-                    if (firstNonSyncingItem is not null)
+                    // Ignore duplicate completion signals
+                    if (existing.Status != SyncFileStatus.Syncing)
                     {
-                        int index = sync.SyncActivities.IndexOf(firstNonSyncingItem);
-                        if (index < sync.SyncActivities.IndexOf(syncingItem))
-                        {
-                            sync.SyncActivities.Remove(syncingItem);
-                            sync.SyncActivities.Insert(index, syncingItem);
-                        }
+                        Logger.Log(Logger.Level.Warning, $"Received completion for already finished item. OperationId: {existing.OperationId}, Existing: {existing.Status}, New: {fileItemInfo.Status}");
+                        return;
                     }
+
+                    // Update state
+                    CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, existing);
+                    existing.Timestamp = DateTime.Now;
+
+                    Logger.Log(Logger.Level.Extended, $"Updated item {existing.OperationId} to {existing.Status}");
+
+                    // Still syncing -> nothing more to do
+                    if (existing.Status == SyncFileStatus.Syncing)
+                        return;
+
+                    // Move completed/errored item after syncing group
+                    if (destIndex != activities.IndexOf(existing))
+                    {
+                        activities.Remove(existing);
+                        activities.Insert(Math.Min(destIndex, activities.Count), existing);
+                    }
+
                     return;
                 }
 
-                // Insert the new item at the beginning of the list
-                sync.SyncActivities.Insert(0, syncFileItem);
-                // Ensure the list does not exceed 500 items
-                while (sync.SyncActivities.Count > 500)
+                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                var toBeRemoved = activities.Where(a => (a.Status == fileItemInfo.Status || a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                activities.RemoveMany(toBeRemoved);
+
+                // Create new item
+                var newItem = new SyncFileItem(sync);
+                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
+
+                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
-                    sync.SyncActivities.RemoveAt(sync.SyncActivities.Count - 1);
+                    // Insert item after all syncing items
+                    activities.Insert(Math.Max(destIndex + 1, activities.Count), newItem);
+                }
+                else
+                {
+                    activities.Insert(0, newItem);
                 }
 
+                // Enforce max size
+                while (activities.Count > MaxActivities)
+                    activities.RemoveAt(activities.Count - 1);
             });
         }
 

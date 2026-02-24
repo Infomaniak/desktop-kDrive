@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.Id), nameof(target.Id));
-			CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
         }
     }
 
@@ -167,7 +167,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
             CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
             CopyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
-			CopyProperty(source, target, nameof(source.AccountName), nameof(target.AccountName));
+            CopyProperty(source, target, nameof(source.AccountName), nameof(target.AccountName));
             CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
             CopyProperty(source, target, nameof(source.Color), nameof(target.Color));
             CopyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));
@@ -328,6 +328,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public string? Error { get; set; }
         public Int64? Size { get; set; }
         public int? Progress { get; set; }
+        public Int64? OperationId { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -348,6 +349,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.Error), nameof(target.Error));
             CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
             CopyProperty(source, target, nameof(source.Progress), nameof(target.ProgressPercent));
+            CopyProperty(source, target, nameof(source.OperationId), nameof(target.OperationId));
         }
     }
 
