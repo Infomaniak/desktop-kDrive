@@ -358,7 +358,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             path /= item.name();
 
             Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
-                      CancelType::AlreadyExistLocal);
+                      CancelType::TmpBlacklisted);
             _syncPal->addError(err);
 
             continue;

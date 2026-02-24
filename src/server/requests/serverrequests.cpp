@@ -1126,7 +1126,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
-                case ExitCause::FileExists:
                 case ExitCause::SyncDirChanged:
                     return true;
                 default:
@@ -1143,7 +1142,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::HttpErrForbidden:
                 case ExitCause::ApiErr:
                 case ExitCause::FileTooBig:
-                case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
                 case ExitCause::FileLocked:
                 case ExitCause::Http5xx:
@@ -1161,8 +1159,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             }
         }
         case ExitCode::Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength &&
-                   error.cancelType() != CancelType::AlreadyExistRemote;
+            return error.inconsistencyType() != InconsistencyType::PathLength;
         }
         default:
             return true;
