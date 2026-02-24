@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,4 +16,60 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import Combine
+import OrderedCollections
+
+public struct UIIndexedSynchroContextOptions: OptionSet {
+    public let rawValue: Int
+
+    public static let nodes = UIIndexedSynchroContextOptions(rawValue: 1 << 0)
+    public static let progressInfo = UIIndexedSynchroContextOptions(rawValue: 1 << 1)
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+}
+
+public extension Published.Publisher where Value == UIIndexedSynchroContext {
+    func removeSynchroContextDuplicates(with options: UIIndexedSynchroContextOptions) -> Publishers.RemoveDuplicates<Self> {
+        removeDuplicates { lhs, rhs in
+            guard lhs.keys == rhs.keys else {
+                return false
+            }
+
+            for key in lhs.keys {
+                guard let lhsContext = lhs[key], let rhsContext = rhs[key] else {
+                    return false
+                }
+
+                if lhsContext.drive != rhsContext.drive
+                    || lhsContext.account != rhsContext.account
+                    || lhsContext.user != rhsContext.user
+                    || lhsContext.blockingError != rhsContext.blockingError {
+                    return false
+                }
+
+                let lhsSynchro = lhsContext.synchro
+                let rhsSynchro = rhsContext.synchro
+
+                if lhsSynchro.dbId != rhsSynchro.dbId
+                    || lhsSynchro.driveDbId != rhsSynchro.driveDbId
+                    || lhsSynchro.localPath != rhsSynchro.localPath
+                    || lhsSynchro.errorCount != rhsSynchro.errorCount {
+                    return false
+                }
+
+                if options.contains(.nodes) && lhsSynchro.nodes != rhsSynchro.nodes {
+                    return false
+                }
+
+                if options.contains(.progressInfo) && lhsSynchro.progressInfo != rhsSynchro.progressInfo {
+                    return false
+                }
+            }
+
+            return true
+        }
+    }
+}

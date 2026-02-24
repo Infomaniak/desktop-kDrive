@@ -122,6 +122,7 @@ final class MainSidebarViewController: NSViewController {
 
     private func bindViewModel() {
         mainViewModel.$availableSynchros
+            .removeSynchroContextDuplicates(with: [])
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
                 self?.updateSynchrosList(synchroContexts)
                 self?.updateSidebar()
