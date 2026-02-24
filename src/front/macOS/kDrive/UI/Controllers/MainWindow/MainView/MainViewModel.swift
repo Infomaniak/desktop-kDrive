@@ -22,6 +22,17 @@ import Foundation
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import OrderedCollections
+
+typealias UIIndexedSynchroContext = OrderedDictionary<UISynchro.ID, UISynchroContext>
+
+public extension UIIndexedSynchroContext {
+    init(indexedSynchro: [SynchroContext]) {
+        self.init(uniqueKeysWithValues: indexedSynchro.map {
+            (UISynchro.ID($0.synchro.dbId), UISynchroContext(synchroContext: $0))
+        })
+    }
+}
 
 @MainActor
 final class MainViewModel: ObservableObject {
@@ -29,37 +40,44 @@ final class MainViewModel: ObservableObject {
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
     @LazyInjectService private var router: MainViewRouter
 
-    var currentUser: UIUser? { currentSynchroContext?.user }
-    var currentDrive: UIDrive? { currentSynchroContext?.drive }
-    var currentSynchro: UISynchro? { currentSynchroContext?.synchro }
-    var currentBlockingError: UIBlockingError? { currentSynchroContext?.blockingError }
-
     @Published private(set) var currentSynchroContext: UISynchroContext?
+    @Published private(set) var availableSynchros = UIIndexedSynchroContext()
 
-    @Published private(set) var availableSynchros = [UISynchroContext]()
+    var currentUser: UIUser? {
+        currentSynchroContext?.user
+    }
+
+    var currentDrive: UIDrive? {
+        currentSynchroContext?.drive
+    }
+
+    var currentSynchro: UISynchro? {
+        currentSynchroContext?.synchro
+    }
+
+    var currentBlockingError: UIBlockingError? {
+        currentSynchroContext?.blockingError
+    }
 
     private var bindStore = Set<AnyCancellable>()
 
     init() {
         cacheObservable.usersPublisher
             .allSynchrosPublisher()
-            .map { synchros in
-                synchros.map { UISynchroContext(synchroContext: $0) }
+            .map { UIIndexedSynchroContext(indexedSynchro: $0) }
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] synchroContext in
+                self?.handleUpdatedSynchroContexts(synchroContext)
             }
-            .receiveOnMain(store: &bindStore) { [weak self] uiSynchros in
-                self?.handleUpdatedSynchros(uiSynchros)
-            }
-    }
 
-    func refreshCache() {
         Task {
-            try await coherentCache.refresh()
-            await restoreLastSelection()
+            let synchroContexts = await coherentCache.getSynchroContexts()
+            handleUpdatedSynchroContexts(UIIndexedSynchroContext(indexedSynchro: synchroContexts))
         }
     }
 
     func setCurrentSynchro(_ synchro: UISynchro) {
-        guard let synchroContext = getSelectedValuesFromSynchro(synchro) else {
+        guard let synchroContext = availableSynchros[synchro.dbId] else {
             return
         }
 
@@ -67,9 +85,11 @@ final class MainViewModel: ObservableObject {
         UserDefaults.standard.selectedSynchroDbId = synchro.dbId
     }
 
-    private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
-        availableSynchros = synchros
-        updateSelectedItems()
+    private func handleUpdatedSynchroContexts(_ context: UIIndexedSynchroContext) {
+        availableSynchros = context
+
+        updateCurrentSynchro()
+
         if currentBlockingError != nil {
             router.setCurrentTab(.blockingError)
         } else if router.currentPath.mainTab == .blockingError {
@@ -77,39 +97,35 @@ final class MainViewModel: ObservableObject {
         }
     }
 
-    private func updateSelectedItems() {
-        guard let currentSynchro,
-              let updatedSynchroContext = getSelectedValuesFromSynchro(currentSynchro) else {
+    private func updateCurrentSynchro() {
+        guard currentSynchroContext != nil else {
+            restoreLastSelection()
             return
         }
 
-        currentSynchroContext = updatedSynchroContext
+        guard let currentSynchro, let synchroContext = availableSynchros[currentSynchro.id] else {
+            selectFirstAvailableSynchro()
+            return
+        }
+
+        currentSynchroContext = synchroContext
     }
 
-    private func restoreLastSelection() async {
+    private func restoreLastSelection() {
         let synchroDbId = UserDefaults.standard.selectedSynchroDbId
-        guard let synchro = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
-            setDefaultSynchro()
+        guard let synchroContext = availableSynchros[synchroDbId] else {
+            selectFirstAvailableSynchro()
             return
         }
 
-        setCurrentSynchro(UISynchro(synchro: synchro))
+        setCurrentSynchro(synchroContext.synchro)
     }
 
-    private func setDefaultSynchro() {
-        guard let firstAvailableSynchro = availableSynchros.first else {
+    private func selectFirstAvailableSynchro() {
+        guard let firstAvailableSynchroContext = availableSynchros.values.first else {
             return
         }
 
-        setCurrentSynchro(firstAvailableSynchro.synchro)
-    }
-
-    private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> UISynchroContext? {
-        guard let matchedSyncContext = availableSynchros.first(where: { syncContext in
-            syncContext.synchro.dbId == Int32(synchro.dbId)
-        }) else {
-            return nil
-        }
-        return matchedSyncContext
+        setCurrentSynchro(firstAvailableSynchroContext.synchro)
     }
 }

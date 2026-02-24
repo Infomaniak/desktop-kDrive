@@ -16,15 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct HomeView: View {
+    static let spacing = AppPadding.padding24
+
     @StateObject private var networkObserver = NetworkObserver()
 
     @ObservedObject var mainViewModel: MainViewModel
-
-    static let spacing = AppPadding.padding24
 
     private var userName: String {
         guard let currentUser = mainViewModel.currentUser,
@@ -60,8 +61,7 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if let errorCount = mainViewModel.currentSynchro?.errorCount,
-               errorCount > 0 {
+            if let errorCount = mainViewModel.currentSynchro?.errorCount, errorCount > 0 {
                 SynchroErrorsInformationBlockView(errorCount: errorCount)
             }
 
