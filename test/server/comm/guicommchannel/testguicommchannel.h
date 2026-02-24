@@ -79,8 +79,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodePathJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
         CPPUNIT_TEST(testNodeSubFolders2Job);
-        CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
-        CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testErrorInfoListJob);
