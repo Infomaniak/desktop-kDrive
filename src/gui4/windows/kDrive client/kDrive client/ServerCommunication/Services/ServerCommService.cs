@@ -1532,7 +1532,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 var newItem = new SyncFileItem(sync);
                 CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
 
-                const int MinFileSizeForTopSticking = 1024; // Only stick items bigger than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
