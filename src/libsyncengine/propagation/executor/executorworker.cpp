@@ -301,6 +301,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         }
 
         if (isDehydratedPlaceholder) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Do not upload dehydrated placeholder " << Utility::formatSyncPath(absoluteLocalFilePath));
             return excludeFileFromSync(syncOp, absoluteLocalFilePath);
         }
     }
@@ -872,6 +874,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
         case ReplicaSide::Remote:
             if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
                 ignoreItem = true;
+                LOGW_SYNCPAL_WARN(_logger, L"Do not upload dehydrated placeholder " << Utility::formatSyncPath(absolutePath));
                 return excludeFileFromSync(syncOp, absolutePath);
             }
             break;
