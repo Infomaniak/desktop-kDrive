@@ -76,10 +76,8 @@ In `Qt 6.2.3`, select:
 - Qt 5 Compatibility Module
 
 In `Qt 6.2.3 Additional Libraries`, select :
-- Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
-- Qt WebView
 - Qt Debug Information Files (only if you want to use a debugger)
 
 In `Developer and Designer Tools` (should be selected by default):
