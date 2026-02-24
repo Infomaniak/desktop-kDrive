@@ -31,9 +31,10 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcLoginDialog, "gui.logindialog", QtInfoMsg)
 
-LoginDialog::LoginDialog(int userDbId, QWidget *parent) :
+LoginDialog::LoginDialog(int userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
     CustomDialog(false, parent),
     _userDbId(userDbId),
+    _gui(gui),
     _loginWidget(nullptr) {
     initUI();
 }
@@ -49,6 +50,7 @@ void LoginDialog::initUI() {
     _loginWidget = new AddDriveLoginWidget(this);
     mainLayout->addWidget(_loginWidget);
 
+    connect(_gui.get(), &ClientGui::authorizationCodeReceived, _loginWidget, &AddDriveLoginWidget::onAuthorizationCodeReceived);
     connect(_loginWidget, &AddDriveLoginWidget::terminated, this, &LoginDialog::onTerminated);
     connect(this, &CustomDialog::exit, this, &LoginDialog::onExit);
 

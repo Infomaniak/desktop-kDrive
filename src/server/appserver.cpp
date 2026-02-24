@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,9 +125,11 @@ static const char optionsC[] =
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
-static const std::string showSynthesisMsg = "showSynthesis";
-static const std::string showSettingsMsg = "showSettings";
-static const std::string restartClientMsg = "restartClient";
+static const QString showSynthesisMsg("showSynthesis");
+static const QString showSettingsMsg("showSettings");
+static const QString restartClientMsg("restartClient");
+static const QString authorizationCodeMsg("redirectLogin");
+static const QString separatorMsg("$$$");
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -156,6 +158,9 @@ AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
+    installEventFilter(&_eventFilter);
+    (void) connect(&_eventFilter, &AuthorizationCodeEventFilter::authorizationCodeReceived, this,
+                   &AppServer::onAuthorizationCodeReceived);
 }
 
 AppServer::~AppServer() {
@@ -182,12 +187,12 @@ void AppServer::init() {
 
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        std::cout << "Command line options processed" << std::endl;
+        LOG_INFO(_logger, "Command line options processed");
         return;
     }
 
     if (isRunning()) {
-        std::cout << "AppServer already running" << std::endl;
+        LOG_INFO(_logger, "AppServer already running");
         return;
     }
 
@@ -495,6 +500,12 @@ void AppServer::init() {
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
+
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
     // Start client
     if (!startClient()) {
@@ -2560,11 +2571,17 @@ void AppServer::onRestartClientReceived() {
 void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObject *) {
     LOG_DEBUG(_logger, "Message received from another kDrive process: '" << message.toStdString() << "'");
 
-    if (message.toStdString() == showSynthesisMsg) {
+    if (message.startsWith(authorizationCodeMsg)) {
+        const QUrl url = message.split(separatorMsg).back();
+        const QUrlQuery query(url);
+        const QString code = query.queryItemValue("code");
+        const QString state = query.queryItemValue("state");
+        onAuthorizationCodeReceived(code, state);
+    } else if (message == showSynthesisMsg) {
         showSynthesis();
-    } else if (message.toStdString() == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
-    } else if (message.toStdString() == restartClientMsg) {
+    } else if (message == restartClientMsg) {
         _clientManuallyRestarted = true;
         if (!startClient()) {
             LOG_ERROR(_logger, "Failed to start the client");
@@ -2576,6 +2593,16 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
 void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
+}
+
+void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
+    int id = 0;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << code;
+    paramsStream << state;
+    (void) OldCommServer::instance()->sendSignal(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, params, id);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) const {
@@ -3455,7 +3482,14 @@ void AppServer::parseOptions(const QStringList &options) {
     it.next(); // File name
     while (it.hasNext()) {
         QString option = it.next();
-        if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
+        if (option.startsWith(REDIRECT_URI)) {
+            const QUrl url(option);
+
+            if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
+                _authorizationCodeStr = option;
+                break;
+            }
+        } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
             _helpAsked = true;
             break;
         } else if (option == QLatin1String("--version") || option == QLatin1String("-v")) {
@@ -3532,15 +3566,19 @@ void AppServer::clearSyncNodes() {
 }
 
 void AppServer::sendShowSettingsMsg() {
-    sendMessage(QString::fromStdString(showSettingsMsg));
+    sendMessage(showSettingsMsg);
 }
 
 void AppServer::sendShowSynthesisMsg() {
-    sendMessage(QString::fromStdString(showSynthesisMsg));
+    sendMessage(showSynthesisMsg);
 }
 
 void AppServer::sendRestartClientMsg() {
-    sendMessage(QString::fromStdString(restartClientMsg));
+    sendMessage(restartClientMsg);
+}
+
+void AppServer::sendAuthorizationCode() {
+    sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr);
 }
 
 void AppServer::showSettings() {
