@@ -98,20 +98,14 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_REMOVED:
             try await accountHandler.handleAccountRemoved(signal)
 
-        case .DRIVE_ADDED:
-            try await driveHandler.handleDrive(signal)
-
-        case .DRIVE_UPDATED:
-            try await driveHandler.handleDrive(signal)
+        case .DRIVE_ADDED, .DRIVE_UPDATED:
+            try await driveHandler.handleDriveAddedOrUpdated(signal)
 
         case .DRIVE_REMOVED:
             try await driveHandler.handleDriveRemoved(signal)
 
-        case .SYNC_ADDED:
-            try await synchroHandler.handleSync(signal)
-
-        case .SYNC_UPDATED:
-            try await synchroHandler.handleSync(signal)
+        case .SYNC_ADDED, .SYNC_UPDATED:
+            try await synchroHandler.handleSyncAddedOrUpdated(signal)
 
         case .SYNC_REMOVED:
             try await synchroHandler.handleSyncRemoved(signal)
