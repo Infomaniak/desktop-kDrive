@@ -24,16 +24,6 @@ import kDriveCore
 import kDriveCoreUI
 import OrderedCollections
 
-typealias UIIndexedSynchroContext = OrderedDictionary<UISynchro.ID, UISynchroContext>
-
-public extension UIIndexedSynchroContext {
-    init(indexedSynchro: [SynchroContext]) {
-        self.init(uniqueKeysWithValues: indexedSynchro.map {
-            (UISynchro.ID($0.synchro.dbId), UISynchroContext(synchroContext: $0))
-        })
-    }
-}
-
 @MainActor
 final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
