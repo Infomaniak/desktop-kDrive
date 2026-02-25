@@ -2328,8 +2328,8 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
 
 ExitInfo ExecutorWorker::excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
     // Blacklist placeholder
-    PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilepath,
-                                                         PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    (void) PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilepath,
+                                                                PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
 
     // Clear update tree
     if (!deleteOpNodes(syncOp)) {
