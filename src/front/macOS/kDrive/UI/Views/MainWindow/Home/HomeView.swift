@@ -70,7 +70,7 @@ struct HomeView: View {
                     SynchroStatusView(state: state, performAction: didTapStateButton)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
-                    DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
+                    DriveWebShortcutsView(avatar: mainViewModel.currentUser?.avatar, drive: mainViewModel.currentDrive)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
                 }
             }

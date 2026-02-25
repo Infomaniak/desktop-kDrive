@@ -58,7 +58,7 @@ struct WebFolder: Sendable, Identifiable, Equatable {
 }
 
 struct DriveWebShortcutsView: View {
-    let user: UIUser?
+    let avatar: Image?
     let drive: UIDrive?
 
     private var topFolders: [WebFolder] {
@@ -67,7 +67,7 @@ struct DriveWebShortcutsView: View {
 
     var body: some View {
         VStack(spacing: AppPadding.padding16) {
-            UserAndDriveView(avatar: user?.avatar, driveColor: drive?.color)
+            UserAndDriveView(avatar: avatar, driveColor: drive?.color)
                 .help(KDriveLocalizable.helpKDriveName(drive?.name ?? ""))
                 .padding(.top, AppPadding.padding8)
 
@@ -100,5 +100,5 @@ struct DriveWebShortcutsView: View {
 }
 
 #Preview {
-    DriveWebShortcutsView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
+    DriveWebShortcutsView(avatar: PreviewHelper.user.avatar, drive: PreviewHelper.drive1)
 }
