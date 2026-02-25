@@ -175,7 +175,7 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDiskMissing, exitInfo.cause());
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
