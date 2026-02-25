@@ -29,14 +29,24 @@ public struct UISynchroNodeContext: Sendable, Identifiable, Equatable {
     public let drive: UIDrive
     public let synchro: UISynchro
     public let node: UISynchroNode
+    
+    public init(user: UIUser, account: UIAccount, drive: UIDrive, synchro: UISynchro, node: UISynchroNode) {
+        self.user = user
+        self.account = account
+        self.drive = drive
+        self.synchro = synchro
+        self.node = node
+    }
 }
 
 public extension UISynchroNodeContext {
     init(synchroNodeContext: SynchroNodeContext) {
-        user = UIUser(user: synchroNodeContext.user)
-        account = UIAccount(account: synchroNodeContext.account)
-        drive = UIDrive(drive: synchroNodeContext.drive)
-        synchro = UISynchro(synchro: synchroNodeContext.synchro)
-        node = UISynchroNode(synchroNode: synchroNodeContext.node)
+        self.init(
+            user: UIUser(user: synchroNodeContext.user),
+            account: UIAccount(account: synchroNodeContext.account),
+            drive: UIDrive(drive: synchroNodeContext.drive),
+            synchro: UISynchro(synchro: synchroNodeContext.synchro),
+            node: UISynchroNode(synchroNode: synchroNodeContext.node)
+        )
     }
 }
