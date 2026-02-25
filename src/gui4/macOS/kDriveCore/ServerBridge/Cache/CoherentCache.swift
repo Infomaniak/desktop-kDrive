@@ -63,6 +63,11 @@ public protocol CoherentCache: Sendable {
     // MARK: - SynchroContexts
 
     func getSynchroContexts() async -> [SynchroContext]
+    func getSynchroContext(_ synchroDbId: Int32) async -> SynchroContext?
+
+    // MARK: - SynchroNodeContexts
+
+    func getSynchroNodeContexts() async -> [SynchroNodeContext]
 
     // MARK: - Errors
 
