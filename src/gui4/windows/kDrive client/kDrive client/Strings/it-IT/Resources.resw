@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
+  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -194,6 +194,9 @@
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Posizione predefinita</value> 
   </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Comprendere il problema</value> 
+  </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
     <value>Condividere un’idea</value> 
   </data> 
@@ -233,6 +236,9 @@
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Aprire kDrive</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Apri cartella superiore</value> 
   </data> 
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Gestione delle esclusioni</value> 
@@ -803,9 +809,6 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
     <value>Ultimo percorso noto del file:</value> 
   </data> 
-  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
-    <value>Apri cartella superiore</value> 
-  </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>File inaccessibile</value> 
   </data> 
@@ -1202,6 +1205,12 @@ La sincronizzazione è stata messa in pausa. Liberare spazio e riprovare.</value
   </data> 
   <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
     <value>Spazio su disco insufficiente</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Controllare la posizione o i diritti di accesso della cartella.</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Cartella di sincronizzazione inaccessibile</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>È possibile che l'estensione Lite Sync non sia installata o che il servizio di ricerca di Windows sia disattivato.

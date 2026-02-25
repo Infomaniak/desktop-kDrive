@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
+  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -194,6 +194,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Standard-Speicherort</value> 
   </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Das Problem verstehen</value> 
+  </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
     <value>Eine Idee teilen</value> 
   </data> 
@@ -233,6 +236,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>KDrive öffnen</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Übergeordneten Ordner öffnen</value> 
   </data> 
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Ausschlüsse verwalten</value> 
@@ -805,9 +811,6 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
     <value>Letzter Dateispeicherort:</value> 
   </data> 
-  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
-    <value>Übergeordneten Ordner öffnen</value> 
-  </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Datei unzugänglich</value> 
   </data> 
@@ -1204,6 +1207,12 @@ Die Synchronisierung wurde pausiert. Bitte geben Sie etwas Speicherplatz frei un
   </data> 
   <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
     <value>Nicht genügend Festplattenplatz</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Überprüfen Sie den Speicherort oder die Zugriffsrechte des Ordners.</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Synchronisationsordner nicht erreichbar</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>Die Lite Sync-Erweiterung ist möglicherweise nicht installiert, oder der Windows-Suchdienst ist deaktiviert.

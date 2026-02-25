@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
+  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -194,6 +194,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Ubicación por defecto</value> 
   </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Entender el problema</value> 
+  </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
     <value>Compartir una idea</value> 
   </data> 
@@ -233,6 +236,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Abrir kDrive</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Abrir carpeta padre</value> 
   </data> 
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Gestión de las exclusiones</value> 
@@ -805,9 +811,6 @@ Por favor, restaure la carpeta, asegúrese de que tiene los derechos de acceso n
   <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
     <value>Última ubicación conocida del archivo:</value> 
   </data> 
-  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
-    <value>Abrir carpeta padre</value> 
-  </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>Fichero inaccesible</value> 
   </data> 
@@ -1204,6 +1207,12 @@ La sincronización se ha detenido. Por favor, libera espacio e inténtalo de nue
   </data> 
   <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
     <value>No hay suficiente espacio en disco</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Compruebe la ubicación o los derechos de acceso de la carpeta.</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Carpeta de sincronización inaccesible</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>Es posible que la extensión Lite Sync no esté instalada o que el servicio Windows Search esté desactivado.

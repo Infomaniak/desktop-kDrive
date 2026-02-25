@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Content = Localizer.Instance.GetString("localFileAccessErrorDialogOpenParentFolder"),
                 DefaultButton = ContentDialogButton.Primary,
                 SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
-                PrimaryButtonText = Localizer.Instance.GetString("localFileAccessErrorDialogOpenParentFolder"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
             };
             dialog.Content = new LocalAccessErrorDialog(_error) { XamlRoot = xamlRoot };
 

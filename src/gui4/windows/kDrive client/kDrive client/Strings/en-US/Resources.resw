@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Feb 2026 16:52:51 +0100 
+  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -194,6 +194,9 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Default location</value> 
   </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Understanding the problem</value> 
+  </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
     <value>Share an idea</value> 
   </data> 
@@ -233,6 +236,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Open kDrive</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Open Parent Folder</value> 
   </data> 
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
     <value>Managing exclusions</value> 
@@ -805,9 +811,6 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
     <value>Last known file location:</value> 
   </data> 
-  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
-    <value>Open Parent Folder</value> 
-  </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>File inaccessible</value> 
   </data> 
@@ -1204,6 +1207,12 @@ Synchronization has been paused. Please free up some space and try again.</value
   </data> 
   <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
     <value>Not enough disk space</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Check the folder's location or access rights.</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Synchronization folder inaccessible</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>The Lite Sync extension may not be installed, or the Windows Search service might be disabled.
