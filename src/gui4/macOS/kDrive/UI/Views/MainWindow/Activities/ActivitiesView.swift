@@ -16,6 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -25,31 +28,34 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
     case myActivityOnly
     case allActivities
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 struct ActivitiesView: View {
+    @InjectService private var observableCache: CoherentCacheObservable
+
     @ObservedObject var mainViewModel: MainViewModel
 
     @State private var visibleActivities = VisibleActivities.allActivities
+    @State private var nodeContexts = [UISynchroNodeContext]()
 
     private var synchroStatus: UISynchroStatus {
         return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
     }
 
-    private var nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
-        let allNodes = mainViewModel.currentSynchro?.nodes ?? [:]
-
+    private var visibleNodes: [UISynchroNodeContext] {
         switch visibleActivities {
         case .myActivityOnly:
-            return allNodes.filter { $0.value.direction == .up }
+            return nodeContexts.filter { $0.node.direction == .up }
         case .allActivities:
-            return allNodes
+            return nodeContexts
         }
     }
 
     private var hasAnyActivity: Bool {
-        return !nodes.isEmpty
+        return !visibleNodes.isEmpty
     }
 
     var body: some View {
@@ -60,7 +66,7 @@ struct ActivitiesView: View {
                 hasAnyActivity: hasAnyActivity
             )
 
-            ActivitiesTable(context: mainViewModel.currentSynchroContext, nodes: nodes)
+            ActivitiesTable(contexts: visibleNodes)
                 .opacity(hasAnyActivity ? 1 : 0)
                 .overlay(alignment: .top) {
                     if !hasAnyActivity {
@@ -73,6 +79,29 @@ struct ActivitiesView: View {
                 }
         }
         .padding(AppPadding.page)
+        .task(id: mainViewModel.currentSynchro?.id) {
+            await fetchSynchroNodeContexts()
+        }
+        .onReceive(
+            observableCache.usersPublisher.synchroNodesPublisher(for: Int32(mainViewModel.currentSynchro?.id ?? 0))
+                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+                .map { $0.map(UISynchroNodeContext.init(synchroNodeContext:)) }
+        ) { synchroNodeContexts in
+            withAnimation {
+                handleUpdatedSynchroNodes(synchroNodeContexts)
+            }
+        }
+    }
+
+    private func fetchSynchroNodeContexts() async {
+        @InjectService var coherentCache: CoherentCache
+        let synchroNodeContexts = await coherentCache.getSynchroNodeContexts()
+
+        handleUpdatedSynchroNodes(synchroNodeContexts.map(UISynchroNodeContext.init(synchroNodeContext:)))
+    }
+
+    private func handleUpdatedSynchroNodes(_ nodes: [UISynchroNodeContext]) {
+        nodeContexts = nodes
     }
 }
 
