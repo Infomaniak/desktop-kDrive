@@ -169,13 +169,20 @@ void TestAppServer::testStartAndStopSync() {
     found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
 
-    sync.setLocalPath("/dummy");
+#ifdef KD_WINDOWS
+    sync.setLocalPath("Y:\\dummy");
+#elif KD_MACOS
+    sync.setLocalPath("/Volumes/dummy");
+#else
+    sync.setLocalPath("/mnt/dummy");
+#endif
+
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
 
     // Start syncs
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
-    CPPUNIT_ASSERT(exitInfo.cause() == ExitCause::SyncDirDiskMissing || exitInfo.cause() == ExitCause::SyncDirAccessError);
+    CPPUNIT_ASSERT(exitInfo.cause() == ExitCause::SyncDirDiskMissing);
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);

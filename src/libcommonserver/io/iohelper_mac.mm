@@ -315,8 +315,14 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
 bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
     isMounted = false;
     ioError = IoError::Success;
+    std::error_code ec;
 
-    std::string absPath = std::filesystem::absolute(path).string();
+    std::string absPath = std::filesystem::absolute(path, ec).string();
+    if (ec) {
+        ioError = Utility::stdError2ioError(ec);
+        LOGW_WARN(logger(), L"Error in std::filesystem::absolute - " << Utility::formatStdError(ec));
+        return false;
+    }
 
     struct statfs *mounts;
     int count = getmntinfo(&mounts, MNT_NOWAIT);

@@ -386,7 +386,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
         case ExitCause::SyncDirDiskMissing:
-            return tr("The drive containing your synchronization folder is no longer connected. (error %1).<br>"
+            return tr("The drive containing your synchronization folder is no longer connected (error %1).<br>"
                       "Please reconnect it to resume synchronization.")
                     .arg(err);
         case ExitCause::NotEnoughDiskSpace:
