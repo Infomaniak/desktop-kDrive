@@ -26,7 +26,7 @@
 #import "config.h"
 
 #include <sys/stat.h>
-#include <sys/mount.h>
+#include <filesystem>
 
 #import <AppKit/NSApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
@@ -325,16 +325,35 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
         return false;
     }
 
+    size_t bestMatchLen = 0;
+    std::string bestMount;
     for (int i = 0; i < count; ++i) {
         std::string mountPoint = mounts[i].f_mntonname;
-        if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
-            (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
-            isMounted = true;
-            return true;
+        bool matches = false;
+        if (mountPoint == "/") {
+            matches = true;
+        } else if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+            matches = true;
+        }
+
+        if (matches && mountPoint.size() > bestMatchLen) {
+            bestMatchLen = mountPoint.size();
+            bestMount = std::move(mountPoint);
         }
     }
 
-    isMounted = false;
+    if (bestMatchLen == 0) {
+        isMounted = false;
+        return true;
+    }
+
+    if (bestMount == "/" && absPath.starts_with("/Volumes/")) {
+        isMounted = false;
+        return true;
+    }
+
+    isMounted = true;
     return true;
 }
 

@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <filesystem>
 #include <mntent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -181,19 +182,39 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     }
 
     struct mntent *ent;
-    bool found = false;
+    size_t bestMatchLen = 0;
+    std::string bestMount;
 
     while ((ent = getmntent(mtab)) != nullptr) {
         std::string mountPoint = ent->mnt_dir;
-        if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
-            (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
-            found = true;
-            break;
+        bool matches = false;
+        if (mountPoint == "/") {
+            matches = true;
+        } else if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+            matches = true;
+        }
+
+        if (matches && mountPoint.size() > bestMatchLen) {
+            bestMatchLen = mountPoint.size();
+            bestMount = std::move(mountPoint);
         }
     }
 
     endmntent(mtab);
-    isMounted = found;
+
+    if (bestMatchLen == 0) {
+        isMounted = false;
+        return true;
+    }
+
+    if (bestMount == "/" && (absPath.starts_with("/mnt/") || absPath.starts_with("/media/") ||
+                             absPath.starts_with("/run/media/"))) {
+        isMounted = false;
+        return true;
+    }
+
+    isMounted = true;
     return true;
 }
 
