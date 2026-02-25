@@ -6,11 +6,11 @@ WinUI:
 
 macOS UI:
   - changed-files:
-    - any-glob-to-any-file: 'src/front/macOS/**'
+    - any-glob-to-any-file: 'src/gui4/macOS/**'
 
 XPC:
   - changed-files:
-    - any-glob-to-any-file: 'src/front/macOS/kDriveCore/ServerBridge/**'
+    - any-glob-to-any-file: 'src/gui4/macOS/kDriveCore/ServerBridge/**'
     - any-glob-to-any-file: 'extensions/MacOSX/kDriveFinderSync/**'
     - any-glob-to-any-file: 'src/server/comm/**'
 
