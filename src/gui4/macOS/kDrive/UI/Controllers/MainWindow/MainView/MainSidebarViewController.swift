@@ -49,6 +49,8 @@ final class MainSidebarViewController: NSViewController {
 
     @LazyInjectService private var router: MainViewRouter
     @LazyInjectService private var loadingIndicatorShower: SidebarNotificationPresenting
+    @LazyInjectService private var observableCache: CoherentCacheObservable
+    @LazyInjectService private var coherentCache: CoherentCache
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
@@ -60,6 +62,7 @@ final class MainSidebarViewController: NSViewController {
     private lazy var sidebarNotificationView: SidebarNotificationView = {
         let view = SidebarNotificationView()
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.configure(with: nil)
         return view
     }()
 
@@ -110,10 +113,12 @@ final class MainSidebarViewController: NSViewController {
 
         setupView()
         bindViewModel()
+        fetchInitialSynchros()
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
+
         outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
     }
 
@@ -123,7 +128,9 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func bindViewModel() {
-        mainViewModel.$availableSynchros
+        observableCache.usersPublisher.allSynchrosPublisher()
+            .map { UIIndexedSynchroContext(indexedSynchro: $0) }
+            .eraseToAnyPublisher()
             .removeSynchroContextDuplicates(with: [])
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
                 self?.updateSynchrosList(synchroContexts)
@@ -137,6 +144,15 @@ final class MainSidebarViewController: NSViewController {
                 self?.sidebarNotificationView.configure(with: state)
             }
             .store(in: &bindStore)
+    }
+
+    private func fetchInitialSynchros() {
+        Task {
+            let synchroContexts = await coherentCache.getSynchroContexts()
+            let uiSynchroContexts = UIIndexedSynchroContext(indexedSynchro: synchroContexts)
+
+            updateSynchrosList(uiSynchroContexts)
+        }
     }
 
     private func setupView() {

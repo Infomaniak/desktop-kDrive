@@ -29,7 +29,7 @@ public struct UIIndexedSynchroContextOptions: OptionSet {
     }
 }
 
-public extension Published.Publisher where Value == UIIndexedSynchroContext {
+public extension AnyPublisher where Output == UIIndexedSynchroContext {
     func removeSynchroContextDuplicates(with options: UIIndexedSynchroContextOptions) -> Publishers.RemoveDuplicates<Self> {
         removeDuplicates { lhs, rhs in
             guard lhs.keys == rhs.keys else {
