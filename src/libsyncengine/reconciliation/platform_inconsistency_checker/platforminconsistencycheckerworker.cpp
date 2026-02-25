@@ -190,8 +190,8 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     }
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
 #if defined(KD_WINDOWS)
-        if (CommonUtility::endsWith(remoteNode->name(), ".")) {
-            LOGW_INFO(_logger, L"Names ending with a dot are forbidden on your filesystem: "
+        if (CommonUtility::endsWith(remoteNode->name(), Str("."))) {
+            LOGW_INFO(_logger, L"Names ending with a dot are forbidden on the filesystem: "
                                        << Utility::formatSyncName(remoteNode->name()));
         }
 #endif
