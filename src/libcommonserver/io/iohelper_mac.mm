@@ -26,6 +26,7 @@
 #import "config.h"
 
 #include <sys/stat.h>
+#include <sys/mount.h>
 #include <filesystem>
 
 #import <AppKit/NSApplication.h>
