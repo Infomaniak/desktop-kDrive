@@ -2797,34 +2797,8 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
-    bool updated = false;
-    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
-        if (exitInfo.code() == ExitCode::InvalidToken) {
-            // Notify client app that the user is disconnected
-            UserInfo userInfo;
-            ServerRequests::userToUserInfo(user, userInfo);
-            sendUserUpdated(userInfo);
-        }
 
-        return exitInfo;
-    }
-
-    if (updated) {
-        bool found = false;
-        if (!ParmsDb::instance()->updateUser(user, found)) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateUser");
-            return ExitCode::DbError;
-        }
-        if (!found) {
-            LOG_WARN(_logger, "User not found for userDbId=" << user.dbId());
-            return ExitCode::DataError;
-        }
-
-        UserInfo userInfo;
-        ServerRequests::userToUserInfo(user, userInfo);
-        sendUserUpdated(userInfo);
-    }
+    if (const auto exitInfo = updateUser(user); !exitInfo) return exitInfo;
 
     std::vector<Account> accounts;
     if (!ParmsDb::instance()->selectAllAccounts(user.dbId(), accounts)) {
@@ -2833,26 +2807,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
-        bool accountUpdated = false;
-        if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
-            LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
-            return exitInfo;
-        }
-        if (accountUpdated) {
-            AccountInfo accountInfo;
-            ServerRequests::accountToAccountInfo(account, accountInfo);
-            sendAccountUpdated(accountInfo);
-
-            bool found = false;
-            if (!ParmsDb::instance()->updateAccount(account, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
-                return ExitCode::DataError;
-            }
-        }
+        if (const auto exitInfo = updateAccount(account); !exitInfo) return exitInfo;
 
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
@@ -2987,6 +2942,65 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
     return ExitCode::Ok;
 }
+
+ExitInfo AppServer::updateUser(User &user) {
+    bool updated = false;
+    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        if (exitInfo.code() == ExitCode::InvalidToken) {
+            // Notify client app that the user is disconnected
+            UserInfo userInfo;
+            ServerRequests::userToUserInfo(user, userInfo);
+            sendUserUpdated(userInfo);
+        }
+
+        return exitInfo;
+    }
+
+    if (updated) {
+        bool found = false;
+        if (!ParmsDb::instance()->updateUser(user, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateUser");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "User not found for userDbId=" << user.dbId());
+            return ExitCode::DataError;
+        }
+
+        UserInfo userInfo;
+        ServerRequests::userToUserInfo(user, userInfo);
+        sendUserUpdated(userInfo);
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::updateAccount(Account &account) {
+    bool accountUpdated = false;
+    if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+        return exitInfo;
+    }
+    if (accountUpdated) {
+        AccountInfo accountInfo;
+        ServerRequests::accountToAccountInfo(account, accountInfo);
+        sendAccountUpdated(accountInfo);
+
+        bool found = false;
+        if (!ParmsDb::instance()->updateAccount(account, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+            return ExitCode::DataError;
+        }
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::updateDrive(Drive &drive){TODO}
+
 
 ExitInfo AppServer::startSyncs() {
     // Load user list
