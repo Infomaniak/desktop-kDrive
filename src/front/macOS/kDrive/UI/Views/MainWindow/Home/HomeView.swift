@@ -67,7 +67,7 @@ struct HomeView: View {
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    SynchroStatusView(state: state, performAction: didTapStateButton)
+                    SynchroStatusView(state: state)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                     DriveWebShortcutsView(avatar: mainViewModel.currentUser?.avatar, drive: mainViewModel.currentDrive)
@@ -76,19 +76,6 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
-    }
-
-    private func didTapStateButton(for state: HomeState) {
-        switch state {
-        case .synchroIsRunning:
-            // TODO: Navigate to activities
-            break
-        case .synchroIsPaused:
-            // TODO: Enable synchro
-            break
-        default:
-            break
-        }
     }
 }
 
