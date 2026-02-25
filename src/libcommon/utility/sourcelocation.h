@@ -74,10 +74,6 @@ class SourceLocation {
             return fileName() + ":" + std::to_string(line()) + (functionName().empty() ? "" : "[" + functionName() + "]");
         }
 
-         [[nodiscard]] std::wstring toWString() const {
-            return CommonUtility::s2ws(toString());
-        }
-
     private:
         uint32_t _line = 0;
         const char *_fileName = "";

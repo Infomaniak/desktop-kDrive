@@ -801,7 +801,7 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     }
 
     if (!diskMounted) {
-        LOGW_INFO(logger(), srcLoc.toWString() << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
+        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString()) << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
         return ExitCause::SyncDirDiskMissing;
     }
     return ExitCause::SyncDirAccessError;
