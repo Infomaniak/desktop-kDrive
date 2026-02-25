@@ -29,9 +29,9 @@ public struct UIHexColor: Sendable, Equatable, Hashable {
 
 extension UIHexColor {
     init(hexColor: HexColor) {
-        self.red = Int(hexColor.red)
-        self.green = Int(hexColor.green)
-        self.blue = Int(hexColor.blue)
+        red = Int(hexColor.red)
+        green = Int(hexColor.green)
+        blue = Int(hexColor.blue)
     }
 }
 

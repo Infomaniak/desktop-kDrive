@@ -28,7 +28,6 @@ public struct UIIndexedSynchroContextOptions: OptionSet {
     public init(rawValue: Int) {
         self.rawValue = rawValue
     }
-
 }
 
 public extension Published.Publisher where Value == UIIndexedSynchroContext {

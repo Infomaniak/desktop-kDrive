@@ -306,9 +306,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         var synchroContexts = [SynchroContext]()
         for user in users.values {
             for account in user.accounts.values {
-                for drives in account.drives.values {
-                    for synchro in drives.synchros.values {
-                        synchroContexts.append(SynchroContext(synchro: synchro, drive: drives, account: account, user: user))
+                for drive in account.drives.values {
+                    for synchro in drive.synchros.values {
+                        synchroContexts.append(SynchroContext(synchro: synchro, drive: drive, account: account, user: user))
                     }
                 }
             }

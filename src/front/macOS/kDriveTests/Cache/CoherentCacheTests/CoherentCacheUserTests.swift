@@ -154,7 +154,7 @@ struct CoherentCacheUserTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func getSynchroContexts_noDriveWithSynchros() async throws {
+    func getSynchroContexts_driveWithNoSynchros() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         await cache.addUser(CacheData.expectedUser)

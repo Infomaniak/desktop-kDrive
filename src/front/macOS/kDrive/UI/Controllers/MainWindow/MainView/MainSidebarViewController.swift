@@ -215,17 +215,18 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func updateSynchrosList(_ synchroContexts: UIIndexedSynchroContext) {
+        var synchrosCountPerDrive: [Int: Int] = [:]
+        for synchroContext in synchroContexts.values {
+            let driveDbId = synchroContext.drive.dbId
+            synchrosCountPerDrive[driveDbId, default: 0] += 1
+        }
+
         popUpButton.removeAllItems()
-        Task {
-            for synchroContext in synchroContexts.values {
-                @InjectService var coherentCache: CoherentCache
-                let driveDbId = Int32(synchroContext.drive.dbId)
-                let synchrosCountForDrive = await coherentCache.getDrive(driveDbId: driveDbId)?.synchros.count ?? 0
-
-                let shouldDisplaySynchroPath = synchrosCountForDrive > 1
-
-                addPopUpItem(forSynchroContext: synchroContext, withSynchroPath: shouldDisplaySynchroPath)
-            }
+        for synchroContext in synchroContexts.values {
+            let driveDbId = synchroContext.drive.dbId
+            let synchrosCountForDrive = synchrosCountPerDrive[driveDbId] ?? 0
+            let shouldDisplaySynchroPath = synchrosCountForDrive > 1
+            addPopUpItem(forSynchroContext: synchroContext, withSynchroPath: shouldDisplaySynchroPath)
         }
     }
 

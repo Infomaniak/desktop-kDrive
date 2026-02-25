@@ -51,6 +51,8 @@ enum MacStorageItems {
 struct StorageView: View {
     static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
 
+    @InjectService private var storageDataProviding: StorageDataProviding
+
     @State private var macStorageItems: OrderedDictionary<MacStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
         .usedByComputer: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
@@ -58,13 +60,6 @@ struct StorageView: View {
     ]
 
     @ObservedObject var mainViewModel: MainViewModel
-
-    private var storageDataPublisher: AnyPublisher<IndexedStorageData, Never> {
-        @InjectService var storageDataProviding: StorageDataProviding
-        return storageDataProviding.storageDataPublisher
-            .removeDuplicates()
-            .eraseToAnyPublisher()
-    }
 
     private var deviceName: String {
         return Host().localizedName ?? KDriveLocalizable.storageDeviceNameMac
@@ -95,7 +90,10 @@ struct StorageView: View {
         }
         .groupedFormatStyle()
         .padding(AppPadding.page)
-        .onReceive(storageDataPublisher, perform: handleUpdatedStorageData)
+        .onReceive(
+            storageDataProviding.storageDataPublisher.removeDuplicates(),
+            perform: handleUpdatedStorageData
+        )
         .onAppear {
             getCachedStorageData()
         }
@@ -104,7 +102,6 @@ struct StorageView: View {
                 return
             }
 
-            @InjectService var storageDataProviding: StorageDataProviding
             try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
         }
     }
@@ -114,7 +111,6 @@ struct StorageView: View {
     }
 
     private func getCachedStorageData() {
-        @InjectService var storageDataProviding: StorageDataProviding
         updateMacStorage(from: storageDataProviding.storageData)
     }
 

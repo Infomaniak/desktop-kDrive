@@ -50,7 +50,7 @@ public struct UIUser: Sendable, Equatable, Hashable {
         self.userId = userId
         self.name = name
         self.email = email
-        self.avatarData = avatar
+        avatarData = avatar
     }
 }
 
