@@ -1162,9 +1162,7 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     isMounted = false;
     ioError = IoError::Success;
 
-    UINT driveType = GetDriveTypeW(path.root_name().c_str());
-
-    switch (driveType) {
+    switch (const UINT driveType = GetDriveTypeW(path.root_name().c_str()); driveType) {
         case DRIVE_REMOVABLE:
         case DRIVE_FIXED:
         case DRIVE_REMOTE:

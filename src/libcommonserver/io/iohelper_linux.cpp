@@ -181,16 +181,14 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
         return false;
     }
 
-    struct mntent *ent;
+    struct mntent *ent = nullptr;
     size_t bestMatchLen = 0;
     std::string bestMount;
 
     while ((ent = getmntent(mtab)) != nullptr) {
         std::string mountPoint = ent->mnt_dir;
         bool matches = false;
-        if (mountPoint == "/") {
-            matches = true;
-        } else if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+        if (mountPoint == "/" || absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
                    (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
             matches = true;
         }
@@ -201,15 +199,17 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
         }
     }
 
-    endmntent(mtab);
+    if (endmntent(mtab) != 1) {
+        LOGW_WARN(logger(), L"Error in endmntent: " << Utility::formatSyncPath(path));
+    }
 
     if (bestMatchLen == 0) {
         isMounted = false;
         return true;
     }
 
-    if (bestMount == "/" && (absPath.starts_with("/mnt/") || absPath.starts_with("/media/") ||
-                             absPath.starts_with("/run/media/"))) {
+    if (bestMount == "/" &&
+        (absPath.starts_with("/mnt/") || absPath.starts_with("/media/") || absPath.starts_with("/run/media/"))) {
         isMounted = false;
         return true;
     }
@@ -217,5 +217,4 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     isMounted = true;
     return true;
 }
-
 } // namespace KDC

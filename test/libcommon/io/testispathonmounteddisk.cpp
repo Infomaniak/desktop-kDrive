@@ -19,7 +19,7 @@
 #include "testio.h"
 
 #if defined(KD_WINDOWS)
-#include <windows.h>
+#include <Windows.h>
 #endif
 
 using namespace CppUnit;
@@ -51,7 +51,7 @@ void TestIo::testIsPathOnMountedDisk() {
     DWORD driveMask = GetLogicalDrives();
     wchar_t driveLetter = 0;
     for (wchar_t letter = L'Z'; letter >= L'D'; --letter) {
-        const DWORD bit = 1u << (letter - L'A');
+        const DWORD bit = 1u << static_cast<DWORD>(letter - L'A');
         if ((driveMask & bit) == 0) {
             driveLetter = letter;
             break;
