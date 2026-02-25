@@ -174,7 +174,12 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
-    if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name())) {
+    wchar_t forbiddenChar;
+    if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name(), &forbiddenChar)) {
+        std::wstring msg = L"Name '" + SyncName2WStr(remoteNode->name()) + L"' contains forbidden character: '";
+        msg.push_back(forbiddenChar);
+        msg.push_back('\'');
+        LOGW_INFO(_logger, msg);
         blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
         return false;
     }
@@ -183,8 +188,13 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
         blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
         return false;
     }
-
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
+#if defined(KD_WINDOWS)
+        if (CommonUtility::endsWith(remoteNode->name(), ".")) {
+            LOGW_INFO(_logger, L"Names ending with a dot are forbidden on your filesystem: "
+                                       << Utility::formatSyncName(remoteNode->name()));
+        }
+#endif
         blacklistNode(remoteNode, InconsistencyType::ReservedName);
         return false;
     }
