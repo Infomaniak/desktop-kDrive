@@ -1158,6 +1158,39 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     return result;
 }
 
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+
+    std::wstring pathWStr = path.wstring();
+    wchar_t volumePath[MAX_PATH];
+
+    if (!GetVolumePathNameW(pathWStr.c_str(), volumePath, MAX_PATH)) {
+        ioError = dWordError2ioError(GetLastError(), logger());
+        LOGW_WARN(logger(), L"Error in GetVolumePathNameW: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    UINT driveType = GetDriveTypeW(volumePath);
+
+    switch (driveType) {
+        case DRIVE_REMOVABLE:
+        case DRIVE_FIXED:
+        case DRIVE_REMOTE:
+        case DRIVE_CDROM:
+        case DRIVE_RAMDISK:
+            isMounted = true;
+            break;
+        case DRIVE_NO_ROOT_DIR:
+        case DRIVE_UNKNOWN:
+        default:
+            isMounted = false;
+            break;
+    }
+
+    return true;
+}
+
 PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
     static PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = nullptr;
 

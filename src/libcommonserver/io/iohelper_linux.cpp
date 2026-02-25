@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <mntent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
@@ -163,6 +164,36 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return false;
     }
 
+    return true;
+}
+
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+
+    std::string absPath = std::filesystem::absolute(path).string();
+
+    FILE *mtab = setmntent("/proc/mounts", "r");
+    if (!mtab) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in setmntent: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    struct mntent *ent;
+    bool found = false;
+
+    while ((ent = getmntent(mtab)) != nullptr) {
+        std::string mountPoint = ent->mnt_dir;
+        if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+            (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+            found = true;
+            break;
+        }
+    }
+
+    endmntent(mtab);
+    isMounted = found;
     return true;
 }
 

@@ -26,6 +26,7 @@
 #import "config.h"
 
 #include <sys/stat.h>
+#include <sys/mount.h>
 
 #import <AppKit/NSApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
@@ -308,6 +309,33 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     }
 
     return success;
+}
+
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+
+    std::string absPath = std::filesystem::absolute(path).string();
+
+    struct statfs *mounts;
+    int count = getmntinfo(&mounts, MNT_NOWAIT);
+    if (count <= 0) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in getmntinfo: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    for (int i = 0; i < count; ++i) {
+        std::string mountPoint = mounts[i].f_mntonname;
+        if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+            (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+            isMounted = true;
+            return true;
+        }
+    }
+
+    isMounted = false;
+    return true;
 }
 
 } // namespace KDC

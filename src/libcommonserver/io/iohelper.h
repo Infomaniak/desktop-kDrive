@@ -193,6 +193,8 @@ struct IoHelper {
         static bool checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept;
         static bool checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
+        static bool isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept;
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
