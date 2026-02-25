@@ -22,7 +22,6 @@ import OrderedCollections
 public struct UIIndexedSynchroContextOptions: OptionSet {
     public let rawValue: Int
 
-    public static let nodes = UIIndexedSynchroContextOptions(rawValue: 1 << 0)
     public static let progressInfo = UIIndexedSynchroContextOptions(rawValue: 1 << 1)
 
     public init(rawValue: Int) {
@@ -56,10 +55,6 @@ public extension Published.Publisher where Value == UIIndexedSynchroContext {
                     || lhsSynchro.driveDbId != rhsSynchro.driveDbId
                     || lhsSynchro.localPath != rhsSynchro.localPath
                     || lhsSynchro.errorCount != rhsSynchro.errorCount {
-                    return false
-                }
-
-                if options.contains(.nodes) && lhsSynchro.nodes != rhsSynchro.nodes {
                     return false
                 }
 

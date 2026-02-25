@@ -89,7 +89,6 @@ public enum PreviewHelper {
         driveDbId: 0,
         localPath: URL(fileURLWithPath: "~/kDrive"),
         progressInfo: nil,
-        nodes: [:],
         errorCount: 0
     )
 
