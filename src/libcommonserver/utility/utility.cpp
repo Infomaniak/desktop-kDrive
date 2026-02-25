@@ -792,4 +792,19 @@ std::wstring Utility::formatSystemError(const std::system_error &exception) {
     return ss.str();
 }
 
+ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, SourceLocation srcLoc) {
+    IoError ioError = IoError::Unknown;
+    bool diskMounted = false;
+    if (!IoHelper::isPathOnMountedDisk(syncDir, diskMounted, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::isDiskMounted: " << Utility::formatIoError(syncDir, ioError));
+        return ExitCause::SyncDirAccessError;
+    }
+
+    if (!diskMounted) {
+        LOGW_INFO(logger(), L"Disk is not mounted for " << Utility::formatSyncPath(syncDir));
+        return ExitCause::SyncDirDiskMissing;
+    }
+    return ExitCause::SyncDirAccessError;
+}
+
 } // namespace KDC

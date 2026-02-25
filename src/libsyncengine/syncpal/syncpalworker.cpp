@@ -56,8 +56,10 @@ bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr
              (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
               w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
     const auto syncDirNotAccessible =
-            (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
-            (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
+            (w1 && w1->exitCode() == ExitCode::SystemError &&
+             (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
+            (w2 && w2->exitCode() == ExitCode::SystemError &&
+             (w2->exitCause() == ExitCause::SyncDirAccessError || w2->exitCause() == ExitCause::SyncDirDiskMissing));
     const auto invalidOperation =
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
@@ -231,11 +233,13 @@ void SyncPalWorker::execute() {
                 if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
                     (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||

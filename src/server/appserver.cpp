@@ -2360,7 +2360,8 @@ void AppServer::startSyncsAndRetryOnError() {
     LOG_DEBUG(_logger, "Start syncs");
     if (const auto exitInfo = startSyncs(); !exitInfo) {
         LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
-        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirAccessError) {
+        if (exitInfo.code() == ExitCode::SystemError &&
+            (exitInfo.cause() == ExitCause::SyncDirAccessError || exitInfo.cause() == ExitCause::SyncDirDiskMissing)) {
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
         }
@@ -3023,10 +3024,8 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed)
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
-        if (exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
-            LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
-            addError(Error(sync.dbId(), ERR_ID, exitInfo));
-        }
+        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
+        addError(Error(sync.dbId(), ERR_ID, exitInfo));
         // Continue. The sync will be initialized but paused.
         // The sync will start when the VFS plugin will be ready (sync folder accessible and permissions granted by the user).
         startPostponed = true;
@@ -3918,7 +3917,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(sync.localPath())};
     }
 
 #if defined(KD_MACOS)

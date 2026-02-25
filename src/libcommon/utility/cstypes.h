@@ -104,6 +104,7 @@ enum class ExitCause {
     InvalidSnapshot,
     SyncDirDoesntExist,
     SyncDirAccessError,
+    SyncDirDiskMissing,
     SyncDirNestingError,
     SyncDirChanged,
     HttpErr,

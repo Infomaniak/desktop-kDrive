@@ -1162,16 +1162,7 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     isMounted = false;
     ioError = IoError::Success;
 
-    std::wstring pathWStr = path.wstring();
-    wchar_t volumePath[MAX_PATH];
-
-    if (!GetVolumePathNameW(pathWStr.c_str(), volumePath, MAX_PATH)) {
-        ioError = dWordError2ioError(GetLastError(), logger());
-        LOGW_WARN(logger(), L"Error in GetVolumePathNameW: " << Utility::formatIoError(path, ioError));
-        return false;
-    }
-
-    UINT driveType = GetDriveTypeW(volumePath);
+    UINT driveType = GetDriveTypeW(path.root_name().c_str());
 
     switch (driveType) {
         case DRIVE_REMOVABLE:

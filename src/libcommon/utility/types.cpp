@@ -142,6 +142,8 @@ std::string toString(const ExitCause e) {
             return "SyncDirDoesntExist";
         case ExitCause::SyncDirAccessError:
             return "SyncDirAccessError";
+        case ExitCause::SyncDirDiskMissing:
+            return "SyncDirDiskMissing";
         case ExitCause::SyncDirNestingError:
             return "SyncDirNestingError";
         case ExitCause::SyncDirChanged:

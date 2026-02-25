@@ -1537,7 +1537,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
-                    activities.Insert(Math.Max(destIndex + 1, activities.Count), newItem);
+                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
                 }
                 else
                 {
