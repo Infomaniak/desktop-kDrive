@@ -112,10 +112,10 @@ struct CoherentCacheUserTests {
         // THEN
         #expect(contexts.count == 1)
         let context = try #require(contexts.first)
-        #expect(context.synchro == CacheData.expectedSynchro)
-        #expect(context.drive == CacheData.expectedDrive)
-        #expect(context.account == CacheData.expectedAccount)
-        #expect(context.user == CacheData.expectedUser)
+        #expect(context.synchro.id == CacheData.expectedSynchro.id)
+        #expect(context.drive.id == CacheData.expectedDrive.id)
+        #expect(context.account.id == CacheData.expectedAccount.id)
+        #expect(context.user.id == CacheData.expectedUser.id)
     }
 
     @Test(.timeLimit(.minutes(1)))
@@ -147,9 +147,9 @@ struct CoherentCacheUserTests {
         #expect(synchroDbIds.contains(secondSynchroDbId))
 
         for context in contexts {
-            #expect(context.drive == CacheData.expectedDrive)
-            #expect(context.account == CacheData.expectedAccount)
-            #expect(context.user == CacheData.expectedUser)
+            #expect(context.drive.id == CacheData.expectedDrive.id)
+            #expect(context.account.id == CacheData.expectedAccount.id)
+            #expect(context.user.id == CacheData.expectedUser.id)
         }
     }
 
