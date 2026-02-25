@@ -24,7 +24,7 @@ import Network
 public final class NetworkObserver: ObservableObject {
     private let monitor: NWPathMonitor
 
-    @Published public private(set) var isConnected = false
+    @Published public private(set) var isConnected = true
 
     public init() {
         monitor = NWPathMonitor()

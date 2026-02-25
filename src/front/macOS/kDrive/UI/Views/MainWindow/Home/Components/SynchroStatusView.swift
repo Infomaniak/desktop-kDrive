@@ -84,7 +84,6 @@ extension HomeState {
 
 struct SynchroStatusView: View {
     let state: HomeState
-    let performAction: (HomeState) -> Void
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -105,7 +104,7 @@ struct SynchroStatusView: View {
 
                 if let buttonTitle = state.buttonTitle {
                     Button(buttonTitle) {
-                        performAction(state)
+                        didTapStateButton(for: state)
                     }
                     .buttonStyle(.borderless)
                     .foregroundStyle(.tint)
@@ -131,7 +130,7 @@ struct SynchroStatusView: View {
                 )
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
+        .clipShape(.rect(cornerRadius: AppRadius.radius16))
     }
 
     /// We use a random image to serve as a redacted view
@@ -139,24 +138,37 @@ struct SynchroStatusView: View {
         KDriveResources.checkmark.swiftUIImage
             .resizable()
     }
+
+    private func didTapStateButton(for state: HomeState) {
+        switch state {
+        case .synchroIsRunning:
+            // TODO: Navigate to activities
+            break
+        case .synchroIsPaused:
+            // TODO: Enable synchro
+            break
+        default:
+            break
+        }
+    }
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(state: .synchroIsUpToDate) { _ in }
+    SynchroStatusView(state: .synchroIsUpToDate)
 }
 
 #Preview("Running") {
-    SynchroStatusView(state: .synchroIsRunning) { _ in }
+    SynchroStatusView(state: .synchroIsRunning)
 }
 
 #Preview("Paused") {
-    SynchroStatusView(state: .synchroIsPaused) { _ in }
+    SynchroStatusView(state: .synchroIsPaused)
 }
 
 #Preview("Offline") {
-    SynchroStatusView(state: .offline) { _ in }
+    SynchroStatusView(state: .offline)
 }
 
 #Preview("Loading") {
-    SynchroStatusView(state: .loading) { _ in }
+    SynchroStatusView(state: .loading)
 }

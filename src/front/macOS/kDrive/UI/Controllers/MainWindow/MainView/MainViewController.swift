@@ -39,7 +39,6 @@ final class MainViewController: IKSplitViewController {
 
         setupSplitView()
         bindViewModel()
-        viewModel.refreshCache()
     }
 
     override func viewDidAppear() {

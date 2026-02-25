@@ -18,6 +18,17 @@
 
 import Foundation
 import kDriveCore
+import OrderedCollections
+
+public typealias UIIndexedSynchroContext = OrderedDictionary<UISynchro.ID, UISynchroContext>
+
+public extension UIIndexedSynchroContext {
+    init(indexedSynchro: [SynchroContext]) {
+        self.init(uniqueKeysWithValues: indexedSynchro.map {
+            (UISynchro.ID($0.synchro.dbId), UISynchroContext(synchroContext: $0))
+        })
+    }
+}
 
 public struct UISynchroContext: Sendable, Equatable {
     public let synchro: UISynchro

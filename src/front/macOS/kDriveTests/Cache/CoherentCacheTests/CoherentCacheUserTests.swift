@@ -82,4 +82,89 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(apiId: CacheData.updatedUserAPIId) == CacheData.updatedUser,
                 "Should be able to fetch an object with the old API id")
     }
+
+    // MARK: - getSynchroContexts
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroContexts_emptyCache() async {
+        // GIVEN
+        let cache = ServerCoherentCache()
+
+        // WHEN
+        let contexts = await cache.getSynchroContexts()
+
+        // THEN
+        #expect(contexts.isEmpty)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroContexts_withOneSynchro() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        // WHEN
+        let contexts = await cache.getSynchroContexts()
+
+        // THEN
+        #expect(contexts.count == 1)
+        let context = try #require(contexts.first)
+        #expect(context.synchro.id == CacheData.expectedSynchro.id)
+        #expect(context.drive.id == CacheData.expectedDrive.id)
+        #expect(context.account.id == CacheData.expectedAccount.id)
+        #expect(context.user.id == CacheData.expectedUser.id)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroContexts_withMultipleSynchros() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        let secondSynchroDbId = Int32.random(in: 10001 ... 20000)
+        let secondSynchro = Synchro(dbId: secondSynchroDbId,
+                                    driveDbId: CacheData.expectedDriveDbId,
+                                    localPath: "/another/path",
+                                    targetPath: "/another/target",
+                                    targetNodeId: UUID().uuidString,
+                                    supportVfs: true,
+                                    virtualFileMode: KDC.VirtualFileMode.Mac)
+        try await cache.addSynchro(secondSynchro)
+
+        // WHEN
+        let contexts = await cache.getSynchroContexts()
+
+        // THEN
+        #expect(contexts.count == 2)
+        let synchroDbIds = Set(contexts.map(\.synchro.dbId))
+        #expect(synchroDbIds.contains(CacheData.expectedSynchroDbId))
+        #expect(synchroDbIds.contains(secondSynchroDbId))
+
+        for context in contexts {
+            #expect(context.drive.id == CacheData.expectedDrive.id)
+            #expect(context.account.id == CacheData.expectedAccount.id)
+            #expect(context.user.id == CacheData.expectedUser.id)
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroContexts_driveWithNoSynchros() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        // WHEN
+        let contexts = await cache.getSynchroContexts()
+
+        // THEN
+        #expect(contexts.isEmpty)
+    }
 }

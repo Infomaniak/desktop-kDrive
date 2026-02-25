@@ -33,40 +33,35 @@ public struct UIUser: Sendable, Equatable, Hashable {
     public let userId: Int
     public let name: String
     public let email: String
-    public let nsAvatar: NSImage?
-    public let accounts: [Int: UIAccount]
+    public let avatarData: Data?
+
+    public var nsAvatar: NSImage? {
+        guard let avatarData else { return nil }
+        return NSImage(data: avatarData)
+    }
 
     public var avatar: Image? {
         guard let nsAvatar else { return nil }
         return Image(nsImage: nsAvatar)
     }
 
-    public init(dbId: Int, userId: Int, name: String, email: String, avatar: NSImage?, accounts: [Int: UIAccount]) {
+    public init(dbId: Int, userId: Int, name: String, email: String, avatar: Data?) {
         self.dbId = dbId
         self.userId = userId
         self.name = name
         self.email = email
-        nsAvatar = avatar
-        self.accounts = accounts
+        avatarData = avatar
     }
 }
 
 public extension UIUser {
     init(user: User) {
-        var avatar: NSImage?
-        if let avatarData = user.avatar {
-            avatar = NSImage(data: avatarData)
-        }
-
-        let accounts = Dictionary(uniqueKeysWithValues: user.accounts.map { key, value in (Int(key), UIAccount(account: value)) })
-
         self.init(
             dbId: Int(user.dbId),
             userId: Int(user.userId),
             name: user.name,
             email: user.email,
-            avatar: avatar,
-            accounts: accounts
+            avatar: user.avatar
         )
     }
 }

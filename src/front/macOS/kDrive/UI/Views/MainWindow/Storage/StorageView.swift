@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -89,7 +90,10 @@ struct StorageView: View {
         }
         .groupedFormatStyle()
         .padding(AppPadding.page)
-        .onReceive(storageDataProviding.storageDataPublisher, perform: handleUpdatedStorageData)
+        .onReceive(
+            storageDataProviding.storageDataPublisher.removeDuplicates(),
+            perform: handleUpdatedStorageData
+        )
         .onAppear {
             getCachedStorageData()
         }

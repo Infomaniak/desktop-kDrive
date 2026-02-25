@@ -19,21 +19,24 @@
 import Foundation
 import kDriveCore
 
-public struct UIAccount: Sendable, Equatable, Hashable {
-    public let dbId: Int
-    public let name: String
-
-    public init(dbId: Int, name: String) {
-        self.dbId = dbId
-        self.name = name
+public struct UISynchroNodeContext: Sendable, Identifiable, Equatable {
+    public var id: UISynchroNode.ID {
+        node.id
     }
+
+    public let user: UIUser
+    public let account: UIAccount
+    public let drive: UIDrive
+    public let synchro: UISynchro
+    public let node: UISynchroNode
 }
 
-public extension UIAccount {
-    init(account: Account) {
-        self.init(
-            dbId: Int(account.dbId),
-            name: account.name
-        )
+public extension UISynchroNodeContext {
+    init(synchroNodeContext: SynchroNodeContext) {
+        user = UIUser(user: synchroNodeContext.user)
+        account = UIAccount(account: synchroNodeContext.account)
+        drive = UIDrive(drive: synchroNodeContext.drive)
+        synchro = UISynchro(synchro: synchroNodeContext.synchro)
+        node = UISynchroNode(synchroNode: synchroNodeContext.node)
     }
 }

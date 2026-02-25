@@ -19,7 +19,7 @@
 import Combine
 import Foundation
 
-public struct MacStorageData: Sendable {
+public struct MacStorageData: Sendable, Equatable {
     public let usedByKDrive: Int64?
     public let usedByComputer: Int64
     public let freeSpace: Int64

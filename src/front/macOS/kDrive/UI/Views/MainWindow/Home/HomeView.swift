@@ -20,11 +20,11 @@ import kDriveCoreUI
 import SwiftUI
 
 struct HomeView: View {
+    static let spacing = AppPadding.padding24
+
     @StateObject private var networkObserver = NetworkObserver()
 
     @ObservedObject var mainViewModel: MainViewModel
-
-    static let spacing = AppPadding.padding24
 
     private var userName: String {
         guard let currentUser = mainViewModel.currentUser,
@@ -60,35 +60,21 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if let errorCount = mainViewModel.currentSynchro?.errorCount,
-               errorCount > 0 {
+            if let errorCount = mainViewModel.currentSynchro?.errorCount, errorCount > 0 {
                 SynchroErrorsInformationBlockView(errorCount: errorCount)
             }
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    SynchroStatusView(state: state, performAction: didTapStateButton)
+                    SynchroStatusView(state: state)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
-                    DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
+                    DriveWebShortcutsView(avatar: mainViewModel.currentUser?.avatar, drive: mainViewModel.currentDrive)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
                 }
             }
         }
         .padding(AppPadding.page)
-    }
-
-    private func didTapStateButton(for state: HomeState) {
-        switch state {
-        case .synchroIsRunning:
-            // TODO: Navigate to activities
-            break
-        case .synchroIsPaused:
-            // TODO: Enable synchro
-            break
-        default:
-            break
-        }
     }
 }
 

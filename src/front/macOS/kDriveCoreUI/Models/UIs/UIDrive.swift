@@ -21,9 +21,25 @@ import Foundation
 import kDriveCore
 import SwiftUI
 
+public struct UIHexColor: Sendable, Equatable, Hashable {
+    public let red: Int
+    public let green: Int
+    public let blue: Int
+}
+
+extension UIHexColor {
+    init(hexColor: HexColor) {
+        red = Int(hexColor.red)
+        green = Int(hexColor.green)
+        blue = Int(hexColor.blue)
+    }
+}
+
 public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {
     var id: Int { get }
     var name: String { get }
+    var hexColor: UIHexColor? { get }
+
     var nsColor: NSColor? { get }
     var color: Color? { get }
 }
@@ -38,33 +54,42 @@ public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
     public let driveId: Int
     public let userDbId: Int
     public let name: String
-    public let nsColor: NSColor?
+    public let hexColor: UIHexColor?
+
+    public var nsColor: NSColor? {
+        guard let hexColor else {
+            return nil
+        }
+        return NSColor(hexColor: hexColor)
+    }
 
     public var color: Color? {
-        guard let nsColor else { return nil }
+        guard let nsColor else {
+            return nil
+        }
         return Color(nsColor: nsColor)
     }
 
-    public init(driveId: Int, userDbId: Int, name: String, color: NSColor?) {
+    public init(driveId: Int, userDbId: Int, name: String, hexColor: UIHexColor?) {
         self.driveId = driveId
         self.userDbId = userDbId
         self.name = name
-        nsColor = color
+        self.hexColor = hexColor
     }
 }
 
 public extension UIAvailableDrive {
     init(availableDrive: AvailableDrive) {
-        var color: NSColor?
+        var hexColor: UIHexColor?
         if let driveColor = availableDrive.color {
-            color = NSColor(hexColor: driveColor)
+            hexColor = UIHexColor(hexColor: driveColor)
         }
 
         self.init(
             driveId: Int(availableDrive.driveId),
             userDbId: Int(availableDrive.userDbId),
             name: availableDrive.name,
-            color: color
+            hexColor: hexColor
         )
     }
 }
@@ -78,50 +103,49 @@ public struct UIDrive: UIDriveRepresentation {
 
     public let dbId: Int
     public let driveId: Int
-    public let userDbId: Int
     public let name: String
-    public let nsColor: NSColor?
-    public let synchros: [Int: UISynchro]
+    public let hexColor: UIHexColor?
+
+    public var nsColor: NSColor? {
+        guard let hexColor else {
+            return nil
+        }
+        return NSColor(hexColor: hexColor)
+    }
 
     public var color: Color? {
-        guard let nsColor else { return nil }
+        guard let nsColor else {
+            return nil
+        }
         return Color(nsColor: nsColor)
     }
 
-    public init(dbId: Int, driveId: Int, userDbId: Int, name: String, color: NSColor?, synchros: [Int: UISynchro]) {
+    public init(dbId: Int, driveId: Int, name: String, hexColor: UIHexColor?) {
         self.dbId = dbId
         self.driveId = driveId
-        self.userDbId = userDbId
         self.name = name
-        nsColor = color
-        self.synchros = synchros
+        self.hexColor = hexColor
     }
 }
 
 public extension UIDrive {
     init(drive: Drive) {
-        var color: NSColor?
+        var hexColor: UIHexColor?
         if let driveColor = drive.color {
-            color = NSColor(hexColor: driveColor)
+            hexColor = UIHexColor(hexColor: driveColor)
         }
-
-        let synchros = Dictionary(uniqueKeysWithValues: drive.synchros.map { key, synchro in
-            (Int(key), UISynchro(synchro: synchro))
-        })
 
         self.init(
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
-            userDbId: Int(drive.userDbId),
             name: drive.name,
-            color: color,
-            synchros: synchros
+            hexColor: hexColor
         )
     }
 }
 
 extension NSColor {
-    convenience init(hexColor: HexColor) {
+    convenience init(hexColor: UIHexColor) {
         self.init(
             red: CGFloat(hexColor.red) / 255,
             green: CGFloat(hexColor.green) / 255,

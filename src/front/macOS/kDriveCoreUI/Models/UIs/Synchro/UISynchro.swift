@@ -20,7 +20,9 @@ import Foundation
 import OrderedCollections
 
 public struct UISynchro: Sendable, Equatable, Hashable {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         dbId
     }
 

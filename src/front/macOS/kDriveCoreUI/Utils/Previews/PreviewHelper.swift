@@ -29,7 +29,7 @@ private final class PreviewBundle {
 public enum PreviewHelper {
     public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
 
-    public static let context = UISynchroContext(
+    public static let synchroContext = UISynchroContext(
         synchro: PreviewHelper.synchro,
         drive: PreviewHelper.drive1,
         account: PreviewHelper.account,
@@ -37,49 +37,51 @@ public enum PreviewHelper {
         blockingError: nil
     )
 
+    public static let synchroNodeContext = UISynchroNodeContext(
+        user: PreviewHelper.user,
+        account: PreviewHelper.account,
+        drive: PreviewHelper.drive1,
+        synchro: PreviewHelper.synchro,
+        node: PreviewHelper.synchroNode1
+    )
+
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
         email: "tim@apple.com",
-        avatar: PreviewHelper.userImage,
-        accounts: [:]
+        avatar: nil
     )
 
     public static let account = UIAccount(
         dbId: 1,
-        name: "Tim Cook",
-        drives: [:]
+        name: "Tim Cook"
     )
 
     public static let drive1 = UIDrive(
         dbId: 1,
         driveId: 1,
-        userDbId: 1,
         name: "Tim Drive",
-        color: .blue,
-        synchros: [:]
+        hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
-        userDbId: 1,
         name: "Drive Pro Max",
-        color: .red,
-        synchros: [:]
+        hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
 
     public static let availableDrive1 = UIAvailableDrive(
         driveId: 1,
         userDbId: 1,
         name: "Tim Drive",
-        color: .blue
+        hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let availableDrive2 = UIAvailableDrive(
         driveId: 2,
         userDbId: 1,
         name: "Drive Pro Max",
-        color: .red
+        hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
 
     public static let synchro = UISynchro(

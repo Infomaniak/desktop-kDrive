@@ -300,6 +300,23 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateDrive(drive: drive)
     }
 
+    // MARK: - SynchroContexts
+
+    public func getSynchroContexts() -> [SynchroContext] {
+        var synchroContexts = [SynchroContext]()
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    for synchro in drive.synchros.values {
+                        synchroContexts.append(SynchroContext(synchro: synchro, drive: drive, account: account, user: user))
+                    }
+                }
+            }
+        }
+
+        return synchroContexts
+    }
+
     // MARK: - Errors
 
     public func addOrUpdateError(_ error: ErrorInfo) async throws {

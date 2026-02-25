@@ -22,6 +22,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 
 extension SidebarItem {
     static let home = SidebarItem(
@@ -53,6 +54,8 @@ final class MainSidebarViewController: NSViewController {
     private var bindStore = Set<AnyCancellable>()
 
     private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
+
+    private var hasBlockingError = false
 
     private lazy var sidebarNotificationView: SidebarNotificationView = {
         let view = SidebarNotificationView()
@@ -121,9 +124,10 @@ final class MainSidebarViewController: NSViewController {
 
     private func bindViewModel() {
         mainViewModel.$availableSynchros
-            .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
-                self?.updateSynchrosList(synchrosContext)
-                self?.updateSidebar()
+            .removeSynchroContextDuplicates(with: [])
+            .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
+                self?.updateSynchrosList(synchroContexts)
+                self?.updateSidebarIfNecessary()
             }
 
         loadingIndicatorShower.statePublisher
@@ -210,39 +214,53 @@ final class MainSidebarViewController: NSViewController {
         NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func updateSynchrosList(_ syncs: [UISynchroContext]) {
+    private func updateSynchrosList(_ synchroContexts: UIIndexedSynchroContext) {
+        var synchrosCountPerDrive: [Int: Int] = [:]
+        for synchroContext in synchroContexts.values {
+            let driveDbId = synchroContext.drive.dbId
+            synchrosCountPerDrive[driveDbId, default: 0] += 1
+        }
+
         popUpButton.removeAllItems()
-        for syncContext in syncs {
-            let displayPath = !(syncContext.drive.synchros.count == 1)
-            addPopUpItem(forSynchro: syncContext.synchro,
-                         drive: syncContext.drive,
-                         displaySynchroPath: displayPath)
+        for synchroContext in synchroContexts.values {
+            let driveDbId = synchroContext.drive.dbId
+            let synchrosCountForDrive = synchrosCountPerDrive[driveDbId] ?? 0
+            let shouldDisplaySynchroPath = synchrosCountForDrive > 1
+            addPopUpItem(forSynchroContext: synchroContext, withSynchroPath: shouldDisplaySynchroPath)
         }
     }
 
-    private func updateSidebar() {
+    private func updateSidebarIfNecessary() {
+        let shouldShowBlockingError = mainViewModel.currentBlockingError != nil
+        guard hasBlockingError != shouldShowBlockingError else {
+            return
+        }
+
         let previousSelectedRow = outlineView.selectedRow == -1 ? 0 : outlineView.selectedRow
         outlineView.reloadData()
-        if mainViewModel.currentBlockingError != nil {
+
+        if shouldShowBlockingError {
             outlineView.selectRowIndexes([], byExtendingSelection: false)
         } else {
             outlineView.selectRowIndexes([previousSelectedRow], byExtendingSelection: false)
         }
+
+        hasBlockingError = shouldShowBlockingError
     }
 
-    private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
+    private func addPopUpItem(forSynchroContext synchroContext: UISynchroContext, withSynchroPath: Bool) {
         var title: String
-        if displaySynchroPath {
-            title = "\(drive.name) › \(synchro.localPath.lastPathComponent)"
+        if withSynchroPath {
+            title = "\(synchroContext.drive.name) › \(synchroContext.synchro.localPath.lastPathComponent)"
         } else {
-            title = "\(drive.name)"
+            title = "\(synchroContext.drive.name)"
         }
 
         popUpButton.addItem(
             withTitle: title,
             image: KDriveResources.kdriveFoldersStacked.image,
-            color: drive.nsColor,
-            representedObject: synchro
+            color: synchroContext.drive.nsColor,
+            representedObject: synchroContext.synchro
         )
     }
 }
