@@ -55,6 +55,8 @@ final class MainSidebarViewController: NSViewController {
 
     private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
 
+    private var hasBlockingError = false
+
     private lazy var sidebarNotificationView: SidebarNotificationView = {
         let view = SidebarNotificationView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -125,7 +127,7 @@ final class MainSidebarViewController: NSViewController {
             .removeSynchroContextDuplicates(with: [])
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
                 self?.updateSynchrosList(synchroContexts)
-                self?.updateSidebar()
+                self?.updateSidebarIfNecessary()
             }
 
         loadingIndicatorShower.statePublisher
@@ -227,14 +229,22 @@ final class MainSidebarViewController: NSViewController {
         }
     }
 
-    private func updateSidebar() {
+    private func updateSidebarIfNecessary() {
+        let shouldShowBlockingError = mainViewModel.currentBlockingError != nil
+        guard hasBlockingError != shouldShowBlockingError else {
+            return
+        }
+
         let previousSelectedRow = outlineView.selectedRow == -1 ? 0 : outlineView.selectedRow
         outlineView.reloadData()
-        if mainViewModel.currentBlockingError != nil {
+
+        if shouldShowBlockingError {
             outlineView.selectRowIndexes([], byExtendingSelection: false)
         } else {
             outlineView.selectRowIndexes([previousSelectedRow], byExtendingSelection: false)
         }
+
+        hasBlockingError = shouldShowBlockingError
     }
 
     private func addPopUpItem(forSynchroContext synchroContext: UISynchroContext, withSynchroPath: Bool) {
