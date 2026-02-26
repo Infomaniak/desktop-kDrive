@@ -57,7 +57,9 @@ public final class UISynchroStateObserver: UISynchroStateObserving {
     public init() {}
 
     deinit {
-        cancellable?.cancel()
+        Task { @MainActor [weak self] in
+            self?.cancellable?.cancel()
+        }
     }
 
     @MainActor

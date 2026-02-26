@@ -24,8 +24,6 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
-    static let defaultFolderName = "kDrive"
-
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {

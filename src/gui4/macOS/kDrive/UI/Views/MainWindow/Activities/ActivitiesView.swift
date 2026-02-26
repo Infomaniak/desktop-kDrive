@@ -18,7 +18,6 @@
 
 import Combine
 import InfomaniakDI
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
