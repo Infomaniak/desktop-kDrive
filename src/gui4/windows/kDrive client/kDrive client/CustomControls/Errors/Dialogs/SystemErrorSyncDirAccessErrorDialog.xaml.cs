@@ -72,72 +72,15 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
     private async void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
-        Sync? sync = Error.Sync;
-        if (sync is null)
+        var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+        if (frame is null)
         {
-            Logger.Log(Logger.Level.Error, "Sync information is missing for the sync error.");
-            Utility.ShowUnexpectedErrorTeachingTip();
+            Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
             return;
         }
 
-        var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        string desiredFolderName = sync.Drive.Name.StartsWith("kDrive") ? sync.Drive.Name : $"kDrive {sync.Drive.Name}";
-        string desiredPath = Path.Combine(userProfile, desiredFolderName);
-        string? result = await commServices.GetGoodPathForNewSync(sync.Drive, desiredPath, CancellationToken.None);
-        if (result is null)
-        {
-            Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{sync.Drive.Name}'");
-            Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
-            return;
-        }
-
-        NewSync newSync = new() { Drive = sync.Drive, DefaultPath = result, LocalPath = result, RemoteNodeId = sync.RemoteNodeId, RemotePath = sync.RemotePath };
-        await newSync.SelectBestVfsMode();
-        var excludedNodeIds = await sync.GetExcludedNodeIds();
-        if (excludedNodeIds is not null)
-        {
-            newSync.ExcludedNodeIds.AddRange(excludedNodeIds);
-        }
-        else
-        {
-            Logger.Log(Logger.Level.Error, $"Failed to get excluded node IDs for drive '{sync.Drive.Name}', the sync setup dialog will proceed without excluding any nodes.");
-        }
-
-        List<NewSync> newSyncs = new() { newSync };
-
-        var currentDialog = this.Parent as ContentDialog;
-        if (currentDialog is not null)
-        {
-            currentDialog.Hide();
-        }
-        else
-        {
-            Logger.Log(Logger.Level.Warning, "The sync setup dialog could not be closed before opening the new sync setup dialog.");
-            Utility.ShowUnexpectedErrorTeachingTip();
-            return;
-        }
-
-        CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
-        await dialog.ShowAsync();
-
-        if (dialog.Result == CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled)
-        {
-            Logger.Log(Logger.Level.Info, $"User canceled main sync setup for drive '{sync.Drive.Name}'");
-            return;
-        }
-
-        var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-
-        Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
-        if (!await commService.AddSync(newSync, CancellationToken.None))
-        {
-            Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive '{sync.Drive.Name}'");
-            Utility.ShowUnexpectedErrorTeachingTip();
-            return;
-        }
-
-
+        var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
+        frame.Navigate(destPage, Error.Sync?.Drive);
     }
 
     private async void FaqHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)

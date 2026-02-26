@@ -43,15 +43,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string? absolutPath = Path.GetDirectoryName(Error.Sync?.LocalPath ?? "") ?? Error.Sync?.LocalPath;
-                if (string.IsNullOrEmpty(absolutPath))
+                var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+                if(frame is null)
                 {
-                    Utility.ShowUnexpectedErrorTeachingTip();
+                    Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
+                    return;
                 }
-                else
-                {
-                    await Utility.OpenFolderSecurely(absolutPath);
-                }
+
+                var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
+                frame.Navigate(destPage, Error.Sync?.Drive);
             }
         }
     }
