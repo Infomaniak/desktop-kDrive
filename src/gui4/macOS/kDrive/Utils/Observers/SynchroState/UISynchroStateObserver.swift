@@ -23,13 +23,20 @@ import kDriveCoreUI
 import OrderedCollections
 import SwiftUI
 
-public struct UISynchroState: Sendable {
+public struct UISynchroState: Sendable, Equatable {
     public let errorCount: Int
     public let status: UISynchroStatus
 
     public init(errorCount: Int, status: UISynchroStatus) {
         self.errorCount = errorCount
         self.status = status
+    }
+
+    public init(fromSynchro synchro: Synchro?) {
+        self.init(
+            errorCount: synchro?.errors.count ?? 0,
+            status: UISynchroStatus(syncStatus: synchro?.progress?.syncStatus ?? .Idle) ?? .idle
+        )
     }
 }
 
@@ -71,23 +78,25 @@ public final class UISynchroStateObserver: UISynchroStateObserving {
         Task {
             @InjectService var cache: CoherentCache
             let synchro = await cache.getSynchro(synchroDbId: Int32(synchroDbId))
-            updateStateFromSynchro(synchro)
+            synchroState = UISynchroState(fromSynchro: synchro)
 
             @InjectService var cacheObservable: CoherentCacheObservable
             cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchroDbId))
-                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+                .throttle(for: 0.5, scheduler: RunLoop.main, latest: true)
+                .map { UISynchroState(fromSynchro: $0) }
+                .removeDuplicates()
                 .receive(on: RunLoop.main)
-                .sink { [weak self] synchro in
-                    self?.updateStateFromSynchro(synchro)
+                .sink { [weak self] output in
+                    self?.synchroState = output
                 }
         }
     }
 
     @MainActor
-    private func updateStateFromSynchro(_ synchro: Synchro?) {
+    private func generateStateFromSynchro(_ synchro: Synchro?) -> UISynchroState {
         let errorCount = synchro?.errors.count ?? 0
         let status = synchro?.progress?.syncStatus ?? .Idle
 
-        synchroState = UISynchroState(errorCount: errorCount, status: UISynchroStatus(syncStatus: status) ?? .idle)
+        return UISynchroState(errorCount: errorCount, status: UISynchroStatus(syncStatus: status) ?? .idle)
     }
 }

@@ -66,6 +66,7 @@ public final class UISynchroNodesObserver: UISynchroNodesObserving {
             cancellable = cacheObservable.usersPublisher.synchroNodesPublisher(for: Int32(synchroDbId))
                 .throttle(for: 1, scheduler: RunLoop.main, latest: true)
                 .map { $0.map(UISynchroNodeContext.init) }
+                .removeDuplicates()
                 .receive(on: RunLoop.main)
                 .sink { [weak self] nodeContexts in
                     self?.synchroNodes = nodeContexts
