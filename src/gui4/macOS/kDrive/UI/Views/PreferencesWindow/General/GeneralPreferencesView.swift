@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct GeneralPreferencesView: View {
@@ -25,21 +26,21 @@ struct GeneralPreferencesView: View {
             Section {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Mise à jour")
-                        Text("kDrive 3.7.6 disponible")
+                        Text(KDriveLocalizable.updateSettings)
+                        Text(KDriveLocalizable.updateAvailable("3.7.6"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Button("Mettre à jour") {
+                    Button(KDriveLocalizable.buttonUpdate) {
                         // TODO: Update app
                     }
                 }
 
-                Toggle("Mises à jour automatiques", isOn: .constant(true))
+                Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(true))
 
-                IKLabeledContent("Programme bêta") {
+                IKLabeledContent(KDriveLocalizable.betaSettings) {
                     HStack {
                         Text("Off")
                             .foregroundStyle(.secondary)
@@ -50,7 +51,7 @@ struct GeneralPreferencesView: View {
                     }
                 }
 
-                IKLabeledContent("À propos de kDrive") {
+                IKLabeledContent(KDriveLocalizable.aboutKDrive) {
                     InformationButton {
                         // TODO: Open About kDrive
                     }
@@ -58,41 +59,41 @@ struct GeneralPreferencesView: View {
             }
 
             Section {
-                Picker("Langue", selection: .constant("fr")) {
+                Picker(KDriveLocalizable.languageSetting, selection: .constant("fr")) {
                     Text("Français")
                         .tag("fr")
                 }
 
-                Picker("Notifications", selection: .constant("off")) {
-                    Text("Jamais")
+                Picker(KDriveLocalizable.labelNotifications, selection: .constant("off")) {
+                    Text(KDriveLocalizable.notificationsDisabledNever)
                         .tag("off")
                 }
 
-                Toggle("Ouvrir kDrive au démarrage de l'ordinateur", isOn: .constant(true))
+                Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: .constant(true))
 
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Déplacer les fichiers supprimés dans la corbeille de l’ordinateur")
-                        Text("Certains éléments ne pourront pas être déplacés.")
+                        Text(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting)
+                        Text(KDriveLocalizable.moveDeletedFilesToRecycleBinWarning)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Toggle("Déplacer les fichiers supprimés dans la corbeille de l’ordinateur", isOn: .constant(true))
+                    Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: .constant(true))
                         .labelsHidden()
                 }
             }
 
             Section {
-                IKLabeledContent("Besoin d'aide ?") {
-                    Button("Support") {
+                IKLabeledContent(KDriveLocalizable.needHelpSetting) {
+                    Button(KDriveLocalizable.buttonHelpdesk) {
                         // TODO: Open Support
                     }
                 }
 
-                IKLabeledContent("Aidez-nous à améliorer kDrive") {
-                    Button("Partager une idée") {
+                IKLabeledContent(KDriveLocalizable.feedbackSetting) {
+                    Button(KDriveLocalizable.buttonFeedback) {
                         // TODO: Open Feedback
                     }
                 }

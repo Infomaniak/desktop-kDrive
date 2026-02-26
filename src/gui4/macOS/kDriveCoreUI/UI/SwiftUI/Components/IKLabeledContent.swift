@@ -19,10 +19,10 @@
 import SwiftUI
 
 public struct IKLabeledContent<Content: View>: View {
-    let titleKey: LocalizedStringKey
+    let titleKey: String
     let content: Content
 
-    public init(_ titleKey: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+    public init(_ titleKey: String, @ViewBuilder content: () -> Content) {
         self.titleKey = titleKey
         self.content = content()
     }
