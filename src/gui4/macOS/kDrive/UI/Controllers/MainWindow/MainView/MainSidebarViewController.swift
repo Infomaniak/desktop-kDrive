@@ -131,7 +131,6 @@ final class MainSidebarViewController: NSViewController {
         observableCache.usersPublisher.allSynchrosPublisher()
             .map { UIIndexedSynchroContext(indexedSynchro: $0) }
             .eraseToAnyPublisher()
-            .removeSynchroContextDuplicates(with: [])
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
                 self?.updateSynchrosList(synchroContexts)
                 self?.updateSidebarIfNecessary()
