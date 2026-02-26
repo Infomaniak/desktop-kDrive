@@ -39,7 +39,7 @@
             <!-- Item infos -->
             <controls:ItemNamePresenter ItemPath="{x:Bind Error.Path , Mode=OneWay}"
                                         NodeType="{x:Bind Error.NodeType}"
-                                        Visibility="{x:Bind IsNodeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        Visibility="{x:Bind HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </StackPanel>
         <!-- Description & CustomContent-->
         <StackPanel Grid.Row="1"

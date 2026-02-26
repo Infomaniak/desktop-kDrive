@@ -27,7 +27,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set
             {
                 SetValue(ErrorProperty, value);
-                IsNodeError = value?.ErrorLevel == Types.ErrorLevel.Node;
             }
         }
 
@@ -51,7 +50,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(CustomContentProperty, value); }
         }
 
-        private bool IsNodeError { get; set; } = false;
+        private bool HasItemPath => Error?.Path.Length > 0;
 
         public delegate void ActionClickEventHandler(object sender, RoutedEventArgs e);
         public event ActionClickEventHandler? ActionClick;

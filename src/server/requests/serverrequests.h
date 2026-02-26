@@ -173,7 +173,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
-        static ExitCode checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error);
+        static ExitInfo checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);

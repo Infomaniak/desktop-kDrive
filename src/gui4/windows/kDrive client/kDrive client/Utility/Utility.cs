@@ -118,12 +118,6 @@ namespace Infomaniak.kDrive
                 return false;
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
-            {
-                Logger.Log(Logger.Level.Warning, $"The parent directory does not exist for the specified folder: {fullPath}");
-                return false;
-            }
-
             if (!Directory.Exists(fullPath))
             {
                 await Launcher.LaunchFolderPathAsync(Path.GetDirectoryName(fullPath));
@@ -286,10 +280,12 @@ namespace Infomaniak.kDrive
 
         public static void ShowUnexpectedErrorTeachingTip()
         {
+            Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
             ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
         }
 
         private static TeachingTip? _currentTeachingTip;
+        private static DispatcherQueueTimer? _autoCloseTimer;
 
         /*
          *  This method shows a TeachingTip with localized content based on the provided translation key prefix.
@@ -322,19 +318,22 @@ namespace Infomaniak.kDrive
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString(titleKey),
-                Subtitle = Localizer.Instance.IsValidKey(subtitleKey) ? Localizer.Instance.GetString(subtitleKey!) : "",
-                Content = Localizer.Instance.IsValidKey(contentKey) ? new TextBlock
-                {
-                    Text = Localizer.Instance.GetString(contentKey!),
-                    TextWrapping = TextWrapping.Wrap
-                } : "",
+                Subtitle = Localizer.Instance.IsValidKey(subtitleKey)
+                    ? Localizer.Instance.GetString(subtitleKey!)
+                    : string.Empty,
+                Content = Localizer.Instance.IsValidKey(contentKey)
+                    ? new TextBlock
+                    {
+                        Text = Localizer.Instance.GetString(contentKey!),
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                    : null,
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };
 
             teachingTip.Closed += TeachingTip_Closed;
 
-            // Attach to visual tree
             if (xamlRoot.Content is Panel panel)
             {
                 panel.Children.Add(teachingTip);
@@ -342,20 +341,37 @@ namespace Infomaniak.kDrive
 
             _currentTeachingTip = teachingTip;
             teachingTip.IsOpen = true;
+
+            // ---- Auto close after 5 seconds ----
+            _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+            _autoCloseTimer.Interval = TimeSpan.FromSeconds(5);
+            _autoCloseTimer.IsRepeating = false;
+            _autoCloseTimer.Tick += (_, _) =>
+            {
+                if (_currentTeachingTip?.IsOpen == true)
+                {
+                    _currentTeachingTip.IsOpen = false;
+                }
+
+                _autoCloseTimer?.Stop();
+                _autoCloseTimer = null;
+            };
+            _autoCloseTimer.Start();
         }
 
         private static void CloseCurrentTeachingTip()
         {
+            _autoCloseTimer?.Stop();
+            _autoCloseTimer = null;
+
             if (_currentTeachingTip is null)
                 return;
 
             _currentTeachingTip.IsOpen = false;
-            // Actual removal happens in Closed handler
         }
 
         private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
         {
-            // Detach from visual tree
             if (VisualTreeHelper.GetParent(sender) is Panel panel)
             {
                 panel.Children.Remove(sender);

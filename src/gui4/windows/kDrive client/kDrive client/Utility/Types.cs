@@ -5,7 +5,10 @@ global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;
 using Infomaniak.kDrive.ViewModels;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows.Documents;
 
 
 namespace Infomaniak.kDrive.Types
@@ -136,6 +139,8 @@ namespace Infomaniak.kDrive.Types
         public SyncPath RemotePath { get; }
         public NodeId RemoteNodeId { get; }
         public SyncType SyncType { get; }
+
+        public Task<List<NodeId>?> GetExcludedNodeIds();
     }
 }
 

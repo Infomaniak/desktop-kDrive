@@ -68,119 +68,122 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             // Inconsistency errors
             await CreateAndEnqueueError(syncDbId, InconsistencyType.ForbiddenChar, "file_with_forbidden_char<>.txt");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.ForbiddenCharEndWithSpace, "filename with space.txt ");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.ReservedName, "CON");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.NameLength, "very_long_filename_" + new string('x', 250) + ".txt");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.PathLength, "folder/" + new string('f', 300) + "/file.txt");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.NotYetSupportedChar, "file_with_emoji_😀.txt");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, InconsistencyType.ForbiddenCharOnlySpaces, "     ");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             // Cancel/Operation errors
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.Create);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.Edit);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.Move, path: "original_location/file.txt", destinationPath: "new_location/file.txt");
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.Delete);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.TmpBlacklisted);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.ExcludedByTemplate);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.Hardlink);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, cancelType: CancelType.FileRescued);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             // BackError errors
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.HttpErrForbidden);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.FileTooBig);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.QuotaExceeded);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.BackError, exitCause: ExitCause.FileLocked);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             // SystemError errors
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.SystemError, exitCause: ExitCause.FileAccessError);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueError(syncDbId, exitCode: ExitCode.SystemError, exitCause: ExitCause.NotEnoughDiskSpace);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             // SyncPal errors
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.NetworkError, ExitCause.SocketsDefuncted);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.NetworkError, ExitCause.NetworkTimeout);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.DataError, ExitCause.SyncDirChanged);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.DataError, ExitCause.InvalidSnapshot);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveMaintenance);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveNotRenew);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveWakingUp);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveAsleep);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.BackError, ExitCause.DriveAccessError);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.SyncDirAccessError);
-            await Task.Delay(300);
+            await Task.Delay(50);
+
+            await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.SyncDirDiskMissing);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.NotEnoughDiskSpace);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.UnableToStartVfs);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.SystemError, ExitCause.FileOrDirectoryCorrupted);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.InvalidSync, ExitCause.SyncDirNestingError);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.InvalidSync, ExitCause.SyncDirAccessError);
-            await Task.Delay(300);
+            await Task.Delay(50);
 
             await CreateAndEnqueueSyncPalError(syncDbId, ExitCode.LogicError, ExitCause.FullListParsingError);
-            await Task.Delay(300);
+            await Task.Delay(50);
         }
 
         private Task CreateAndEnqueueError(

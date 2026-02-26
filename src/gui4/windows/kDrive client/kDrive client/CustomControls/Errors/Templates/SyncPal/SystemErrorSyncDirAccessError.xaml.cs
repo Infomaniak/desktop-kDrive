@@ -9,7 +9,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.SyncDirAccessError }
+        ExitCauses = new[] { ExitCause.SyncDirAccessError },
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
     )]
     public sealed partial class SystemErrorSyncDirAccessError : UserControl
     {
@@ -18,6 +19,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         {
             this.InitializeComponent();
             Error = error;
+
+            error.Path = Error.Sync?.LocalPath ?? "";
+            error.NodeType = Types.NodeType.Directory;
         }
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -31,12 +35,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("systemErrorSyncDirAccessErrorTitle"),
-                Content = Localizer.Instance.GetString("localFileAccessErrorDialogOpenParentFolder"),
                 DefaultButton = ContentDialogButton.Primary,
                 SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
             };
-            dialog.Content = new LocalAccessErrorDialog(Error) { XamlRoot = xamlRoot };
+            dialog.Content = new SystemErrorSyncDirAccessErrorDialog(Error) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

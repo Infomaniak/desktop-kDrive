@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
+  Exported at: Thu, 26 Feb 2026 16:43:19 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -191,6 +191,9 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonCreateAccount" xml:space="preserve"> 
     <value>Create an account</value> 
   </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Create a new synchronization</value> 
+  </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Default location</value> 
   </data> 
@@ -251,6 +254,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Release notes</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Resume synchronization</value> 
   </data> 
   <data name="buttonRestartSynchro" xml:space="preserve"> 
     <value>Restart synchronization</value> 
@@ -348,6 +354,12 @@ If the problem continues, please contact our support team.</value>
   <data name="deleteCancelErrorTitle" xml:space="preserve"> 
     <value>Deletion cancelled</value> 
   </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>In these situations, a new synchronization is required to continue using kDrive correctly.</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangedTitle" xml:space="preserve"> 
+    <value>A change has been detected in your configuration.</value> 
+  </data> 
   <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
     <value>Please select an empty folder that is not in the root of a drive.
 
@@ -413,6 +425,15 @@ Do not close the application during the process.</value>
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Change the synchronization mode?</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Here's how to restore synchronization:</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>The disk containing your synchronization folder is no longer connected</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Reconnect to resume synchronization.</value> 
   </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
     <value>Disable notifications</value> 
@@ -700,14 +721,45 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="joinBetaProgram" xml:space="preserve"> 
     <value>Join the beta program</value> 
   </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ ago</value> 
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
   </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Create a %@.</value> 
+    <comment>use in pair with: labelNewSync</comment> 
+  </data> 
+  <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
+    <value>External disk disconnected</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Folder</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Deleted folder</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Moved or modified folder</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>The folder may have been moved to another disk and then returned to its original location.</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Moved or renamed folder</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Recreated or replaced folder</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>The folder has been deleted and recreated, or replaced by another folder with the same name.</value> 
   </data> 
   <data name="labelGigaBytes" xml:space="preserve"> 
     <value>Gb</value> 
@@ -727,8 +779,24 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
   </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>New device detected</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>You're using kDrive on a new computer, after restoring from a backup.</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>new synchronization</value> 
+    <comment>use in pair with:  labelCreateNewSync</comment> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Original location :</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Return it to its original position.</value> 
   </data> 
   <data name="labelRules" xml:space="preserve"> 
     <value>Rules</value> 
@@ -1213,6 +1281,12 @@ Synchronization has been paused. Please free up some space and try again.</value
   </data> 
   <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
     <value>Synchronization folder inaccessible</value> 
+  </data> 
+  <data name="systemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>This folder is no longer accessible. An action is required to resume synchronization.</value> 
+  </data> 
+  <data name="systemErrorSyncDirMissingErrorTitle" xml:space="preserve"> 
+    <value>Synchronization folder not found</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>The Lite Sync extension may not be installed, or the Windows Search service might be disabled.

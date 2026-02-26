@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 25 Feb 2026 14:17:13 +0100 
+  Exported at: Thu, 26 Feb 2026 16:43:19 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -191,6 +191,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonCreateAccount" xml:space="preserve"> 
     <value>Ein Konto erstellen</value> 
   </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Eine neue Synchronisation erstellen</value> 
+  </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Standard-Speicherort</value> 
   </data> 
@@ -251,6 +254,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Anmerkungen zur Veröffentlichung</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Synchronisation fortsetzen</value> 
   </data> 
   <data name="buttonRestartSynchro" xml:space="preserve"> 
     <value>Synchronisierung neu starten</value> 
@@ -348,6 +354,12 @@ Wenn das Problem weiterhin besteht, wenden Sie sich bitte an unser Support-Team.
   <data name="deleteCancelErrorTitle" xml:space="preserve"> 
     <value>Löschung aufgehoben</value> 
   </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>In diesen Situationen ist eine erneute Synchronisierung erforderlich, um kDrive weiterhin korrekt zu nutzen.</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangedTitle" xml:space="preserve"> 
+    <value>In Ihrer Konfiguration wurde eine Änderung festgestellt.</value> 
+  </data> 
   <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
     <value>Bitte wählen Sie einen leeren Ordner, der sich nicht im Stammverzeichnis eines Laufwerks befindet.
 
@@ -413,6 +425,15 @@ Schliessen Sie die Anwendung während des Vorgangs nicht.</value>
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Ändern Sie den Synchronisationsmodus?</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>So stellen Sie die Synchronisation wieder her :</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>Das Laufwerk mit Ihrem Synchronisationsordner ist nicht mehr angeschlossen</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Verbinden Sie ihn erneut, um die Synchronisierung fortzusetzen.</value> 
   </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
     <value>Benachrichtigungen deaktivieren</value> 
@@ -700,14 +721,45 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   <data name="joinBetaProgram" xml:space="preserve"> 
     <value>Nehmen Sie am Beta-Programm teil</value> 
   </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>vor %@</value> 
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
   </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Erstellen Sie eine %@.</value> 
+    <comment>use in pair with: labelNewSync</comment> 
+  </data> 
+  <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
+    <value>Externes Laufwerk getrennt</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Mappe</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Gelöschter Ordner</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Ordner verschoben oder verändert</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>Der Ordner wurde vielleicht auf ein anderes Laufwerk verschoben und dann wieder an seinen ursprünglichen Ort zurückgebracht.</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Ordner verschoben oder umbenannt</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Ordner neu erstellt oder ersetzt</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>Der Ordner wurde gelöscht und dann neu erstellt oder durch einen anderen Ordner mit demselben Namen ersetzt.</value> 
   </data> 
   <data name="labelGigaBytes" xml:space="preserve"> 
     <value>Gb</value> 
@@ -727,8 +779,24 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
   </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>Neues Gerät erkannt</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>Sie verwenden kDrive auf einem neuen Computer, nachdem Sie von einem Backup wiederhergestellt haben.</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>neue Synchronisation</value> 
+    <comment>use in pair with:  labelCreateNewSync</comment> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Benachrichtigung</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Ursprünglicher Standort :</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Legen Sie es wieder an seinen ursprünglichen Platz zurück.</value> 
   </data> 
   <data name="labelRules" xml:space="preserve"> 
     <value>Regeln</value> 
@@ -1213,6 +1281,12 @@ Die Synchronisierung wurde pausiert. Bitte geben Sie etwas Speicherplatz frei un
   </data> 
   <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
     <value>Synchronisationsordner nicht erreichbar</value> 
+  </data> 
+  <data name="systemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>Auf diesen Ordner kann nicht mehr zugegriffen werden. Es ist eine Aktion erforderlich, um die Synchronisierung wieder aufzunehmen.</value> 
+  </data> 
+  <data name="systemErrorSyncDirMissingErrorTitle" xml:space="preserve"> 
+    <value>Synchronisationsordner nicht gefunden</value> 
   </data> 
   <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
     <value>Die Lite Sync-Erweiterung ist möglicherweise nicht installiert, oder der Windows-Suchdienst ist deaktiviert.

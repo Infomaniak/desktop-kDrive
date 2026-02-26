@@ -116,6 +116,12 @@
     <Page Update="CustomControls\ErrorBar.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirChangedErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirDiskMissingErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\ErrorPresenter.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -188,13 +194,16 @@
     <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorSyncDirDiskMissing.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\UnknownError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\NetworkErrorOther.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\BackErrorDriveMaintenance.xaml">
@@ -301,7 +310,6 @@
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
     <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
-    <Folder Include="CustomControls\Errors\Dialogs\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">

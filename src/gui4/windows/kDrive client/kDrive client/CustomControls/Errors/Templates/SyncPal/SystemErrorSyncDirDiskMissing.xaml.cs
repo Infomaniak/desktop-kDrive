@@ -8,14 +8,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
-        ExitCodes = new[] { ExitCode.DataError },
-        ExitCauses = new[] { ExitCause.SyncDirChanged },
+        ExitCodes = new[] { ExitCode.SystemError },
+        ExitCauses = new[] { ExitCause.SyncDirDiskMissing },
         NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
     )]
-    public sealed partial class DataErrorSyncDirChanged : UserControl
+    public sealed partial class SystemErrorSyncDirDiskMissing : UserControl
     {
         private Error Error { get; init; }
-        public DataErrorSyncDirChanged(Error error)
+        public SystemErrorSyncDirDiskMissing(Error error)
         {
             this.InitializeComponent();
             Error = error;
@@ -34,12 +34,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString("dialogDataErrorSyncDirChangedTitle"),
+                Title = Localizer.Instance.GetString("systemErrorSyncDirMissingErrorTitle"),
                 DefaultButton = ContentDialogButton.Primary,
                 SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
-                PrimaryButtonText = Localizer.Instance.GetString("buttonCreateNewSync"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonRestartSync"),
             };
-            dialog.Content = new SystemErrorSyncDirChangedErrorDialog(Error) { XamlRoot = xamlRoot };
+            dialog.Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

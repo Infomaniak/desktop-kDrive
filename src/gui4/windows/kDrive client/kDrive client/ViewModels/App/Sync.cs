@@ -21,6 +21,7 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -298,5 +299,12 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             });
         }
+
+        public async Task<List<NodeId>?> GetExcludedNodeIds()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
+        }
+
     }
 }

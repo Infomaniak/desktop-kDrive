@@ -19,9 +19,11 @@
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -58,7 +60,8 @@ namespace Infomaniak.kDrive.ViewModels
         public string LocalPath
         {
             get => _localPath;
-            set { 
+            set
+            {
                 SetPropertyInUIThread(ref _localPath, value);
                 IsDefaultLocalPath = _localPath == _defaultPath;
             }
@@ -107,5 +110,11 @@ namespace Infomaniak.kDrive.ViewModels
 
             SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
+
+        public Task<List<NodeId>?> GetExcludedNodeIds()
+        {
+            return Task.FromResult(new List<NodeId>(ExcludedNodeIds));
+        }
+
     }
 }
