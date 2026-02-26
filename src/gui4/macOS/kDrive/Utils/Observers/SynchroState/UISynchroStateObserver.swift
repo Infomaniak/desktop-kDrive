@@ -91,12 +91,4 @@ public final class UISynchroStateObserver: UISynchroStateObserving {
                 }
         }
     }
-
-    @MainActor
-    private func generateStateFromSynchro(_ synchro: Synchro?) -> UISynchroState {
-        let errorCount = synchro?.errors.count ?? 0
-        let status = synchro?.progress?.syncStatus ?? .Idle
-
-        return UISynchroState(errorCount: errorCount, status: UISynchroStatus(syncStatus: status) ?? .idle)
-    }
 }
