@@ -135,7 +135,7 @@ struct SynchroStatusView: View {
     }
 
     /// We use a random image to serve as a redacted view
-    @ViewBuilder private var redactedAnimation: some View {
+    private var redactedAnimation: some View {
         KDriveResources.checkmark.swiftUIImage
             .resizable()
     }
