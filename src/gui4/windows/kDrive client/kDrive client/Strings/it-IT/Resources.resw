@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 16:43:19 +0100 
+  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -151,6 +151,9 @@
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Ottenete l’accesso anticipato alle nuove versioni dell’applicazione prima che vengano rilasciate al pubblico e contribuite a migliorare l’applicazione condividendo con noi le vostre idee di miglioramento.</value> 
+  </data> 
+  <data name="betaSettings" xml:space="preserve"> 
+    <value>Programma beta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Il browser dovrebbe aprirsi automaticamente per completare l’accesso. Una volta effettuato l’accesso, si tornerà automaticamente a kDrive.</value> 
@@ -716,9 +719,6 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Questo articolo non è disponibile su questo dispositivo. Si aprirà nel browser.</value> 
   </data> 
-  <data name="joinBetaProgram" xml:space="preserve"> 
-    <value>Partecipare al programma beta</value> 
-  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
   </data> 
@@ -831,6 +831,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Sincronizzato dal computer</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Cartelle di sincronizzazione</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Posizione</value> 

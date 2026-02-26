@@ -16,13 +16,24 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
         public static UserControl CreateErrorControl(Error error)
         {
-            var candidates = GetCandidates();
-            if (candidates == null)
+            var matchType = GetBestControlType(error);
+            if(matchType is null)
             {
-                Logger.Log(Logger.Level.Error, "No candidates found for error control creation.");
+                Logger.Log(Logger.Level.Warning, $"No matching control type found for error: {error}. Returning default error control.");
                 return new DefaultError(error);
             }
 
+            return (UserControl)Activator.CreateInstance(matchType, error)!;
+        }
+
+        public static Type? GetBestControlType(Error error)
+        {
+            var candidates = GetCandidates();
+            if (candidates == null)
+            {
+                Logger.Log(Logger.Level.Error, "No candidates found for best control type retrieval.");
+                return null;
+            }
             // Try to find a perfect match
             var perfectMatch = candidates
                 .Select(c => (c.type, c.meta)).Where(c =>
@@ -33,19 +44,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 c.meta.ConflictTypes.Contains(error.ConflictType) &&
                 c.meta.InconsistencyTypes.Contains(error.InconsistencyType) &&
                 c.meta.CancelTypes.Contains(error.CancelType));
-
             if (!perfectMatch.Any())
             {
-                Logger.Log(Logger.Level.Warning, $"No perfect match found for error control creation (error: {error}). Using default error control.");
-                return new DefaultError(error);
+                Logger.Log(Logger.Level.Warning, $"No perfect match found for best control type retrieval (error: {error}).");
+                return null;
             }
             else if (perfectMatch.Count() > 1)
             {
-                Logger.Log(Logger.Level.Error, $"Multiple perfect matches found for error control creation (error: {error}). Using the first match ${perfectMatch.First().type.FullName}.");
+                Logger.Log(Logger.Level.Error, $"Multiple perfect matches found for best control type retrieval (error: {error}). Returning the first match ${perfectMatch.First().type.FullName}.");
             }
-
-            var matchType = perfectMatch.First().type;
-            return (UserControl)Activator.CreateInstance(matchType, error)!;
+            return perfectMatch.First().type;
         }
 
         private static (Type type, ErrorMetadataAttribute meta)[] GetCandidates()

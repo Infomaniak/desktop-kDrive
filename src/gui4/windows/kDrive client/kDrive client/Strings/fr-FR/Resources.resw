@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 16:43:19 +0100 
+  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -151,6 +151,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.</value> 
+  </data> 
+  <data name="betaSettings" xml:space="preserve"> 
+    <value>Programme bêta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Votre navigateur devrait s’ouvrir automatiquement pour terminer la connexion. Une fois connecté, vous reviendrez automatiquement à kDrive.</value> 
@@ -716,9 +719,6 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Cet élément n’est pas disponible sur cet appareil. Il s’ouvrira dans votre navigateur.</value> 
   </data> 
-  <data name="joinBetaProgram" xml:space="preserve"> 
-    <value>Rejoindre le programme bêta</value> 
-  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Droits d’accès modifiés</value> 
   </data> 
@@ -831,6 +831,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Synchronisé à partir de votre ordinateur</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Dossiers de synchronisation</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Localisation</value> 

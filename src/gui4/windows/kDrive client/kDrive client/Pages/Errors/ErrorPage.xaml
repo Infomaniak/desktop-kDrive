@@ -71,6 +71,11 @@
                                   Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
                                   Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
+                <errors:ErrorList Grid.Row="1"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncFolder')}"
+                                  Errors="{x:Bind _errorPageVM.SyncDirErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.SyncDirErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
                 <errors:ErrorList Grid.Row="2"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
                                   Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"

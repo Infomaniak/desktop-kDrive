@@ -1,6 +1,7 @@
 ﻿using DynamicData;
 using DynamicData.Binding;
 using ExCSS;
+using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
@@ -92,7 +93,19 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private static bool IsInSyncDirErrorList(Error error)
         {
-            return false; //error.ErrorLevel == ErrorLevel.SyncPal;
+            // List of Types of errors to be included in the SyncDirErrors list:
+            List<Type> syncDirErrorTypes = new List<Type>
+            {
+                typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirAccessError),
+                typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirDiskMissing),
+                typeof(CustomControls.Errors.Templates.SyncPal.DataErrorSyncDirChanged)
+            };
+
+            Type? errorType = ErrorFactory.GetBestControlType(error);
+            if(errorType is null) {
+                return false;
+            }
+            return syncDirErrorTypes.Contains(errorType);
         }
 
         private static bool IsInOtherErrorList(Error error)

@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 16:43:19 +0100 
+  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -151,6 +151,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Obtenga acceso anticipado a las nuevas versiones de la aplicación antes de que se lancen al público en general y ayude a mejorar la aplicación compartiendo con nosotros sus ideas de mejora.</value> 
+  </data> 
+  <data name="betaSettings" xml:space="preserve"> 
+    <value>Programa beta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Su navegador debería abrirse automáticamente para completar el inicio de sesión. Una vez iniciada la sesión, volverá automáticamente a kDrive.</value> 
@@ -718,9 +721,6 @@ Por favor, restaure la carpeta, asegúrese de que tiene los derechos de acceso n
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Este artículo no está disponible en este dispositivo. Se abrirá en su navegador.</value> 
   </data> 
-  <data name="joinBetaProgram" xml:space="preserve"> 
-    <value>Únase al programa beta</value> 
-  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
   </data> 
@@ -833,6 +833,9 @@ Por favor, restaure la carpeta, asegúrese de que tiene los derechos de acceso n
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Sincronizado desde el ordenador</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Carpetas de sincronización</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Ubicación</value> 
