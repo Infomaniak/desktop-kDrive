@@ -4,11 +4,15 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Feb 2026 08:46:58 +0100
+ * Exported at: Thu, 26 Feb 2026 16:56:20 +0100
  */
+
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "Non è stato possibile sincronizzare alcuni file.";
+
+/* loco:698b3c0d8004546e240eb2d2 */
+"aboutKDrive" = "Informazioni su kDrive";
 
 /* loco:6981b68c6d1056609e079525 */
 "accessibilityActivityTypePicker" = "Attività visibili";
@@ -34,6 +38,11 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo la mia attività";
 
+/* loco:698af0b429d5e005bc08dfb2 */
+"automaticUpdatesSetting" = "Aggiornamenti automatici";
+
+/* loco:698af16617408ac0d8026b12 */
+"betaSettings" = "Programma beta";
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Aggiungere l’archiviazione";
 
@@ -52,11 +61,17 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
 
+/* loco:6992eca9a8cb168fe70c0922 */
+"buttonFeedback" = "Condividere un’idea";
+
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Installazione finale";
 
 /* loco:698052d464e4b53cef0e9272 */
 "buttonFixErrors" = "Correggere gli errori";
+
+/* loco:6992eabc63e4de22f10535b2 */
+"buttonHelpdesk" = "Supporto";
 
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "Ho attivato kDrive";
@@ -100,6 +115,9 @@
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Iniziare gratuitamente";
 
+/* loco:698aec47dbcc2bef330cf7a9 */
+"buttonUpdate" = "Aggiornamento";
+
 /* loco:697b6767849b0ee24c089f46 */
 "buttonUpdateSubscription" = "Aggiornamento dell’abbonamento";
 
@@ -108,6 +126,7 @@
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
+
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Non si ha l’autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l’amministratore.";
 
@@ -146,6 +165,10 @@
 
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Sembra che non riusciamo a caricare l'applicazione…";
+
+/* loco:6992ec7abaf88a24990d3e13 */
+"feedbackSetting" = "Aiutaci a migliorare kDrive";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Preferiti";
 
@@ -214,8 +237,12 @@
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
 "labelJustNow" = "Solo ora";
+
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nome";
+
+/* loco:698b5869ab41083f11042b52 */
+"labelNotifications" = "Notifica";
 
 /* loco:6989ff974ef31503cb002e23 */
 "labelSize" = "Dimensione";
@@ -225,8 +252,25 @@
 
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Tempo";
+
+/* loco:698b0dd551a7a263e6030a72 */
+"languageSetting" = "Lingua";
+
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboard" = "Link copiato negli appunti";
+
+/* loco:698b11f969e305d1ce01e062 */
+"moveDeletedFilesToRecycleBinSetting" = "Spostare i file eliminati nel cestino del computer";
+
+/* loco:698b1273e77c157c0d065892 */
+"moveDeletedFilesToRecycleBinWarning" = "Alcuni articoli non possono essere spostati.";
+
+/* loco:6992e9f20953b626df05ffc2 */
+"needHelpSetting" = "Avete bisogno di aiuto?";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Mai";
+
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizzare kDrive nelle impostazioni di macOS:";
 
@@ -286,6 +330,9 @@
 
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingWindowTitle" = "Benvenuti in kDrive";
+
+/* loco:698b0ee1587496f4f5035cd2 */
+"openKDriveAtStartupSetting" = "Aprire kDrive all’avvio del computer";
 
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Conti";
@@ -385,3 +432,10 @@
 
 /* loco:6981e8f0f994e5f7bc040692 */
 "unavailableContentNoActivityTitle" = "Nessuna attività recente";
+
+/* loco:698af3afefd229ca780c59e2 */
+"updateAvailable" = "kDrive %@ disponibile";
+
+/* loco:698aec0b7bde6b6260001c02 */
+"updateSettings" = "Aggiornamento";
+
