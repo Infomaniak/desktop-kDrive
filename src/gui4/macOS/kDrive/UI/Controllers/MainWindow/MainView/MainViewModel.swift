@@ -31,8 +31,8 @@ final class MainViewModel: ObservableObject {
 
     @LazyInjectService private var router: MainViewRouter
 
-    @LazyInjectService private var synchroStateObserver: SynchroStateObserving
-    @LazyInjectService private var synchroNodesObserver: SynchroNodesObserving
+    @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
+    @LazyInjectService private var synchroNodesObserver: UISynchroNodesObserving
 
     @Published private(set) var currentSynchroContext: UISynchroContext? {
         didSet {

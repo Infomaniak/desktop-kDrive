@@ -42,11 +42,11 @@ final class DriveTargetAssembly: TargetAssembly {
             Factory(type: SidebarNotificationPresenting.self) { _, _ in
                 SidebarNotificationPresenter()
             },
-            Factory(type: SynchroStateObserving.self) { _, _ in
-                SynchroStateObserver()
+            Factory(type: UISynchroStateObserving.self) { _, _ in
+                UISynchroStateObserver()
             },
-            Factory(type: SynchroNodesObserving.self) { _, _ in
-                SynchroNodesObserver()
+            Factory(type: UISynchroNodesObserving.self) { _, _ in
+                UISynchroNodesObserver()
             }
         ]
     }
