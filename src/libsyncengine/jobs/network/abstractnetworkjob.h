@@ -135,11 +135,11 @@ class AbstractNetworkJob : public SyncJob {
          * @brief Try to extract the waiting time from the reply header. Especially useful when receiving a 429 error.
          * @return The waiting in milliseconds if found. -1 otherwise.
          */
-        int64_t extractWaitingTime();
+        int extractWaitingTime();
 
         const std::string _requestUuid;
 
-        int64_t _sleepTime = 500; // By default, wait for 500ms before retrying to send a requests
+        int _sleepTime = 500; // By default, wait for 500ms before retrying to send a requests
 
         static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;
