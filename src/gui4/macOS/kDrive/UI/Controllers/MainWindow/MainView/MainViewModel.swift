@@ -57,8 +57,8 @@ final class MainViewModel: ObservableObject {
         return currentSynchroContext?.synchro
     }
 
-    var currentBlockingError: UIBlockingError? {
-        return currentSynchroContext?.blockingError
+    var currentSynchroError: UISynchroError? {
+        return currentSynchroContext?.synchroError
     }
 
     private var bindStore = Set<AnyCancellable>()
@@ -92,7 +92,8 @@ final class MainViewModel: ObservableObject {
     private func handleUpdatedSynchroContexts(_ context: UIIndexedSynchroContext) {
         updateCurrentSynchro(context)
 
-        if currentBlockingError != nil {
+        if let currentSynchroError,
+           currentSynchroError.isBlocking {
             router.setCurrentTab(.blockingError)
         } else if router.currentPath.mainTab == .blockingError {
             router.setCurrentTab(.home)

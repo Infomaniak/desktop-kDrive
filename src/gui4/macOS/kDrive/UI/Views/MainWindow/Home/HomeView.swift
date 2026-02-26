@@ -18,6 +18,7 @@
 
 import Combine
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import OrderedCollections
 import SwiftUI
@@ -60,7 +61,10 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if synchroState.errorCount > 0 {
+            if let synchroError = mainViewModel.currentSynchroError,
+               synchroError.error == .quota {
+                DriveFullInformationBlockView(quotaError: synchroError)
+            } else if synchroState.errorCount > 0 {
                 SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
 

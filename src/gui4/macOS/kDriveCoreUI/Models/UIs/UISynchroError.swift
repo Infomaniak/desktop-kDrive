@@ -21,11 +21,12 @@ import kDriveCore
 import kDriveResources
 import SwiftUI
 
-public struct UIBlockingError: Sendable, Equatable {
+public struct UISynchroError: Sendable, Equatable {
     public let title: String
     public let subtitle: String?
     public let actionTitle: String?
     public let isLoading: Bool
+    public let isBlocking: Bool
 
     public let drive: UIDrive
 
@@ -35,7 +36,7 @@ public struct UIBlockingError: Sendable, Equatable {
 
     public let error: SynchroError
 
-    public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: SynchroError) {
+    public init(uiDrive: UIDrive, error: SynchroError) {
         drive = uiDrive
         self.error = error
 
@@ -45,6 +46,7 @@ public struct UIBlockingError: Sendable, Equatable {
             subtitle = nil
             actionTitle = KDriveLocalizable.buttonWakeUp
             isLoading = false
+            isBlocking = true
             badgeIcon = KDriveResources.moonSleep.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.security.asColor
             badgeColor = ColorToken.Status.Medium.security.asColor
@@ -53,11 +55,12 @@ public struct UIBlockingError: Sendable, Equatable {
             subtitle = KDriveLocalizable.driveWakingUpErrorDescription
             actionTitle = nil
             isLoading = true
+            isBlocking = true
             badgeIcon = KDriveResources.sun.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.security.asColor
             badgeColor = ColorToken.Status.Medium.security.asColor
         case .notRenew:
-            if isDriveAdmin {
+            if drive.isAdmin {
                 subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
                 actionTitle = KDriveLocalizable.buttonUpdateSubscription
             } else {
@@ -65,6 +68,7 @@ public struct UIBlockingError: Sendable, Equatable {
                 actionTitle = KDriveLocalizable.buttonRefresh
             }
             isLoading = false
+            isBlocking = true
             title = KDriveLocalizable.driveLockedErrorTitle
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
@@ -74,6 +78,7 @@ public struct UIBlockingError: Sendable, Equatable {
             subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
             actionTitle = KDriveLocalizable.buttonRefresh
             isLoading = false
+            isBlocking = true
             badgeIcon = KDriveResources.wrench.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
@@ -82,6 +87,7 @@ public struct UIBlockingError: Sendable, Equatable {
             subtitle = KDriveLocalizable.driveAccessDeniedErrorDescription
             actionTitle = KDriveLocalizable.buttonRetry
             isLoading = false
+            isBlocking = true
             badgeIcon = KDriveResources.warning.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
@@ -90,9 +96,24 @@ public struct UIBlockingError: Sendable, Equatable {
             subtitle = KDriveLocalizable.driveLoggingErrorDescription
             actionTitle = KDriveLocalizable.buttonLogin
             isLoading = false
+            isBlocking = true
             badgeIcon = KDriveResources.doorArrowRight.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.neutral.asColor
             badgeColor = ColorToken.Status.Medium.neutral.asColor
+        case .quota:
+            title = KDriveLocalizable.informationBlockKDriveFullTitle
+            subtitle = KDriveLocalizable.informationBlockKDriveFullSubtitle
+            if drive.isAdmin {
+                actionTitle = KDriveLocalizable.buttonAddStorage
+            } else {
+                actionTitle = nil
+            }
+
+            isLoading = false
+            isBlocking = false
+            badgeIcon = KDriveResources.hardDiskDrive.swiftUIImage
+            badgeBackgroundColor = ColorToken.Accent.secondary.asColor
+            badgeColor = .white
         }
     }
 
@@ -101,6 +122,6 @@ public struct UIBlockingError: Sendable, Equatable {
             return nil
         }
 
-        self.init(uiDrive: UIDrive(drive: drive), isDriveAdmin: drive.admin, error: error)
+        self.init(uiDrive: UIDrive(drive: drive), error: error)
     }
 }

@@ -21,11 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
-    let blockingError: UIBlockingError
-
-    init(blockingError: UIBlockingError) {
-        self.blockingError = blockingError
-    }
+    let blockingError: UISynchroError
 
     var body: some View {
         VStack(spacing: 0) {

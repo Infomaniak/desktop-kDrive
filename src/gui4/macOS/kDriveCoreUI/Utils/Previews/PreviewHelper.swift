@@ -23,7 +23,7 @@ import OrderedCollections
 import SwiftUI
 
 private final class PreviewBundle {
-    /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
+    /*  Meant to access kDriveCoreUI bundle in `PreviewHelper` */
 }
 
 public enum PreviewHelper {
@@ -34,7 +34,7 @@ public enum PreviewHelper {
         drive: PreviewHelper.drive1,
         account: PreviewHelper.account,
         user: PreviewHelper.user,
-        blockingError: nil
+        synchroError: nil
     )
 
     public static let synchroNodeContext = UISynchroNodeContext(
@@ -62,12 +62,14 @@ public enum PreviewHelper {
         dbId: 1,
         driveId: 1,
         name: "Tim Drive",
+        isAdmin: true,
         hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
         name: "Drive Pro Max",
+        isAdmin: false,
         hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
 
@@ -133,7 +135,7 @@ public enum PreviewHelper {
         syncDate: .now.addingTimeInterval(-3600)
     )
 
-    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
-        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UISynchroError {
+        return UISynchroError(uiDrive: drive1, error: syncError)
     }
 }

@@ -141,6 +141,7 @@ public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
     case maintenance
     case accessDenied
     case loggingError
+    case quota
 
     init?(errorInfo: ErrorInfo) {
         switch errorInfo.exitCause {

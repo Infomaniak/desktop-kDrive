@@ -22,7 +22,7 @@ import kDriveCoreUI
 import SwiftUI
 
 final class BlockingErrorViewController: TitledViewController<BlockingErrorView> {
-    init(blockingError: UIBlockingError) {
+    init(blockingError: UISynchroError) {
         super.init(
             toolbarTitle: SidebarItem.home.title,
             contentView: BlockingErrorView(blockingError: blockingError)

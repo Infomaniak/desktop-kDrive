@@ -253,7 +253,7 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func updateSidebarIfNecessary() {
-        let shouldShowBlockingError = mainViewModel.currentBlockingError != nil
+        let shouldShowBlockingError = mainViewModel.currentSynchroError != nil
         guard hasBlockingError != shouldShowBlockingError else {
             return
         }
@@ -318,7 +318,7 @@ extension MainSidebarViewController: NSOutlineViewDataSource {
 extension MainSidebarViewController: ClickableOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
-        return item.canBeSelected && mainViewModel.currentBlockingError == nil
+        return item.canBeSelected && mainViewModel.currentSynchroError == nil
     }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -330,7 +330,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        let enabled = !item.canBeSelected || mainViewModel.currentBlockingError == nil
+        let enabled = !item.canBeSelected || mainViewModel.currentSynchroError == nil
         cell?.setupForItem(item, enabled: enabled)
         return cell
     }

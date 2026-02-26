@@ -122,7 +122,7 @@ final class MainViewController: IKSplitViewController {
         case .storage:
             contentViewController = StorageViewController(mainViewModel: viewModel)
         case .blockingError:
-            if let blockingError = viewModel.currentBlockingError {
+            if let blockingError = viewModel.currentSynchroError {
                 contentViewController = BlockingErrorViewController(blockingError: blockingError)
             } else {
                 #if DEBUG
@@ -273,7 +273,7 @@ extension MainViewController {
     }
 
     private func updatePauseResumeButton(_ item: NSToolbarItem, state: UISynchroState) {
-        let hasBlockingError = viewModel.currentBlockingError != nil
+        let hasBlockingError = viewModel.currentSynchroError != nil
 
         guard !hasBlockingError else {
             setPauseResumeAppearance(item, showPause: true, enabled: false)

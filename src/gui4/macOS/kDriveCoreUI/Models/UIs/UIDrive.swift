@@ -109,6 +109,7 @@ public struct UIDrive: UIDriveRepresentation {
     public let driveId: Int
     public let name: String
     public let hexColor: UIHexColor?
+    public let isAdmin: Bool
 
     public var nsColor: NSColor? {
         guard let hexColor else {
@@ -124,10 +125,11 @@ public struct UIDrive: UIDriveRepresentation {
         return Color(nsColor: nsColor)
     }
 
-    public init(dbId: Int, driveId: Int, name: String, hexColor: UIHexColor?) {
+    public init(dbId: Int, driveId: Int, name: String, isAdmin: Bool, hexColor: UIHexColor?) {
         self.dbId = dbId
         self.driveId = driveId
         self.name = name
+        self.isAdmin = isAdmin
         self.hexColor = hexColor
     }
 }
@@ -143,6 +145,7 @@ public extension UIDrive {
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
             name: drive.name,
+            isAdmin: drive.admin,
             hexColor: hexColor
         )
     }

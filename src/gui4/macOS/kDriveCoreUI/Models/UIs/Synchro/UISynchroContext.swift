@@ -35,7 +35,7 @@ public struct UISynchroContext: Sendable, Equatable {
     public let drive: UIDrive
     public let account: UIAccount
     public let user: UIUser
-    public let blockingError: UIBlockingError?
+    public let synchroError: UISynchroError?
 }
 
 public extension UISynchroContext {
@@ -44,6 +44,6 @@ public extension UISynchroContext {
         drive = .init(drive: synchroContext.drive)
         synchro = .init(synchro: synchroContext.synchro)
         user = .init(user: synchroContext.user)
-        blockingError = .init(drive: synchroContext.drive, error: synchroContext.synchro.latestError)
+        synchroError = .init(drive: synchroContext.drive, error: synchroContext.synchro.latestError)
     }
 }
