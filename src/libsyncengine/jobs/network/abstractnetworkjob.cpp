@@ -46,6 +46,11 @@
 
 namespace KDC {
 
+const std::string waitingTimeHeader1 = "X-RateLimit-Limit";
+const std::string waitingTimeHeader2 = "X-RateLimit-Remaining";
+const std::string waitingTimeHeader3 = "X-RateLimit-Reset";
+const std::string waitingTimeHeader4 = "Retry-After";
+
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
@@ -138,6 +143,17 @@ void AbstractNetworkJob::logReplyInfo() {
     }
 }
 
+int64_t AbstractNetworkJob::extractWaitingTime() {
+    static const std::vector<std::string> possibleHeaders = {waitingTimeHeader1, waitingTimeHeader2, waitingTimeHeader3,
+                                                             waitingTimeHeader4};
+    Poco::Net::NameValueCollection nvc(httpResponse());
+    for (const auto &header: possibleHeaders) {
+        if (nvc.has(header)) return std::stoll(nvc.get(header));
+    }
+
+    return -1;
+}
+
 ExitInfo AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url.empty()) {
@@ -153,7 +169,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            Utility::msleep(500); // Sleep for 0.5s
+            Utility::msleep(_sleepTime);
         }
 
         uri = Poco::URI(url);
@@ -491,6 +507,13 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
+
+            // Update time to wait
+            const auto newWaitTime = extractWaitingTime();
+            if (newWaitTime > 0) {
+                _sleepTime = newWaitTime;
+                LOG_INFO(_logger, "New waiting time: " << _sleepTime);
+            }
             return ExitCode::RateLimited;
         }
         default: {
