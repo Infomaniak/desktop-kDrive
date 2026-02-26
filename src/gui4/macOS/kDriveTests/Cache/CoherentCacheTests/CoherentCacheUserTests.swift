@@ -167,4 +167,230 @@ struct CoherentCacheUserTests {
         // THEN
         #expect(contexts.isEmpty)
     }
+
+    // MARK: - getSynchroNodeContexts
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_emptyCache() async {
+        // GIVEN
+        let cache = ServerCoherentCache()
+
+        // WHEN
+        let contexts = await cache.getSynchroNodeContexts(CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(contexts.isEmpty)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_unknownSynchroDbId() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        // WHEN
+        let unknownDbId = Int32.random(in: 20001 ... 30000)
+        let contexts = await cache.getSynchroNodeContexts(unknownDbId)
+
+        // THEN
+        #expect(contexts.isEmpty)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_synchroWithNoNodes() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        // WHEN
+        let contexts = await cache.getSynchroNodeContexts(CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(contexts.isEmpty)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_withOneNode() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        var synchroWithNode = CacheData.expectedSynchro
+        let node = SynchroNode(
+            operationId: 1,
+            type: .File,
+            path: "/Documents/test.txt",
+            newPath: "",
+            localNodeId: "node-123",
+            remoteNodeId: "remote-123",
+            direction: .Down,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 0),
+            size: 1000,
+            progress: 100,
+            error: ""
+        )
+        synchroWithNode.addOrUpdateSynchNode(node)
+        try await cache.addSynchro(synchroWithNode)
+
+        // WHEN
+        let contexts = await cache.getSynchroNodeContexts(CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(contexts.count == 1)
+        let context = try #require(contexts.first)
+        #expect(context.node.localNodeId == "node-123")
+        #expect(context.synchro.dbId == CacheData.expectedSynchroDbId)
+        #expect(context.drive.id == CacheData.expectedDrive.id)
+        #expect(context.account.id == CacheData.expectedAccount.id)
+        #expect(context.user.id == CacheData.expectedUser.id)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_withMultipleNodes() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        var synchroWithNodes = CacheData.expectedSynchro
+        let firstNode = SynchroNode(
+            operationId: 1,
+            type: .File,
+            path: "/Documents/first.txt",
+            newPath: "",
+            localNodeId: "node-1",
+            remoteNodeId: "remote-1",
+            direction: .Down,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 0),
+            size: 1000,
+            progress: 100,
+            error: ""
+        )
+        let secondNode = SynchroNode(
+            operationId: 2,
+            type: .File,
+            path: "/Documents/second.txt",
+            newPath: "",
+            localNodeId: "node-2",
+            remoteNodeId: "remote-2",
+            direction: .Up,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 1),
+            size: 2000,
+            progress: 100,
+            error: ""
+        )
+        synchroWithNodes.addOrUpdateSynchNode(firstNode)
+        synchroWithNodes.addOrUpdateSynchNode(secondNode)
+        try await cache.addSynchro(synchroWithNodes)
+
+        // WHEN
+        let contexts = await cache.getSynchroNodeContexts(CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(contexts.count == 2)
+        let nodeIds = Set(contexts.map(\.node.localNodeId))
+        #expect(nodeIds.contains("node-1"))
+        #expect(nodeIds.contains("node-2"))
+        for context in contexts {
+            #expect(context.synchro.dbId == CacheData.expectedSynchroDbId)
+            #expect(context.drive.id == CacheData.expectedDrive.id)
+            #expect(context.account.id == CacheData.expectedAccount.id)
+            #expect(context.user.id == CacheData.expectedUser.id)
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroNodeContexts_filtersToSpecificSynchro() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        var synchroWithNode = CacheData.expectedSynchro
+        let firstNode = SynchroNode(
+            operationId: 1,
+            type: .File,
+            path: "/Documents/first.txt",
+            newPath: "",
+            localNodeId: "node-1",
+            remoteNodeId: "remote-1",
+            direction: .Down,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 0),
+            size: 1000,
+            progress: 100,
+            error: ""
+        )
+        synchroWithNode.addOrUpdateSynchNode(firstNode)
+        try await cache.addSynchro(synchroWithNode)
+
+        let secondSynchroDbId = Int32.random(in: 10001 ... 20000)
+        var secondSynchro = Synchro(
+            dbId: secondSynchroDbId,
+            driveDbId: CacheData.expectedDriveDbId,
+            localPath: "/another/path",
+            targetPath: "/another/target",
+            targetNodeId: UUID().uuidString,
+            supportVfs: true,
+            virtualFileMode: KDC.VirtualFileMode.Mac
+        )
+        let secondNode = SynchroNode(
+            operationId: 2,
+            type: .File,
+            path: "/Other/second.txt",
+            newPath: "",
+            localNodeId: "node-2",
+            remoteNodeId: "remote-2",
+            direction: .Up,
+            instruction: .None,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(timeIntervalSince1970: 1),
+            size: 2000,
+            progress: 100,
+            error: ""
+        )
+        secondSynchro.addOrUpdateSynchNode(secondNode)
+        try await cache.addSynchro(secondSynchro)
+
+        // WHEN
+        let contexts = await cache.getSynchroNodeContexts(CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(contexts.count == 1)
+        let context = try #require(contexts.first)
+        #expect(context.node.localNodeId == "node-1")
+        #expect(context.synchro.dbId == CacheData.expectedSynchroDbId)
+    }
 }
