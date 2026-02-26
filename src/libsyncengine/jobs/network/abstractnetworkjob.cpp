@@ -46,10 +46,8 @@
 
 namespace KDC {
 
-const std::string waitingTimeHeader1 = "X-RateLimit-Limit";
-const std::string waitingTimeHeader2 = "X-RateLimit-Remaining";
-const std::string waitingTimeHeader3 = "X-RateLimit-Reset";
-const std::string waitingTimeHeader4 = "Retry-After";
+const std::string RateLimitHeaderReset = "X-RateLimit-Reset"; // Timestamp (in seconds since epoch)
+const std::string RateLimitHeaderDelay = "Retry-After"; // Delay (in seconds)
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
@@ -144,11 +142,15 @@ void AbstractNetworkJob::logReplyInfo() {
 }
 
 int AbstractNetworkJob::extractWaitingTime() {
-    static const std::vector<std::string> possibleHeaders = {waitingTimeHeader1, waitingTimeHeader2, waitingTimeHeader3,
-                                                             waitingTimeHeader4};
     Poco::Net::NameValueCollection nvc(httpResponse());
-    for (const auto &header: possibleHeaders) {
-        if (nvc.has(header)) return std::stoll(nvc.get(header));
+    if (nvc.has(RateLimitHeaderReset)) {
+        const auto timestamp = std::stoi(nvc.get(RateLimitHeaderReset));
+        const auto nowEpoch = std::chrono::system_clock::now().time_since_epoch();
+        const auto now = std::chrono::duration_cast<std::chrono::seconds>(nowEpoch);
+        return static_cast<int>(timestamp - now.count()) * 1000;
+    }
+    if (nvc.has(RateLimitHeaderDelay)) {
+        return std::stoi(nvc.get(RateLimitHeaderDelay)) * 1000;
     }
 
     return -1;
