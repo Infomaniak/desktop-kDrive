@@ -34,16 +34,14 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
 }
 
 struct ActivitiesView: View {
-    @InjectService private var observableCache: CoherentCacheObservable
+    @InjectService private var cacheObservable: CoherentCacheObservable
 
     @ObservedObject var mainViewModel: MainViewModel
 
     @State private var visibleActivities = VisibleActivities.allActivities
-    @State private var nodeContexts = [UISynchroNodeContext]()
 
-    private var synchroStatus: UISynchroStatus {
-        return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
-    }
+    @State private var synchroStatus = UISynchroStatus.idle
+    @State private var nodeContexts = [UISynchroNodeContext]()
 
     private var visibleNodes: [UISynchroNodeContext] {
         switch visibleActivities {
@@ -83,7 +81,15 @@ struct ActivitiesView: View {
             await fetchSynchroNodeContexts()
         }
         .onReceive(
-            observableCache.usersPublisher.synchroNodesPublisher(for: Int32(mainViewModel.currentSynchro?.id ?? 0))
+            cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(mainViewModel.currentSynchro?.id ?? 0))
+                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+        ) { output in
+            if let syncStatus = output?.progress?.syncStatus, let uiSynchroStatus = UISynchroStatus(syncStatus: syncStatus) {
+                synchroStatus = uiSynchroStatus
+            }
+        }
+        .onReceive(
+            cacheObservable.usersPublisher.synchroNodesPublisher(for: Int32(mainViewModel.currentSynchro?.id ?? 0))
                 .throttle(for: 1, scheduler: RunLoop.main, latest: true)
                 .map { $0.map(UISynchroNodeContext.init(synchroNodeContext:)) }
         ) { synchroNodeContexts in

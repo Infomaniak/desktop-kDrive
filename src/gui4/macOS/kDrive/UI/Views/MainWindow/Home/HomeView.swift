@@ -16,13 +16,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
+import OrderedCollections
 import SwiftUI
 
 struct HomeView: View {
     static let spacing = AppPadding.padding24
 
+    @InjectService private var cacheObservable: CoherentCacheObservable
+
     @StateObject private var networkObserver = NetworkObserver()
+
+    @State private var currentSynchroStatus = UISynchroStatus.idle
+    @State private var errorCount = 0
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -39,11 +48,7 @@ struct HomeView: View {
             return .offline
         }
 
-        guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
-            return .synchroIsUpToDate
-        }
-
-        switch synchroStatus {
+        switch currentSynchroStatus {
         case .idle:
             return .synchroIsUpToDate
         case .starting, .running:
@@ -60,7 +65,7 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if let errorCount = mainViewModel.currentSynchro?.errorCount, errorCount > 0 {
+            if errorCount > 0 {
                 SynchroErrorsInformationBlockView(errorCount: errorCount)
             }
 
@@ -75,6 +80,17 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
+        .onReceive(
+            cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(mainViewModel.currentSynchro?.id ?? 0))
+                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+        ) { output in
+            if let syncStatus = output?.progress?.syncStatus, let uiSynchroStatus = UISynchroStatus(syncStatus: syncStatus) {
+                currentSynchroStatus = uiSynchroStatus
+            }
+            if let errors = output?.errors {
+                errorCount = errors.count
+            }
+        }
     }
 }
 

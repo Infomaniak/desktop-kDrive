@@ -55,7 +55,7 @@ struct ActivitiesTable: View {
                 } label: {
                     Text(
                         context.node.parentFolder,
-                        format: .node(driveFolderName: context.synchro.localPath.lastPathComponent ?? Self.defaultFolderName)
+                        format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
                     )
                     .underline()
                 }
