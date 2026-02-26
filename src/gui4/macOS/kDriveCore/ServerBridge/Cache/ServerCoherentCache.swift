@@ -333,24 +333,20 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - SynchroNodeContexts
 
-    public func getSynchroNodeContexts() -> [SynchroNodeContext] {
+    public func getSynchroNodeContexts(_ synchroDbId: Int32) -> [SynchroNodeContext] {
+        guard let synchroContext = getSynchroContext(synchroDbId) else {
+            return []
+        }
+
         var synchroNodeContexts = [SynchroNodeContext]()
-        for user in users.values {
-            for account in user.accounts.values {
-                for drive in account.drives.values {
-                    for synchro in drive.synchros.values {
-                        for node in synchro.synchNodes.values {
-                            synchroNodeContexts.append(SynchroNodeContext(
-                                node: node,
-                                synchro: synchro,
-                                drive: drive,
-                                account: account,
-                                user: user
-                            ))
-                        }
-                    }
-                }
-            }
+        for node in synchroContext.synchro.synchNodes.values {
+            synchroNodeContexts.append(SynchroNodeContext(
+                node: node,
+                synchro: synchroContext.synchro,
+                drive: synchroContext.drive,
+                account: synchroContext.account,
+                user: synchroContext.user
+            ))
         }
 
         return synchroNodeContexts

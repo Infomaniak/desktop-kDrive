@@ -64,19 +64,21 @@ public final class UISynchroStateObserver: UISynchroStateObserving {
     public func observeSynchro(_ synchroDbId: UISynchro.ID) {
         cancellable?.cancel()
 
-        @InjectService var cache: CoherentCache
+        synchroState = UISynchroState(errorCount: 0, status: .idle)
+
         Task {
+            @InjectService var cache: CoherentCache
             let synchro = await cache.getSynchro(synchroDbId: Int32(synchroDbId))
             updateStateFromSynchro(synchro)
-        }
 
-        @InjectService var cacheObservable: CoherentCacheObservable
-        cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchroDbId))
-            .throttle(for: 1, scheduler: RunLoop.main, latest: true)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] synchro in
-                self?.updateStateFromSynchro(synchro)
-            }
+            @InjectService var cacheObservable: CoherentCacheObservable
+            cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchroDbId))
+                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+                .receive(on: RunLoop.main)
+                .sink { [weak self] synchro in
+                    self?.updateStateFromSynchro(synchro)
+                }
+        }
     }
 
     @MainActor

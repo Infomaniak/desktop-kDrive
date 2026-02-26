@@ -43,10 +43,8 @@ private final class UISynchroStateModel: ObservableObject {
         cancellable = synchroStateObserver.synchroStatePublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] output in
-                MainActor.assumeIsolated {
-                    withAnimation {
-                        self?.state = output
-                    }
+                withAnimation {
+                    self?.state = output
                 }
             }
     }

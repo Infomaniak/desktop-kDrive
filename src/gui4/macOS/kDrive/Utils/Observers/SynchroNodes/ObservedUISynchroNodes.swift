@@ -43,10 +43,8 @@ private final class UISynchroNodesModel: ObservableObject {
         cancellable = synchroNodesObserver.synchroNodesPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] output in
-                MainActor.assumeIsolated {
-                    withAnimation {
-                        self?.nodes = output
-                    }
+                withAnimation {
+                    self?.nodes = output
                 }
             }
     }

@@ -29,7 +29,7 @@ public struct UISynchroNodeContext: Sendable, Identifiable, Equatable {
     public let drive: UIDrive
     public let synchro: UISynchro
     public let node: UISynchroNode
-    
+
     public init(user: UIUser, account: UIAccount, drive: UIDrive, synchro: UISynchro, node: UISynchroNode) {
         self.user = user
         self.account = account

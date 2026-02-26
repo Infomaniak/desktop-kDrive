@@ -20,7 +20,6 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
-import OrderedCollections
 import SwiftUI
 
 public protocol UISynchroNodesObserving: Sendable {
@@ -54,19 +53,21 @@ public final class UISynchroNodesObserver: UISynchroNodesObserving {
     public func observeSynchro(_ synchroDbId: UISynchro.ID) {
         cancellable?.cancel()
 
+        synchroNodes = []
+
         Task {
             @InjectService var cache: CoherentCache
-            let nodeContexts = await cache.getSynchroNodeContexts()
+            let nodeContexts = await cache.getSynchroNodeContexts(Int32(synchroDbId))
             synchroNodes = nodeContexts.map(UISynchroNodeContext.init)
-        }
 
-        @InjectService var cacheObservable: CoherentCacheObservable
-        cancellable = cacheObservable.usersPublisher.synchroNodesPublisher(for: Int32(synchroDbId))
-            .throttle(for: 1, scheduler: RunLoop.main, latest: true)
-            .map { $0.map(UISynchroNodeContext.init) }
-            .receive(on: RunLoop.main)
-            .sink { [self] nodeContexts in
-                synchroNodes = nodeContexts
-            }
+            @InjectService var cacheObservable: CoherentCacheObservable
+            cancellable = cacheObservable.usersPublisher.synchroNodesPublisher(for: Int32(synchroDbId))
+                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
+                .map { $0.map(UISynchroNodeContext.init) }
+                .receive(on: RunLoop.main)
+                .sink { [weak self] nodeContexts in
+                    self?.synchroNodes = nodeContexts
+                }
+        }
     }
 }
