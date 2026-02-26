@@ -142,19 +142,18 @@ void AbstractNetworkJob::logReplyInfo() {
 }
 
 int AbstractNetworkJob::extractWaitingTime() {
-    Poco::Net::NameValueCollection nvc(httpResponse());
-    if (nvc.has(RateLimitHeaderReset)) {
+    if (httpResponse().has(RateLimitHeaderReset)) {
         int timestamp = 0;
         try {
-            timestamp = std::stoi(nvc.get(RateLimitHeaderReset));
+            timestamp = std::stoi(httpResponse().get(RateLimitHeaderReset));
         } catch (std::exception const &e) {
-            LOG_DEBUG(_logger, "Failed to extract int value from header " << RateLimitHeaderReset << " : " << e.what());
+            LOG_WARN(_logger, "Failed to extract int value from header " << RateLimitHeaderReset << " : " << e.what());
         }
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         return static_cast<int>(timestamp - now.count()) * 1000;
     }
-    if (nvc.has(RateLimitHeaderDelay)) {
-        return std::stoi(nvc.get(RateLimitHeaderDelay)) * 1000;
+    if (httpResponse().has(RateLimitHeaderDelay)) {
+        return std::stoi(httpResponse().get(RateLimitHeaderDelay)) * 1000;
     }
 
     return -1;
