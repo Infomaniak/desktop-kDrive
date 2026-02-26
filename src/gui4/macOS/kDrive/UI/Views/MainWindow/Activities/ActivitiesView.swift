@@ -34,12 +34,12 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
 }
 
 struct ActivitiesView: View {
-    @InjectService private var cacheObservable: CoherentCacheObservable
-
-    @ObservedObject var mainViewModel: MainViewModel
+    @InjectService private var synchroStateObserver: SynchroStateObserving
+    @InjectService private var synchroNodesObserver: SynchroNodesObserving
 
     @State private var visibleActivities = VisibleActivities.allActivities
 
+    @State private var synchroState = UISynchroState(errorCount: 0, status: .idle)
     @State private var synchroStatus = UISynchroStatus.idle
     @State private var nodeContexts = [UISynchroNodeContext]()
 
@@ -77,24 +77,18 @@ struct ActivitiesView: View {
                 }
         }
         .padding(AppPadding.page)
-        .task(id: mainViewModel.currentSynchro?.id) {
-            await fetchSynchroNodeContexts()
+        .onAppear {
+            synchroState = synchroStateObserver.synchroState
+            nodeContexts = synchroNodesObserver.synchroNodes
         }
-        .onReceive(
-            cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(mainViewModel.currentSynchro?.id ?? 0))
-                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
-        ) { output in
-            if let syncStatus = output?.progress?.syncStatus, let uiSynchroStatus = UISynchroStatus(syncStatus: syncStatus) {
-                synchroStatus = uiSynchroStatus
+        .onReceive(synchroStateObserver.synchroStatePublisher) { output in
+            withAnimation {
+                synchroState = output
             }
         }
-        .onReceive(
-            cacheObservable.usersPublisher.synchroNodesPublisher(for: Int32(mainViewModel.currentSynchro?.id ?? 0))
-                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
-                .map { $0.map(UISynchroNodeContext.init(synchroNodeContext:)) }
-        ) { synchroNodeContexts in
+        .onReceive(synchroNodesObserver.synchroNodesPublisher) { output in
             withAnimation {
-                handleUpdatedSynchroNodes(synchroNodeContexts)
+                nodeContexts = output
             }
         }
     }
@@ -112,5 +106,5 @@ struct ActivitiesView: View {
 }
 
 #Preview {
-    ActivitiesView(mainViewModel: MainViewModel())
+    ActivitiesView()
 }

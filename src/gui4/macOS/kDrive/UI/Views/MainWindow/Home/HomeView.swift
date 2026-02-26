@@ -26,12 +26,10 @@ import SwiftUI
 struct HomeView: View {
     static let spacing = AppPadding.padding24
 
-    @InjectService private var cacheObservable: CoherentCacheObservable
+    @InjectService private var synchroStateObserver: SynchroStateObserving
 
     @StateObject private var networkObserver = NetworkObserver()
-
-    @State private var currentSynchroStatus = UISynchroStatus.idle
-    @State private var errorCount = 0
+    @State private var synchroState = UISynchroState(errorCount: 0, status: .idle)
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -48,7 +46,7 @@ struct HomeView: View {
             return .offline
         }
 
-        switch currentSynchroStatus {
+        switch synchroState.status {
         case .idle:
             return .synchroIsUpToDate
         case .starting, .running:
@@ -65,8 +63,8 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if errorCount > 0 {
-                SynchroErrorsInformationBlockView(errorCount: errorCount)
+            if synchroState.errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
 
             GeometryReader { proxy in
@@ -80,15 +78,12 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
-        .onReceive(
-            cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(mainViewModel.currentSynchro?.id ?? 0))
-                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
-        ) { output in
-            if let syncStatus = output?.progress?.syncStatus, let uiSynchroStatus = UISynchroStatus(syncStatus: syncStatus) {
-                currentSynchroStatus = uiSynchroStatus
-            }
-            if let errors = output?.errors {
-                errorCount = errors.count
+        .onAppear {
+            synchroState = synchroStateObserver.synchroState
+        }
+        .onReceive(synchroStateObserver.synchroStatePublisher) { output in
+            withAnimation {
+                synchroState = output
             }
         }
     }
