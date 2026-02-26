@@ -143,7 +143,7 @@ void AbstractNetworkJob::logReplyInfo() {
     }
 }
 
-int64_t AbstractNetworkJob::extractWaitingTime() {
+int AbstractNetworkJob::extractWaitingTime() {
     static const std::vector<std::string> possibleHeaders = {waitingTimeHeader1, waitingTimeHeader2, waitingTimeHeader3,
                                                              waitingTimeHeader4};
     Poco::Net::NameValueCollection nvc(httpResponse());
@@ -239,6 +239,10 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
                 break;
             }
 
+            if (outputExitInfo.code() == ExitCode::RateLimited) {
+                continue; // Retry
+            }
+
             // Attempt to detect network timeout
             auto errChrono = std::chrono::steady_clock::now();
             std::chrono::duration<double> requestDuration = errChrono - sendChrono;
@@ -259,7 +263,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
             break;
         }
 
-        if (outputExitInfo.code() == ExitCode::TokenRefreshed || outputExitInfo.code() == ExitCode::RateLimited) {
+        if (outputExitInfo.code() == ExitCode::TokenRefreshed) {
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(outputExitInfo)) {
