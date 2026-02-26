@@ -36,6 +36,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <Poco/File.h>
+#include "utility/utility.h"
 
 namespace KDC {
 

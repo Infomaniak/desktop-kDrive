@@ -18,6 +18,7 @@
 
 #include "permissionsholder.h"
 #include "utility/types.h"
+#include "utility/utility.h"
 
 #include "filestat.h"
 #include "iohelper.h"
