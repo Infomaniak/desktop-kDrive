@@ -34,14 +34,10 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
 }
 
 struct ActivitiesView: View {
-    @InjectService private var synchroStateObserver: SynchroStateObserving
-    @InjectService private var synchroNodesObserver: SynchroNodesObserving
-
     @State private var visibleActivities = VisibleActivities.allActivities
 
-    @State private var synchroState = UISynchroState(errorCount: 0, status: .idle)
-    @State private var synchroStatus = UISynchroStatus.idle
-    @State private var nodeContexts = [UISynchroNodeContext]()
+    @ObservedUISynchroNodes private var nodeContexts: [UISynchroNodeContext]
+    @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var visibleNodes: [UISynchroNodeContext] {
         switch visibleActivities {
@@ -60,7 +56,7 @@ struct ActivitiesView: View {
         VStack(spacing: AppPadding.padding32) {
             ActivityHeaderView(
                 visibleActivities: $visibleActivities,
-                synchroStatus: synchroStatus,
+                synchroStatus: synchroState.status,
                 hasAnyActivity: hasAnyActivity
             )
 
@@ -77,31 +73,6 @@ struct ActivitiesView: View {
                 }
         }
         .padding(AppPadding.page)
-        .onAppear {
-            synchroState = synchroStateObserver.synchroState
-            nodeContexts = synchroNodesObserver.synchroNodes
-        }
-        .onReceive(synchroStateObserver.synchroStatePublisher) { output in
-            withAnimation {
-                synchroState = output
-            }
-        }
-        .onReceive(synchroNodesObserver.synchroNodesPublisher) { output in
-            withAnimation {
-                nodeContexts = output
-            }
-        }
-    }
-
-    private func fetchSynchroNodeContexts() async {
-        @InjectService var coherentCache: CoherentCache
-        let synchroNodeContexts = await coherentCache.getSynchroNodeContexts()
-
-        handleUpdatedSynchroNodes(synchroNodeContexts.map(UISynchroNodeContext.init(synchroNodeContext:)))
-    }
-
-    private func handleUpdatedSynchroNodes(_ nodes: [UISynchroNodeContext]) {
-        nodeContexts = nodes
     }
 }
 

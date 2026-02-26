@@ -26,12 +26,10 @@ import SwiftUI
 struct HomeView: View {
     static let spacing = AppPadding.padding24
 
-    @InjectService private var synchroStateObserver: SynchroStateObserving
-
     @StateObject private var networkObserver = NetworkObserver()
-    @State private var synchroState = UISynchroState(errorCount: 0, status: .idle)
 
     @ObservedObject var mainViewModel: MainViewModel
+    @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var userName: String {
         guard let currentUser = mainViewModel.currentUser,
@@ -78,14 +76,6 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
-        .onAppear {
-            synchroState = synchroStateObserver.synchroState
-        }
-        .onReceive(synchroStateObserver.synchroStatePublisher) { output in
-            withAnimation {
-                synchroState = output
-            }
-        }
     }
 }
 
