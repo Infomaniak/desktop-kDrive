@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,11 +16,89 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct GeneralPreferencesView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Mise à jour")
+                        Text("kDrive 3.7.6 disponible")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Button("Mettre à jour") {
+                        // TODO: Update app
+                    }
+                }
+
+                Toggle("Mises à jour automatiques", isOn: .constant(true))
+
+                IKLabeledContent("Programme bêta") {
+                    HStack {
+                        Text("Off")
+                            .foregroundStyle(.secondary)
+
+                        InformationButton {
+                            // TODO: Open Beta modal
+                        }
+                    }
+                }
+
+                IKLabeledContent("À propos de kDrive") {
+                    InformationButton {
+                        // TODO: Open About kDrive
+                    }
+                }
+            }
+
+            Section {
+                Picker("Langue", selection: .constant("fr")) {
+                    Text("Français")
+                        .tag("fr")
+                }
+
+                Picker("Notifications", selection: .constant("off")) {
+                    Text("Jamais")
+                        .tag("off")
+                }
+
+                Toggle("Ouvrir kDrive au démarrage de l'ordinateur", isOn: .constant(true))
+
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Déplacer les fichiers supprimés dans la corbeille de l’ordinateur")
+                        Text("Certains éléments ne pourront pas être déplacés.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Toggle("Déplacer les fichiers supprimés dans la corbeille de l’ordinateur", isOn: .constant(true))
+                        .labelsHidden()
+                }
+            }
+
+            Section {
+                IKLabeledContent("Besoin d'aide ?") {
+                    Button("Support") {
+                        // TODO: Open Support
+                    }
+                }
+
+                IKLabeledContent("Aidez-nous à améliorer kDrive") {
+                    Button("Partager une idée") {
+                        // TODO: Open Feedback
+                    }
+                }
+            }
+        }
+        .groupedFormatStyle()
     }
 }
 
