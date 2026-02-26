@@ -28,9 +28,22 @@ import OrderedCollections
 final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
+
     @LazyInjectService private var router: MainViewRouter
 
-    @Published private(set) var currentSynchroContext: UISynchroContext?
+    @LazyInjectService private var synchroStateObserver: SynchroStateObserving
+    @LazyInjectService private var synchroNodesObserver: SynchroNodesObserving
+
+    @Published private(set) var currentSynchroContext: UISynchroContext? {
+        didSet {
+            guard let currentSynchroContext else {
+                return
+            }
+
+            synchroStateObserver.observeSynchro(currentSynchroContext.synchro.id)
+            synchroNodesObserver.observeSynchro(currentSynchroContext.synchro.id)
+        }
+    }
 
     var currentUser: UIUser? {
         return currentSynchroContext?.user
