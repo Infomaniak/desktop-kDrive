@@ -31,4 +31,17 @@ public struct UpdaterJobs: Sendable {
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    public func versionInfo(channel: KDC.VersionChannel) async throws -> VersionInfo {
+        IKLogger.data.log("Query for version info")
+        let query = UpdaterVersionInfoQuery(channel: channel)
+        let request = await RequestMessage<UpdaterVersionInfoQuery>(num: RequestNum.UPDATER_VERSION_INFO, body: query)
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UpdaterVersionInfoResponse>.self
+        )
+
+        return decodedMessage.body.versionInfo
+    }
 }

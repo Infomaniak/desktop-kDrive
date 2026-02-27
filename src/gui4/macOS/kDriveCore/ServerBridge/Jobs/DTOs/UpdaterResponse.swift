@@ -18,10 +18,16 @@
 
 import Foundation
 
-struct UpdaterChangeChannelQuery: Codable, Sendable {
+struct UpdaterChangeChannelResponse: Codable, Sendable {}
+
+public struct VersionInfo: Codable, Sendable {
     let channel: KDC.VersionChannel
+    @Base64CodedString var tag: String
+    let buildVersion: UInt64
+    @Base64CodedString var buildMinOsVersion: String
+    @Base64CodedString var downloadUrl: String
 }
 
-struct UpdaterVersionInfoQuery: Codable, Sendable {
-    let channel: KDC.VersionChannel
+struct UpdaterVersionInfoResponse: Codable, Sendable {
+    let versionInfo: VersionInfo
 }
