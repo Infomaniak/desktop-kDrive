@@ -95,9 +95,9 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncName &name) {
     for (auto c: forbiddenFilenameChars) {
-        if (name.native().find(c) != std::string::npos) {
+        if (name.find(c) != std::string::npos) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
             return true;
@@ -106,10 +106,11 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 
 #if defined(KD_WINDOWS)
     // Check for forbidden ascii codes
-    for (const SyncChar c: name.native()) {
-        int asciiCode(c);
+    for (const SyncChar c: name) {
+        const int64_t asciiCode(c);
         if (asciiCode <= 31) {
-            if (forbiddenChar) *forbiddenChar = c;
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
             return true;
         }
     }
