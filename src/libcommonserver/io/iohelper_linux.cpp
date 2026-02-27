@@ -175,7 +175,7 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     std::error_code ec;
     std::string absPath = std::filesystem::absolute(path, ec).string();
     if (ec) {
-        ioError = Utility::stdError2ioError(ec);
+        ioError = IoHelper::stdError2ioError(ec);
         LOGW_WARN(logger(), L"Error in std::filesystem::absolute - " << Utility::formatStdError(ec));
         return false;
     }
@@ -194,8 +194,8 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     while ((ent = getmntent(mtab)) != nullptr) {
         std::string mountPoint = ent->mnt_dir;
         bool matches = false;
-        if (mountPoint == "/" || absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
-                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+        if (mountPoint == "/" || (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/'))) {
             matches = true;
         }
 
