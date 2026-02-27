@@ -24,7 +24,6 @@ public struct ParametersJobs: Sendable {
 
     public init() {}
 
-    @discardableResult
     public func parametersInfo() async throws -> ParametersInfo {
         IKLogger.data.log("Query for parametersInfo")
         let query = EmptyQuery()
