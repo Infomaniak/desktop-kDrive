@@ -124,6 +124,12 @@ public enum KDriveLocalizable {
   public static let folderShares = KDriveLocalizable.tr("Localizable", "folderShares", fallback: "Shares")
   /// loco:695e5889bc7544361b08b834
   public static let folderTrash = KDriveLocalizable.tr("Localizable", "folderTrash", fallback: "Trash")
+  /// loco:698b111bc1341f8509093622
+  public static let forOneHour = KDriveLocalizable.tr("Localizable", "forOneHour", fallback: "For 1 hour")
+  /// loco:698b115dd0d747974308d3b2
+  public static let forOneWeek = KDriveLocalizable.tr("Localizable", "forOneWeek", fallback: "For one week")
+  /// loco:698b1185c1341f8509093624
+  public static let forThreeDays = KDriveLocalizable.tr("Localizable", "forThreeDays", fallback: "For three days")
   /// loco:6960b7720cbd5c07340af144
   public static func greetingLabel(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "greetingLabel", String(describing: p1), String(describing: p2), fallback: "Hello %@, %@")
@@ -176,6 +182,8 @@ public enum KDriveLocalizable {
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:698b5869ab41083f11042b52
   public static let labelNotifications = KDriveLocalizable.tr("Localizable", "labelNotifications", fallback: "Notification")
+  /// loco:698b2f6aae1ca9d0290ad174
+  public static let labelSameAsSystem = KDriveLocalizable.tr("Localizable", "labelSameAsSystem", fallback: "Same as system")
   /// loco:6989ff974ef31503cb002e23
   public static let labelSize = KDriveLocalizable.tr("Localizable", "labelSize", fallback: "Size")
   /// loco:698a070557f1356c46048003
@@ -192,6 +200,8 @@ public enum KDriveLocalizable {
   public static let moveDeletedFilesToRecycleBinWarning = KDriveLocalizable.tr("Localizable", "moveDeletedFilesToRecycleBinWarning", fallback: "Some items cannot be moved.")
   /// loco:6992e9f20953b626df05ffc2
   public static let needHelpSetting = KDriveLocalizable.tr("Localizable", "needHelpSetting", fallback: "Need help?")
+  /// loco:698b10ad0c20e31c9c00a5c2
+  public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92
   public static let notificationsDisabledNever = KDriveLocalizable.tr("Localizable", "notificationsDisabledNever", fallback: "Never")
   /// loco:693050ed6a0836d25507da22
@@ -304,6 +314,8 @@ public enum KDriveLocalizable {
   public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
   /// loco:6981e8f0f994e5f7bc040692
   public static let unavailableContentNoActivityTitle = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityTitle", fallback: "No recent activity")
+  /// loco:698b112a6dcfa5bb030c2f32
+  public static let untilTomorrow = KDriveLocalizable.tr("Localizable", "untilTomorrow", fallback: "Until tomorrow")
   /// loco:698af3afefd229ca780c59e2
   public static func updateAvailable(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "updateAvailable", String(describing: p1), fallback: "kDrive %@ available")

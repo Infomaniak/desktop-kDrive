@@ -58,32 +58,7 @@ struct GeneralPreferencesView: View {
                 }
             }
 
-            Section {
-                Picker(KDriveLocalizable.languageSetting, selection: .constant("fr")) {
-                    Text("Français")
-                        .tag("fr")
-                }
-
-                Picker(KDriveLocalizable.labelNotifications, selection: .constant("off")) {
-                    Text(KDriveLocalizable.notificationsDisabledNever)
-                        .tag("off")
-                }
-
-                Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: .constant(true))
-
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting)
-                        Text(KDriveLocalizable.moveDeletedFilesToRecycleBinWarning)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: .constant(true))
-                        .labelsHidden()
-                }
-            }
+            GeneralPreferencesMiscSection()
 
             GeneralPreferencesHelpSection()
         }
