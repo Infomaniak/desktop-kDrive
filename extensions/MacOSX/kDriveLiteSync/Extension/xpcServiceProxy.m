@@ -151,5 +151,25 @@
     callback([_delegate getFetchingAppList]);
 }
 
+// MARK: - Dehydrated Files Cache (workaround for APFS recursive lock bug)
+
+- (void)addDehydratedFile:(NSString *)appId filePath:(NSString *)path
+{
+    NSLog(@"[KD] addDehydratedFile called: %@", path);
+    [_delegate addDehydratedFile:path];
+}
+
+- (void)removeDehydratedFile:(NSString *)appId filePath:(NSString *)path
+{
+    NSLog(@"[KD] removeDehydratedFile called: %@", path);
+    [_delegate removeDehydratedFile:path];
+}
+
+- (void)clearDehydratedFilesCache:(NSString *)appId
+{
+    NSLog(@"[KD] clearDehydratedFilesCache called");
+    [_delegate clearDehydratedFilesCache:appId];
+}
+
 @end
 

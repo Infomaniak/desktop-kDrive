@@ -28,6 +28,11 @@
 - (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus;
 - (void)connectionEnded:(NSString *)appId;
 - (NSMutableString *)getFetchingAppList;
+
+// Delegate methods for dehydrated files cache (workaround for APFS recursive lock bug)
+- (void)addDehydratedFile:(NSString *)filePath;
+- (void)removeDehydratedFile:(NSString *)filePath;
+- (void)clearDehydratedFilesCache:(NSString *)appId;
 @end
 
 @interface XPCServiceProxy : NSObject <XPCLiteSyncExtensionProtocol, NSXPCListenerDelegate>

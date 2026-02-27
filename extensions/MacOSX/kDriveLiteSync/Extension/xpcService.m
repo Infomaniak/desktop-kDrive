@@ -30,6 +30,8 @@
     _fetchMap = [[NSMutableDictionary alloc] init];
     _userBlackListMap = [[NSMutableDictionary alloc] init];
     _fetchingAppArray = [[NSMutableArray alloc] init];
+    // Initialize dehydrated files cache (workaround for APFS recursive lock bug)
+    _dehydratedFilesCache = [[NSMutableSet alloc] init];
 
     [self initOpenWhiteListThumbnailSet];
     [self initOpenWhiteListSet];
@@ -325,6 +327,12 @@
         // Remove file path from fetch map
         [_fetchMap removeObjectForKey:filePath];
     }
+
+    // Remove from dehydrated cache - file is now hydrated
+    // Status "F" = Full/Offline, "H" = Hydrating - both mean not dehydrated anymore
+    if (fileStatus && ([fileStatus isEqualToString:@"F"] || [fileStatus isEqualToString:@"H"])) {
+        [self removeDehydratedFile:filePath];
+    }
 }
 
 - (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)filePath fileStatus:(NSString *)fileStatus {
@@ -391,6 +399,49 @@
     NSString *fileType = [fileAttribs objectForKey:NSFileType];
 
     return fileType == NSFileTypeDirectory;
+}
+
+// MARK: - Dehydrated Files Cache (workaround for APFS recursive lock bug)
+// These methods avoid calling getxattr() in the Endpoint Security callback,
+// which can cause a recursive lock in APFS and kernel panic.
+
+- (void)addDehydratedFile:(NSString *)filePath {
+    assert(_dehydratedFilesCache);
+
+    if (!filePath) return;
+
+    @synchronized(_dehydratedFilesCache) {
+        [_dehydratedFilesCache addObject:filePath];
+    }
+}
+
+- (void)removeDehydratedFile:(NSString *)filePath {
+    assert(_dehydratedFilesCache);
+
+    if (!filePath) return;
+
+    @synchronized(_dehydratedFilesCache) {
+        [_dehydratedFilesCache removeObject:filePath];
+    }
+}
+
+- (void)clearDehydratedFilesCache:(NSString *)appId {
+    assert(_dehydratedFilesCache);
+
+    NSLog(@"[KD] Clear dehydrated files cache");
+    @synchronized(_dehydratedFilesCache) {
+        [_dehydratedFilesCache removeAllObjects];
+    }
+}
+
+- (BOOL)isFileDehydrated:(NSString *)filePath {
+    assert(_dehydratedFilesCache);
+
+    if (!filePath) return FALSE;
+
+    @synchronized(_dehydratedFilesCache) {
+        return [_dehydratedFilesCache containsObject:filePath];
+    }
 }
 
 @end

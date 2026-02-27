@@ -27,4 +27,9 @@
 - (void)updateThumbnailFetchStatus:(NSString *)appId filePath:(NSString *)path fileStatus:(NSString *)status;
 - (void)getFetchingAppList:(NSString *)appId callback:(void (^)(NSString *))callback;
 
+// Methods to manage dehydrated files cache (workaround for APFS recursive lock bug)
+- (void)addDehydratedFile:(NSString *)appId filePath:(NSString *)path;
+- (void)removeDehydratedFile:(NSString *)appId filePath:(NSString *)path;
+- (void)clearDehydratedFilesCache:(NSString *)appId;
+
 @end

@@ -85,6 +85,11 @@
 - (BOOL)getFetchingAppList:(NSMutableDictionary<NSString *, NSString *> *_Nonnull *_Nonnull)appMap;
 - (BOOL)setThumbnail:(NSString *_Nonnull)path image:(NSImage *_Nonnull)image;
 
+// Methods to manage dehydrated files cache (workaround for APFS recursive lock bug)
+- (BOOL)addDehydratedFile:(NSString *_Nonnull)path;
+- (BOOL)removeDehydratedFile:(NSString *_Nonnull)path;
+- (BOOL)clearDehydratedFilesCache;
+
 @end
 
 namespace KDC {
@@ -106,6 +111,11 @@ class LiteSyncCommClientPrivate {
         bool setThumbnail(const SyncPath &filePath, const QPixmap &pixmap);
         bool setAppExcludeList(const std::string &appList);
         bool getFetchingAppList(AppTable &appTable);
+
+        // Methods to manage dehydrated files cache (workaround for APFS recursive lock bug)
+        bool addDehydratedFile(const SyncPath &filePath);
+        bool removeDehydratedFile(const SyncPath &filePath);
+        bool clearDehydratedFilesCache();
 
     private:
         log4cplus::Logger _logger;
@@ -462,6 +472,35 @@ class LiteSyncCommClientPrivate {
     return true;
 }
 
+// MARK: - Dehydrated Files Cache (workaround for APFS recursive lock bug)
+
+- (BOOL)addDehydratedFile:(NSString *)path {
+    if (_connection) {
+        [[_connection remoteObjectProxy] addDehydratedFile:_pId filePath:path];
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+- (BOOL)removeDehydratedFile:(NSString *)path {
+    if (_connection) {
+        [[_connection remoteObjectProxy] removeDehydratedFile:_pId filePath:path];
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+- (BOOL)clearDehydratedFilesCache {
+    if (_connection) {
+        [[_connection remoteObjectProxy] clearDehydratedFilesCache:_pId];
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 // xpcLiteSyncExtensionRemoteProtocol protocol implementation
 - (void)getAppId:(void (^)(NSString *))callback {
     NSLog(@ "[KD] getAppId called");
@@ -732,6 +771,52 @@ bool LiteSyncCommClientPrivate::getFetchingAppList(AppTable &appTable) {
     return true;
 }
 
+// MARK: - Dehydrated Files Cache (workaround for APFS recursive lock bug)
+
+bool LiteSyncCommClientPrivate::addDehydratedFile(const SyncPath &filePath) {
+    if (!_connector) {
+        LOG_WARN(_logger, "Connector not initialized!");
+        return false;
+    }
+
+    NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
+    if (![_connector addDehydratedFile:nsPath]) {
+        LOGW_WARN(_logger, L"Call to addDehydratedFile failed: " << Utility::formatSyncPath(filePath));
+        return false;
+    }
+
+    return true;
+}
+
+bool LiteSyncCommClientPrivate::removeDehydratedFile(const SyncPath &filePath) {
+    if (!_connector) {
+        LOG_WARN(_logger, "Connector not initialized!");
+        return false;
+    }
+
+    NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
+    if (![_connector removeDehydratedFile:nsPath]) {
+        LOGW_WARN(_logger, L"Call to removeDehydratedFile failed: " << Utility::formatSyncPath(filePath));
+        return false;
+    }
+
+    return true;
+}
+
+bool LiteSyncCommClientPrivate::clearDehydratedFilesCache() {
+    if (!_connector) {
+        LOG_WARN(_logger, "Connector not initialized!");
+        return false;
+    }
+
+    if (![_connector clearDehydratedFilesCache]) {
+        LOG_WARN(_logger, "Call to clearDehydratedFilesCache failed!");
+        return false;
+    }
+
+    return true;
+}
+
 // LiteSyncCommClient implementation
 LiteSyncCommClient::LiteSyncCommClient(log4cplus::Logger logger, ExecuteCommand executeCommand) :
     _logger(logger) {
@@ -925,6 +1010,13 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
         return false;
     }
 
+    // Add to dehydrated files cache (workaround for APFS recursive lock bug)
+    // This avoids calling getxattr() in the Endpoint Security callback
+    if (!_private->addDehydratedFile(absoluteFilepath)) {
+        LOGW_WARN(_logger, L"Call to addDehydratedFile failed: " << Utility::formatSyncPath(absoluteFilepath));
+        // Don't fail - cache miss is not critical
+    }
+
     return true;
 }
 
@@ -1077,6 +1169,13 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", absolutePath, _logger)) {
         return false;
+    }
+
+    // Add to dehydrated files cache (workaround for APFS recursive lock bug)
+    // This avoids calling getxattr() in the Endpoint Security callback
+    if (!_private->addDehydratedFile(absolutePath)) {
+        LOGW_WARN(_logger, L"Call to addDehydratedFile failed: " << Utility::formatSyncPath(absolutePath));
+        // Don't fail - cache miss is not critical
     }
 
     // Set pin state

@@ -29,6 +29,8 @@
     NSSet<NSString *> *_defaultOpenBlackListSet;
     NSMutableDictionary<NSString *, NSSet<NSString *> *> *_userBlackListMap;
     NSMutableArray<NSString *> *_fetchingAppArray;
+    // Cache of dehydrated (online-only) file paths to avoid getxattr() in ES callback
+    NSMutableSet<NSString *> *_dehydratedFilesCache;
 }
 
 @property(retain) XPCServiceProxy *_Nullable xpcServiceProxy;
@@ -48,5 +50,11 @@
 - (BOOL)fetchFile:(NSString *_Nullable)filePath pid:(pid_t)pid;
 - (BOOL)fetchThumbnail:(NSString *_Nullable)filePath pid:(pid_t)pid;
 - (BOOL)isDirectory:(NSString *_Nullable)path error:(NSError *_Nullable *_Nullable)error;
+
+// Methods for dehydrated files cache (workaround for APFS recursive lock bug)
+- (void)addDehydratedFile:(NSString *_Nullable)filePath;
+- (void)removeDehydratedFile:(NSString *_Nullable)filePath;
+- (void)clearDehydratedFilesCache:(NSString *_Nullable)appId;
+- (BOOL)isFileDehydrated:(NSString *_Nullable)filePath;
 
 @end

@@ -17,14 +17,12 @@
  */
 
 #include "xpcService.h"
-#include "fileAttributes.h"
 
 #import <Foundation/Foundation.h>
 #import <EndpointSecurity/EndpointSecurity.h>
 #import <bsm/libbsm.h>
 
 #include <dispatch/queue.h>
-#include <sys/xattr.h>
 
 es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
@@ -124,24 +122,13 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
               msg->process->signing_id.data);
     }
     
-    // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
-    if (bufferLength >= 0) {
-        char status[bufferLength];
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
-            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
-            return FALSE;
-        }
-
-        if (status[0] != EXT_ATTR_STATUS_ONLINE[0]) {
-            // The file is not dehydrated.
-            return FALSE;
-        }
-    }
-    else {
+    // Check file status using cache (workaround for APFS recursive lock bug)
+    // Previously used getxattr() here which caused kernel panic due to recursive APFS locking
+    if (!(g_xpcService && [g_xpcService isFileDehydrated:filePath])) {
+        // The file is not in the dehydrated cache, so it's either not dehydrated or not tracked
         return FALSE;
     }
-    
+
     // Check opening process
     if (msg->process->signing_id.data) {
         NSString *appId = [NSString stringWithUTF8String:msg->process->signing_id.data];
@@ -213,23 +200,13 @@ static BOOL processAuthRename(const es_message_t *msg)
     /*NSLog(@"[KD] Move file %s to destination %s",
           msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);*/
     
-    // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
-    if (bufferLength >= 0) {
-        char status[bufferLength];
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
-            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
-            return FALSE;
-        }
-        
-        if (status[0] != EXT_ATTR_STATUS_ONLINE[0]) {
-            return FALSE;
-        }
-    }
-    else {
+    // Check file status using cache (workaround for APFS recursive lock bug)
+    // Previously used getxattr() here which caused kernel panic due to recursive APFS locking
+    if (!(g_xpcService && [g_xpcService isFileDehydrated:filePath])) {
+        // The file is not in the dehydrated cache, so it's either not dehydrated or not tracked
         return FALSE;
     }
-    
+
     NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
     
     // Check that the destination is the Trash
