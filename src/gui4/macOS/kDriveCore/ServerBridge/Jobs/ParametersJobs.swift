@@ -43,7 +43,7 @@ public struct ParametersJobs: Sendable {
             body: query
         )
 
-        _ = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
