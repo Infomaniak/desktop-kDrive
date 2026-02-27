@@ -20,6 +20,7 @@ import Foundation
 import InfomaniakDI
 
 public protocol XPCQueryFetcherProtocol {
+    @discardableResult
     func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response
 }
 
