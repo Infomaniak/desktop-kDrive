@@ -38,7 +38,7 @@ class PlatformInconsistencyCheckerUtility {
 
         bool isNameTooLong(const SyncName &name) const;
         bool isPathTooLong(size_t pathSize);
-        bool nameHasForbiddenChars(const SyncPath &name, wchar_t *forbiddenChar = nullptr);
+        bool nameHasForbiddenChars(const SyncPath &name, SyncChar *forbiddenChar = nullptr);
         static bool isNameOnlySpaces(const SyncName &name);
         static bool nameEndWithForbiddenSpace(const SyncName &name);
 

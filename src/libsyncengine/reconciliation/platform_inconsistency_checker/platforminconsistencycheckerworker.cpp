@@ -174,7 +174,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
-    wchar_t forbiddenChar;
+    SyncChar forbiddenChar;
     if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name(), &forbiddenChar)) {
         std::wstring msg = L"Name '" + SyncName2WStr(remoteNode->name()) + L"' contains forbidden character: '";
         msg.push_back(forbiddenChar);

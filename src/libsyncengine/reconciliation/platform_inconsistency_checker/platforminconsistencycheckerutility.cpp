@@ -95,7 +95,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name, wchar_t *forbiddenChar /*= nullptr*/) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name, SyncChar *forbiddenChar /*= nullptr*/) {
     for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
             if (forbiddenChar) *forbiddenChar = c;
@@ -105,7 +105,7 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 
 #if defined(KD_WINDOWS)
     // Check for forbidden ascii codes
-    for (wchar_t c: name.native()) {
+    for (const SyncChar c: name.native()) {
         int asciiCode(c);
         if (asciiCode <= 31) {
             if (forbiddenChar) *forbiddenChar = c;
