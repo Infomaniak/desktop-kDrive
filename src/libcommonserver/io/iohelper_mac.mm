@@ -26,6 +26,8 @@
 #import "config.h"
 
 #include <sys/stat.h>
+#include <sys/mount.h>
+#include <filesystem>
 
 #import <AppKit/NSApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
@@ -308,6 +310,58 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     }
 
     return success;
+}
+
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+    std::error_code ec;
+
+    std::string absPath = std::filesystem::absolute(path, ec).string();
+    if (ec) {
+        ioError = IoHelper::stdError2ioError(ec);
+        LOGW_WARN(logger(), L"Error in std::filesystem::absolute - " << Utility::formatStdError(ec));
+        return false;
+    }
+
+    struct statfs *mounts;
+    int count = getmntinfo(&mounts, MNT_NOWAIT);
+    if (count <= 0) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in getmntinfo: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    size_t bestMatchLen = 0;
+    std::string bestMount;
+    for (int i = 0; i < count; ++i) {
+        std::string mountPoint = mounts[i].f_mntonname;
+        bool matches = false;
+        if (mountPoint == "/") {
+            matches = true;
+        } else if (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/')) {
+            matches = true;
+        }
+
+        if (matches && mountPoint.size() > bestMatchLen) {
+            bestMatchLen = mountPoint.size();
+            bestMount = std::move(mountPoint);
+        }
+    }
+
+    if (bestMatchLen == 0) {
+        isMounted = false;
+        return true;
+    }
+
+    if (bestMount == "/" && absPath.starts_with("/Volumes/")) {
+        isMounted = false;
+        return true;
+    }
+
+    isMounted = true;
+    return true;
 }
 
 } // namespace KDC

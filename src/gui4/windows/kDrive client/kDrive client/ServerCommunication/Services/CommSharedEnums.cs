@@ -217,7 +217,6 @@ namespace Infomaniak.kDrive.Types
         UpdateFailed
     };
 
-
     public enum ExitCause
     {
         Unknown,
@@ -227,6 +226,7 @@ namespace Infomaniak.kDrive.Types
         InvalidSnapshot,
         SyncDirDoesntExist,
         SyncDirAccessError,
+        SyncDirDiskMissing,
         SyncDirNestingError,
         SyncDirChanged,
         HttpErr,
@@ -273,6 +273,7 @@ namespace Infomaniak.kDrive.Types
         UpdateTreeIntegrityCheckFailed,
         MissingReplyData
     };
+
 
     public enum ConflictType
     {

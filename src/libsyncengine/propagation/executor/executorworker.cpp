@@ -2099,7 +2099,8 @@ void ExecutorWorker::cancelAllOngoingJobs() {
 }
 
 void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
-    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError) ||
+        exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirDiskMissing)) {
         return; // Ignore error if sync folder is not accessible.
     }
 
@@ -2180,7 +2181,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         if (!exists) {
             LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
             _snapshotToInvalidate = true; // The snapshot must be invalidated before the next sync
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(_syncPal->localPath())};
         }
     }
 

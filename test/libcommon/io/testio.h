@@ -74,6 +74,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSetFileDates);
         CPPUNIT_TEST(testGetDirectorySize);
         CPPUNIT_TEST(testMoveItemToTrash);
+        CPPUNIT_TEST(testIsPathOnMountedDisk);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -149,6 +150,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testGetDirectorySize();
 
         void testMoveItemToTrash();
+        void testIsPathOnMountedDisk();
 
     private:
         IoHelperTestUtilities *_testObj;

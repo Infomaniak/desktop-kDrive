@@ -577,7 +577,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(absoluteParentDirPath)};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
@@ -596,13 +596,10 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             assert(ioError != IoError::Success && "Unexpected IoHelper::getDirectoryIterator return value.");
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
-            switch (ioError) {
-                case IoError::NoSuchFileOrDirectory:
-                case IoError::AccessDenied:
-                    return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
-                default:
-                    return ExitCode::SystemError;
+            if (ioError == IoError::AccessDenied) {
+                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
             }
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(absoluteParentDirPath)};
         }
 
         DirectoryEntry entry;

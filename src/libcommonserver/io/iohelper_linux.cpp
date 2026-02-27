@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <filesystem>
+#include <mntent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
@@ -34,6 +36,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <Poco/File.h>
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -166,4 +169,58 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     return true;
 }
 
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+    std::error_code ec;
+    std::string absPath = std::filesystem::absolute(path, ec).string();
+    if (ec) {
+        ioError = IoHelper::stdError2ioError(ec);
+        LOGW_WARN(logger(), L"Error in std::filesystem::absolute - " << Utility::formatStdError(ec));
+        return false;
+    }
+
+    FILE *mtab = setmntent("/proc/mounts", "r");
+    if (!mtab) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in setmntent: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    struct mntent *ent = nullptr;
+    size_t bestMatchLen = 0;
+    std::string bestMount;
+
+    while ((ent = getmntent(mtab)) != nullptr) {
+        std::string mountPoint = ent->mnt_dir;
+        bool matches = false;
+        if (mountPoint == "/" || (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/'))) {
+            matches = true;
+        }
+
+        if (matches && mountPoint.size() > bestMatchLen) {
+            bestMatchLen = mountPoint.size();
+            bestMount = std::move(mountPoint);
+        }
+    }
+
+    if (endmntent(mtab) != 1) {
+        LOGW_WARN(logger(), L"Error in endmntent: " << Utility::formatSyncPath(path));
+    }
+
+    if (bestMatchLen == 0) {
+        isMounted = false;
+        return true;
+    }
+
+    if (bestMount == "/" &&
+        (absPath.starts_with("/mnt/") || absPath.starts_with("/media/") || absPath.starts_with("/run/media/"))) {
+        isMounted = false;
+        return true;
+    }
+
+    isMounted = true;
+    return true;
+}
 } // namespace KDC
