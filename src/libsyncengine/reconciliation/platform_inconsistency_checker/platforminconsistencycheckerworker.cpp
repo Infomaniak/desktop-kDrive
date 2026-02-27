@@ -176,10 +176,8 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     const SyncPath relativePath = remoteNode->getPath();
     SyncChar forbiddenChar;
     if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name(), &forbiddenChar)) {
-        std::wstring msg = L"Name '" + SyncName2WStr(remoteNode->name()) + L"' contains forbidden character: '";
-        msg.push_back(forbiddenChar);
-        msg.push_back('\'');
-        LOGW_INFO(_logger, msg);
+        LOGW_INFO(_logger, L"Name '" << SyncName2WStr(remoteNode->name()) << L"' contains forbidden character: '"
+                                     << std::wstring(1, forbiddenChar) << L"\'");
         blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
         return false;
     }
