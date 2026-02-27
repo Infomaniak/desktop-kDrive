@@ -191,7 +191,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 Logger.Log(Logger.Level.Debug, "There are no syncs available, setting SelectedSync to null.");
                 SelectedSync = null;
-                (((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame.Navigate(typeof(SettingsPage)));
+                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame.Navigate(typeof(SettingsPage));
             }
             else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {

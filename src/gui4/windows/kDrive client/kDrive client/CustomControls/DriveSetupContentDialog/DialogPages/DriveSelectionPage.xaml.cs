@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
-            (DriveSetupContentDialogVM?.RevertAllChanges());
+            DriveSetupContentDialogVM?.RevertAllChanges();
             DriveSetupContentDialogVM?.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled);
         }
 
