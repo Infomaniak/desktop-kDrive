@@ -244,6 +244,27 @@
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Benachrichtigung";
 
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Immer";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Niemals";
+
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "Für 1 Stunde";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "Eine Woche lang";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "Drei Tage lang";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Bis morgen";
+
+/* loco:698b2f6aae1ca9d0290ad174 */
+"labelSameAsSystem" = "Gleiches wie System";
+
 /* loco:6989ff974ef31503cb002e23 */
 "labelSize" = "Grösse";
 
@@ -268,8 +289,6 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Brauchen Sie Hilfe?";
 
-/* loco:698b1086dc2a328c000cfd92 */
-"notificationsDisabledNever" = "Niemals";
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Lassen Sie kDrive in den macOS-Einstellungen zu:";
