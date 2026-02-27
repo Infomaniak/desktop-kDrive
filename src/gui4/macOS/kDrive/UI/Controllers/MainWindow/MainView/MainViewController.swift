@@ -27,6 +27,7 @@ extension NSToolbarItem.Identifier {
     static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
     static let syncControlsGroup = NSToolbarItem.Identifier("SyncControlsGroup")
     static let searchGroup = NSToolbarItem.Identifier("SearchGroup")
+    static let pauseResumeButton = NSToolbarItem.Identifier("PauseResumeButton")
 }
 
 final class MainViewController: IKSplitViewController {
@@ -189,7 +190,7 @@ extension MainViewController {
     }
 
     private func makeSyncControlsGroup() -> NSToolbarItemGroup {
-        let pauseResumeButton = NSToolbarItem(itemIdentifier: .init("PauseResumeButton"))
+        let pauseResumeButton = NSToolbarItem(itemIdentifier: .pauseResumeButton)
         pauseResumeButton.target = self
         pauseResumeButton.action = #selector(togglePauseResume)
         updatePauseResumeButton(pauseResumeButton)
@@ -228,11 +229,15 @@ extension MainViewController {
         let syncDbId = Int32(synchro.dbId)
 
         Task {
-            let status = synchro.progressInfo?.status
-            if status == .running || status == .starting {
-                try? await SyncJobs().stopSync(syncDbId: syncDbId)
-            } else {
-                try? await SyncJobs().startSync(syncDbId: syncDbId)
+            do {
+                let status = synchro.progressInfo?.status
+                if status == .running || status == .starting {
+                    try await SyncJobs().stopSync(syncDbId: syncDbId)
+                } else {
+                    try await SyncJobs().startSync(syncDbId: syncDbId)
+                }
+            } catch {
+                IKLogger.general.error("Failed to toggle sync pause/resume: \(error)")
             }
         }
     }
@@ -250,7 +255,7 @@ extension MainViewController {
         guard let toolbar = view.window?.toolbar else { return }
         for item in toolbar.items {
             if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup {
-                if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier.rawValue == "PauseResumeButton" }) {
+                if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier == .pauseResumeButton }) {
                     updatePauseResumeButton(pauseResumeItem)
                 }
             }
@@ -259,9 +264,7 @@ extension MainViewController {
 
     private func updatePauseResumeButton(_ item: NSToolbarItem) {
         guard let synchro = viewModel.currentSynchro else {
-            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
-            item.label = "Pause"
-            item.isEnabled = false
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
             return
         }
 
@@ -269,17 +272,19 @@ extension MainViewController {
         let hasBlockingError = viewModel.currentBlockingError != nil
 
         if hasBlockingError {
-            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
-            item.label = "Pause"
-            item.isEnabled = false
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
         } else if status == .running || status == .starting {
-            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
-            item.label = "Pause"
-            item.isEnabled = true
+            setPauseResumeAppearance(item, showPause: true, enabled: true)
         } else {
-            item.image = NSImage(systemSymbolName: "play.circle", accessibilityDescription: "Resume")
-            item.label = "Resume"
-            item.isEnabled = true
+            setPauseResumeAppearance(item, showPause: false, enabled: true)
         }
+    }
+
+    private func setPauseResumeAppearance(_ item: NSToolbarItem, showPause: Bool, enabled: Bool) {
+        let symbolName = showPause ? "pause.circle" : "play.circle"
+        let label = showPause ? "Pause" : "Resume"
+        item.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: label)
+        item.label = label
+        item.isEnabled = enabled
     }
 }
