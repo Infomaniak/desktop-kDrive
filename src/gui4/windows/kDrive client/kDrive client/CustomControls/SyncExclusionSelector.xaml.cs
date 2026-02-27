@@ -336,38 +336,22 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh exclusion map from server
         private async Task<bool> RefreshExcludedNodesAsync()
         {
-            if (Sync is ViewModels.Sync dbSync)
+            _excludedNodeIds.Clear();
+            if (Sync is null)
             {
-                DbId syncDbId = dbSync.DbId;
-                _excludedNodeIds.Clear();
-
-                if (syncDbId != -1) // Existing sync -> load exclusions
-                {
-                    var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                    var res = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None);
-                    if (res is null)
-                    {
-                        Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
-                        _excludedNodeIds.Clear();
-                        return false;
-                    }
-                    _excludedNodeIds = res;
-                    return await RefreshExcludedNodePathsAsync();
-                }
-
-                // New sync -> no exclusions
-                _excludedNodePathsMap.Clear();
-                return true;
-            }
-            else if (Sync is NewSync tmpSync)
-            {
-                _excludedNodeIds.Clear();
-                _excludedNodeIds = tmpSync.ExcludedNodeIds.ToList();
-                return await RefreshExcludedNodePathsAsync();
+                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null.");
+                return false;
             }
 
-            Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
-            return false;
+            var res = await Sync.GetExcludedNodeIds();
+            if (res is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
+                _excludedNodeIds.Clear();
+                return false;
+            }
+            _excludedNodeIds = res;
+            return await RefreshExcludedNodePathsAsync();
         }
 
         // Ensure path map for excluded nodes is up to date (add new)

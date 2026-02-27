@@ -1,7 +1,6 @@
 using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.IO;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -18,7 +17,7 @@ namespace Infomaniak.kDrive.CustomControls
         public string ItemPath
         {
             get => (string)GetValue(ItemPathProperty);
-            set => SetValue(ItemPathProperty, Path.GetFileName(value) ?? Path.GetDirectoryName(value) ?? value);
+            set => SetValue(ItemPathProperty,value);
         }
 
         public NodeType? NodeType

@@ -1,6 +1,7 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,7 +27,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set
             {
                 SetValue(ErrorProperty, value);
-                IsNodeError = value?.ErrorLevel == Types.ErrorLevel.Node;
             }
         }
 
@@ -36,19 +36,21 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(DescriptionProperty, value); }
         }
 
+        public bool HasDescription => Description.Count() > 1;
+
         public string? ActionText
         {
             get { return (string?)GetValue(ActionTextProperty); }
             set { SetValue(ActionTextProperty, value); }
         }
 
-        public Control? CustomContent
+        public FrameworkElement? CustomContent
         {
-            get { return (Control?)GetValue(CustomContentProperty); }
+            get { return (FrameworkElement?)GetValue(CustomContentProperty); }
             set { SetValue(CustomContentProperty, value); }
         }
 
-        private bool IsNodeError { get; set; } = false;
+        private bool HasItemPath => Error?.Path.Length > 0;
 
         public delegate void ActionClickEventHandler(object sender, RoutedEventArgs e);
         public event ActionClickEventHandler? ActionClick;
@@ -66,7 +68,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             DependencyProperty.Register(nameof(ActionText), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
 
         public static readonly DependencyProperty CustomContentProperty =
-            DependencyProperty.Register(nameof(CustomContent), typeof(Control), typeof(ErrorCard), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(CustomContent), typeof(FrameworkElement), typeof(ErrorCard), new PropertyMetadata(null));
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {

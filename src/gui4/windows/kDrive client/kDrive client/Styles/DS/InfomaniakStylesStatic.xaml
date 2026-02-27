@@ -67,6 +67,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Arrows.arrow-loop">ms-appx:///Assets/DS/Icons/Arrows/arrows-loop.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up">ms-appx:///Assets/DS/Icons/Arrows/square-arrow-diagonal-up.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Arrows.arrows-loop-automatic">ms-appx:///Assets/DS/Icons/Arrows/arrows-loop-automatic.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Arrows.arrow-right">ms-appx:///Assets/DS/Icons/Arrows/arrow-right.svg</x:String>
 
     <!-- Media -->
     <x:String x:Key="Infomaniak.DS.Icons.Media.pause">ms-appx:///Assets/DS/Icons/Media/pause.svg</x:String>

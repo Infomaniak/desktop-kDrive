@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Feb 2026 12:15:09 +0100 
+  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -142,8 +142,18 @@ You can access your advanced synchronizations from the drive selector on the hom
     <value>Your files are copied to your computer. 
 You can open them at any time, even without Internet access.</value> 
   </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>You do not have permission to access this kDrive. Please check your rights or contact your administrator.</value> 
+    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>You can wake it up from the web interface.</value> 
+  </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.</value> 
+  </data> 
+  <data name="betaSettings" xml:space="preserve"> 
+    <value>Beta program</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Your browser should open automatically to complete the sign-in. Once signed in, you will be returned automatically to kDrive.</value> 
@@ -184,8 +194,14 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonCreateAccount" xml:space="preserve"> 
     <value>Create an account</value> 
   </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Create a new synchronization</value> 
+  </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Default location</value> 
+  </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Understanding the problem</value> 
   </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
     <value>Share an idea</value> 
@@ -204,6 +220,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonManage" xml:space="preserve"> 
     <value>Manage</value> 
+  </data> 
+  <data name="buttonManageDiskSpace" xml:space="preserve"> 
+    <value>Manage disk space</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Open debug folder</value> 
@@ -224,11 +243,23 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonOpenKDrive" xml:space="preserve"> 
     <value>Open kDrive</value> 
   </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Open Parent Folder</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Managing exclusions</value> 
+  </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Open synchronization settings</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Refresh</value> 
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Release notes</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Resume synchronization</value> 
   </data> 
   <data name="buttonRestartSynchro" xml:space="preserve"> 
     <value>Restart synchronization</value> 
@@ -305,11 +336,32 @@ The source code of this application can be reviewed, the collected information i
   <data name="debugLogsSettings" xml:space="preserve"> 
     <value>Debug logs</value> 
   </data> 
+  <data name="defaultErrorDescription" xml:space="preserve"> 
+    <value>The technical details below may help identify the issue.
+Your synchronization will restart automatically in a few moments.
+
+If the problem continues, please contact our support team.</value> 
+  </data> 
+  <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
+    <value>Technical Details</value> 
+  </data> 
+  <data name="defaultErrorTitle" xml:space="preserve"> 
+    <value>An Unexpected Error Has Occurred</value> 
+  </data> 
   <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
     <value>These files are ignored by default and cannot be modified.</value> 
   </data> 
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
     <value>Automatically excluded</value> 
+  </data> 
+  <data name="deleteCancelErrorTitle" xml:space="preserve"> 
+    <value>Deletion cancelled</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>In these situations, a new synchronization is required to continue using kDrive correctly.</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangedTitle" xml:space="preserve"> 
+    <value>A change has been detected in your configuration.</value> 
   </data> 
   <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
     <value>Please select an empty folder that is not in the root of a drive.
@@ -377,6 +429,15 @@ Do not close the application during the process.</value>
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Change the synchronization mode?</value> 
   </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Here's how to restore synchronization:</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>The disk containing your synchronization folder is no longer connected</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Reconnect to resume synchronization.</value> 
+  </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
     <value>Disable notifications</value> 
   </data> 
@@ -433,6 +494,12 @@ Please try again in a few minutes.</value>
   <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
     <value>kDrive waking up</value> 
   </data> 
+  <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
+    <value>Duplicate names</value> 
+  </data> 
+  <data name="editCancelErrorTitle" xml:space="preserve"> 
+    <value>Edit cancelled</value> 
+  </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
     <value>Save diagnostic information on my computer.</value> 
   </data> 
@@ -442,8 +509,97 @@ Please try again in a few minutes.</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Enter your password</value> 
   </data> 
+  <data name="errCreateCancelDescription" xml:space="preserve"> 
+    <value>You do not have the rights to create a file or folder in this location.
+Ask the owner or your administrator for access.</value> 
+  </data> 
+  <data name="errDeleteCancelDescription" xml:space="preserve"> 
+    <value>You do not have permission to delete this file or folder. It will be restored to its original location.
+Please ask the owner or your administrator for access.
+</value> 
+  </data> 
+  <data name="errDuplicateNamesDescription" xml:space="preserve"> 
+    <value>A file or folder with this name already exists.</value> 
+  </data> 
+  <data name="errEditCancelDescription" xml:space="preserve"> 
+    <value>You do not have permission to edit this file or folder.
+It will be restored to its previous version. 
+Your changes are available in a separate file next to the original, with conflict added to its name.
+Please ask the owner or your administrator for access.
+</value> 
+  </data> 
+  <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
+    <value>This item has been excluded from synchronization by a custom template.
+You can disable this type of notification in the exclusion parameters.
+</value> 
+  </data> 
+  <data name="errFileExistsDescription" xml:space="preserve"> 
+    <value>A file with this name already exists.</value> 
+  </data> 
+  <data name="errFileLockedDescription" xml:space="preserve"> 
+    <value>This file is locked by another user and cannot be modified at the moment.
+Your changes will be synchronized later.</value> 
+  </data> 
+  <data name="errFileRescuedDescription" xml:space="preserve"> 
+    <value>The file was modified locally when it had been deleted on the remote kDrive.
+The local copy has been saved in the recovery folder.</value> 
+  </data> 
+  <data name="errFileTooBigDescription" xml:space="preserve"> 
+    <value>This file exceeds the maximum authorized size (50 GB).
+Contact your administrator to increase the file size limit.</value> 
+  </data> 
+  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
+    <value>This file exceeds the maximum authorized size (50 GB).
+Contact support to unlock the limit.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Fichier trop volumineux</value> 
+  </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this file contains one or more characters that are not supported by your device</value> 
+  </data> 
+  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
+    <value>The file or folder name cannot end with a space.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
+    <value>The file or folder name cannot contain only spaces.</value> 
+  </data> 
+  <data name="errHardlinkDescription" xml:space="preserve"> 
+    <value>Hard links are not supported for synchronization.</value> 
+  </data> 
+  <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
+    <value>The operation performed on this element is forbidden.
+Please request access from the owner or your administrator.</value> 
+  </data> 
+  <data name="errMoveCancelDescription" xml:space="preserve"> 
+    <value>You do not have permission to move this file or folder here, it will be restored to its original location.
+Please ask the owner or your administrator for access.
+</value> 
+  </data> 
+  <data name="errNameLengthDescription" xml:space="preserve"> 
+    <value>The file or folder name is too long.</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>There is not enough space on your computer to synchronize this file.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
+    <value>This file or folder name contains unsupported characters.</value> 
+  </data> 
+  <data name="errPathLengthDescription" xml:space="preserve"> 
+    <value>The file path is too long for your device. Shorten it and try again.</value> 
+  </data> 
+  <data name="errQuotaExceededDescription" xml:space="preserve"> 
+    <value>Your kDrive is full.
+Free up space or upgrade your offer to synchronize this file.</value> 
+  </data> 
+  <data name="errReservedNameDescription" xml:space="preserve"> 
+    <value>This name is reserved by the system. Rename the item and try again.</value> 
+  </data> 
+  <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
+    <value>This item was temporarily blacklisted after repeated failures. It will be retried later.</value> 
+  </data> 
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
+    <value>The upload could not be completed. Please try again later.</value> 
   </data> 
   <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
     <value>Files to verify</value> 
@@ -459,6 +615,9 @@ Please try again in a few minutes.</value>
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>Files matching this rule will not be synchronized.</value> 
   </data> 
+  <data name="excludedByTemplateErrorTitle" xml:space="preserve"> 
+    <value>Excluded by rule</value> 
+  </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
     <value>Enables the collection of additional information useful for support.</value> 
   </data> 
@@ -473,6 +632,15 @@ Please try again in a few minutes.</value>
   </data> 
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Help us improve kDrive</value> 
+  </data> 
+  <data name="fileExistsErrorTitle" xml:space="preserve"> 
+    <value>File already exists</value> 
+  </data> 
+  <data name="fileLockedErrorTitle" xml:space="preserve"> 
+    <value>File locked</value> 
+  </data> 
+  <data name="fileRescuedErrorTitle" xml:space="preserve"> 
+    <value>File rescued</value> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>File synchronization mode</value> 
@@ -501,14 +669,29 @@ Please try again in a few minutes.</value>
   <data name="forThreeDays" xml:space="preserve"> 
     <value>For three days</value> 
   </data> 
+  <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
+    <value>Access denied</value> 
+  </data> 
+  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Name ends with a space</value> 
+  </data> 
   <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
     <value>Unsupported character</value> 
+  </data> 
+  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
+    <value>Name contains only spaces</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hello %@, %@</value> 
   </data> 
+  <data name="hardlinkErrorTitle" xml:space="preserve"> 
+    <value>Hard link not supported</value> 
+  </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
+  </data> 
+  <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
+    <value>Access forbidden</value> 
   </data> 
   <data name="infomaniakSupport" xml:space="preserve"> 
     <value>Infomaniak Support</value> 
@@ -522,11 +705,24 @@ Please try again in a few minutes.</value>
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Some files could not be synchronized.</value> 
   </data> 
+  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>The sync folder on your kDrive is no longer available or you no longer have access to it.
+Please restore the folder, make sure you have the necessary access rights, or delete and recreate the synchronization.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Remote sync folder not accessible</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
+    <value>It looks like one of your synchronized folders is inside another synchronized folder. To fix this, keep only one synchronization for that location and make sure your sync folders do not overlap or contain each other.</value> 
+  </data> 
+  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
+    <value>Nested synchronizations</value> 
+  </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>This item is not available on this device. It will open in your browser.</value> 
   </data> 
-  <data name="joinBetaProgram" xml:space="preserve"> 
-    <value>Join the beta program</value> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ ago</value> 
@@ -534,8 +730,36 @@ Please try again in a few minutes.</value>
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
   </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Create a %@.</value> 
+    <comment>use in pair with: labelNewSync</comment> 
+  </data> 
+  <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
+    <value>External disk disconnected</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Folder</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Deleted folder</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Moved or modified folder</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>The folder may have been moved to another disk and then returned to its original location.</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Moved or renamed folder</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Recreated or replaced folder</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>The folder has been deleted and recreated, or replaced by another folder with the same name.</value> 
   </data> 
   <data name="labelGigaBytes" xml:space="preserve"> 
     <value>Gb</value> 
@@ -555,8 +779,24 @@ Please try again in a few minutes.</value>
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
   </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>New device detected</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>You're using kDrive on a new computer, after restoring from a backup.</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>new synchronization</value> 
+    <comment>use in pair with:  labelCreateNewSync</comment> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Original location :</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Return it to its original position.</value> 
   </data> 
   <data name="labelRules" xml:space="preserve"> 
     <value>Rules</value> 
@@ -593,6 +833,9 @@ Please try again in a few minutes.</value>
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Synced from your computer</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Synchronization folders</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Location</value> 
@@ -639,9 +882,6 @@ Please try again in a few minutes.</value>
   <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
     <value>Last known file location:</value> 
   </data> 
-  <data name="localFileAccessErrorDialogOpenParentFolder" xml:space="preserve"> 
-    <value>Open Parent Folder</value> 
-  </data> 
   <data name="localFileAccessErrorTitle" xml:space="preserve"> 
     <value>File inaccessible</value> 
   </data> 
@@ -669,6 +909,14 @@ Please try again in a few minutes.</value>
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Send debug folder to Infomaniak Support</value> 
   </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Some file names may contain unsupported special characters (such as double quotes, backslashes, or line breaks).
+
+Please check and rename any files with unusual characters, then try again.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Invalid file name</value> 
+  </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
     <value>Compressing logs…</value> 
   </data> 
@@ -681,6 +929,9 @@ Please try again in a few minutes.</value>
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.</value> 
   </data> 
+  <data name="moveCancelErrorTitle" xml:space="preserve"> 
+    <value>Move canceled</value> 
+  </data> 
   <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
     <value>Move deleted files to the computer’s recycle bin</value> 
   </data> 
@@ -690,8 +941,20 @@ Please try again in a few minutes.</value>
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>More storage, more features with my kSuite+</value> 
   </data> 
+  <data name="nameLengthErrorTitle" xml:space="preserve"> 
+    <value>Name too long</value> 
+  </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Need help?</value> 
+  </data> 
+  <data name="networkErrorOtherDescription" xml:space="preserve"> 
+    <value>We’re having trouble connecting to kDrive. We’ll keep trying automatically.
+
+Please check your Internet connection and firewall settings. 
+If the problem continues, contact our support team.</value> 
+  </data> 
+  <data name="networkErrorOtherTitle" xml:space="preserve"> 
+    <value>Connection issue</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>You are not logged in</value> 
@@ -699,8 +962,14 @@ Please try again in a few minutes.</value>
   <data name="noResultsFound" xml:space="preserve"> 
     <value>No results found”</value> 
   </data> 
+  <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve"> 
+    <value>Not enough disk space</value> 
+  </data> 
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Not synchronized</value> 
+  </data> 
+  <data name="notYetSupportedCharErrorTitle" xml:space="preserve"> 
+    <value>Unsupported character</value> 
   </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Always</value> 
@@ -817,6 +1086,9 @@ Please wait a few moments.</value>
   <data name="pathCopiedToClipboard" xml:space="preserve"> 
     <value>Path copied to clipboard</value> 
   </data> 
+  <data name="pathLengthErrorTitle" xml:space="preserve"> 
+    <value>Path too long</value> 
+  </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Define how kDrive connects to the Internet.</value> 
   </data> 
@@ -847,6 +1119,9 @@ Please wait a few moments.</value>
   <data name="proxyUser" xml:space="preserve"> 
     <value>Username</value> 
   </data> 
+  <data name="quotaExceededErrorTitle" xml:space="preserve"> 
+    <value>Storage quota exceeded</value> 
+  </data> 
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Internal</value> 
   </data> 
@@ -858,6 +1133,9 @@ Please wait a few moments.</value>
   </data> 
   <data name="removeSync" xml:space="preserve"> 
     <value>Remove synchronization</value> 
+  </data> 
+  <data name="reservedNameErrorTitle" xml:space="preserve"> 
+    <value>Reserved name</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
     <value>Search in %@</value> 
@@ -987,6 +1265,40 @@ Internet connection required for access.</value>
   <data name="synchronizationSettings" xml:space="preserve"> 
     <value>Synchronization</value> 
   </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>A file or folder in your synchronization folder appears to be corrupted.
+Synchronization has been paused. Please check your files and try again.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Corrupted file detected</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Your computer does not have enough available storage space.
+Synchronization has been paused. Please free up some space and try again.</value> 
+  </data> 
+  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Not enough disk space</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Check the folder's location or access rights.</value> 
+  </data> 
+  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Synchronization folder inaccessible</value> 
+  </data> 
+  <data name="systemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>This folder is no longer accessible. An action is required to resume synchronization.</value> 
+  </data> 
+  <data name="systemErrorSyncDirMissingErrorTitle" xml:space="preserve"> 
+    <value>Synchronization folder not found</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>The Lite Sync extension may not be installed, or the Windows Search service might be disabled.
+
+If the problem continues, you can convert the synchronization to a standard sync or contact our support team for help.</value> 
+  </data> 
+  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Lite Sync plugin cannot start</value> 
+  </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Activities</value> 
   </data> 
@@ -995,6 +1307,9 @@ Internet connection required for access.</value>
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Storage</value> 
+  </data> 
+  <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
+    <value>Temporarily blacklisted</value> 
   </data> 
   <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
     <value>A notification will inform you when a file is excluded by this rule</value> 
@@ -1031,6 +1346,9 @@ If the problem persists, please contact support.</value>
   </data> 
   <data name="updateSettings" xml:space="preserve"> 
     <value>Update</value> 
+  </data> 
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
+    <value>Upload incomplete</value> 
   </data> 
   <data name="userExclusionFileListDescription" xml:space="preserve"> 
     <value>Add files to exclude from synchronization.</value> 

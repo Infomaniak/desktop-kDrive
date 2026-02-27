@@ -25,7 +25,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             if (ViewModel.SelectedSync is not null)
             {
-                _errorPageVM = new ErrorPageVM(ViewModel.SelectedSync);
+                _errorPageVM = new ErrorPageVM { Sync = ViewModel.SelectedSync };
             }
         }
 
@@ -42,10 +42,12 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
         {
-            _errorPageVM = null;
             if (e.NewValue is not null)
             {
-                _errorPageVM = new ErrorPageVM(e.NewValue);
+                if (_errorPageVM is not null)
+                    _errorPageVM.Sync = e.NewValue;
+                else
+                    _errorPageVM = new ErrorPageVM { Sync = e.NewValue };
             }
         }
     }
