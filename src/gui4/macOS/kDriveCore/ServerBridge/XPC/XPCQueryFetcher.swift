@@ -44,6 +44,7 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
         case unableToDecodeReply(parsingError: Error)
     }
 
+    @discardableResult
     func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
         let requestData = try encoder.encode(request)
 
