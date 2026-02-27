@@ -34,4 +34,18 @@ public struct ParametersJobs: Sendable {
 
         return decodedMessage.body.parametersInfo
     }
+
+    public func updateParameters(parametersInfo: ParametersInfo) async throws {
+        IKLogger.data.log("Query for updating parameters")
+        let query = ParametersUpdateQuery(parametersInfo: parametersInfo)
+        let request = await RequestMessage<ParametersUpdateQuery>(
+            num: RequestNum.PARAMETERS_UPDATE,
+            body: query
+        )
+
+        _ = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<EmptyResponse>.self
+        )
+    }
 }
