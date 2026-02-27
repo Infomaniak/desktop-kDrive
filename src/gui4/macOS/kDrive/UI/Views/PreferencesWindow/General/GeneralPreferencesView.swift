@@ -85,19 +85,7 @@ struct GeneralPreferencesView: View {
                 }
             }
 
-            Section {
-                IKLabeledContent(KDriveLocalizable.needHelpSetting) {
-                    Button(KDriveLocalizable.buttonHelpdesk) {
-                        // TODO: Open Support
-                    }
-                }
-
-                IKLabeledContent(KDriveLocalizable.feedbackSetting) {
-                    Button(KDriveLocalizable.buttonFeedback) {
-                        // TODO: Open Feedback
-                    }
-                }
-            }
+            GeneralPreferencesHelpSection()
         }
         .groupedFormatStyle()
     }
