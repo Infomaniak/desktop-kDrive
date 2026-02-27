@@ -137,6 +137,8 @@ namespace Infomaniak.kDrive.Types
         // Updater
         UPDATER_SHOW_DIALOG,
         UPDATER_STATE_CHANGED,
+        // Login
+        LOGIN_SEND_AUTHORIZATION_CODE,
         // Utility
         UTILITY_SHOW_NOTIFICATION,
         UTILITY_ERROR_ADDED_LEGACY,
