@@ -24,7 +24,9 @@ import kDriveCoreUI
 import SwiftUI
 
 extension NSToolbarItem.Identifier {
-    static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
+    static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
+    static let syncControlsGroup = NSToolbarItem.Identifier("SyncControlsGroup")
+    static let searchGroup = NSToolbarItem.Identifier("SearchGroup")
 }
 
 final class MainViewController: IKSplitViewController {
@@ -57,6 +59,8 @@ final class MainViewController: IKSplitViewController {
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
                 self?.onModalPathChange(newPath)
             }
+
+        bindToolbarToViewModel()
     }
 
     private func configureWindowAppearance() {
@@ -130,14 +134,21 @@ final class MainViewController: IKSplitViewController {
 extension MainViewController {
     override func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         var initialItems = super.toolbarAllowedItemIdentifiers(toolbar)
-        initialItems.append(.searchTextField)
+        initialItems.append(contentsOf: [.supportGroup, .syncControlsGroup, .searchGroup])
 
         return initialItems
     }
 
     override func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         var initialItems = super.toolbarDefaultItemIdentifiers(toolbar)
-        initialItems.append(.searchTextField)
+        initialItems.append(contentsOf: [
+            .flexibleSpace,
+            .supportGroup,
+            .space,
+            .syncControlsGroup,
+            .space,
+            .searchGroup
+        ])
 
         return initialItems
     }
@@ -152,10 +163,123 @@ extension MainViewController {
         }
 
         switch itemIdentifier {
-        case .searchTextField:
-            return NSSearchToolbarItem(itemIdentifier: .searchTextField)
+        case .supportGroup:
+            return makeSupportGroup()
+        case .syncControlsGroup:
+            return makeSyncControlsGroup()
+        case .searchGroup:
+            return makeSearchGroup()
         default:
             return nil
+        }
+    }
+
+    // MARK: - Toolbar Item Factories
+
+    private func makeSupportGroup() -> NSToolbarItemGroup {
+        let helpButton = NSToolbarItem(itemIdentifier: .init("HelpButton"))
+        helpButton.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: "Help")
+        helpButton.label = "Help"
+        helpButton.target = self
+        helpButton.action = #selector(openHelpURL)
+
+        let group = NSToolbarItemGroup(itemIdentifier: .supportGroup)
+        group.subitems = [helpButton]
+        return group
+    }
+
+    private func makeSyncControlsGroup() -> NSToolbarItemGroup {
+        let pauseResumeButton = NSToolbarItem(itemIdentifier: .init("PauseResumeButton"))
+        pauseResumeButton.target = self
+        pauseResumeButton.action = #selector(togglePauseResume)
+        updatePauseResumeButton(pauseResumeButton)
+
+        let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
+        settingsButton.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
+        settingsButton.label = "Settings"
+        settingsButton.target = nil
+        settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
+
+        let group = NSToolbarItemGroup(itemIdentifier: .syncControlsGroup)
+        group.subitems = [pauseResumeButton, settingsButton]
+        return group
+    }
+
+    private func makeSearchGroup() -> NSToolbarItemGroup {
+        let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
+        searchButton.image = NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Search")
+        searchButton.label = "Search"
+        searchButton.target = nil
+        searchButton.action = nil
+
+        let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
+        group.subitems = [searchButton]
+        return group
+    }
+
+    // MARK: - Toolbar Actions
+
+    @objc private func openHelpURL() {
+        NSWorkspace.shared.open(URLConstants.helpURL)
+    }
+
+    @objc private func togglePauseResume() {
+        guard let synchro = viewModel.currentSynchro else { return }
+        let syncDbId = Int32(synchro.dbId)
+
+        Task {
+            let status = synchro.progressInfo?.status
+            if status == .running || status == .starting {
+                try? await SyncJobs().stopSync(syncDbId: syncDbId)
+            } else {
+                try? await SyncJobs().startSync(syncDbId: syncDbId)
+            }
+        }
+    }
+
+    // MARK: - Toolbar State Updates
+
+    private func bindToolbarToViewModel() {
+        viewModel.$currentSynchroContext
+            .receiveOnMain(store: &bindStore) { [weak self] _ in
+                self?.refreshPauseResumeToolbarItem()
+            }
+    }
+
+    private func refreshPauseResumeToolbarItem() {
+        guard let toolbar = view.window?.toolbar else { return }
+        for item in toolbar.items {
+            if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup {
+                if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier.rawValue == "PauseResumeButton" }) {
+                    updatePauseResumeButton(pauseResumeItem)
+                }
+            }
+        }
+    }
+
+    private func updatePauseResumeButton(_ item: NSToolbarItem) {
+        guard let synchro = viewModel.currentSynchro else {
+            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
+            item.label = "Pause"
+            item.isEnabled = false
+            return
+        }
+
+        let status = synchro.progressInfo?.status
+        let hasBlockingError = viewModel.currentBlockingError != nil
+
+        if hasBlockingError {
+            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
+            item.label = "Pause"
+            item.isEnabled = false
+        } else if status == .running || status == .starting {
+            item.image = NSImage(systemSymbolName: "pause.circle", accessibilityDescription: "Pause")
+            item.label = "Pause"
+            item.isEnabled = true
+        } else {
+            item.image = NSImage(systemSymbolName: "play.circle", accessibilityDescription: "Resume")
+            item.label = "Resume"
+            item.isEnabled = true
         }
     }
 }
