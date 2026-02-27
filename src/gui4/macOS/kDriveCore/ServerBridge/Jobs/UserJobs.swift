@@ -54,7 +54,7 @@ public struct UserJobs: Sendable {
         let query = UserQuery(userDbId: dbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 
-        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         await coherentCache.removeUser(dbId: dbId)
     }
