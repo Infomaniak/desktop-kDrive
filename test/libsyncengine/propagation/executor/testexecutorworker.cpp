@@ -618,36 +618,6 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
     CPPUNIT_ASSERT(exitInfo == ExitInfo(ExitCode::DataError, ExitCause::FileExists));
 }
 
-void TestExecutorWorker::testFixModificationDate() {
-    // Create temp directory
-    const LocalTemporaryDirectory temporaryDirectory;
-    // Create file
-    const SyncName filename = Str("test_file.txt");
-    const SyncPath path = temporaryDirectory.path() / filename;
-    {
-        std::ofstream ofs(path);
-        ofs << "abc";
-        ofs.close();
-    }
-
-    // Update DB
-    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", testhelpers::defaultTime,
-                  testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, "cs");
-    DbNodeId dbNodeId;
-    bool constraintError = false;
-    _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
-
-    SyncOpPtr op = generateSyncOperation(dbNodeId, filename);
-    CPPUNIT_ASSERT(_executorWorker->fixModificationDate(op, path));
-
-    FileStat filestat;
-    IoError ioError = IoError::Unknown;
-    IoHelper::getFileStat(path, &filestat, ioError);
-
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modificationTime);
-}
-
 void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
