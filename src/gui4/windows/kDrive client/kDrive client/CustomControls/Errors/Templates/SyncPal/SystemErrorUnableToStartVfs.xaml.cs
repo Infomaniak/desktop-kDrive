@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 return;
             }
             var destPage = Error.Sync.IsAdvanced ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
-            frame?.Navigate(destPage, Error.Sync.Drive);
+            (frame?.Navigate(destPage, Error.Sync.Drive));
 
             if (control is not null)
                 control.IsEnabled = true;

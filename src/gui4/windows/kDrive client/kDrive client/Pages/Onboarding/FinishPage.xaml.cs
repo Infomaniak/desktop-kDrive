@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class FinishPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public FinishPage()
         {

@@ -5,16 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.Storage.Pickers;
 using System;
-using System.Threading;
 using System.Linq;
+using System.Threading;
+using Windows.Storage.Pickers;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class SyncExclusionPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
         private DriveSetupContentDialogVM? DriveSetupContentDialogVM { get; set; }

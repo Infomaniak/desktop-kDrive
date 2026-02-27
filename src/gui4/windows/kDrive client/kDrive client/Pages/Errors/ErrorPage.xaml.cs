@@ -1,4 +1,3 @@
-using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -10,7 +9,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ErrorPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
         public ErrorPage()

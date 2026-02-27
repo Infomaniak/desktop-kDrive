@@ -1,6 +1,5 @@
 ﻿using DynamicData;
 using DynamicData.Binding;
-using ExCSS;
 using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -13,7 +12,7 @@ namespace Infomaniak.kDrive.Pages.Errors
     partial class ErrorPageVM : UISafeObservableObject, IDisposable
     {
         private Sync _syncVM;
-        private readonly List<IDisposable?> _errorsSubscription = new();
+        private readonly List<IDisposable?> _errorsSubscription = [];
 
         public Sync SyncVM
         {
@@ -49,9 +48,9 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             if (Sync is null)
             {
-                FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
-                SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
-                OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                FileErrors = new ReadOnlyObservableCollection<Error>([]);
+                SyncDirErrors = new ReadOnlyObservableCollection<Error>([]);
+                OtherErrors = new ReadOnlyObservableCollection<Error>([]);
                 return;
             }
 
@@ -94,15 +93,16 @@ namespace Infomaniak.kDrive.Pages.Errors
         private static bool IsInSyncDirErrorList(Error error)
         {
             // List of Types of errors to be included in the SyncDirErrors list:
-            List<Type> syncDirErrorTypes = new List<Type>
-            {
+            List<Type> syncDirErrorTypes =
+            [
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirAccessError),
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirDiskMissing),
                 typeof(CustomControls.Errors.Templates.SyncPal.DataErrorSyncDirChanged)
-            };
+            ];
 
             Type? errorType = ErrorFactory.GetBestControlType(error);
-            if(errorType is null) {
+            if (errorType is null)
+            {
                 return false;
             }
             return syncDirErrorTypes.Contains(errorType);

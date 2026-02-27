@@ -21,81 +21,81 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     // Shared JSON keys used in server communication
     public struct JsonKeys
     {
-        static public string ExitCode = "code";
-        static public string ExitCause = "cause";
+        public static string ExitCode = "code";
+        public static string ExitCause = "cause";
 
-        static public string OAuthCode = "code";
-        static public string OAuthCodeVerifier = "codeVerifier";
+        public static string OAuthCode = "code";
+        public static string OAuthCodeVerifier = "codeVerifier";
 
-        static public string UserDbId = "userDbId";
-        static public string UserDbIds = "userDbIds";
-        static public string UserInfoList = "userInfoList";
-        static public string UserInfo = "userInfo";
+        public static string UserDbId = "userDbId";
+        public static string UserDbIds = "userDbIds";
+        public static string UserInfoList = "userInfoList";
+        public static string UserInfo = "userInfo";
 
-        static public string AccountDbId = "accountDbId";
-        static public string AccountId = "accountId";
-        static public string AccountName = "accountName";
-        static public string AccountInfoList = "accountInfoList";
-        static public string AccountInfo = "accountInfo";
+        public static string AccountDbId = "accountDbId";
+        public static string AccountId = "accountId";
+        public static string AccountName = "accountName";
+        public static string AccountInfoList = "accountInfoList";
+        public static string AccountInfo = "accountInfo";
 
-        static public string DriveDbId = "driveDbId";
-        static public string DriveInfoList = "driveInfoList";
-        static public string DriveInfo = "driveInfo";
-        static public string DriveId = "driveId";
+        public static string DriveDbId = "driveDbId";
+        public static string DriveInfoList = "driveInfoList";
+        public static string DriveInfo = "driveInfo";
+        public static string DriveId = "driveId";
 
-        static public string SyncInfoList = "syncInfoList";
-        static public string SyncDbId = "syncDbId";
-        static public string SyncInfo = "syncInfo";
-        static public string SyncProgress = "syncProgress";
-        static public string SyncStep = "syncStep";
-        static public string SyncStatus = "syncStatus";
-        static public string SyncFileItemInfo = "itemInfo";
-        static public string RestartSync = "restartSync";
+        public static string SyncInfoList = "syncInfoList";
+        public static string SyncDbId = "syncDbId";
+        public static string SyncInfo = "syncInfo";
+        public static string SyncProgress = "syncProgress";
+        public static string SyncStep = "syncStep";
+        public static string SyncStatus = "syncStatus";
+        public static string SyncFileItemInfo = "itemInfo";
+        public static string RestartSync = "restartSync";
 
-        static public string ErrorDbId = "errorDbId";
-        static public string ErrorInfo = "errorInfo";
-        static public string ErrorInfoList = "errorInfoList";
-        static public string ErrorMessage = "errorMessage";
+        public static string ErrorDbId = "errorDbId";
+        public static string ErrorInfo = "errorInfo";
+        public static string ErrorInfoList = "errorInfoList";
+        public static string ErrorMessage = "errorMessage";
 
-        static public string NodeId = "nodeId";
-        static public string NodeInfo = "nodeInfo";
-        static public string NodeIdList = "nodeIdList";
-        static public string LocalFolderPath = "localFolderPath";
-        static public string ServerFolderPath = "serverFolderPath";
-        static public string ServerFolderNodeId = "serverFolderNodeId";
-        static public string LiteSync = "liteSync";
-        static public string BlackList = "blackList";
+        public static string NodeId = "nodeId";
+        public static string NodeInfo = "nodeInfo";
+        public static string NodeIdList = "nodeIdList";
+        public static string LocalFolderPath = "localFolderPath";
+        public static string ServerFolderPath = "serverFolderPath";
+        public static string ServerFolderNodeId = "serverFolderNodeId";
+        public static string LiteSync = "liteSync";
+        public static string BlackList = "blackList";
 
-        static public string SearchString = "searchString";
-        static public string SearchInfoList = "searchInfoList";
+        public static string SearchString = "searchString";
+        public static string SearchInfoList = "searchInfoList";
 
-        static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
-        static public string FolderSize = "folderSize";
-        static public string WithPath = "withPath";
-        static public string ParmsInfo = "parametersInfo";
+        public static string NodeSubFolderInfoList = "nodeSubFolderInfoList";
+        public static string FolderSize = "folderSize";
+        public static string WithPath = "withPath";
+        public static string ParmsInfo = "parametersInfo";
 
-        static public string ExclusionTemplatesList = "exclusionTemplateList";
-        static public string Default = "default";
+        public static string ExclusionTemplatesList = "exclusionTemplateList";
+        public static string Default = "default";
 
-        static public string Limit = "limit";
-        static public string IsValid = "isValid";
-        static public string Path = "path";
-        static public string BasePath = "basePath";
-        static public string GoodPath = "goodPath";
-        static public string BestMode = "bestMode";
-        static public string Value = "value";
-        static public string Size= "size";
+        public static string Limit = "limit";
+        public static string IsValid = "isValid";
+        public static string Path = "path";
+        public static string BasePath = "basePath";
+        public static string GoodPath = "goodPath";
+        public static string BestMode = "bestMode";
+        public static string Value = "value";
+        public static string Size = "size";
 
-        static public string LinkUrl = "linkUrl";
+        public static string LinkUrl = "linkUrl";
 
-        static public string VersionInfo = "versionInfo";
-        static public string DriveAvailableInfoList = "driveAvailableInfoList";
+        public static string VersionInfo = "versionInfo";
+        public static string DriveAvailableInfoList = "driveAvailableInfoList";
 
-        static public string UpdateChannel = "channel";
-        static public string UpdateState = "updateState";
-        static public string State = "state";
-        static public string Percentage = "percentage";
+        public static string UpdateChannel = "channel";
+        public static string UpdateState = "updateState";
+        public static string State = "state";
+        public static string Percentage = "percentage";
 
-        static public string IncludeArchivedLogs = "includeArchivedLogs";
+        public static string IncludeArchivedLogs = "includeArchivedLogs";
     }
 }

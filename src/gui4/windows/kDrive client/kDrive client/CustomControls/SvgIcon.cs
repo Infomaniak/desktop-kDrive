@@ -59,7 +59,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static void OnUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var type = d.GetType();
             if (d is SvgIcon icon && icon._isLoaded)
                 icon.ScheduleRefresh();
         }
@@ -102,7 +101,7 @@ namespace Infomaniak.kDrive.CustomControls
             var token = _refreshCts.Token;
 
             // Enqueue on UI dispatcher
-            _ = DispatcherQueue.TryEnqueue(async () =>
+            DispatcherQueue.TryEnqueue(async () =>
             {
                 try
                 {
@@ -209,8 +208,10 @@ namespace Infomaniak.kDrive.CustomControls
             if (double.IsNaN(ratio) || double.IsInfinity(ratio))
                 ratio = 1.0F;
 
-            double targetWidth = 0;
-            double targetHeight = 0;
+
+            double targetWidth;
+
+            double targetHeight;
             if (double.IsNaN(Width) && double.IsNaN(Height))
             {
                 targetHeight = svgDoc.Height.Value;

@@ -140,7 +140,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        static private IDisposable? _sentryHandler;
+        private static IDisposable? _sentryHandler;
         public static void StartSentry([CallerMemberName] string memberName = "?")
         {
             if (_sentryHandler is not null)

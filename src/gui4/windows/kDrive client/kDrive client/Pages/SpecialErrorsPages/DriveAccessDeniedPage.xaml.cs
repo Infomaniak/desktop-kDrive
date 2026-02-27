@@ -18,9 +18,6 @@
 
 using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System;
-using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
 {

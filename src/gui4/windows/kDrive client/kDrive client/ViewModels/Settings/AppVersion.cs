@@ -19,7 +19,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        static public AppVersion Current()
+        public static AppVersion Current()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version;
@@ -72,7 +72,7 @@ namespace Infomaniak.kDrive.ViewModels
                     return thisTagParts.Length > otherTagParts.Length;
                 }
             }
-            catch (System.FormatException ex)
+            catch (System.FormatException)
             {
                 Logger.Log(Logger.Level.Error, "Unable to parse the version tag");
                 return false;

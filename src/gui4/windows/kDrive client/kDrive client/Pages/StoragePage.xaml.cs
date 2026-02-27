@@ -33,7 +33,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class StoragePage : Page
     {
-        private StoragePageViewModel _pageViewModel = new StoragePageViewModel();
+        private readonly StoragePageViewModel _pageViewModel = new StoragePageViewModel();
         public StoragePageViewModel PageViewModel => _pageViewModel;
         public StoragePage()
         {
@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Debug, "StoragePage components initialized");
         }
 
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null)
                 AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));

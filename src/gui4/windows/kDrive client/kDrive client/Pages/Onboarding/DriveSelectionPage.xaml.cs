@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -42,7 +41,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
-                if(!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
+                if (!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to refresh available drives for user in DriveSelectionPage");
                     obvm.Reset();

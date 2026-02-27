@@ -25,7 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _name = "";
         private DbId _dbId = -1;
         private AccountId _id = 0;
-        private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
+        private ObservableCollection<Drive> _drives = [];
         private User _user;
         public Account(DbId dbId, User user)
         {
