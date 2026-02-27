@@ -34,7 +34,6 @@ public struct ParametersInfo: Codable, Sendable {
     let purgeOldLogs: Bool
     let proxyConfigInfo: ProxyConfigInfo
     let darkTheme: Bool
-    let dialogGeometry: [String: String]?
     let maxAllowedCpu: Int32
     let distributionChannel: KDC.VersionChannel
     let sentryEnabled: Bool
