@@ -95,10 +95,11 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name, SyncChar *forbiddenChar /*= nullptr*/) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
     for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
-            if (forbiddenChar) *forbiddenChar = c;
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
             return true;
         }
     }
@@ -159,22 +160,27 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     }
 
     if (name == Str("..") || name == Str(".")) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Items named '.' or '..' are forbidden on the filesystem");
         return true;
     }
 
 #if defined(KD_WINDOWS)
     // Can't have only dots
     if (std::ranges::count(name, '.') == name.size()) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Names containing only dots are forbidden on the filesystem");
         return true;
     }
 
     // Can't finish with a '.'
     if (name[name.size() - 1] == '.') {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Names ending with a dot are forbidden on the filesystem: " << Utility::formatSyncName(name));
         return true;
     }
 
     for (const auto &reserved: reservedWinNames) {
         if (CommonUtility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Name '" << Str2SyncName(reserved) << L"' is reserved on the filesystem");
             return true;
         }
     }
