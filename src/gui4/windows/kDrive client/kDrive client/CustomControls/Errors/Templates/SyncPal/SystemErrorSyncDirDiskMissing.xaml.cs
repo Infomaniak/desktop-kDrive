@@ -41,17 +41,17 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             dialog.Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot };
 
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            if (Error.Sync is null)
             {
-                string? absolutPath = Path.GetDirectoryName(Error.Sync?.LocalPath ?? "") ?? Error.Sync?.LocalPath;
-                if (string.IsNullOrEmpty(absolutPath))
-                {
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
-                else
-                {
-                    await Utility.OpenFolderSecurely(absolutPath);
-                }
+                Logger.Log(Logger.Level.Error, "Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            if (!await Error.Sync.Start())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
+                Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
     }
