@@ -33,6 +33,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-maybe-check">ms-appx:///Assets/DS/Icons/Actions/circle-maybe-check.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-question">ms-appx:///Assets/DS/Icons/Actions/circle-question.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.copy-paste">ms-appx:///Assets/DS/Icons/Actions/copy-paste.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.eye">ms-appx:///Assets/DS/Icons/Actions/eye.svg</x:String>
 
     <!-- Books -->
     <x:String x:Key="Infomaniak.DS.Icons.Books.book">ms-appx:///Assets/DS/Icons/Books/book.svg</x:String>
@@ -57,6 +58,7 @@
     <!-- Network -->
     <x:String x:Key="Infomaniak.DS.Icons.Network.globe">ms-appx:///Assets/DS/Icons/Network/globe.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Network.cloud-offline">ms-appx:///Assets/DS/Icons/Network/cloud-offline.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Network.cloud">ms-appx:///Assets/DS/Icons/Network/cloud.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Network.hardware">ms-appx:///Assets/DS/Icons/Network/hardware.svg</x:String>
 
     <!-- Security -->

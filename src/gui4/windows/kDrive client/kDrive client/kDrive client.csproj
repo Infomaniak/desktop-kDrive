@@ -119,7 +119,16 @@
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirChangedErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirAccessErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirDiskMissingErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\ConflictDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\LocalAccessErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorPresenter.xaml">
@@ -129,6 +138,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\LocalAccessError.xaml">
