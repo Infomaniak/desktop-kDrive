@@ -18,9 +18,8 @@
 
 import Foundation
 
-// periphery:ignore - This is a future UI model
-enum UILanguageOption: String, CaseIterable {
-    var id: String {
+public enum UIAppLanguage: String, CaseIterable, Sendable {
+    public var id: String {
         rawValue
     }
 
@@ -32,9 +31,8 @@ enum UILanguageOption: String, CaseIterable {
     case italian
 }
 
-// periphery:ignore - This is a future UI model
-enum UINotificationOption: String, CaseIterable {
-    var id: String {
+public enum UINotificationState: String, CaseIterable, Sendable {
+    public var id: String {
         rawValue
     }
 
@@ -46,21 +44,69 @@ enum UINotificationOption: String, CaseIterable {
     case forOneWeek
 }
 
-// periphery:ignore - This is a future UI model
+public enum UILogLevel: String, CaseIterable, Sendable {
+    public var id: String {
+        rawValue
+    }
+
+    case info
+    case debug
+    case warning
+    case error
+    case fatal
+}
+
+public enum UIDistributionChannel: String, CaseIterable, Sendable {
+    public var id: String {
+        rawValue
+    }
+
+    case prod
+    case next
+    case beta
+    case `internal`
+    case legacy
+}
+
 public struct UIParametersInfo: Sendable {
-    let language: UILanguageOption
+    let language: UIAppLanguage
     let launchOnStartup: Bool
     let moveDeletedFilesToTrash: Bool
-    let notificationsState: UINotificationOption
-
+    let notificationsState: UINotificationState
     let shouldUseLog: Bool
-//    let logLevel: UILogLevelOption
+    let logLevel: UILogLevel
     let isExtendedLogEnabled: Bool
-    let purgedOldLogs: Bool
-
-//    let proxyConfiguration: UIProxyConfiguration
-//    let distributionChannel: UIDistributionChannel
-
+    let shouldPurgeOldLogs: Bool
+    let proxyConfiguration: UIProxyConfiguration
+    let distributionChannel: UIDistributionChannel
     let isSentryEnabled: Bool
     let isMatomoEnabled: Bool
+
+    public init(
+        language: UIAppLanguage,
+        launchOnStartup: Bool,
+        moveDeletedFilesToTrash: Bool,
+        notificationsState: UINotificationState,
+        shouldUseLog: Bool,
+        logLevel: UILogLevel,
+        isExtendedLogEnabled: Bool,
+        shouldPurgeOldLogs: Bool,
+        proxyConfiguration: UIProxyConfiguration,
+        distributionChannel: UIDistributionChannel,
+        isSentryEnabled: Bool,
+        isMatomoEnabled: Bool
+    ) {
+        self.language = language
+        self.launchOnStartup = launchOnStartup
+        self.moveDeletedFilesToTrash = moveDeletedFilesToTrash
+        self.notificationsState = notificationsState
+        self.shouldUseLog = shouldUseLog
+        self.logLevel = logLevel
+        self.isExtendedLogEnabled = isExtendedLogEnabled
+        self.shouldPurgeOldLogs = shouldPurgeOldLogs
+        self.proxyConfiguration = proxyConfiguration
+        self.distributionChannel = distributionChannel
+        self.isSentryEnabled = isSentryEnabled
+        self.isMatomoEnabled = isMatomoEnabled
+    }
 }
