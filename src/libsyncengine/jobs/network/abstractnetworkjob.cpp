@@ -141,8 +141,11 @@ void AbstractNetworkJob::logReplyInfo() {
     }
 }
 
-int AbstractNetworkJob::extractWaitingTime() {
-    if (httpResponse().has(RateLimitHeaderReset)) {
+int64_t AbstractNetworkJob::extractWaitingTime() {
+    int64_t waitingTime = -1;
+    if (httpResponse().has(RateLimitHeaderDelay)) {
+        waitingTime = std::stoi(httpResponse().get(RateLimitHeaderDelay));
+    } else if (httpResponse().has(RateLimitHeaderReset)) {
         int timestamp = 0;
         try {
             timestamp = std::stoi(httpResponse().get(RateLimitHeaderReset));
@@ -150,12 +153,12 @@ int AbstractNetworkJob::extractWaitingTime() {
             LOG_WARN(_logger, "Failed to extract int value from header " << RateLimitHeaderReset << " : " << e.what());
         }
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        return static_cast<int>(timestamp - now.count()) * 1000;
-    }
-    if (httpResponse().has(RateLimitHeaderDelay)) {
-        return std::stoi(httpResponse().get(RateLimitHeaderDelay)) * 1000;
+        waitingTime = static_cast<int64_t>(timestamp - now.count());
     }
 
+    if (waitingTime > 0) {
+        return (waitingTime + CommonUtility::generateRandomNumber(1, 15)) * 1000; // Add a random delay between 1 and 15sec
+    }
     return -1;
 }
 
@@ -518,8 +521,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
 
             // Update time to wait
-            const auto newWaitTime = extractWaitingTime();
-            if (newWaitTime > 0) {
+            if (const auto newWaitTime = extractWaitingTime(); newWaitTime > 0) {
                 _sleepTime = newWaitTime;
                 LOG_INFO(_logger, "New waiting time: " << _sleepTime);
             }
