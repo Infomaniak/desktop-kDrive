@@ -2,7 +2,6 @@
 <Page x:Class="Infomaniak.kDrive.Pages.ActivityPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:Infomaniak.kDrive"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
@@ -10,6 +9,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -22,18 +22,15 @@
         <DataTemplate x:Key="UpToDateTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_Finished"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleIdle')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="InProgressTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_InProgress"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleInProgress')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -41,18 +38,7 @@
         <DataTemplate x:Key="InPauseTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_Paused"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ErrorTitleTemplate"
-                      x:DataType="viewmodels:Sync">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_Error"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitlePause')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -60,7 +46,7 @@
         <DataTemplate x:Key="OfflineTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_Offline"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleOffline')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -68,7 +54,7 @@
         <DataTemplate x:Key="NoActivityTitleTemplate"
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                <TextBlock x:Uid="Page_ActivityPage_SyncState_NoActivity"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleNoActivity')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </StackPanel>
         </DataTemplate>
@@ -121,7 +107,7 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock x:Uid="Page_ActivityPage_Filter_My" />
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeMyActivity')}" />
                     </StackPanel>
                 </ComboBoxItem>
                 <ComboBoxItem>
@@ -130,7 +116,7 @@
                         <controls:SvgIcon Height="14"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock x:Uid="Page_ActivityPage_Filter_All"/>
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeAllActivities')}" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox.Items>
@@ -140,7 +126,7 @@
         <Grid Grid.Row="1"
               Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <controlsErrors:ErrorBar Grid.Row="0"

@@ -32,6 +32,10 @@ typedef ExitCode (UpdateTreeWorker::*stepptr)();
 
 class UpdateTreeWorker : public ISyncWorker {
     public:
+        struct IntegrityError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
         UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          ReplicaSide side);
         UpdateTreeWorker(SyncDbReadOnlyCache &syncDbReadOnlyCache, std::shared_ptr<FSOperationSet> operationSet,

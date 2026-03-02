@@ -62,9 +62,19 @@ void AbstractUpdater::onAppVersionReceived() {
 
     const VersionInfo &versionInfo = _updateChecker->versionInfo(_currentChannel);
     if (!versionInfo.isValid()) {
-        LOG_INFO(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
+        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
         setState(UpdateState::UpToDate);
+        return;
     }
+
+    sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
+
+    if (!checkMinOsVersion(versionInfo.buildMinOsVersion)) {
+        setState(UpdateState::UpToDate);
+        return;
+    }
+
+    _appShouldBeBlocked = _updateChecker->appShouldBeBlocked();
 
     const bool newVersionAvailable = CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.fullVersion());
     setState(newVersionAvailable ? UpdateState::Available : UpdateState::UpToDate);
@@ -73,8 +83,15 @@ void AbstractUpdater::onAppVersionReceived() {
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
+}
 
-    sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
+bool AbstractUpdater::checkMinOsVersion(const std::string &minOsVersion) const {
+    if (const auto currentOsVersion = CommonUtility::osVersion(); CommonUtility::isVersionLower(currentOsVersion, minOsVersion)) {
+        LOG_WARN(Log::instance()->getLogger(), "OS version not supported, the update is ignored. Current OS version: "
+                                                       << CommonUtility::osVersion() << ", min OS version: " << minOsVersion);
+        return false;
+    }
+    return true;
 }
 
 void AbstractUpdater::skipVersion(const std::string &skippedVersion) {
@@ -106,7 +123,7 @@ bool AbstractUpdater::isVersionSkipped(const std::string &version) {
 VersionChannel AbstractUpdater::currentVersionChannel() const {
     const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
     if (allVersions.empty()) return VersionChannel::Unknown;
-    std::string currentVersion = getCurrentVersion();
+    const std::string currentVersion = getCurrentVersion();
     if (allVersions.contains(VersionChannel::Prod) && allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
         return VersionChannel::Prod;
     }

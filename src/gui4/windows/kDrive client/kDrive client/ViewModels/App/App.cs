@@ -18,7 +18,6 @@
 
 using DynamicData;
 using DynamicData.Binding;
-using DynamicData.Kernel;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,14 +25,11 @@ using Microsoft.UI.Dispatching;
 using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Networking.Connectivity;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infomaniak.kDrive.ViewModels
 
@@ -273,6 +269,18 @@ namespace Infomaniak.kDrive.ViewModels
                     {
                         Logger.Log(Logger.Level.Error, "Failed to refresh errors during AppModel initialization.");
                         return false;
+                    }
+
+                    if (!await serverCommService.RefreshUpdaterVersionInfo(cts.Token))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
+                        // This is not critical, we can continue without this info
+                    }
+
+                    if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
+                    {
+                        Logger.Log(Logger.Level.Error, "Failed to ActivateLoadInfo during AppModel initialization.");
+                        // This is not critical, we can continue without this info
                     }
 
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");

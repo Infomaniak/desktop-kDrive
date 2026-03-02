@@ -35,7 +35,7 @@ SearchInfo::SearchInfo(const NodeId &id, const SyncName &name, const NodeType ty
     _name(name),
     _path(path),
     _modifiedTime(modifiedTime),
-    _size(size),
+    _size(static_cast<int64_t>(size)),
     _isAvailableLocally(isAvailableLocally),
     _type(type) {}
 

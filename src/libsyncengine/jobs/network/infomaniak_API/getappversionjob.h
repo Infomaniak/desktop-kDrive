@@ -39,6 +39,8 @@ class GetAppVersionJob : public AbstractNetworkJob {
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) { return _versionsInfo[channel]; }
         [[nodiscard]] const AllVersionsInfo &versionsInfo() const { return _versionsInfo; }
 
+        [[nodiscard]] const std::string &minAppVersion() const { return _minAppVersion; }
+
         std::string getUrl() override { return UrlHelper::infomaniakApiUrl(1, true) + getSpecificUrl(); }
 
         static std::string toStr(Platform platform);
@@ -57,8 +59,10 @@ class GetAppVersionJob : public AbstractNetworkJob {
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
         const std::vector<int> _userIdList;
+
         VersionChannel _prodVersionChannel{VersionChannel::Unknown};
         AllVersionsInfo _versionsInfo;
+        std::string _minAppVersion;
 };
 
 } // namespace KDC

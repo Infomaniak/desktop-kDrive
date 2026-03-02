@@ -85,15 +85,6 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job);
 
-        /**
-         * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix
-         * wrong EDIT operations generated on dehydrated placeholders.
-         * @param syncOp : the operation to propagate.
-         * @param absolutePath : absolute local path of the affected file.
-         * @return `true` if the date is modified successfully.
-         * @note _executorExitCode and _executorExitCause must be set when the function returns false
-         */
-        ExitInfo fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
         ExitInfo checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
                                           bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
                                                             // good, function probably does too much
@@ -158,6 +149,8 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
         ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
+
+        ExitInfo excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath);
 
         std::unordered_map<UniqueId, std::shared_ptr<SyncJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;

@@ -74,7 +74,6 @@ class SourceLocation {
             return fileName() + ":" + std::to_string(line()) + (functionName().empty() ? "" : "[" + functionName() + "]");
         }
 
-
     private:
         uint32_t _line = 0;
         const char *_fileName = "";

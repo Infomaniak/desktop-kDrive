@@ -1,0 +1,276 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Foundation
+@testable import kDriveCore
+import OrderedCollections
+import Testing
+
+enum CacheData {
+    static let expectedUserAPIId = Int32.random(in: 0 ... 10000)
+    static let expectedUserDbId = Int32.random(in: 0 ... 10000)
+    static var expectedUser = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserAPIId,
+        name: "appleseed",
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: true
+    )
+
+    static let updatedUserAPIId = Int32.random(in: 0 ... 10000)
+    static let updatedUserName = "appleseed2"
+    static var updatedUser = User(
+        dbId: expectedUserDbId,
+        userId: updatedUserAPIId,
+        name: updatedUserName,
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: true
+    )
+
+    static let expectedAccountDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAccountId = Int32.random(in: 0 ... 10000)
+    static let expectedAccountName = "myAccount"
+    static var expectedAccount = Account(
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: expectedAccountName, drives: [:]
+    )
+
+    static let updatedAccountName = "myUpdatedAccount"
+    static var updatedAccount = Account(
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: updatedAccountName, drives: [:]
+    )
+
+    static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
+    static let expectedDriveId = Int32.random(in: 0 ... 10000)
+    static let expectedDriveName = "My Drive"
+    static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
+    static var expectedDrive = Drive.some(
+        driveDbId: expectedDriveDbId,
+        driveId: expectedDriveId,
+        accountDbId: expectedAccountDbId,
+        accountId: expectedAccountId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserDbId,
+        name: expectedDriveName,
+        color: expectedDriveColor,
+        synchros: [:]
+    )
+
+    static let updatedDriveId = Int32.random(in: 0 ... 10000)
+    static let updatedDriveName = "My Drive Pro Max"
+    static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
+    static var updatedDrive = Drive.some(
+        driveDbId: expectedDriveDbId,
+        driveId: updatedDriveId,
+        accountDbId: expectedAccountDbId,
+        accountId: expectedAccountId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserDbId,
+        name: updatedDriveName,
+        color: updatedDriveColor,
+        synchros: [:]
+    )
+
+    static let expectedSynchroDbId = Int32.random(in: 0 ... 10000)
+    static let expectedSynchroLocalPath = "/dev/null"
+    static let expectedSynchroPath = "/dev/null"
+    static let expectedTargetPath = "dev/bin"
+    static let expectedTargetNodeId = UUID().uuidString
+    static let expectedSupportVFS = true
+    static let expectedVirtualFileMode = KDC.VirtualFileMode.Mac
+    static let expectedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                         driveDbId: expectedDriveDbId,
+                                         localPath: expectedSynchroLocalPath,
+                                         targetPath: expectedTargetPath,
+                                         targetNodeId: expectedTargetNodeId,
+                                         supportVfs: expectedSupportVFS,
+                                         virtualFileMode: expectedVirtualFileMode)
+
+    static let updatedSynchroLocalPath = "C:/Windows/System32"
+    static let updatedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                        driveDbId: expectedDriveDbId,
+                                        localPath: updatedSynchroLocalPath,
+                                        targetPath: expectedTargetPath,
+                                        targetNodeId: expectedTargetNodeId,
+                                        supportVfs: expectedSupportVFS,
+                                        virtualFileMode: expectedVirtualFileMode)
+
+    static let expectedLoginErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Date().timeIntervalSince1970,
+                                              level: KDC.ErrorLevel.SyncPal,
+                                              functionName: "",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.InvalidToken,
+                                              exitCause: KDC.ExitCause.LoginError,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
+    static let updatedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                             synchroDbId: expectedSynchroDbId,
+                                             time: Date().timeIntervalSince1970,
+                                             level: KDC.ErrorLevel.SyncPal,
+                                             functionName: "some update",
+                                             workerName: "",
+                                             exitCode: KDC.ExitCode.InvalidToken,
+                                             exitCause: KDC.ExitCause.LoginError,
+                                             localNodeId: "",
+                                             remoteNodeId: "",
+                                             nodeType: KDC.NodeType.Unknown,
+                                             path: "",
+                                             conflictType: KDC.ConflictType.None,
+                                             cancelType: KDC.CancelType.None,
+                                             inconsistencyType: KDC.InconsistencyType.None,
+                                             destinationPath: "",
+                                             autoResolved: false)
+
+    static let expectedAsleepErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAsleepError = ErrorInfo(dbId: expectedAsleepErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.SyncPal,
+                                               functionName: "",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.Unknown,
+                                               exitCause: KDC.ExitCause.DriveAsleep,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Date().timeIntervalSince1970,
+                                               level: KDC.ErrorLevel.Server,
+                                               functionName: "main.swift",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.NetworkError,
+                                               exitCause: KDC.ExitCause.NetworkTimeout,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let updatedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Date().timeIntervalSince1970,
+                                              level: KDC.ErrorLevel.Server,
+                                              functionName: "main_updated.swift",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.DbError,
+                                              exitCause: KDC.ExitCause.DbEntryNotFound,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
+    static let expectedFileSyncErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedFileSyncErrorLocalNodeId = UUID().uuidString
+    static let expectedFileSyncErrorRemoteNodeId = UUID().uuidString
+    static let expectedFileSyncErrorPath = "/dev/null"
+    static let expectedFileSyncError = ErrorInfo(dbId: expectedFileSyncErrorDbId,
+                                                 synchroDbId: expectedSynchroDbId,
+                                                 time: Date().timeIntervalSince1970 + 1,
+                                                 level: KDC.ErrorLevel.Node,
+                                                 functionName: "",
+                                                 workerName: "",
+                                                 exitCode: KDC.ExitCode.Ok,
+                                                 exitCause: KDC.ExitCause.Unknown,
+                                                 localNodeId: expectedFileSyncErrorLocalNodeId,
+                                                 remoteNodeId: expectedFileSyncErrorRemoteNodeId,
+                                                 nodeType: KDC.NodeType.File,
+                                                 path: expectedFileSyncErrorPath,
+                                                 conflictType: KDC.ConflictType.CreateCreate,
+                                                 cancelType: KDC.CancelType.None,
+                                                 inconsistencyType: KDC.InconsistencyType.None,
+                                                 destinationPath: "",
+                                                 autoResolved: false)
+
+    // MARK: - AvailableDrive
+
+    static let expectedAvailableDriveDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAvailableDriveId = Int32.random(in: 0 ... 10000)
+    static let expectedAvailableDriveName = "My Available Drive"
+    static let expectedAvailableDriveColor: HexColor = .init(hex: "ff5733")!
+    static var expectedAvailableDrive = AvailableDrive(
+        driveId: expectedAvailableDriveId,
+        accountId: expectedAccountId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserAPIId,
+        name: expectedAvailableDriveName,
+        color: expectedAvailableDriveColor
+    )
+
+    static let secondUserDbId = Int32.random(in: 0 ... 10000)
+    static let secondUserAPIId = Int32.random(in: 0 ... 10000)
+    static var secondUser = User(
+        dbId: secondUserDbId,
+        userId: secondUserAPIId,
+        name: "seconduser",
+        email: "second@example.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: false
+    )
+
+    static let secondAvailableDriveDbId = Int32.random(in: 0 ... 10000)
+    static let secondAvailableDriveId = Int32.random(in: 0 ... 10000)
+    static let secondAvailableDriveName = "Second Available Drive"
+    static let secondAvailableDriveColor: HexColor = .init(hex: "33ff57")!
+    static var secondAvailableDrive = AvailableDrive(
+        driveId: secondAvailableDriveId,
+        accountId: expectedAccountId,
+        userDbId: secondUserDbId,
+        userId: secondUserAPIId,
+        name: secondAvailableDriveName,
+        color: secondAvailableDriveColor
+    )
+}

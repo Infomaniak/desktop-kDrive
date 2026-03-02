@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "wizard/webview.h"
 #include "libcommon/info/userinfo.h"
 
 #include <QRadioButton>
 #include <QString>
+#include <QUrlQuery>
 #include <QWidget>
 
 namespace KDC {
@@ -33,10 +33,12 @@ class AddDriveLoginWidget : public QWidget {
     public:
         explicit AddDriveLoginWidget(QWidget *parent = nullptr);
 
-        void init(const QString &serverUrl);
         void init();
 
         inline int userDbId() const { return _userDbId; }
+
+    public slots:
+        void onAuthorizationCodeReceived(const QString &code, const QString &state);
 
     signals:
         void terminated(bool next = true);
@@ -45,18 +47,14 @@ class AddDriveLoginWidget : public QWidget {
         QString _codeVerifier;
         int _userDbId{0};
 
-        WebView *_webView{nullptr};
+        QUrl generateAuthorizeUrl();
 
-        void refreshPage();
-
-        QUrl generateUrl();
-
-        const QString generateCodeVerifier();
-        const QString generateCodeChallenge(const QString &codeVerifier);
+        QString generateCodeVerifier() const;
+        QString generateCodeChallenge(const QString &codeVerifier) const;
 
     private slots:
-        void onAuthorizationCodeReceived(const QString code, const QString state);
         void onErrorReceived(const QString error, const QString errorDescr);
+        void onOpenLoginInBrowser();
 };
 
 } // namespace KDC

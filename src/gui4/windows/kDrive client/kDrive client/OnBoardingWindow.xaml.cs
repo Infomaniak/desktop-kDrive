@@ -41,34 +41,31 @@ namespace Infomaniak.kDrive.OnBoarding
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 850, 530, false);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
-
-            if (ViewModel.Users.Any())
-            {
-                // TODO: Go directly to Drive selection
-            }
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
-            UpdateLottieSource(_lottieRessourceKey);
+            UpdateLottieSource(_lottieRessourceKey, 130, 1);
             Closed += OnBoardingWindow_Closed;
         }
 
         private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
             LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
+            _onBoardingViewModel.Dispose();
         }
 
         private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)
         {
-            UpdateLottieSource(_lottieRessourceKey);
+            UpdateLottieSource(_lottieRessourceKey, null, 1);
         }
 
-        public void UpdateLottieSource(string ressourceKey, int? height = null)
+        public void UpdateLottieSource(string ressourceKey, int? height, int repeat = 0)
         {
             App.Current.Resources.TryGetValue(ressourceKey, out var sourceObj);
             if (sourceObj is string source)
             {
                 _lottieRessourceKey = ressourceKey;
                 LottiePlayer.UriSource = new System.Uri(source);
+                LottiePlayer.PlayCount = repeat;
                 if (height is not null)
                     LottiePlayer.Height = height.Value;
             }

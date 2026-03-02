@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,20 +22,39 @@ namespace Infomaniak.kDrive.CustomControls
     {
         SearchItem? SearchItem { get; }
         bool IsSelectable { get; }
+        bool ShowUnavailableState { get; }
     }
 
-    public sealed record SearchBoxResultItem(SearchItem? SearchItem, bool IsSelectable = true) : ISearchBoxResultItem;
+    public sealed class SearchBoxResultItem : UISafeObservableObject, ISearchBoxResultItem
+    {
+        private bool _showUnavailableState = false;
+        public SearchBoxResultItem(SearchItem? SearchItem, bool IsSelectable = true)
+        {
+            this.SearchItem = SearchItem;
+            this.IsSelectable = IsSelectable;
+        }
+
+        public SearchItem? SearchItem { get; }
+        public bool IsSelectable { get; }
+        public bool ShowUnavailableState
+        {
+            get => _showUnavailableState;
+            set => SetPropertyInUIThread(ref _showUnavailableState, value);
+        }
+    }
 
     public sealed record SearchBoxLoaderItem() : ISearchBoxResultItem
     {
         public SearchItem? SearchItem => null;
         public bool IsSelectable => false;
+        public bool ShowUnavailableState => false;
     };
 
     public sealed record SearchBoxNotFoundItem() : ISearchBoxResultItem
     {
         public SearchItem? SearchItem => null;
         public bool IsSelectable => false;
+        public bool ShowUnavailableState => false;
     };
 
     public sealed partial class SearchBox : UserControl
@@ -43,6 +63,7 @@ namespace Infomaniak.kDrive.CustomControls
         private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
         private const string _privateFolderName = "Private/";
         private const string _sharedFolderName = "Shared/";
+        private ISearchBoxResultItem? _lastItemOver;
         public SearchBox()
         {
             InitializeComponent();
@@ -255,6 +276,35 @@ namespace Infomaniak.kDrive.CustomControls
                 string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
                 await Utility.OpenFolderSecurely(path);
             }
+        }
+
+        private void Template_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            FrameworkElement? frameworkElement = sender as FrameworkElement;
+            if (frameworkElement is null)
+            {
+                Logger.Log(Logger.Level.Warning, "sender is expected to be a FrameworkElement.");
+                return;
+            }
+
+            SearchBoxResultItem? searchResultItem = frameworkElement.DataContext as SearchBoxResultItem;
+            if (searchResultItem is null)
+                return;
+
+            if (_lastItemOver is SearchBoxResultItem lastItemOver && lastItemOver != searchResultItem)
+                lastItemOver.ShowUnavailableState = false;
+
+            if (!searchResultItem.SearchItem?.IsAvailableLocally ?? false)
+            {
+                searchResultItem.ShowUnavailableState = true;
+                _lastItemOver = searchResultItem;
+            }
+        }
+
+        private void Template_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (_lastItemOver is SearchBoxResultItem lastItemOver)
+                lastItemOver.ShowUnavailableState = false;
         }
     }
 

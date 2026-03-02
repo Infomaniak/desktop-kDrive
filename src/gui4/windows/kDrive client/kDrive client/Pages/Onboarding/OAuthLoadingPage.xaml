@@ -8,40 +8,50 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
     </Page.Resources>
 
-    <StackPanel Orientation="Vertical"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="{StaticResource Infomaniak.Style.Spacing.XL}">
-        <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+    <Grid HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          MaxWidth="316"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
 
-            <!-- Title -->
-            <TextBlock x:Uid="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title"
-                       x:Name="TitleTextBlock"
-                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
-                       Foreground="{ThemeResource TextFillColorPrimary}" />
+        <Grid.RowDefinitions>
+            <!-- Title row -->
+            <RowDefinition Height="Auto" />
+            <!-- Subtitle row -->
+            <RowDefinition Height="Auto" />
+            <!-- Button row -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-            <!-- Subtitle -->
-            <TextBlock x:Uid="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle"
-                       x:Name="SubtitleTextBlock"
-                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                       TextWrapping="WrapWholeWords"
-                       Foreground="{ThemeResource TextFillColorSecondary}" />
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('signInBrowser')}"
+                   TextWrapping="WrapWholeWords"
+                   x:Name="TitleTextBlock"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                   Foreground="{ThemeResource TextFillColorPrimary}" />
 
-        </StackPanel>
+        <!-- Subtitle -->
+        <TextBlock Grid.Row="1"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('browserSignInInstruction')}"
+                   x:Name="SubtitleTextBlock"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                   TextWrapping="WrapWholeWords"
+                   Foreground="{ThemeResource TextFillColorSecondary}" />
+
         <!-- Restart oauth button -->
-        <Button x:Name="RestartOAuthButton"
-                x:Uid="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton"
+        <Button Grid.Row="2"
+                x:Name="RestartOAuthButton"
+                Content="{x:Bind kDrive:Localizer.Instance.GetString('openLoginPage')}"
                 Style="{StaticResource AccentButtonStyle}"
                 Click="RestartOAuthButton_Click"
                 IsEnabled="False" />
-    </StackPanel>
+    </Grid>
+
 </Page>

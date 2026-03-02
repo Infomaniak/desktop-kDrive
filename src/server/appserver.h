@@ -19,6 +19,10 @@
 #pragma once
 
 #include "qtsingleapplication.h"
+
+#include <QFileOpenEvent>
+#include <QUrl>
+#include <QUrlQuery>
 #if defined(KD_WINDOWS)
 #include "navigationpanehelper.h"
 #endif
@@ -52,6 +56,35 @@ class Theme;
  * @ingroup gui
  */
 
+class AuthorizationCodeEventFilter : public QObject {
+        // On macOS, the authorization code is retrieved by catching the `QEvent::FileOpen` and extracting its URL.
+        Q_OBJECT
+
+    signals:
+        void authorizationCodeReceived(const QString &code, const QString &state);
+
+    private:
+        bool eventFilter(QObject *obj, QEvent *event) override {
+            if (event->type() == QEvent::FileOpen) {
+                const auto *openEvent = static_cast<const QFileOpenEvent *>(event);
+                const auto url = openEvent->url();
+
+                if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
+                    const QUrlQuery query(url);
+                    const auto code = query.queryItemValue("code");
+                    const auto state = query.queryItemValue("state");
+
+                    if (!code.isEmpty() && !state.isEmpty()) {
+                        // We cannot log errors here. We forward the authorization code to the client only if values are
+                        // non-empty.
+                        emit authorizationCodeReceived(code, state);
+                    }
+                    return true;
+                }
+            }
+            return QObject::eventFilter(obj, event);
+        }
+};
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
@@ -93,6 +126,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool clearSyncNodesAsked() { return _clearSyncNodesAsked; }
         inline bool settingsAsked() { return _settingsAsked; }
         inline bool synthesisAsked() { return _synthesisAsked; }
+        inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
 
         void showHelp();
@@ -101,10 +135,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
         void sendRestartClientMsg();
+        void sendAuthorizationCode();
 
         void clearKeychainKeys();
 
         void showHint(std::string errorHint);
+
+        void stopAllSyncPals();
+        void stopAllVfs();
 
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
@@ -172,7 +210,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static bool useOldCommServer() {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return (KDRIVE_VERSION_MAJOR < 4);
+            return true; // (KDRIVE_VERSION_MAJOR < 4);
 #else
             return true;
 #endif
@@ -190,6 +228,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
     private:
+        AuthorizationCodeEventFilter _eventFilter;
+
         QStringList _arguments;
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
@@ -201,6 +241,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _clearSyncNodesAsked{false};
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
+        QString _authorizationCodeStr;
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
         bool _vfsActivationDone{false};
@@ -315,11 +356,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartSyncs();
         void onScheduleAppRestart();
         void onShowWindowsUpdateDialog();
+        void onUpdateRequired();
         void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
+        void onAuthorizationCodeReceived(const QString &code, const QString &state);
 };
 } // namespace KDC

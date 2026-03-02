@@ -24,6 +24,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _localPath = "";
         private string _parentFolderPath = "";
         private int _progressPercent = 0;
+        public Int64 _perationId = 0;
 
         public Sync Sync { get; }
 
@@ -79,6 +80,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _instruction;
             set => SetPropertyInUIThread(ref _instruction, value);
         }
+
+        public bool IsDeletion
+        {
+            get => Instruction == SyncFileInstruction.Remove;
+        }
+
         public SyncFileStatus Status
         {
             get => _status;
@@ -121,7 +128,15 @@ namespace Infomaniak.kDrive.ViewModels
         public DateTime Timestamp
         {
             get => _timestamp;
+            set => SetPropertyInUIThread(ref _timestamp, value);
         }
+
+        public Int64 OperationId
+        {
+            get => _perationId;
+            set => SetPropertyInUIThread(ref _perationId, value);
+        }
+
         // Calculated properties
         public string ParentFolderPath
         {

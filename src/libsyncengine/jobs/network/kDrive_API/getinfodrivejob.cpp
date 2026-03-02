@@ -27,8 +27,6 @@ namespace KDC {
 static const std::string isLockedKey = "is_locked";
 static const std::string usedSizeKey = "used_size";
 static const std::string packKey = "pack";
-static const std::string packIdKey = "id";
-static const std::string packNameKey = "name";
 static const std::string packDisplayNameKey = "display_name";
 static const std::string packIsFreeKey = "is_free";
 
@@ -57,7 +55,7 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj || dataObj->size() == 0) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to read drive info");
-        return ExitCode::DataError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) {
@@ -72,14 +70,12 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) { // Not mandatory
+        (void) JsonParserUtility::extractValue(prefObj, colorKey, _colorHex, false);
     }
 
-    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) { // Not mandatory
-        if (!JsonParserUtility::extractValue(prefObj, colorKey, _colorHex, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
+    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     // Non DB attributes
@@ -87,10 +83,8 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (_isInMaintenance) {
-        if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
+    if (_isInMaintenance) { // Not mandatory
+        (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom, false);
     }
 
     if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked)) {
@@ -102,8 +96,8 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
     }
 
     if (Poco::JSON::Object::Ptr packObj = dataObj->getObject(packKey); packObj) { // Not mandatory
-        (void) JsonParserUtility::extractValue(packObj, packIdKey, _packInfo.id, false);
-        (void) JsonParserUtility::extractValue(packObj, packNameKey, _packInfo.name, false);
+        (void) JsonParserUtility::extractValue(packObj, idKey, _packInfo.id, false);
+        (void) JsonParserUtility::extractValue(packObj, nameKey, _packInfo.name, false);
         (void) JsonParserUtility::extractValue(packObj, packDisplayNameKey, _packInfo.displayName, false);
         (void) JsonParserUtility::extractValue(packObj, packIsFreeKey, _packInfo.isFree, false);
     }

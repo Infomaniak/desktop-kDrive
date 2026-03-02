@@ -21,6 +21,7 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -58,8 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     return SyncStatus.Offline;
                 }
-                if (_syncStatus == SyncStatus.Error)
-                    return SyncStatus.Paused;
+
                 return _syncStatus;
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
@@ -155,10 +155,10 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public bool IsTypeOnline
-        {
-            get => _isTypeOnline;
-        }
+        public bool IsTypeOnline => _isTypeOnline;
+
+        public bool IsAdvanced => RemoteNodeId.Count() >= 1;
+
 
         public ObservableCollection<SyncFileItem> SyncActivities
         {
@@ -252,8 +252,9 @@ namespace Infomaniak.kDrive.ViewModels
             await Utility.RunOnUIThread(async () =>
             {
                 // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-                foreach (var error in SyncErrors)
+                while (SyncErrors.Any())
                 {
+                    var error = SyncErrors[0];
                     Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
                     await RemoveErrorAsync(error, false);
                 }
@@ -298,5 +299,12 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             });
         }
+
+        public async Task<List<NodeId>?> GetExcludedNodeIds()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
+        }
+
     }
 }

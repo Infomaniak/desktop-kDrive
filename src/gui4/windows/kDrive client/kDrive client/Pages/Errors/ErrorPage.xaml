@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.Errors.ErrorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+          RowSpacing="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0"
+              Height="{StaticResource Infomaniak.Style.Spacing.XL}"
+              Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities')}"
+                       FontSize="{StaticResource TitleTextBlockFontSize}"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       PointerPressed="BreadcrumbActivity_Click" />
+
+            <FontIcon Grid.Column="1"
+                      Glyph="&#xE76C;"
+                      Width="24"
+                      FontSize="16"
+                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}"
+                      VerticalAlignment="Bottom" />
+
+            <TextBlock Grid.Column="2"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('errorPageTitle')}"
+                       FontSize="{StaticResource TitleTextBlockFontSize}"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                       VerticalAlignment="Center"
+                       PointerPressed="BreadcrumbActivity_Click" />
+        </Grid>
+
+        <ScrollView Grid.Row="1"
+                    Padding="0"
+                    Margin="0">
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+                <Grid.RowDefinitions>
+                    <!-- Files -->
+                    <RowDefinition Height="Auto" />
+                    <!-- SyncDir -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Other -->
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <errors:ErrorList Grid.Row="0"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncFolder')}"
+                                  Errors="{x:Bind _errorPageVM.SyncDirErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.SyncDirErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                
+                <errors:ErrorList Grid.Row="1"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
+                                  Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <errors:ErrorList Grid.Row="2"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
+                                  Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
+                                  Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+            </Grid>
+        </ScrollView>
+    </Grid>
+</Page>

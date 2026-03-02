@@ -224,6 +224,7 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         return ExitCode::SystemError;
     }
 
+    bool removeFromDb = true;
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
@@ -240,14 +241,9 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                               L"Failed to remove item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                              << CommonUtility::s2ws(localNodeId)
                                                              << L") removed from local replica. It will not be blacklisted.");
-
-            SyncPath destPath;
-            PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted, &destPath);
-
-            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absoluteLocalPath, ConflictType::None,
-                      InconsistencyType::None, CancelType::MoveToBinFailed, destPath);
-            _syncPal->addError(err);
+            removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
+                                  // remove it from filesystem (we can have transient errors like file locks)
+            _syncPal->blacklistTemporarily(localNodeId, localPath, ReplicaSide::Local); 
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                                            << CommonUtility::s2ws(localNodeId)
@@ -255,14 +251,16 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         }
     }
 
-    // Remove node (and children by cascade) from DB
-    if (!_syncPal->syncDb()->deleteNode(dbId, found)) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Node not found in node table for dbId=" << dbId);
-        return ExitCode::DataError;
+    if (removeFromDb) {
+        // Remove node (and children by cascade) from DB
+        if (!_syncPal->syncDb()->deleteNode(dbId, found)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Node not found in node table for dbId=" << dbId);
+            return ExitCode::DataError;
+        }
     }
 
     return ExitCode::Ok;

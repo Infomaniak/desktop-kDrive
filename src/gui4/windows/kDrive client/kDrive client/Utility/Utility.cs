@@ -118,12 +118,6 @@ namespace Infomaniak.kDrive
                 return false;
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
-            {
-                Logger.Log(Logger.Level.Warning, $"The parent directory does not exist for the specified folder: {fullPath}");
-                return false;
-            }
-
             if (!Directory.Exists(fullPath))
             {
                 await Launcher.LaunchFolderPathAsync(Path.GetDirectoryName(fullPath));
@@ -166,39 +160,6 @@ namespace Infomaniak.kDrive
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
-        public static string GetLocalizedString(string key)
-        {
-            return GetLocalizedString(key, null);
-        }
-
-        public static string GetLocalizedString(string key, params object?[]? args)
-        {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            string? localizedString = resourceLoader.GetString(key);
-
-            if (localizedString is null || localizedString.Length == 0)
-            {
-                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-            }
-
-            // Replace literal \r\n with real newlines
-            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
-
-            // Format the string if arguments are provided
-            if (args != null && args.Length > 0)
-            {
-                try
-                {
-                    localizedString = string.Format(localizedString, args);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(Logger.Level.Error, $"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}");
-                }
-            }
-
-            return localizedString;
-        }
 
         // Convert any enum value to a string
         public static string ToString(Enum value)
@@ -218,22 +179,22 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
             dialog.XamlRoot = xamlRoot;
-            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
-            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
-            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title");
+            dialog.PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText");
             dialog.DefaultButton = defaultButton;
-            dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
+            dialog.Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content");
             return dialog;
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton defaultButton = ContentDialogButton.Primary)
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            var result = await GetContentDialog(xamlRoot, xuid, defaultButton).ShowAsync();
+            var result = await GetContentDialog(xamlRoot, translationKeyPreffix, defaultButton).ShowAsync();
             return result;
         }
 
@@ -319,11 +280,28 @@ namespace Infomaniak.kDrive
 
         public static void ShowUnexpectedErrorTeachingTip()
         {
+            Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
             ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
         }
 
         private static TeachingTip? _currentTeachingTip;
-        public static void ShowTeachingTipFromxUid(string xuid)
+        private static DispatcherQueueTimer? _autoCloseTimer;
+
+        /*
+         *  This method shows a TeachingTip with localized content based on the provided translation key prefix.
+         *  The Following keys are expected to be defined in the resource files:
+         *     {translationKeyPreffix}Title
+         *     
+         *  The following keys are optional, but if provided, they will be used to populate the corresponding fields in the TeachingTip:
+         *     {translationKeyPreffix}Subtitle
+         *     {translationKeyPreffix}Content
+         */
+        public static void ShowTeachingTipFromxUid(string translationKeyPreffix)
+        {
+            ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
+        }
+
+        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -339,20 +317,23 @@ namespace Infomaniak.kDrive
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = GetLocalizedString($"{xuid}/Title"),
-                Subtitle = GetLocalizedString($"{xuid}/Subtitle"),
-                Content = new TextBlock
-                {
-                    Text = GetLocalizedString($"{xuid}/Content"),
-                    TextWrapping = TextWrapping.Wrap
-                },
+                Title = Localizer.Instance.GetString(titleKey),
+                Subtitle = Localizer.Instance.IsValidKey(subtitleKey)
+                    ? Localizer.Instance.GetString(subtitleKey!)
+                    : string.Empty,
+                Content = Localizer.Instance.IsValidKey(contentKey)
+                    ? new TextBlock
+                    {
+                        Text = Localizer.Instance.GetString(contentKey!),
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                    : null,
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };
 
             teachingTip.Closed += TeachingTip_Closed;
 
-            // Attach to visual tree
             if (xamlRoot.Content is Panel panel)
             {
                 panel.Children.Add(teachingTip);
@@ -360,20 +341,37 @@ namespace Infomaniak.kDrive
 
             _currentTeachingTip = teachingTip;
             teachingTip.IsOpen = true;
+
+            // ---- Auto close after 5 seconds ----
+            _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+            _autoCloseTimer.Interval = TimeSpan.FromSeconds(5);
+            _autoCloseTimer.IsRepeating = false;
+            _autoCloseTimer.Tick += (_, _) =>
+            {
+                if (_currentTeachingTip?.IsOpen == true)
+                {
+                    _currentTeachingTip.IsOpen = false;
+                }
+
+                _autoCloseTimer?.Stop();
+                _autoCloseTimer = null;
+            };
+            _autoCloseTimer.Start();
         }
 
         private static void CloseCurrentTeachingTip()
         {
+            _autoCloseTimer?.Stop();
+            _autoCloseTimer = null;
+
             if (_currentTeachingTip is null)
                 return;
 
             _currentTeachingTip.IsOpen = false;
-            // Actual removal happens in Closed handler
         }
 
         private static void TeachingTip_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
         {
-            // Detach from visual tree
             if (VisualTreeHelper.GetParent(sender) is Panel panel)
             {
                 panel.Children.Remove(sender);
@@ -386,7 +384,6 @@ namespace Infomaniak.kDrive
                 _currentTeachingTip = null;
             }
         }
-
     }
 }
 

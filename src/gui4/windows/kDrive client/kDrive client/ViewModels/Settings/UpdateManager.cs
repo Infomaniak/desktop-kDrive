@@ -8,9 +8,16 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class UpdateManager : UISafeObservableObject
     {
+        private bool _updateEnabled = false;
         private bool _autoUpdateEnabled = false;
         private VersionChannel _currentChannel = VersionChannel.Beta;
         private AppVersion? _availableUpdate;
+
+        public bool UpdateEnabled
+        {
+            get => _updateEnabled;
+            set => SetPropertyInUIThread(ref _updateEnabled, value);
+        }
 
         public bool AutoUpdateEnabled
         {

@@ -63,6 +63,8 @@ class SyncFileItem {
         inline void setSize(int64_t newSize) { _size = newSize; }
         inline int progress() const { return _progress; }
         inline void setProgress(const int newProgress) { _progress = newProgress; }
+        inline UniqueId operationId() const { return _operationId; }
+        inline void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
         inline SyncTime modTime() const { return _modTime; }
         inline void setModTime(SyncTime newModTime) { _modTime = newModTime; }
         inline SyncTime creationTime() const { return _creationTime; }
@@ -103,6 +105,7 @@ class SyncFileItem {
         std::string _error;
         int64_t _size{0};
         int _progress{0}; // %
+        UniqueId _operationId{0};
         SyncTime _modTime{0};
         SyncTime _creationTime{0};
         bool _dehydrated{false};

@@ -7,8 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
-             Loaded="UserControl_Loaded"
-             Unloaded="UserControl_Unloaded"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -16,12 +15,14 @@
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
     <InfoBar x:Name="InfoBar_"
-             x:Uid="CC_ErrorBar"
+             Title="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('winInformationBlockSynchroErrorTitle', ViewModel.SelectedSync.SyncErrors.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}"
+             Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockSynchroErrorSubtitle')}"
              Severity="Informational"
              IsIconVisible="False"
-             IsClosable="False">
+             IsClosable="False"
+             IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter='{StaticResource IntegerToBooleanConverter}', Mode=OneWay}">
         <InfoBar.ActionButton>
-            <Button x:Uid="CC_ErrorBar_Button"
+            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonFixErrors')}"
                     HorizontalAlignment="Right"
                     Style="{ThemeResource AccentButtonStyle}"
                     Click="InfoBarButton_Click" />

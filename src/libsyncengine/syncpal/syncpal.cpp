@@ -823,7 +823,7 @@ ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath())};
         }
 
         if (localNodeId().empty()) {
@@ -837,7 +837,7 @@ ExitInfo SyncPal::isRootFolderValid() {
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath())};
     }
 }
 
@@ -1393,7 +1393,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError);
+        return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
     Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
                 relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,

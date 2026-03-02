@@ -91,7 +91,7 @@ void TestIntegration::setUp() {
     const User user(1, 12321, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId());
+    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;

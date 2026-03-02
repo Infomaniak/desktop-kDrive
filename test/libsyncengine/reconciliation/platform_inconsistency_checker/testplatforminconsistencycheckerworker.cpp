@@ -52,7 +52,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     const User user(1, 1, "dummy");
     (void) ParmsDb::instance()->insertUser(user);
 
-    const Account account(1, 1, user.dbId());
+    const Account account(1, 1, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());

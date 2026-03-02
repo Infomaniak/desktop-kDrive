@@ -485,12 +485,12 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
                         R"( "num": )" +
                         std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+                        R"( "params": { "driveDbId": 1, "nodeId": "MTExMQ==" } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+                        R"( "params": { "driveDbId": 1, "nodeId": "MTExMQ==" } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{
@@ -513,7 +513,7 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
         CPPUNIT_ASSERT(syncGetPrivateLinkUrlJob);
         CPPUNIT_ASSERT_EQUAL(1, syncGetPrivateLinkUrlJob->_driveDbId);
-        CPPUNIT_ASSERT(CommString{Str("1111")} == syncGetPrivateLinkUrlJob->_fileId);
+        CPPUNIT_ASSERT(CommString{Str("1111")} == syncGetPrivateLinkUrlJob->_nodeId);
 
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
     };

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,9 +125,11 @@ static const char optionsC[] =
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
-static const std::string showSynthesisMsg = "showSynthesis";
-static const std::string showSettingsMsg = "showSettings";
-static const std::string restartClientMsg = "restartClient";
+static const QString showSynthesisMsg("showSynthesis");
+static const QString showSettingsMsg("showSettings");
+static const QString restartClientMsg("restartClient");
+static const QString authorizationCodeMsg("redirectLogin");
+static const QString separatorMsg("$$$");
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -156,6 +158,9 @@ AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
+    installEventFilter(&_eventFilter);
+    (void) connect(&_eventFilter, &AuthorizationCodeEventFilter::authorizationCodeReceived, this,
+                   &AppServer::onAuthorizationCodeReceived);
 }
 
 AppServer::~AppServer() {
@@ -182,12 +187,12 @@ void AppServer::init() {
 
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        std::cout << "Command line options processed" << std::endl;
+        LOG_INFO(_logger, "Command line options processed");
         return;
     }
 
     if (isRunning()) {
-        std::cout << "AppServer already running" << std::endl;
+        LOG_INFO(_logger, "AppServer already running");
         return;
     }
 
@@ -445,9 +450,14 @@ void AppServer::init() {
         _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
-        connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-        connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-        connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+        (void) connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog,
+                       Qt::QueuedConnection);
+        (void) connect(_updateManager.get(), &UpdateManager::requireUpdate, this, &AppServer::onUpdateRequired,
+                       Qt::QueuedConnection);
     }
 
     // Check last crash to avoid crash loop
@@ -491,6 +501,12 @@ void AppServer::init() {
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
 
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
+
     // Start client
     if (!startClient()) {
         LOG_ERROR(_logger, "Error in startClient");
@@ -531,27 +547,8 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "ExtJobManager stopped");
 #endif
 
-    // Stop SyncPals
-    {
-        const std::scoped_lock lock(syncPalMapMutex);
-        for (const auto &[syncDbId, _]: syncPalMap) {
-            if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
-            }
-        }
-    }
-    LOG_DEBUG(_logger, "Syncpal(s) stopped");
-
-    // Stop Vfs
-    {
-        const std::scoped_lock lock(vfsMapMutex);
-        for (const auto &[syncDbId, _]: vfsMap) {
-            if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
-            }
-        }
-    }
-    LOG_DEBUG(_logger, "Vfs(s) stopped");
+    stopAllSyncPals();
+    stopAllVfs();
 
     // Clear CommManager
     if (useCommManager()) {
@@ -628,6 +625,26 @@ ExitInfo AppServer::setSupportsVirtualFilesAsync(int syncDbId, bool value) {
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     return setSupportsVirtualFiles(syncDbId, value, false);
+}
+
+void AppServer::stopAllSyncPals() {
+    const std::scoped_lock lock(syncPalMapMutex);
+    for (const auto &[syncDbId, _]: syncPalMap) {
+        if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+            LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
+        }
+    }
+    LOG_DEBUG(_logger, "Syncpal(s) stopped");
+}
+
+void AppServer::stopAllVfs() {
+    const std::scoped_lock lock(vfsMapMutex);
+    for (const auto &[syncDbId, _]: vfsMap) {
+        if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
+            LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
+        }
+    }
+    LOG_DEBUG(_logger, "Vfs(s) stopped");
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
@@ -759,7 +776,8 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
 
     // Propagate language change
     if (oldParametersInfo.language() != newParametersInfo.language()) {
-        CommonUtility::setupTranslations(this, newParametersInfo.language());
+        Language language = newParametersInfo.language();
+        QTimer::singleShot(100, this, [this, language]() { CommonUtility::setupTranslations(this, language); });
     }
 
     // Propagate ProxyConfig change
@@ -1225,7 +1243,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
 
-            QHash<int, DriveAvailableInfo> list;
+            QList<DriveAvailableInfo> list;
             ExitCode exitCode = ServerRequests::getUserAvailableDrives(userDbId, list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
@@ -2342,7 +2360,8 @@ void AppServer::startSyncsAndRetryOnError() {
     LOG_DEBUG(_logger, "Start syncs");
     if (const auto exitInfo = startSyncs(); !exitInfo) {
         LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
-        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirAccessError) {
+        if (exitInfo.code() == ExitCode::SystemError &&
+            (exitInfo.cause() == ExitCause::SyncDirAccessError || exitInfo.cause() == ExitCause::SyncDirDiskMissing)) {
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
         }
@@ -2506,6 +2525,12 @@ void AppServer::onShowWindowsUpdateDialog() {
     }
 }
 
+void AppServer::onUpdateRequired() {
+    addError(Error(ERR_ID, ExitCode::UpdateRequired));
+    stopAllSyncPals();
+    stopAllVfs();
+}
+
 void AppServer::onUpdateStateChanged(const UpdateState state) {
     if (useOldCommServer()) {
         QByteArray params;
@@ -2547,11 +2572,17 @@ void AppServer::onRestartClientReceived() {
 void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObject *) {
     LOG_DEBUG(_logger, "Message received from another kDrive process: '" << message.toStdString() << "'");
 
-    if (message.toStdString() == showSynthesisMsg) {
+    if (message.startsWith(authorizationCodeMsg)) {
+        const QUrl url = message.split(separatorMsg).back();
+        const QUrlQuery query(url);
+        const QString code = query.queryItemValue("code");
+        const QString state = query.queryItemValue("state");
+        onAuthorizationCodeReceived(code, state);
+    } else if (message == showSynthesisMsg) {
         showSynthesis();
-    } else if (message.toStdString() == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
-    } else if (message.toStdString() == restartClientMsg) {
+    } else if (message == restartClientMsg) {
         _clientManuallyRestarted = true;
         if (!startClient()) {
             LOG_ERROR(_logger, "Failed to start the client");
@@ -2563,6 +2594,16 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
 void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
+}
+
+void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
+    int id = 0;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << code;
+    paramsStream << state;
+    (void) OldCommServer::instance()->sendSignal(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, params, id);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) const {
@@ -2792,6 +2833,27 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
+        bool accountUpdated = false;
+        if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
+            LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+            return exitInfo;
+        }
+        if (accountUpdated) {
+            AccountInfo accountInfo;
+            ServerRequests::accountToAccountInfo(account, accountInfo);
+            sendAccountUpdated(accountInfo);
+
+            bool found = false;
+            if (!ParmsDb::instance()->updateAccount(account, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+                return ExitCode::DbError;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+                return ExitCode::DataError;
+            }
+        }
+
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
@@ -2800,8 +2862,10 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
         for (auto &drive: drives) {
             bool quotaUpdated = false;
-            bool accountUpdated = false;
-            if (const auto exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+            bool accountChanged = false;
+            Account modifiedAccount = account;
+            if (const auto exitInfo =
+                        ServerRequests::loadDriveInfo(drive, modifiedAccount, updated, quotaUpdated, accountChanged);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
                 return exitInfo;
@@ -2851,32 +2915,34 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             }
 
             bool accountRemoved = false;
-            if (accountUpdated) {
-                int accountDbId = 0;
-                if (!ParmsDb::instance()->accountDbId(user.dbId(), account.accountId(), accountDbId)) {
+            if (accountChanged) {
+                bool accountIdAlreadyExists = false;
+                Account dummyAccount;
+                bool found = false;
+                if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(user.dbId(), modifiedAccount.accountId(), dummyAccount,
+                                                                          found)) {
                     LOG_WARN(_logger, "Error in ParmsDb::accountDbId");
                     return ExitCode::DbError;
                 }
+                accountIdAlreadyExists = found;
 
-                if (accountDbId == 0) {
-                    // No existing account with the new accountId, update it
-                    bool found = false;
-                    if (!ParmsDb::instance()->updateAccount(account, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
-                        return ExitCode::DbError;
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
-                        return ExitCode::DataError;
-                    }
+                // Update account
+                if (!ParmsDb::instance()->updateAccount(modifiedAccount, found)) {
+                    LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
+                    return ExitCode::DbError;
+                }
+                if (!found) {
+                    LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+                    return ExitCode::DataError;
+                }
 
-                    AccountInfo accountInfo;
-                    ServerRequests::accountToAccountInfo(account, accountInfo);
-                    sendAccountUpdated(accountInfo);
-                } else {
+                AccountInfo accountInfo;
+                ServerRequests::accountToAccountInfo(account, accountInfo);
+                sendAccountUpdated(accountInfo);
+
+                if (modifiedAccount.accountId() != account.accountId() && accountIdAlreadyExists) {
                     // An account already exists with the new accountId, link the drive to it
-                    drive.setAccountDbId(accountDbId);
-                    bool found = false;
+                    drive.setAccountDbId(modifiedAccount.dbId());
                     if (!ParmsDb::instance()->updateDrive(drive, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                         return ExitCode::DbError;
@@ -2958,10 +3024,8 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed)
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
-        if (exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
-            LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
-            addError(Error(sync.dbId(), ERR_ID, exitInfo));
-        }
+        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
+        addError(Error(sync.dbId(), ERR_ID, exitInfo));
         // Continue. The sync will be initialized but paused.
         // The sync will start when the VFS plugin will be ready (sync folder accessible and permissions granted by the user).
         startPostponed = true;
@@ -3192,6 +3256,7 @@ void AppServer::logUsefulInformation() {
 
     LOG_INFO(_logger, "version: " << _theme->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
+    LOG_INFO(_logger, "os version: " << CommonUtility::osVersion());
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
@@ -3416,7 +3481,14 @@ void AppServer::parseOptions(const QStringList &options) {
     it.next(); // File name
     while (it.hasNext()) {
         QString option = it.next();
-        if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
+        if (option.startsWith(REDIRECT_URI)) {
+            const QUrl url(option);
+
+            if (url.scheme() == "kdrive" && url.host() == "auth-desktop") {
+                _authorizationCodeStr = option;
+                break;
+            }
+        } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
             _helpAsked = true;
             break;
         } else if (option == QLatin1String("--version") || option == QLatin1String("-v")) {
@@ -3493,15 +3565,19 @@ void AppServer::clearSyncNodes() {
 }
 
 void AppServer::sendShowSettingsMsg() {
-    sendMessage(QString::fromStdString(showSettingsMsg));
+    sendMessage(showSettingsMsg);
 }
 
 void AppServer::sendShowSynthesisMsg() {
-    sendMessage(QString::fromStdString(showSynthesisMsg));
+    sendMessage(showSynthesisMsg);
 }
 
 void AppServer::sendRestartClientMsg() {
-    sendMessage(QString::fromStdString(restartClientMsg));
+    sendMessage(restartClientMsg);
+}
+
+void AppServer::sendAuthorizationCode() {
+    sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr);
 }
 
 void AppServer::showSettings() {
@@ -3841,7 +3917,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(sync.localPath())};
     }
 
 #if defined(KD_MACOS)
@@ -4730,7 +4806,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(syncPalMapMutex);
-    for (const auto &[_, syncPal]: syncPalMap) {
+    for (const auto [_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {

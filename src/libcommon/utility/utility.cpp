@@ -1034,10 +1034,6 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
-    if (currTabVersion.size() != targetTabVersion.size()) {
-        return false; // Should not happen
-    }
-
     return std::lexicographical_compare(currTabVersion.begin(), currTabVersion.end(), targetTabVersion.begin(),
                                         targetTabVersion.end());
 }
@@ -1178,13 +1174,13 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
 
 #ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
-    QProcess *process = new QProcess();
-    process->start("bash", QStringList() << "-c"
-                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
-                                                    .arg(liteSyncExtBundleIdStr.data()));
-    process->waitForStarted();
-    process->waitForFinished();
-    QByteArray result = process->readAll();
+    QProcess process;
+    process.start("bash", QStringList() << "-c"
+                                        << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                   .arg(liteSyncExtBundleIdStr.data()));
+    process.waitForStarted();
+    process.waitForFinished();
+    QByteArray result = process.readAll();
 
     return result.trimmed().toInt() == 1;
 }

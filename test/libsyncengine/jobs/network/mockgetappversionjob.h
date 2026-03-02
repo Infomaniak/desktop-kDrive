@@ -71,54 +71,56 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
                                                       : generateJsonReply(lowTagValue, lowBuildVersionValue);
             const std::istringstream iss(str);
             std::istream is(iss.rdbuf());
-            GetAppVersionJob::handleResponse(is);
+            (void) GetAppVersionJob::handleResponse(is);
             return ExitCode::Ok;
         }
 
+        void setBigMinAppVersion(const bool val) { _bigMinAppVersion = val; }
+
     private:
-        std::string generateJsonReply(const std::string &tag, uint64_t buildVersion) {
+        std::string generateJsonReply(const std::string &tag, const uint64_t buildVersion) const {
             Poco::JSON::Object versionObj;
-            versionObj.set("tag", tag);
-            versionObj.set("tag_updated_at", "2020-06-04 15:06:37");
-            versionObj.set("version_changelog", "test");
-            versionObj.set("type", "production");
-            versionObj.set("build_version", buildVersion);
-            versionObj.set("build_min_os_version", "XXXX");
-            versionObj.set("download_link", "test");
+            (void) versionObj.set("tag", tag);
+            (void) versionObj.set("tag_updated_at", "2020-06-04 15:06:37");
+            (void) versionObj.set("version_changelog", "test");
+            (void) versionObj.set("type", "production");
+            (void) versionObj.set("build_version", buildVersion);
+            (void) versionObj.set("build_min_os_version", "1.1");
+            (void) versionObj.set("download_link", "test");
 
             Poco::JSON::Array publishedVersionsArray;
             for (const auto channel:
                  {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta, VersionChannel::Internal}) {
                 Poco::JSON::Object tmpObj;
-                tmpObj.set("tag", tag);
-                tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");
-                tmpObj.set("version_changelog", "test");
-                tmpObj.set("type", GetAppVersionJob::toStr(channel));
-                tmpObj.set("build_version", buildVersion);
-                tmpObj.set("build_min_os_version", "XXXX");
-                tmpObj.set("download_link", "test");
-                publishedVersionsArray.add(tmpObj);
+                (void) tmpObj.set("tag", tag);
+                (void) tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");
+                (void) tmpObj.set("version_changelog", "test");
+                (void) tmpObj.set("type", GetAppVersionJob::toStr(channel));
+                (void) tmpObj.set("build_version", buildVersion);
+                (void) tmpObj.set("build_min_os_version", "1.1");
+                (void) tmpObj.set("download_link", "test");
+                (void) publishedVersionsArray.add(tmpObj);
             }
 
             Poco::JSON::Object applicationObj;
-            applicationObj.set("id", "27");
-            applicationObj.set("name", "com.infomaniak.drive");
-            applicationObj.set("platform", "mac-os");
-            applicationObj.set("store", "kStore");
-            applicationObj.set("api_id", "com.infomaniak.drive");
-            applicationObj.set("min_version", "3.6.2");
-            applicationObj.set("next_version_rate", "0");
-            applicationObj.set("published_versions", publishedVersionsArray);
+            (void) applicationObj.set("id", "27");
+            (void) applicationObj.set("name", "com.infomaniak.drive");
+            (void) applicationObj.set("platform", "mac-os");
+            (void) applicationObj.set("store", "kStore");
+            (void) applicationObj.set("api_id", "com.infomaniak.drive");
+            (void) applicationObj.set("min_version", _bigMinAppVersion ? "1111.2222.3333.0" : "3.6.2.0");
+            (void) applicationObj.set("next_version_rate", "0");
+            (void) applicationObj.set("published_versions", publishedVersionsArray);
 
             Poco::JSON::Object dataObj;
-            dataObj.set("application_id", "27");
-            dataObj.set("prod_version", "production");
-            dataObj.set("version", versionObj);
-            dataObj.set("application", applicationObj);
+            (void) dataObj.set("application_id", "27");
+            (void) dataObj.set("prod_version", "production");
+            (void) dataObj.set("version", versionObj);
+            (void) dataObj.set("application", applicationObj);
 
             Poco::JSON::Object mainObj;
-            mainObj.set("result", "success");
-            mainObj.set("data", dataObj);
+            (void) mainObj.set("result", "success");
+            (void) mainObj.set("data", dataObj);
 
             std::ostringstream out;
             mainObj.stringify(out);
@@ -126,5 +128,6 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
         }
 
         bool _updateShouldBeAvailable{false};
+        bool _bigMinAppVersion{false};
 };
 } // namespace KDC

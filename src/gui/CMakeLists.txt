@@ -4,7 +4,7 @@ else()
     project(gui LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets WebEngineWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets)
 find_package(Qt6LinguistTools)
 find_package(Poco 1.13.3 REQUIRED Foundation Net)
 
@@ -37,10 +37,6 @@ else()
 endif()
 
 # Sources
-set(client_UI_SRCS
-    wizard/webview.ui
-)
-
 set(client_SRCS
     ../libcommongui/commclient.h ../libcommongui/commclient.cpp
     ../libcommongui/logger.h ../libcommongui/logger.cpp
@@ -48,7 +44,6 @@ set(client_SRCS
     debugreporter.h debugreporter.cpp
     guiutility.h guiutility.cpp
     systray.h systray.cpp
-    wizard/webview.h wizard/webview.cpp
 
     # KDrive V3
     aboutdialog.h aboutdialog.cpp
@@ -175,7 +170,6 @@ endif()
 set(final_src
     ${KDRIVE_RC_SRC}
     ${client_SRCS}
-    ${client_UI_SRCS}
     ${client_version}
     ${guiMoc}
     ${client_I18N}
@@ -197,7 +191,6 @@ ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEB
 # Skip automoc for the files in libcommongui to avoid duplicate moc files since AUTOMOC is already enabled in ../libcommongui/CMakeLists.txt
 set_source_files_properties(
         "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/logger.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/utility/widgetsignalblocker.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/../libcommongui/matomoclient.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/qt-piwik-tracker/piwiktracker.h"
         PROPERTIES SKIP_AUTOMOC ON
@@ -345,7 +338,7 @@ target_include_directories(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE
 
 # Link
 target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE}
-    Qt6::Network Qt6::Sql Qt6::SvgWidgets Qt6::WebEngineWidgets
+    Qt6::Network Qt6::Sql Qt6::SvgWidgets
     sentry::sentry
     Poco::Foundation Poco::Net
     ${libcommongui_NAME})

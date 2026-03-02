@@ -30,10 +30,11 @@ class LoginDialog : public CustomDialog {
         Q_OBJECT
 
     public:
-        LoginDialog(int userDbId, QWidget *parent = nullptr);
+        LoginDialog(int userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
     private:
         int _userDbId;
+        std::shared_ptr<ClientGui> _gui;
 
         AddDriveLoginWidget *_loginWidget;
 

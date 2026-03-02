@@ -231,8 +231,10 @@ std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(const st
         correspondingParentNode = correspondingNodeInOtherTree(createNode->parentNode());
     }
     if (!correspondingParentNode) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Failed to get corresponding node: " << Utility::formatSyncName(createNode->parentNode()->name()));
+        if (!createNode->parentNode()->hasChangeEvent(OperationType::Create)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Failed to get corresponding node: " << Utility::formatSyncName(createNode->parentNode()->name()));
+        }
         return std::nullopt;
     }
     std::optional<Conflict> conflict = std::nullopt;

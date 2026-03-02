@@ -394,6 +394,15 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit fixConflictingFilesCompleted(syncDbId, nbErrors);
             break;
         }
+        case SignalNum::LOGIN_SEND_AUTHORIZATION_CODE: {
+            QString code;
+            QString state;
+            paramsStream >> code;
+            paramsStream >> state;
+
+            emit authorizationCodeReceived(code, state);
+            break;
+        }
         case SignalNum::UTILITY_SHOW_NOTIFICATION: {
             QString title;
             QString message;

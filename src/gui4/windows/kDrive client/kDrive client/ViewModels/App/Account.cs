@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private string _name = "";
         private DbId _dbId = -1;
-        private AccountId accountId = 0;
+        private AccountId _id = 0;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
         private User _user;
         public Account(DbId dbId, User user)
@@ -56,10 +56,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _name, value);
         }
 
-        public AccountId AccountId
+        public AccountId Id
         {
-            get => accountId;
-            set => SetPropertyInUIThread(ref accountId, value);
+            get => _id;
+            set => SetPropertyInUIThread(ref _id, value);
         }
     }
 }

@@ -27,6 +27,7 @@ class TestUpdateChecker final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUpdateChecker);
         CPPUNIT_TEST(testCheckUpdateAvailable);
         CPPUNIT_TEST(testVersionInfo);
+        CPPUNIT_TEST(testAppIsBlocked);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,6 +37,7 @@ class TestUpdateChecker final : public CppUnit::TestFixture, public TestBase {
     protected:
         void testCheckUpdateAvailable();
         void testVersionInfo();
+        void testAppIsBlocked();
 };
 
 } // namespace KDC

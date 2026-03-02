@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -35,7 +34,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     public class MockServerCommProtocol : Interfaces.IServerCommProtocol
     {
-        private MockServerData _mockData = new MockServerData();
+        protected MockServerData _mockData = new MockServerData();
 
         private long _requestIdCounter = 0;
         private long NextId
@@ -45,7 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public event EventHandler<SignalEventArgs>? SignalReceived;
         public event EventHandler? ConnectionLost;
-        private Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
+        protected Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
         public MockServerCommProtocol()
@@ -180,7 +179,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "dbId", account.DbId },
                     { JsonKeys.UserDbId, account.User.DbId },
-                                    };
+                    { JsonKeys.AccountName, account.Name },
+                };
                 if (!result.ContainsKey("accountInfoList"))
                 {
                     result["accountInfoList"] = new JsonArray();
@@ -389,12 +389,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
         }
 
-        private void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
+        protected void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
         {
             PendingSignals.Enqueue(new KeyValuePair<SignalNum, JsonObject>(signalNum, parameters));
         }
 
-        private void RaiseSignal(SignalNum signalNum, JsonObject parameters)
+        protected void RaiseSignal(SignalNum signalNum, JsonObject parameters)
         {
             SignalReceived?.Invoke(this, new SignalEventArgs(signalNum, parameters));
         }
@@ -417,7 +417,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return Task.CompletedTask;
         }
 
-        public async Task SimulateSignals()
+        public virtual async Task SimulateSignals()
         {
         }
     }

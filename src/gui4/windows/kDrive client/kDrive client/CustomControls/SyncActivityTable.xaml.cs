@@ -11,7 +11,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,58 +21,6 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public static class AncestorSource
-    {
-        public static readonly DependencyProperty AncestorTypeProperty =
-            DependencyProperty.RegisterAttached(
-                "AncestorType",
-                typeof(Type),
-                typeof(AncestorSource),
-                new PropertyMetadata(default(Type), OnAncestorTypeChanged)
-        );
-
-        public static void SetAncestorType(FrameworkElement element, Type value) =>
-            element.SetValue(AncestorTypeProperty, value);
-
-        public static Type GetAncestorType(FrameworkElement element) =>
-            (Type)element.GetValue(AncestorTypeProperty);
-
-        private static void OnAncestorTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            FrameworkElement target = (FrameworkElement)d;
-            if (target.IsLoaded)
-                SetDataContext(target);
-            else
-                target.Loaded += OnTargetLoaded;
-        }
-
-        private static void OnTargetLoaded(object sender, RoutedEventArgs e)
-        {
-            FrameworkElement target = (FrameworkElement)sender;
-            target.Loaded -= OnTargetLoaded;
-            SetDataContext(target);
-        }
-
-        private static void SetDataContext(FrameworkElement target)
-        {
-            Type ancestorType = GetAncestorType(target);
-            if (ancestorType != null)
-                target.DataContext = FindParent(target, ancestorType);
-        }
-
-        private static object FindParent(DependencyObject dependencyObject, Type ancestorType)
-        {
-            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
-            if (parent == null)
-                return null;
-
-            if (ancestorType.IsAssignableFrom(parent.GetType()))
-                return parent;
-
-            return FindParent(parent, ancestorType);
-        }
-    }
-
     public sealed partial class SyncActivityTable : UserControl
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
@@ -197,7 +144,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
-                frame.Navigate(typeof(Pages.ErrorPage));
+                frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
@@ -215,7 +162,8 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
@@ -234,7 +182,8 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
@@ -247,27 +196,23 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
         {
-            const string loadingTextXuid = "CC_SyncActivityTable_FetchingLink/Text";
-            const string errorTextXuid = "CC_SyncActivityTable_LinkFaillure/Text";
-            const string successTextXuid = "CC_SyncActivityTable_LinkFetched/Text";
-
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), false);
                 return;
             }
 
             // Find parrent button to anchor teaching tip
-            DisplayTeachingTip(Utility.GetLocalizedString(loadingTextXuid), true);
+            DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), true);
 
-
-            var activity = element.DataContext as SyncFileItem;
+            FrameworkElement? parentElement = element.DataContext as FrameworkElement;
+            var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
                 return;
             }
 
@@ -280,12 +225,12 @@ namespace Infomaniak.kDrive.CustomControls
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip(Utility.GetLocalizedString(successTextXuid), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboardTitle"), false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip(Utility.GetLocalizedString(errorTextXuid), false);
+                DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
             }
         }
 
@@ -295,7 +240,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
-                frame.Navigate(typeof(Pages.ErrorPage));
+                frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
@@ -317,43 +262,16 @@ namespace Infomaniak.kDrive.CustomControls
         {
             NotificationTeachingTip.IsOpen = false;
         }
-
-        private void SynchronizingProgressRing_Loaded(object sender, RoutedEventArgs e)
+        
+        public static string GetSyncDirectionToolTip(SyncDirection direction)
         {
-            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
-            if (syncItem is null)
+            return direction switch
             {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                return;
-            }
-            syncItem.PropertyChanged += SyncItem_PropertyChanged;
-        }
 
-        private void SynchronizingProgressRing_Unloaded(object sender, RoutedEventArgs e)
-        {
-            var syncItem = (sender as FrameworkElement)?.DataContext as SyncFileItem;
-            if (syncItem is null)
-            {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                return;
-            }
-            syncItem.PropertyChanged -= SyncItem_PropertyChanged;
-        }
-
-        private void SyncItem_PropertyChanged(object? sender, PropertyChangedEventArgs args)
-        {
-            if (args.PropertyName == nameof(SyncFileItem.Status))
-            {
-                // Force the ContentControl to re-evaluate the DataTemplateSelector
-                var frameWorkElement = sender as FrameworkElement;
-                var parent = VisualTreeHelper.GetParent(frameWorkElement) as ContentControl;
-                if (parent != null)
-                {
-                    var currentContent = parent.Content;
-                    parent.Content = null; // Clear content to force re-evaluation
-                    parent.Content = currentContent; // Restore content
-                }
-            }
+                SyncDirection.Up => Localizer.Instance.GetString("syncedFromComputer"),
+                SyncDirection.Down => Localizer.Instance.GetString("syncedFromKDriveWeb"),
+                _ => ""
+            };
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector

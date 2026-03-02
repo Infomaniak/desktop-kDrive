@@ -142,6 +142,8 @@ std::string toString(const ExitCause e) {
             return "SyncDirDoesntExist";
         case ExitCause::SyncDirAccessError:
             return "SyncDirAccessError";
+        case ExitCause::SyncDirDiskMissing:
+            return "SyncDirDiskMissing";
         case ExitCause::SyncDirNestingError:
             return "SyncDirNestingError";
         case ExitCause::SyncDirChanged:
@@ -286,8 +288,6 @@ std::string toString(const InconsistencyType e) {
             return "PathLength";
         case InconsistencyType::NotYetSupportedChar:
             return "NotYetSupportedChar";
-        case InconsistencyType::DuplicateNames:
-            return "DuplicateNames";
         case InconsistencyType::ForbiddenCharOnlySpaces:
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
@@ -309,12 +309,8 @@ std::string toString(const CancelType e) {
             return "Move";
         case CancelType::Delete:
             return "Delete";
-        case CancelType::AlreadyExistRemote:
-            return "AlreadyExistRemote";
         case CancelType::MoveToBinFailed:
             return "MoveToBinFailed";
-        case CancelType::AlreadyExistLocal:
-            return "AlreadyExistLocal";
         case CancelType::TmpBlacklisted:
             return "TmpBlacklisted";
         case CancelType::ExcludedByTemplate:

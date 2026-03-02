@@ -30,7 +30,7 @@ class SyncGetPrivateLinkUrlJob : public AbstractGuiJob {
     private:
         // Input parameters
         int _driveDbId = 0;
-        CommString _fileId;
+        CommString _nodeId;
 
         // Output parameters
         std::string _linkUrl;

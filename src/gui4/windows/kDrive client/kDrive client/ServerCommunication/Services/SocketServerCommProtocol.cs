@@ -343,7 +343,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        private void RaiseSignal(SignalNum signalNum, JsonObject parameters)
+        protected void RaiseSignal(SignalNum signalNum, JsonObject parameters)
         {
             SignalReceived?.Invoke(this, new SignalEventArgs(signalNum, parameters));
         }

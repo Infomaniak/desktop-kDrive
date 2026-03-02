@@ -7,6 +7,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:controls="using:Infomaniak.kDrive.CustomControls"
                 xmlns:converters="using:Infomaniak.kDrive.Converters"
+                xmlns:kDrive="using:Infomaniak.kDrive"
                 mc:Ignorable="d"
                 PaneDisplayMode="Left"
                 SelectionChanged="OnSelectionChanged"
@@ -16,8 +17,7 @@
                 OpenPaneLength="280"
                 CompactPaneLength="52"
                 Loaded="AppNavigationView_Loaded"
-                Unloaded="AppNavigationView_Unloaded"
-                >
+                Unloaded="AppNavigationView_Unloaded">
     <!--
     CompactPaneLength must be overridden (default is 48px) due to the following issue:
     https://github.com/microsoft/microsoft-ui-xaml/issues/10415
@@ -39,7 +39,7 @@
     </NavigationView.PaneCustomContent>
 
     <NavigationView.MenuItems>
-        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Home"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleHome'), Mode=OneWay}"
                             Tag="HomePage"
                             MinHeight="30"
                             IsSelected="True"
@@ -48,7 +48,7 @@
                 <SymbolIcon Symbol="Home" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Activity"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities'), Mode=OneWay}"
                             Tag="ActivityPage"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
@@ -56,7 +56,7 @@
                 <SymbolIcon Symbol="Sync" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"
                             Tag="StoragePage"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
@@ -67,7 +67,7 @@
     </NavigationView.MenuItems>
 
     <NavigationView.PaneFooter>
-        <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
+        <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenExplorer'), Mode=OneWay}"
                             Tapped="NavigationViewItem_Tapped"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">

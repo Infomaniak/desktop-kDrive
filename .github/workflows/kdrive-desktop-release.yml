@@ -7,6 +7,10 @@ on:
         type: boolean
         description: Build Windows executables
         default: true
+      build_windows_new_client:
+        type: boolean
+        description: Build Windows with new client (has no effect on macOS and Linux)
+        default: false
       build_macos:
         type: boolean
         description: Build macOS executables
@@ -140,6 +144,7 @@ jobs:
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true
+          build_new_client: ${{ inputs.build_windows_new_client }}
 
   build-Linux-amd:
     if: ${{ inputs.build_linux }}

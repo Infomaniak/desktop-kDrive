@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
@@ -620,13 +621,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
         {
-            DbId driveDbId = -1;
-            if (drive is Drive inDbDrive)
-                driveDbId = inDbDrive.DbId;
-
             var parms = new JsonObject
             {
-                [JsonKeys.DriveDbId] = driveDbId,
                 [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
             };
 
@@ -787,7 +783,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return nodes;
         }
-        public async Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
+        public async Task<GetNodeInfoResult> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
@@ -798,10 +794,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
 
             if (!HasRequiredParam(data, JsonKeys.NodeInfo))
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
 
             var options = new JsonSerializerOptions
             {
@@ -812,9 +808,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null;
+                return new GetNodeInfoResult(data.Cause, null);
             }
-            return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
+            return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
         public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)
@@ -921,16 +917,63 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
+            // First check the update state
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, new JsonObject(), cancellationToken);
+            if (!CheckJobResultAndLogIfError(data))
+                return false;
+
+            if (!HasRequiredParam(data, JsonKeys.UpdateState))
+                return false;
+
+            UpdateState? updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
+            if (updateState is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                return false;
+            }
+
+            if (updateState == UpdateState.NoUpdate)
+            {
+                _viewModel.Settings.UpdateManager.UpdateEnabled = false;
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
+                return true;
+            }
+            _viewModel.Settings.UpdateManager.UpdateEnabled = true;
+
+            List<UpdateState> notReadyStates = new List<UpdateState>
+            {
+                UpdateState.UpToDate,
+                UpdateState.Available,
+                UpdateState.Downloading,
+                UpdateState.CheckError,
+                UpdateState.DownloadError,
+                UpdateState.UpdateError
+            };
+
+            if (notReadyStates.Contains(updateState.Value))
+            {
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
+                return true;
+            }
+
+            if (updateState == UpdateState.Checking)
+            {
+                // If we are currently checking for updates but we already have update info, we can keep showing the update info without refreshing it to avoid UI flickering.
+                // We will refresh the update info once the state changes to something other than checking.
+                return true;
+            }
+
+            // If we are here, it means we are in a state where an update is available but not being checked for, which means we should have the update info available and can refresh it.
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
             {
                 [JsonKeys.UpdateChannel] = (int)channel
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, parms))
+            CommData data2 = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data2, parms))
                 return false;
 
-            if (!HasRequiredParam(data, JsonKeys.VersionInfo))
+            if (!HasRequiredParam(data2, JsonKeys.VersionInfo))
                 return false;
 
             var options = new JsonSerializerOptions
@@ -938,15 +981,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
-            if (versionInfo is null)
+            AppVersion? versionInfo = data2.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
+            if (versionInfo is null || versionInfo.Tag == "")
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data.Params[JsonKeys.VersionInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data2.Params[JsonKeys.VersionInfo]}.");
                 return false;
             }
 
             if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
+            {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+            }
             else
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
 
@@ -1437,45 +1482,71 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            SyncFileItem syncFileItem = new SyncFileItem(sync);
             await Utility.RunOnUIThread(() =>
             {
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncFileItem);
+                const int MaxActivities = 500;
 
-                var existingItems = sync.SyncActivities.Where(item => (item.LocalNodeId == syncFileItem.LocalNodeId && item.LocalNodeId.Length > 0) || (item.RemoteNodeId == syncFileItem.RemoteNodeId && item.RemoteNodeId.Length > 0));
+                var activities = sync.SyncActivities;
+                var operationId = fileItemInfo.OperationId;
 
-                // Remove existing items with same LocalNodeId and RemoteNodeId that are not successful or are still syncing
-                var itemsToRemove = existingItems.Where(item => item.Status != SyncFileStatus.Success && item.Status != SyncFileStatus.Syncing);
-                sync.SyncActivities.RemoveMany(itemsToRemove);
+                // Store the position of the last syncing item
+                var lastSyncingItem = activities.LastOrDefault(a => a.Status == SyncFileStatus.Syncing);
+                int destIndex = lastSyncingItem is null ? 0 : activities.IndexOf(lastSyncingItem);
 
-                // update existing item if it is syncing
-                var syncingItem = existingItems.FirstOrDefault(item => item.Status == SyncFileStatus.Syncing);
-                if (syncingItem is not null)
+                // Find existing item
+                var existing = activities.FirstOrDefault(a => a.OperationId == operationId);
+
+                if (existing is not null)
                 {
-                    ConversionHelper.CopyToSyncFileItem(fileItemInfo, syncingItem);
-
-                    // Move the updated item just before the first item that is not 
-                    var firstNonSyncingItem = sync.SyncActivities.FirstOrDefault(item => item.Status != SyncFileStatus.Syncing);
-                    if (firstNonSyncingItem is not null)
+                    // Ignore duplicate completion signals
+                    if (existing.Status != SyncFileStatus.Syncing)
                     {
-                        int index = sync.SyncActivities.IndexOf(firstNonSyncingItem);
-                        if (index < sync.SyncActivities.IndexOf(syncingItem))
-                        {
-                            sync.SyncActivities.Remove(syncingItem);
-                            sync.SyncActivities.Insert(index, syncingItem);
-                        }
+                        Logger.Log(Logger.Level.Warning, $"Received completion for already finished item. OperationId: {existing.OperationId}, Existing: {existing.Status}, New: {fileItemInfo.Status}");
+                        return;
                     }
+
+                    // Update state
+                    CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, existing);
+                    existing.Timestamp = DateTime.Now;
+
+                    Logger.Log(Logger.Level.Extended, $"Updated item {existing.OperationId} to {existing.Status}");
+
+                    // Still syncing -> nothing more to do
+                    if (existing.Status == SyncFileStatus.Syncing)
+                        return;
+
+                    // Move completed/errored item after syncing group
+                    if (destIndex != activities.IndexOf(existing))
+                    {
+                        activities.Remove(existing);
+                        activities.Insert(Math.Min(destIndex, activities.Count), existing);
+                    }
+
                     return;
                 }
 
-                // Insert the new item at the beginning of the list
-                sync.SyncActivities.Insert(0, syncFileItem);
-                // Ensure the list does not exceed 500 items
-                while (sync.SyncActivities.Count > 500)
+                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                var toBeRemoved = activities.Where(a => (a.Status == fileItemInfo.Status || a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                activities.RemoveMany(toBeRemoved);
+
+                // Create new item
+                var newItem = new SyncFileItem(sync);
+                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
+
+                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
-                    sync.SyncActivities.RemoveAt(sync.SyncActivities.Count - 1);
+                    // Insert item after all syncing items
+                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
+                }
+                else
+                {
+                    activities.Insert(0, newItem);
                 }
 
+                // Enforce max size
+                while (activities.Count > MaxActivities)
+                    activities.RemoveAt(activities.Count - 1);
             });
         }
 

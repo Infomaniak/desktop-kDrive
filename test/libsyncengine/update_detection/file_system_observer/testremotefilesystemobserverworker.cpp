@@ -79,7 +79,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;

@@ -7,10 +7,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d"
              HorizontalAlignment="Stretch"
-             Loaded="SyncExclusionSelector_Loaded"
-             >
+             Loaded="SyncExclusionSelector_Loaded">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -22,10 +22,10 @@
             <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0"
@@ -52,7 +52,7 @@
                                   Visibility="{x:Bind IsLoadingChildren, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                   IsIndeterminate="True"
                                   Height="16"
-                                  Width="auto" />
+                                  Width="Auto" />
 
                     <local:ContentLoader Grid.Column="4"
                                          HorizontalAlignment="Right"
@@ -74,14 +74,14 @@
                       x:Key="AccessDeneidDirectoryTemplate">
             <TreeViewItem HorizontalAlignment="Stretch">
                 <ToolTipService.ToolTip>
-                    <ToolTip x:Uid="CC_SyncExclusionSelector_ToolTip_AccessDenied" />
+                    <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('unauthorizedAccess')}" />
                 </ToolTipService.ToolTip>
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0"
                               IsChecked="False"
@@ -120,13 +120,13 @@
             <ScrollView>
                 <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0"
                           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
@@ -143,14 +143,14 @@
                                           MinHeight="0"
                                           Click="CheckBox_Click"
                                           DataContext="{x:Bind RootTreeItem, Mode=OneWay}" />
-                                <TextBlock x:Uid="CC_SyncExclusionSelector_Header_Name"
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelName')}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Column="1"
                               HorizontalAlignment="Right"
                               Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}">
-                            <TextBlock x:Uid="CC_SyncExclusionSelector_Header_Size" />
+                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}" />
                         </Grid>
 
                         <TreeView x:Name="FolderTree"
@@ -172,11 +172,11 @@
                                 HorizontalAlignment="Right"
                                 Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                                 Visibility="{x:Bind ShowSaveMenu, Mode=OneWay}">
-                        <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_CancelButton"
-                                Click="CancelSyncSelection_click"
+                        <Button Click="CancelSyncSelection_click"
+                                Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
-                        <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_SaveButton"
-                                Style="{ThemeResource AccentButtonStyle}"
+                        <Button Style="{ThemeResource AccentButtonStyle}"
+                                Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSaveMyChoices')}"
                                 Click="SaveSyncSelection_click"
                                 IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                     </StackPanel>

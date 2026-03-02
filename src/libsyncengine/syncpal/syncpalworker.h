@@ -20,7 +20,6 @@
 
 #include "isyncworker.h"
 #include "libcommon/utility/types.h"
-#include "performance_watcher/performancewatcher.h"
 
 #include <ctime>
 

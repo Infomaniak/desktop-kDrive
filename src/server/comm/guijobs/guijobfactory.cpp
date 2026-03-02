@@ -79,6 +79,7 @@
 #include "updaterstatejob.h"
 #include "updaterstartinstallerjob.h"
 #include "updaterskipversionjob.h"
+#include "log/log.h"
 
 namespace KDC {
 
@@ -110,7 +111,6 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::NODE_PATH, makeShared<NodePathJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
@@ -150,8 +150,11 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
                                                     std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
-    else
+    else 
+    {
+        LOG_WARN(Log::instance()->getLogger(), "Received unknown request " << requestNum << " with id " << requestId);
         return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
+    }
 }
 
 } // namespace KDC

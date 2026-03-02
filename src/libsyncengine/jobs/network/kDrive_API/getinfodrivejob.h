@@ -29,7 +29,6 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         GetInfoDriveJob(int userDbId, int driveId);
         GetInfoDriveJob(int driveDbId);
 
-
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] bool isAdmin() const { return _isAdmin; }

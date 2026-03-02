@@ -203,6 +203,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool getLinuxDesktopType(std::string &currentDesktop);
         static SyncPath getTrashPath();
 
+        static bool registerLoginRedirection();
+
         // Format utility functions
         static std::wstring formatStdError(const std::error_code &ec);
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
@@ -216,6 +218,10 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
         static std::wstring formatSystemError(const std::system_error &exception);
+
+        static ExitCause exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir,
+                                                                SourceLocation srcLoc = SourceLocation::currentLoc());
+
 
     private:
         static log4cplus::Logger _logger;

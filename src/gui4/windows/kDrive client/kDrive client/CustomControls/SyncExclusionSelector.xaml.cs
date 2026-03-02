@@ -336,38 +336,22 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh exclusion map from server
         private async Task<bool> RefreshExcludedNodesAsync()
         {
-            if (Sync is ViewModels.Sync dbSync)
+            _excludedNodeIds.Clear();
+            if (Sync is null)
             {
-                DbId syncDbId = dbSync.DbId;
-                _excludedNodeIds.Clear();
-
-                if (syncDbId != -1) // Existing sync -> load exclusions
-                {
-                    var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                    var res = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None);
-                    if (res is null)
-                    {
-                        Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
-                        _excludedNodeIds.Clear();
-                        return false;
-                    }
-                    _excludedNodeIds = res;
-                    return await RefreshExcludedNodePathsAsync();
-                }
-
-                // New sync -> no exclusions
-                _excludedNodePathsMap.Clear();
-                return true;
-            }
-            else if (Sync is NewSync tmpSync)
-            {
-                _excludedNodeIds.Clear();
-                _excludedNodeIds = tmpSync.ExcludedNodeIds.ToList();
-                return await RefreshExcludedNodePathsAsync();
+                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null.");
+                return false;
             }
 
-            Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null or of unsupported type.");
-            return false;
+            var res = await Sync.GetExcludedNodeIds();
+            if (res is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
+                _excludedNodeIds.Clear();
+                return false;
+            }
+            _excludedNodeIds = res;
+            return await RefreshExcludedNodePathsAsync();
         }
 
         // Ensure path map for excluded nodes is up to date (add new)
@@ -376,14 +360,23 @@ namespace Infomaniak.kDrive.CustomControls
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             async Task<bool> loadPath(NodeId nodeId)
             {
-                var nodeInfo = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
-                if (nodeId is null || nodeInfo is null || nodeInfo.Path == "")
+                var getNodeInfoResult = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
+                if (nodeId is not null && getNodeInfoResult.IsSuccess && getNodeInfoResult.Node is not null)
+                {
+                    _excludedNodePathsMap.TryAdd(nodeId, getNodeInfoResult.Node.Path);
+                    return true;
+                }
+
+                if (getNodeInfoResult.Cause == ExitCause.NotFound)
+                {
+                    Logger.Log(Logger.Level.Info, $"Excluded node with id {nodeId} not found on server. It might have been deleted since it was blacklisted.");
+                    return true;
+                }
+                else
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
                     return false;
                 }
-                _excludedNodePathsMap.TryAdd(nodeId, nodeInfo.Path);
-                return true;
             }
             var newExcludedNodePathsMap = _excludedNodePathsMap.Where(pair => _excludedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
             _excludedNodePathsMap.Clear(); // Cannot just use "=" because of references held by TreeItems.

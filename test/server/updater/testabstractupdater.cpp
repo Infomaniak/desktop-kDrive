@@ -49,10 +49,10 @@ void TestAbstractUpdater::setUp() {
     // Init parmsDb
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Setup parameters cache in test mode
-    ParametersCache::instance(true);
+    (void) ParametersCache::instance(true);
 }
 
 void TestAbstractUpdater::tearDown() {
@@ -70,14 +70,14 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
 
     bool found = false;
     Parameters parameters;
-    ParmsDb::instance()->selectParameters(parameters, found);
+    (void) ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
     unskipVersion();
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
-    ParmsDb::instance()->selectParameters(parameters, found);
+    (void) ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion().empty());
 }
 
@@ -125,22 +125,34 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
+void generateValidAllVersionsInfo(AllVersionsInfo &versionsInfo) {
+    versionsInfo[VersionChannel::Next].channel = VersionChannel::Next;
+    versionsInfo[VersionChannel::Next].tag = "10.0.0";
+    versionsInfo[VersionChannel::Next].buildVersion = 20210101;
+    versionsInfo[VersionChannel::Next].downloadUrl = "test";
+
+    versionsInfo[VersionChannel::Prod].channel = VersionChannel::Prod;
+    versionsInfo[VersionChannel::Prod].tag = "9.0.0";
+    versionsInfo[VersionChannel::Prod].buildVersion = 20210101;
+    versionsInfo[VersionChannel::Prod].downloadUrl = "test";
+
+    versionsInfo[VersionChannel::Beta].channel = VersionChannel::Beta;
+    versionsInfo[VersionChannel::Beta].tag = "11.0.0";
+    versionsInfo[VersionChannel::Beta].buildVersion = 20210101;
+    versionsInfo[VersionChannel::Beta].downloadUrl = "test";
+
+    versionsInfo[VersionChannel::Internal].channel = VersionChannel::Internal;
+    versionsInfo[VersionChannel::Internal].tag = "11.0.1";
+    versionsInfo[VersionChannel::Internal].buildVersion = 20210101;
+    versionsInfo[VersionChannel::Internal].downloadUrl = "test";
+}
+
 void TestAbstractUpdater::testCurrentVersionedChannel() {
-    auto updateChecker = std::make_shared<MockUpdateChecker>();
+    const auto updateChecker = std::make_shared<MockUpdateChecker>();
     MockUpdater updater(updateChecker);
 
     AllVersionsInfo testVersions;
-    testVersions[VersionChannel::Next].tag = "10.0.0";
-    testVersions[VersionChannel::Next].buildVersion = 20210101;
-
-    testVersions[VersionChannel::Prod].tag = "9.0.0";
-    testVersions[VersionChannel::Prod].buildVersion = 20210101;
-
-    testVersions[VersionChannel::Beta].tag = "11.0.0";
-    testVersions[VersionChannel::Beta].buildVersion = 20210101;
-
-    testVersions[VersionChannel::Internal].tag = "11.0.1";
-    testVersions[VersionChannel::Internal].buildVersion = 20210101;
+    generateValidAllVersionsInfo(testVersions);
     updateChecker->setAllVersionInfo(testVersions);
 
     std::string version;
@@ -176,10 +188,44 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 
     // Non-empty invalid version info.
-    AllVersionsInfo invalidVersions;
+    const AllVersionsInfo invalidVersions;
     testVersions[VersionChannel::Unknown].tag = "10.0.0";
     updateChecker->setAllVersionInfo(invalidVersions);
     version = "11.0.1.20210101";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 }
+
+void TestAbstractUpdater::testOsTooOld() {
+    // New version is available
+    {
+        const auto updateChecker = std::make_shared<MockUpdateChecker>();
+        updateChecker->setVersionReceived(true);
+
+        AllVersionsInfo testVersions;
+        generateValidAllVersionsInfo(testVersions);
+        updateChecker->setAllVersionInfo(testVersions);
+
+        MockUpdater updater(updateChecker);
+        updater.onAppVersionReceived();
+        CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
+    }
+    // New version is available but OS is too old
+    {
+        const auto updateChecker = std::make_shared<MockUpdateChecker>();
+        updateChecker->setVersionReceived(true);
+
+        AllVersionsInfo testVersions;
+        generateValidAllVersionsInfo(testVersions);
+        testVersions[VersionChannel::Next].buildMinOsVersion = "99.99.99";
+        testVersions[VersionChannel::Prod].buildMinOsVersion = "99.99.99";
+        testVersions[VersionChannel::Beta].buildMinOsVersion = "99.99.99";
+        testVersions[VersionChannel::Internal].buildMinOsVersion = "99.99.99";
+        updateChecker->setAllVersionInfo(testVersions);
+
+        MockUpdater updater(updateChecker);
+        updater.onAppVersionReceived();
+        CPPUNIT_ASSERT_EQUAL(UpdateState::UpToDate, updater.state());
+    }
+}
+
 } // namespace KDC

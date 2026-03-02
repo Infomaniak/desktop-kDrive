@@ -483,7 +483,6 @@ SyncPath Handler::getEventFilePath(const AppType appType, const bool crash) {
             fileName = crash ? testCrashEventFileName : testSendEventFileName;
             break;
         default:
-            assert(false && "Invalid enum value in switch statement.");
             fileName = crash ? clientCrashEventFileName : clientSendEventFileName;
     }
 

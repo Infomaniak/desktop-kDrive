@@ -20,15 +20,28 @@
 
 namespace KDC {
 
+enum class UpdateState {
+    UpToDate,
+    Checking,
+    Available,
+    ManualUpdateAvailable,
+    Downloading,
+    Ready,
+    CheckError,
+    DownloadError,
+    UpdateError,
+    NoUpdate,
+    Unknown,
+    EnumEnd
+};
+
 enum class CancelType {
     None,
     Create,
     Edit,
     Move,
     Delete,
-    AlreadyExistRemote,
     MoveToBinFailed,
-    AlreadyExistLocal,
     TmpBlacklisted,
     ExcludedByTemplate,
     Hardlink,
@@ -91,6 +104,7 @@ enum class ExitCause {
     InvalidSnapshot,
     SyncDirDoesntExist,
     SyncDirAccessError,
+    SyncDirDiskMissing,
     SyncDirNestingError,
     SyncDirChanged,
     HttpErr,
@@ -147,7 +161,6 @@ enum class InconsistencyType {
     NameLength = 0x008,
     PathLength = 0x010,
     NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
     ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
     ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
 };

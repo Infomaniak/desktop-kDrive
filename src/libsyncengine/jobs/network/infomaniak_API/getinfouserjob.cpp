@@ -38,18 +38,18 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) return {};
+    if (!dataObj || dataObj->size() == 0) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     JsonParserUtility::extractValue(dataObj, isStaffKey, _isStaff, false);
@@ -57,8 +57,7 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
 }
 
 std::string GetInfoUserJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    return str;
+    return "/profile";
 }
 
 } // namespace KDC

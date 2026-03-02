@@ -96,5 +96,20 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             DriveSetupContentDialogVM.CurrentSync = sync;
             AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SyncSetupPage), DriveSetupContentDialogVM));
         }
+
+        public static string GetExclusionsSummary(int exclusionCount)
+        {
+            string exclusionText = exclusionCount == 0 ? Localizer.Instance.GetString("onboardingExclusionSummaryNone") : Localizer.Instance.GetString("onboardingExclusionSummaryAtLeastOne");
+
+            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionExclusion", exclusionText);
+        }
+
+        public static string GetLocationSummary(bool isDefaultLocation, string location)
+        {
+            string locationText = isDefaultLocation ? Localizer.Instance.GetString("buttonDefaultLocation") : location;
+
+            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionLocation", locationText);
+        }
+
     }
 }

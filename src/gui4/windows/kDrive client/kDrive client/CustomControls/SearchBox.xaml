@@ -6,6 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
@@ -19,17 +20,24 @@
         <!-- File template -->
         <DataTemplate x:Key="FileTemplate"
                       x:DataType="local:ISearchBoxResultItem">
-            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
-                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                  ToolTipService.Placement="Right"
+                  Background="Transparent"
+                  PointerEntered="Template_PointerEntered"
+                  PointerExited="Template_PointerExited"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">
+
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -41,7 +49,8 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis">
+                           TextTrimming="CharacterEllipsis"
+                           HorizontalAlignment="Left">
                     <ToolTipService.ToolTip>
                         <ToolTip Content="{x:Bind SearchItem.Name}" />
                     </ToolTipService.ToolTip>
@@ -60,34 +69,39 @@
 
                 <local:SvgIcon Grid.Column="2"
                                Grid.Row="0"
-                               Width="16"
+                               Width="10"
                                HorizontalAlignment="Right"
                                UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
-                               ToolTipService.Placement="Right">
-                    <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
-                    </ToolTipService.ToolTip>
-                </local:SvgIcon>
+                               Visibility="{Binding ShowUnavailableState, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
             </Grid>
         </DataTemplate>
 
         <!-- Directory template -->
         <DataTemplate x:Key="FolderTemplate"
                       x:DataType="local:ISearchBoxResultItem">
-            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
-                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                  Background="Transparent"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  ToolTipService.Placement="Right"
+                  PointerEntered="Template_PointerEntered"
+                  PointerExited="Template_PointerExited"
+                  Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">
+                <ToolTipService.ToolTip>
+                    <ToolTip Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                             Content="{x:Bind kDrive:Localizer.Instance.GetString('itemUnavailableBrowserFallback'), Mode=OneWay}" />
+                </ToolTipService.ToolTip>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -114,18 +128,12 @@
                 </TextBlock>
                 <local:SvgIcon Grid.Column="2"
                                Grid.Row="0"
-                               Width="16"
+                               Width="10"
                                HorizontalAlignment="Right"
                                Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
-                               ToolTipService.Placement="Right">
-                    <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
-                    </ToolTipService.ToolTip>
-                </local:SvgIcon>
-
+                               Visibility="{Binding ShowUnavailableState, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
             </Grid>
         </DataTemplate>
 
@@ -143,7 +151,7 @@
                                Height="100"
                                HorizontalAlignment="Center" />
                 <TextBlock Grid.Row="1"
-                           Text="Aucun résultat trouvé"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('noResultsFound'), Mode=OneWay}"
                            HorizontalAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -203,9 +211,9 @@
                                                    NotFoundTemplate="{StaticResource NotFoundTemplate}" />
     </UserControl.Resources>
 
-    <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
-                    x:Name="TitleBarSearchBox"
+    <AutoSuggestBox x:Name="TitleBarSearchBox"
                     QueryIcon="Find"
+                    PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString('searchBoxPlaceholder', ViewModel.SelectedSync.Drive.Name), Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
@@ -215,7 +223,5 @@
                     UpdateTextOnSelect="False"
                     SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
                     QuerySubmitted="TitleBarSearchBox_QuerySubmitted"
-                    Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
-    </AutoSuggestBox>
-
+                    Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
 </UserControl>
