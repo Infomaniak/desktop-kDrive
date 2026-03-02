@@ -185,7 +185,7 @@ cmake-build-debug*
 /extensions/windows/cfapi/FileExplorerExtension/Generated Files
 /CMakeSettings.json
 /out/
-
+/src/libcommonserver/vfs/win
 /src/libcommonserver/vfs/vfspluginmetadata.json
 
 # Conan / CMake generated file

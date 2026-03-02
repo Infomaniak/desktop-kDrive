@@ -160,5 +160,3 @@ if(ZLIB_FOUND)
     target_link_libraries("${libcommon_NAME}"
         ZLIB::ZLIB)
 endif(ZLIB_FOUND)
-
-
