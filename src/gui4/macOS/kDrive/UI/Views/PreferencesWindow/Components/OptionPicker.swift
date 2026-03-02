@@ -36,7 +36,6 @@ struct OptionPicker<Option: PreferenceOption>: View {
                     .tag(option)
             }
         }
-
     }
 }
 

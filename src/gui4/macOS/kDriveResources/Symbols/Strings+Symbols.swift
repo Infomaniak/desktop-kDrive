@@ -12,6 +12,8 @@ import Foundation
 public enum KDriveLocalizable {
   /// loco:698053a65bddc8df790d0212
   public static let informationBlockSynchroErrorSubtitle = KDriveLocalizable.tr("Localizable", " informationBlockSynchroErrorSubtitle", fallback: "Some files could not be synchronized.")
+  /// loco:69a57d074f11212a7007d403
+  public static let aboutButton = KDriveLocalizable.tr("Localizable", "aboutButton", fallback: "About")
   /// loco:698b3c0d8004546e240eb2d2
   public static let aboutKDrive = KDriveLocalizable.tr("Localizable", "aboutKDrive", fallback: "About kDrive")
   /// loco:6981b68c6d1056609e079525

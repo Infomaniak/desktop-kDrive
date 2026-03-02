@@ -18,6 +18,7 @@
 
 import Foundation
 
+// periphery:ignore - This is a future UI model
 enum UILanguageOption: String, CaseIterable {
     var id: String {
         rawValue
@@ -31,6 +32,7 @@ enum UILanguageOption: String, CaseIterable {
     case italian
 }
 
+// periphery:ignore - This is a future UI model
 enum UINotificationOption: String, CaseIterable {
     var id: String {
         rawValue
@@ -44,6 +46,7 @@ enum UINotificationOption: String, CaseIterable {
     case forOneWeek
 }
 
+// periphery:ignore - This is a future UI model
 public struct UIParametersInfo: Sendable {
     let language: UILanguageOption
     let launchOnStartup: Bool

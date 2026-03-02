@@ -17,7 +17,6 @@
  */
 
 import kDriveCoreUI
-import kDriveResources
 import SwiftUI
 
 struct GeneralPreferencesView: View {

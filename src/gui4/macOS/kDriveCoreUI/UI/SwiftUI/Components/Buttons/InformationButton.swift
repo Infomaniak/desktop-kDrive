@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveResources
 import SwiftUI
 
 public struct InformationButton: View {
@@ -27,7 +28,7 @@ public struct InformationButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Label("Information", systemImage: "info.circle")
+            Label(KDriveLocalizable.aboutButton, systemImage: "info.circle")
                 .labelStyle(.iconOnly)
         }
         .buttonStyle(.borderless)

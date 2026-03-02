@@ -10,6 +10,8 @@
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "Non è stato possibile sincronizzare alcuni file.";
+/* loco:69a57d074f11212a7007d403 */
+"aboutButton" = "About";
 
 /* loco:698b3c0d8004546e240eb2d2 */
 "aboutKDrive" = "Informazioni su kDrive";
