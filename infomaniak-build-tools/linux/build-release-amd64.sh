@@ -86,6 +86,8 @@ build_dir="$src_dir/build-linux"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
+export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
+
 conan_dependencies_folder="$build_dir/conan/dependencies"
 source "$src_dir/infomaniak-build-tools/conan/common-utils.sh"
 
