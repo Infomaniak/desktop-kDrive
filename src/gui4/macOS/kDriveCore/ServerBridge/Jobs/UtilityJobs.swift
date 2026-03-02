@@ -78,14 +78,14 @@ public struct UtilityJobs: Sendable {
         IKLogger.data.log("Query for activating load info display")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_ACTIVATELOADINFO, body: EmptyQuery())
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func checkCommStatus() async throws {
         IKLogger.data.log("Query for checking communication status")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CHECKCOMMSTATUS, body: EmptyQuery())
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func hasSystemLaunchOnStartup() async throws -> Bool {
@@ -126,7 +126,7 @@ public struct UtilityJobs: Sendable {
             body: query
         )
 
-        let decodedMessage = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
@@ -140,7 +140,7 @@ public struct UtilityJobs: Sendable {
             body: query
         )
 
-        let decodedMessage = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
@@ -170,7 +170,7 @@ public struct UtilityJobs: Sendable {
             body: query
         )
 
-        let decodedMessage = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
@@ -183,7 +183,7 @@ public struct UtilityJobs: Sendable {
             body: EmptyQuery()
         )
 
-        let decodedMessage = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )
@@ -193,14 +193,14 @@ public struct UtilityJobs: Sendable {
         IKLogger.data.log("Query for crashing the application")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CRASH, body: EmptyQuery())
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func quit() async throws {
         IKLogger.data.log("Query for quitting")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_QUIT, body: EmptyQuery())
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func sendAppStartTrace() async throws {
@@ -210,7 +210,7 @@ public struct UtilityJobs: Sendable {
             body: EmptyQuery()
         )
 
-        let decodedMessage = try await queryFetcher.query(
+        try await queryFetcher.query(
             request,
             responseType: CallbackMessage<EmptyResponse>.self
         )

@@ -82,7 +82,7 @@ public struct SyncJobs: Sendable {
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_START, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func stopSync(syncDbId: Int32) async throws {
@@ -90,7 +90,7 @@ public struct SyncJobs: Sendable {
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STOP, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func syncStatus(syncDbId: Int32) async throws -> KDC.SyncFileStatus {
@@ -140,7 +140,7 @@ public struct SyncJobs: Sendable {
         let query = UserQuery(userDbId: userDbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.SYNC_START_AFTER_LOGIN, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func syncDelete(syncDbId: Int32) async throws {
@@ -148,9 +148,9 @@ public struct SyncJobs: Sendable {
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_DELETE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-        await try? coherentCache.removeSynchro(synchroDbId: syncDbId)
+        try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
@@ -176,7 +176,7 @@ public struct SyncJobs: Sendable {
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
 
-        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
@@ -187,7 +187,7 @@ public struct SyncJobs: Sendable {
             body: query
         )
 
-        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
