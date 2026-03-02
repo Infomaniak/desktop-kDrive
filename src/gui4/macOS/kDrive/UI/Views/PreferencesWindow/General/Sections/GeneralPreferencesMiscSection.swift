@@ -17,25 +17,15 @@
  */
 
 import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-protocol PreferenceOption: Identifiable, Sendable, Hashable {
+protocol PreferenceOption: Hashable, Identifiable {
     var label: String { get }
 }
 
-enum LanguageOption: String, CaseIterable, PreferenceOption {
-    var id: String {
-        rawValue
-    }
-
-    case system
-    case french
-    case english
-    case german
-    case spanish
-    case italian
-
+extension UIAppLanguage: PreferenceOption {
     var label: String {
         switch self {
         case .system:
@@ -54,18 +44,7 @@ enum LanguageOption: String, CaseIterable, PreferenceOption {
     }
 }
 
-enum NotificationOption: String, CaseIterable, PreferenceOption {
-    var id: String {
-        rawValue
-    }
-
-    case always
-    case never
-    case forOneHour
-    case untilTomorrow
-    case forThreeDays
-    case forOneWeek
-
+extension UINotificationState: PreferenceOption {
     var label: String {
         switch self {
         case .always:
@@ -85,25 +64,23 @@ enum NotificationOption: String, CaseIterable, PreferenceOption {
 }
 
 struct GeneralPreferencesMiscSection: View {
-    @State private var languageOption = LanguageOption.system
-    @State private var notificationOption = NotificationOption.always
-    @State private var launchOnStartup = true
+    @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
         Section {
             OptionPicker(
                 KDriveLocalizable.languageSetting,
-                options: LanguageOption.allCases,
-                selection: $languageOption
+                options: UIAppLanguage.allCases,
+                selection: $viewModel.language
             )
 
             OptionPicker(
                 KDriveLocalizable.labelNotifications,
-                options: NotificationOption.allCases,
-                selection: $notificationOption
+                options: UINotificationState.allCases,
+                selection: $viewModel.notificationsState
             )
 
-            Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
+            Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $viewModel.launchOnStartup)
 
             HStack {
                 VStack(alignment: .leading) {
@@ -114,24 +91,13 @@ struct GeneralPreferencesMiscSection: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: .constant(true))
+                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: $viewModel.moveDeletedFilesToTrash)
                     .labelsHidden()
-            }
-        }
-        .task {
-            do {
-                let utilityJobs = UtilityJobs()
-
-                async let launchOnStartup = utilityJobs.hasSystemLaunchOnStartup()
-
-                self.launchOnStartup = try await launchOnStartup
-            } catch {
-                print("Zut")
             }
         }
     }
 }
 
 #Preview {
-    GeneralPreferencesMiscSection()
+    GeneralPreferencesMiscSection(viewModel: PreferencesViewModel())
 }

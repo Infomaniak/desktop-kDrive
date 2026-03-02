@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,4 +16,30 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
+import kDriveCoreUI
+
+@MainActor
+final class PreferencesViewModel: ObservableObject {
+    @Published var language = UIAppLanguage.english
+
+    @Published var launchOnStartup = true
+    @Published var moveDeletedFilesToTrash = true
+
+    @Published var notificationsState = UINotificationState.always
+
+    @Published var shouldUseLog = true
+    @Published var logLever = UILogLevel.info
+    @Published var isExtendedLogEnabled = false
+    @Published var shouldPurgeOldLogs = false
+
+    @Published var proxyConfiguration = UIProxyConfiguration(type: nil, hostName: "", port: 0, authType: .noAuth)
+
+    @Published var distributionChannel = UIDistributionChannel.prod
+
+    @Published var isSentryEnabled = true
+    @Published var isMatomoEnabled = true
+
+    init() {}
+}
