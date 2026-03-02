@@ -16,7 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
 import kDriveCoreUI
+import OrderedCollections
 import SwiftUI
 
 struct HomeView: View {
@@ -25,6 +28,7 @@ struct HomeView: View {
     @StateObject private var networkObserver = NetworkObserver()
 
     @ObservedObject var mainViewModel: MainViewModel
+    @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var userName: String {
         guard let currentUser = mainViewModel.currentUser,
@@ -39,11 +43,7 @@ struct HomeView: View {
             return .offline
         }
 
-        guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
-            return .synchroIsUpToDate
-        }
-
-        switch synchroStatus {
+        switch synchroState.status {
         case .idle:
             return .synchroIsUpToDate
         case .starting, .running:
@@ -60,8 +60,8 @@ struct HomeView: View {
             GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
-            if let errorCount = mainViewModel.currentSynchro?.errorCount, errorCount > 0 {
-                SynchroErrorsInformationBlockView(errorCount: errorCount)
+            if synchroState.errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
 
             GeometryReader { proxy in

@@ -87,10 +87,7 @@ public enum PreviewHelper {
     public static let synchro = UISynchro(
         dbId: 0,
         driveDbId: 0,
-        localPath: URL(fileURLWithPath: "~/kDrive"),
-        progressInfo: nil,
-        nodes: [:],
-        errorCount: 0
+        localPath: URL(fileURLWithPath: "~/kDrive")
     )
 
     public static let synchroNode1 = UISynchroNode(

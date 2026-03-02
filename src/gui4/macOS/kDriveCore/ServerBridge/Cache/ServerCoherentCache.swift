@@ -317,6 +317,41 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return synchroContexts
     }
 
+    public func getSynchroContext(_ synchroDbId: Int32) -> SynchroContext? {
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    if let synchro = drive.synchros[synchroDbId] {
+                        return SynchroContext(synchro: synchro, drive: drive, account: account, user: user)
+                    }
+                }
+            }
+        }
+
+        return nil
+    }
+
+    // MARK: - SynchroNodeContexts
+
+    public func getSynchroNodeContexts(_ synchroDbId: Int32) -> [SynchroNodeContext] {
+        guard let synchroContext = getSynchroContext(synchroDbId) else {
+            return []
+        }
+
+        var synchroNodeContexts = [SynchroNodeContext]()
+        for node in synchroContext.synchro.synchNodes.values {
+            synchroNodeContexts.append(SynchroNodeContext(
+                node: node,
+                synchro: synchroContext.synchro,
+                drive: synchroContext.drive,
+                account: synchroContext.account,
+                user: synchroContext.user
+            ))
+        }
+
+        return synchroNodeContexts
+    }
+
     // MARK: - Errors
 
     public func addOrUpdateError(_ error: ErrorInfo) async throws {

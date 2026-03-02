@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -25,42 +27,39 @@ enum VisibleActivities: String, Identifiable, CaseIterable {
     case myActivityOnly
     case allActivities
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 struct ActivitiesView: View {
-    @ObservedObject var mainViewModel: MainViewModel
-
     @State private var visibleActivities = VisibleActivities.allActivities
 
-    private var synchroStatus: UISynchroStatus {
-        return mainViewModel.currentSynchro?.progressInfo?.status ?? .idle
-    }
+    @ObservedUISynchroNodes private var nodeContexts: [UISynchroNodeContext]
+    @ObservedUISynchroState private var synchroState: UISynchroState
 
-    private var nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode> {
-        let allNodes = mainViewModel.currentSynchro?.nodes ?? [:]
-
+    private var visibleNodes: [UISynchroNodeContext] {
         switch visibleActivities {
         case .myActivityOnly:
-            return allNodes.filter { $0.value.direction == .up }
+            return nodeContexts.filter { $0.node.direction == .up }
         case .allActivities:
-            return allNodes
+            return nodeContexts
         }
     }
 
     private var hasAnyActivity: Bool {
-        return !nodes.isEmpty
+        return !visibleNodes.isEmpty
     }
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
             ActivityHeaderView(
                 visibleActivities: $visibleActivities,
-                synchroStatus: synchroStatus,
+                synchroStatus: synchroState.status,
                 hasAnyActivity: hasAnyActivity
             )
 
-            ActivitiesTable(context: mainViewModel.currentSynchroContext, nodes: nodes)
+            ActivitiesTable(contexts: visibleNodes)
                 .opacity(hasAnyActivity ? 1 : 0)
                 .overlay(alignment: .top) {
                     if !hasAnyActivity {
@@ -77,5 +76,5 @@ struct ActivitiesView: View {
 }
 
 #Preview {
-    ActivitiesView(mainViewModel: MainViewModel())
+    ActivitiesView()
 }

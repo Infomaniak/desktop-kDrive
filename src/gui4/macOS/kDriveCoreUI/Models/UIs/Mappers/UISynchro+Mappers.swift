@@ -22,30 +22,11 @@ import OrderedCollections
 
 public extension UISynchro {
     init(synchro: Synchro) {
-        var progressInfo: UISynchroProgressInfo?
-        if let synchroProgressInfo = synchro.progress {
-            progressInfo = UISynchroProgressInfo(synchroProgressInfo: synchroProgressInfo)
-        }
-
-        let nodes = OrderedDictionary(uniqueKeysWithValues: synchro.synchNodes.map { _, value in
-            let uiNode = UISynchroNode(synchroNode: value)
-            return (uiNode.id, uiNode)
-        })
-
         self.init(
             dbId: Int(synchro.dbId),
             driveDbId: Int(synchro.driveDbId),
-            localPath: URL(fileURLWithPath: synchro.localPath),
-            progressInfo: progressInfo,
-            nodes: nodes,
-            errorCount: synchro.errors.count
+            localPath: URL(fileURLWithPath: synchro.localPath)
         )
-    }
-}
-
-public extension UISynchroProgressInfo {
-    init(synchroProgressInfo: SynchroProgressInfo) {
-        status = UISynchroStatus(syncStatus: synchroProgressInfo.syncStatus)
     }
 }
 

@@ -24,87 +24,70 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
-    static let defaultFolderName = "kDrive"
+    let contexts: [UISynchroNodeContext]
 
-    let context: UISynchroContext?
-    let nodes: OrderedDictionary<UISynchroNode.ID, UISynchroNode>
-
-    private var orderedNodes: [UISynchroNode] {
-        let nodes = Array(nodes.values)
-        return nodes.sorted { lhs, rhs in
-            if lhs.status == .syncing && rhs.status != .syncing {
+    private var orderedNodes: [UISynchroNodeContext] {
+        return contexts.sorted { lhs, rhs in
+            if lhs.node.status == .syncing && rhs.node.status != .syncing {
                 return true
             }
-            return lhs.syncDate > rhs.syncDate
+            return lhs.node.syncDate > rhs.node.syncDate
         }
-    }
-
-    private var synchroOrigin: String {
-        return context?.synchro.localPath.lastPathComponent ?? ActivitiesTable.defaultFolderName
     }
 
     var body: some View {
         Table(orderedNodes) {
-            TableColumn(KDriveLocalizable.labelName) { node in
+            TableColumn(KDriveLocalizable.labelName) { context in
                 Label {
-                    Text(node.relevantPath, format: .node)
+                    Text(context.node.relevantPath, format: .node)
                 } icon: {
-                    FileTypeView(fileTypeRepresentation: node.fileTypeRepresentation)
+                    FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize12)
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
-            TableColumn(KDriveLocalizable.labelFolder) { node in
+            TableColumn(KDriveLocalizable.labelFolder) { context in
                 Button {
-                    openParentFolder(of: node)
+                    openParentFolder(of: context)
                 } label: {
-                    Text(node.parentFolder, format: .node(driveFolderName: synchroOrigin))
-                        .underline()
+                    Text(
+                        context.node.parentFolder,
+                        format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
+                    )
+                    .underline()
                 }
                 .buttonStyle(.borderless)
                 .tint(ColorToken.Text.tertiary.asColor)
             }
 
-            TableColumn(KDriveLocalizable.labelTime) { node in
-                Text(node.syncDate, format: .friendlyRelative)
+            TableColumn(KDriveLocalizable.labelTime) { context in
+                Text(context.node.syncDate, format: .friendlyRelative)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             .width(ideal: 50)
 
-            TableColumn(KDriveLocalizable.labelSize) { node in
-                Text(node.size, format: .byteCount(style: .file))
+            TableColumn(KDriveLocalizable.labelSize) { context in
+                Text(context.node.size, format: .byteCount(style: .file))
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             .width(ideal: 20)
 
-            TableColumn(KDriveLocalizable.labelStatus) { node in
-                ActivitiesTableStatusView(context: context, node: node)
+            TableColumn(KDriveLocalizable.labelStatus) { context in
+                ActivitiesTableStatusView(context: context)
             }
             .width(ideal: 30)
         }
-        .animation(.default, value: orderedNodes)
     }
 
-    private func openParentFolder(of node: UISynchroNode) {
-        guard let synchroURL = context?.synchro.localPath else {
-            return
-        }
-
+    private func openParentFolder(of context: UISynchroNodeContext) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        let url = nodeURLGenerator.localURL(for: node.parentFolder.path, synchroPath: synchroURL)
+        let url = nodeURLGenerator.localURL(for: context.node.parentFolder.path, synchroPath: context.synchro.localPath)
 
         NSWorkspace.shared.open(url)
     }
 }
 
 #Preview {
-    ActivitiesTable(
-        context: PreviewHelper.synchroContext,
-        nodes: [
-            1: PreviewHelper.synchroNode1,
-            2: PreviewHelper.synchroNode2,
-            3: PreviewHelper.synchroNode3
-        ]
-    )
+    ActivitiesTable(contexts: [PreviewHelper.synchroNodeContext])
 }

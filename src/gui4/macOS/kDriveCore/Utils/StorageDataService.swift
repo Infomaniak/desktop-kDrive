@@ -39,14 +39,14 @@ public final class StorageDataService: StorageDataProviding {
     public private(set) var storageData: IndexedStorageData = [:]
 
     @MainActor
-    public let storageDataSubject = PassthroughSubject<IndexedStorageData, Never>()
-
-    @MainActor
     public var storageDataPublisher: AnyPublisher<IndexedStorageData, Never> {
         return storageDataSubject
             .subscribe(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
+
+    @MainActor
+    private let storageDataSubject = PassthroughSubject<IndexedStorageData, Never>()
 
     public init() {}
 
