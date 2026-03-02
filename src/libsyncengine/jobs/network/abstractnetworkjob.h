@@ -39,7 +39,6 @@ class AbstractNetworkJob : public SyncJob {
     public:
         /// @throw std::runtime_error
         AbstractNetworkJob();
-
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
@@ -54,7 +53,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const BackError &backError() const { return _backError; }
 
         int32_t trials() const noexcept { return _trials; }
-        [[nodiscard]] int sleepTime() const { return _sleepTime; }
+        [[nodiscard]] int64_t sleepDuration() const { return _sleepDuration; }
 
     protected:
         ExitInfo runJob() noexcept override;
@@ -140,7 +139,7 @@ class AbstractNetworkJob : public SyncJob {
 
         const std::string _requestUuid;
 
-        int64_t _sleepTime = 500; // By default, wait for 500ms before retrying to send a requests
+        int64_t _sleepDuration = 500; // By default, wait for 500ms before retrying to send a requests
 
         static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;

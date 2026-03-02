@@ -88,6 +88,8 @@ class SyncPalWorker : public ISyncWorker {
          */
         bool tryToFixDbNodeIdsAfterSyncDirChange();
 
+        bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+
         friend class TestSyncPalWorker;
 };
 } // namespace KDC

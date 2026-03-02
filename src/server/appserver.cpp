@@ -4911,7 +4911,7 @@ void AppServer::onRestartSyncs() {
     for (const auto &[_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
-            syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+            syncPal->pauseTime() + std::chrono::milliseconds(syncPal->pauseDuration()) < std::chrono::steady_clock::now()) {
             syncPal->unpause();
 #if defined(__APPLE__)
             Utility::restartFinderExtension();

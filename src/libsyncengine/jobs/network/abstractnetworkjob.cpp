@@ -46,8 +46,9 @@
 
 namespace KDC {
 
-const std::string RateLimitHeaderReset = "X-RateLimit-Reset"; // Timestamp (in seconds since epoch)
-const std::string RateLimitHeaderDelay = "Retry-After"; // Delay (in seconds)
+const std::string rateLimitHeaderReset = "X-RateLimit-Reset"; // Timestamp (in seconds since epoch)
+const std::string rateLimitHeaderDelay = "Retry-After"; // Delay (in seconds)
+const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
@@ -143,14 +144,14 @@ void AbstractNetworkJob::logReplyInfo() {
 
 int64_t AbstractNetworkJob::extractWaitingTime() {
     int64_t waitingTime = -1;
-    if (httpResponse().has(RateLimitHeaderDelay)) {
-        waitingTime = std::stoi(httpResponse().get(RateLimitHeaderDelay));
-    } else if (httpResponse().has(RateLimitHeaderReset)) {
+    if (httpResponse().has(rateLimitHeaderDelay)) {
+        waitingTime = std::stoi(httpResponse().get(rateLimitHeaderDelay));
+    } else if (httpResponse().has(rateLimitHeaderReset)) {
         int timestamp = 0;
         try {
-            timestamp = std::stoi(httpResponse().get(RateLimitHeaderReset));
+            timestamp = std::stoi(httpResponse().get(rateLimitHeaderReset));
         } catch (std::exception const &e) {
-            LOG_WARN(_logger, "Failed to extract int value from header " << RateLimitHeaderReset << " : " << e.what());
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderReset << " : " << e.what());
         }
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         waitingTime = static_cast<int64_t>(timestamp - now.count());
@@ -177,7 +178,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            Utility::msleep(_sleepTime);
+            Utility::msleep(_sleepDuration);
         }
 
         uri = Poco::URI(url);
@@ -248,7 +249,12 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
             }
 
             if (outputExitInfo.code() == ExitCode::RateLimited) {
-                continue; // Retry
+                if (_sleepDuration < sleepDurationThreshold) {
+                    // The waiting time is short enough, wait and retry to send the request
+                    continue;
+                }
+                // Waiting time is too long, pause the sync
+                break;
             }
 
             // Attempt to detect network timeout
@@ -522,8 +528,8 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
             // Update time to wait
             if (const auto newWaitTime = extractWaitingTime(); newWaitTime > 0) {
-                _sleepTime = newWaitTime;
-                LOG_INFO(_logger, "New waiting time: " << _sleepTime);
+                _sleepDuration = newWaitTime;
+                LOG_INFO(_logger, "New waiting time: " << _sleepDuration);
             }
             return ExitCode::RateLimited;
         }

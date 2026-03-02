@@ -47,26 +47,6 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
     return (!w1 || w1->exitCode() == ExitCode::Ok) && (!w2 || w2->exitCode() == ExitCode::Ok);
 }
 
-bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
-    const auto networkIssue =
-            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError =
-            (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
-              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::MissingReplyData)) ||
-            (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
-              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
-    const auto syncDirNotAccessible =
-            (w1 && w1->exitCode() == ExitCode::SystemError &&
-             (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
-            (w2 && w2->exitCode() == ExitCode::SystemError &&
-             (w2->exitCause() == ExitCause::SyncDirAccessError || w2->exitCause() == ExitCause::SyncDirDiskMissing));
-    const auto invalidOperation =
-            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
-}
-
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto dataError = (w1 && w1->exitCode() == ExitCode::DataError) || (w2 && w2->exitCode() == ExitCode::DataError);
     const auto backError = (w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError);
@@ -90,6 +70,37 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
 }
 
 } // namespace
+
+bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 /*= nullptr*/) {
+    resetPauseDuration();
+
+    const auto networkIssue =
+            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
+    const auto httpBlockingError =
+            (w1 && w1->exitCode() == ExitCode::BackError &&
+             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::MissingReplyData)) ||
+            (w2 && w2->exitCode() == ExitCode::BackError &&
+             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
+    const auto syncDirNotAccessible =
+            (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
+            (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
+    const auto invalidOperation =
+            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+
+    if ((w1 && w1->exitCode() == ExitCode::RateLimited) || (w2 && w2->exitCode() == ExitCode::RateLimited)) {
+        const auto newPauseDuration =
+                std::max(w1 ? w1->pauseDuration() : defaultPauseDuration, w2 ? w2->pauseDuration() : defaultPauseDuration);
+        if (newPauseDuration != pauseDuration()) {
+            LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+            setPauseDuration(newPauseDuration);
+        }
+        return true;
+    }
+
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
