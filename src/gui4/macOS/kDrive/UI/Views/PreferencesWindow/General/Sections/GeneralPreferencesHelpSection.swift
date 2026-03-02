@@ -16,17 +16,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct GeneralPreferencesHelpSection: View {
-    enum URLConstants {
-        static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
-        static let feedback = URL(string: "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46#ideas/popular")!
-    }
-
     @Environment(\.openURL) private var openURL
+
+    static let feedbackURL = URL(string: KDriveLocalizable.feedbackURL)!
 
     var body: some View {
         Section {
@@ -38,7 +36,7 @@ struct GeneralPreferencesHelpSection: View {
 
             IKLabeledContent(KDriveLocalizable.feedbackSetting) {
                 Button(KDriveLocalizable.buttonFeedback) {
-                    openURL(URLConstants.feedback)
+                    openURL(GeneralPreferencesHelpSection.feedbackURL)
                 }
             }
         }
