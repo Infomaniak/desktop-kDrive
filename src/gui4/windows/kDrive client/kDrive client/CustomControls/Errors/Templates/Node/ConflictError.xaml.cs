@@ -35,13 +35,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = "Choisir la version à conserver", //Localizer.Instance.GetString("localFileAccessErrorTitle"),
-                Content = Localizer.Instance.GetString("localFileAccessErrorDialogOpenParentFolder"),
-                DefaultButton = ContentDialogButton.Primary,
-                SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
-                PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
+                DefaultButton = ContentDialogButton.Secondary,
+                SecondaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                MaxWidth = 800
             };
-            dialog.Content = new ConflictDialog(Error) { XamlRoot = xamlRoot };
+            dialog.Content = new ConflictDialog(Error, dialog) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

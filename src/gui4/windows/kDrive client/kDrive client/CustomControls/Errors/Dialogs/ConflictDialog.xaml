@@ -6,15 +6,26 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
 
-    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
-                MinWidth="540">
+    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+        <StackPanel>
+            <TextBlock Text="Choisir la version à conserver"
+                       Style="{StaticResource TitleTextBlockStyle}"
+                       TextWrapping="Wrap" />
 
+            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                <TextBlock Text="1 sur 8" />
+            </Border>
+        </StackPanel>
         <!-- File name badge -->
-        <controls:ItemNamePresenter ItemPath="{x:Bind FilePath}"
-                                    NodeType="{x:Bind Error.NodeType}" />
+        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path}"
+                                    NodeType="{x:Bind ViewModel.CurrentError.NodeType}" />
 
         <!-- Question -->
         <TextBlock Text="Quelle version souhaitez-vous garder ?"
@@ -28,198 +39,18 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Online version card (selected) -->
-            <Border Grid.Column="0"
-                    BorderBrush="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
-                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <controls:ConflictVersionPresenter x:Name="RemoteVersionPresenter"
+                                               Grid.Column="0"
+                                               ShowMostRecentBadge="False"
+                                               Selected="RemoteVersionPresenter_Selected"
+                                               Unselected="VersionPresenter_Unselected" />
 
-                    <!-- Header: cloud icon + label + badge + view button -->
-                    <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+            <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
+                                               Grid.Column="1"
+                                               ShowMostRecentBadge="True"
+                                               Selected="LocalVersionPresenter_Selected"
+                                               Unselected="VersionPresenter_Unselected" />
 
-                        <controls:SvgIcon Grid.Column="0"
-                                          UriString="{StaticResource Infomaniak.Custom.Icons.Devices.cloud-sync}"
-                                          Width="16"
-                                          Height="16"
-                                          VerticalAlignment="Center" />
-
-                        <TextBlock Grid.Column="1"
-                                   Text="En ligne"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
-                                   VerticalAlignment="Center" />
-
-                        <!-- "Plus récente" badge -->
-                        <Border Grid.Column="2"
-                                BorderBrush="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
-                                Padding="6,2"
-                                VerticalAlignment="Center">
-                            <TextBlock Text="Plus récente"
-                                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                       Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
-                        </Border>
-
-                        <!-- View button -->
-                        <Button Grid.Column="4"
-                                Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
-                                Padding="4"
-                                MinWidth="0"
-                                VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE890;"
-                                      FontSize="16"
-                                      Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
-                        </Button>
-                    </Grid>
-
-                    <!-- Details -->
-                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
-                        <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                       Text="Auteur"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="0" Grid.Column="1"
-                                       Text="Jeanne Ultou"
-                                       FontWeight="SemiBold" />
-
-                            <TextBlock Grid.Row="1" Grid.Column="0"
-                                       Text="Taille"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="1" Grid.Column="1"
-                                       Text="7 MB"
-                                       FontWeight="SemiBold" />
-
-                            <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="Date"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="2" Grid.Column="1"
-                                       Text="22.05.2025  16:32"
-                                       FontWeight="SemiBold" />
-                        </Grid>
-                    </Border>
-
-                    <!-- Selected button -->
-                    <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
-                                              Foreground="White"
-                                              Width="16"
-                                              Height="16" />
-                            <TextBlock Text="Selectionné"
-                                       Foreground="White" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Border>
-
-            <!-- Local version card (unselected) -->
-            <Border Grid.Column="1"
-                    BorderBrush="{ThemeResource SystemControlBackgroundBaseLowRevealBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
-                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-
-                    <!-- Header: computer icon + label + view button -->
-                    <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <controls:SvgIcon Grid.Column="0"
-                                          UriString="{StaticResource Infomaniak.DS.Icons.Devices.computer}"
-                                          Width="16"
-                                          Height="16"
-                                          VerticalAlignment="Center" />
-
-                        <TextBlock Grid.Column="1"
-                                   Text="Locale"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
-                                   VerticalAlignment="Center" />
-
-                        <!-- View button -->
-                        <Button Grid.Column="2"
-                                Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
-                                Padding="4"
-                                MinWidth="0"
-                                VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE890;"
-                                      FontSize="16"
-                                      Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
-                        </Button>
-                    </Grid>
-
-                    <!-- Details -->
-                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
-                        <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                       Text="Auteur"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="0" Grid.Column="1"
-                                       Text="Jeanne Ultou"
-                                       FontWeight="SemiBold" />
-
-                            <TextBlock Grid.Row="1" Grid.Column="0"
-                                       Text="Taille"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="1" Grid.Column="1"
-                                       Text="7 MB"
-                                       FontWeight="SemiBold" />
-
-                            <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="Date"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock Grid.Row="2" Grid.Column="1"
-                                       Text="22.05.2025  16:30"
-                                       FontWeight="SemiBold" />
-                        </Grid>
-                    </Border>
-
-                    <!-- Select button (unselected) -->
-                    <Button Style="{StaticResource Infomaniak.Style.Button.Secondary}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            Content="Selectionner" />
-                </StackPanel>
-            </Border>
         </Grid>
     </StackPanel>
 </Page>

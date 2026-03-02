@@ -32,8 +32,6 @@ namespace Infomaniak.kDrive.Types
         NoUpdate,
         Unknown
     };
-
-
     public enum RequestNum
     {
         Unknown = 0,
@@ -337,4 +335,11 @@ namespace Infomaniak.kDrive.Types
         CancelRequested,
         Canceled
     };
+    public enum ReplicaSide
+    {
+        Unknown,
+        Local,
+        Remote
+    };
+
 }

@@ -306,13 +306,6 @@ enum class Platform {
     EnumEnd
 };
 
-enum class ReplicaSide {
-    Unknown,
-    Local,
-    Remote,
-    EnumEnd
-};
-
 enum class SignalCategory {
     Kill,
     Crash,
