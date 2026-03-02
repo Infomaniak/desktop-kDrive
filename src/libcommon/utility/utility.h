@@ -65,6 +65,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
+        static int64_t generateRandomNumber(const int64_t minValue, const int64_t maxValue);
         static std::string generateUUID();
 
         // File system type
