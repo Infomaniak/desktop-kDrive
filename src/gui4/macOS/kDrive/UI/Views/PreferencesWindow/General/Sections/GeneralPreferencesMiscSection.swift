@@ -31,12 +31,12 @@ enum LanguageOption: String, CaseIterable, PreferenceOption {
         rawValue
     }
 
-    case system = "SystemDefault"
-    case french = "FR"
-    case english = "EN"
-    case german = "DE"
-    case spanish = "ES"
-    case italian = "IT"
+    case system
+    case french
+    case english
+    case german
+    case spanish
+    case italian
 
     var label: String {
         switch self {
@@ -61,12 +61,12 @@ enum NotificationOption: String, CaseIterable, PreferenceOption {
         rawValue
     }
 
-    case always = "Always"
-    case never = "Never"
-    case forOneHour = "OneHour"
-    case untilTomorrow = "UntilTomorrow"
-    case forThreeDays = "ThreeDays"
-    case forOneWeek = "OneWeek"
+    case always
+    case never
+    case forOneHour
+    case untilTomorrow
+    case forThreeDays
+    case forOneWeek
 
     var label: String {
         switch self {

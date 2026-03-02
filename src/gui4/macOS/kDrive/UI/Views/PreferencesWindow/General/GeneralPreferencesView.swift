@@ -23,43 +23,8 @@ import SwiftUI
 struct GeneralPreferencesView: View {
     var body: some View {
         Form {
-            Section {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(KDriveLocalizable.updateSettings)
-                        Text(KDriveLocalizable.updateAvailable("3.7.6"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Button(KDriveLocalizable.buttonUpdate) {
-                        // TODO: Update app
-                    }
-                }
-
-                Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(true))
-
-                IKLabeledContent(KDriveLocalizable.betaSettings) {
-                    HStack {
-                        Text("Off")
-                            .foregroundStyle(.secondary)
-
-                        InformationButton {
-                            // TODO: Open Beta modal
-                        }
-                    }
-                }
-
-                IKLabeledContent(KDriveLocalizable.aboutKDrive) {
-                    InformationButton {
-                        // TODO: Open About kDrive
-                    }
-                }
-            }
-
+            GeneralPreferencesVersionSection()
             GeneralPreferencesMiscSection()
-
             GeneralPreferencesHelpSection()
         }
         .groupedFormatStyle()
