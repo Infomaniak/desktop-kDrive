@@ -54,6 +54,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const BackError &backError() const { return _backError; }
 
         int32_t trials() const noexcept { return _trials; }
+        [[nodiscard]] int sleepTime() const { return _sleepTime; }
 
     protected:
         ExitInfo runJob() noexcept override;
@@ -135,11 +136,11 @@ class AbstractNetworkJob : public SyncJob {
          * @brief Try to extract the waiting time from the reply header. Especially useful when receiving a 429 error.
          * @return The waiting in milliseconds if found. -1 otherwise.
          */
-        int extractWaitingTime();
+        int64_t extractWaitingTime();
 
         const std::string _requestUuid;
 
-        int _sleepTime = 500; // By default, wait for 500ms before retrying to send a requests
+        int64_t _sleepTime = 500; // By default, wait for 500ms before retrying to send a requests
 
         static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;
