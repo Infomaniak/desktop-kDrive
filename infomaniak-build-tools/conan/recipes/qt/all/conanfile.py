@@ -114,20 +114,13 @@ class QtConan(ConanFile):
         modules = [
             f"qt.qt{major}.{compact}.{compiler}",
 
-            f"qt.qt{major}.{compact}.addons.qtpositioning",
-            f"qt.qt{major}.{compact}.addons.qtwebchannel",
-            f"qt.qt{major}.{compact}.addons.qtwebview",
+            f"qt.qt{major}.{compact}.addons.qtpositioning"
         ]
 
-        # Qt 6.8.3+ and 6.10.1+ use the new module naming scheme with extensions.qtwebengine
         if version in ("6.8.3", "6.10.1"):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
-            modules.append(f"extensions.qtwebengine.{compact}.{compiler}")
-            if self.options.debug_symbols:
-                modules.append(f"extensions.qtwebengine.{compact}.debug_information")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
-            modules.append(f"qt.qt{major}.{compact}.addons.qtwebengine")
             if self.options.debug_symbols:
                 modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files
 
