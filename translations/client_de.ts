@@ -1637,12 +1637,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Es ist ein technischer Fehler aufgetreten. Die Synchronisierung wird so schnell wie möglich fortgesetzt. Bitte kontaktieren Sie unser Support-Team, falls der Fehler weiterhin besteht.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
-        <source>The drive containing your synchronization folder is no longer connected. (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
-        <translation>Das Laufwerk, das Ihren Synchronisierungsordner enthält, ist nicht mehr verbunden (Fehler %1).
-Bitte verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="401"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
         <translation>Die Anzahl der inotify-Überwachungen ist unzureichend (Fehler %1).&lt;br&gt;Sie können diese Anzahl erhöhen, indem Sie &apos;/etc/sysctl.conf&apos; bearbeiten.</translation>
@@ -1856,6 +1850,11 @@ Bitte verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</translatio
         <location filename="../src/gui/parametersdialog.cpp" line="779"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Sie haben Ihr Kontingent überschritten. Erhöhen Sie Ihr Speicherplatzkontingent, um den Datei-Upload wieder zu aktivieren.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
+        <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
+        <translation>Das Laufwerk mit Ihrem Synchronisationsordner ist nicht mehr verbunden (Fehler %1).&lt;br&gt;Bitte verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="413"/>
@@ -2726,17 +2725,17 @@ Bitte verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</translatio
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2031"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2032"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 enthält einen bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2039"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 befindet sich in einem bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2047"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2048"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 ist bereits synchronisiert. Bitte wählen Sie einen anderen!</translation>
     </message>
@@ -2888,14 +2887,14 @@ Bitte verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</translatio
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Systemleiste nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires on a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 benötigt eine funktionierende Systemleiste (System Tray). Wenn Sie XFCE verwenden, folgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diesen Anweisungen&lt;/a&gt;. Andernfalls installieren Sie eine System-Tray-Anwendung wie „trayer“ und versuchen Sie es erneut.</translation>
+        <location filename="../src/gui/mainclient.cpp" line="50"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 benötigt eine funktionierende Systemablage (System Tray). Wenn Sie XFCE verwenden, folgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diesen Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine System-Tray-Anwendung wie „trayer“ und versuchen Sie es erneut.</translation>
     </message>
 </context>
 <context>

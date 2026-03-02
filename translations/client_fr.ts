@@ -1636,12 +1636,6 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Une erreur technique s&apos;est produite. La synchronisation reprendra dès que possible. Veuillez contacter notre équipe d&apos;assistance si l&apos;erreur persiste.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
-        <source>The drive containing your synchronization folder is no longer connected. (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
-        <translation>Le disque contenant votre dossier de synchronisation n’est plus connecté (erreur %1).
-Veuillez le reconnecter pour reprendre la synchronisation.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="401"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
         <translation>Le nombre d&apos;observateurs inotify est insuffisant (erreur %1).&lt;br&gt;Vous pouvez augmenter ce nombre en éditant &apos;/etc/sysctl.conf&apos;.</translation>
@@ -1855,6 +1849,11 @@ Veuillez le reconnecter pour reprendre la synchronisation.</translation>
         <location filename="../src/gui/parametersdialog.cpp" line="779"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Vous avez dépassé votre quota. Augmentez votre quota d&apos;espace pour réactiver le téléchargement de fichiers.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
+        <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
+        <translation>Le disque contenant votre dossier de synchronisation n’est plus connecté (erreur %1).&lt;br&gt;Veuillez le reconnecter pour reprendre la synchronisation.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="413"/>
@@ -2725,17 +2724,17 @@ Veuillez le reconnecter pour reprendre la synchronisation.</translation>
         <translation>Vous n&apos;avez pas la permission d&apos;écrire dans le dossier sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2031"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2032"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 contient un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2039"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est contenu dans un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2047"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2048"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
@@ -2887,14 +2886,14 @@ Veuillez le reconnecter pour reprendre la synchronisation.</translation>
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Zone de notification indisponible</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires on a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 nécessite une zone de notification (system tray) fonctionnelle. Si vous utilisez XFCE, veuillez suivre &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;ces instructions&lt;/a&gt;. Sinon, installez une application de zone de notification comme « trayer » et réessayez.</translation>
+        <location filename="../src/gui/mainclient.cpp" line="50"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 nécessite une zone de notification (system tray) fonctionnelle. Si vous utilisez XFCE, veuillez suivre &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;ces instructions&lt;/a&gt;. Sinon, veuillez installer une application de zone de notification telle que « trayer » et réessayer.</translation>
     </message>
 </context>
 <context>
