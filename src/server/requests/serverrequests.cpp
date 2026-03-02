@@ -1150,6 +1150,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCode::RateLimited:
+            return false;
         case ExitCode::Unknown: {
             return error.inconsistencyType() != InconsistencyType::PathLength;
         }
