@@ -118,6 +118,8 @@ public enum KDriveLocalizable {
   public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
+  /// loco:69a560c0ef88a6b6b00e49a4
+  public static let feedbackURL = KDriveLocalizable.tr("Localizable", "feedbackURL", fallback: "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46")
   /// loco:695e57f549f806b5ef0a3ac2
   public static let folderFavorites = KDriveLocalizable.tr("Localizable", "folderFavorites", fallback: "Favorites")
   /// loco:695e584bbc7544361b08b832

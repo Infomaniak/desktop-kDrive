@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 26 Feb 2026 16:56:20 +0100
+ * Exported at: Mon, 02 Mar 2026 11:05:21 +0100
  */
 
 
@@ -169,6 +169,8 @@
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aiutaci a migliorare kDrive";
 
+/* loco:69a560c0ef88a6b6b00e49a4 */
+"feedbackURL" = "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee";
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Preferiti";
 
