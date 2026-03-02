@@ -289,6 +289,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     if (!job->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob: " << job->exitInfo());
+        if (job->exitInfo().code() == ExitCode::RateLimited) {
+            setPauseDuration(job->sleepDuration());
+        }
 
         return job->exitInfo();
     }

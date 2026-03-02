@@ -29,6 +29,8 @@
 
 namespace KDC {
 
+const int64_t defaultPauseDuration = 60000; // 1 min
+
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
@@ -48,6 +50,12 @@ class ISyncWorker {
         inline bool stopAsked() const { return _stopAsked; }
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
+
+        [[nodiscard]] const int64_t &pauseDuration() const { return _pauseDuration; }
+        void setPauseDuration(const int64_t &pauseDuration) {
+            _pauseDuration = std::max(pauseDuration, defaultPauseDuration);
+        } // Minimum pause duration is 1 min
+        void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 
         inline void setTesting(bool testing) { _testing = testing; }
 
@@ -83,6 +91,7 @@ class ISyncWorker {
         bool _isRunning{false};
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};
+        int64_t _pauseDuration{defaultPauseDuration};
 };
 
 } // namespace KDC
