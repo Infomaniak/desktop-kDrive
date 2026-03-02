@@ -456,7 +456,7 @@ void TestUtility::testGenerateRandomNumber() {
         (void) sequence.push_back(val);
     }
     // Check that not all values are the same
-    CPPUNIT_ASSERT_GREATER(1, static_cast<int>(results.size()));
+    CPPUNIT_ASSERT_GREATER(static_cast<int64_t>(1), static_cast<int64_t>(results.size()));
 
     // Check that a second draw does not produce the same sequence
     bool allValuesAreTheSame = true;
