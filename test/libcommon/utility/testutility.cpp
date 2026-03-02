@@ -447,6 +447,29 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     }
 }
 
+void TestUtility::testGenerateRandomNumber() {
+    std::unordered_set<int64_t> results;
+    std::vector<int64_t> sequence;
+    for (auto i = 0; i < 100; i++) {
+        const auto val = CommonUtility::generateRandomNumber(1, 100);
+        (void) results.emplace(val);
+        (void) sequence.push_back(val);
+    }
+    // Check that not all values are the same
+    CPPUNIT_ASSERT_GREATER(1, static_cast<int>(results.size()));
+
+    // Check that a second draw does not produce the same sequence
+    bool allValuesAreTheSame = true;
+    for (auto i = 0; i < 100; i++) {
+        const auto val = CommonUtility::generateRandomNumber(1, 100);
+        if (val != sequence[i]) {
+            allValuesAreTheSame = false;
+            break;
+        }
+    }
+    CPPUNIT_ASSERT(!allValuesAreTheSame);
+}
+
 void TestUtility::testGenerateUuid() {
     const auto uuid = CommonUtility::generateUUID();
     const auto regexPattern = std::regex(R"(^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$)");
