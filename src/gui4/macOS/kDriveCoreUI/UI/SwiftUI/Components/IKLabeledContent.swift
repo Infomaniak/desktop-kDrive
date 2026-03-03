@@ -16,18 +16,35 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import SwiftUI
 
-public enum Constants {
-    public static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
-    public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
-    public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
+public struct IKLabeledContent<Content: View>: View {
+    let titleKey: String
+    let content: Content
+
+    public init(_ titleKey: String, @ViewBuilder content: () -> Content) {
+        self.titleKey = titleKey
+        self.content = content()
+    }
+
+    public var body: some View {
+        if #available(macOS 13.0, *) {
+            LabeledContent(titleKey) {
+                content
+            }
+        } else {
+            HStack {
+                Text(titleKey)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                content
+            }
+        }
+    }
 }
 
-public enum URLConstants {
-    public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
-
-    public static func kDrive(for driveID: Int) -> URL {
-        return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
+#Preview {
+    IKLabeledContent("Hello") {
+        Text("World")
     }
 }

@@ -16,18 +16,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import SwiftUI
 
-public enum Constants {
-    public static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
-    public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
-    public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
+struct OptionPicker<Option: PreferenceOption>: View {
+    let label: String
+    let options: [Option]
+    let selection: Binding<Option>
+
+    init(_ label: String, options: [Option], selection: Binding<Option>) {
+        self.label = label
+        self.options = options
+        self.selection = selection
+    }
+
+    var body: some View {
+        Picker(label, selection: selection) {
+            ForEach(options) { option in
+                Text(option.label)
+                    .tag(option)
+            }
+        }
+    }
 }
 
-public enum URLConstants {
-    public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
-
-    public static func kDrive(for driveID: Int) -> URL {
-        return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
-    }
+#Preview {
+    OptionPicker("My Picker", options: NotificationOption.allCases, selection: .constant(.always))
 }

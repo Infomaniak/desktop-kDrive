@@ -16,12 +16,33 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
+import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-class AdvancedPreferencesViewController: TitledViewController<Text> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: Text("Not Available Yet."))
+struct GeneralPreferencesHelpSection: View {
+    @Environment(\.openURL) private var openURL
+
+    static let feedbackURL = URL(string: KDriveLocalizable.feedbackURL)!
+
+    var body: some View {
+        Section {
+            IKLabeledContent(KDriveLocalizable.needHelpSetting) {
+                Button(KDriveLocalizable.buttonHelpdesk) {
+                    openURL(URLConstants.help)
+                }
+            }
+
+            IKLabeledContent(KDriveLocalizable.feedbackSetting) {
+                Button(KDriveLocalizable.buttonFeedback) {
+                    openURL(GeneralPreferencesHelpSection.feedbackURL)
+                }
+            }
+        }
     }
+}
+
+#Preview {
+    GeneralPreferencesHelpSection()
 }
