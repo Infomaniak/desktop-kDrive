@@ -2892,7 +2892,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Area di notifica non disponibile</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="50"/>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
         <translation>%1 richiede un’area di notifica (system tray) funzionante. Se utilizzi XFCE, segui &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;queste istruzioni&lt;/a&gt;. In caso contrario, installa un’applicazione per l’area di notifica come “trayer” e riprova.</translation>
     </message>

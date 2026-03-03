@@ -2892,7 +2892,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Systemleiste nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="50"/>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
         <translation>%1 benötigt eine funktionierende Systemablage (System Tray). Wenn Sie XFCE verwenden, folgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diesen Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine System-Tray-Anwendung wie „trayer“ und versuchen Sie es erneut.</translation>
     </message>

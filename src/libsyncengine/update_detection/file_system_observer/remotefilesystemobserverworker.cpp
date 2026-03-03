@@ -624,9 +624,11 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::ActionCodeRestore:
         case ActionCode::ActionCodeCreate:
         case ActionCode::ActionCodeRename: {
-            const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
-                                    actionInfo.actionCode != ActionCode::ActionCodeCreate &&
-                                    !_liveSnapshot.exists(actionInfo.snapshotItem.id());
+            const auto alreadySynced =
+                    _liveSnapshot.exists(actionInfo.snapshotItem.id()) || movedItems.contains(actionInfo.snapshotItem.id());
+            const bool exploreDir = !alreadySynced && actionInfo.snapshotItem.type() == NodeType::Directory &&
+                                    actionInfo.actionCode != ActionCode::ActionCodeCreate;
+
             _liveSnapshot.updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
                 // Retrieve all children
@@ -676,6 +678,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::ActionCodeMoveOut:
             // Ignore move out action if destination is inside the synced folder.
             if (movedItems.contains(actionInfo.snapshotItem.id())) break;
+            (void) movedItems.insert(actionInfo.snapshotItem.id());
             [[fallthrough]];
         case ActionCode::ActionCodeTrash:
             if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {

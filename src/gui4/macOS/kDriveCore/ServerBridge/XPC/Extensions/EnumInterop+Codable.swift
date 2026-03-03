@@ -32,5 +32,10 @@ extension KDC.CancelType: Codable {}
 extension KDC.SyncStatus: Codable {}
 extension KDC.SyncStep: Codable {}
 extension KDC.ErrorLevel: Codable {}
+extension KDC.Language: Codable {}
+extension KDC.LogLevel: Codable {}
+extension KDC.NotificationsDisabled: Codable {}
+extension KDC.ProxyType: Codable {}
+extension KDC.VersionChannel: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}
