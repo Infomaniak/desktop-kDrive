@@ -16,12 +16,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 import kDriveCore
 import kDriveCoreUI
 
-public final class PreferencesRepository: Sendable {
-    public var parametersInfo = UIParametersInfo()
+@MainActor
+public final class PreferencesRepository: ObservableObject {
+    @Published public private(set) var parametersInfo = UIParametersInfo()
 
     public init() {}
 
@@ -34,6 +36,9 @@ public final class PreferencesRepository: Sendable {
         var updatedParameters = parametersInfo
         updatedParameters[keyPath: keyPath] = value
 
-        // TODO: Update to ParametersInfo and send it to ParametersJobs().updateParametersInfo(updatedParameters.parametersInfo)
+        let payload = updatedParameters.toParametersInfo()
+        try await ParametersJobs().updateParameters(parametersInfo: payload)
+
+        try? await refreshData()
     }
 }
