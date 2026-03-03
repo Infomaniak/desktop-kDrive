@@ -127,7 +127,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
             try await utilitySignalHandler.handleErrorCleared()
-            
+
         case .UPDATER_SHOW_DIALOG:
             try await updaterSignalHandler.handleShowDialog(signal)
 
