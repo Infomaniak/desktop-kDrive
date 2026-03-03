@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -18,3 +17,23 @@
  */
 
 import Foundation
+import kDriveCore
+import kDriveCoreUI
+
+public final class PreferencesRepository: Sendable {
+    public var parametersInfo = UIParametersInfo()
+
+    public init() {}
+
+    public func refreshData() async throws {
+        let refreshedData = try await ParametersJobs().parametersInfo()
+        parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
+    }
+
+    public func update<T>(_ keyPath: WritableKeyPath<UIParametersInfo, T>, value: T) async throws {
+        var updatedParameters = parametersInfo
+        updatedParameters[keyPath: keyPath] = value
+
+        // TODO: Update to ParametersInfo and send it to ParametersJobs().updateParametersInfo(updatedParameters.parametersInfo)
+    }
+}
