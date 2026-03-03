@@ -16,49 +16,104 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AppKit
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
+enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
+    var id: String {
+        rawValue
+    }
+
+    case doNotJoin
+    case beta
+    case `internal`
+
+    var description: String {
+        switch self {
+        case .doNotJoin:
+            KDriveLocalizable.labelOff
+        case .beta:
+            KDriveLocalizable.releaseChannelBeta
+        case .internal:
+            KDriveLocalizable.releaseChannelInternal
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .doNotJoin:
+            return KDriveLocalizable.doNotJoin
+        case .beta:
+            return KDriveLocalizable.releaseChannelBeta
+        case .internal:
+            return KDriveLocalizable.releaseChannelInternal
+        }
+    }
+
+    init(_ distributionChannel: UIDistributionChannel) {
+        switch distributionChannel {
+        case .prod:
+            self = .doNotJoin
+        case .next:
+            self = .doNotJoin
+        case .beta:
+            self = .beta
+        case .internal:
+            self = .internal
+        case .legacy:
+            self = .doNotJoin
+        }
+    }
+}
+
 struct GeneralPreferencesVersionSection: View {
+    @ObservedObject var repository: PreferencesRepository
+
+    @State private var isShowingDistributionChannelSheet = false
+    @State private var betaOption = BetaOption.doNotJoin
+
     var body: some View {
         Section {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(KDriveLocalizable.updateSettings)
-                    Text(KDriveLocalizable.updateAvailable("3.7.6"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VersionManagementCell()
 
-                Button(KDriveLocalizable.buttonUpdate) {
-                    // TODO: Update app
-                }
-            }
-
-            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(true))
+            // TODO: Automatic update is not available yet
+            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
             IKLabeledContent(KDriveLocalizable.betaSettings) {
                 HStack {
-                    Text("Off")
+                    Text(betaOption.description)
                         .foregroundStyle(.secondary)
 
                     InformationButton {
-                        // TODO: Open Beta modal
+                        isShowingDistributionChannelSheet = true
                     }
                 }
             }
 
             IKLabeledContent(KDriveLocalizable.aboutKDrive) {
                 InformationButton {
-                    // TODO: Open About kDrive
+                    NSApplication.shared.orderFrontStandardAboutPanel(nil)
                 }
             }
         }
+        .onAppear {
+            updatePropertiesFromParametersInfo(repository.parametersInfo)
+        }
+        .onChange(of: repository.parametersInfo) { newValue in
+            updatePropertiesFromParametersInfo(newValue)
+        }
+        .sheet(isPresented: $isShowingDistributionChannelSheet) {
+            DistributionChannelView(repository: repository)
+        }
+    }
+
+    private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
+        betaOption = BetaOption(parametersInfo.distributionChannel)
     }
 }
 
 #Preview {
-    GeneralPreferencesVersionSection()
+    GeneralPreferencesVersionSection(repository: PreferencesRepository())
 }

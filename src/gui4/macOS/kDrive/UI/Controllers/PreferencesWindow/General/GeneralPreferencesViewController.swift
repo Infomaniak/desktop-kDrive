@@ -21,7 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 class GeneralPreferencesViewController: TitledViewController<GeneralPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.general.title, contentView: GeneralPreferencesView())
+    convenience init(repository: PreferencesRepository) {
+        self.init(toolbarTitle: SidebarItem.general.title, contentView: GeneralPreferencesView(repository: repository))
     }
 }

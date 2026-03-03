@@ -16,22 +16,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
-import SwiftUI
+import Foundation
 
-struct GeneralPreferencesView: View {
-    @ObservedObject var repository: PreferencesRepository
-
-    var body: some View {
-        Form {
-            GeneralPreferencesVersionSection(repository: repository)
-            GeneralPreferencesMiscSection(repository: repository)
-            GeneralPreferencesHelpSection()
-        }
-        .groupedFormatStyle()
-    }
+public enum UIProxyType: Sendable, Equatable {
+    case system
+    case http
+    case socks5
 }
 
-#Preview {
-    GeneralPreferencesView(repository: PreferencesRepository())
+public enum UIProxyAuthType: Sendable, Equatable {
+    case noAuth
+    case needsAuth(user: String, password: String)
+}
+
+public struct UIProxyConfiguration: Sendable, Equatable {
+    public let type: UIProxyType?
+    public let hostName: String
+    public let port: Int
+    public let authType: UIProxyAuthType
+
+    public init(type: UIProxyType?, hostName: String, port: Int, authType: UIProxyAuthType) {
+        self.type = type
+        self.hostName = hostName
+        self.port = port
+        self.authType = authType
+    }
 }

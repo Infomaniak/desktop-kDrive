@@ -17,10 +17,14 @@
  */
 
 import Foundation
+import kDriveResources
 
-// periphery:ignore - This is a future UI model
-enum UILanguageOption: String, CaseIterable {
-    var id: String {
+public protocol PreferenceOption: Hashable, Identifiable {
+    var label: String { get }
+}
+
+public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable, PreferenceOption {
+    public var id: String {
         rawValue
     }
 
@@ -30,11 +34,27 @@ enum UILanguageOption: String, CaseIterable {
     case german
     case spanish
     case italian
+
+    public var label: String {
+        switch self {
+        case .system:
+            return KDriveLocalizable.labelSameAsSystem
+        case .french:
+            return "Français"
+        case .english:
+            return "English"
+        case .german:
+            return "Deutsch"
+        case .spanish:
+            return "Español"
+        case .italian:
+            return "Italiano"
+        }
+    }
 }
 
-// periphery:ignore - This is a future UI model
-enum UINotificationOption: String, CaseIterable {
-    var id: String {
+public enum UINotificationState: String, CaseIterable, Sendable, Equatable, PreferenceOption {
+    public var id: String {
         rawValue
     }
 
@@ -44,23 +64,105 @@ enum UINotificationOption: String, CaseIterable {
     case untilTomorrow
     case forThreeDays
     case forOneWeek
+
+    public var label: String {
+        switch self {
+        case .always:
+            return KDriveLocalizable.notificationsDisabledAlways
+        case .never:
+            return KDriveLocalizable.notificationsDisabledNever
+        case .forOneHour:
+            return KDriveLocalizable.forOneHour
+        case .untilTomorrow:
+            return KDriveLocalizable.untilTomorrow
+        case .forThreeDays:
+            return KDriveLocalizable.forThreeDays
+        case .forOneWeek:
+            return KDriveLocalizable.forOneWeek
+        }
+    }
 }
 
-// periphery:ignore - This is a future UI model
-public struct UIParametersInfo: Sendable {
-    let language: UILanguageOption
-    let launchOnStartup: Bool
-    let moveDeletedFilesToTrash: Bool
-    let notificationsState: UINotificationOption
+public enum UILogLevel: String, CaseIterable, Sendable, Equatable {
+    public var id: String {
+        rawValue
+    }
 
-    let shouldUseLog: Bool
-//    let logLevel: UILogLevelOption
-    let isExtendedLogEnabled: Bool
-    let purgedOldLogs: Bool
+    case info
+    case debug
+    case warning
+    case error
+    case fatal
+}
 
-//    let proxyConfiguration: UIProxyConfiguration
-//    let distributionChannel: UIDistributionChannel
+public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
+    public var id: String {
+        rawValue
+    }
 
-    let isSentryEnabled: Bool
-    let isMatomoEnabled: Bool
+    case prod
+    case next
+    case beta
+    case `internal`
+    case legacy
+}
+
+public struct UIParametersInfo: Sendable, Equatable {
+    public var language: UIAppLanguage
+    public var launchOnStartup: Bool
+    public var moveDeletedFilesToTrash: Bool
+    public var notificationsState: UINotificationState
+    public var shouldUseLog: Bool
+    public var logLevel: UILogLevel
+    public var isExtendedLogEnabled: Bool
+    public var shouldPurgeOldLogs: Bool
+    public var proxyConfiguration: UIProxyConfiguration
+    public var distributionChannel: UIDistributionChannel
+    public var isSentryEnabled: Bool
+    public var isMatomoEnabled: Bool
+
+    public init() {
+        self.init(
+            language: .english,
+            launchOnStartup: true,
+            moveDeletedFilesToTrash: true,
+            notificationsState: .always,
+            shouldUseLog: true,
+            logLevel: .info,
+            isExtendedLogEnabled: true,
+            shouldPurgeOldLogs: true,
+            proxyConfiguration: UIProxyConfiguration(type: .system, hostName: "", port: 0, authType: .noAuth),
+            distributionChannel: .prod,
+            isSentryEnabled: true,
+            isMatomoEnabled: true
+        )
+    }
+
+    public init(
+        language: UIAppLanguage,
+        launchOnStartup: Bool,
+        moveDeletedFilesToTrash: Bool,
+        notificationsState: UINotificationState,
+        shouldUseLog: Bool,
+        logLevel: UILogLevel,
+        isExtendedLogEnabled: Bool,
+        shouldPurgeOldLogs: Bool,
+        proxyConfiguration: UIProxyConfiguration,
+        distributionChannel: UIDistributionChannel,
+        isSentryEnabled: Bool,
+        isMatomoEnabled: Bool
+    ) {
+        self.language = language
+        self.launchOnStartup = launchOnStartup
+        self.moveDeletedFilesToTrash = moveDeletedFilesToTrash
+        self.notificationsState = notificationsState
+        self.shouldUseLog = shouldUseLog
+        self.logLevel = logLevel
+        self.isExtendedLogEnabled = isExtendedLogEnabled
+        self.shouldPurgeOldLogs = shouldPurgeOldLogs
+        self.proxyConfiguration = proxyConfiguration
+        self.distributionChannel = distributionChannel
+        self.isSentryEnabled = isSentryEnabled
+        self.isMatomoEnabled = isMatomoEnabled
+    }
 }

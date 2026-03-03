@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 02 Mar 2026 11:05:21 +0100
+ * Exported at: Tue, 03 Mar 2026 13:54:27 +0100
  */
 
 
@@ -18,6 +18,9 @@
 
 /* loco:6981b68c6d1056609e079525 */
 "accessibilityActivityTypePicker" = "Actividades visibles";
+
+/* loco:69a6d9dd08a75d40410b53f6 */
+"accessibilityBetaProgramPicker" = "Elegir el canal de distribución";
 
 /* loco:6981cb92c70239c9ed0d45a3 */
 "activitiesTitleIdle" = "Sincronización completada";
@@ -43,6 +46,11 @@
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Actualizaciones automáticas";
 
+/* loco:698af17b4dd554948901a8b2 */
+"betaProgramDescription" = "Obtenga acceso anticipado a las nuevas versiones de la aplicación antes de que se lancen al público en general y ayude a mejorar la aplicación compartiendo con nosotros sus ideas de mejora.";
+
+/* loco:69a6d9b44d26dc09aa0d0643 */
+"betaProgramTitle" = "Únase al programa beta";
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Programa beta";
 /* loco:696a483470f3b70399021c12 */
@@ -50,6 +58,9 @@
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Configuración avanzada";
+
+/* loco:6989c98657a76723c20d0e92 */
+"buttonCancel" = "Cancelar";
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Cerrar";
@@ -123,12 +134,16 @@
 /* loco:697b6767849b0ee24c089f46 */
 "buttonUpdateSubscription" = "Actualizar suscripción";
 
+/* loco:69a69d71b2261fc281078712 */
+"buttonValidate" = "Confirme";
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Despierta";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copiando enlace…";
 
+/* loco:698af1c80126fd2db302b783 */
+"doNotJoin" = "No se afilie";
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "No tienes permiso para acceder a este kDrive.\nCompruebe sus permisos o póngase en contacto con su administrador.";
 
@@ -259,6 +274,8 @@
 
 /* loco:698b115dd0d747974308d3b2 */
 "forOneWeek" = "Durante una semana";
+/* loco:69a6e4aceff2d992ad059324 */
+"labelOff" = "Desactivado";
 
 /* loco:698b1185c1341f8509093624 */
 "forThreeDays" = "Durante tres días";
@@ -357,6 +374,11 @@
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Abrir kDrive al iniciar el ordenador";
 
+/* loco:698af22fb4f7b3f2640d1493 */
+"releaseChannelBeta" = "Beta";
+
+/* loco:698af24c3d21055870072b12 */
+"releaseChannelInternal" = "Interno";
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Cuentas";
 
