@@ -113,6 +113,9 @@
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XS">2</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.S">4</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.M">8</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.L">12</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XL">16</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XXL">24</CornerRadius>
 
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Top.S">4,4,0,0</CornerRadius>
 

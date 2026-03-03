@@ -39,7 +39,6 @@
 
                 <TextBlock Grid.Column="1"
                            Text="En ligne"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
                            VerticalAlignment="Center" />
 
                 <!-- "Most recent" badge -->

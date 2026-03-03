@@ -22,6 +22,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <Style TargetType="ContentDialog"
+                   BasedOn="{StaticResource DefaultContentDialogStyle}">
+                <Setter Property="MaxWidth"
+                        Value="1000" />
+            </Style>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Static ressources -->
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />

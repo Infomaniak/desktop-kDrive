@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Tue, 03 Mar 2026 09:49:52 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -303,6 +303,12 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Actualizar</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Confirme</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Confirmar y seguir adelante</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Despierta</value> 
@@ -633,6 +639,9 @@ Libere espacio o actualice su paquete para sincronizar este archivo.</value>
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Ayúdanos a mejorar kDrive</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/e1304b1e-ebd0-4ffe-9234-a1a91730e651</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>El archivo ya existe</value> 
   </data> 
@@ -845,6 +854,9 @@ Por favor, restaure la carpeta, asegúrese de que tiene los derechos de acceso n
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ sobre %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>gestión de kDrive</value> 

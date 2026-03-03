@@ -13,22 +13,35 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
 
-    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
-        <StackPanel>
-            <TextBlock Text="Choisir la version à conserver"
+    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                MinWidth="600">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictDialogTitle')}"
                        Style="{StaticResource TitleTextBlockStyle}"
                        TextWrapping="Wrap" />
 
-            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                <TextBlock Text="1 sur 8" />
+            <Border Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XL}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                    Visibility="{x:Bind ViewModel.MultipleConflicts, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1i2i('labelXoverY', ViewModel.CurrentErrorIndex, ViewModel.TotalErrors), Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
             </Border>
-        </StackPanel>
+        </Grid>
         <!-- File name badge -->
         <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path}"
                                     NodeType="{x:Bind ViewModel.CurrentError.NodeType}" />
 
         <!-- Question -->
-        <TextBlock Text="Quelle version souhaitez-vous garder ?"
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictDialogQuestion')}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
                    TextWrapping="Wrap" />
 
@@ -43,13 +56,13 @@
                                                Grid.Column="0"
                                                ShowMostRecentBadge="False"
                                                Selected="RemoteVersionPresenter_Selected"
-                                               Unselected="VersionPresenter_Unselected" />
+                                               Unselected="RemoteVersionPresenter_Unselected" />
 
             <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
                                                Grid.Column="1"
                                                ShowMostRecentBadge="True"
                                                Selected="LocalVersionPresenter_Selected"
-                                               Unselected="VersionPresenter_Unselected" />
+                                               Unselected="LocalVersionPresenter_Unselected" />
 
         </Grid>
     </StackPanel>

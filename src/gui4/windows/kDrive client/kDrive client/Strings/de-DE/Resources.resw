@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Tue, 03 Mar 2026 09:49:52 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -303,6 +303,12 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgrade</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Bestätigen</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Bestätigen und weiter zum nächsten</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Aufwachen</value> 
@@ -633,6 +639,9 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Helfen Sie uns, kDrive zu verbessern</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-9157fdb3d2d7</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Datei existiert bereits</value> 
   </data> 
@@ -845,6 +854,9 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ über %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>kDrive Verwaltung</value> 

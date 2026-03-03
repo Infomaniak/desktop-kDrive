@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Tue, 03 Mar 2026 09:49:52 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -303,6 +303,12 @@
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Aggiornamento</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Confermare</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Confermare e andare avanti</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Risveglio</value> 
@@ -631,6 +637,9 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Aiutaci a migliorare kDrive</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Il file esiste già</value> 
   </data> 
@@ -843,6 +852,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ su %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>gestione kDrive</value> 

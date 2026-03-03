@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -36,11 +37,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Secondary,
-                SecondaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
-                MaxWidth = 800
             };
-            dialog.Content = new ConflictDialog(Error, dialog) { XamlRoot = xamlRoot };
+
+            List<Error> allConflict = Error.Sync.SyncErrors.Where(e => (e.ConflictType == ConflictType.EditEdit || e.ConflictType == ConflictType.CreateCreate)).ToList();
+            // Set the content first to allow the dialog to measure properly
+            dialog.Content = new ConflictDialog(allConflict, dialog) { XamlRoot = xamlRoot };
+
+            // Apply the style to allow wider content
+            dialog.Resources["ContentDialogMaxWidth"] = 800d;
+            dialog.Resources["ContentDialogMaxHeight"] = 800d;
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Tue, 03 Mar 2026 09:49:52 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -303,6 +303,12 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgrade</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Confirm</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Validate and move on</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Wake-up</value> 
@@ -633,6 +639,9 @@ Free up space or upgrade your offer to synchronize this file.</value>
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Help us improve kDrive</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>File already exists</value> 
   </data> 
@@ -845,6 +854,9 @@ Please restore the folder, make sure you have the necessary access rights, or de
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ over %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>kDrive Management</value> 
