@@ -16,18 +16,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import kDriveCoreUI
+import SwiftUI
 
-public enum Constants {
-    public static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
-    public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
-    public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
+struct GeneralPreferencesView: View {
+    var body: some View {
+        Form {
+            GeneralPreferencesVersionSection()
+            GeneralPreferencesMiscSection()
+            GeneralPreferencesHelpSection()
+        }
+        .groupedFormatStyle()
+    }
 }
 
-public enum URLConstants {
-    public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
-
-    public static func kDrive(for driveID: Int) -> URL {
-        return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
-    }
+#Preview {
+    GeneralPreferencesView()
 }
