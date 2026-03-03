@@ -25,7 +25,7 @@ struct GeneralPreferencesView: View {
     var body: some View {
         Form {
             GeneralPreferencesVersionSection()
-            GeneralPreferencesMiscSection(viewModel: viewModel)
+            GeneralPreferencesMiscSection()
             GeneralPreferencesHelpSection()
         }
         .groupedFormatStyle()

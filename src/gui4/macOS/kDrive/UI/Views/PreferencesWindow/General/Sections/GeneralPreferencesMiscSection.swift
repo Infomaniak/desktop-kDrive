@@ -64,23 +64,33 @@ extension UINotificationState: PreferenceOption {
 }
 
 struct GeneralPreferencesMiscSection: View {
-    @ObservedObject var viewModel: PreferencesViewModel
+    @State private var language: UIAppLanguage
+    @State private var notificationsState: UINotificationState
+    @State private var launchOnStartup: Bool
+    @State private var moveDeletedFilesToTrash: Bool
+
+    init() {
+        _language = State(wrappedValue: .english)
+        _notificationsState = State(wrappedValue: .always)
+        _launchOnStartup = State(wrappedValue: true)
+        _moveDeletedFilesToTrash = State(wrappedValue: true)
+    }
 
     var body: some View {
         Section {
             OptionPicker(
                 KDriveLocalizable.languageSetting,
                 options: UIAppLanguage.allCases,
-                selection: $viewModel.language
+                selection: $language
             )
 
             OptionPicker(
                 KDriveLocalizable.labelNotifications,
                 options: UINotificationState.allCases,
-                selection: $viewModel.notificationsState
+                selection: $notificationsState
             )
 
-            Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $viewModel.launchOnStartup)
+            Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
 
             HStack {
                 VStack(alignment: .leading) {
@@ -91,7 +101,7 @@ struct GeneralPreferencesMiscSection: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: $viewModel.moveDeletedFilesToTrash)
+                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: $moveDeletedFilesToTrash)
                     .labelsHidden()
             }
         }
@@ -99,5 +109,5 @@ struct GeneralPreferencesMiscSection: View {
 }
 
 #Preview {
-    GeneralPreferencesMiscSection(viewModel: PreferencesViewModel())
+    GeneralPreferencesMiscSection()
 }
