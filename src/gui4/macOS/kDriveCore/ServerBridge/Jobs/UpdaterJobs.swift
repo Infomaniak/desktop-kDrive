@@ -56,4 +56,11 @@ public struct UpdaterJobs: Sendable {
 
         return decodedMessage.body.updateState
     }
+
+    public func startInstaller() async throws {
+        IKLogger.data.log("Query to start installer")
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UPDATER_START_INSTALLER, body: EmptyQuery())
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
 }
