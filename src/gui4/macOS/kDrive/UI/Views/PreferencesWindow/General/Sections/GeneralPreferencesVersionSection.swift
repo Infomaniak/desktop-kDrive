@@ -90,7 +90,8 @@ struct GeneralPreferencesVersionSection: View {
                 }
             }
 
-            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(true))
+            // TODO: Automatic update is not available yet
+            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
             IKLabeledContent(KDriveLocalizable.betaSettings) {
                 HStack {
