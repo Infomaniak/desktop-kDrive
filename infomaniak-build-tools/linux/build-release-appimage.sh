@@ -144,7 +144,7 @@ function move_dependencies() {
   cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
   cp -P -r $QT_BASE_DIR/libexec ./usr
-  cp -P -r $QT_BASE_DIR/resources ./usr
+  cp -P -r $QT_BASE_DIR/resources ./usr || true # resources might not exist, ignore if not found
   cp -P -r $QT_BASE_DIR/translations ./usr
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
