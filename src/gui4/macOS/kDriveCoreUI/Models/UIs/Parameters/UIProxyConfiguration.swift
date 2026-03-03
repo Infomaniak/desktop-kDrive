@@ -18,18 +18,18 @@
 
 import Foundation
 
-public enum UIProxyType: Sendable {
+public enum UIProxyType: Sendable, Equatable {
     case system
     case http
     case socks5
 }
 
-public enum UIProxyAuthType: Sendable {
+public enum UIProxyAuthType: Sendable, Equatable {
     case noAuth
     case needsAuth(user: String, password: String)
 }
 
-public struct UIProxyConfiguration: Sendable {
+public struct UIProxyConfiguration: Sendable, Equatable {
     public let type: UIProxyType?
     public let hostName: String
     public let port: Int

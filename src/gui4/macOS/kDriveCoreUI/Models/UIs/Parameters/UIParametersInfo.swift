@@ -18,7 +18,7 @@
 
 import Foundation
 
-public enum UIAppLanguage: String, CaseIterable, Sendable {
+public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable {
     public var id: String {
         rawValue
     }
@@ -31,7 +31,7 @@ public enum UIAppLanguage: String, CaseIterable, Sendable {
     case italian
 }
 
-public enum UINotificationState: String, CaseIterable, Sendable {
+public enum UINotificationState: String, CaseIterable, Sendable, Equatable {
     public var id: String {
         rawValue
     }
@@ -44,7 +44,7 @@ public enum UINotificationState: String, CaseIterable, Sendable {
     case forOneWeek
 }
 
-public enum UILogLevel: String, CaseIterable, Sendable {
+public enum UILogLevel: String, CaseIterable, Sendable, Equatable {
     public var id: String {
         rawValue
     }
@@ -56,7 +56,7 @@ public enum UILogLevel: String, CaseIterable, Sendable {
     case fatal
 }
 
-public enum UIDistributionChannel: String, CaseIterable, Sendable {
+public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
     public var id: String {
         rawValue
     }
@@ -68,19 +68,19 @@ public enum UIDistributionChannel: String, CaseIterable, Sendable {
     case legacy
 }
 
-public struct UIParametersInfo: Sendable {
-    var language: UIAppLanguage
-    var launchOnStartup: Bool
-    var moveDeletedFilesToTrash: Bool
-    var notificationsState: UINotificationState
-    var shouldUseLog: Bool
-    var logLevel: UILogLevel
-    var isExtendedLogEnabled: Bool
-    var shouldPurgeOldLogs: Bool
-    var proxyConfiguration: UIProxyConfiguration
-    var distributionChannel: UIDistributionChannel
-    var isSentryEnabled: Bool
-    var isMatomoEnabled: Bool
+public struct UIParametersInfo: Sendable, Equatable {
+    public var language: UIAppLanguage
+    public var launchOnStartup: Bool
+    public var moveDeletedFilesToTrash: Bool
+    public var notificationsState: UINotificationState
+    public var shouldUseLog: Bool
+    public var logLevel: UILogLevel
+    public var isExtendedLogEnabled: Bool
+    public var shouldPurgeOldLogs: Bool
+    public var proxyConfiguration: UIProxyConfiguration
+    public var distributionChannel: UIDistributionChannel
+    public var isSentryEnabled: Bool
+    public var isMatomoEnabled: Bool
 
     public init() {
         self.init(
