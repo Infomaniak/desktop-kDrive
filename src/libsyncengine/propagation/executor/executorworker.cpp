@@ -1430,7 +1430,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
-        if (job->exitInfo().code() == ExitCode::RateLimited) {
+        if (networkJob && job->exitInfo().code() == ExitCode::RateLimited) {
             setPauseDuration(networkJob->sleepDuration());
         }
 
