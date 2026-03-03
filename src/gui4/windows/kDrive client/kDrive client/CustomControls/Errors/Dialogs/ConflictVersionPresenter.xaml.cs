@@ -1,6 +1,7 @@
 using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 
 namespace Infomaniak.kDrive.CustomControls
@@ -59,11 +60,6 @@ namespace Infomaniak.kDrive.CustomControls
         public event EventHandler Selected;
         public event EventHandler Unselected;
 
-        private string GetToggleButtonText(bool? isToggled)
-        {
-            return isToggled ?? false ?  Localizer.Instance.GetString("buttonSelected") : Localizer.Instance.GetString("buttonSelect");
-        }
-
         private void RemoteTogglebutton_Checked(object sender, RoutedEventArgs e)
         {
             if (Selected is not null)
@@ -78,6 +74,20 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 Unselected(this, EventArgs.Empty);
             }
+        }
+
+        private string GetToggleButtonText(bool? isToggled)
+        {
+            return isToggled ?? false ? Localizer.Instance.GetString("buttonSelected") : Localizer.Instance.GetString("buttonSelect");
+        }
+
+        public SolidColorBrush GetBorderBrush(bool isSelected)
+        {
+            // Return AccentFillColorDefaultBrush if selected, CardStrokeColorDefaultBrush if not
+            if (isSelected)
+                return Application.Current.Resources["AccentFillColorDefaultBrush"] as SolidColorBrush ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            else
+                return Application.Current.Resources["CardStrokeColorDefaultBrush"] as SolidColorBrush ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
         }
     }
 }

@@ -11,10 +11,9 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:ConflictSelectionBorderBrushConverter x:Key="ConflictSelectionBorderBrushConverter" />
     </UserControl.Resources>
 
-    <Border BorderBrush="{x:Bind IsSelected, Converter={StaticResource ConflictSelectionBorderBrushConverter}, Mode=OneWay}"
+    <Border BorderBrush="{x:Bind GetBorderBrush(IsSelected), Mode=OneWay}"
             BorderThickness="1"
             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"

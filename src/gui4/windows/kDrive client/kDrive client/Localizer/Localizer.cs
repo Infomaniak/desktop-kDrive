@@ -51,7 +51,9 @@ namespace Infomaniak.kDrive
             OnPropertyChanged(nameof(IsValidKey));
         }
 
-        // The above methods are helper methods to call GetString with a specific number of arguments of specific types, to make it easier to use in XAML bindings. They simply forward the call to GetString with the appropriate arguments.
+        // The below methods are helper methods to call GetString with a specific number of arguments of specific types,
+        // to make it easier to use in XAML bindings.
+        // They simply forward the call to GetString with the appropriate arguments.
         public string GetString1s(string key, string arg1)
         {
             return GetString(key, new object?[] { arg1 });

@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 03 Mar 2026 10:05:17 +0100 
+  Exported at: Tue, 03 Mar 2026 10:32:55 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -318,6 +318,15 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Réveil</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Choisir  une version</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Deux versions différentes de ces fichiers ont été détectées.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Conflits de versions</value> 
   </data> 
   <data name="connectAccount" xml:space="preserve"> 
     <value>Connecter un compte</value> 

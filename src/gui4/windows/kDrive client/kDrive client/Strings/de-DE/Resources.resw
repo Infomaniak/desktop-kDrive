@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 03 Mar 2026 10:05:17 +0100 
+  Exported at: Tue, 03 Mar 2026 10:32:55 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -318,6 +318,15 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Aufwachen</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Wählen Sie eine Version</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Es wurden zwei verschiedene Versionen dieser Dateien entdeckt.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Versionskonflikte</value> 
   </data> 
   <data name="connectAccount" xml:space="preserve"> 
     <value>Ein Konto verbinden</value> 
@@ -743,7 +752,7 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
     <value>vor %@</value> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
-    <value /> 
+    <value>Autor</value> 
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
@@ -759,7 +768,7 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
     <comment>use in pair with: labelNewSync</comment> 
   </data> 
   <data name="labelDate" xml:space="preserve"> 
-    <value /> 
+    <value>Datum</value> 
   </data> 
   <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
     <value>Externes Laufwerk getrennt</value> 
