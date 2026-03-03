@@ -38,6 +38,24 @@ public struct ParametersInfo: Codable, Sendable {
     public let distributionChannel: KDC.VersionChannel
     public let sentryEnabled: Bool
     public let matomoEnabled: Bool
+
+    public init(language: KDC.Language, monoIcons: Bool, autoStart: Bool, moveToTrash: Bool, notificationsDisabled: KDC.NotificationsDisabled, useLog: Bool, logLevel: KDC.LogLevel, extendedLog: Bool, purgeOldLogs: Bool, proxyConfigInfo: ProxyConfigInfo, darkTheme: Bool, maxAllowedCpu: Int32, distributionChannel: KDC.VersionChannel, sentryEnabled: Bool, matomoEnabled: Bool) {
+        self.language = language
+        self.monoIcons = monoIcons
+        self.autoStart = autoStart
+        self.moveToTrash = moveToTrash
+        self.notificationsDisabled = notificationsDisabled
+        self.useLog = useLog
+        self.logLevel = logLevel
+        self.extendedLog = extendedLog
+        self.purgeOldLogs = purgeOldLogs
+        self.proxyConfigInfo = proxyConfigInfo
+        self.darkTheme = darkTheme
+        self.maxAllowedCpu = maxAllowedCpu
+        self.distributionChannel = distributionChannel
+        self.sentryEnabled = sentryEnabled
+        self.matomoEnabled = matomoEnabled
+    }
 }
 
 public struct ProxyConfigInfo: Codable, Sendable {
@@ -47,6 +65,15 @@ public struct ProxyConfigInfo: Codable, Sendable {
     public let needsAuth: Bool
     @Base64CodedString public var user: String
     @Base64CodedString public var pwd: String
+
+    public init(type: KDC.ProxyType, hostName: String, port: Int32, needsAuth: Bool, user: String, pwd: String) {
+        self.type = type
+        _hostName = Base64CodedString(wrappedValue: hostName)
+        self.port = port
+        self.needsAuth = needsAuth
+        _user = Base64CodedString(wrappedValue: user)
+        _pwd = Base64CodedString(wrappedValue: pwd)
+    }
 }
 
 public struct ParametersUpdateQuery: Codable, Sendable {
