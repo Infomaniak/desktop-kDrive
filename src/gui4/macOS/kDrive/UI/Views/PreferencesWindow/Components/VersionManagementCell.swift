@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,4 +16,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import kDriveResources
+import SwiftUI
+
+struct VersionManagementCell: View {
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text(KDriveLocalizable.updateSettings)
+                Text(KDriveLocalizable.updateAvailable("3.7.6"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(KDriveLocalizable.buttonUpdate) {
+                // TODO: Update app
+            }
+        }
+    }
+}

@@ -79,14 +79,7 @@ struct GeneralPreferencesMiscSection: View {
                 selection: $language
             )
             .onChange(of: language) { newValue in
-                Task {
-                    guard newValue != preferencesRepository.parametersInfo.language else { return }
-                    do {
-                        try await preferencesRepository.update(\.language, value: newValue)
-                    } catch {
-                        language = preferencesRepository.parametersInfo.language
-                    }
-                }
+                updateValue(\.$language, \.language, newValue: newValue)
             }
 
             OptionPicker(
@@ -95,26 +88,12 @@ struct GeneralPreferencesMiscSection: View {
                 selection: $notificationsState
             )
             .onChange(of: notificationsState) { newValue in
-                Task {
-                    guard newValue != preferencesRepository.parametersInfo.notificationsState else { return }
-                    do {
-                        try await preferencesRepository.update(\.notificationsState, value: newValue)
-                    } catch {
-                        notificationsState = preferencesRepository.parametersInfo.notificationsState
-                    }
-                }
+                updateValue(\.$notificationsState, \.notificationsState, newValue: newValue)
             }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
                 .onChange(of: launchOnStartup) { newValue in
-                    Task {
-                        guard newValue != preferencesRepository.parametersInfo.launchOnStartup else { return }
-                        do {
-                            try await preferencesRepository.update(\.launchOnStartup, value: newValue)
-                        } catch {
-                            launchOnStartup = preferencesRepository.parametersInfo.launchOnStartup
-                        }
-                    }
+                    updateValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue)
                 }
 
             HStack {
@@ -130,24 +109,38 @@ struct GeneralPreferencesMiscSection: View {
                     .labelsHidden()
             }
             .onChange(of: moveDeletedFilesToTrash) { newValue in
-                Task {
-                    guard newValue != preferencesRepository.parametersInfo.moveDeletedFilesToTrash else { return }
-                    do {
-                        try await preferencesRepository.update(\.moveDeletedFilesToTrash, value: newValue)
-                    } catch {
-                        moveDeletedFilesToTrash = preferencesRepository.parametersInfo.moveDeletedFilesToTrash
-                    }
-                }
+                updateValue(\.$moveDeletedFilesToTrash, \.moveDeletedFilesToTrash, newValue: newValue)
             }
         }
         .onAppear {
-            let parametersInfo = preferencesRepository.parametersInfo
-
-            language = parametersInfo.language
-            notificationsState = parametersInfo.notificationsState
-            launchOnStartup = parametersInfo.launchOnStartup
-            moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
+            updatePropertiesFromParametersInfo(preferencesRepository.parametersInfo)
         }
+        .onChange(of: preferencesRepository.parametersInfo) { newValue in
+            updatePropertiesFromParametersInfo(newValue)
+        }
+    }
+
+    private func updateValue<T: Equatable>(
+        _ state: KeyPath<Self, Binding<T>>,
+        _ repository: WritableKeyPath<UIParametersInfo, T>,
+        newValue: T
+    ) {
+        Task {
+            guard newValue != preferencesRepository.parametersInfo[keyPath: repository] else { return }
+
+            do {
+                try await preferencesRepository.update(repository, value: newValue)
+            } catch {
+                self[keyPath: state].wrappedValue = preferencesRepository.parametersInfo[keyPath: repository]
+            }
+        }
+    }
+
+    private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
+        language = parametersInfo.language
+        notificationsState = parametersInfo.notificationsState
+        launchOnStartup = parametersInfo.launchOnStartup
+        moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
     }
 }
 

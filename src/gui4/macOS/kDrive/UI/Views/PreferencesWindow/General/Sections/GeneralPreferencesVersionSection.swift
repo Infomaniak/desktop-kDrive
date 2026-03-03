@@ -76,19 +76,7 @@ struct GeneralPreferencesVersionSection: View {
 
     var body: some View {
         Section {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(KDriveLocalizable.updateSettings)
-                    Text(KDriveLocalizable.updateAvailable("3.7.6"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Button(KDriveLocalizable.buttonUpdate) {
-                    // TODO: Update app
-                }
-            }
+            VersionManagementCell()
 
             // TODO: Automatic update is not available yet
             Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
@@ -111,14 +99,18 @@ struct GeneralPreferencesVersionSection: View {
             }
         }
         .onAppear {
-            betaOption = BetaOption(repository.parametersInfo.distributionChannel)
+            updatePropertiesFromParametersInfo(repository.parametersInfo)
         }
         .onChange(of: repository.parametersInfo) { newValue in
-            betaOption = BetaOption(newValue.distributionChannel)
+            updatePropertiesFromParametersInfo(newValue)
         }
         .sheet(isPresented: $isShowingDistributionChannelSheet) {
             DistributionChannelView(repository: repository)
         }
+    }
+
+    private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
+        betaOption = BetaOption(parametersInfo.distributionChannel)
     }
 }
 
