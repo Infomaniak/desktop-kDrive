@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,4 +16,43 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import kDriveCore
+
+public extension UIProxyType {
+    init?(proxyType: KDC.ProxyType) {
+        switch proxyType {
+        case .None:
+            return nil
+        case .System:
+            self = .system
+        case .HTTP:
+            self = .http
+        case .Socks5:
+            self = .socks5
+        case .Undefined:
+            ReportHelper.reportToSentryIfProd(message: "UIProxyType init received KDC.ProxyType.Undefined case")
+            return nil
+        case .EnumEnd:
+            ReportHelper.reportToSentryIfProd(message: "UIProxyType init received KDC.ProxyType.EnumEnd case")
+            return nil
+        @unknown default:
+            ReportHelper.reportToSentryIfProd(message: "UIProxyType init received @unknown case")
+            return nil
+        }
+    }
+}
+
+public extension UIProxyConfiguration {
+    init(proxyConfigInfo: ProxyConfigInfo) {
+        let authType: UIProxyAuthType = proxyConfigInfo.needsAuth
+            ? .needsAuth(user: proxyConfigInfo.user, password: proxyConfigInfo.pwd)
+            : .noAuth
+
+        self.init(
+            type: UIProxyType(proxyType: proxyConfigInfo.type),
+            hostName: proxyConfigInfo.hostName,
+            port: Int(proxyConfigInfo.port),
+            authType: authType
+        )
+    }
+}
