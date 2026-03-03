@@ -1430,6 +1430,10 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
     }
 
     if (job->exitInfo().code() != ExitCode::Ok) {
+        if (job->exitInfo().code() == ExitCode::RateLimited) {
+            setPauseDuration(networkJob->sleepDuration());
+        }
+
         if (networkJob &&
             (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
              networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT) &&
