@@ -17,8 +17,13 @@
  */
 
 import Foundation
+import kDriveResources
 
-public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable {
+public protocol PreferenceOption: Hashable, Identifiable {
+    var label: String { get }
+}
+
+public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable, PreferenceOption {
     public var id: String {
         rawValue
     }
@@ -29,9 +34,26 @@ public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable {
     case german
     case spanish
     case italian
+
+    public var label: String {
+        switch self {
+        case .system:
+            return KDriveLocalizable.labelSameAsSystem
+        case .french:
+            return "Français"
+        case .english:
+            return "English"
+        case .german:
+            return "Deutsch"
+        case .spanish:
+            return "Español"
+        case .italian:
+            return "Italiano"
+        }
+    }
 }
 
-public enum UINotificationState: String, CaseIterable, Sendable, Equatable {
+public enum UINotificationState: String, CaseIterable, Sendable, Equatable, PreferenceOption {
     public var id: String {
         rawValue
     }
@@ -42,6 +64,23 @@ public enum UINotificationState: String, CaseIterable, Sendable, Equatable {
     case untilTomorrow
     case forThreeDays
     case forOneWeek
+
+    public var label: String {
+        switch self {
+        case .always:
+            return KDriveLocalizable.notificationsDisabledAlways
+        case .never:
+            return KDriveLocalizable.notificationsDisabledNever
+        case .forOneHour:
+            return KDriveLocalizable.forOneHour
+        case .untilTomorrow:
+            return KDriveLocalizable.untilTomorrow
+        case .forThreeDays:
+            return KDriveLocalizable.forThreeDays
+        case .forOneWeek:
+            return KDriveLocalizable.forOneWeek
+        }
+    }
 }
 
 public enum UILogLevel: String, CaseIterable, Sendable, Equatable {

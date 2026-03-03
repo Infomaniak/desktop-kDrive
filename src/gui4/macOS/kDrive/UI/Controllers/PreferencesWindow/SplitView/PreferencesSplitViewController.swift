@@ -30,6 +30,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
     }
 
     override func viewWillAppear() {
+        super.viewWillAppear()
         Task {
             try? await repository.refreshData()
         }

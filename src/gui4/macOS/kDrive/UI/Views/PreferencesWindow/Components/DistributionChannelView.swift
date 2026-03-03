@@ -35,8 +35,8 @@ struct DistributionChannelView: View {
                 .padding(.bottom, AppPadding.padding4)
 
             Text(KDriveLocalizable.betaProgramDescription)
-            .font(.Tokens.body)
-            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                .font(.Tokens.body)
+                .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
             OptionPicker(KDriveLocalizable.accessibilityBetaProgramPicker, options: BetaOption.allCases, selection: $betaOption)
                 .labelsHidden()
@@ -67,7 +67,7 @@ struct DistributionChannelView: View {
             var newValue: UIDistributionChannel
             switch betaOption {
             case .doNotJoin:
-                guard currentValue != .prod || currentValue != .next || currentValue != .legacy else { return }
+                guard currentValue != .prod && currentValue != .next && currentValue != .legacy else { return }
                 newValue = .prod
             case .beta:
                 guard currentValue != .beta else { return }

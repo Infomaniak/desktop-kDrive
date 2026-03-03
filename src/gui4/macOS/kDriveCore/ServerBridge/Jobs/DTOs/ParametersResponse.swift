@@ -39,7 +39,23 @@ public struct ParametersInfo: Codable, Sendable {
     public let sentryEnabled: Bool
     public let matomoEnabled: Bool
 
-    public init(language: KDC.Language, monoIcons: Bool, autoStart: Bool, moveToTrash: Bool, notificationsDisabled: KDC.NotificationsDisabled, useLog: Bool, logLevel: KDC.LogLevel, extendedLog: Bool, purgeOldLogs: Bool, proxyConfigInfo: ProxyConfigInfo, darkTheme: Bool, maxAllowedCpu: Int32, distributionChannel: KDC.VersionChannel, sentryEnabled: Bool, matomoEnabled: Bool) {
+    public init(
+        language: KDC.Language,
+        monoIcons: Bool,
+        autoStart: Bool,
+        moveToTrash: Bool,
+        notificationsDisabled: KDC.NotificationsDisabled,
+        useLog: Bool,
+        logLevel: KDC.LogLevel,
+        extendedLog: Bool,
+        purgeOldLogs: Bool,
+        proxyConfigInfo: ProxyConfigInfo,
+        darkTheme: Bool,
+        maxAllowedCpu: Int32,
+        distributionChannel: KDC.VersionChannel,
+        sentryEnabled: Bool,
+        matomoEnabled: Bool
+    ) {
         self.language = language
         self.monoIcons = monoIcons
         self.autoStart = autoStart

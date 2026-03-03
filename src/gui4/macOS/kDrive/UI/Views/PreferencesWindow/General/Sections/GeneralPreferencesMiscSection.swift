@@ -16,55 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-protocol PreferenceOption: Hashable, Identifiable {
-    var label: String { get }
-}
-
-extension UIAppLanguage: PreferenceOption {
-    var label: String {
-        switch self {
-        case .system:
-            return KDriveLocalizable.labelSameAsSystem
-        case .french:
-            return "Français"
-        case .english:
-            return "English"
-        case .german:
-            return "Deutsch"
-        case .spanish:
-            return "Español"
-        case .italian:
-            return "Italiano"
-        }
-    }
-}
-
-extension UINotificationState: PreferenceOption {
-    var label: String {
-        switch self {
-        case .always:
-            return KDriveLocalizable.notificationsDisabledAlways
-        case .never:
-            return KDriveLocalizable.notificationsDisabledNever
-        case .forOneHour:
-            return KDriveLocalizable.forOneHour
-        case .untilTomorrow:
-            return KDriveLocalizable.untilTomorrow
-        case .forThreeDays:
-            return KDriveLocalizable.forThreeDays
-        case .forOneWeek:
-            return KDriveLocalizable.forOneWeek
-        }
-    }
-}
-
 struct GeneralPreferencesMiscSection: View {
-    @ObservedObject var preferencesRepository: PreferencesRepository
+    @ObservedObject var repository: PreferencesRepository
 
     @State private var language: UIAppLanguage = .english
     @State private var notificationsState: UINotificationState = .never
@@ -113,25 +70,25 @@ struct GeneralPreferencesMiscSection: View {
             }
         }
         .onAppear {
-            updatePropertiesFromParametersInfo(preferencesRepository.parametersInfo)
+            updatePropertiesFromParametersInfo(repository.parametersInfo)
         }
-        .onChange(of: preferencesRepository.parametersInfo) { newValue in
+        .onChange(of: repository.parametersInfo) { newValue in
             updatePropertiesFromParametersInfo(newValue)
         }
     }
 
     private func updateValue<T: Equatable>(
-        _ state: KeyPath<Self, Binding<T>>,
-        _ repository: WritableKeyPath<UIParametersInfo, T>,
+        _ stateKeyPath: KeyPath<Self, Binding<T>>,
+        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
         newValue: T
     ) {
         Task {
-            guard newValue != preferencesRepository.parametersInfo[keyPath: repository] else { return }
+            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
 
             do {
-                try await preferencesRepository.update(repository, value: newValue)
+                try await repository.update(repositoryKeyPath, value: newValue)
             } catch {
-                self[keyPath: state].wrappedValue = preferencesRepository.parametersInfo[keyPath: repository]
+                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
             }
         }
     }
@@ -145,5 +102,5 @@ struct GeneralPreferencesMiscSection: View {
 }
 
 #Preview {
-    GeneralPreferencesMiscSection(preferencesRepository: PreferencesRepository())
+    GeneralPreferencesMiscSection(repository: PreferencesRepository())
 }
