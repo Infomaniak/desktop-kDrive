@@ -6,7 +6,6 @@ com.acronis.backup.sh-inventory;Acronis
 com.acronis.backup.service_process-bin;Acronis
 com.google.GoogleDrive;Google Drive
 com.parallels.vm;Parallels
-com.parallels.desktop.console.ExeQLPlugin;Parallels QuickLook Plugin
 atuin-*;Atuin
 starship-*;Starship
 com.4D.*;4D
