@@ -80,10 +80,7 @@ void RemoteFileSystemObserverWorker::execute() {
             }
         }
 
-        const std::vector<std::string> mainDirectoriesRemoteIds{ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId),
-                                                                ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
-                                                                ApiTranslator::getSharedRemoteId(_driveDbId)};
-
+        const std::vector<std::string> &mainDirectoriesRemoteIds = getMainDirectoriesRemoteIds();
         for (const auto &remoteDirId: mainDirectoriesRemoteIds) {
             exitInfo = processEvents(remoteDirId);
             if (!exitInfo) {
@@ -106,7 +103,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     ExitInfo exitInfo = ExitCode::Ok;
 
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
-    auto start = std::chrono::steady_clock::now();
+    const auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
 
     // Retrieve the list of blacklisted folders.
@@ -158,7 +155,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
     if (!_updating && !_initializing) {
         // Send long poll request
         bool changes = false;
-        if (const auto exitInfo = sendLongPoll(changes); !exitInfo) {
+        if (const auto exitInfo = sendLongPoll(remoteDirId, changes); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::sendLongPoll: " << exitInfo);
             return exitInfo;
         }
@@ -266,10 +263,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
-    const std::vector<NodeId> mainFolderIds{ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId),
-                                            ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
-                                            ApiTranslator::getSharedRemoteId(_driveDbId)};
-
+    const std::vector<NodeId> &mainFolderIds = getMainDirectoriesRemoteIds();
     ExitInfo exitInfo;
     for (const auto &mainFolderRemoteId: mainFolderIds) {
         if (_blackList.contains(mainFolderRemoteId)) continue;
@@ -372,7 +366,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
         constexpr bool zip = true;
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList, zip);
     } catch (const std::exception &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
@@ -384,7 +378,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     }
 
     if (!job->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob: " << job->exitInfo());
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob: " << job->exitInfo());
 
         return job->exitInfo();
     }
@@ -438,19 +432,18 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
+ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
     changes = false;
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     std::shared_ptr<LongPollJob> notifyJob = nullptr;
-    const RemoteNodeId remoteDirId = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId);
     auto timeStamp = 0;
-    if (const auto exitInfo = listingCursor(remoteDirId, _longPollCursor, timeStamp); !exitInfo) {
+    if (const auto exitInfo = listingCursor(remoteDirId, _listingCursorMap.at(remoteDirId), timeStamp); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
         return exitInfo;
     }
     try {
-        notifyJob = std::make_shared<LongPollJob>(_driveDbId, _longPollCursor);
+        notifyJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId));
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
@@ -481,8 +474,9 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     }
 
     if (!notifyJob->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo() << " for drive: "
-                                                           << std::to_string(_driveDbId) << " and cursor: " << _longPollCursor);
+        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo()
+                                                           << " for drive: " << std::to_string(_driveDbId)
+                                                           << " and cursor: " << _listingCursorMap.at(remoteDirId));
 
         if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
             _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, notifyJob->exitInfo()));
@@ -494,8 +488,9 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
     if (!resObj) {
         // If error, fall
-        LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                               << " and cursor: " << _longPollCursor);
+        LOG_SYNCPAL_DEBUG(_logger,
+                          "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
+                                                                      << " and cursor: " << _listingCursorMap.at(remoteDirId));
         return {ExitCode::BackError, ExitCause::ApiErr};
     }
 
@@ -894,6 +889,7 @@ void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &re
     ApiTranslator::translateV3ToV2(remotePath_);
     _path = remotePath_.string();
 }
+
 std::vector<RemoteFileSystemObserverWorker::RemoteNodeId> RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds() const {
     return {ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
             ApiTranslator::getSharedRemoteId(_driveDbId)};
@@ -903,9 +899,11 @@ ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId
     if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
         return _syncPal->userPrivateFolderCursor(cursor, timeStamp);
     }
+
     if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
         return _syncPal->commonDocumentsFolderCursor(cursor, timeStamp);
     }
+
     if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
         return _syncPal->sharedFolderCursor(cursor, timeStamp);
     }
@@ -918,9 +916,11 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteD
     if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
         return _syncPal->setUserPrivateFolderCursor(cursor, timeStamp);
     }
+
     if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
         return _syncPal->setCommonDocumentsFolderCursor(cursor, timeStamp);
     }
+
     if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
         return _syncPal->setSharedFolderCursor(cursor, timeStamp);
     }

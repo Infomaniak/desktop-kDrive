@@ -411,8 +411,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo userPrivateFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
         ExitInfo commonDocumentsFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
         ExitInfo sharedFolderCursor(Cursor &listingCursor, TimeStamp &timestamp);
-        ExitInfo longPollCursor(Cursor &listingCursor, TimeStamp &timestamp);
-
 
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();

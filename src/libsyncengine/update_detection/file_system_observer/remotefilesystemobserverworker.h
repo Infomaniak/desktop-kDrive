@@ -39,7 +39,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         void execute() override;
-        virtual ExitInfo sendLongPoll(bool &changes);
+        virtual ExitInfo sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes);
         ExitInfo generateInitialSnapshot() override;
 
     private:
@@ -90,7 +90,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         using CursorMap = std::unordered_map<NodeId, Cursor, StringHashFunction, std::equal_to<>>;
         // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
         CursorMap _listingCursorMap;
-        Cursor _longPollCursor;
         ExitInfo listingCursor(const NodeId &remoteDirId, Cursor &cursor, TimeStamp timeStamp);
         ExitInfo saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor, const TimeStamp timeStamp);
 

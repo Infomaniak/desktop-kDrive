@@ -58,17 +58,13 @@ CursorStore Sync::getCursorStore() const {
     CursorData sharedFolderCursorData;
     sharedFolderCursor(sharedFolderCursorData.cursor, sharedFolderCursorData.timeStamp);
 
-    CursorData longPollCursorData;
-    longPollCursor(longPollCursorData.cursor, longPollCursorData.timeStamp);
-
-    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData, longPollCursorData};
+    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData};
 }
 
 void Sync::setCursorStore(const KDC::CursorStore &cursors) {
     setUserPrivateFolderCursor(cursors.userPrivateFolderCursor.cursor, cursors.userPrivateFolderCursor.timeStamp);
     setCommonDocumentsFolderCursor(cursors.commonDocumentsFolderCursor.cursor, cursors.commonDocumentsFolderCursor.timeStamp);
     setSharedFolderCursor(cursors.sharedFolderCursor.cursor, cursors.sharedFolderCursor.timeStamp);
-    setLongPollCursor(cursors.longPollCursor.cursor, cursors.longPollCursor.timeStamp);
 }
 
 } // namespace KDC

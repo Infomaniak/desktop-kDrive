@@ -74,9 +74,6 @@ class PARMS_EXPORT Sync {
         inline void setSharedFolderCursor(const Cursor &listingCursor, TimeStamp timestamp) {
             _cursorStore.sharedFolderCursor = {listingCursor, timestamp};
         }
-        inline void setLongPollCursor(const Cursor &listingCursor, TimeStamp timestamp) {
-            _cursorStore.longPollCursor = {listingCursor, timestamp};
-        }
 
         inline void userPrivateFolderCursor(Cursor &listingCursor, TimeStamp &timestamp) const {
             listingCursor = _cursorStore.userPrivateFolderCursor.cursor;
@@ -89,10 +86,6 @@ class PARMS_EXPORT Sync {
         inline void sharedFolderCursor(Cursor &listingCursor, TimeStamp &timestamp) const {
             listingCursor = _cursorStore.sharedFolderCursor.cursor;
             timestamp = _cursorStore.sharedFolderCursor.timeStamp;
-        }
-        inline void longPollCursor(Cursor &listingCursor, TimeStamp &timestamp) const {
-            listingCursor = _cursorStore.longPollCursor.cursor;
-            timestamp = _cursorStore.longPollCursor.timeStamp;
         }
 
     private:

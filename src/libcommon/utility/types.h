@@ -70,7 +70,6 @@ struct CursorStore {
         CursorData userPrivateFolderCursor;
         CursorData commonDocumentsFolderCursor;
         CursorData sharedFolderCursor;
-        CursorData longPollCursor;
 };
 
 #if defined(KD_WINDOWS)

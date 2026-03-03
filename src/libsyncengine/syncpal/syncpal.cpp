@@ -924,15 +924,6 @@ ExitInfo SyncPal::setSharedFolderCursor(const Cursor &listingCursor, TimeStamp t
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::setLongPollCursor(const Cursor &listingCursor, TimeStamp timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.setLongPollCursor(listingCursor, timestamp);
-
-    return updateSync(sync);
-}
-
 ExitInfo SyncPal::userPrivateFolderCursor(Cursor &value, TimeStamp &timestamp) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
@@ -956,15 +947,6 @@ ExitInfo SyncPal::sharedFolderCursor(Cursor &value, TimeStamp &timestamp) {
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
     sync.sharedFolderCursor(value, timestamp);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo SyncPal::longPollCursor(Cursor &value, TimeStamp &timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.longPollCursor(value, timestamp);
 
     return ExitCode::Ok;
 }

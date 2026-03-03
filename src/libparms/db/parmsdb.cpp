@@ -274,8 +274,6 @@
     "commonDocumentsFolderTimestamp INTEGER,"                                                \
     "sharedFolderCursor TEXT,"                                                               \
     "sharedFolderTimestamp INTEGER,"                                                         \
-    "longPollCursor TEXT,"                                                                   \
-    "longPollTimestamp INTEGER,"                                                             \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
 
@@ -286,9 +284,8 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                             \
     "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                     \
-    "sharedFolderCursor, sharedFolderTimestamp, "                                                                       \
-    "longPollCursor, longPollTimestamp) "                                                                               \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21);"
+    "sharedFolderCursor, sharedFolderTimestamp) "                                                                       \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                              \
@@ -298,8 +295,7 @@
     "userPrivateFolderCursor=?13, userPrivateFolderTimestamp=?14, "                                                      \
     "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp=?16, "                                              \
     "sharedFolderCursor=?17, sharedFolderTimestamp=?18, "                                                                \
-    "longPollCursor=?19, longPollTimestamp=?20 "                                                                         \
-    "WHERE dbId=?21;"
+    "WHERE dbId=?19;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -322,8 +318,7 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
     "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, "                                                                             \
-    "longPollCursor, longPollTimestamp "                                                                                      \
+    "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     " FROM sync "                                                                                                             \
     "WHERE dbId=?1;"
 
@@ -333,8 +328,7 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
     "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, "                                                                             \
-    "longPollCursor, longPollTimestamp "                                                                                      \
+    "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
 
@@ -345,8 +339,7 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
     "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, "                                                                             \
-    "longPollCursor, longPollTimestamp "                                                                                      \
+    "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
 
@@ -357,8 +350,7 @@
     "hasFullyCompleted, navigationPaneClsid, "                                                                     \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                        \
     "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp, "                                            \
-    "sharedFolderCursor, sharedFolderTimestamp, "                                                                  \
-    "longPollCursor, longPollTimestamp "                                                                           \
+    "sharedFolderCursor, sharedFolderTimestamp "                                                                   \
     "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
@@ -2217,8 +2209,6 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.timeStamp));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timeStamp));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.longPollCursor.timeStamp));
 
     if (filter == FieldFilter::WhereSyncDbId) {
         LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
@@ -2395,9 +2385,6 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
 
     LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
     LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timeStamp));
-
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.longPollCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.longPollCursor.timeStamp));
 
     sync.setCursorStore(cursorStore);
 }
