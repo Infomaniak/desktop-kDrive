@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,4 +16,72 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
+
+struct DistributionChannelView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @ObservedObject var repository: PreferencesRepository
+
+    @State private var betaOption = BetaOption.doNotJoin
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Rejoindre le programme bêta")
+                .font(.Tokens.headline)
+                .padding(.bottom, AppPadding.padding4)
+            
+            Text(
+                "Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations."
+            )
+            .foregroundStyle(.secondary)
+
+            OptionPicker("Rejoindre la bêta", options: BetaOption.allCases, selection: $betaOption)
+        }
+        .onAppear {
+            betaOption = BetaOption(repository.parametersInfo.distributionChannel)
+        }
+        .padding()
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Valider") {
+                    updateDistributionChannel()
+                    dismiss()
+                }
+            }
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Annuler") {
+                    dismiss()
+                }
+            }
+        }
+    }
+
+    private func updateDistributionChannel() {
+        Task {
+            let currentValue = repository.parametersInfo.distributionChannel
+
+            var newValue: UIDistributionChannel
+            switch betaOption {
+            case .doNotJoin:
+                guard currentValue != .prod || currentValue != .next || currentValue != .legacy else { return }
+                newValue = .prod
+            case .beta:
+                guard currentValue != .beta else { return }
+                newValue = .beta
+            case .internal:
+                guard currentValue != .internal else { return }
+                newValue = .internal
+            }
+
+            try? await repository.update(\.distributionChannel, value: newValue)
+            try? await repository.refreshData()
+        }
+    }
+}
+
+#Preview {
+    DistributionChannelView(repository: PreferencesRepository())
+}
