@@ -31,3 +31,7 @@ public struct VersionInfo: Codable, Sendable {
 struct UpdaterVersionInfoResponse: Codable, Sendable {
     let versionInfo: VersionInfo
 }
+
+struct UpdaterStateResponse: Codable, Sendable {
+    let updateState: KDC.UpdateState
+}

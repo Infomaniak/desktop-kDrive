@@ -44,4 +44,16 @@ public struct UpdaterJobs: Sendable {
 
         return decodedMessage.body.versionInfo
     }
+
+    public func updaterState() async throws -> KDC.UpdateState {
+        IKLogger.data.log("Query for updater state")
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UPDATER_STATE, body: EmptyQuery())
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UpdaterStateResponse>.self
+        )
+
+        return decodedMessage.body.updateState
+    }
 }
