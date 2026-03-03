@@ -896,8 +896,13 @@ void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &re
 }
 
 std::vector<RemoteFileSystemObserverWorker::RemoteNodeId> RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds() const {
-    return {ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
+    std::vector<RemoteFileSystemObserverWorker::RemoteNodeId> mainFoldersIds{
+            ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId),
             ApiTranslator::getSharedRemoteId(_driveDbId)};
+
+    std::erase_if(mainFoldersIds, [](const std::string_view s) { return s.empty(); });
+
+    return mainFoldersIds;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId, Cursor &cursor, TimeStamp timeStamp) {
