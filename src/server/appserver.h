@@ -278,8 +278,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitInfo updateAllUsersInfo();
         ExitInfo updateUserInfo(User &user);
         ExitInfo updateUser(User &user);
+        ExitInfo createAccount(Account &newAccount);
         ExitInfo updateAccount(Account &account);
-        ExitInfo updateDrive(Drive &drive);
+        ExitInfo updateDrive(const User &user, const Account &account, Drive &drive);
+        ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
+                                                  Drive &drive, bool &driveUpdated);
 
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
