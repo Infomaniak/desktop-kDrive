@@ -41,6 +41,7 @@ enum SignalError: Error {
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
     case unableToGetVersionInfoFromSignal
+    case unableToGetUpdateStateFromSignal
     case unsupported(_ num: SignalNum)
 }
 
@@ -129,6 +130,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             
         case .UPDATER_SHOW_DIALOG:
             try await updaterSignalHandler.handleShowDialog(signal)
+
+        case .UPDATER_STATE_CHANGED:
+            try await updaterSignalHandler.handleStateChanged(signal)
 
         default:
             throw SignalError.unsupported(signalNum)

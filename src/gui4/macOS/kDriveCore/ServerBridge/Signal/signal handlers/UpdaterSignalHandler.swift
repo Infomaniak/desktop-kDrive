@@ -28,8 +28,21 @@ struct UpdaterSignalHandler {
         }
 
         let versionInfo = showDialogSignal.body.versionInfo
-        // TODO: Implement UI trigger for update dialog
 
         IKLogger.xpc.log("[KD] Update available: \(versionInfo.tag) (build: \(versionInfo.buildVersion))")
+
+        // TODO: Show updater UI via AppRouter state change
+    }
+
+    func handleStateChanged(_ signal: Data) async throws {
+        guard let stateChangedSignal = try? decoder.decode(SignalMessage<UpdaterStateChangedSignal>.self, from: signal) else {
+            throw SignalError.unableToGetUpdateStateFromSignal
+        }
+
+        let updateState = stateChangedSignal.body.updateState
+
+        IKLogger.xpc.log("[KD] Updater state changed: \(updateState)")
+
+        // TODO: Show updater UI via AppRouter state change
     }
 }
