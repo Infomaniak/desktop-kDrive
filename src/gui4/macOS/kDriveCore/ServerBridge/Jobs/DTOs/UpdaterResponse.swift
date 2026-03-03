@@ -18,8 +18,6 @@
 
 import Foundation
 
-struct UpdaterChangeChannelResponse: Codable, Sendable {}
-
 public struct VersionInfo: Codable, Sendable {
     let channel: KDC.VersionChannel
     @Base64CodedString var tag: String
