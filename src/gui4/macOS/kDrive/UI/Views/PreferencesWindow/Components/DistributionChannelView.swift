@@ -29,18 +29,16 @@ struct DistributionChannelView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Rejoindre le programme bêta")
+            Text(KDriveLocalizable.betaProgramTitle)
                 .font(.Tokens.headline)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .padding(.bottom, AppPadding.padding4)
 
-            Text(
-                "Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations."
-            )
+            Text(KDriveLocalizable.betaProgramDescription)
             .font(.Tokens.body)
             .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-            OptionPicker("Rejoindre la bêta", options: BetaOption.allCases, selection: $betaOption)
+            OptionPicker(KDriveLocalizable.accessibilityBetaProgramPicker, options: BetaOption.allCases, selection: $betaOption)
                 .labelsHidden()
         }
         .onAppear {
@@ -49,13 +47,13 @@ struct DistributionChannelView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Valider") {
+                Button(KDriveLocalizable.buttonValidate) {
                     updateDistributionChannel()
                     dismiss()
                 }
             }
             ToolbarItem(placement: .cancellationAction) {
-                Button("Annuler") {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     dismiss()
                 }
             }

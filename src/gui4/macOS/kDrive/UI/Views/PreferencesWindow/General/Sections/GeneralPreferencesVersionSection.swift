@@ -33,22 +33,22 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
     var description: String {
         switch self {
         case .doNotJoin:
-            "Off"
+            KDriveLocalizable.labelOff
         case .beta:
-            "Beta"
+            KDriveLocalizable.releaseChannelBeta
         case .internal:
-            "Internal"
+            KDriveLocalizable.releaseChannelInternal
         }
     }
 
     var label: String {
         switch self {
         case .doNotJoin:
-            return "Ne pas rejoindre"
+            return KDriveLocalizable.doNotJoin
         case .beta:
-            return "Version beta publique"
+            return KDriveLocalizable.releaseChannelBeta
         case .internal:
-            return "Version beta interne"
+            return KDriveLocalizable.releaseChannelInternal
         }
     }
 
