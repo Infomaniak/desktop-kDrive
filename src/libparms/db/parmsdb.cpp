@@ -1096,8 +1096,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgradeTables() {
-    // Parameters table
+bool ParmsDb::upgradeParametersTables() {
     std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -1111,36 +1110,6 @@ bool ParmsDb::upgradeTables() {
     }
 
     columnName = "jobPoolCapacityFactor";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "userPrivateFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "userPrivateFolderTimestamp";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "commonDocumentsFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "commonDocumentsFolderTimestamp";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "sharedFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "sharedFolderTimestamp";
     if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
         return false;
     }
@@ -1179,8 +1148,44 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    columnName = "userPrivateFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "userPrivateFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    columnName = "commonDocumentsFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    columnName = "commonDocumentsFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    columnName = "sharedFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    columnName = "sharedFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::upgradeTables() {
+    if (!upgradeParametersTables()) return false;
+
     // AppState table
-    tableName = "app_state";
+    std::string tableName = "app_state";
     bool exist = false;
     if (!tableExists(tableName, exist)) return false;
     if (!exist) {
