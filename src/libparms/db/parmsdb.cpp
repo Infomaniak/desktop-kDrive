@@ -1115,6 +1115,36 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    columnName = "userPrivateFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "userPrivateFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "commonDocumentsFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "commonDocumentsFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "sharedFolderCursor";
+    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
+    columnName = "sharedFolderTimestamp";
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
+
     if (updateParameters) {
         int errId = 0;
         std::string error;
