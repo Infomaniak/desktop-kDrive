@@ -67,11 +67,8 @@ final class PreferencesViewModel: ObservableObject {
 
     init() {}
 
-    func fetchData() async throws {
-        async let launchOnStartup = UtilityJobs().hasSystemLaunchOnStartup()
-        async let parametersInformation = ParametersJobs().parametersInfo()
-
-        self.launchOnStartup = try await launchOnStartup
+    func refreshData() async throws {
+        let parametersInformation = try await ParametersJobs().parametersInfo()
     }
 
     private func updateLaunchOnStartup(_ value: Bool) {
@@ -79,12 +76,14 @@ final class PreferencesViewModel: ObservableObject {
             do {
                 try await UtilityJobs().setLaunchOnStartup(enabled: value)
             } catch {
-                launchOnStartup = !value
+//                launchOnStartup = !value
             }
         }
     }
 
     private func updateParametersInfo() {
-
+        Task {
+            try? await refreshData()
+        }
     }
 }

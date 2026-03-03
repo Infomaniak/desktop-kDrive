@@ -31,7 +31,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
 
     override func viewWillAppear() {
         Task {
-            try? await viewModel.fetchData()
+            try? await viewModel.refreshData()
         }
     }
 
