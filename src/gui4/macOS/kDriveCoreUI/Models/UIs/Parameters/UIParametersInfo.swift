@@ -69,18 +69,35 @@ public enum UIDistributionChannel: String, CaseIterable, Sendable {
 }
 
 public struct UIParametersInfo: Sendable {
-    let language: UIAppLanguage
-    let launchOnStartup: Bool
-    let moveDeletedFilesToTrash: Bool
-    let notificationsState: UINotificationState
-    let shouldUseLog: Bool
-    let logLevel: UILogLevel
-    let isExtendedLogEnabled: Bool
-    let shouldPurgeOldLogs: Bool
-    let proxyConfiguration: UIProxyConfiguration
-    let distributionChannel: UIDistributionChannel
-    let isSentryEnabled: Bool
-    let isMatomoEnabled: Bool
+    var language: UIAppLanguage
+    var launchOnStartup: Bool
+    var moveDeletedFilesToTrash: Bool
+    var notificationsState: UINotificationState
+    var shouldUseLog: Bool
+    var logLevel: UILogLevel
+    var isExtendedLogEnabled: Bool
+    var shouldPurgeOldLogs: Bool
+    var proxyConfiguration: UIProxyConfiguration
+    var distributionChannel: UIDistributionChannel
+    var isSentryEnabled: Bool
+    var isMatomoEnabled: Bool
+
+    public init() {
+        self.init(
+            language: .english,
+            launchOnStartup: true,
+            moveDeletedFilesToTrash: true,
+            notificationsState: .always,
+            shouldUseLog: true,
+            logLevel: .info,
+            isExtendedLogEnabled: true,
+            shouldPurgeOldLogs: true,
+            proxyConfiguration: UIProxyConfiguration(type: .system, hostName: "", port: 0, authType: .noAuth),
+            distributionChannel: .prod,
+            isSentryEnabled: true,
+            isMatomoEnabled: true
+        )
+    }
 
     public init(
         language: UIAppLanguage,
