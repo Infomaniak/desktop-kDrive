@@ -25,3 +25,7 @@ struct UpdaterChangeChannelQuery: Codable, Sendable {
 struct UpdaterVersionInfoQuery: Codable, Sendable {
     let channel: KDC.VersionChannel
 }
+
+struct UpdaterSkipVersionQuery: Codable, Sendable {
+    @Base64CodedString var skippedVersion: String
+}

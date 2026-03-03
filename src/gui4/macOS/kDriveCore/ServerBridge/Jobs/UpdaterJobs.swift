@@ -63,4 +63,12 @@ public struct UpdaterJobs: Sendable {
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    public func skipVersion(version: String) async throws {
+        IKLogger.data.log("Query to skip version")
+        let query = UpdaterSkipVersionQuery(skippedVersion: version)
+        let request = await RequestMessage<UpdaterSkipVersionQuery>(num: RequestNum.UPDATER_SKIP_VERSION, body: query)
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
 }
