@@ -37,7 +37,7 @@ mkdir -p "$app_dir/usr/plugins"
 
 cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
 cp -P -r "$QTDIR/libexec" "$app_dir/usr"
-cp -P -r "$QTDIR/resources" "$app_dir/usr"
+cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation.
 cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
 mv "$app_dir/usr/lib/x86_64-linux-gnu/"* "$app_dir/usr/lib/" || echo "The folder $app_dir/usr/lib/aarch64-linux-gnu/ might not exist." >&2
