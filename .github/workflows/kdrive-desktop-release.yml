@@ -15,14 +15,15 @@ on:
         type: boolean
         description: Build macOS executables
         default: true
-      build_linux_amd:
-        type: boolean
-        description: Build Linux AMD64 executables
-        default: true
-      build_linux_arm:
-        type: boolean
-        description: Build Linux ARM64 executables
-        default: true
+      build_linux:
+        type: choice
+        description: Build Linux executables
+        options:
+          - all
+          - amd64
+          - arm64
+          - none
+        default: all
       upload_to_kdrive:
         type: boolean
         description: Upload builds to kDrive
@@ -152,7 +153,7 @@ jobs:
           build_new_client: ${{ inputs.build_windows_new_client }}
 
   build-Linux-amd:
-    if: ${{ inputs.build_linux_amd }}
+    if: ${{ inputs.build_linux == 'all' || inputs.build_linux == 'amd64' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -166,7 +167,7 @@ jobs:
           release_build: true
 
   build-Linux-arm:
-    if: ${{ inputs.build_linux_arm }}
+    if: ${{ inputs.build_linux == 'all' || inputs.build_linux == 'arm64' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
@@ -239,7 +240,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
-    if: ${{ inputs.build_linux_amd && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'amd64') && inputs.upload_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -281,7 +282,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
-    if: ${{ inputs.build_linux_arm && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'arm64') && inputs.upload_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
