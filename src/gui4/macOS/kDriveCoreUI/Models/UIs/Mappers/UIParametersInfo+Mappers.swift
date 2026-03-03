@@ -199,10 +199,10 @@ public extension UIParametersInfo {
         )
     }
 
-    func toParametersInfo() -> ParametersInfo {
+    func copyToParametersInfo(from parametersInfo: ParametersInfo) -> ParametersInfo {
         return ParametersInfo(
             language: language.toKDCLanguage(),
-            monoIcons: true,
+            monoIcons: parametersInfo.monoIcons,
             autoStart: launchOnStartup,
             moveToTrash: moveDeletedFilesToTrash,
             notificationsDisabled: notificationsState.toKDCNotificationsDisabled(),
@@ -211,8 +211,8 @@ public extension UIParametersInfo {
             extendedLog: isExtendedLogEnabled,
             purgeOldLogs: shouldPurgeOldLogs,
             proxyConfigInfo: proxyConfiguration.toProxyConfigInfo(),
-            darkTheme: false,
-            maxAllowedCpu: 0,
+            darkTheme: parametersInfo.darkTheme,
+            maxAllowedCpu: parametersInfo.maxAllowedCpu,
             distributionChannel: distributionChannel.toKDCVersionChannel(),
             sentryEnabled: isSentryEnabled,
             matomoEnabled: isMatomoEnabled

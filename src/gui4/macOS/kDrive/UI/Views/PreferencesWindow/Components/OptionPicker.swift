@@ -40,7 +40,7 @@ struct OptionPicker<Option: PreferenceOption>: View {
     }
 }
 
-@available(macOS 14.0,*)
+@available(macOS 14.0, *)
 #Preview {
     @Previewable @State var selection = UINotificationState.always
     OptionPicker("My Picker", options: UINotificationState.allCases, selection: $selection)

@@ -36,7 +36,8 @@ public final class PreferencesRepository: ObservableObject {
         var updatedParameters = parametersInfo
         updatedParameters[keyPath: keyPath] = value
 
-        let payload = updatedParameters.toParametersInfo()
+        let currentData = try await ParametersJobs().parametersInfo()
+        let payload = updatedParameters.copyToParametersInfo(from: currentData)
         try await ParametersJobs().updateParameters(parametersInfo: payload)
 
         try? await refreshData()
