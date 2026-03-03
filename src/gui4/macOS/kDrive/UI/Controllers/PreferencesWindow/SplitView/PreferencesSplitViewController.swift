@@ -29,6 +29,12 @@ final class PreferencesSplitViewController: IKSplitViewController {
         setupSplitView()
     }
 
+    override func viewWillAppear() {
+        Task {
+            try? await viewModel.fetchData()
+        }
+    }
+
     private func setupSplitView() {
         splitView.autosaveName = "PreferencesSplitViewAutoSave"
         splitView.isVertical = true

@@ -18,28 +18,73 @@
 
 import Combine
 import Foundation
+import kDriveCore
 import kDriveCoreUI
 
 @MainActor
 final class PreferencesViewModel: ObservableObject {
-    @Published var language = UIAppLanguage.english
+    @Published var language = UIAppLanguage.english {
+        didSet { updateParametersInfo() }
+    }
+    @Published var moveDeletedFilesToTrash = true {
+        didSet { updateParametersInfo() }
+    }
+    @Published var notificationsState = UINotificationState.always {
+        didSet { updateParametersInfo() }
+    }
 
-    @Published var launchOnStartup = true
-    @Published var moveDeletedFilesToTrash = true
+    @Published var launchOnStartup = true {
+        didSet { updateLaunchOnStartup(launchOnStartup) }
+    }
 
-    @Published var notificationsState = UINotificationState.always
+    @Published var shouldUseLog = true {
+        didSet { updateParametersInfo() }
+    }
+    @Published var logLever = UILogLevel.info {
+        didSet { updateParametersInfo() }
+    }
+    @Published var isExtendedLogEnabled = false {
+        didSet { updateParametersInfo() }
+    }
+    @Published var shouldPurgeOldLogs = false {
+        didSet { updateParametersInfo() }
+    }
 
-    @Published var shouldUseLog = true
-    @Published var logLever = UILogLevel.info
-    @Published var isExtendedLogEnabled = false
-    @Published var shouldPurgeOldLogs = false
+    @Published var proxyConfiguration = UIProxyConfiguration(type: nil, hostName: "", port: 0, authType: .noAuth) {
+        didSet { updateParametersInfo() }
+    }
 
-    @Published var proxyConfiguration = UIProxyConfiguration(type: nil, hostName: "", port: 0, authType: .noAuth)
+    @Published var distributionChannel = UIDistributionChannel.prod {
+        didSet { updateParametersInfo() }
+    }
 
-    @Published var distributionChannel = UIDistributionChannel.prod
-
-    @Published var isSentryEnabled = true
-    @Published var isMatomoEnabled = true
+    @Published var isSentryEnabled = true {
+        didSet { updateParametersInfo() }
+    }
+    @Published var isMatomoEnabled = true {
+        didSet { updateParametersInfo() }
+    }
 
     init() {}
+
+    func fetchData() async throws {
+        async let launchOnStartup = UtilityJobs().hasSystemLaunchOnStartup()
+        async let parametersInformation = ParametersJobs().parametersInfo()
+
+        self.launchOnStartup = try await launchOnStartup
+    }
+
+    private func updateLaunchOnStartup(_ value: Bool) {
+        Task {
+            do {
+                try await UtilityJobs().setLaunchOnStartup(enabled: value)
+            } catch {
+                launchOnStartup = !value
+            }
+        }
+    }
+
+    private func updateParametersInfo() {
+
+    }
 }
