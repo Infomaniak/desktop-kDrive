@@ -61,7 +61,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private string GetToggleButtonText(bool? isToggled)
         {
-            return isToggled ?? false ? "Selectionné" : "Selectionner";
+            return isToggled ?? false ?  Localizer.Instance.GetString("buttonSelected") : Localizer.Instance.GetString("buttonSelect");
         }
 
         private void RemoteTogglebutton_Checked(object sender, RoutedEventArgs e)

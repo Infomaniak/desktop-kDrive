@@ -7,6 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -40,6 +41,7 @@
                 <TextBlock Grid.Column="1"
                            Text="En ligne"
                            VerticalAlignment="Center" />
+                <!-- TODO: Add translation once bind to the actual side -->
 
                 <!-- "Most recent" badge -->
                 <Border Grid.Column="2"
@@ -48,7 +50,7 @@
                         Padding="4,2"
                         VerticalAlignment="Center"
                         Visibility="{x:Bind ShowMostRecentBadge, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                    <TextBlock Text="Plus récente"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelMostRecent')}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
                 </Border>
@@ -88,7 +90,7 @@
 
                     <TextBlock Grid.Row="0"
                                Grid.Column="0"
-                               Text="Auteur"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelAuthor')}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="0"
                                Grid.Column="1"
@@ -103,7 +105,7 @@
 
                     <TextBlock Grid.Row="2"
                                Grid.Column="0"
-                               Text="Taille"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="2"
                                Grid.Column="1"
@@ -118,7 +120,7 @@
 
                     <TextBlock Grid.Row="4"
                                Grid.Column="0"
-                               Text="Date"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelDate')}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="4"
                                Grid.Column="1"

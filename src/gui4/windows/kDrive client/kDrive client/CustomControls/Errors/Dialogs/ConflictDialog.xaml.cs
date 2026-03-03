@@ -55,15 +55,20 @@ public partial class ConflictDialog : Page
 
     public ConflictDialog(Error error, ContentDialog dialog)
     {
+        _dialog = dialog;
         _errors = new List<Error> { error };
-        _dialog = dialog; 
+        ViewModel = new ConflictDialogVM(_errors);
+
         Init();
         InitializeComponent();
     }
 
     public ConflictDialog(List<Error> errors, ContentDialog dialog)
     {
+        _dialog = dialog;
         _errors = errors;
+        ViewModel = new ConflictDialogVM(_errors);
+
         if (errors.Count < 1)
         {
             Logger.Log(Logger.Level.Error, "ConflictDialog initialized with an empty list of errors.");
@@ -71,14 +76,12 @@ public partial class ConflictDialog : Page
             Utility.ShowUnexpectedErrorTeachingTip();
             return;
         }
-        _dialog = dialog;
         Init();
         InitializeComponent();
     }
 
     private void Init()
     {
-        ViewModel = new ConflictDialogVM(_errors);
         _dialog.IsSecondaryButtonEnabled = false;
         _dialog.SecondaryButtonClick += _dialog_SecondaryButtonClick;
         RefreshPrimaryButtonText();
