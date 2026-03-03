@@ -63,6 +63,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp

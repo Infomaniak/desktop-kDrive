@@ -101,6 +101,13 @@ static const std::string canWriteKey = "can_write";
 static const std::string canShowKey = "can_show";
 static const std::string redirectUriKey = "redirect_uri";
 static const std::string symbolicLinkKey = "symbolic_link";
+static const std::string updatedByKey = "updated_by";
+static const std::string displayNameKey = "display_name";
+static const std::string emailKey = "email";
+static const std::string avatarKey = "avatar";
+static const std::string isStaffKey = "is_staff";
+static const std::string updatedAtKey = "updated_at";
+static const std::string versionsKey = "versions";
 
 static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";

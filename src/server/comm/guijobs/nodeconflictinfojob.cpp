@@ -1,0 +1,183 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "nodeconflictinfojob.h"
+#include "appserver.h"
+#include "server/comm/guijobmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileversionsjob.h"
+#include "libsyncengine/syncpal/syncpal.h"
+#include "libparms/db/parmsdb.h"
+
+#include <Poco/Net/HTTPResponse.h>
+
+// Input parameters keys
+static const auto inParamsSyncDbId = "syncDbId";
+static const auto inParamsRelativePath = "relativePath";
+static const auto inParamsReplicaSide = "replicaSide";
+
+// Output parameters keys
+static const auto outParamsAuthorName = "authorName";
+static const auto outParamsFileSize = "fileSize";
+static const auto outParamsLastModificationDate = "lastModificationDate";
+
+namespace KDC {
+
+NodeConflictInfoJob::NodeConflictInfoJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::NODE_CONFLICT_INFO;
+}
+
+ExitInfo NodeConflictInfoJob::deserializeInputParms() {
+    try {
+        readParamValue(inParamsSyncDbId, _syncDbId);
+
+        std::string relativePathStr;
+        readParamValue(inParamsRelativePath, relativePathStr);
+        _relativePath = SyncPath(relativePathStr);
+
+        readParamValue(inParamsReplicaSide, _replicaSide);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Exception in NodeConflictInfoJob::readParamValue: error=" << e.what());
+        return ExitCode::LogicError;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo NodeConflictInfoJob::serializeOutputParms() {
+    writeParamValue(outParamsAuthorName, _authorName);
+    writeParamValue(outParamsFileSize, _fileSize);
+    writeParamValue(outParamsLastModificationDate, _lastModificationDate);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const NodeId &nodeId) {
+    std::shared_ptr<GetFileVersionsJob> networkJob;
+    try {
+        networkJob = std::make_shared<GetFileVersionsJob>(userDbId, driveId, nodeId);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Error creating GetFileVersionsJob: error=" << e.what());
+        return ExitCode::DataError;
+    }
+
+    if (const auto exitInfo = networkJob->runSynchronously(); !exitInfo) {
+        LOG_WARN(_logger, "Error in GetFileVersionsJob::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
+        return exitInfo;
+    }
+
+    _fileSize = networkJob->size();
+    _lastModificationDate = networkJob->updatedAt();
+    _authorName = networkJob->updatedByName();
+
+    return ExitCode::Ok;
+}
+
+ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int userDbId, int driveId, const NodeId &nodeId) {
+    // Get file size and modification date from filesystem
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(localPath, &fileStat, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat for " << Utility::formatIoError(localPath, ioError));
+        return ExitCode::SystemError;
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"IoError in IoHelper::getFileStat for " << Utility::formatIoError(localPath, ioError));
+        return ExitCode::SystemError;
+    }
+
+    _fileSize = fileStat.size;
+    _lastModificationDate = fileStat.modificationTime;
+
+    User user;
+    bool found = false;
+    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
+        return ExitCode::DbError;
+    } else if (found) {
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    _authorName = user.name();
+    return ExitCode::Ok;
+}
+
+ExitInfo NodeConflictInfoJob::process() {
+    // Look up SyncPal from syncPalMap
+    const auto &syncPalMap = _commManager->appServer().syncPalMap;
+    const auto syncPalMapIt = syncPalMap.find(_syncDbId);
+    if (syncPalMapIt == syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
+        return ExitCode::DataError;
+    }
+
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << _syncDbId);
+        return ExitCode::DataError;
+    }
+
+    const auto &syncPal = syncPalMapIt->second;
+    const int userDbId = syncPal->userDbId();
+    const int driveId = syncPal->driveId();
+    const SyncPath &localRootPath = syncPal->localPath();
+
+    // Resolve the remote nodeId from the relative path using the sync database
+    NodeId remoteNodeId;
+    if (const auto syncDb = syncPal->syncDb(); syncDb) {
+        std::optional<NodeId> nodeIdOpt;
+        bool found = false;
+        if (syncDb->id(ReplicaSide::Remote, _relativePath, nodeIdOpt, found) && found && nodeIdOpt.has_value()) {
+            remoteNodeId = nodeIdOpt.value();
+        }
+    }
+
+    if (_replicaSide == ReplicaSide::Remote) {
+        if (remoteNodeId.empty()) {
+            LOGW_WARN(_logger,
+                      L"Remote nodeId not found for " << Utility::formatSyncPath(_relativePath) << L" in syncDbId=" << _syncDbId);
+            return {ExitCode::DataError, ExitCause::NotFound};
+        }
+
+        if (ExitInfo exitInfo = fetchRemoteInfo(userDbId, driveId, remoteNodeId); !exitInfo) {
+            LOGW_WARN(_logger, L"Error fetching remote info for nodeId=" << CommonUtility::s2ws(remoteNodeId) << L" exitInfo="
+                                                                         << exitInfo);
+            return exitInfo;
+        }
+    } else if (_replicaSide == ReplicaSide::Local) {
+        const SyncPath localFilePath = localRootPath / _relativePath;
+
+        if (ExitInfo exitInfo = fetchLocalInfo(localFilePath, userDbId, driveId, remoteNodeId); !exitInfo) {
+            LOGW_WARN(_logger, L"Error fetching local info for " << Utility::formatSyncPath(localFilePath) << L" exitInfo="
+                                                                        << exitInfo);
+            return exitInfo;
+        }
+    } else {
+        LOG_WARN(_logger, "Invalid ReplicaSide value for syncDbId=" << _syncDbId);
+        return ExitCode::LogicError;
+    }
+
+    return ExitCode::Ok;
+}
+
+} // namespace KDC
