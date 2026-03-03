@@ -40,6 +40,17 @@ public extension UIProxyType {
             return nil
         }
     }
+
+    func toKDCProxyType() -> KDC.ProxyType {
+        switch self {
+        case .system:
+            return .System
+        case .http:
+            return .HTTP
+        case .socks5:
+            return .Socks5
+        }
+    }
 }
 
 public extension UIProxyConfiguration {
@@ -53,6 +64,26 @@ public extension UIProxyConfiguration {
             hostName: proxyConfigInfo.hostName,
             port: Int(proxyConfigInfo.port),
             authType: authType
+        )
+    }
+
+    func toProxyConfigInfo() -> ProxyConfigInfo {
+        var needsAuth = false
+        var user = ""
+        var pwd = ""
+        if case .needsAuth(let authUser, let authPwd) = authType {
+            needsAuth = true
+            user = authUser
+            pwd = authPwd
+        }
+
+        return ProxyConfigInfo(
+            type: type?.toKDCProxyType() ?? .None,
+            hostName: hostName,
+            port: Int32(port),
+            needsAuth: needsAuth,
+            user: user,
+            pwd: pwd
         )
     }
 }

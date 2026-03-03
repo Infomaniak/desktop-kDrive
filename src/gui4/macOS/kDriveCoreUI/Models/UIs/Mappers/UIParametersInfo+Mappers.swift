@@ -41,6 +41,23 @@ public extension UIAppLanguage {
             self = .system
         }
     }
+
+    func toKDCLanguage() -> KDC.Language {
+        switch self {
+        case .system:
+            return .Default
+        case .french:
+            return .French
+        case .english:
+            return .English
+        case .german:
+            return .German
+        case .spanish:
+            return .Spanish
+        case .italian:
+            return .Italian
+        }
+    }
 }
 
 public extension UINotificationState {
@@ -66,6 +83,23 @@ public extension UINotificationState {
             self = .never
         }
     }
+
+    func toKDCNotificationsDisabled() -> KDC.NotificationsDisabled {
+        switch self {
+        case .always:
+            return .Always
+        case .never:
+            return .Never
+        case .forOneHour:
+            return .OneHour
+        case .untilTomorrow:
+            return .UntilTomorrow
+        case .forThreeDays:
+            return .ThreeDays
+        case .forOneWeek:
+            return .OneWeek
+        }
+    }
 }
 
 public extension UILogLevel {
@@ -87,6 +121,21 @@ public extension UILogLevel {
         @unknown default:
             ReportHelper.reportToSentryIfProd(message: "UILogLevel init received @unknown case")
             self = .info
+        }
+    }
+
+    func toKDCLogLevel() -> KDC.LogLevel {
+        switch self {
+        case .info:
+            return .Info
+        case .debug:
+            return .Debug
+        case .warning:
+            return .Warning
+        case .error:
+            return .Error
+        case .fatal:
+            return .Fatal
         }
     }
 }
@@ -115,6 +164,21 @@ public extension UIDistributionChannel {
             self = .prod
         }
     }
+
+    func toKDCVersionChannel() -> KDC.VersionChannel {
+        switch self {
+        case .prod:
+            return .Prod
+        case .next:
+            return .Next
+        case .beta:
+            return .Beta
+        case .internal:
+            return .Internal
+        case .legacy:
+            return .Legacy
+        }
+    }
 }
 
 public extension UIParametersInfo {
@@ -132,6 +196,26 @@ public extension UIParametersInfo {
             distributionChannel: UIDistributionChannel(versionChannel: parametersInfo.distributionChannel),
             isSentryEnabled: parametersInfo.sentryEnabled,
             isMatomoEnabled: parametersInfo.matomoEnabled
+        )
+    }
+
+    func toParametersInfo() -> ParametersInfo {
+        return ParametersInfo(
+            language: language.toKDCLanguage(),
+            monoIcons: true,
+            autoStart: launchOnStartup,
+            moveToTrash: moveDeletedFilesToTrash,
+            notificationsDisabled: notificationsState.toKDCNotificationsDisabled(),
+            useLog: shouldUseLog,
+            logLevel: logLevel.toKDCLogLevel(),
+            extendedLog: isExtendedLogEnabled,
+            purgeOldLogs: shouldPurgeOldLogs,
+            proxyConfigInfo: proxyConfiguration.toProxyConfigInfo(),
+            darkTheme: false,
+            maxAllowedCpu: 0,
+            distributionChannel: distributionChannel.toKDCVersionChannel(),
+            sentryEnabled: isSentryEnabled,
+            matomoEnabled: isMatomoEnabled
         )
     }
 }
