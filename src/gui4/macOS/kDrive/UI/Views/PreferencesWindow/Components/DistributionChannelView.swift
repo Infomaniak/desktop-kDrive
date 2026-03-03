@@ -31,14 +31,17 @@ struct DistributionChannelView: View {
         VStack(alignment: .leading) {
             Text("Rejoindre le programme bêta")
                 .font(.Tokens.headline)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
                 .padding(.bottom, AppPadding.padding4)
-            
+
             Text(
                 "Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations."
             )
-            .foregroundStyle(.secondary)
+            .font(.Tokens.body)
+            .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
             OptionPicker("Rejoindre la bêta", options: BetaOption.allCases, selection: $betaOption)
+                .labelsHidden()
         }
         .onAppear {
             betaOption = BetaOption(repository.parametersInfo.distributionChannel)
