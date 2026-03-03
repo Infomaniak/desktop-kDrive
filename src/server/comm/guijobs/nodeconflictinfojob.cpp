@@ -36,9 +36,7 @@ static const auto inParamsRelativePath = "relativePath";
 static const auto inParamsReplicaSide = "replicaSide";
 
 // Output parameters keys
-static const auto outParamsAuthorName = "authorName";
-static const auto outParamsFileSize = "fileSize";
-static const auto outParamsLastModificationDate = "lastModificationDate";
+static const auto outParamsNodeVersionInfo = "nodeVersionInfo";
 
 namespace KDC {
 
@@ -66,9 +64,7 @@ ExitInfo NodeConflictInfoJob::deserializeInputParms() {
 }
 
 ExitInfo NodeConflictInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsAuthorName, _authorName);
-    writeParamValue(outParamsFileSize, _fileSize);
-    writeParamValue(outParamsLastModificationDate, _lastModificationDate);
+    writeParamValue(outParamsNodeVersionInfo, _nodeVersionInfo, info2DynamicVar<NodeVersionInfo>);
 
     return ExitCode::Ok;
 }
@@ -87,9 +83,9 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
         return exitInfo;
     }
 
-    _fileSize = networkJob->size();
-    _lastModificationDate = networkJob->updatedAt();
-    _authorName = networkJob->updatedByName();
+    _nodeVersionInfo.setAuthorName(networkJob->updatedByName());
+    _nodeVersionInfo.setFileSize(networkJob->size());
+    _nodeVersionInfo.setLastModificationDate(networkJob->updatedAt());
 
     return ExitCode::Ok;
 }
@@ -108,8 +104,8 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int user
         return ExitCode::SystemError;
     }
 
-    _fileSize = fileStat.size;
-    _lastModificationDate = fileStat.modificationTime;
+    _nodeVersionInfo.setFileSize(fileStat.size);
+    _nodeVersionInfo.setLastModificationDate(fileStat.modificationTime);
 
     User user;
     bool found = false;
@@ -119,7 +115,7 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int user
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    _authorName = user.name();
+    _nodeVersionInfo.setAuthorName(user.name());
     return ExitCode::Ok;
 }
 
