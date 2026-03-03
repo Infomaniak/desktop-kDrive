@@ -64,17 +64,12 @@ extension UINotificationState: PreferenceOption {
 }
 
 struct GeneralPreferencesMiscSection: View {
-    @State private var language: UIAppLanguage
-    @State private var notificationsState: UINotificationState
-    @State private var launchOnStartup: Bool
-    @State private var moveDeletedFilesToTrash: Bool
+    @ObservedObject var preferencesRepository: PreferencesRepository
 
-    init() {
-        _language = State(wrappedValue: .english)
-        _notificationsState = State(wrappedValue: .always)
-        _launchOnStartup = State(wrappedValue: true)
-        _moveDeletedFilesToTrash = State(wrappedValue: true)
-    }
+    @State private var language: UIAppLanguage = .english
+    @State private var notificationsState: UINotificationState = .never
+    @State private var launchOnStartup = true
+    @State private var moveDeletedFilesToTrash = true
 
     var body: some View {
         Section {
@@ -83,14 +78,44 @@ struct GeneralPreferencesMiscSection: View {
                 options: UIAppLanguage.allCases,
                 selection: $language
             )
+            .onChange(of: language) { newValue in
+                Task {
+                    guard newValue != preferencesRepository.parametersInfo.language else { return }
+                    do {
+                        try await preferencesRepository.update(\.language, value: newValue)
+                    } catch {
+                        language = preferencesRepository.parametersInfo.language
+                    }
+                }
+            }
 
             OptionPicker(
                 KDriveLocalizable.labelNotifications,
                 options: UINotificationState.allCases,
                 selection: $notificationsState
             )
+            .onChange(of: notificationsState) { newValue in
+                Task {
+                    guard newValue != preferencesRepository.parametersInfo.notificationsState else { return }
+                    do {
+                        try await preferencesRepository.update(\.notificationsState, value: newValue)
+                    } catch {
+                        notificationsState = preferencesRepository.parametersInfo.notificationsState
+                    }
+                }
+            }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
+                .onChange(of: launchOnStartup) { newValue in
+                    Task {
+                        guard newValue != preferencesRepository.parametersInfo.launchOnStartup else { return }
+                        do {
+                            try await preferencesRepository.update(\.launchOnStartup, value: newValue)
+                        } catch {
+                            launchOnStartup = preferencesRepository.parametersInfo.launchOnStartup
+                        }
+                    }
+                }
 
             HStack {
                 VStack(alignment: .leading) {
@@ -104,10 +129,28 @@ struct GeneralPreferencesMiscSection: View {
                 Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: $moveDeletedFilesToTrash)
                     .labelsHidden()
             }
+            .onChange(of: moveDeletedFilesToTrash) { newValue in
+                Task {
+                    guard newValue != preferencesRepository.parametersInfo.moveDeletedFilesToTrash else { return }
+                    do {
+                        try await preferencesRepository.update(\.moveDeletedFilesToTrash, value: newValue)
+                    } catch {
+                        moveDeletedFilesToTrash = preferencesRepository.parametersInfo.moveDeletedFilesToTrash
+                    }
+                }
+            }
+        }
+        .onAppear {
+            let parametersInfo = preferencesRepository.parametersInfo
+
+            language = parametersInfo.language
+            notificationsState = parametersInfo.notificationsState
+            launchOnStartup = parametersInfo.launchOnStartup
+            moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
         }
     }
 }
 
 #Preview {
-    GeneralPreferencesMiscSection()
+    GeneralPreferencesMiscSection(preferencesRepository: PreferencesRepository())
 }

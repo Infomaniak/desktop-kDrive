@@ -77,7 +77,6 @@ struct DistributionChannelView: View {
             }
 
             try? await repository.update(\.distributionChannel, value: newValue)
-            try? await repository.refreshData()
         }
     }
 }
