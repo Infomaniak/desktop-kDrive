@@ -257,7 +257,9 @@
         // Store the pid
         [[_fetchThumbnailMap objectForKey:filePath] addObject:[NSNumber numberWithInt:pid]];
 
-        NSLog(@"[KD] Thumbnail asked by process %@: %@", [NSNumber numberWithInt:pid], filePath);
+        // Stop the process
+        NSLog(@"[KD] Stop process %@ opening thumbnail %@", [NSNumber numberWithInt:pid], filePath);
+        kill(pid, SIGSTOP);
     }
 
     return TRUE;
@@ -335,8 +337,10 @@
             return;
         }
 
+        // Resume the stopped processes
         for (NSNumber *pidNumber in _fetchThumbnailMap[filePath]) {
-            NSLog(@"[KD] Thumbnail asked by %@ is ready: %@", pidNumber, filePath);
+            NSLog(@"[KD] Resume process %@ opening thumbnail %@", pidNumber, filePath);
+            kill([pidNumber intValue], SIGCONT);
         }
 
         // Remove file path from fetch map
@@ -390,4 +394,3 @@
 }
 
 @end
-
