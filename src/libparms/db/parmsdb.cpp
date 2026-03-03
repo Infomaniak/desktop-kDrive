@@ -294,7 +294,7 @@
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
     "userPrivateFolderCursor=?13, userPrivateFolderTimestamp=?14, "                                                      \
     "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp=?16, "                                              \
-    "sharedFolderCursor=?17, sharedFolderTimestamp=?18, "                                                                \
+    "sharedFolderCursor=?17, sharedFolderTimestamp=?18 "                                                                 \
     "WHERE dbId=?19;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
@@ -319,7 +319,7 @@
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
     "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
     "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
-    " FROM sync "                                                                                                             \
+    "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
