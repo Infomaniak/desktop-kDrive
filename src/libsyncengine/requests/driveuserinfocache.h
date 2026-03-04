@@ -34,7 +34,7 @@ struct DriveUserBasicInfo {
         std::string avatarUrl;
 };
 
-class SYNCENGINE_EXPORT DriveUserInfoCache {
+class DriveUserInfoCache {
     public:
         static DriveUserInfoCache &instance();
 
