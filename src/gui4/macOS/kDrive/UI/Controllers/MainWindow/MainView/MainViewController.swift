@@ -21,6 +21,7 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 extension NSToolbarItem.Identifier {
@@ -32,6 +33,7 @@ extension NSToolbarItem.Identifier {
 
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
+    @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
 
     private let viewModel = MainViewModel()
 
@@ -61,7 +63,10 @@ final class MainViewController: IKSplitViewController {
                 self?.onModalPathChange(newPath)
             }
 
-        bindToolbarToViewModel()
+        synchroStateObserver.synchroStatePublisher
+            .receiveOnMain(store: &bindStore) { [weak self] synchroState in
+                self?.refreshPauseResumeToolbarItem(synchroState)
+            }
     }
 
     private func configureWindowAppearance() {
@@ -193,7 +198,7 @@ extension MainViewController {
         let pauseResumeButton = NSToolbarItem(itemIdentifier: .pauseResumeButton)
         pauseResumeButton.target = self
         pauseResumeButton.action = #selector(togglePauseResume)
-        updatePauseResumeButton(pauseResumeButton)
+        updatePauseResumeButton(pauseResumeButton, state: synchroStateObserver.synchroState)
 
         let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
         settingsButton.image = KDriveResources.cog.image
@@ -221,7 +226,7 @@ extension MainViewController {
     // MARK: - Toolbar Actions
 
     @objc private func openHelpURL() {
-        NSWorkspace.shared.open(URLConstants.helpURL)
+        NSWorkspace.shared.open(URLConstants.help)
     }
 
     @objc private func togglePauseResume() {
@@ -230,10 +235,10 @@ extension MainViewController {
 
         Task {
             do {
-                let status = synchro.progressInfo?.status
-                if status == .running || status == .starting {
+                switch synchroStateObserver.synchroState.status {
+                case .starting, .running, .idle:
                     try await SyncJobs().stopSync(syncDbId: syncDbId)
-                } else {
+                case .pauseAsked, .paused, .stopAsked, .stopped, .error:
                     try await SyncJobs().startSync(syncDbId: syncDbId)
                 }
             } catch {
@@ -244,39 +249,33 @@ extension MainViewController {
 
     // MARK: - Toolbar State Updates
 
-    private func bindToolbarToViewModel() {
-        viewModel.$currentSynchroContext
-            .receiveOnMain(store: &bindStore) { [weak self] _ in
-                self?.refreshPauseResumeToolbarItem()
-            }
-    }
-
-    private func refreshPauseResumeToolbarItem() {
+    private func refreshPauseResumeToolbarItem(_ state: UISynchroState) {
         guard let toolbar = view.window?.toolbar else { return }
+
         for item in toolbar.items {
             if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup {
                 if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier == .pauseResumeButton }) {
-                    updatePauseResumeButton(pauseResumeItem)
+                    updatePauseResumeButton(pauseResumeItem, state: state)
                 }
             }
         }
     }
 
-    private func updatePauseResumeButton(_ item: NSToolbarItem) {
-        guard let synchro = viewModel.currentSynchro else {
+    private func updatePauseResumeButton(_ item: NSToolbarItem, state: UISynchroState) {
+        let hasBlockingError = viewModel.currentBlockingError != nil
+
+        guard !hasBlockingError else {
             setPauseResumeAppearance(item, showPause: true, enabled: false)
             return
         }
 
-        let status = synchro.progressInfo?.status
-        let hasBlockingError = viewModel.currentBlockingError != nil
-
-        if hasBlockingError {
-            setPauseResumeAppearance(item, showPause: true, enabled: false)
-        } else if status == .running || status == .starting {
+        switch state.status {
+        case .starting, .running, .idle:
             setPauseResumeAppearance(item, showPause: true, enabled: true)
-        } else {
+        case .pauseAsked, .paused, .stopAsked, .stopped:
             setPauseResumeAppearance(item, showPause: false, enabled: true)
+        case .error:
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
         }
     }
 
