@@ -37,7 +37,7 @@
             </Border>
         </Grid>
         <!-- File name badge -->
-        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path}"
+        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path, Mode=OneWay}"
                                     NodeType="{x:Bind ViewModel.CurrentError.NodeType}" />
 
         <!-- Question -->
@@ -56,13 +56,15 @@
                                                Grid.Column="0"
                                                ShowMostRecentBadge="False"
                                                Selected="RemoteVersionPresenter_Selected"
-                                               Unselected="RemoteVersionPresenter_Unselected" />
+                                               Unselected="RemoteVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.RemoteVersionInfo, Mode=OneWay}" />
 
             <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
                                                Grid.Column="1"
                                                ShowMostRecentBadge="True"
                                                Selected="LocalVersionPresenter_Selected"
-                                               Unselected="LocalVersionPresenter_Unselected" />
+                                               Unselected="LocalVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.LocalVersionInfo, Mode=OneWay}" />
 
         </Grid>
     </StackPanel>

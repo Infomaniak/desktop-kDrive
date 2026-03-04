@@ -97,5 +97,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Percentage = "percentage";
 
         static public string IncludeArchivedLogs = "includeArchivedLogs";
+
+        static public string RelativePath = "relativePath";
+        static public string ReplicaSide = "replicaSide";
+        static public string NodeVersionInfo = "nodeVersionInfo";
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -88,6 +89,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
+
+        Task<NodeConflictInfo?> GetNodeConflictInfo(DbId syncDbId, string relativePath, ReplicaSide replicaSide, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task<bool> RefreshSettings(CancellationToken cancellationToken);

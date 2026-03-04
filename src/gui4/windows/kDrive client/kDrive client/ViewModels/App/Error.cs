@@ -16,8 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -113,6 +119,14 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _autoResolved;
             set => SetPropertyInUIThread(ref _autoResolved, value);
+        }
+
+        public async Task<NodeConflictInfo?> GetConflictNodeVersionInfo(ReplicaSide side, CancellationToken cancellationToken)
+        {
+            if (Sync is null) return null;
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            var path = side == ReplicaSide.Local ? DestinationPath : Path;
+            return await commService.GetNodeConflictInfo(Sync.DbId, path, side, cancellationToken);
         }
     }
 }

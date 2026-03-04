@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,8 +9,6 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class ConflictVersionPresenter : UserControl
     {
-        private int _currentPlayCount = 0;
-
         public ConflictVersionPresenter()
         {
             this.InitializeComponent();
@@ -21,7 +20,11 @@ namespace Infomaniak.kDrive.CustomControls
             get => (ReplicaSide)GetValue(FileSideProperty);
             set => SetValue(FileSideProperty, value);
         }
-
+        public NodeConflictInfo? NodeInfo
+        {
+            get => (NodeConflictInfo?)GetValue(NodeInfoProperty);
+            set => SetValue(NodeInfoProperty, value);
+        }
         public bool IsSelected
         {
             get => (bool)GetValue(IsSelectedProperty);
@@ -55,10 +58,17 @@ namespace Infomaniak.kDrive.CustomControls
             typeof(ConflictVersionPresenter),
             new PropertyMetadata(false));
 
+        public static readonly DependencyProperty NodeInfoProperty =
+            DependencyProperty.Register(
+            nameof(NodeInfo),
+            typeof(NodeConflictInfo),
+            typeof(ConflictVersionPresenter),
+            new PropertyMetadata(null));
+
 
         // Events
-        public event EventHandler Selected;
-        public event EventHandler Unselected;
+        public event EventHandler Selected = delegate { };
+        public event EventHandler Unselected = delegate { };
 
         private void RemoteTogglebutton_Checked(object sender, RoutedEventArgs e)
         {

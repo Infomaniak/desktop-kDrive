@@ -11,6 +11,8 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
     </UserControl.Resources>
 
     <Border BorderBrush="{x:Bind GetBorderBrush(IsSelected), Mode=OneWay}"
@@ -93,7 +95,7 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="0"
                                Grid.Column="1"
-                               Text="Jeanne Ultou"
+                               Text="{x:Bind NodeInfo.AuthorName, Mode=OneWay}"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Right" />
 
@@ -108,7 +110,7 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="2"
                                Grid.Column="1"
-                               Text="7 MB"
+                               Text="{x:Bind NodeInfo.FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Right" />
 
@@ -123,7 +125,7 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Row="4"
                                Grid.Column="1"
-                               Text="22.05.2025  16:32"
+                               Text="{x:Bind NodeInfo.LastModificationDate, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Right" />
 
