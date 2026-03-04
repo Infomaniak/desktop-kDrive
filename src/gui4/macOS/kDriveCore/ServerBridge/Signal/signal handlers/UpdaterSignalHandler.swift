@@ -43,6 +43,6 @@ struct UpdaterSignalHandler {
 
         IKLogger.xpc.log("[KD] Updater state changed: \(updateState)")
 
-        // TODO: Show updater UI via AppRouter state change
+        // TODO: Make the updater view refresh itself with a UpdaterJobs().updaterState()
     }
 }
