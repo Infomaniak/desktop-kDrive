@@ -115,6 +115,15 @@ namespace KDC {
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
 
+std::function<ExitInfo(User &user, bool &updated)> AppServer::_loadUserInfo =
+        static_cast<ExitInfo (*)(User &user, bool &updated)>(&ServerRequests::loadUserInfo);
+std::function<ExitInfo(Account &account, bool &updated)> AppServer::_loadAccountInfo =
+        static_cast<ExitInfo (*)(Account &account, bool &updated)>(&ServerRequests::loadAccountInfo);
+std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated, bool &quotaUpdated)>
+        AppServer::_loadDriveInfo =
+                static_cast<ExitInfo (*)(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                         bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
+
 namespace {
 
 static const char optionsC[] =
@@ -2825,7 +2834,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
 ExitInfo AppServer::updateUser(User &user) {
     bool updated = false;
-    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
+    if (const auto exitInfo = _loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
@@ -2858,7 +2867,7 @@ ExitInfo AppServer::updateUser(User &user) {
 ExitInfo AppServer::createAccount(Account &newAccount) {
     // Make sure all information are up to date
     bool accountUpdated = false;
-    if (const auto exitInfo = ServerRequests::loadAccountInfo(newAccount, accountUpdated); !exitInfo) {
+    if (const auto exitInfo = _loadAccountInfo(newAccount, accountUpdated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
         return exitInfo;
     }
@@ -2894,7 +2903,7 @@ ExitInfo AppServer::createAccount(Account &newAccount) {
 
 ExitInfo AppServer::updateAccount(Account &account) {
     bool accountUpdated = false;
-    if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
+    if (const auto exitInfo = _loadAccountInfo(account, accountUpdated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
         return exitInfo;
     }

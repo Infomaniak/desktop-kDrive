@@ -227,6 +227,13 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
         }
 
+    protected:
+        static std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo;
+        static std::function<ExitInfo(Account &account, bool &updated)> _loadAccountInfo;
+        static std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                      bool &quotaUpdated)>
+                _loadDriveInfo;
+
     private:
         AuthorizationCodeEventFilter _eventFilter;
 
