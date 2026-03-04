@@ -196,7 +196,12 @@ void TestAppServer::testCleanup() {
     CPPUNIT_ASSERT(true);
 }
 
-ExitInfo mockLoadUserInfo(User &user, bool &updated) {
+/**
+ * Test:
+ * - "driveA" has been moved from "accountA" to "accountB"
+ */
+
+ExitInfo mockLoadUserInfo([[maybe_unused]] User &user, bool &updated) {
     updated = false;
     return ExitCode::Ok;
 }
@@ -227,11 +232,6 @@ void TestAppServer::testUpdateUserInfo() {
     _appPtr->setLoadAccountInfoFunction(mockLoadAccountInfo);
     _appPtr->setLoadDriveInfoFunction(mockLoadDriveInfo);
 
-    /**
-     * Test:
-     * - "driveA" has been moved from "accountA" to "accountB"
-     * - "userA" is in both "accountA" and "accountB"
-     */
     // Insert user, account, drive & sync
     User userA(11, 111, "dummy", "userA", "userA@mail.com");
     (void) ParmsDb::instance()->insertUser(userA);
@@ -245,7 +245,7 @@ void TestAppServer::testUpdateUserInfo() {
     _appPtr->updateUserInfo(userA);
 
     std::vector<Account> accounts;
-    ParmsDb::instance()->selectAllAccounts(accounts);
+    (void) ParmsDb::instance()->selectAllAccounts(accounts);
     bool foundAccountA = false;
     bool foundAccountB = false;
     uint64_t accountDbIdB = 0;
@@ -261,7 +261,7 @@ void TestAppServer::testUpdateUserInfo() {
 
     Drive drive;
     bool found = false;
-    ParmsDb::instance()->selectDrive(driveA.dbId(), drive, found);
+    (void) ParmsDb::instance()->selectDrive(driveA.dbId(), drive, found);
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT(drive.accountDbId() != 11);
     CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));

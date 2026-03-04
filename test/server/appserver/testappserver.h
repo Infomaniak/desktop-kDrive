@@ -33,20 +33,21 @@ class MockAppServer : public AppServer {
 
         void setParmsDbPath(const std::filesystem::path &path) { _parmsDbPath = path; }
 
-        void setLoadUserInfoFunction(std::function<ExitInfo(User &user, bool &updated)> f) { _loadUserInfo = f; };
-        void setLoadAccountInfoFunction(std::function<ExitInfo(Account &account, bool &updated)> f) { _loadAccountInfo = f; };
-        void setLoadDriveInfoFunction(std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId,
-                                                             uint64_t &newAccountId, bool &updated, bool &quotaUpdated)>
-                                              f) {
+        void setLoadUserInfoFunction(const std::function<ExitInfo(User &user, bool &updated)> &f) { _loadUserInfo = f; };
+        void setLoadAccountInfoFunction(const std::function<ExitInfo(Account &account, bool &updated)> &f) {
+            _loadAccountInfo = f;
+        };
+        void setLoadDriveInfoFunction(
+                const std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId,
+                                             bool &updated, bool &quotaUpdated)> &f) {
             _loadDriveInfo = f;
         };
 
     private:
-        // Do not try to notify the client
-        void sendUserUpdated(const UserInfo &) const override {};
-        void sendAccountAdded(const AccountInfo &) const override {};
-        void sendAccountUpdated(const AccountInfo &) const override {};
-        void sendDriveUpdated(const DriveInfo &) const override {};
+        void sendUserUpdated(const UserInfo &) const override { /* Do not try to notify the client */ };
+        void sendAccountAdded(const AccountInfo &) const override { /* Do not try to notify the client */ };
+        void sendAccountUpdated(const AccountInfo &) const override { /* Do not try to notify the client */ };
+        void sendDriveUpdated(const DriveInfo &) const override { /* Do not try to notify the client */ };
 
         std::filesystem::path _parmsDbPath;
 };
