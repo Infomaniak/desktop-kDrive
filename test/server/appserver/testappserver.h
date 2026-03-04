@@ -53,10 +53,10 @@ class MockAppServer : public AppServer {
 
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
-        // CPPUNIT_TEST(testInitAndStopSyncPal);
-        // CPPUNIT_TEST(testStartAndStopSync);
+        CPPUNIT_TEST(testInitAndStopSyncPal);
+        CPPUNIT_TEST(testStartAndStopSync);
         CPPUNIT_TEST(testUpdateUserInfo);
-        // CPPUNIT_TEST(testCleanup); // Must be the last test
+        CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
     public:

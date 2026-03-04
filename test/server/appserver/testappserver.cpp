@@ -18,6 +18,7 @@
 
 #include "testappserver.h"
 
+#include "comm/guijobmanager.h"
 #include "utility/types.h"
 #include "requests/parameterscache.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -196,15 +197,28 @@ void TestAppServer::testCleanup() {
 }
 
 ExitInfo mockLoadUserInfo(User &user, bool &updated) {
+    updated = false;
     return ExitCode::Ok;
 }
 
+const std::string accountNameA = "accountA";
+const std::string accountNameB = "accountB";
+const uint64_t accountIdA = 111;
+const uint64_t accountIdB = 222;
 ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
+    const auto accountName = account.dbId() == 11 ? accountNameA : accountNameB;
+    updated = account.name() == accountName;
+    account.setName(accountName);
     return ExitCode::Ok;
 }
 
 ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
                            bool &quotaUpdated) {
+    if (drive.dbId() == 11 && previousAccountId == accountIdA) {
+        newAccountId = accountIdB;
+        updated = true;
+    }
+    quotaUpdated = false;
     return ExitCode::Ok;
 }
 
@@ -219,20 +233,38 @@ void TestAppServer::testUpdateUserInfo() {
      * - "userA" is in both "accountA" and "accountB"
      */
     // Insert user, account, drive & sync
-    User userA(1, 11, "dummy");
+    User userA(11, 111, "dummy", "userA", "userA@mail.com");
     (void) ParmsDb::instance()->insertUser(userA);
 
-    Account accountA(1, 111, userA.dbId(), "accountA");
+    Account accountA(11, accountIdA, userA.dbId(), accountNameA);
     (void) ParmsDb::instance()->insertAccount(accountA);
-    Account accountB(1, 222, userA.dbId(), "accountB");
-    (void) ParmsDb::instance()->insertAccount(accountB);
 
-    Drive driveA(1, 1111, accountA.dbId(), "driveA", 123, "#FF0000");
+    Drive driveA(11, 111, accountA.dbId(), "driveA", 123, "#FF0000");
     (void) ParmsDb::instance()->insertDrive(driveA);
-    // const Drive driveB(1, 1111, accountB.dbId(), "driveB", 123, "#FF0000");
-    // (void) ParmsDb::instance()->insertDrive(driveB);
 
     _appPtr->updateUserInfo(userA);
+
+    std::vector<Account> accounts;
+    ParmsDb::instance()->selectAllAccounts(accounts);
+    bool foundAccountA = false;
+    bool foundAccountB = false;
+    uint64_t accountDbIdB = 0;
+    for (const auto &account: accounts) {
+        if (account.accountId() == accountIdA) foundAccountA = true;
+        if (account.accountId() == accountIdB) {
+            foundAccountB = true;
+            accountDbIdB = static_cast<uint64_t>(account.dbId());
+        }
+    }
+    CPPUNIT_ASSERT(!foundAccountA);
+    CPPUNIT_ASSERT(foundAccountB);
+
+    Drive drive;
+    bool found = false;
+    ParmsDb::instance()->selectDrive(driveA.dbId(), drive, found);
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(drive.accountDbId() != 11);
+    CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

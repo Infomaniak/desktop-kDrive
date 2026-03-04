@@ -2883,21 +2883,6 @@ ExitInfo AppServer::createAccount(Account &newAccount) {
         return ExitCode::DbError;
     }
 
-    // Retrieve account DB ID
-    std::vector<Account> accountList;
-    if (!ParmsDb::instance()->selectAllAccounts(newAccount.userDbId(), accountList)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
-        return ExitCode::DbError;
-    }
-    for (const auto &account: accountList) {
-        if (account.accountId() == newAccount.accountId()) {
-            newAccount.setDbId(account.dbId());
-            break;
-        }
-    }
-
-    assert(newAccount.dbId()); // At this point, newAccount should have a valid DB ID
-
     return ExitCode::Ok;
 }
 
@@ -2930,8 +2915,8 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
     bool driveUpdated = false;
     bool quotaUpdated = false;
     uint64_t newAccountId = 0;
-    if (const auto exitInfo = ServerRequests::loadDriveInfo(drive, static_cast<uint64_t>(account.accountId()), newAccountId,
-                                                            driveUpdated, quotaUpdated);
+    if (const auto exitInfo =
+                _loadDriveInfo(drive, static_cast<uint64_t>(account.accountId()), newAccountId, driveUpdated, quotaUpdated);
         !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
         return exitInfo;
@@ -3006,6 +2991,14 @@ ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Acc
 
     if (!accountIdAlreadyExists) {
         // The account does not exist yet for this user, create it
+        int accountDbId = 0;
+        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
+            return ExitCode::DbError;
+        }
+        newAccount.setDbId(accountDbId);
+        newAccount.setAccountId(static_cast<int>(newAccountId));
+        newAccount.setUserDbId(user.dbId());
         if (const auto exitInfo = createAccount(newAccount); !exitInfo) return exitInfo;
     }
 
