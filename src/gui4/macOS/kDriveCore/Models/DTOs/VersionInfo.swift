@@ -16,20 +16,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+public struct VersionInfo: Codable, Sendable {
+    public init(channel: KDC.VersionChannel, tag: String, buildVersion: UInt64, buildMinOsVersion: String, downloadUrl: String) {
+        self.channel = channel
+        self.tag = tag
+        self.buildVersion = buildVersion
+        self.buildMinOsVersion = buildMinOsVersion
+        self.downloadUrl = downloadUrl
+    }
 
-struct VersionInfoResponse: Codable, Sendable {
-    let channel: KDC.VersionChannel
-    @Base64CodedString var tag: String
-    let buildVersion: UInt64
-    @Base64CodedString var buildMinOsVersion: String
-    @Base64CodedString var downloadUrl: String
-}
-
-struct UpdaterVersionInfoResponse: Codable, Sendable {
-    let versionInfo: VersionInfoResponse
-}
-
-struct UpdaterStateResponse: Codable, Sendable {
-    let updateState: KDC.UpdateState
+    public let channel: KDC.VersionChannel
+    public let tag: String
+    public let buildVersion: UInt64
+    public let buildMinOsVersion: String
+    public let downloadUrl: String
 }
