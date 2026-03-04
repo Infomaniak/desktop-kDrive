@@ -2978,7 +2978,6 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
         DriveInfo driveInfo;
         ServerRequests::driveToDriveInfo(drive, driveInfo);
         sendDriveUpdated(driveInfo);
-        if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
     }
     return ExitCode::Ok;
 }
