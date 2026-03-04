@@ -27,6 +27,7 @@
 #include "comm/guijobs/nodesubfolders2job.h"
 #include "comm/guijobs/nodefoldersizejob.h"
 #include "comm/guijobs/nodecreatemissingfoldersjob.h"
+#include "comm/guijobs/nodeconflictinfojob.h"
 
 namespace KDC {
 using namespace testcommhelpers;
@@ -488,6 +489,60 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
         nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testNodeConflictInfoJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::NODE_CONFLICT_INFO));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 42);
+    (void) queryParamsObj.set("relativePath", toBase64(Str("Documents/report.txt")));
+    (void) queryParamsObj.set("replicaSide", toInt(ReplicaSide::Remote));
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object nodeConflictInfoObj;
+    (void) nodeConflictInfoObj.set("authorName", toBase64(Str("JohnDoe")));
+    (void) nodeConflictInfoObj.set("fileSize", 512000);
+    (void) nodeConflictInfoObj.set("lastModificationDate", 1700000000);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("nodeVersionInfo", nodeConflictInfoObj);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_CONFLICT_INFO));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answer
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto nodeConflictInfoJob = std::dynamic_pointer_cast<NodeConflictInfoJob>(job);
+        CPPUNIT_ASSERT(nodeConflictInfoJob);
+        CPPUNIT_ASSERT_EQUAL(42, nodeConflictInfoJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(SyncPath("Documents/report.txt"), nodeConflictInfoJob->_relativePath);
+        CPPUNIT_ASSERT(nodeConflictInfoJob->_replicaSide == ReplicaSide::Remote);
+
+        nodeConflictInfoJob->_nodeConflictInfo = NodeConflictInfo("JohnDoe", 512000, 1700000000);
+    };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
