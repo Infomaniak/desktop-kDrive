@@ -20,6 +20,7 @@
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 
 namespace KDC {
+const RemoteNodeId ApiTranslator::v2RootFolderRemoteId = RemoteNodeId{"1"};
 
 std::mutex ApiTranslator::_mutex;
 
@@ -135,7 +136,7 @@ RemoteNodeId ApiTranslator::getSharedRemoteId(DriveDbId driveDbId) {
 }
 
 void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId) {
-    if (remoteDirectoryId != "1") return;
+    if (remoteDirectoryId != v2RootFolderRemoteId) return;
 
     remoteDirectoryId = getUserPrivateFolderRemoteId(driveDbId);
 }
@@ -149,12 +150,10 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNodeId) {
     if (remoteNodeId != getUserPrivateFolderRemoteId(driveDbId)) return;
 
-    remoteNodeId = NodeId{"1"};
+    remoteNodeId = v2RootFolderRemoteId;
 }
 
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeInfoList &v3NodeInfoList) {
-    static const RemoteNodeId v2RootFolderRemoteId{"1"};
-
     const RemoteNodeId privateFolderId = getUserPrivateFolderRemoteId(driveDbId);
     std::erase_if(v3NodeInfoList,
                   [&privateFolderId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId().toStdString() == privateFolderId; });

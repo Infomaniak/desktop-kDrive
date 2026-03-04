@@ -260,6 +260,43 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
     return exitInfo;
 }
 
+ExitInfo RemoteFileSystemObserverWorker::updateV2MainFolderItem(const RemoteNodeId &remoteNodeId) {
+    SyncName folderName;
+    if (const auto exitInfo = getV2RemoteFolderName(remoteNodeId, folderName); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getV2RemoteFolderName: " << exitInfo);
+        return exitInfo;
+    }
+
+    DbNode dbNode;
+    bool found = false;
+    if (!_syncDb->node(ReplicaSide::Remote, remoteNodeId, dbNode, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
+        return ExitCode::DbError;
+    }
+
+    SnapshotItem remoteSnapshotItem(remoteNodeId);
+    const SyncTime now = std::chrono::steady_clock::now().time_since_epoch().count();
+    remoteSnapshotItem.setType(NodeType::Directory);
+    remoteSnapshotItem.setName(folderName);
+    remoteSnapshotItem.setCreatedAt(now);
+    remoteSnapshotItem.setLastModified(now);
+    remoteSnapshotItem.setParentId(_driveDbId, ApiTranslator::v2RootFolderRemoteId);
+    if (found) {
+        assert(dbNode.type() == NodeType::Directory && "Invalid node type.");
+        remoteSnapshotItem.setCreatedAt(dbNode.created().value_or(now));
+        remoteSnapshotItem.setLastModified(dbNode.lastModified(ReplicaSide::Remote));
+    }
+
+    if (!_liveSnapshot.updateItem(remoteSnapshotItem)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncName(remoteSnapshotItem.name()) << L" ("
+                                                              << CommonUtility::s2ws(remoteSnapshotItem.id()) << L")");
+        tryToInvalidateSnapshot();
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
@@ -267,6 +304,8 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     ExitInfo exitInfo;
     for (const auto &mainFolderRemoteId: mainFolderIds) {
         if (_blackList.contains(mainFolderRemoteId)) continue;
+
+        updateV2MainFolderItem(mainFolderRemoteId);
 
         constexpr bool saveCursor = true;
         exitInfo = getItemsInDir(mainFolderRemoteId, saveCursor);
@@ -933,6 +972,22 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteD
 
     if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
         return _syncPal->setSharedFolderCursor(cursor, timeStamp);
+    }
+
+    return {ExitCode::LogicError, ExitCause::InvalidArgument};
+}
+
+ExitInfo RemoteFileSystemObserverWorker::getV2RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
+    folderName = "";
+
+    if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
+        folderName = "Common Documents";
+        return ExitCode::Ok;
+    }
+
+    if (remoteDirId == ApiTranslator::getSharedRemoteId(_driveDbId)) {
+        folderName = "Shared";
+        return ExitCode::Ok;
     }
 
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
