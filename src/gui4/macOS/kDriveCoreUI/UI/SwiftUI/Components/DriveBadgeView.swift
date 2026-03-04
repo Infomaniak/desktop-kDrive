@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,14 +16,35 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveResources
 import SwiftUI
 
 struct DriveBadgeView: View {
+    let color: Color
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        if #available(macOS 26.0, *) {
+            icon
+                .padding(AppPadding.padding4)
+                .glassEffect(.regular.tint(color), in: .rect(cornerRadius: AppRadius.radius4))
+        } else {
+            RoundedRectangle(cornerRadius: AppRadius.radius4)
+                .fill(color)
+                .frame(width: 20, height: 20)
+                .overlay { icon }
+        }
+    }
+
+    private var icon: some View {
+        KDriveResources.kdriveFoldersStacked.swiftUIImage
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(.white)
+            .frame(width: 12, height: 12)
     }
 }
 
 #Preview {
-    DriveBadgeView()
+    DriveBadgeView(color: .yellow)
+        .padding()
 }
