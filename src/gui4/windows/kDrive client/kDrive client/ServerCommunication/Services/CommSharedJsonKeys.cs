@@ -100,6 +100,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string RelativePath = "relativePath";
         static public string ReplicaSide = "replicaSide";
-        static public string NodeVersionInfo = "nodeVersionInfo";
+        static public string NodeConflictInfo = "nodeConflictInfo";
     }
 }

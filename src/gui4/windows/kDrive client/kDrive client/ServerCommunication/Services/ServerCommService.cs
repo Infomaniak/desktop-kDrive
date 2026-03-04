@@ -922,7 +922,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
-            if (!HasRequiredParam(data, JsonKeys.NodeVersionInfo))
+            if (!HasRequiredParam(data, JsonKeys.NodeConflictInfo))
                 return null;
 
             var options = new JsonSerializerOptions
@@ -932,10 +932,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
 
-            NodeConflictInfo? nodeVersionInfo = data.Params[JsonKeys.NodeVersionInfo].Deserialize<NodeConflictInfo>(options);
+            NodeConflictInfo? nodeVersionInfo = data.Params[JsonKeys.NodeConflictInfo].Deserialize<NodeConflictInfo>(options);
             if (nodeVersionInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeVersionInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeConflictInfo]}.");
                 return null;
             }
 

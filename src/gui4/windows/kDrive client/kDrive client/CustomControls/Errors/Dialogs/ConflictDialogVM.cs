@@ -15,7 +15,8 @@ public class ConflictDialogVM : UISafeObservableObject
 
     private NodeConflictInfo? _localNodeVersionInfo;
     private NodeConflictInfo? _remoteNodeVersionInfo;
-
+    private bool _localIsMostRecent;
+    private bool _remoteIsMostRecent;
     private CancellationTokenSource? cts;
 
     public Error? CurrentError
@@ -25,6 +26,8 @@ public class ConflictDialogVM : UISafeObservableObject
         {
             SetPropertyInUIThread(ref _currentError, value);
             OnPropertyChangedInUIThread(nameof(CurrentErrorIndex));
+            OnPropertyChangedInUIThread(nameof(LocalVersionAbsolutePath));
+            OnPropertyChangedInUIThread(nameof(RemoteVersionAbsolutePath));
             LoadVersionInfos();
         }
     }
@@ -40,6 +43,19 @@ public class ConflictDialogVM : UISafeObservableObject
         get => _remoteNodeVersionInfo;
         set => SetPropertyInUIThread(ref _remoteNodeVersionInfo, value);
     }
+    public bool LocalIsMostRecent
+    {
+        get => _localIsMostRecent;
+        set => SetPropertyInUIThread(ref _localIsMostRecent, value);
+    }
+    public bool RemoteIsMostRecent
+    {
+        get => _remoteIsMostRecent;
+        set => SetPropertyInUIThread(ref _remoteIsMostRecent, value);
+    }
+
+    public string LocalVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.DestinationPath);
+    public string RemoteVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.Path);
 
     public bool MultipleConflicts => _errors.Count > 1;
 
@@ -75,6 +91,7 @@ public class ConflictDialogVM : UISafeObservableObject
 
         LocalVersionInfo = null;
         RemoteVersionInfo = null;
+        RefreshMostRecentFlags();
         if (cts is not null)
         {
             cts.Cancel();
@@ -87,7 +104,8 @@ public class ConflictDialogVM : UISafeObservableObject
             if (cts.Token.IsCancellationRequested) return;
             if (t.IsCompletedSuccessfully)
             {
-                LocalVersionInfo = t.Result;
+                LocalVersionInfo = t.Result; 
+                RefreshMostRecentFlags();
             }
             else
             {
@@ -101,11 +119,39 @@ public class ConflictDialogVM : UISafeObservableObject
             if (t.IsCompletedSuccessfully)
             {
                 RemoteVersionInfo = t.Result;
+                RefreshMostRecentFlags();
             }
             else
             {
                 Logger.Log(Logger.Level.Error, $"Failed to get remote node version info for error at path {CurrentError?.Path}: {t.Exception}");
             }
         });
+    }
+
+    private void RefreshMostRecentFlags()
+    {
+        if (LocalVersionInfo is null || RemoteVersionInfo is null)
+        {
+            LocalIsMostRecent = false;
+            RemoteIsMostRecent = false;
+            return;
+        }
+
+        if (LocalVersionInfo.LastModificationDate > RemoteVersionInfo.LastModificationDate)
+        {
+            LocalIsMostRecent = true;
+            RemoteIsMostRecent = false;
+        }
+        else if (RemoteVersionInfo.LastModificationDate > LocalVersionInfo.LastModificationDate)
+        {
+            LocalIsMostRecent = false;
+            RemoteIsMostRecent = true;
+        }
+        else
+        {
+            // In the unlikely case where both versions have the exact same last modification date, we consider neither to be more recent than the other
+            LocalIsMostRecent = false;
+            RemoteIsMostRecent = false;
+        }
     }
 }

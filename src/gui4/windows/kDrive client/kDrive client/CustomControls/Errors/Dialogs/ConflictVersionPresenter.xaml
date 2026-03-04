@@ -12,7 +12,8 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </UserControl.Resources>
 
     <Border BorderBrush="{x:Bind GetBorderBrush(IsSelected), Mode=OneWay}"
@@ -37,12 +38,26 @@
                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                   Width="14"
                                   Height="14"
-                                  VerticalAlignment="Center" />
+                                  VerticalAlignment="Center"
+                                  Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
                 <TextBlock Grid.Column="1"
-                           Text="En ligne"
-                           VerticalAlignment="Center" />
-                <!-- TODO: Add translation once bind to the actual side -->
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelOnline')}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <controls:SvgIcon Grid.Column="0"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Devices.computer}"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Width="14"
+                                  Height="14"
+                                  VerticalAlignment="Center"
+                                  Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
+
+                <TextBlock Grid.Column="1"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelLocal')}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
 
                 <!-- "Most recent" badge -->
                 <Border Grid.Column="2"
@@ -57,17 +72,28 @@
                 </Border>
 
                 <!-- View button -->
-                <Button Grid.Column="4"
+                <Button x:Name="ViewButton"
+                        Grid.Column="4"
                         Style="{ThemeResource SubtleButtonStyle}"
                         Padding="4"
                         MinWidth="0"
-                        VerticalAlignment="Center">
-                    <controls:SvgIcon Grid.Column="0"
-                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.eye}"
-                                      Width="16"
-                                      Height="16"
+                        VerticalAlignment="Center"
+                        Click="ViewButton_Click">
+                    <StackPanel>
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.eye}"
+                                          Width="16"
+                                          Height="16"
+                                          VerticalAlignment="Center"
+                                          Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                          Visibility="{x:Bind ViewButton.IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                        <ProgressRing Height="12"
+                                      Width="12"
+                                      IsActive="True"
                                       VerticalAlignment="Center"
-                                      Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                                      Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                      Visibility="{x:Bind ViewButton.IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
+
+                    </StackPanel>
                 </Button>
             </Grid>
 
@@ -92,12 +118,21 @@
                     <TextBlock Grid.Row="0"
                                Grid.Column="0"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('labelAuthor')}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Row="0"
-                               Grid.Column="1"
-                               Text="{x:Bind NodeInfo.AuthorName, Mode=OneWay}"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Right" />
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="0"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="100"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.AuthorName, Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
 
                     <Rectangle Height="1"
                                Grid.ColumnSpan="2"
@@ -107,13 +142,21 @@
                     <TextBlock Grid.Row="2"
                                Grid.Column="0"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Row="2"
-                               Grid.Column="1"
-                               Text="{x:Bind NodeInfo.FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Right" />
-
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="2"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="70"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
                     <Rectangle Height="1"
                                Grid.ColumnSpan="2"
                                Grid.Row="3"
@@ -122,12 +165,21 @@
                     <TextBlock Grid.Row="4"
                                Grid.Column="0"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('labelDate')}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Grid.Row="4"
-                               Grid.Column="1"
-                               Text="{x:Bind NodeInfo.LastModificationDate, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Right" />
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="4"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="130"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.LastModificationDate, Converter={StaticResource DateTimeToStringConverter}, ConverterParameter='format=g', Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
 
                 </Grid>
             </Border>

@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -15,11 +16,6 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         // DependencyProperty
-        public ReplicaSide FileSide
-        {
-            get => (ReplicaSide)GetValue(FileSideProperty);
-            set => SetValue(FileSideProperty, value);
-        }
         public NodeConflictInfo? NodeInfo
         {
             get => (NodeConflictInfo?)GetValue(NodeInfoProperty);
@@ -37,10 +33,22 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(ShowMostRecentBadgeProperty, value);
         }
 
-        public static readonly DependencyProperty FileSideProperty =
+        public bool IsRemote
+        {
+            get => (bool)GetValue(IsRemoteProperty);
+            set => SetValue(IsRemoteProperty, value);
+        }
+
+        public string? NodeAbsolutePath
+        {
+            get => (string?)GetValue(NodeAbsolutePathProperty);
+            set => SetValue(NodeAbsolutePathProperty, value);
+        }
+
+        public static readonly DependencyProperty IsRemoteProperty =
             DependencyProperty.Register(
-            nameof(FileSide),
-            typeof(ReplicaSide),
+            nameof(IsRemote),
+            typeof(bool),
             typeof(ConflictVersionPresenter),
             new PropertyMetadata(null));
 
@@ -62,6 +70,13 @@ namespace Infomaniak.kDrive.CustomControls
             DependencyProperty.Register(
             nameof(NodeInfo),
             typeof(NodeConflictInfo),
+            typeof(ConflictVersionPresenter),
+            new PropertyMetadata(null));
+
+        public static readonly DependencyProperty NodeAbsolutePathProperty =
+            DependencyProperty.Register(
+            nameof(NodeAbsolutePath),
+            typeof(string),
             typeof(ConflictVersionPresenter),
             new PropertyMetadata(null));
 
@@ -98,6 +113,23 @@ namespace Infomaniak.kDrive.CustomControls
                 return Application.Current.Resources["AccentFillColorDefaultBrush"] as SolidColorBrush ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
             else
                 return Application.Current.Resources["CardStrokeColorDefaultBrush"] as SolidColorBrush ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        }
+
+        private async void ViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NodeAbsolutePath is null)
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            await Utility.OpenFileAsync(NodeAbsolutePath);
+            await Task.Delay(5000); // Avoid multiple click by the time the fie open
+            if (control is not null)
+                control.IsEnabled = true;
         }
     }
 }

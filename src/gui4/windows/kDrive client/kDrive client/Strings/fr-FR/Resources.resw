@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 03 Mar 2026 10:32:55 +0100 
+  Exported at: Wed, 04 Mar 2026 12:59:04 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -252,6 +252,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Ouvrir les paramètres de synchronisation</value> 
   </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Pause</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Rafraîchir</value> 
   </data> 
@@ -274,6 +277,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
     <value>Sauvegarder mes choix</value> 
   </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Recherche</value> 
+  </data> 
   <data name="buttonSeeActivities" xml:space="preserve"> 
     <value>Voir les activités</value> 
   </data> 
@@ -292,11 +298,17 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonSendLog" xml:space="preserve"> 
     <value>Envoyer le dossier de débogage</value> 
   </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Ouvrir les paramètres</value> 
+  </data> 
   <data name="buttonShowOffers" xml:space="preserve"> 
     <value>Voir les offres</value> 
   </data> 
   <data name="buttonSignOut" xml:space="preserve"> 
     <value>Se déconnecter</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Démarrage</value> 
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Commencer gratuitement</value> 
@@ -466,7 +478,7 @@ Ne fermez pas l’application pendant la procédure.</value>
     <value>Déconnecter ce compte</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
-    <value>Ne pas rejoindre</value> 
+    <value>Ne pas adhérer</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
     <value>Vous n'avez pas la permission d'accéder à ce kDrive.
@@ -807,6 +819,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>Kb</value> 
   </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Locale</value> 
+  </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
   </data> 
@@ -828,6 +843,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>En ligne</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Emplacement d’origine :</value> 
@@ -1162,11 +1180,11 @@ Nous vous invitons à patienter quelques instants.</value>
   <data name="quotaExceededErrorTitle" xml:space="preserve"> 
     <value>Quota de stockage dépassée</value> 
   </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Bêta</value> 
+  </data> 
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Interne</value> 
-  </data> 
-  <data name="releaseChannelbeta" xml:space="preserve"> 
-    <value>Bêta</value> 
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Localisation sur kDrive</value> 
