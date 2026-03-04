@@ -23,10 +23,12 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/sysinfo.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <log4cplus/loggingmacros.h>
@@ -64,11 +66,12 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         desktopType = "GNOME";
     }
 
-    std::string command;
+    const std::string pathStr = itemPath.string();
+    std::vector<const char *> argv;
     if (desktopType == "GNOME") {
-        command = "gio trash \"" + itemPath.string() + "\"";
+        argv = {"gio", "trash", pathStr.c_str(), nullptr};
     } else if (desktopType == "KDE") {
-        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
+        argv = {"kioclient", "move", pathStr.c_str(), "trash:/files/", nullptr};
     } else {
         // Not implemented for the others distros
         return true;
@@ -91,9 +94,22 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         }
     }
 
-    int result = system(command.c_str());
-    if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
+    const pid_t pid = fork();
+    if (pid == -1) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to fork - err=" << strerror(errno));
+        return false;
+    }
+    if (pid == 0) {
+        execvp(argv[0], const_cast<char *const *>(argv.data()));
+        _exit(1);
+    }
+    int status = 0;
+    if (waitpid(pid, &status, 0) == -1) {
+        LOG_WARN(Log::instance()->getLogger(), "waitpid failed - err=" << strerror(errno));
+        return false;
+    }
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - exit=" << WEXITSTATUS(status));
         return false;
     }
     return true;
