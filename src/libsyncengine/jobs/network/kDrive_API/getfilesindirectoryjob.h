@@ -36,8 +36,10 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
-        // The return value of this accessor is meaningful only if the response has been handled.
-        [[nodiscard]] const NodeInfoList &nodeInfoList() const { return _nodeInfoList; };
+        [[nodiscard]] NodeInfoList nodeInfoList();
+
+        // The node info list as returned by the backend API v3
+        [[nodiscard]] const NodeInfoList &v3NodeInfoList() const { return _nodeInfoList; };
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -47,6 +49,9 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo setData() override { return ExitCode::Ok; }
+
+        // The node info list as returned by the backend API v2
+        [[nodiscard]] NodeInfoList v2NodeInfoList();
 
         // Fill the `_nodeInfoList` data structure with the deserialization
         // of the JSON result's `data` field.

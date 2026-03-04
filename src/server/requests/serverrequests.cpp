@@ -866,8 +866,8 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         if (nodeId.empty()) {
             job = std::make_shared<GetFilesInRootDirJob>(userDbId, driveId);
         } else {
-            constexpr bool translateV2ToV3 = true;
-            job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, nodeId, translateV2ToV3);
+            constexpr bool translateV2InputNodeIdToV3 = true;
+            job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, nodeId, translateV2InputNodeIdToV3);
         }
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), getFileListConstructorErrorMsg(job.get(), userDbId, driveId, e));

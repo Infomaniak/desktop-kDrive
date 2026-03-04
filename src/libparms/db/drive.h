@@ -97,4 +97,6 @@ class PARMS_EXPORT Drive {
         PackInfo _packInfo;
 };
 
+using DriveList = std::vector<Drive>;
+
 } // namespace KDC

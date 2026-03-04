@@ -54,6 +54,7 @@ using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using RemoteNodeId = NodeId;
+using RemoteNodeId = NodeId;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
@@ -190,6 +191,7 @@ using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
 using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
 using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to<>>;
 using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
+using DriveDbIdMap = std::unordered_map<DriveId, DriveDbId>;
 
 //
 // Enums

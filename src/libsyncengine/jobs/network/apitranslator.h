@@ -30,12 +30,16 @@ class ApiTranslator {
         static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
         static void translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
+        static void translateV3ToV2(DriveDbId driveDbId, NodeInfoList &v3NodeInfoList);
         static RemoteNodeId getUserPrivateFolderRemoteId(DriveDbId driveDbId);
         static RemoteNodeId getCommonDocumentsRemoteId(DriveDbId driveDbId);
         static RemoteNodeId getSharedRemoteId(DriveDbId driveDbId);
 
+        static DriveDbId getDriveDbId(DriveId driveId);
+
     private:
         static DriveId getDriveId(DriveDbId driveDbId);
+        static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
         static void updateCache(DriveDbId driveDbId);
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;

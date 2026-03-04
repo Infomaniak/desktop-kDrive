@@ -45,6 +45,7 @@ GetRootFileListJob::GetRootFileListJob(const int driveDbId, const uint64_t page 
 std::string GetRootFileListJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files";
+
     return str;
 }
 

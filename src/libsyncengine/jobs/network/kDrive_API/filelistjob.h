@@ -34,7 +34,12 @@ class FileListJob : public SyncJob {
 
         // The return value of this accessor is only meaningful when all the responses of the
         // underlying file list requests have been handled.
-        [[nodiscard]] const NodeInfoList &nodeInfoList() const { return _nodeInfoList; };
+        [[nodiscard]] NodeInfoList nodeInfoList() const { return v2NodeInfoList(); };
+
+        // The node info list as returned by the backend API v3
+        // The return value is only meaningful when all the responses of the
+        // underlying file list requests have been handled.
+        [[nodiscard]] const NodeInfoList &v3NodeInfoList() const { return _nodeInfoList; };
 
     protected:
         [[nodiscard]] std::string getConstructorFailureLogMessage(const std::exception &e) const;
@@ -64,6 +69,9 @@ class FileListJob : public SyncJob {
         bool _translateV2ToV3{false};
 
     private:
+        // The node info list as returned by the backend API v2
+        NodeInfoList v2NodeInfoList() const;
+
         [[nodiscard]] std::string createLogMessage(const std::string &coreMsg) const;
 
         [[nodiscard]] virtual std::string getConstructorFailureCoreMsg() const = 0;

@@ -17,7 +17,8 @@
  */
 
 #include "jobs/network/kDrive_API/filelistjob.h"
-#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
+
+#include "jobs/network/apitranslator.h"
 
 namespace KDC {
 
@@ -28,6 +29,8 @@ FileListJob::FileListJob(const int userDbId, const DriveId driveId, NodeId fileI
     _translateV2ToV3(translateV2ToV3) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
+    _driveDbId = ApiTranslator::getDriveDbId(_driveId);
+    assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 
 FileListJob::FileListJob(const int driveDbId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
@@ -55,6 +58,13 @@ std::string FileListJob::getConstructorFailureLogMessage(const std::exception &e
 
 std::string FileListJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
     return createLogMessage(getConstructorFailureCoreMsg()) + " exitInfo:" + toString(exitInfo);
+}
+
+NodeInfoList FileListJob::v2NodeInfoList() const {
+    NodeInfoList v2NodeInfoList_ = _nodeInfoList;
+    ApiTranslator::translateV3ToV2(_driveDbId, v2NodeInfoList_);
+
+    return v2NodeInfoList_;
 }
 
 } // namespace KDC

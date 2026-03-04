@@ -61,12 +61,12 @@ ExitInfo GetFilesInRootDirJob::runJob() {
         }
 
         if (_nodeInfoList.empty())
-            _nodeInfoList = getRootListJob->nodeInfoList();
+            _nodeInfoList = getRootListJob->v3NodeInfoList();
         else {
             // Concatenate the two listings.
-            _nodeInfoList.reserve(_nodeInfoList.size() + getRootListJob->nodeInfoList().size());
-            _nodeInfoList.insert(_nodeInfoList.end(), getRootListJob->nodeInfoList().begin(),
-                                 getRootListJob->nodeInfoList().end());
+            _nodeInfoList.reserve(_nodeInfoList.size() + getRootListJob->v3NodeInfoList().size());
+            _nodeInfoList.insert(_nodeInfoList.end(), getRootListJob->v3NodeInfoList().begin(),
+                                 getRootListJob->v3NodeInfoList().end());
         }
     }
 

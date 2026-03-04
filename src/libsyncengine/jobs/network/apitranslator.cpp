@@ -31,7 +31,7 @@ ApiTranslator::ApiTranslator() {}
 
 ApiTranslator::~ApiTranslator() {}
 
-DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
+DriveId ApiTranslator::getDriveId(const DriveDbId driveDbId) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -44,6 +44,29 @@ DriveId ApiTranslator::getDriveId(DriveDbId driveDbId) {
     return drive.driveId();
 }
 
+bool ApiTranslator::getDriveDbIds(DriveDbIdMap &driveDbIdMap) {
+    driveDbIdMap.clear();
+    DriveList driveList;
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) return false;
+
+    for (const auto &drive: driveList) {
+        (void) driveDbIdMap.insert({drive.driveId(), drive.dbId()});
+    }
+
+    return true;
+}
+
+DriveDbId ApiTranslator::getDriveDbId(const DriveId driveId) {
+    DriveDbIdMap driveDbIdMap;
+    (void) getDriveDbIds(driveDbIdMap); // Consider logging
+
+    if (const auto it = driveDbIdMap.find(driveId); it != driveDbIdMap.cend()) {
+        return it->second;
+    }
+
+    return -1;
+}
+
 void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     constexpr auto maxNumberOfItems = 1000;
 
@@ -51,7 +74,7 @@ void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     fileListJob.setListingConf({.dirOnly = true, .limit = maxNumberOfItems});
     fileListJob.runSynchronously(); // Consider logging
 
-    const auto &nodeInfoList = fileListJob.nodeInfoList();
+    const auto &nodeInfoList = fileListJob.v3NodeInfoList();
 
     const std::scoped_lock lock(_mutex);
 
@@ -127,6 +150,20 @@ void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNod
     if (remoteNodeId != getUserPrivateFolderRemoteId(driveDbId)) return;
 
     remoteNodeId = NodeId{"1"};
+}
+
+void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeInfoList &v3NodeInfoList) {
+    static const RemoteNodeId v2RootFolderRemoteId{"1"};
+
+    const RemoteNodeId privateFolderId = getUserPrivateFolderRemoteId(driveDbId);
+    std::erase_if(v3NodeInfoList,
+                  [&privateFolderId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId().toStdString() == privateFolderId; });
+
+    for (auto &nodeInfo: v3NodeInfoList) {
+        if (nodeInfo.nodeId().toStdString() == privateFolderId) continue;
+        if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
+            nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId));
+    }
 }
 
 } // namespace KDC

@@ -146,6 +146,19 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
     return ExitCode::Ok;
 }
 
+NodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
+    return v2NodeInfoList();
+}
+
+NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
+    if (_nodeInfoList.empty()) deserializeDataArray();
+
+    NodeInfoList v2NodeInfoList_ = _nodeInfoList;
+    ApiTranslator::translateV3ToV2(driveDbId(), v2NodeInfoList_);
+
+    return v2NodeInfoList_;
+}
+
 ExitInfo GetFilesInDirectoryJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;

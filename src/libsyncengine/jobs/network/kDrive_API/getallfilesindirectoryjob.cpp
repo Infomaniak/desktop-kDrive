@@ -59,7 +59,7 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         }
 
         // Concatenate partial listings
-        const auto &nodeInfoList = fileListJob->nodeInfoList();
+        const auto &nodeInfoList = fileListJob->v3NodeInfoList();
         _nodeInfoList.reserve(_nodeInfoList.size() + _nodeInfoList.size());
         _nodeInfoList.insert(_nodeInfoList.end(), nodeInfoList.begin(), nodeInfoList.end());
 
