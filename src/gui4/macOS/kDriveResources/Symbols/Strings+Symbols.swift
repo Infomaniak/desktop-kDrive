@@ -78,18 +78,26 @@ public enum KDriveLocalizable {
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
   /// loco:6931a5687031691272002314
   public static let buttonOpenKDrive = KDriveLocalizable.tr("Localizable", "buttonOpenKDrive", fallback: "Open kDrive")
+  /// loco:69a7ed0ecbb2fb59660bfa12
+  public static let buttonPause = KDriveLocalizable.tr("Localizable", "buttonPause", fallback: "Pause")
   /// loco:697b65a56840f9d35605a134
   public static let buttonRefresh = KDriveLocalizable.tr("Localizable", "buttonRefresh", fallback: "Refresh")
   /// loco:6964e1fd78f375ec03073c88
   public static let buttonRestartSynchro = KDriveLocalizable.tr("Localizable", "buttonRestartSynchro", fallback: "Restart synchronization")
   /// loco:697b6560c18f7ca128034f16
   public static let buttonRetry = KDriveLocalizable.tr("Localizable", "buttonRetry", fallback: "Retry")
+  /// loco:69a7f03b5fa9c90f560c1192
+  public static let buttonSearch = KDriveLocalizable.tr("Localizable", "buttonSearch", fallback: "Search")
   /// loco:6964e1dfed4b6acb0107409a
   public static let buttonSeeActivities = KDriveLocalizable.tr("Localizable", "buttonSeeActivities", fallback: "See activities")
+  /// loco:69a7ed31e3754291a4029e52
+  public static let buttonSettings = KDriveLocalizable.tr("Localizable", "buttonSettings", fallback: "Open Settings")
   /// loco:69240f7b15d05a975c07dc13
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:698af1b4d7cad5e8710909b2
   public static let buttonShowOption = KDriveLocalizable.tr("Localizable", "buttonShowOption", fallback: "Show options")
+  /// loco:69a7ecff1619fbbe5a0c75b3
+  public static let buttonStart = KDriveLocalizable.tr("Localizable", "buttonStart", fallback: "Start")
   /// loco:69240f6d4433e24658054fd4
   public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
   /// loco:698aec47dbcc2bef330cf7a9
