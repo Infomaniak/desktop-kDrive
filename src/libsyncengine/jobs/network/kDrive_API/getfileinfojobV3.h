@@ -22,26 +22,32 @@
 
 namespace KDC {
 
-class GetFileVersionsJob : public AbstractTokenNetworkJob {
+class GetFileInfoJobV3 : public AbstractTokenNetworkJob {
     public:
-        GetFileVersionsJob(int userDbId, int driveId, const NodeId &nodeId);
+        GetFileInfoJobV3(int userDbId, int driveId, const NodeId &nodeId);
+        GetFileInfoJobV3(int driveDbId, const NodeId &nodeId);
 
+        inline const NodeId &nodeId() const { return _nodeId; }
+        inline SyncTime creationTime() const { return _creationTime; }
+        inline SyncTime modificationTime() const { return _modificationTime; }
+        inline int32_t lastModifiedByUserId() const { return _lastModifiedByUserId; }
         inline int64_t size() const { return _size; }
-        inline SyncTime updatedAt() const { return _updatedAt; }
-        inline const std::string &updatedByName() const { return _updatedByName; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri) override;
+        void setQueryParameters(Poco::URI &) override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
-        int64_t _size{0};
-        SyncTime _updatedAt{0};
-        std::string _updatedByName;
+        std::string _name;
+        SyncTime _creationTime{0};
+        SyncTime _modificationTime{0};
+        int32_t _lastModifiedByUserId{-1};
+        int64_t _size{-1};
 };
 
 } // namespace KDC

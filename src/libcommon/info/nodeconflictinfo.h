@@ -24,10 +24,10 @@
 
 namespace KDC {
 
-class NodeVersionInfo {
+class NodeConflictInfo {
     public:
-        NodeVersionInfo() = default;
-        NodeVersionInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate);
+        NodeConflictInfo() = default;
+        NodeConflictInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate);
 
         [[nodiscard]] const std::string &authorName() const { return _authorName; }
         void setAuthorName(const std::string &authorName) { _authorName = authorName; }

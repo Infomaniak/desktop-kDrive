@@ -20,7 +20,7 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/nodeversioninfo.h"
+#include "libcommon/info/nodeconflictinfo.h"
 
 namespace KDC {
 
@@ -36,7 +36,7 @@ class NodeConflictInfoJob : public AbstractGuiJob {
         ReplicaSide _replicaSide = ReplicaSide::Unknown;
 
         // Output parameters
-        NodeVersionInfo _nodeVersionInfo;
+        NodeConflictInfo _nodeConflictInfo;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

@@ -36,7 +36,7 @@ set(libcommon_SRCS
     info/driveavailableinfo.h info/driveavailableinfo.cpp
     info/syncinfo.h info/syncinfo.cpp
     info/nodeinfo.h info/nodeinfo.cpp
-    info/nodeversioninfo.h info/nodeversioninfo.cpp
+    info/nodeconflictinfo.h info/nodeconflictinfo.cpp
     info/errorinfo.h info/errorinfo.cpp
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp

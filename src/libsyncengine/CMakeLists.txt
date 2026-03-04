@@ -50,6 +50,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/longpolljob.h jobs/network/kDrive_API/listing/longpolljob.cpp
     jobs/network/kDrive_API/getfileinfojob.h jobs/network/kDrive_API/getfileinfojob.cpp
+    jobs/network/kDrive_API/getfileinfojobV3.h jobs/network/kDrive_API/getfileinfojobV3.cpp
     jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
     jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
     jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
@@ -75,7 +76,6 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
-    jobs/network/kDrive_API/getfileversionsjob.h jobs/network/kDrive_API/getfileversionsjob.cpp
     jobs/network/kDrive_API/itemsexistjob.h jobs/network/kDrive_API/itemsexistjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp

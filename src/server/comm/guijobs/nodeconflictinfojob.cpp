@@ -24,7 +24,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfileversionsjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojobV3.h"
 #include "libsyncengine/syncpal/syncpal.h"
 #include "libparms/db/parmsdb.h"
 
@@ -64,15 +64,15 @@ ExitInfo NodeConflictInfoJob::deserializeInputParms() {
 }
 
 ExitInfo NodeConflictInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsNodeVersionInfo, _nodeVersionInfo, info2DynamicVar<NodeVersionInfo>);
+    writeParamValue(outParamsNodeVersionInfo, _nodeConflictInfo, info2DynamicVar<NodeConflictInfo>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const NodeId &nodeId) {
-    std::shared_ptr<GetFileVersionsJob> networkJob;
+    std::shared_ptr<GetFileInfoJobV3> networkJob;
     try {
-        networkJob = std::make_shared<GetFileVersionsJob>(userDbId, driveId, nodeId);
+        networkJob = std::make_shared<GetFileInfoJobV3>(userDbId, driveId, nodeId);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error creating GetFileVersionsJob: error=" << e.what());
         return ExitCode::DataError;
@@ -82,10 +82,9 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
         LOG_WARN(_logger, "Error in GetFileVersionsJob::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
         return exitInfo;
     }
-
-    _nodeVersionInfo.setAuthorName(networkJob->updatedByName());
-    _nodeVersionInfo.setFileSize(networkJob->size());
-    _nodeVersionInfo.setLastModificationDate(networkJob->updatedAt());
+    _nodeConflictInfo.setAuthorName(std::to_string(networkJob->lastModifiedByUserId()));
+    _nodeConflictInfo.setFileSize(networkJob->size());
+    _nodeConflictInfo.setLastModificationDate(networkJob->modificationTime());
 
     return ExitCode::Ok;
 }
@@ -104,18 +103,18 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int user
         return ExitCode::SystemError;
     }
 
-    _nodeVersionInfo.setFileSize(fileStat.size);
-    _nodeVersionInfo.setLastModificationDate(fileStat.modificationTime);
+    _nodeConflictInfo.setFileSize(fileStat.size);
+    _nodeConflictInfo.setLastModificationDate(fileStat.modificationTime);
 
     User user;
     bool found = false;
     if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
         return ExitCode::DbError;
-    } else if (found) {
+    } else if (!found) {
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    _nodeVersionInfo.setAuthorName(user.name());
+    _nodeConflictInfo.setAuthorName(user.name());
     return ExitCode::Ok;
 }
 
@@ -164,8 +163,8 @@ ExitInfo NodeConflictInfoJob::process() {
         const SyncPath localFilePath = localRootPath / _relativePath;
 
         if (ExitInfo exitInfo = fetchLocalInfo(localFilePath, userDbId, driveId, remoteNodeId); !exitInfo) {
-            LOGW_WARN(_logger, L"Error fetching local info for " << Utility::formatSyncPath(localFilePath) << L" exitInfo="
-                                                                        << exitInfo);
+            LOGW_WARN(_logger,
+                      L"Error fetching local info for " << Utility::formatSyncPath(localFilePath) << L" exitInfo=" << exitInfo);
             return exitInfo;
         }
     } else {

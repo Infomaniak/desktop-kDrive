@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "nodeversioninfo.h"
+#include "nodeconflictinfo.h"
 #include "utility/utility.h"
 
 static const auto nodeVersionInfoAuthorName = "authorName";
@@ -25,18 +25,18 @@ static const auto nodeVersionInfoLastModificationDate = "lastModificationDate";
 
 namespace KDC {
 
-NodeVersionInfo::NodeVersionInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate) :
+NodeConflictInfo::NodeConflictInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate) :
     _authorName(authorName),
     _fileSize(fileSize),
     _lastModificationDate(lastModificationDate) {}
 
-void NodeVersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+void NodeConflictInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoAuthorName, _authorName);
     CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoFileSize, _fileSize);
     CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoLastModificationDate, _lastModificationDate);
 }
 
-void NodeVersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+void NodeConflictInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoAuthorName, _authorName);
     CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoFileSize, _fileSize);
     CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoLastModificationDate, _lastModificationDate);

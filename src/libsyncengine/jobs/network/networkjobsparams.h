@@ -80,6 +80,7 @@ static const std::string fileTypeKey = "file_type";
 static const std::string timestampKey = "timestamp";
 static const std::string createdAtKey = "created_at";
 static const std::string lastModifiedAtKey = "last_modified_at";
+static const std::string lastModifiedByKey = "last_modified_by";
 static const std::string addedAtKey = "added_at";
 static const std::string pathKey = "path";
 static const std::string destinationKey = "destination";
