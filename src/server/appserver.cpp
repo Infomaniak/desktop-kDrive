@@ -115,15 +115,6 @@ namespace KDC {
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
 
-std::function<ExitInfo(User &user, bool &updated)> AppServer::_loadUserInfo =
-        static_cast<ExitInfo (*)(User &user, bool &updated)>(&ServerRequests::loadUserInfo);
-std::function<ExitInfo(Account &account, bool &updated)> AppServer::_loadAccountInfo =
-        static_cast<ExitInfo (*)(Account &account, bool &updated)>(&ServerRequests::loadAccountInfo);
-std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated, bool &quotaUpdated)>
-        AppServer::_loadDriveInfo =
-                static_cast<ExitInfo (*)(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
-                                         bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
-
 namespace {
 
 static const char optionsC[] =

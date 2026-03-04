@@ -228,11 +228,15 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
     protected:
-        static std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo;
-        static std::function<ExitInfo(Account &account, bool &updated)> _loadAccountInfo;
-        static std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
-                                      bool &quotaUpdated)>
-                _loadDriveInfo;
+        // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests
+        std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo =
+                static_cast<ExitInfo (*)(User &user, bool &updated)>(&ServerRequests::loadUserInfo);
+        std::function<ExitInfo(Account &account, bool &updated)> _loadAccountInfo =
+                static_cast<ExitInfo (*)(Account &account, bool &updated)>(&ServerRequests::loadAccountInfo);
+        std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                               bool &quotaUpdated)>
+                _loadDriveInfo = static_cast<ExitInfo (*)(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId,
+                                                          bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
 
     private:
         AuthorizationCodeEventFilter _eventFilter;
