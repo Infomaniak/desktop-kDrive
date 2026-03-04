@@ -100,7 +100,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         return false;
     }
     if (pid == 0) {
-        execvp(argv[0], const_cast<char *const *>(argv.data()));
+        (void) execvp(argv[0], const_cast<char *const *>(argv.data()));
         _exit(1);
     }
     int status = 0;
