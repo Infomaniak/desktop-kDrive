@@ -24,14 +24,6 @@ public struct UpdaterJobs: Sendable {
 
     public init() {}
 
-    public func changeDistributionChannel(channel: KDC.VersionChannel) async throws {
-        IKLogger.data.log("Query to change distribution channel")
-        let query = UpdaterChangeChannelQuery(channel: channel)
-        let request = await RequestMessage<UpdaterChangeChannelQuery>(num: RequestNum.UPDATER_CHANGE_CHANNEL, body: query)
-
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-    }
-
     public func versionInfo(channel: KDC.VersionChannel) async throws -> VersionInfo {
         IKLogger.data.log("Query for version info")
         let query = UpdaterVersionInfoQuery(channel: channel)

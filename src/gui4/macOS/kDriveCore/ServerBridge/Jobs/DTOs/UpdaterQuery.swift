@@ -18,10 +18,6 @@
 
 import Foundation
 
-struct UpdaterChangeChannelQuery: Codable, Sendable {
-    let channel: KDC.VersionChannel
-}
-
 struct UpdaterVersionInfoQuery: Codable, Sendable {
     let channel: KDC.VersionChannel
 }
