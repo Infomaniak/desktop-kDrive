@@ -202,7 +202,7 @@ extension MainViewController {
 
         let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
         settingsButton.image = KDriveResources.cog.image
-        settingsButton.label = "Settings"
+        settingsButton.label = KDriveLocalizable.buttonSettings
         settingsButton.target = nil
         settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
 
@@ -213,8 +213,8 @@ extension MainViewController {
 
     private func makeSearchGroup() -> NSToolbarItemGroup {
         let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
-        searchButton.image = NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Search")
-        searchButton.label = "Search"
+        searchButton.image = KDriveResources.magnifyingGlass.image
+        searchButton.label = KDriveLocalizable.buttonSearch
         searchButton.target = nil
         searchButton.action = nil
 
@@ -281,7 +281,7 @@ extension MainViewController {
 
     private func setPauseResumeAppearance(_ item: NSToolbarItem, showPause: Bool, enabled: Bool) {
         let image = showPause ? KDriveResources.pause.image : KDriveResources.play.image
-        let label = showPause ? "Pause" : "Resume"
+        let label = showPause ? KDriveLocalizable.buttonPause : KDriveLocalizable.buttonStart
 
         item.image = image
         item.label = label
