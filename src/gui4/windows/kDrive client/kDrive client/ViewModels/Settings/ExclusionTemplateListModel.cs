@@ -15,17 +15,17 @@ namespace Infomaniak.kDrive.ViewModels
     public partial class ExclusionTemplateListModel : UISafeObservableObject, IDisposable
     {
         // Collection of all the ExclusionTemplate objects
-        private ObservableCollection<ExclusionTemplate> _templates = new();
-        private ReadOnlyObservableCollection<ExclusionTemplate> _defaultTemplates;
-        private ReadOnlyObservableCollection<ExclusionTemplate> _userDefinedTemplates;
+        private ObservableCollection<ExclusionTemplate> _templates = [];
+        private readonly ReadOnlyObservableCollection<ExclusionTemplate> _defaultTemplates;
+        private readonly ReadOnlyObservableCollection<ExclusionTemplate> _userDefinedTemplates;
         private int _selectedCount;
         private bool _hasSelectedTemplates;
         private CancellationTokenSource? _saveDebounceCts;
         private readonly object _saveDebounceLock = new();
 
         // Subscription handlers
-        private IDisposable _defaultTemplatesSubscription;
-        private IDisposable _userDefinedTemplatesSubscription;
+        private readonly IDisposable _defaultTemplatesSubscription;
+        private readonly IDisposable _userDefinedTemplatesSubscription;
         public ExclusionTemplateListModel()
         {
             _defaultTemplatesSubscription = _templates.ToObservableChangeSet().Filter(t => t.Default).Bind(out _defaultTemplates).Subscribe();
@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
                 _saveDebounceCts = null;
             }
             if (hasPendingSave)
-                _ = SaveUserTemplatesImmediateAsync().ContinueWith(task =>
+                SaveUserTemplatesImmediateAsync().ContinueWith(task =>
                 {
                     if (task.Exception is not null)
                     {

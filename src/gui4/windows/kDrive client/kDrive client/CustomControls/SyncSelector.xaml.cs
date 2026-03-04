@@ -1,4 +1,3 @@
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -6,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive.CustomControls
 {
- 
+
     public sealed partial class SyncSelector : UserControl
     {
         public AppModel ViewModel { get; } =
@@ -29,7 +28,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
             if (item is Sync sync)
             {
-                if(sync.Drive.MainSync == sync)
+                if (sync.Drive.MainSync == sync)
                 {
                     return MainSyncTemplate;
                 }

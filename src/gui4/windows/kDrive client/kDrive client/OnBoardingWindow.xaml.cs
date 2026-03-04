@@ -20,18 +20,13 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
-using System.Linq;
-using System.Reactive.Linq;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        private ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
+        private readonly ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
         private string _lottieRessourceKey = "Infomaniak.Custom.Animations.loader-stroke";
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()

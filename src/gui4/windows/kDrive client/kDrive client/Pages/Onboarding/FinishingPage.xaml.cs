@@ -9,7 +9,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class FinishingPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
 
@@ -20,7 +20,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Logger.Log(Logger.Level.Debug, "FinishingPage components initialized");
         }
 
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding obvm)
             {

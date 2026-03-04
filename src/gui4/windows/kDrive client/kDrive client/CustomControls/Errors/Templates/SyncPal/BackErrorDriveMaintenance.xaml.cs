@@ -1,7 +1,6 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using System;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {

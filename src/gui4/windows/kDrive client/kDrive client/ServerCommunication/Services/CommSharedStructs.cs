@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void CopyToUser(UserInfo source, User target)
+        public static void CopyToUser(UserInfo source, User target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
@@ -104,7 +104,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void CopyToAccount(AccountInfo source, Account target)
+        public static void CopyToAccount(AccountInfo source, Account target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.Id), nameof(target.Id));
@@ -137,7 +137,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void CopyToDrive(DriveInfo source, Drive target)
+        public static void CopyToDrive(DriveInfo source, Drive target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.Id), nameof(target.DriveId));
@@ -162,7 +162,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void CopyToDriveAvailable(DriveAvailableInfo source, DriveAvailable target)
+        public static void CopyToDriveAvailable(DriveAvailableInfo source, DriveAvailable target)
         {
             CopyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
             CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
@@ -186,7 +186,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void CopyToSync(SyncInfo source, Sync target)
+        public static void CopyToSync(SyncInfo source, Sync target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
@@ -213,7 +213,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void CopyToProxyConfig(ProxyConfigInfo source, ProxyConfig target)
+        public static void CopyToProxyConfig(ProxyConfigInfo source, ProxyConfig target)
         {
             CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
             CopyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
@@ -222,7 +222,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.User), nameof(target.User));
             CopyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
         }
-        static public void CopyToProxyConfigInfo(ProxyConfig source, ProxyConfigInfo target)
+        public static void CopyToProxyConfigInfo(ProxyConfig source, ProxyConfigInfo target)
         {
             CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
             CopyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
@@ -250,7 +250,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void CopyToSettings(ParmsInfo source, Settings target)
+        public static void CopyToSettings(ParmsInfo source, Settings target)
         {
             CopyProperty(source, target, nameof(source.Language), nameof(target.Language));
             CopyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
@@ -274,7 +274,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             else
                 CopyProperty(source, target, nameof(source.LogLevel), nameof(target.LogLevel));
         }
-        static public void CopyToParmsInfo(Settings source, ParmsInfo target)
+        public static void CopyToParmsInfo(Settings source, ParmsInfo target)
         {
             CopyProperty(source, target, nameof(source.Language), nameof(target.Language));
             CopyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
@@ -333,7 +333,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void CopyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
+        public static void CopyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
         {
             CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
             CopyProperty(source, target, nameof(source.Path), nameof(target.Path));
@@ -365,7 +365,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void CopyToNode(NodeInfo source, Node target)
+        public static void CopyToNode(NodeInfo source, Node target)
         {
             CopyProperty(source, target, nameof(source.NodeId), nameof(target.NodeId));
             CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
@@ -395,7 +395,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void CopyToError(ErrorInfo source, Error target)
+        public static void CopyToError(ErrorInfo source, Error target)
         {
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.Time), nameof(target.Timestamp));
@@ -421,7 +421,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public ExclusionTemplate FromExclusionTemplateInfo(ExclusionTemplateInfo source)
+        public static ExclusionTemplate FromExclusionTemplateInfo(ExclusionTemplateInfo source)
         {
             return new ExclusionTemplate(
                 template: source.Template ?? string.Empty,
@@ -430,7 +430,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             );
         }
 
-        static public void CopyToExclusionTemplateInfo(ExclusionTemplate source, ExclusionTemplateInfo target)
+        public static void CopyToExclusionTemplateInfo(ExclusionTemplate source, ExclusionTemplateInfo target)
         {
             CopyProperty(source, target, nameof(source.Template), nameof(target.Template));
             CopyProperty(source, target, nameof(source.Default), nameof(target.Default));

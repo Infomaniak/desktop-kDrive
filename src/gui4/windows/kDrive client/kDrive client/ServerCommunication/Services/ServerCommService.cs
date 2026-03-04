@@ -65,7 +65,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, [], cancellationToken);
             if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
@@ -122,9 +122,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, [], cancellationToken).ConfigureAwait(false);
 
-            if (!CheckJobResultAndLogIfError(data, new JsonObject()))
+            if (!CheckJobResultAndLogIfError(data, []))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.UserInfoList))
@@ -191,7 +191,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshAccounts(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.ACCOUNT_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ACCOUNT_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -249,7 +249,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshDrives(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -398,7 +398,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshSyncs(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -912,13 +912,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> StartUpdate(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, [], cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data);
         }
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
             // First check the update state
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -940,15 +940,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             _viewModel.Settings.UpdateManager.UpdateEnabled = true;
 
-            List<UpdateState> notReadyStates = new List<UpdateState>
-            {
+            List<UpdateState> notReadyStates =
+            [
                 UpdateState.UpToDate,
                 UpdateState.Available,
                 UpdateState.Downloading,
                 UpdateState.CheckError,
                 UpdateState.DownloadError,
                 UpdateState.UpdateError
-            };
+            ];
 
             if (notReadyStates.Contains(updateState.Value))
             {
@@ -1010,13 +1010,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> CancelLogUpload(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, [], cancellationToken);
             return CheckJobResultAndLogIfError(data);
         }
 
         public async Task<bool> RefreshSettings(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, [], cancellationToken);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -1040,14 +1040,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> ActivateLoadInfo(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, [], cancellationToken);
             return CheckJobResultAndLogIfError(data);
         }
 
         public async Task Exit()
         {
             // Try and forget, no need to wait for response on exit
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, new JsonObject { }, CancellationToken.None);
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, [], CancellationToken.None);
         }
 
         public async Task<bool> SaveSettings(CancellationToken cancellationToken)
@@ -1081,7 +1081,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken)
         {
-            List<ExclusionTemplate> result = new();
+            List<ExclusionTemplate> result = [];
 
             foreach (bool def in new bool[] { false, true })
             {
@@ -1526,7 +1526,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => (a.Status == fileItemInfo.Status || a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                var toBeRemoved = activities.Where(a => a.Status == fileItemInfo.Status || (a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
                 activities.RemoveMany(toBeRemoved);
 
                 // Create new item
@@ -1758,7 +1758,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             await AutoRetry(async Task<bool> () =>
             {
-                List<Drive> allDrives = new();
+                List<Drive> allDrives = [];
                 foreach (var user in _viewModel.Users)
                 {
                     allDrives.AddRange(user.Drives);

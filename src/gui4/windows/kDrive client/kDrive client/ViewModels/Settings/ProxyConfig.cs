@@ -1,7 +1,4 @@
-﻿using DynamicData;
-using Infomaniak.kDrive.Types;
-using System;
-using System.Threading.Tasks;
+﻿using Infomaniak.kDrive.Types;
 
 namespace Infomaniak.kDrive.ViewModels
 {
