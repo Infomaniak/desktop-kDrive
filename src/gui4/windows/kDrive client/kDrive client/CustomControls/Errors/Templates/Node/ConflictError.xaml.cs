@@ -42,8 +42,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             dialog.Content = new ConflictDialog(allConflict, dialog) { XamlRoot = xamlRoot };
 
             // Apply the style to allow wider content
-            dialog.Resources["ContentDialogMaxWidth"] = 800d;
-            dialog.Resources["ContentDialogMaxHeight"] = 800d;
+            dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
+            dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

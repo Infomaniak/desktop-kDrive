@@ -121,6 +121,10 @@
 
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Circle">1000</CornerRadius>
 
+    <!-- ContentDialog -->
+    <x:Double x:Key="Infomaniak.Style.ContentDialog.MaxWidth">800</x:Double>
+    <x:Double x:Key="Infomaniak.Style.ContentDialog.MaxHeight">800</x:Double>
+
     <!-- Elements styles -->
     <!-- TextBlock -->
     <Style x:Key="Infomaniak.Style.TextBlock.Base"
