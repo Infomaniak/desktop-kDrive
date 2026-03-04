@@ -82,7 +82,7 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
         LOG_WARN(_logger, "Error in GetFileVersionsJob::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
         return exitInfo;
     }
-    _nodeConflictInfo.setAuthorName(std::to_string(networkJob->lastModifiedByUserId()));
+    _nodeConflictInfo.setAuthorName(std::to_string(networkJob->lastModifiedByUserId())); // TODO: Get the author display name, waiting from backend.
     _nodeConflictInfo.setFileSize(networkJob->size());
     _nodeConflictInfo.setLastModificationDate(networkJob->modificationTime());
 
