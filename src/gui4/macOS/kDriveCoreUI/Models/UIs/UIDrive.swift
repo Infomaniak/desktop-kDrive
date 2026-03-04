@@ -97,7 +97,9 @@ public extension UIAvailableDrive {
 // MARK: - UIDrive
 
 public struct UIDrive: UIDriveRepresentation {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         return dbId
     }
 
