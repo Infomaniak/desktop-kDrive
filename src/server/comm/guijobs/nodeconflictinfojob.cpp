@@ -25,6 +25,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfileinfojobV3.h"
+#include "libsyncengine/jobs/network/kDrive_API/getdriveuserinfojob.h"
+#include "libsyncengine/requests/driveuserinfocache.h"
 #include "libsyncengine/syncpal/syncpal.h"
 #include "libparms/db/parmsdb.h"
 
@@ -74,17 +76,42 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
     try {
         networkJob = std::make_shared<GetFileInfoJobV3>(userDbId, driveId, nodeId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Error creating GetFileVersionsJob: error=" << e.what());
+        LOG_WARN(_logger, "Error creating GetFileInfoJobV3: error=" << e.what());
         return ExitCode::DataError;
     }
 
     if (const auto exitInfo = networkJob->runSynchronously(); !exitInfo) {
-        LOG_WARN(_logger, "Error in GetFileVersionsJob::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
+        LOG_WARN(_logger, "Error in GetFileInfoJobV3::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
         return exitInfo;
     }
-    _nodeConflictInfo.setAuthorName(std::to_string(networkJob->lastModifiedByUserId())); // TODO: Get the author display name, waiting from backend.
     _nodeConflictInfo.setFileSize(networkJob->size());
     _nodeConflictInfo.setLastModificationDate(networkJob->modificationTime());
+
+    // Resolve the author display name from the user ID
+    const int lastModifiedByUserId = networkJob->lastModifiedByUserId();
+    if (lastModifiedByUserId > 0) {
+        // Check cache first
+        if (auto cached = DriveUserInfoCache::instance().get(driveId, lastModifiedByUserId)) {
+            _nodeConflictInfo.setAuthorName(cached->name);
+        } else {
+            std::shared_ptr<GetDriveUserInfoJob> userInfoJob;
+            try {
+                userInfoJob = std::make_shared<GetDriveUserInfoJob>(userDbId, driveId, lastModifiedByUserId);
+            } catch (const std::exception &e) {
+                LOG_WARN(_logger, "Error creating GetDriveUserInfoJob: error=" << e.what());
+                return ExitCode::DataError;
+            }
+
+            if (const auto exitInfo = userInfoJob->runSynchronously(); !exitInfo) {
+                LOG_WARN(_logger,
+                         "Error in GetDriveUserInfoJob::runSynchronously for userId=" << lastModifiedByUserId << " exitInfo=" << exitInfo);
+                return exitInfo;
+            }
+            _nodeConflictInfo.setAuthorName(userInfoJob->name());
+            DriveUserInfoCache::instance().put(driveId, lastModifiedByUserId,
+                                               {userInfoJob->name(), userInfoJob->email(), userInfoJob->avatarUrl()});
+        }
+    }
 
     return ExitCode::Ok;
 }
