@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Tue, 03 Mar 2026 10:32:55 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -277,8 +277,14 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonSeeActivities" xml:space="preserve"> 
     <value>Voir les activités</value> 
   </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>sélectionner</value> 
+  </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Sélectionner les dossiers</value> 
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>sélectionné</value> 
   </data> 
   <data name="buttonSend" xml:space="preserve"> 
     <value>Envoyer</value> 
@@ -304,8 +310,23 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Mise à niveau</value> 
   </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Valider</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Valider et passer au suivant</value> 
+  </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Réveil</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Choisir  une version</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Deux versions différentes de ces fichiers ont été détectées.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Conflits de versions</value> 
   </data> 
   <data name="connectAccount" xml:space="preserve"> 
     <value>Connecter un compte</value> 
@@ -631,6 +652,9 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Aidez-nous à améliorer kDrive</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Le fichier existe déjà</value> 
   </data> 
@@ -725,12 +749,24 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   <data name="labelAgo" xml:space="preserve"> 
     <value>il y a %@</value> 
   </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Auteur</value> 
+  </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Quelle version souhaitez-vous garder ?</value> 
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Choisir la version à conserver</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Créez une %@.</value> 
     <comment>use in pair with: labelNewSync</comment> 
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Date</value> 
   </data> 
   <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
     <value>Disque externe déconnecté</value> 
@@ -773,6 +809,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Plus récente</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nom</value> 
@@ -843,6 +882,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ sur %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>gestion de kDrive</value> 

@@ -57,7 +57,7 @@
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('joinBetaProgram'), Mode=OneWay}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaSettings'), Mode=OneWay}"
                               Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"

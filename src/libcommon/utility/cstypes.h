@@ -73,6 +73,13 @@ enum class ErrorLevel {
     EnumEnd
 };
 
+enum class ReplicaSide {
+    Unknown,
+    Local,
+    Remote,
+    EnumEnd
+};
+
 enum class ExitCode {
     Ok,
     Unknown,
