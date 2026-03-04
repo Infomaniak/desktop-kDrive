@@ -103,7 +103,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         (void) execvp(argv[0], const_cast<char *const *>(argv.data()));
         _exit(1);
     }
-    int status = 0;
+    int32_t status = 0;
     if (waitpid(pid, &status, 0) == -1) {
         LOG_WARN(Log::instance()->getLogger(), "waitpid failed - err=" << strerror(errno));
         return false;
