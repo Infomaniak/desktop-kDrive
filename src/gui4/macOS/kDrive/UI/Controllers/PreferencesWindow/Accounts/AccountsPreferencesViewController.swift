@@ -20,8 +20,8 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-class AccountsPreferencesViewController: TitledViewController<Text> {
+class AccountsPreferencesViewController: TitledViewController<AccountsView> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: Text("Not Available Yet."))
+        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: AccountsView())
     }
 }

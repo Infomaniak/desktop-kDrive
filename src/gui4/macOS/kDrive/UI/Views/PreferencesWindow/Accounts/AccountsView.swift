@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,11 +16,33 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct AccountsView: View {
+    let users: [UIUser] = [PreviewHelper.user]
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Form {
+            ForEach(users) { user in
+                UserSection(
+                    user: PreviewHelper.user,
+                    drives: [
+                        DriveContext(drive: PreviewHelper.drive1, isSynchronized: true),
+                        DriveContext(drive: PreviewHelper.drive2, isSynchronized: false)
+                    ]
+                )
+            }
+
+            Section {
+                Button("Connecter un compte") {
+                    // TODO: Add new user
+                }
+                .buttonStyle(.bordered)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .groupedFormatStyle()
     }
 }
 

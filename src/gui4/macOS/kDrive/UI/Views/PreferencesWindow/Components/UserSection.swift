@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,14 +16,96 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
+struct DriveContext: Sendable, Identifiable {
+    var id: UIDrive.ID {
+        return drive.id
+    }
+
+    let drive: UIDrive
+    let isSynchronized: Bool
+}
+
 struct UserSection: View {
+    let user: UIUser
+    let drives: [DriveContext]
+
+    private var orderedDrives: [DriveContext] {
+        return drives.sorted {
+            if $0.isSynchronized != $1.isSynchronized {
+                return $0.isSynchronized && !$1.isSynchronized
+            }
+            return $0.drive.name < $1.drive.name
+        }
+    }
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Section {
+            HStack(spacing: AppPadding.padding8) {
+                if let avatar = user.avatar {
+                    avatar
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 26, height: 26)
+                }
+
+                VStack(alignment: .leading) {
+                    Text(user.name)
+                        .font(.Tokens.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                    Text(user.email)
+                        .font(.Tokens.subheadline)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+            }
+
+            ForEach(drives) { context in
+                HStack(spacing: AppPadding.padding8) {
+                    Text(context.drive.name)
+                        .font(.Tokens.bodyEmphasized)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if context.isSynchronized {
+                        Text("Synchronisé")
+                            .font(.Tokens.body)
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+
+                        Button("Gérer") {
+
+                        }
+                        .buttonStyle(.bordered)
+                    } else {
+                        Text("Non synchronisé")
+                            .font(.Tokens.body)
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+
+                        Button("Activer") {
+
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                .padding(.leading, AppPadding.padding32)
+            }
+
+            Button("Déconnecter ce compte", role: .destructive) {
+                // TODO: Remove user
+            }
+            .buttonStyle(.borderless)
+            .tint(.red)
+        }
     }
 }
 
 #Preview {
-    UserSection()
+    UserSection(
+        user: PreviewHelper.user,
+        drives: [
+            DriveContext(drive: PreviewHelper.drive1, isSynchronized: true),
+            DriveContext(drive: PreviewHelper.drive2, isSynchronized: false)
+        ]
+    )
 }
