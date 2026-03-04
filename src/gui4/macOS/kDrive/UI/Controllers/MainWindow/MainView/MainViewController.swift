@@ -179,7 +179,7 @@ extension MainViewController {
 
     private func makeSupportGroup() -> NSToolbarItemGroup {
         let helpButton = NSToolbarItem(itemIdentifier: .init("HelpButton"))
-        helpButton.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: "Help")
+        helpButton.image = KDriveResources.headphones.image
         helpButton.label = "Help"
         helpButton.target = self
         helpButton.action = #selector(openHelpURL)
@@ -196,7 +196,7 @@ extension MainViewController {
         updatePauseResumeButton(pauseResumeButton)
 
         let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
-        settingsButton.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
+        settingsButton.image = KDriveResources.cog.image
         settingsButton.label = "Settings"
         settingsButton.target = nil
         settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
@@ -281,9 +281,10 @@ extension MainViewController {
     }
 
     private func setPauseResumeAppearance(_ item: NSToolbarItem, showPause: Bool, enabled: Bool) {
-        let symbolName = showPause ? "pause.circle" : "play.circle"
+        let image = showPause ? KDriveResources.pause.image : KDriveResources.play.image
         let label = showPause ? "Pause" : "Resume"
-        item.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: label)
+
+        item.image = image
         item.label = label
         item.isEnabled = enabled
     }
