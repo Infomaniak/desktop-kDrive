@@ -38,65 +38,8 @@
 namespace KDC {
 
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    std::string xdgDataHome, homePath, trashPath;
-
-    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
-    const char *homePathEnv = std::getenv("HOME");
-
-    if (xdgDataHomeEnv) {
-        xdgDataHome = std::string(xdgDataHomeEnv);
-    }
-    if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
-        return false;
-    }
-
-    homePath = std::string(homePathEnv);
-
-    if (xdgDataHome.empty()) {
-        trashPath = homePath + "/.local/share/Trash/files/";
-    } else {
-        trashPath = xdgDataHome + "/Trash/files/";
-    }
-
-    std::string desktopType;
-    if (!Utility::getLinuxDesktopType(desktopType)) {
-        desktopType = "GNOME";
-    }
-
-    std::string command;
-    if (desktopType == "GNOME") {
-        command = "gio trash \"" + itemPath.string() + "\"";
-    } else if (desktopType == "KDE") {
-        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
-    } else {
-        // Not implemented for the others distros
-        return true;
-    }
-
-    std::filesystem::path trash_path(trashPath);
-
-    // Check if the trash/files & trash/info path exists and create it if needed
-    std::error_code ec;
-    if (!std::filesystem::exists(trash_path, ec)) {
-        if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in std::filesystem::exists - err=" << ec.message() << " (" << std::to_string(ec.value()) << ")");
-            return false;
-        }
-
-        if (!std::filesystem::create_directories(trash_path)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string());
-            return false;
-        }
-    }
-
-    int result = system(command.c_str());
-    if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
-        return false;
-    }
-    return true;
+    QFile file(itemPath);
+    return file.moveToTrash();
 }
 
 namespace {
