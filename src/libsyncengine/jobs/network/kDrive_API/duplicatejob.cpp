@@ -31,12 +31,14 @@ DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, 
     _absoluteFinalPath(absoluteFinalPath),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
 }
 
 DuplicateJob::~DuplicateJob() {
     if (!_absoluteFinalPath.empty() && _vfs) {
         if (const auto exitInfo = _vfs->forceStatus(_absoluteFinalPath, VfsStatus()); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
+            LOGW_WARN(_logger,
+                      L"Error in vfsForceStatus for path=" << Utility::formatSyncPath(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }
 }

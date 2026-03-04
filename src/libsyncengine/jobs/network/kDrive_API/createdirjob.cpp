@@ -20,6 +20,8 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
+#include "jobs/network/apitranslator.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -33,6 +35,8 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const 
     _color(color),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
+    ApiTranslator::translateV2ToV3(driveDbId, _parentDirId);
 }
 
 CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &parentId, const SyncName &name) :

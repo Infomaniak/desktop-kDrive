@@ -19,8 +19,9 @@
 #include "movejob.h"
 
 #include "libcommonserver/io/iohelper.h"
-
 #include "libcommonserver/utility/utility.h"
+
+#include "jobs/network/apitranslator.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -35,6 +36,8 @@ MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &
     _name(name),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
+    ApiTranslator::translateV2ToV3(driveDbId, _destDirId);
 }
 
 MoveJob::~MoveJob() {

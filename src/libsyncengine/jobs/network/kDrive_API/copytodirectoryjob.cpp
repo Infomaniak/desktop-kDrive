@@ -19,6 +19,8 @@
 #include "copytodirectoryjob.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
+#include "jobs/network/apitranslator.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -30,6 +32,8 @@ CopyToDirectoryJob::CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId
     _remoteDestId(remoteDestId),
     _newName(newName) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
+    ApiTranslator::translateV2ToV3(driveDbId, _remoteDestId);
 }
 
 ExitInfo CopyToDirectoryJob::handleResponse(std::istream &is) {
