@@ -2923,30 +2923,7 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
     }
 
     if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
-        LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
-
-        std::vector<Sync> syncs;
-        if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncs)) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
-            return ExitCode::DbError;
-        }
-
-        for (auto &sync: syncs) {
-            // Pause sync
-            sync.setPaused(true);
-            ExitCause exitCause = ExitCause::DriveAccessError;
-            if (drive.maintenanceInfo()._maintenance) {
-                if (drive.maintenanceInfo()._notRenew)
-                    exitCause = ExitCause::DriveNotRenew;
-                else if (drive.maintenanceInfo()._asleep)
-                    exitCause = ExitCause::DriveAsleep;
-                else if (drive.maintenanceInfo()._wakingUp)
-                    exitCause = ExitCause::DriveWakingUp;
-                else
-                    exitCause = ExitCause::DriveMaintenance;
-            }
-            addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
-        }
+        if (const auto exitInfo = handleDriveAccessDenied(drive); !exitInfo) return exitInfo;
     }
 
     if (driveUpdated) {
@@ -2972,6 +2949,34 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
         DriveInfo driveInfo;
         ServerRequests::driveToDriveInfo(drive, driveInfo);
         sendDriveUpdated(driveInfo);
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::handleDriveAccessDenied(const Drive &drive) {
+    LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
+
+    std::vector<Sync> syncs;
+    if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncs)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+        return ExitCode::DbError;
+    }
+
+    for (auto &sync: syncs) {
+        // Pause sync
+        sync.setPaused(true);
+        ExitCause exitCause = ExitCause::DriveAccessError;
+        if (drive.maintenanceInfo()._maintenance) {
+            if (drive.maintenanceInfo()._notRenew)
+                exitCause = ExitCause::DriveNotRenew;
+            else if (drive.maintenanceInfo()._asleep)
+                exitCause = ExitCause::DriveAsleep;
+            else if (drive.maintenanceInfo()._wakingUp)
+                exitCause = ExitCause::DriveWakingUp;
+            else
+                exitCause = ExitCause::DriveMaintenance;
+        }
+        addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
     }
     return ExitCode::Ok;
 }

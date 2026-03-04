@@ -288,6 +288,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitInfo createAccount(Account &newAccount);
         ExitInfo updateAccount(Account &account);
         ExitInfo updateDrive(const User &user, const Account &account, Drive &drive);
+        ExitInfo handleDriveAccessDenied(const Drive &drive);
         ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
                                                   Drive &drive, bool &driveUpdated);
 
