@@ -63,6 +63,12 @@ final class MainViewController: IKSplitViewController {
                 self?.onModalPathChange(newPath)
             }
 
+        viewModel.$currentSynchroContext
+            .receiveOnMain(store: &bindStore) { [weak self] _ in
+                guard let self else { return }
+                self.refreshPauseResumeToolbarItem(self.synchroStateObserver.synchroState)
+            }
+
         synchroStateObserver.synchroStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] synchroState in
                 self?.refreshPauseResumeToolbarItem(synchroState)
