@@ -25,7 +25,7 @@ DriveUserInfoCache &DriveUserInfoCache::instance() {
     return cache;
 }
 
-std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const int driveId, const int userId) const {
+std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const int32_t driveId, const int32_t userId) const {
     const std::scoped_lock lock(_mutex);
 
     const CacheKey key{driveId, userId};
@@ -35,18 +35,18 @@ std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const int driveId, con
     }
 
     if (std::chrono::steady_clock::now() - it->second.insertTime > _ttl) {
-        _cache.erase(it);
+        (void) _cache.erase(it);
         return std::nullopt;
     }
 
     return it->second.info;
 }
 
-void DriveUserInfoCache::put(const int driveId, const int userId, const DriveUserBasicInfo &info) {
+void DriveUserInfoCache::put(const int32_t driveId, const int32_t userId, const DriveUserBasicInfo &info) {
     const std::scoped_lock lock(_mutex);
 
     const CacheKey key{driveId, userId};
-    _cache.insert_or_assign(key, CacheEntry{info, std::chrono::steady_clock::now()});
+    (void) _cache.insert_or_assign(key, CacheEntry{info, std::chrono::steady_clock::now()});
 }
 
 void DriveUserInfoCache::clear() {

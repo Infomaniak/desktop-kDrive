@@ -18,7 +18,6 @@
 
 #include "nodeconflictinfojob.h"
 #include "appserver.h"
-#include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -30,8 +29,6 @@
 #include "libsyncengine/syncpal/syncpal.h"
 #include "libparms/db/parmsdb.h"
 
-#include <Poco/Net/HTTPResponse.h>
-
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsRelativePath = "relativePath";
@@ -42,7 +39,7 @@ static const auto outParamsNodeConflictInfo = "nodeConflictInfo";
 
 namespace KDC {
 
-NodeConflictInfoJob::NodeConflictInfoJob(std::shared_ptr<CommManager> commManager, int requestId,
+NodeConflictInfoJob::NodeConflictInfoJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                          const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::NODE_CONFLICT_INFO;
@@ -71,7 +68,7 @@ ExitInfo NodeConflictInfoJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const NodeId &nodeId) {
+ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int32_t userDbId, int32_t driveId, const NodeId &nodeId) {
     std::shared_ptr<GetFileInfoJobV3> networkJob;
     try {
         networkJob = std::make_shared<GetFileInfoJobV3>(userDbId, driveId, nodeId);
@@ -88,7 +85,7 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
     _nodeConflictInfo.setLastModificationDate(networkJob->modificationTime());
 
     // Resolve the author display name from the user ID
-    const int lastModifiedByUserId = networkJob->lastModifiedByUserId();
+    const int32_t lastModifiedByUserId = networkJob->lastModifiedByUserId();
     if (lastModifiedByUserId > 0) {
         // Check cache first
         if (auto cached = DriveUserInfoCache::instance().get(driveId, lastModifiedByUserId)) {
@@ -103,8 +100,8 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
             }
 
             if (const auto exitInfo = userInfoJob->runSynchronously(); !exitInfo) {
-                LOG_WARN(_logger,
-                         "Error in GetDriveUserInfoJob::runSynchronously for userId=" << lastModifiedByUserId << " exitInfo=" << exitInfo);
+                LOG_WARN(_logger, "Error in GetDriveUserInfoJob::runSynchronously for userId=" << lastModifiedByUserId
+                                                                                               << " exitInfo=" << exitInfo);
                 return exitInfo;
             }
             _nodeConflictInfo.setAuthorName(userInfoJob->name());
@@ -116,7 +113,7 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int userDbId, int driveId, const N
     return ExitCode::Ok;
 }
 
-ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int userDbId, int driveId, const NodeId &nodeId) {
+ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int32_t userDbId) {
     // Get file size and modification date from filesystem
     FileStat fileStat;
     IoError ioError = IoError::Success;
@@ -139,10 +136,10 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int user
         return ExitCode::DbError;
     } else if (!found) {
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    } else {
+        _nodeConflictInfo.setAuthorName(user.name());
+        return ExitCode::Ok;
     }
-
-    _nodeConflictInfo.setAuthorName(user.name());
-    return ExitCode::Ok;
 }
 
 ExitInfo NodeConflictInfoJob::process() {
@@ -160,8 +157,8 @@ ExitInfo NodeConflictInfoJob::process() {
     }
 
     const auto &syncPal = syncPalMapIt->second;
-    const int userDbId = syncPal->userDbId();
-    const int driveId = syncPal->driveId();
+    const int32_t userDbId = syncPal->userDbId();
+    const int32_t driveId = syncPal->driveId();
     const SyncPath &localRootPath = syncPal->localPath();
 
     // Resolve the remote nodeId from the relative path using the sync database
@@ -189,7 +186,7 @@ ExitInfo NodeConflictInfoJob::process() {
     } else if (_replicaSide == ReplicaSide::Local) {
         const SyncPath localFilePath = localRootPath / _relativePath;
 
-        if (ExitInfo exitInfo = fetchLocalInfo(localFilePath, userDbId, driveId, remoteNodeId); !exitInfo) {
+        if (ExitInfo exitInfo = fetchLocalInfo(localFilePath, userDbId); !exitInfo) {
             LOGW_WARN(_logger,
                       L"Error fetching local info for " << Utility::formatSyncPath(localFilePath) << L" exitInfo=" << exitInfo);
             return exitInfo;

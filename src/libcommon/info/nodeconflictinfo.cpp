@@ -25,7 +25,7 @@ static const auto nodeConflictInfoLastModificationDate = "lastModificationDate";
 
 namespace KDC {
 
-NodeConflictInfo::NodeConflictInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate) :
+NodeConflictInfo::NodeConflictInfo(const std::string &authorName, const int64_t fileSize, const SyncTime lastModificationDate) :
     _authorName(authorName),
     _fileSize(fileSize),
     _lastModificationDate(lastModificationDate) {}

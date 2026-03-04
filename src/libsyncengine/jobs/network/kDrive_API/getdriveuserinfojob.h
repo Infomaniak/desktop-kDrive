@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetDriveUserInfoJob : public AbstractTokenNetworkJob {
     public:
-        GetDriveUserInfoJob(int userDbId, int driveId, int userId);
-        GetDriveUserInfoJob(int driveDbId, int userId);
+        GetDriveUserInfoJob(int32_t userDbId, int32_t driveId, int32_t userId);
+        GetDriveUserInfoJob(int32_t driveDbId, int32_t userId);
 
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] const std::string &email() const { return _email; }

@@ -27,16 +27,15 @@ namespace KDC {
 class NodeConflictInfo {
     public:
         NodeConflictInfo() = default;
-        NodeConflictInfo(const std::string &authorName, int64_t fileSize, SyncTime lastModificationDate);
+        NodeConflictInfo(const std::string &authorName, const int64_t fileSize, const SyncTime lastModificationDate);
 
-        [[nodiscard]] const std::string &authorName() const { return _authorName; }
-        void setAuthorName(const std::string &authorName) { _authorName = authorName; }
+        [[nodiscard]] const std::string_view &authorName() const { return _authorName; }
+        void setAuthorName(const std::string_view &authorName) { _authorName = authorName; }
 
         [[nodiscard]] int64_t fileSize() const { return _fileSize; }
-        void setFileSize(int64_t fileSize) { _fileSize = fileSize; }
-
+        void setFileSize(const int64_t fileSize) { _fileSize = fileSize; }
         [[nodiscard]] SyncTime lastModificationDate() const { return _lastModificationDate; }
-        void setLastModificationDate(SyncTime lastModificationDate) { _lastModificationDate = lastModificationDate; }
+        void setLastModificationDate(const SyncTime lastModificationDate) { _lastModificationDate = lastModificationDate; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);

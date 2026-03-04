@@ -26,12 +26,12 @@ namespace KDC {
 
 class NodeConflictInfoJob : public AbstractGuiJob {
     public:
-        NodeConflictInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        NodeConflictInfoJob(std::shared_ptr<CommManager> commManager, int32_t requestId, const Poco::DynamicStruct &inParams,
                             std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        int _syncDbId = 0;
+        int32_t _syncDbId = 0;
         SyncPath _relativePath;
         ReplicaSide _replicaSide = ReplicaSide::Unknown;
 
@@ -42,8 +42,8 @@ class NodeConflictInfoJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo fetchRemoteInfo(int userDbId, int driveId, const NodeId &nodeId);
-        ExitInfo fetchLocalInfo(const SyncPath &localPath, int userDbId, int driveId, const NodeId &nodeId);
+        ExitInfo fetchRemoteInfo(int32_t userDbId, int32_t driveId, const NodeId &nodeId);
+        ExitInfo fetchLocalInfo(const SyncPath &localPath, int32_t userDbId);
 
         friend class TestGuiCommChannel;
 };
