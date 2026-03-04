@@ -195,6 +195,46 @@ void TestAppServer::testCleanup() {
     CPPUNIT_ASSERT(true);
 }
 
+ExitInfo mockLoadUserInfo(User &user, bool &updated) {
+    return ExitCode::Ok;
+}
+
+ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
+    return ExitCode::Ok;
+}
+
+ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                           bool &quotaUpdated) {
+    return ExitCode::Ok;
+}
+
+void TestAppServer::testUpdateUserInfo() {
+    _appPtr->setLoadUserInfoFunction(mockLoadUserInfo);
+    _appPtr->setLoadAccountInfoFunction(mockLoadAccountInfo);
+    _appPtr->setLoadDriveInfoFunction(mockLoadDriveInfo);
+
+    /**
+     * Test:
+     * - "driveA" has been moved from "accountA" to "accountB"
+     * - "userA" is in both "accountA" and "accountB"
+     */
+    // Insert user, account, drive & sync
+    User userA(1, 11, "dummy");
+    (void) ParmsDb::instance()->insertUser(userA);
+
+    Account accountA(1, 111, userA.dbId(), "accountA");
+    (void) ParmsDb::instance()->insertAccount(accountA);
+    Account accountB(1, 222, userA.dbId(), "accountB");
+    (void) ParmsDb::instance()->insertAccount(accountB);
+
+    Drive driveA(1, 1111, accountA.dbId(), "driveA", 123, "#FF0000");
+    (void) ParmsDb::instance()->insertDrive(driveA);
+    // const Drive driveB(1, 1111, accountB.dbId(), "driveB", 123, "#FF0000");
+    // (void) ParmsDb::instance()->insertDrive(driveB);
+
+    _appPtr->updateUserInfo(userA);
+}
+
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
     int count = 0;
     while (count++ < 100) {

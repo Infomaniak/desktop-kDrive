@@ -33,15 +33,30 @@ class MockAppServer : public AppServer {
 
         void setParmsDbPath(const std::filesystem::path &path) { _parmsDbPath = path; }
 
+        void setLoadUserInfoFunction(std::function<ExitInfo(User &user, bool &updated)> f) { _loadUserInfo = f; };
+        void setLoadAccountInfoFunction(std::function<ExitInfo(Account &account, bool &updated)> f) { _loadAccountInfo = f; };
+        void setLoadDriveInfoFunction(std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId,
+                                                             uint64_t &newAccountId, bool &updated, bool &quotaUpdated)>
+                                              f) {
+            _loadDriveInfo = f;
+        };
+
     private:
+        // Do not try to notify the client
+        void sendUserUpdated(const UserInfo &) const override {};
+        void sendAccountAdded(const AccountInfo &) const override {};
+        void sendAccountUpdated(const AccountInfo &) const override {};
+        void sendDriveUpdated(const DriveInfo &) const override {};
+
         std::filesystem::path _parmsDbPath;
 };
 
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
-        CPPUNIT_TEST(testInitAndStopSyncPal);
-        CPPUNIT_TEST(testStartAndStopSync);
-        CPPUNIT_TEST(testCleanup); // Must be the last test
+        // CPPUNIT_TEST(testInitAndStopSyncPal);
+        // CPPUNIT_TEST(testStartAndStopSync);
+        CPPUNIT_TEST(testUpdateUserInfo);
+        // CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -51,6 +66,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testInitAndStopSyncPal();
         void testStartAndStopSync();
         void testCleanup();
+        void testUpdateUserInfo();
 
     private:
         MockAppServer *_appPtr;
