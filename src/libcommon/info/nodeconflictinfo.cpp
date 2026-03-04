@@ -19,9 +19,9 @@
 #include "nodeconflictinfo.h"
 #include "utility/utility.h"
 
-static const auto nodeVersionInfoAuthorName = "authorName";
-static const auto nodeVersionInfoFileSize = "fileSize";
-static const auto nodeVersionInfoLastModificationDate = "lastModificationDate";
+static const auto nodeConflictInfoAuthorName = "authorName";
+static const auto nodeConflictInfoFileSize = "fileSize";
+static const auto nodeConflictInfoLastModificationDate = "lastModificationDate";
 
 namespace KDC {
 
@@ -31,15 +31,15 @@ NodeConflictInfo::NodeConflictInfo(const std::string &authorName, int64_t fileSi
     _lastModificationDate(lastModificationDate) {}
 
 void NodeConflictInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
-    CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoAuthorName, _authorName);
-    CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoFileSize, _fileSize);
-    CommonUtility::writeValueToStruct(dstruct, nodeVersionInfoLastModificationDate, _lastModificationDate);
+    CommonUtility::writeValueToStruct(dstruct, nodeConflictInfoAuthorName, _authorName);
+    CommonUtility::writeValueToStruct(dstruct, nodeConflictInfoFileSize, _fileSize);
+    CommonUtility::writeValueToStruct(dstruct, nodeConflictInfoLastModificationDate, _lastModificationDate);
 }
 
 void NodeConflictInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoAuthorName, _authorName);
-    CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoFileSize, _fileSize);
-    CommonUtility::readValueFromStruct(dstruct, nodeVersionInfoLastModificationDate, _lastModificationDate);
+    CommonUtility::readValueFromStruct(dstruct, nodeConflictInfoAuthorName, _authorName);
+    CommonUtility::readValueFromStruct(dstruct, nodeConflictInfoFileSize, _fileSize);
+    CommonUtility::readValueFromStruct(dstruct, nodeConflictInfoLastModificationDate, _lastModificationDate);
 }
 
 } // namespace KDC

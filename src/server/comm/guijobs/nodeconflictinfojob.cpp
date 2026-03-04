@@ -38,7 +38,7 @@ static const auto inParamsRelativePath = "relativePath";
 static const auto inParamsReplicaSide = "replicaSide";
 
 // Output parameters keys
-static const auto outParamsNodeVersionInfo = "nodeVersionInfo";
+static const auto outParamsNodeConflictInfo = "nodeConflictInfo";
 
 namespace KDC {
 
@@ -66,7 +66,7 @@ ExitInfo NodeConflictInfoJob::deserializeInputParms() {
 }
 
 ExitInfo NodeConflictInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsNodeVersionInfo, _nodeConflictInfo, info2DynamicVar<NodeConflictInfo>);
+    writeParamValue(outParamsNodeConflictInfo, _nodeConflictInfo, info2DynamicVar<NodeConflictInfo>);
 
     return ExitCode::Ok;
 }

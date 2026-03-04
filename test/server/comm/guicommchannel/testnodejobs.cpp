@@ -524,7 +524,7 @@ void TestGuiCommChannel::testNodeConflictInfoJob() {
     (void) nodeConflictInfoObj.set("lastModificationDate", 1700000000);
 
     Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("nodeVersionInfo", nodeConflictInfoObj);
+    (void) paramsObj.set("nodeConflictInfo", nodeConflictInfoObj);
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
