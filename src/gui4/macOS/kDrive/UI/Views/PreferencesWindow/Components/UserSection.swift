@@ -46,9 +46,7 @@ struct UserSection: View {
         Section {
             HStack(spacing: AppPadding.padding8) {
                 if let avatar = user.avatar {
-                    avatar
-                        .resizable()
-                        .scaledToFill()
+                    AvatarView(image: avatar)
                         .frame(width: 26, height: 26)
                 }
 
