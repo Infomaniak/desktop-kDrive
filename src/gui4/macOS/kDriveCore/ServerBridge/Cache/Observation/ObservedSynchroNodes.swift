@@ -32,10 +32,10 @@ public struct SynchroNodeContext: Sendable, Equatable {
 @MainActor
 @propertyWrapper
 final class ObservedSynchroNodes: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroNodeContext] = []
+    @Published private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -52,7 +52,7 @@ final class ObservedSynchroNodes: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchroNodes {
+    var projectedValue: ObservedSynchroNodes {
         self
     }
 }
