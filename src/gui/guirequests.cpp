@@ -163,7 +163,7 @@ ExitCode GuiRequests::resolveUnsupportedCharErrors(const int driveDbId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 

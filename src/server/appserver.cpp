@@ -1231,7 +1231,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitCode);
             break;
         }
-        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR: {
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY: {
             int driveId = 0;
 
             QDataStream paramsStream(params);
