@@ -19,11 +19,16 @@
 import Combine
 import Foundation
 
-public protocol UpdaterObservable: Sendable {
+public protocol UpdaterCacheObservable: Sendable {
     var updateStatePublisher: AnyPublisher<KDC.UpdateState, Never> { get }
 }
 
-public actor UpdaterStateCache: UpdaterObservable {
+public protocol UpdaterCache {
+    func setUpdateState(_ state: KDC.UpdateState) async
+    func getUpdateState() async -> KDC.UpdateState?
+}
+
+public actor UpdaterStateCache: UpdaterCache, UpdaterCacheObservable {
     private var updateState: KDC.UpdateState?
 
     private nonisolated let updateStateSubject = PassthroughSubject<KDC.UpdateState, Never>()
