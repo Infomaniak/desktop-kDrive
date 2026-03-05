@@ -77,6 +77,7 @@ enum class RequestNum {
     NODE_SUBFOLDERS2,
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
+    NODE_CONFLICT_INFO,
     ERROR_INFOLIST,
     ERROR_INFOLIST_LEGACY,
     ERROR_GET_CONFLICTS_LEGACY,
@@ -180,6 +181,8 @@ inline std::string toString(RequestNum e) {
             return "NODE_FOLDER_SIZE";
         case RequestNum::NODE_CREATEMISSINGFOLDERS:
             return "NODE_CREATEMISSINGFOLDERS";
+        case RequestNum::NODE_CONFLICT_INFO:
+            return "NODE_CONFLICT_INFO";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
         case RequestNum::ERROR_INFOLIST_LEGACY:

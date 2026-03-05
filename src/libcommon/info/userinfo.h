@@ -42,6 +42,8 @@ class UserInfo {
         inline const QString &email() const { return _email; }
         inline void setAvatar(const QImage &avatar) { _avatar = avatar; }
         inline const QImage &avatar() const { return _avatar; }
+        inline void setAvatarUrl(const QString &avatarUrl) { _avatarUrl = avatarUrl; }
+        inline const QString &avatarUrl() const { return _avatarUrl; }
         inline void setConnected(bool connected) { _connected = connected; }
         inline bool connected() const { return _connected; }
         inline bool credentialsAsked() const { return _credentialsAsked; }
@@ -51,7 +53,8 @@ class UserInfo {
 
         friend bool operator==(const UserInfo &lhs, const UserInfo &rhs) {
             return (lhs.dbId() == rhs.dbId()) && (lhs.userId() == rhs.userId()) && (lhs.name() == rhs.name()) &&
-                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) && (lhs.connected() == rhs.connected()) &&
+                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) &&
+                   (lhs.avatarUrl() == rhs.avatarUrl()) && (lhs.connected() == rhs.connected()) &&
                    (lhs.credentialsAsked() == rhs.credentialsAsked()) && (lhs.isStaff() == rhs.isStaff());
         }
 
@@ -70,6 +73,7 @@ class UserInfo {
         QString _name;
         QString _email;
         QImage _avatar;
+        QString _avatarUrl;
         bool _connected{false};
 
         // Non DB attributes

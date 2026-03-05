@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "getinfouserjob.h"
+#include "getdriveuserinfojob.h"
 
 #include "libcommonserver/utility/jsonparserutility.h"
 
@@ -24,16 +24,32 @@
 
 namespace KDC {
 
-GetInfoUserJob::GetInfoUserJob(const int userDbId) :
-    AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
+GetDriveUserInfoJob::GetDriveUserInfoJob(const int32_t userDbId, const int32_t driveId, const int32_t userId) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 3;
 }
 
-ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
+GetDriveUserInfoJob::GetDriveUserInfoJob(const int32_t driveDbId, const int32_t userId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _targetUserId(userId) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 3;
+}
+
+ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
-    Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    const auto dataArray = jsonRes()->getArray(dataKey);
+    if (!dataArray || dataArray->empty()) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    const auto dataObj = dataArray->getObject(0);
+    if (!dataObj) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -47,12 +63,17 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    JsonParserUtility::extractValue(dataObj, isStaffKey, _isStaff, false);
     return ExitCode::Ok;
 }
 
-std::string GetInfoUserJob::getSpecificUrl() {
-    return "/profile";
+std::string GetDriveUserInfoJob::getSpecificUrl() {
+    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+    str += "/users";
+    return str;
+}
+
+void GetDriveUserInfoJob::setQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("user_ids[]", std::to_string(_targetUserId));
 }
 
 } // namespace KDC
