@@ -21,6 +21,7 @@ import InfomaniakDI
 
 struct UpdaterSignalHandler {
     private let decoder = JSONDecoder()
+    @LazyInjectService private var updaterCache: UpdaterCache
 
     func handleShowDialog(_ signal: Data) async throws {
         guard let showDialogSignal = try? decoder.decode(SignalMessage<UpdaterShowDialogSignal>.self, from: signal) else {
@@ -43,6 +44,6 @@ struct UpdaterSignalHandler {
 
         IKLogger.xpc.log("[KD] Updater state changed: \(updateState)")
 
-        // TODO: Make the updater view refresh itself with a UpdaterJobs().updaterState()
+        await updaterCache.setUpdateState(updateState)
     }
 }

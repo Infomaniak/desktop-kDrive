@@ -137,6 +137,7 @@
 				Cache/Observation/ObservedSynchroNodesTests.swift,
 				Cache/Observation/ObservedSynchrosTests.swift,
 				Cache/Observation/ObservedSynchroTests.swift,
+				Cache/Observation/ObservedUpdaterTests.swift,
 				Cache/Observation/ObservedUserTests.swift,
 				Jobs/LoginJobTests.swift,
 				Parsing/Base64CodedTests.swift,

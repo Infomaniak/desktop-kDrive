@@ -21,13 +21,15 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedDrive: ObservableObject {
-    @Published public private(set) var wrappedValue: Drive?
+final class ObservedDrive: ObservableObject {
+    @Published private(set) var wrappedValue: Drive?
     private var cancellable: AnyCancellable?
 
-    public init(
+    // periphery:ignore
+    init(
         userDbId: Int32,
         accountDbId: Int32,
         driveDbId: Int32,
@@ -48,7 +50,7 @@ public final class ObservedDrive: ObservableObject {
             }
     }
 
-    public init(
+    init(
         driveDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -65,7 +67,9 @@ public final class ObservedDrive: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedDrive { self }
+    var projectedValue: ObservedDrive {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

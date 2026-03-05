@@ -26,13 +26,15 @@ public struct AvailableDriveContext: Sendable, Equatable {
     public let user: User
 }
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedAvailableDrives: ObservableObject {
-    @Published public private(set) var wrappedValue: [AvailableDriveContext] = []
+final class ObservedAvailableDrives: ObservableObject {
+    @Published private(set) var wrappedValue: [AvailableDriveContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    // periphery:ignore
+    init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
@@ -48,7 +50,9 @@ public final class ObservedAvailableDrives: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedAvailableDrives { self }
+    var projectedValue: ObservedAvailableDrives {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

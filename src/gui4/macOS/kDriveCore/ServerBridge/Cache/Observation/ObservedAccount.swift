@@ -21,13 +21,15 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedAccount: ObservableObject {
-    @Published public private(set) var wrappedValue: Account?
+final class ObservedAccount: ObservableObject {
+    @Published private(set) var wrappedValue: Account?
     private var cancellable: AnyCancellable?
 
-    public init(
+    // periphery:ignore
+    init(
         userDbId: Int32,
         accountDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
@@ -43,7 +45,8 @@ public final class ObservedAccount: ObservableObject {
             }
     }
 
-    public init(
+    // periphery:ignore
+    init(
         accountDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -60,7 +63,9 @@ public final class ObservedAccount: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedAccount { self }
+    var projectedValue: ObservedAccount {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
