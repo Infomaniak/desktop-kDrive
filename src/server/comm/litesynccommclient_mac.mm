@@ -441,10 +441,10 @@ class LiteSyncCommClientPrivate {
     }
 
     // Set icon (!!! touch modification date !!!)
-    if (![[NSWorkspace sharedWorkspace] setIcon:image forFile:path options:0]) {
+    /*if (![[NSWorkspace sharedWorkspace] setIcon:image forFile:path options:0]) {
         NSLog(@ "[KD] Error in NSWorkspace::setIcon - path=%@", path);
         return false;
-    }
+    }*/
 
     // Set modification date
     NSDictionary *fileAttribModificationDate =
