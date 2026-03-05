@@ -1,6 +1,8 @@
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +12,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors;
 public class ConflictDialogVM : UISafeObservableObject
 {
     private List<Error> _errors { get; init; }
+    private List<DbId> _keepLocalIds = new List<DbId>();
+    private List<DbId> _keepRemoteIds = new List<DbId>();
 
     private Error? _currentError;
 
@@ -57,7 +61,7 @@ public class ConflictDialogVM : UISafeObservableObject
     public string LocalVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.DestinationPath);
     public string RemoteVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.Path);
 
-    public bool MultipleConflicts => _errors.Count > 1;
+    public bool HasMultipleConflicts => _errors.Count > 1;
 
     public int CurrentErrorIndex
     {
@@ -153,5 +157,28 @@ public class ConflictDialogVM : UISafeObservableObject
             LocalIsMostRecent = false;
             RemoteIsMostRecent = false;
         }
+    }
+
+    public void SaveCurrentErrorChoice(bool keepLocal)
+    {
+        if (CurrentError is null)
+        {
+            Logger.Log(Logger.Level.Error, "Attempted to save user choice but CurrentError is null.");
+            return;
+        }
+        if (keepLocal)
+        {
+            _keepLocalIds.Add(CurrentError.DbId);
+        }
+        else
+        {
+            _keepRemoteIds.Add(CurrentError.DbId);
+        }
+    }
+
+    public async Task<bool> ApplyUserChoices()
+    {
+        var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+        return await commService.ResolveConflicts(_keepLocalIds, _keepRemoteIds, CancellationToken.None);
     }
 }

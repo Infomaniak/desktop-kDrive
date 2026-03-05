@@ -928,7 +928,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }; 
+            };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
 
@@ -1579,8 +1579,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
 
-                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => (a.Status == fileItemInfo.Status || a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                // Remove any item with the same remote or local node id wich is not done (ie errored)
+                var toBeRemoved = activities.Where(a =>
+                    a.Status != SyncFileStatus.Success &&
+                    (
+                        (!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) ||
+                        (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId)
+                    ));
                 activities.RemoveMany(toBeRemoved);
 
                 // Create new item
@@ -1591,7 +1596,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
-                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
+                    activities.Insert(Math.Clamp((destIndex == 0) ? 0 : destIndex + 1, 0, activities.Count), newItem);
                 }
                 else
                 {
