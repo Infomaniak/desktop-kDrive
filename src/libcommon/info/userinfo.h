@@ -40,6 +40,9 @@ class UserInfo {
         inline const QString &name() const { return _name; }
         inline void setEmail(const QString &email) { _email = email; }
         inline const QString &email() const { return _email; }
+
+        // For temporary users, the avatar does not need to be available offline,
+        // so `avatar` is not mandatory and `avatarUrl` can be used instead to display the avatar in the UI.
         inline void setAvatar(const QImage &avatar) { _avatar = avatar; }
         inline const QImage &avatar() const { return _avatar; }
         inline void setAvatarUrl(const QString &avatarUrl) { _avatarUrl = avatarUrl; }
@@ -53,9 +56,9 @@ class UserInfo {
 
         friend bool operator==(const UserInfo &lhs, const UserInfo &rhs) {
             return (lhs.dbId() == rhs.dbId()) && (lhs.userId() == rhs.userId()) && (lhs.name() == rhs.name()) &&
-                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) &&
-                   (lhs.avatarUrl() == rhs.avatarUrl()) && (lhs.connected() == rhs.connected()) &&
-                   (lhs.credentialsAsked() == rhs.credentialsAsked()) && (lhs.isStaff() == rhs.isStaff());
+                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) && (lhs.avatarUrl() == rhs.avatarUrl()) &&
+                   (lhs.connected() == rhs.connected()) && (lhs.credentialsAsked() == rhs.credentialsAsked()) &&
+                   (lhs.isStaff() == rhs.isStaff());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
