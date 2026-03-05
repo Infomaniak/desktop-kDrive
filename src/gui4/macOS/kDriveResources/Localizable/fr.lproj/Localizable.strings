@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 03 Mar 2026 13:54:27 +0100
+ * Exported at: Thu, 05 Mar 2026 14:19:08 +0100
  */
 
 
@@ -65,6 +65,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Fermer";
 
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Connecter un compte";
+
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Continuer";
 
@@ -74,6 +77,11 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
 
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Déconnecter ce compte";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Activer";
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Partager une idée";
 
@@ -310,6 +318,8 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Besoin d’aide ?";
 
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Non synchronisé";
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
@@ -423,6 +433,9 @@
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synchronisé";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Synchronisé";
 
 /* loco:698b2ff6c504d956e009aad2 */
 "syncedFromComputer" = "Synchronisé à partir de votre ordinateur";
