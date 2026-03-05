@@ -24,10 +24,10 @@ import OrderedCollections
 @MainActor
 @propertyWrapper
 final class ObservedAccount: ObservableObject {
-    @Published public private(set) var wrappedValue: Account?
+    @Published private(set) var wrappedValue: Account?
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         userDbId: Int32,
         accountDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
@@ -43,7 +43,7 @@ final class ObservedAccount: ObservableObject {
             }
     }
 
-    public init(
+    init(
         accountDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -60,7 +60,9 @@ final class ObservedAccount: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedAccount { self }
+    var projectedValue: ObservedAccount {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
