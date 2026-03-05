@@ -18,42 +18,12 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
 
 public struct DriveContext: Sendable, Equatable {
     public let drive: Drive
     public let account: Account
     public let user: User
-}
-
-// periphery:ignore - Will be moved to the test target
-@MainActor
-@propertyWrapper
-final class ObservedDrives: ObservableObject {
-    @Published private(set) var wrappedValue: [DriveContext] = []
-    private var cancellable: AnyCancellable?
-
-    // periphery:ignore
-    init(
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .allDrivesPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] drives in
-                self?.wrappedValue = drives
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    var projectedValue: ObservedDrives {
-        self
-    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
