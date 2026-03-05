@@ -928,7 +928,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }; 
+            };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
 
@@ -1591,7 +1591,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
-                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
+                    activities.Insert(Math.Clamp((destIndex == 0) ? 0 : destIndex + 1, 0, activities.Count), newItem);
                 }
                 else
                 {

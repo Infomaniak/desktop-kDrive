@@ -1,6 +1,7 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
 
@@ -42,15 +43,27 @@ public partial class ConflictDialog : Page
     private void Init()
     {
         _dialog.IsSecondaryButtonEnabled = false;
-        _dialog.SecondaryButtonClick += _dialog_SecondaryButtonClick;
+        _dialog.SecondaryButtonClick += Dialog_SecondaryButtonClick;
         RefreshPrimaryButtonText();
     }
 
-    private void _dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void Dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        if (!ViewModel.MultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
+        if (RemoteVersionPresenter.IsSelected || LocalVersionPresenter.IsSelected)
+            ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected);
+
+        if (!ViewModel.HasMultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
         {
-            return;
+
+
+            // The user has validated the last conflict, we can now apply all their choices on the server
+            _dialog.IsEnabled = false;
+            if (!await ViewModel.ApplyUserChoices())
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                args.Cancel = true;
+            }
+            _dialog.IsEnabled = true;
         }
         else
         {
