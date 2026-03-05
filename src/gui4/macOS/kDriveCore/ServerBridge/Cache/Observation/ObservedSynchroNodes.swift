@@ -31,7 +31,7 @@ public struct SynchroNodeContext: Sendable, Equatable {
 
 @MainActor
 @propertyWrapper
-public final class ObservedSynchroNodes: ObservableObject {
+final class ObservedSynchroNodes: ObservableObject {
     @Published public private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
