@@ -23,7 +23,7 @@ import OrderedCollections
 
 @MainActor
 @propertyWrapper
-public final class ObservedAccount: ObservableObject {
+final class ObservedAccount: ObservableObject {
     @Published public private(set) var wrappedValue: Account?
     private var cancellable: AnyCancellable?
 
