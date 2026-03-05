@@ -30,10 +30,10 @@ public struct DriveContext: Sendable, Equatable {
 @MainActor
 @propertyWrapper
 final class ObservedDrives: ObservableObject {
-    @Published public private(set) var wrappedValue: [DriveContext] = []
+    @Published private(set) var wrappedValue: [DriveContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
@@ -49,7 +49,9 @@ final class ObservedDrives: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedDrives { self }
+    var projectedValue: ObservedDrives {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
