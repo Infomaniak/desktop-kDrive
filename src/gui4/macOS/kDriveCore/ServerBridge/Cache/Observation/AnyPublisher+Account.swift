@@ -18,55 +18,7 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
-
-// periphery:ignore - Will be moved to the test target
-@MainActor
-@propertyWrapper
-final class ObservedAccount: ObservableObject {
-    @Published private(set) var wrappedValue: Account?
-    private var cancellable: AnyCancellable?
-
-    // periphery:ignore
-    init(
-        userDbId: Int32,
-        accountDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .accountPublisher(userDbId: userDbId, accountDbId: accountDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] account in
-                self?.wrappedValue = account
-            }
-    }
-
-    // periphery:ignore
-    init(
-        accountDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .accountPublisher(accountDbId: accountDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] account in
-                self?.wrappedValue = account
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    var projectedValue: ObservedAccount {
-        self
-    }
-}
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func accountEventPublisher(
