@@ -21,12 +21,14 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
 final class ObservedDrive: ObservableObject {
     @Published private(set) var wrappedValue: Drive?
     private var cancellable: AnyCancellable?
 
+    // periphery:ignore
     init(
         userDbId: Int32,
         accountDbId: Int32,

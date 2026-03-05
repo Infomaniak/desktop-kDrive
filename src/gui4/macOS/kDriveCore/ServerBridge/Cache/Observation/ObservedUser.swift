@@ -26,12 +26,14 @@ public enum ObservationEvent<Some: Equatable>: Equatable {
     case removed
 }
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
 final class ObservedUser: ObservableObject {
     @Published private(set) var wrappedValue: User?
     private var cancellable: AnyCancellable?
 
+    // periphery:ignore
     init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 

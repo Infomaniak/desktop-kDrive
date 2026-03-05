@@ -21,12 +21,14 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
 final class ObservedSynchro: ObservableObject {
     @Published private(set) var wrappedValue: Synchro?
     private var cancellable: AnyCancellable?
 
+    // periphery:ignore
     init(
         userDbId: Int32,
         accountDbId: Int32,
@@ -45,6 +47,7 @@ final class ObservedSynchro: ObservableObject {
             }
     }
 
+    // periphery:ignore
     init(
         synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil

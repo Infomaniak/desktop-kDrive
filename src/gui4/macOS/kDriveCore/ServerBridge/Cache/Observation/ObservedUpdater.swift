@@ -20,13 +20,14 @@ import Combine
 import Foundation
 import InfomaniakDI
 
-// periphery:ignore - Will be moved to the test target with the other ones
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
 final class ObservedUpdater: ObservableObject {
     @Published private(set) var wrappedValue: KDC.UpdateState?
     private var cancellable: AnyCancellable?
 
+    // periphery:ignore
     init(updaterObservable: UpdaterCacheObservable? = nil) {
         let updaterObservable =
             updaterObservable ?? InjectService<UpdaterCacheObservable>().wrappedValue
