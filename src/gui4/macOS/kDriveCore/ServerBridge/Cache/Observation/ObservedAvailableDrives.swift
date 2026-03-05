@@ -28,7 +28,7 @@ public struct AvailableDriveContext: Sendable, Equatable {
 
 @MainActor
 @propertyWrapper
-public final class ObservedAvailableDrives: ObservableObject {
+final class ObservedAvailableDrives: ObservableObject {
     @Published public private(set) var wrappedValue: [AvailableDriveContext] = []
     private var cancellable: AnyCancellable?
 
