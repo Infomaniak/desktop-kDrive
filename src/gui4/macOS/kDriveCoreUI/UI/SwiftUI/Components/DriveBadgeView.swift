@@ -19,10 +19,14 @@
 import kDriveResources
 import SwiftUI
 
-struct DriveBadgeView: View {
+public struct DriveBadgeView: View {
     let color: Color
 
-    var body: some View {
+    public init(color: Color) {
+        self.color = color
+    }
+
+    public var body: some View {
         if #available(macOS 26.0, *) {
             icon
                 .padding(AppPadding.padding4)
