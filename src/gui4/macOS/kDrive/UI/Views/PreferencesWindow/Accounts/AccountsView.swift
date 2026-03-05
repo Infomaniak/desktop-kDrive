@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct AccountsView: View {
@@ -35,7 +36,7 @@ struct AccountsView: View {
             }
 
             Section {
-                Button("Connecter un compte") {
+                Button(KDriveLocalizable.buttonConnectAccount) {
                     // TODO: Add new user
                 }
                 .buttonStyle(.bordered)
