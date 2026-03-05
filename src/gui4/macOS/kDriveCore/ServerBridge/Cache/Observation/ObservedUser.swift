@@ -29,10 +29,10 @@ public enum ObservationEvent<Some: Equatable>: Equatable {
 @MainActor
 @propertyWrapper
 final class ObservedUser: ObservableObject {
-    @Published public private(set) var wrappedValue: User?
+    @Published private(set) var wrappedValue: User?
     private var cancellable: AnyCancellable?
 
-    public init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+    init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
@@ -45,7 +45,9 @@ final class ObservedUser: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedUser { self }
+    var projectedValue: ObservedUser {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
