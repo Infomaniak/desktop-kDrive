@@ -23,7 +23,7 @@ import OrderedCollections
 
 @MainActor
 @propertyWrapper
-public final class ObservedSynchros: ObservableObject {
+final class ObservedSynchros: ObservableObject {
     @Published public private(set) var wrappedValue: [SynchroContext] = []
     private var cancellable: AnyCancellable?
 
