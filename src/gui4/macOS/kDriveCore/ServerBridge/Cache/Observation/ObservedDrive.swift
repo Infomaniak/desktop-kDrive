@@ -24,10 +24,10 @@ import OrderedCollections
 @MainActor
 @propertyWrapper
 final class ObservedDrive: ObservableObject {
-    @Published public private(set) var wrappedValue: Drive?
+    @Published private(set) var wrappedValue: Drive?
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         userDbId: Int32,
         accountDbId: Int32,
         driveDbId: Int32,
@@ -48,7 +48,7 @@ final class ObservedDrive: ObservableObject {
             }
     }
 
-    public init(
+    init(
         driveDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -65,7 +65,9 @@ final class ObservedDrive: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedDrive { self }
+    var projectedValue: ObservedDrive {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
