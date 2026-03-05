@@ -19,6 +19,8 @@
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
 #include "comm/guijobs/errorinfolistjob.h"
+#include "comm/guijobs/errorresolveconflictsjob.h"
+#include "comm/guijobs/errorresolveconflictsquickjob.h"
 
 namespace KDC {
 
@@ -113,6 +115,88 @@ void TestGuiCommChannel::testErrorInfoListJob() {
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorResolveConflictsJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_RESOLVE_CONFLICTS));
+
+    Poco::JSON::Array keepLocalArr;
+    (void) keepLocalArr.add(static_cast<int64_t>(10));
+    (void) keepLocalArr.add(static_cast<int64_t>(20));
+
+    Poco::JSON::Array keepRemoteArr;
+    (void) keepRemoteArr.add(static_cast<int64_t>(30));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("keepLocalErrorDbIdList", keepLocalArr);
+    (void) queryParamsObj.set("keepRemoteErrorDbIdList", keepRemoteArr);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_RESOLVE_CONFLICTS);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto resolveJob = std::dynamic_pointer_cast<ErrorResolveConflictsJob>(job);
+        CPPUNIT_ASSERT(resolveJob);
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, resolveJob->_keepLocalErrorDbIdList.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{10}, resolveJob->_keepLocalErrorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(int64_t{20}, resolveJob->_keepLocalErrorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, resolveJob->_keepRemoteErrorDbIdList.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{30}, resolveJob->_keepRemoteErrorDbIdList.at(0));
+    };
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr2 = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr2, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK));
+
+    Poco::JSON::Array errorDbIdArr;
+    (void) errorDbIdArr.add(static_cast<int64_t>(100));
+    (void) errorDbIdArr.add(static_cast<int64_t>(200));
+    (void) errorDbIdArr.add(static_cast<int64_t>(300));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("errorDbIdList", errorDbIdArr);
+    (void) queryParamsObj.set("strategy", toInt(ConflictResolutionStrategy::KeepLocal));
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto quickJob = std::dynamic_pointer_cast<ErrorResolveConflictsQuickJob>(job);
+        CPPUNIT_ASSERT(quickJob);
+        CPPUNIT_ASSERT_EQUAL(size_t{3}, quickJob->_errorDbIdList.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{100}, quickJob->_errorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(int64_t{200}, quickJob->_errorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(int64_t{300}, quickJob->_errorDbIdList.at(2));
+        CPPUNIT_ASSERT(ConflictResolutionStrategy::KeepLocal == quickJob->_strategy);
+    };
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr2 = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr2, processFct);
 #endif
 }
 

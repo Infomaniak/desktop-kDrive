@@ -77,8 +77,7 @@ ExitInfo ErrorResolveConflictsJob::process() {
         return exitInfo;
     }
 
-    return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors,
-                                 keepLocalErrors.size() + keepRemoteErrors.size());
+    return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);   
 }
 
 } // namespace KDC
