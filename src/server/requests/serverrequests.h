@@ -141,7 +141,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // Server requests
         static ExitInfo loadAccountInfo(Account &account, bool &updated);
-        static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
+        static ExitInfo loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                      bool &quotaUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);
         static ExitInfo getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
