@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+// periphery:ignore - Will be moved to the test target with the other ones
 @MainActor
 @propertyWrapper
 final class ObservedUpdater: ObservableObject {
