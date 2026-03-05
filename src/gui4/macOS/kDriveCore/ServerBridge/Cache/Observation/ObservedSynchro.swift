@@ -24,10 +24,10 @@ import OrderedCollections
 @MainActor
 @propertyWrapper
 final class ObservedSynchro: ObservableObject {
-    @Published public private(set) var wrappedValue: Synchro?
+    @Published private(set) var wrappedValue: Synchro?
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         userDbId: Int32,
         accountDbId: Int32,
         driveDbId: Int32,
@@ -45,7 +45,7 @@ final class ObservedSynchro: ObservableObject {
             }
     }
 
-    public init(
+    init(
         synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -62,7 +62,9 @@ final class ObservedSynchro: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchro { self }
+    var projectedValue: ObservedSynchro {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
