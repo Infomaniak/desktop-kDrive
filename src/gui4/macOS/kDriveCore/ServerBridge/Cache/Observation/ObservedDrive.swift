@@ -23,7 +23,7 @@ import OrderedCollections
 
 @MainActor
 @propertyWrapper
-public final class ObservedDrive: ObservableObject {
+final class ObservedDrive: ObservableObject {
     @Published public private(set) var wrappedValue: Drive?
     private var cancellable: AnyCancellable?
 
