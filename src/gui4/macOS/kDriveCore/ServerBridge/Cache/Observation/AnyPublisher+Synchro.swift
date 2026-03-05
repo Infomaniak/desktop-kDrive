@@ -18,57 +18,7 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
-
-// periphery:ignore - Will be moved to the test target
-@MainActor
-@propertyWrapper
-final class ObservedSynchro: ObservableObject {
-    @Published private(set) var wrappedValue: Synchro?
-    private var cancellable: AnyCancellable?
-
-    // periphery:ignore
-    init(
-        userDbId: Int32,
-        accountDbId: Int32,
-        driveDbId: Int32,
-        synchroDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .synchroPublisher(userDbId: userDbId, accountDbId: accountDbId, driveDbId: driveDbId, synchroDbId: synchroDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] synchro in
-                self?.wrappedValue = synchro
-            }
-    }
-
-    // periphery:ignore
-    init(
-        synchroDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .synchroPublisher(dbId: synchroDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] synchro in
-                self?.wrappedValue = synchro
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    var projectedValue: ObservedSynchro {
-        self
-    }
-}
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func synchroEventPublisher(
