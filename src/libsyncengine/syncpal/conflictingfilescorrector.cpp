@@ -31,14 +31,21 @@
 
 namespace KDC {
 
-ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion,
-                                                     std::vector<Error> &errors) :
+ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal,
+                                                     const std::vector<Error> &keepLocalErrorList,
+                                                     const std::vector<Error> &keepRemoteErrorList) :
     _syncPal(syncPal),
-    _keepLocalVersion(keepLocalVersion),
-    _errors(std::move(errors)) {}
+    _keepLocalErrors(std::move(keepLocalErrorList)),
+    _keepRemoteErrors(std::move(keepRemoteErrorList)) {}
 
 ExitInfo ConflictingFilesCorrector::runJob() {
-    for (auto &error: _errors) {
+    resolveConflicts(_keepLocalErrors, true);
+    resolveConflicts(_keepRemoteErrors, false);
+    return ExitCode::Ok;
+}
+
+void ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &errorList, bool keepLocal) {
+    for (auto &error: errorList) {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
@@ -54,7 +61,7 @@ ExitInfo ConflictingFilesCorrector::runJob() {
             continue;
         }
 
-        if (_keepLocalVersion) {
+        if (keepLocal) {
             if (keepLocalVersion(error)) {
                 deleteError(error.dbId());
             } else {
@@ -68,8 +75,6 @@ ExitInfo ConflictingFilesCorrector::runJob() {
             }
         }
     }
-
-    return ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
@@ -109,6 +114,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
 void ConflictingFilesCorrector::deleteError(int64_t errorDbId) {
     bool found = false;
     ParmsDb::instance()->deleteError(errorDbId, found);
+    _removedErrorsDbIds.push_back(errorDbId);
 }
 
 } // namespace KDC

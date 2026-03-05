@@ -128,7 +128,6 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfojob.h comm/guijobs/signalsyncprogressinfojob.cpp
     comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
-    comm/guijobs/signalnodefixconflictedfilescompletedjob.h comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp

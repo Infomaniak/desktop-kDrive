@@ -186,7 +186,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
-        ExitCode fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList);
+        ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                     std::vector<int64_t> &removedErrorsdbIds);
+
+        // TODO: Removed in favor of fixConflictingFiles, the asynchronicity is handled by the new CommLayer design.
+        ExitCode fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
+                                          const std::vector<Error> &keepRemoteErrorList);
+        ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                     std::vector<int64_t> &removedErrorsdbIds, bool async);
         ExitCode fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap);
         ExitCode fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const;
         ExitCode fileSyncing(ReplicaSide side, const SyncPath &path, bool &syncing) const;

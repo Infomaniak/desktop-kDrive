@@ -146,7 +146,7 @@ ExitCode GuiRequests::resolveConflictErrors(const int driveDbId, const bool keep
     paramsStream << keepLocalVersion;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 

@@ -28,21 +28,25 @@ namespace KDC {
 
 class ConflictingFilesCorrector : public AbstractPropagatorJob {
     public:
-        ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion, std::vector<Error> &errors);
+        ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, const std::vector<Error> &keepLocalErrorList,
+                                  const std::vector<Error> &keepRemoteErrorList);
 
         ExitInfo runJob() override;
 
-        inline uint64_t nbErrors() const { return _nbErrors; }
+        uint64_t nbErrors() const { return _nbErrors; }
+        std::vector<int64_t> removedErrorsDbIds() const { return _removedErrorsDbIds; }
+
 
     private:
+        void resolveConflicts(const std::vector<Error> &errorList, bool keepLocal);
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
         void deleteError(int64_t errorDbId);
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
-        bool _keepLocalVersion = false;
-        std::vector<Error> _errors;
-
+        const std::vector<Error> _keepLocalErrors;
+        const std::vector<Error> _keepRemoteErrors;
+        std::vector<int64_t> _removedErrorsDbIds;
         uint64_t _nbErrors = 0;
 };
 

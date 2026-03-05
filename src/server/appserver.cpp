@@ -45,7 +45,6 @@
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditemjob.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
-#include "server/comm/guijobs/signalnodefixconflictedfilescompletedjob.h"
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfojob.h"
@@ -1181,7 +1180,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case RequestNum::ERROR_RESOLVE_CONFLICTS: {
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY: {
             int driveDbId = 0;
             bool keepLocalVersion = false;
 
@@ -1212,11 +1211,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     break;
                 }
 
-                std::vector<Error> errorList;
-                ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, errorList);
+                std::vector<Error> keepLocalErrorList;
+                std::vector<Error> keepRemoteErrorList;
+                if (keepLocalVersion) {
+                    ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepLocalErrorList);
+                } else {
+                    ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepRemoteErrorList);
+                }
 
-                if (!errorList.empty()) {
-                    exitCode = syncPalMapIt->second->fixConflictingFiles(keepLocalVersion, errorList);
+                if (!keepLocalErrorList.empty() || !keepRemoteErrorList.empty()) {
+                    exitCode = syncPalMapIt->second->fixConflictingFilesAsync(keepLocalErrorList, keepRemoteErrorList);
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles for syncDbId=" << sync.dbId());
                         break;
@@ -2454,9 +2458,6 @@ void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbError
         paramsStream << syncDbId;
         paramsStream << nbErrors;
         (void) OldCommServer::instance()->sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, params, id);
-    }
-    if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalNodeFixConflictedFilesCompletedJob>(syncDbId, nbErrors));
     }
 }
 
