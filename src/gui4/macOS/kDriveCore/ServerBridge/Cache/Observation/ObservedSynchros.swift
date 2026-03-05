@@ -24,10 +24,10 @@ import OrderedCollections
 @MainActor
 @propertyWrapper
 final class ObservedSynchros: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroContext] = []
+    @Published private(set) var wrappedValue: [SynchroContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
@@ -43,7 +43,9 @@ final class ObservedSynchros: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchros { self }
+    var projectedValue: ObservedSynchros {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
