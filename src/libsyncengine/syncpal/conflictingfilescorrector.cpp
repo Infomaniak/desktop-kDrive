@@ -35,8 +35,8 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
                                                      const std::vector<Error> &keepLocalErrorList,
                                                      const std::vector<Error> &keepRemoteErrorList) :
     _syncPal(syncPal),
-    _keepLocalErrors(std::move(keepLocalErrorList)),
-    _keepRemoteErrors(std::move(keepRemoteErrorList)) {}
+    _keepLocalErrors(keepLocalErrorList),
+    _keepRemoteErrors(keepRemoteErrorList) {}
 
 ExitInfo ConflictingFilesCorrector::runJob() {
     resolveConflicts(_keepLocalErrors, true);
@@ -113,7 +113,10 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
 
 void ConflictingFilesCorrector::deleteError(int64_t errorDbId) {
     bool found = false;
-    ParmsDb::instance()->deleteError(errorDbId, found);
+    if (!ParmsDb::instance()->deleteError(errorDbId, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+        return;
+    }
     _removedErrorsDbIds.push_back(errorDbId);
 }
 

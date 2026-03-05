@@ -1067,17 +1067,17 @@ ExitCode SyncPal::excludeListUpdated() {
 
 ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
                                            const std::vector<Error> &keepRemoteErrorList) {
-    std::vector<int64_t> removedErrorsdbIds; // Not used in (legacy) async mode
-    return fixConflictingFiles(keepLocalErrorList, keepRemoteErrorList, removedErrorsdbIds, true);
+    std::vector<int64_t> removedErrorsDbIds; // Not used in (legacy) async mode
+    return fixConflictingFiles(keepLocalErrorList, keepRemoteErrorList, removedErrorsDbIds, true);
 }
 
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                      std::vector<int64_t> &removedErrorsdbIds) {
-    return fixConflictingFiles(keepLocalErrorList, keepRemoteErrorList, removedErrorsdbIds, false);
+                                      std::vector<int64_t> &removedErrorsDbIds) {
+    return fixConflictingFiles(keepLocalErrorList, keepRemoteErrorList, removedErrorsDbIds, false);
 }
 
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                      std::vector<int64_t> &removedErrorsdbIds, bool async) {
+                                      std::vector<int64_t> &removedErrorsDbIds, bool async) {
     bool restartSync = isRunning();
     if (restartSync) {
         stop();
@@ -1100,7 +1100,7 @@ ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorLi
             LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
             return exitInfo.code();
         }
-        removedErrorsdbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+        removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
     }
 
     return ExitCode::Ok;

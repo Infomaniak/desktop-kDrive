@@ -22,6 +22,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 
+#include <unordered_set>
+
 // Input parameters keys
 static const auto inParamsErrorDbIdList = "errorDbIdList";
 static const auto inParamsStrategy = "strategy";
@@ -54,9 +56,10 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
     }
 
     // Filter errors matching the provided dbIds
+    const std::unordered_set<int64_t> errorDbIdSet(_errorDbIdList.begin(), _errorDbIdList.end());
     std::vector<Error> matchedErrors;
     for (const auto &error: errorList) {
-        if (std::ranges::find(_errorDbIdList, error.dbId()) != _errorDbIdList.end()) {
+        if (errorDbIdSet.contains(error.dbId())) {
             matchedErrors.push_back(error);
         }
     }

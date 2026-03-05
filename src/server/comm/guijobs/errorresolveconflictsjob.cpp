@@ -20,6 +20,8 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
+#include <unordered_set>
+
 // Input parameters keys
 static const auto inParamsKeepLocalErrorDbIdList = "keepLocalErrorDbIdList";
 static const auto inParamsKeepRemoteErrorDbIdList = "keepRemoteErrorDbIdList";
@@ -52,12 +54,14 @@ ExitInfo ErrorResolveConflictsJob::process() {
     }
 
     // Dispatch errors into keepLocal / keepRemote lists based on the provided dbId lists
+    const std::unordered_set<int64_t> keepLocalDbIdSet(_keepLocalErrorDbIdList.begin(), _keepLocalErrorDbIdList.end());
+    const std::unordered_set<int64_t> keepRemoteDbIdSet(_keepRemoteErrorDbIdList.begin(), _keepRemoteErrorDbIdList.end());
     std::vector<Error> keepLocalErrors;
     std::vector<Error> keepRemoteErrors;
     for (const auto &error: errorList) {
-        if (std::ranges::find(_keepLocalErrorDbIdList, error.dbId()) != _keepLocalErrorDbIdList.end()) {
+        if (keepLocalDbIdSet.contains(error.dbId())) {
             keepLocalErrors.push_back(error);
-        } else if (std::ranges::find(_keepRemoteErrorDbIdList, error.dbId()) != _keepRemoteErrorDbIdList.end()) {
+        } else if (keepRemoteDbIdSet.contains(error.dbId())) {
             keepRemoteErrors.push_back(error);
         }
     }

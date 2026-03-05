@@ -187,14 +187,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                     std::vector<int64_t> &removedErrorsdbIds);
+                                     std::vector<int64_t> &removedErrorsDbIds);
 
         // TODO: Remove this in favor of `fixConflictingFiles`.
         // The asynchronous behavior is now handled by the new CommLayer design.
         ExitCode fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
                                           const std::vector<Error> &keepRemoteErrorList);
-        ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                     std::vector<int64_t> &removedErrorsdbIds, bool async);
 
         ExitCode fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap);
         ExitCode fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const;
@@ -407,6 +405,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                     std::vector<int64_t> &removedErrorsDbIds, bool async);
         log4cplus::Logger _logger;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).

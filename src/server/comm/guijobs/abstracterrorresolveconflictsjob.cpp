@@ -31,7 +31,7 @@ AbstractErrorResolveConflictsJob::AbstractErrorResolveConflictsJob(std::shared_p
     AbstractGuiJob(commManager, requestId, inParams, channel) {}
 
 ExitInfo AbstractErrorResolveConflictsJob::fetchAllErrors(std::vector<Error> &errorList) {
-    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Server, 0, INT_MAX, errorList)) {
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Node, 0, INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return ExitCode::DbError;
     }
