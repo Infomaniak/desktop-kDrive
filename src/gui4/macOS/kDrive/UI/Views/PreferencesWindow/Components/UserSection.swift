@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct DriveContext: Sendable, Identifiable {
@@ -63,35 +64,33 @@ struct UserSection: View {
 
             ForEach(drives) { context in
                 HStack(spacing: AppPadding.padding8) {
+                    DriveBadgeView(color: context.drive.color ?? ColorToken.Drive.defaultColor.asColor)
+
                     Text(context.drive.name)
-                        .font(.Tokens.bodyEmphasized)
+                        .font(.Tokens.body)
                         .foregroundStyle(ColorToken.Text.primary.asColor)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     if context.isSynchronized {
-                        Text("Synchronisé")
+                        Text(KDriveLocalizable.syncedDrive)
                             .font(.Tokens.body)
                             .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                        Button("Gérer") {
-
-                        }
-                        .buttonStyle(.bordered)
+                        Button(KDriveLocalizable.buttonManage) {}
+                            .buttonStyle(.bordered)
                     } else {
-                        Text("Non synchronisé")
+                        Text(KDriveLocalizable.notSyncedDrive)
                             .font(.Tokens.body)
                             .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                        Button("Activer") {
-
-                        }
-                        .buttonStyle(.bordered)
+                        Button(KDriveLocalizable.buttonEnable) {}
+                            .buttonStyle(.bordered)
                     }
                 }
-                .padding(.leading, AppPadding.padding32)
+                .padding(.leading, AppPadding.padding24)
             }
 
-            Button("Déconnecter ce compte", role: .destructive) {
+            Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
                 // TODO: Remove user
             }
             .buttonStyle(.borderless)
