@@ -22,16 +22,16 @@ import InfomaniakDI
 
 @MainActor
 @propertyWrapper
-public final class ObservedUpdater: ObservableObject {
-    @Published public private(set) var wrappedValue: KDC.UpdateState?
+final class ObservedUpdater: ObservableObject {
+    @Published private(set) var wrappedValue: KDC.UpdateState?
     private var cancellable: AnyCancellable?
 
-    public init(updaterObservable: UpdaterCacheObservable? = nil) {
+    init(updaterObservable: UpdaterCacheObservable? = nil) {
         let updaterObservable =
             updaterObservable ?? InjectService<UpdaterCacheObservable>().wrappedValue
 
         cancellable = updaterObservable.updateStatePublisher
-            .removeDuplicates()
+            .observableUpdaterPublisher()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updateState in
                 self?.wrappedValue = updateState
@@ -40,7 +40,14 @@ public final class ObservedUpdater: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedUpdater {
+    var projectedValue: ObservedUpdater {
         self
+    }
+}
+
+public extension AnyPublisher where Output == KDC.UpdateState, Failure == Never {
+    func observableUpdaterPublisher() -> AnyPublisher<KDC.UpdateState, Never> {
+        removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }
