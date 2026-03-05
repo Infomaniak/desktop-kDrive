@@ -1,14 +1,8 @@
 using DynamicData;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Documents;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
 
@@ -38,8 +32,10 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         AccessRightsModifiedTextBlock.Inlines.Add(new Run { Text = parts[0] });
 
         // Add hyperlink
-        var hyperlink = new Hyperlink();
-        hyperlink.UnderlineStyle = UnderlineStyle.None;
+        var hyperlink = new Hyperlink
+        {
+            UnderlineStyle = UnderlineStyle.None
+        };
         hyperlink.Inlines.Add(new Run { Text = faqText });
         hyperlink.Click += FaqHyperlink_Click;
         AccessRightsModifiedTextBlock.Inlines.Add(hyperlink);
@@ -59,8 +55,10 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[0] });
 
         // Add hyperlink
-        var hyperlink2 = new Hyperlink();
-        hyperlink2.UnderlineStyle = UnderlineStyle.None;
+        var hyperlink2 = new Hyperlink
+        {
+            UnderlineStyle = UnderlineStyle.None
+        };
         hyperlink2.Inlines.Add(new Run { Text = newSyncText });
         hyperlink2.Click += RecreateSync_Click;
         FolderDeletedTextBlock.Inlines.Add(hyperlink2);

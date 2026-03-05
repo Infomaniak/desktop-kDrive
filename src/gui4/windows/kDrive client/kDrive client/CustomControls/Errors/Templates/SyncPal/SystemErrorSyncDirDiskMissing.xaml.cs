@@ -38,8 +38,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 DefaultButton = ContentDialogButton.Primary,
                 SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonRestartSync"),
+                Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot }
             };
-            dialog.Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {

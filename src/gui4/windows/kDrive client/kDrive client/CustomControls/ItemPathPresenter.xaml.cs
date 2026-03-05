@@ -86,8 +86,10 @@ namespace Infomaniak.kDrive.CustomControls
             if (string.IsNullOrWhiteSpace(ToolTipPath))
                 return;
 
-            DataPackage dataPackage = new();
-            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            DataPackage dataPackage = new()
+            {
+                RequestedOperation = DataPackageOperation.Copy
+            };
             dataPackage.SetText(ToolTipPath);
             Clipboard.SetContent(dataPackage);
 

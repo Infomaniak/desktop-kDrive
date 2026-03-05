@@ -26,13 +26,15 @@ public enum ObservationEvent<Some: Equatable>: Equatable {
     case removed
 }
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedUser: ObservableObject {
-    @Published public private(set) var wrappedValue: User?
+final class ObservedUser: ObservableObject {
+    @Published private(set) var wrappedValue: User?
     private var cancellable: AnyCancellable?
 
-    public init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+    // periphery:ignore
+    init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
@@ -45,7 +47,9 @@ public final class ObservedUser: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedUser { self }
+    var projectedValue: ObservedUser {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

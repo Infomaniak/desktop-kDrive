@@ -21,13 +21,15 @@ import Foundation
 import InfomaniakDI
 import OrderedCollections
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedSynchros: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroContext] = []
+final class ObservedSynchros: ObservableObject {
+    @Published private(set) var wrappedValue: [SynchroContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    // periphery:ignore
+    init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
@@ -43,7 +45,9 @@ public final class ObservedSynchros: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchros { self }
+    var projectedValue: ObservedSynchros {
+        self
+    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

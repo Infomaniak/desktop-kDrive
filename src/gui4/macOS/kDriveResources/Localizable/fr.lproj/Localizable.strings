@@ -4,14 +4,23 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Feb 2026 08:46:58 +0100
+ * Exported at: Tue, 03 Mar 2026 13:54:27 +0100
  */
+
 
 /* loco:698053a65bddc8df790d0212 */
 " informationBlockSynchroErrorSubtitle" = "Certains fichiers n’ont pas pu être synchronisés.";
+/* loco:69a57d074f11212a7007d403 */
+"aboutButton" = "About";
+
+/* loco:698b3c0d8004546e240eb2d2 */
+"aboutKDrive" = "À propos de kDrive";
 
 /* loco:6981b68c6d1056609e079525 */
 "accessibilityActivityTypePicker" = "Activités visibles";
+
+/* loco:69a6d9dd08a75d40410b53f6 */
+"accessibilityBetaProgramPicker" = "Choisir le canal de distribution";
 
 /* loco:6981cb92c70239c9ed0d45a3 */
 "activitiesTitleIdle" = "Synchronisation terminée";
@@ -34,12 +43,24 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Mon activité uniquement";
 
+/* loco:698af0b429d5e005bc08dfb2 */
+"automaticUpdatesSetting" = "Mises à jour automatiques";
 
+/* loco:698af17b4dd554948901a8b2 */
+"betaProgramDescription" = "Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.";
+
+/* loco:69a6d9b44d26dc09aa0d0643 */
+"betaProgramTitle" = "Rejoindre le programme bêta";
+/* loco:698af16617408ac0d8026b12 */
+"betaSettings" = "Programme bêta";
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Paramètres avancés";
+
+/* loco:6989c98657a76723c20d0e92 */
+"buttonCancel" = "Annuler";
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Fermer";
@@ -53,11 +74,17 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
 
+/* loco:6992eca9a8cb168fe70c0922 */
+"buttonFeedback" = "Partager une idée";
+
 /* loco:6930506962426d4ff30af473 */
 "buttonFinishInstallation" = "Terminer l’installation";
 
 /* loco:698052d464e4b53cef0e9272 */
 "buttonFixErrors" = "Corriger les erreurs";
+
+/* loco:6992eabc63e4de22f10535b2 */
+"buttonHelpdesk" = "Support";
 
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "J’ai activé kDrive";
@@ -101,14 +128,22 @@
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
 
+/* loco:698aec47dbcc2bef330cf7a9 */
+"buttonUpdate" = "Mettre à jour";
+
 /* loco:697b6767849b0ee24c089f46 */
 "buttonUpdateSubscription" = "Mettre à jour l’abonnement";
 
+/* loco:69a69d71b2261fc281078712 */
+"buttonValidate" = "Valider";
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Sortir de veille";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copie du lien…";
+
+/* loco:698af1c80126fd2db302b783 */
+"doNotJoin" = "Ne pas adhérer";
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Vous n’avez pas l’autorisation d’accéder à ce kDrive.\nVeuillez vérifier vos droits ou contacter votre administrateur.";
 
@@ -147,6 +182,12 @@
 
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Il semble que nous ne pouvons pas charger l'application…";
+
+/* loco:6992ec7abaf88a24990d3e13 */
+"feedbackSetting" = "Aidez-nous à améliorer kDrive";
+
+/* loco:69a560c0ef88a6b6b00e49a4 */
+"feedbackURL" = "https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6";
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoris";
 
@@ -215,8 +256,35 @@
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
 "labelJustNow" = "A l'instant";
+
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nom";
+
+/* loco:698b5869ab41083f11042b52 */
+"labelNotifications" = "Notification";
+
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Toujours";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Jamais";
+
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "Pendant 1 heure";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "Pendant une semaine";
+/* loco:69a6e4aceff2d992ad059324 */
+"labelOff" = "Désactivé";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "Pendant trois jours";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Jusqu'à demain";
+
+/* loco:698b2f6aae1ca9d0290ad174 */
+"labelSameAsSystem" = "Identique au système";
 
 /* loco:6989ff974ef31503cb002e23 */
 "labelSize" = "Taille";
@@ -226,8 +294,23 @@
 
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Temps";
+
+/* loco:698b0dd551a7a263e6030a72 */
+"languageSetting" = "Langue";
+
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboard" = "Lien copié dans le presse-papiers";
+
+/* loco:698b11f969e305d1ce01e062 */
+"moveDeletedFilesToRecycleBinSetting" = "Déplacer les fichiers supprimés vers la corbeille de l’ordinateur";
+
+/* loco:698b1273e77c157c0d065892 */
+"moveDeletedFilesToRecycleBinWarning" = "Certains objets ne peuvent pas être déplacés.";
+
+/* loco:6992e9f20953b626df05ffc2 */
+"needHelpSetting" = "Besoin d’aide ?";
+
+
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
 
@@ -288,6 +371,14 @@
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingWindowTitle" = "Bienvenue dans kDrive";
 
+/* loco:698b0ee1587496f4f5035cd2 */
+"openKDriveAtStartupSetting" = "Ouvrir kDrive au démarrage de l’ordinateur";
+
+/* loco:698af22fb4f7b3f2640d1493 */
+"releaseChannelBeta" = "Bêta";
+
+/* loco:698af24c3d21055870072b12 */
+"releaseChannelInternal" = "Interne";
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Comptes";
 
@@ -386,3 +477,10 @@
 
 /* loco:6981e8f0f994e5f7bc040692 */
 "unavailableContentNoActivityTitle" = "Aucune activité récente";
+
+/* loco:698af3afefd229ca780c59e2 */
+"updateAvailable" = "kDrive %@ disponible";
+
+/* loco:698aec0b7bde6b6260001c02 */
+"updateSettings" = "Mise à jour";
+

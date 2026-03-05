@@ -1,11 +1,9 @@
 ﻿using Infomaniak.kDrive.CustomControls.Errors.Templates;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Linq;
 using System.Reflection;
-using WinRT;
 
 namespace Infomaniak.kDrive.CustomControls.Errors
 {
@@ -17,7 +15,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
         public static UserControl CreateErrorControl(Error error)
         {
             var matchType = GetBestControlType(error);
-            if(matchType is null)
+            if (matchType is null)
             {
                 Logger.Log(Logger.Level.Warning, $"No matching control type found for error: {error}. Returning default error control.");
                 return new DefaultError(error);

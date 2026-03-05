@@ -6,7 +6,6 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,9 +14,6 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -221,8 +217,10 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? publicLink = await commService.GetPublicLink(activity.Sync.Drive.DbId, activity.RemoteNodeId, CancellationToken.None);
             if (publicLink is not null)
             {
-                DataPackage dataPackage = new();
-                dataPackage.RequestedOperation = DataPackageOperation.Copy;
+                DataPackage dataPackage = new()
+                {
+                    RequestedOperation = DataPackageOperation.Copy
+                };
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
                 DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboardTitle"), false);
@@ -262,7 +260,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             NotificationTeachingTip.IsOpen = false;
         }
-        
+
         public static string GetSyncDirectionToolTip(SyncDirection direction)
         {
             return direction switch

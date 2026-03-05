@@ -1,0 +1,14 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 18,
+  "params": {
+    "versionInfo": {
+      "buildMinOsVersion": "MTAuMTU=",
+      "buildVersion": 5,
+      "channel": 3,
+      "downloadUrl": "aHR0cHM6Ly9kb3dubG9hZC5zdG9yYWdlLmluZm9tYW5pYWsuY29tL2RyaXZlL2Rlc2t0b3BjbGllbnQvdXBkYXRlLW1hY29zLTMuOC4yLjUueG1s",
+      "tag": "My44LjI="
+    }
+  }
+}

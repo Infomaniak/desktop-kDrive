@@ -62,11 +62,10 @@ struct StateIndicator: StatusIndicator {
 }
 
 struct ActivitiesTableStatusView: View {
-    let context: UISynchroContext?
-    let node: UISynchroNode
+    let context: UISynchroNodeContext
 
     private var direction: DirectionIndicator {
-        guard let nodeDirection = node.direction else {
+        guard let nodeDirection = context.node.direction else {
             return .up
         }
 
@@ -79,7 +78,7 @@ struct ActivitiesTableStatusView: View {
     }
 
     private var status: StateIndicator {
-        guard let nodeStatus = node.status else {
+        guard let nodeStatus = context.node.status else {
             return .synchronized
         }
 
@@ -96,7 +95,7 @@ struct ActivitiesTableStatusView: View {
     private var shouldDisplayOptionButton: Bool {
         switch status {
         case .synchronized:
-            return node.instruction != .remove
+            return context.node.instruction != .remove
         case .failed:
             return true
         default:
@@ -155,33 +154,27 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func openInFinder() {
-        guard let synchro = context?.synchro else { return }
-
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        let pathToLink = node.type == .directory ? node.path : node.parentFolder
-        let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: synchro.localPath)
+        let pathToLink = context.node.type == .directory ? context.node.path : context.node.parentFolder
+        let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: context.synchro.localPath)
 
         NSWorkspace.shared.open(url)
     }
 
     private func openInBrowser() {
-        guard let drive = context?.drive else { return }
-
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        let url = nodeURLGenerator.remoteURL(for: node.remoteID, driveId: drive.driveId)
+        let url = nodeURLGenerator.remoteURL(for: context.node.remoteID, driveId: context.drive.driveId)
 
         NSWorkspace.shared.open(url)
     }
 
     private func copyShareLink() {
-        guard let drive = context?.drive else { return }
-
         @InjectService var loadingIndicatorShower: SidebarNotificationPresenting
         loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
 
         Task { @MainActor in
             @InjectService var nodeURLGenerator: NodeURLGenerator
-            let url = try await nodeURLGenerator.shareURL(for: node.remoteID, driveDbId: drive.dbId)
+            let url = try await nodeURLGenerator.shareURL(for: context.node.remoteID, driveDbId: context.drive.dbId)
 
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
@@ -202,6 +195,6 @@ struct ActivitiesTableStatusView: View {
 }
 
 #Preview {
-    ActivitiesTableStatusView(context: PreviewHelper.synchroContext, node: PreviewHelper.synchroNode1)
+    ActivitiesTableStatusView(context: PreviewHelper.synchroNodeContext)
         .padding()
 }

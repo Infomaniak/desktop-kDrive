@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public MockServerCommProtocolTestError() : base()
         {
-            _ = Task.Run(async () =>
+            Task.Run(async () =>
             {
                 while (!App.ServiceProvider.GetRequiredService<AppModel>().IsInitialized)
                 {
@@ -255,7 +255,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new IntToDateTimeConverter());
 
             var json = JsonSerializer.SerializeToNode(errorInfo, options);
-            var jsonObject = json as JsonObject ?? new JsonObject();
+            var jsonObject = json as JsonObject ?? [];
 
             return new JsonObject
             {

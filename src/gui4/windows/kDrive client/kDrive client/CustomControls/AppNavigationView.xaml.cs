@@ -9,9 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class AppNavigationView : NavigationView
@@ -20,7 +17,7 @@ namespace Infomaniak.kDrive.CustomControls
            App.ServiceProvider.GetRequiredService<AppModel>();
 
         public Frame Frame { get { return ContentFrame; } }
-        private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
+        private readonly Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
             { "HomePage", new List<Type>() {
                 typeof(Pages.HomePage),

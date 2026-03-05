@@ -66,16 +66,6 @@ ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
     return ExitCode::Ok;
 }
 
-ExitInfo GetDriveUserInfoJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
-    using namespace Poco::Net;
-    if (httpResponse().getStatus() == HTTPResponse::HTTP_FORBIDDEN ||
-        httpResponse().getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
-        return ExitCode::Ok;
-    }
-
-    return AbstractTokenNetworkJob::handleError(replyBody, uri);
-}
-
 std::string GetDriveUserInfoJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/users";

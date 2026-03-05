@@ -6,14 +6,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStartPauseButton : UserControl
 {
-    private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+    private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     public AppModel ViewModel
     {
         get { return _viewModel; }
@@ -85,7 +82,7 @@ public class SyncToButtonEnabledConverter : IValueConverter
         if (value is Sync sync)
         {
             SyncStatus syncStatus = sync.SyncStatus;
-            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error);
+            return syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error;
         }
         return false;
     }

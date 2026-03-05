@@ -1061,12 +1061,13 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
     Drive driveUpdated(drive);
     Account account;
     bool updated = false;
-    bool accountUpdated = false;
     bool quotaUpdated = false;
-    ExitCode exitCode = loadDriveInfo(driveUpdated, account, updated, quotaUpdated, accountUpdated);
-    if (exitCode != ExitCode::Ok) {
+    uint64_t newAccountId = 0;
+    if (const auto exitInfo =
+                loadDriveInfo(driveUpdated, static_cast<uint64_t>(account.accountId()), newAccountId, updated, quotaUpdated);
+        !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in User::loadDriveInfo");
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
@@ -1724,9 +1725,10 @@ ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
+ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                       bool &quotaUpdated) {
+    newAccountId = 0;
     updated = false;
-    accountUpdated = false;
     quotaUpdated = false; // TODO: variable to be removed once migrated to the new UI
     // Get drive data
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
@@ -1774,9 +1776,8 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         updated = true;
     }
 
-    if (account.accountId() != job->accountId()) {
-        account.setAccountId(job->accountId());
-        accountUpdated = true;
+    if (previousAccountId != job->accountId()) {
+        newAccountId = job->accountId();
     }
 
     if (!job->colorHex().empty()) {

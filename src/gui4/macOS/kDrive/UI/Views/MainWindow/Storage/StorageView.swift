@@ -89,7 +89,6 @@ struct StorageView: View {
             }
         }
         .groupedFormatStyle()
-        .padding(AppPadding.page)
         .onReceive(
             storageDataProviding.storageDataPublisher.removeDuplicates(),
             perform: handleUpdatedStorageData

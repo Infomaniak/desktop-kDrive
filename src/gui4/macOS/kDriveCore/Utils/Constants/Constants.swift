@@ -25,6 +25,8 @@ public enum Constants {
 }
 
 public enum URLConstants {
+    public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
+
     public static func kDrive(for driveID: Int) -> URL {
         return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
     }

@@ -21,7 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 final class ActivitiesViewController: TitledViewController<ActivitiesView> {
-    init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: SidebarItem.activities.title, contentView: ActivitiesView(mainViewModel: mainViewModel))
+    init() {
+        super.init(toolbarTitle: SidebarItem.activities.title, contentView: ActivitiesView())
     }
 }

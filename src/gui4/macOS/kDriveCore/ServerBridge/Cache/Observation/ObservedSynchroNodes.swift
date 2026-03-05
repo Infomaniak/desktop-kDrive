@@ -29,13 +29,15 @@ public struct SynchroNodeContext: Sendable, Equatable {
     public let user: User
 }
 
+// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-public final class ObservedSynchroNodes: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroNodeContext] = []
+final class ObservedSynchroNodes: ObservableObject {
+    @Published private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    // periphery:ignore
+    init(
         synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -52,7 +54,7 @@ public final class ObservedSynchroNodes: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchroNodes {
+    var projectedValue: ObservedSynchroNodes {
         self
     }
 }

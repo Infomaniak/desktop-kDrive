@@ -3,12 +3,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -23,7 +18,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class LocalAccessError : UserControl
     {
-        private Error _error;
+        private readonly Error _error;
         public LocalAccessError(Error error)
         {
             this.InitializeComponent();

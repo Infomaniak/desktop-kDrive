@@ -21,16 +21,16 @@ namespace Infomaniak.kDrive
                 try
                 {
                     string jsonContent = File.ReadAllText(userDefaultsFilePath);
-                    userDefaults = JsonNode.Parse(jsonContent)?.AsObject() ?? new JsonObject();
+                    userDefaults = JsonNode.Parse(jsonContent)?.AsObject() ?? [];
                 }
                 catch (Exception)
                 {
-                    userDefaults = new JsonObject();
+                    userDefaults = [];
                 }
             }
             else
             {
-                userDefaults = new JsonObject();
+                userDefaults = [];
             }
         }
 
