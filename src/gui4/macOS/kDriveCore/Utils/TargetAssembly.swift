@@ -43,6 +43,9 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: UpdaterObservable.self) { _, _ in
+                UpdaterStateCache()
+            },
             Factory(type: XPCConnectionProvider.self) { _, _ in
                 if testing {
                     return XPCServerMock()
