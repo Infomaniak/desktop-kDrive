@@ -26,7 +26,7 @@ extension ObservedUpdater {
         AsyncStream { continuation in
             let cancellable = $wrappedValue
                 .sink { value in
-                    if let value = value {
+                    if let value {
                         continuation.yield(value)
                     }
                 }
