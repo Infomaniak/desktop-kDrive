@@ -56,6 +56,10 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public static string ErrorInfo = "errorInfo";
         public static string ErrorInfoList = "errorInfoList";
         public static string ErrorMessage = "errorMessage";
+        public static string KeepLocalErrorDbIdList = "keepLocalErrorDbIdList";
+        public static string KeepRemoteErrorDbIdList = "keepRemoteErrorDbIdList";
+        public static string ErrorDbIdList = "errorDbIdList";
+        public static string Strategy = "strategy";
 
         public static string NodeId = "nodeId";
         public static string NodeInfo = "nodeInfo";
