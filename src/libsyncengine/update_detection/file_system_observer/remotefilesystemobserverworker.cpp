@@ -260,12 +260,17 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::updateV2MainFolderItem(const RemoteNodeId &remoteNodeId) {
+ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNodeId &remoteNodeId) {
     SyncName folderName;
-    if (const auto exitInfo = getV2RemoteFolderName(remoteNodeId, folderName); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getV2RemoteFolderName: " << exitInfo);
+    if (const auto exitInfo = getV3RemoteFolderName(remoteNodeId, folderName); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in RemoteFileSystemObserverWorker::getV3RemoteFolderName: remoteNodeId="
+                                           << CommonUtility::s2ws(remoteNodeId) << L", exitInfo=" << exitInfo);
         return exitInfo;
     }
+
+    // As long as the local folder hierarchy is reflects the v2 API
+    // we should not create a Private folder at the root of the local synchronization folder.
+    if (folderName == Str("Private")) return ExitCode::Ok;
 
     DbNode dbNode;
     bool found = false;
@@ -305,7 +310,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     for (const auto &mainFolderRemoteId: mainFolderIds) {
         if (_blackList.contains(mainFolderRemoteId)) continue;
 
-        updateV2MainFolderItem(mainFolderRemoteId);
+        updateV3MainFolderItem(mainFolderRemoteId);
 
         constexpr bool saveCursor = true;
         exitInfo = getItemsInDir(mainFolderRemoteId, saveCursor);
@@ -977,8 +982,13 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteD
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getV2RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
+ExitInfo RemoteFileSystemObserverWorker::getV3RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
     folderName = "";
+
+    if (remoteDirId == ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId)) {
+        folderName = "Private";
+        return ExitCode::Ok;
+    }
 
     if (remoteDirId == ApiTranslator::getCommonDocumentsRemoteId(_driveDbId)) {
         folderName = "Common Documents";

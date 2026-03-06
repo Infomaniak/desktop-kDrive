@@ -97,8 +97,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
-        ExitInfo updateV2MainFolderItem(const RemoteNodeId &remoteNodeId);
-        ExitInfo getV2RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        ExitInfo updateV3MainFolderItem(const RemoteNodeId &remoteNodeId);
+        ExitInfo getV3RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
 
         friend class TestRemoteFileSystemObserverWorker;
 };
