@@ -17,14 +17,33 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
-struct UserHeaderCell: View {
+struct UserHeaderCellView: View {
+    let avatar: Image?
+    let name: String
+    let email: String
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack(spacing: AppPadding.padding8) {
+            if let avatar {
+                AvatarView(image: avatar)
+                    .frame(width: 26, height: 26)
+            }
+
+            VStack(alignment: .leading) {
+                Text(name)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+                Text(email)
+                    .font(.Tokens.subheadline)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            }
+        }
     }
 }
 
 #Preview {
-    UserHeaderCell()
+    UserHeaderCellView(avatar: nil, name: "Tim Cook", email: "tim@apple.com")
 }
