@@ -109,8 +109,11 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
                 IoError ioError = IoError::Success;
 
                 if (!IoHelper::getFileStat(originalAbsPath, &originalStat, ioError) || ioError != IoError::Success) {
-                    LOG_WARN(_logger, "Error getting file stat for original path, defaulting to keepLocal for errorDbId="
-                                              << error.dbId());
+                    LOG_WARN(_logger,
+                             "Error getting file stat for original path, defaulting to keepLocal for errorDbId=" << error.dbId());
+                    // If we cannot retrieve the file information, we fall back to keeping the local version.
+                    // This is the safest choice to avoid accidental data loss. If the file no longer exists,
+                    // the conflict will resolve itself later.
                     keepLocalErrors.push_back(error);
                     break;
                 }
@@ -118,6 +121,9 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
                 if (!IoHelper::getFileStat(conflictAbsPath, &conflictStat, ioError) || ioError != IoError::Success) {
                     LOG_WARN(_logger,
                              "Error getting file stat for conflict path, defaulting to keepLocal for errorDbId=" << error.dbId());
+                    // If we cannot retrieve the file information, we fall back to keeping the local version.
+                    // This is the safest choice to avoid accidental data loss. If the file no longer exists,
+                    // the conflict will resolve itself later.
                     keepLocalErrors.push_back(error);
                     break;
                 }
