@@ -76,11 +76,13 @@ public class PreferencesViewModel: ObservableObject {
                     synchronizedDrivesID.insert(drive.driveId)
                 }
             }
+            refreshedSynchronizedDrives[uiUser.id, default: []].sort { $0.name < $1.name }
 
             for availableDrive in user.availableDrives.values {
                 guard !synchronizedDrivesID.contains(availableDrive.driveId) else { continue }
                 refreshedAvailableDrives[uiUser.id, default: []].append(UIAvailableDrive(availableDrive: availableDrive))
             }
+            refreshedAvailableDrives[uiUser.id, default: []].sort { $0.name < $1.name }
         }
 
         self.users = refreshedUsers
