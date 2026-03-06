@@ -3,15 +3,18 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using static Infomaniak.kDrive.ViewModels.AppModel;
 
 namespace Infomaniak.kDrive.Pages.Errors
 {
     partial class ErrorPageVM : UISafeObservableObject, IDisposable
     {
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
 
         private Sync? _sync;
         private const int _maxConflictsForIndividualDisplay = 5;
@@ -19,9 +22,10 @@ namespace Infomaniak.kDrive.Pages.Errors
         private int _conflictsCount;
         private readonly List<IDisposable?> _errorsSubscription = new();
 
-        public ReadOnlyObservableCollection<Error> FileErrors { get; private set; }
-        public ReadOnlyObservableCollection<Error> SyncDirErrors { get; private set; }
-        public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; }
+        public ReadOnlyObservableCollection<Error> FileErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+        public ReadOnlyObservableCollection<Error> SyncDirErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+        public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+
         public Sync? Sync
         {
             get => _sync;
@@ -46,6 +50,14 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         public ErrorPageVM()
         {
+            _viewModel.SelectedSyncChanged += OnSelectedSyncChanged;
+            Sync = _viewModel.SelectedSync;
+            InitErrorLists();
+        }
+
+        private void OnSelectedSyncChanged(object? sender, SelectedSyncChangedEventArgs e)
+        {
+            Sync = e.NewValue;
             InitErrorLists();
         }
 
@@ -59,9 +71,15 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             if (Sync is null)
             {
+                OnPropertyChangingInUIThread(nameof(FileErrors));
+                OnPropertyChangingInUIThread(nameof(SyncDirErrors));
+                OnPropertyChangingInUIThread(nameof(OtherErrors));
                 FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                OnPropertyChangedInUIThread(nameof(FileErrors));
+                OnPropertyChangedInUIThread(nameof(SyncDirErrors));
+                OnPropertyChangedInUIThread(nameof(OtherErrors));
                 return;
             }
             ConflictsCount = Sync.SyncErrors.Where(e => IsConflictUserResolvable(e)).Count();
@@ -143,6 +161,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 subscription?.Dispose();
             }
+            _viewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
         }
     }
 }

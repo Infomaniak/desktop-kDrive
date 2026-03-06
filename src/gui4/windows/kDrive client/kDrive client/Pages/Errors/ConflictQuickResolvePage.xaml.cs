@@ -7,16 +7,16 @@ using static Infomaniak.kDrive.ViewModels.AppModel;
 
 namespace Infomaniak.kDrive.Pages.Errors
 {
-    public sealed partial class ErrorPage : Page
+    public sealed partial class ConflictQuickResolvePage : Page
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
-        public ErrorPage()
+        public ConflictQuickResolvePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to ConflictQuickResolvePage - Initializing components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
+            Logger.Log(Logger.Level.Debug, "ConflictQuickResolvePage components initialized");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void ManyConflicts_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(ConflictQuickResolvePage));
+
         }
     }
 }

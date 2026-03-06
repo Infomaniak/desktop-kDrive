@@ -286,7 +286,7 @@
                                         </DataTemplate>
                                     </toolKit:SettingsExpander.ItemTemplate>
                                     <toolKit:SettingsExpander.ItemsFooter>
-                                        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('disconnectAccount'), Mode=OneWay}"
+                                        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonDisconnectAccount'), Mode=OneWay}"
                                                               Style="{StaticResource DefaultSettingsExpanderItemStyle}"
                                                               IsClickEnabled="True"
                                                               Click="DisconectUser_Click" />
