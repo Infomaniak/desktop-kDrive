@@ -134,18 +134,17 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
         if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
     }
 
-
     auto ioError = IoError::Success;
     for (const auto &pathToErase: itemsToErase) (void) IoHelper::deleteItem(pathToErase, ioError);
 }
 
 // Check if a file is in the trash
-bool isInTrash(const SyncPath &filePath) {
+bool isInTrash(const SyncPath &absoluteFilePath) {
     try {
         const SyncPath trashInfoDir = getTrashSubDir(TrashSubDirectory::Info);
         if (!std::filesystem::exists(trashInfoDir)) return false;
 
-        const SyncPath targetPath = std::filesystem::absolute(filePath);
+        const SyncPath targetPath = std::filesystem::absolute(absoluteFilePath);
 
         for (const auto &entry: std::filesystem::directory_iterator(trashInfoDir)) {
             if (entry.path().extension() != ".trashinfo") continue;
@@ -154,9 +153,9 @@ bool isInTrash(const SyncPath &filePath) {
             if (originalPathStr.empty()) continue;
 
             const auto originalPath = std::filesystem::absolute(originalPathStr);
-            if (!isSubPath(filePath, originalPath)) continue;
+            if (!isSubPath(absoluteFilePath, originalPath)) continue;
 
-            const SyncPath relativePath = std::filesystem::relative(filePath, originalPath);
+            const SyncPath relativePath = std::filesystem::relative(absoluteFilePath, originalPath);
             if (relativePath.begin() == relativePath.end()) return true;
 
             const auto fileTrashParentName = entry.path().filename().stem();
