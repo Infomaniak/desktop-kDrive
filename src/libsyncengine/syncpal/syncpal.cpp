@@ -1080,11 +1080,13 @@ ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorLi
                                       std::vector<int32_t> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
     _conflictingFilesCorrector->setMainCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
-    if (ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously(); !exitInfo) {
+    auto conflictingFilesCorrectorPtr = _conflictingFilesCorrector; // Keep a local copy of the shared_ptr to ensure the object is
+                                                                    // not destroyed while running synchronously
+    if (ExitInfo exitInfo = conflictingFilesCorrectorPtr->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
         return exitInfo.code();
     }
-    removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+    removedErrorsDbIds = conflictingFilesCorrectorPtr->removedErrorsDbIds();
     return ExitCode::Ok;
 }
 
