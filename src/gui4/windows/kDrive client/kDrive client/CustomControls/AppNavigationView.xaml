@@ -55,6 +55,11 @@
             <NavigationViewItem.Icon>
                 <SymbolIcon Symbol="Sync" />
             </NavigationViewItem.Icon>
+            <NavigationViewItem.InfoBadge>
+                <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+            </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"
                             Tag="StoragePage"

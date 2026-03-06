@@ -26,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace Infomaniak.kDrive.TrayIcon
         private string _currentIcon = "taskbar-ico";
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
-        private readonly IDisposable _subscription;
+        private readonly List<IDisposable> _subscription = new List<IDisposable>();
 
         public void Initialize()
         {
@@ -89,11 +90,12 @@ namespace Infomaniak.kDrive.TrayIcon
         {
             _appModel = appModel;
 
-            // Subscribe to changes in the syncs collection and their statuses
-            _subscription = _appModel.AllSyncs
+            // Subscribe to changes in the syncs collection, their statuses, and their errors
+            _subscription.Add(_appModel.AllSyncs
                 .ToObservableChangeSet()
                 .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
-                .Subscribe(_ => UpdateTrayIcon());
+                .AutoRefreshOnObservable(sync => sync.SyncErrors.ToObservableChangeSet()) // react when any sync's errors change
+                .Subscribe(_ => UpdateTrayIcon()));
         }
 
         private void UpdateTrayIcon()
@@ -102,6 +104,12 @@ namespace Infomaniak.kDrive.TrayIcon
             if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
             {
                 SetIconSync();
+                return;
+            }
+
+            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Count != 0))
+            {
+                SetIconError();
                 return;
             }
 
@@ -213,7 +221,10 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
-            _subscription.Dispose();
+            foreach (var subscription in _subscription)
+            {
+                subscription.Dispose();
+            }
         }
     }
 }
