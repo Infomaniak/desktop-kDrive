@@ -106,7 +106,7 @@ bool isSubPath(const SyncPath &path1, const SyncPath &path2) {
         const auto [path1It, path2It] =
                 std::mismatch(canonicalPath1.begin(), canonicalPath1.end(), canonicalPath2.begin(), canonicalPath2.end());
 
-        return (path2It == canonicalPath2.end());
+        return (path1It == canonicalPath1.end());
     } catch (const std::filesystem::filesystem_error &e) {
         std::cerr << "Filesystem error in isSubPath: " << e.what() << std::endl;
         return false;
@@ -154,10 +154,10 @@ bool isInTrash(const SyncPath &absoluteFilePath) {
             if (originalPathStr.empty()) continue;
 
             const auto originalPath = std::filesystem::absolute(originalPathStr);
-            if (!isSubPath(absoluteFilePath, originalPath)) continue;
+            if (!isSubPath(originalPath, absoluteFilePath)) continue;
 
             const SyncPath relativePath = std::filesystem::relative(absoluteFilePath, originalPath);
-            if (relativePath.begin() == relativePath.end()) return true;
+            if (relativePath.begin() == relativePath.end() || relativePath == ".") return true;
 
             const auto fileTrashParentName = entry.path().filename().stem();
             return std::filesystem::exists(getTrashSubDir(TrashSubDirectory::Files) / fileTrashParentName / relativePath);

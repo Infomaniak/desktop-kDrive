@@ -36,8 +36,6 @@
 
 #include <QFile>
 
-#include <QFile>
-
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
