@@ -22,6 +22,8 @@
 
 namespace KDC {
 
+// This job is used to resolve errors conflicts by keeping either the local or the remote version of each conflicting error, based
+// on the provided dbId lists.
 class ErrorResolveConflictsJob : public AbstractErrorResolveConflictsJob {
     public:
         ErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,

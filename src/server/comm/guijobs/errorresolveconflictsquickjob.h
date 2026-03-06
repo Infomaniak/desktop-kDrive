@@ -22,7 +22,8 @@
 #include "libcommon/utility/types.h"
 
 namespace KDC {
-
+// This job is used to resolve errors conflicts by keeping either the local, the remote or the most recent version of each conflicting error, based
+// on the provided dbId list and strategy.
 class ErrorResolveConflictsQuickJob : public AbstractErrorResolveConflictsJob {
     public:
         ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int requestId,
