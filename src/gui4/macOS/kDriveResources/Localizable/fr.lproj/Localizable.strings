@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 03 Mar 2026 13:54:27 +0100
+ * Exported at: Wed, 04 Mar 2026 09:33:39 +0100
  */
 
 
@@ -107,6 +107,8 @@
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "Ouvrir kDrive";
 
+/* loco:69a7ed0ecbb2fb59660bfa12 */
+"buttonPause" = "Pause";
 /* loco:697b65a56840f9d35605a134 */
 "buttonRefresh" = "Actualiser";
 
@@ -116,15 +118,21 @@
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Réessayer";
 
+/* loco:69a7f03b5fa9c90f560c1192 */
+"buttonSearch" = "Recherche";
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Voir les activités";
 
+/* loco:69a7ed31e3754291a4029e52 */
+"buttonSettings" = "Ouvrir les paramètres";
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Voir les offres";
 
 /* loco:698af1b4d7cad5e8710909b2 */
 "buttonShowOption" = "Afficher les options";
 
+/* loco:69a7ecff1619fbbe5a0c75b3 */
+"buttonStart" = "Démarrage";
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
 
