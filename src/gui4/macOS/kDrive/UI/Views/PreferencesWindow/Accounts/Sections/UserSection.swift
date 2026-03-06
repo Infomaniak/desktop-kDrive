@@ -21,15 +21,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct DriveContext: Sendable, Identifiable {
-    var id: UIDrive.ID {
-        return drive.id
-    }
-
-    let drive: UIDrive
-    let isSynchronized: Bool
-}
-
 struct UserSection: View {
     @State private var isShowingDisconnectUserAlert = false
 
