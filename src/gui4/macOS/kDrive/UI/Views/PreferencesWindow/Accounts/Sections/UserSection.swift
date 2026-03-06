@@ -32,10 +32,6 @@ struct UserSection: View {
     let synchronizedDrives: [UIDrive]
     let availableDrives: [UIAvailableDrive]
 
-    private var orderedSynchronizedDrives: [UIDrive] {
-        return synchronizedDrives.sorted { $0.name < $1.name }
-    }
-
     enum DomainError: LocalizedError {
         case impossibleToDeleteUser
 
@@ -51,7 +47,7 @@ struct UserSection: View {
         Section {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
-            ForEach(orderedSynchronizedDrives) { drive in
+            ForEach(synchronizedDrives) { drive in
                 AccountDriveCellView(drive: drive, isSynchronized: true)
             }
 
