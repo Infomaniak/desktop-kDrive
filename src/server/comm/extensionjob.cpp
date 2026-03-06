@@ -909,7 +909,7 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
 
 bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) return false;
-
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return false;
 
