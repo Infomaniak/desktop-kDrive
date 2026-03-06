@@ -430,13 +430,13 @@ class LiteSyncCommClientPrivate {
     // Get modification date
     NSDictionary *fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
     if (!fileAttribs) {
-        NSLog(@ "[KD] Error in NSFileManager::attributesOfItemAtPath - path=%@", path);
+        NSLog(@ "[KD] Error in NSFileManager::attributesOfItemAtPath: path=%@", path);
         return false;
     }
 
     NSDate *modificationDate = [fileAttribs objectForKey:NSFileModificationDate];
     if (!modificationDate) {
-        NSLog(@ "[KD] Error in NSDictionary::objectForKey:NSFileModificationDate - path=%@", path);
+        NSLog(@ "[KD] Error in NSDictionary::objectForKey:NSFileModificationDate: path=%@", path);
         return false;
     }
 
@@ -446,20 +446,49 @@ class LiteSyncCommClientPrivate {
         return false;
     }*/
 
+    // Create destination (file URL)
+    CFURLRef url = (__bridge CFURLRef) [NSURL fileURLWithPath:path];
+
+    // Create image destination for PNG
+    CGImageDestinationRef destination = CGImageDestinationCreateWithURL(url, kUTTypePNG, 1, NULL);
+    if (!destination) {
+        NSLog(@ "[KD] Failed to create image destination: path=%@", path);
+        return false;
+    }
+
+    // Convert NSImage to CGImage
+    NSRect rect = NSZeroRect;
+    CGImageRef cgImage = [image CGImageForProposedRect:&rect context:NULL hints:NULL];
+    if (!cgImage) {
+        NSLog(@ "[KD] Failed to convert image: path=%@", path);
+        CFRelease(destination);
+        return false;
+    }
+
+    // Add image with properties
+    CGImageDestinationAddImage(destination, cgImage, NULL);
+
+    // Finalize (write to disk)
+    BOOL success = CGImageDestinationFinalize(destination);
+
+    // Cleanup
+    CGImageRelease(cgImage);
+    CFRelease(destination);
+
     // Set modification date
     NSDictionary *fileAttribModificationDate =
             [NSDictionary dictionaryWithObjectsAndKeys:modificationDate, NSFileModificationDate, NULL];
     if (!fileAttribModificationDate) {
-        NSLog(@ "[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys - path=%@", path);
+        NSLog(@ "[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys: path=%@", path);
         return false;
     }
 
     if (![[NSFileManager defaultManager] setAttributes:fileAttribModificationDate ofItemAtPath:path error:NULL]) {
-        NSLog(@ "[KD] Error in NSFileManager::setAttributes - path=%@", path);
+        NSLog(@ "[KD] Error in NSFileManager::setAttributes: path=%@", path);
         return false;
     }
 
-    return true;
+    return success;
 }
 
 // xpcLiteSyncExtensionRemoteProtocol protocol implementation
