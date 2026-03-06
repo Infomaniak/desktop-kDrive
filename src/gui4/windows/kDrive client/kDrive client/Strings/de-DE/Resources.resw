@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 04 Mar 2026 12:59:04 +0100 
+  Exported at: Fri, 06 Mar 2026 11:35:46 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -182,11 +182,11 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonConfigure" xml:space="preserve"> 
     <value>Konfigurieren Sie</value> 
   </data> 
-  <data name="buttonConfigureMainSync" xml:space="preserve"> 
-    <value>Aktivieren Sie</value> 
-  </data> 
   <data name="buttonConfirm" xml:space="preserve"> 
     <value>Bestätigen Sie</value> 
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Ein Konto verbinden</value> 
   </data> 
   <data name="buttonCopyShareLink" xml:space="preserve"> 
     <value>Link zur Freigabe kopieren</value> 
@@ -199,6 +199,12 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Standard-Speicherort</value> 
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Trennen Sie dieses Konto</value> 
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Aktivieren Sie</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Das Problem verstehen</value> 
@@ -214,6 +220,12 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
     <value>kDrive Online</value> 
+  </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Behalten Sie das Konto</value> 
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Abmelden</value> 
   </data> 
   <data name="buttonLogin" xml:space="preserve"> 
     <value>Sich anmelden</value> 
@@ -340,9 +352,6 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="conflictErrorTitle" xml:space="preserve"> 
     <value>Versionskonflikte</value> 
   </data> 
-  <data name="connectAccount" xml:space="preserve"> 
-    <value>Ein Konto verbinden</value> 
-  </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
     <value>Freigabelink erstellen…</value> 
   </data> 
@@ -410,17 +419,12 @@ Dieser Ordner darf nicht in einem anderen Synchronisationsordner enthalten sein 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Eine Ausschlussregel hinzufügen</value> 
   </data> 
-  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Sie sind dabei, sich von der App abzumelden {0}.
-Dateien, die von allen kDrives dieses Kontos synchronisiert wurden, werden von Ihrem Computer entfernt.
+  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
+    <value>Sie werden {0} von der Anwendung abmelden.
+
+Der Synchronisationsordner bleibt auf Ihrem Computer, wird aber nicht mehr mit kDrive synchronisiert.
 
 Alle Ihre Daten bleiben online auf kDrive zugänglich.</value> 
-  </data> 
-  <data name="dialogRemoveAccountPrimaryButton" xml:space="preserve"> 
-    <value>Behalten Sie das Konto</value> 
-  </data> 
-  <data name="dialogRemoveAccountSecondaryButton" xml:space="preserve"> 
-    <value>Abmelden</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
     <value>Von diesem Konto abmelden?</value> 
@@ -473,9 +477,6 @@ Schliessen Sie die Anwendung während des Vorgangs nicht.</value>
   </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
     <value>Benachrichtigungen deaktivieren</value> 
-  </data> 
-  <data name="disconnectAccount" xml:space="preserve"> 
-    <value>Trennen Sie dieses Konto</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
     <value>Nicht beitreten</value> 
@@ -985,6 +986,12 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   </data> 
   <data name="logsUploadErrorTooltip" xml:space="preserve"> 
     <value>Die letzte Übertragung ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und stellen Sie sicher, dass mindestens ein kDrive-Benutzer eingeloggt ist. Die Anzahl der Übertragungen ist auf 10 pro Tag begrenzt.</value> 
+  </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Des versions différentes de ces fichiers ont été détectées.</value> 
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%@ Versionskonflikte entdeckt</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo ist ein Analysetool, das ausschliesslich von Infomaniak gehostet und verwaltet wird, um zu verstehen, wie die Anwendung genutzt wird.</value> 
