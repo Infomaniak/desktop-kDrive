@@ -306,7 +306,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    testhelpers::isInTrash(dirpath);
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -322,7 +322,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    testhelpers::isInTrash(_syncPal->localPath() / filename);
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -480,7 +480,7 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename);
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif

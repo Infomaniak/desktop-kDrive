@@ -254,7 +254,7 @@ void TestIntegration::testEditDeleteConflict() {
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
 
 #if defined(KD_LINUX)
-        testhelpers::isInTrash(dirpath);
+        CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
         CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif

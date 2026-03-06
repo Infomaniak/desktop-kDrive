@@ -100,7 +100,7 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
 #if defined(KD_LINUX)
-    testhelpers::isInTrash(subDirPath);
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
 #endif
@@ -178,7 +178,7 @@ void TestIntegration::testRemoteChanges() {
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
 #if defined(KD_LINUX)
-    testhelpers::isInTrash(subDirPath);
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
 #endif
