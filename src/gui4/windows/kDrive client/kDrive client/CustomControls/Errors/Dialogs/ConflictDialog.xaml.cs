@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
@@ -50,7 +51,7 @@ public partial class ConflictDialog : Page
     private async void Dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         if (RemoteVersionPresenter.IsSelected || LocalVersionPresenter.IsSelected)
-            ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected);
+            ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected ? ConflictResolutionStrategy.KeepLocal : ConflictResolutionStrategy.KeepRemote);
 
         if (!ViewModel.HasMultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
         {
