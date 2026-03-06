@@ -137,6 +137,7 @@
 				Cache/Observation/helpers/ObservedSynchroNodes.swift,
 				Cache/Observation/helpers/ObservedSynchros.swift,
 				Cache/Observation/helpers/ObservedUpdater.swift,
+				Cache/Observation/helpers/ObservedUser.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
 				Cache/Observation/ObservedAccountTests.swift,
