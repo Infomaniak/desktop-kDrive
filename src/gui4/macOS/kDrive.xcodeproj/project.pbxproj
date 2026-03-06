@@ -11,6 +11,7 @@
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 7A9074A42F59D1350089E4F1 /* InfomaniakDI */; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
@@ -128,6 +129,15 @@
 				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
 				Cache/DTOs/SynchroTests.swift,
 				Cache/DTOs/UserUpdateTests.swift,
+				Cache/Observation/helpers/ObservedAccount.swift,
+				Cache/Observation/helpers/ObservedAvailableDrives.swift,
+				Cache/Observation/helpers/ObservedDrive.swift,
+				Cache/Observation/helpers/ObservedDrives.swift,
+				Cache/Observation/helpers/ObservedSynchro.swift,
+				Cache/Observation/helpers/ObservedSynchroNodes.swift,
+				Cache/Observation/helpers/ObservedSynchros.swift,
+				Cache/Observation/helpers/ObservedUpdater.swift,
+				Cache/Observation/helpers/ObservedUser.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
 				Cache/Observation/ObservedAccountTests.swift,
@@ -286,6 +296,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,6 +470,7 @@
 			);
 			name = kDriveTests;
 			packageProductDependencies = (
+				7A9074A42F59D1350089E4F1 /* InfomaniakDI */,
 			);
 			productName = kDriveTests;
 			productReference = 7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */;
@@ -1305,6 +1317,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7A9074A42F59D1350089E4F1 /* InfomaniakDI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */;
+			productName = InfomaniakDI;
+		};
 		7A97962B2F0EB51100E36DDE /* Collections */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7A97962A2F0EB51100E36DDE /* XCRemoteSwiftPackageReference "swift-collections" */;

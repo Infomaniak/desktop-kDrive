@@ -18,34 +18,6 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
-
-// periphery:ignore - Will be moved to the test target
-@MainActor
-@propertyWrapper
-final class ObservedUpdater: ObservableObject {
-    @Published private(set) var wrappedValue: KDC.UpdateState?
-    private var cancellable: AnyCancellable?
-
-    // periphery:ignore
-    init(updaterObservable: UpdaterCacheObservable? = nil) {
-        let updaterObservable =
-            updaterObservable ?? InjectService<UpdaterCacheObservable>().wrappedValue
-
-        cancellable = updaterObservable.updateStatePublisher
-            .observableUpdaterPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] updateState in
-                self?.wrappedValue = updateState
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    var projectedValue: ObservedUpdater {
-        self
-    }
-}
 
 public extension AnyPublisher where Output == KDC.UpdateState, Failure == Never {
     func observableUpdaterPublisher() -> AnyPublisher<KDC.UpdateState, Never> {

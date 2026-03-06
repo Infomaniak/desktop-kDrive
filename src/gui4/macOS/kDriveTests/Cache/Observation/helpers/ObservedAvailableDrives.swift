@@ -19,22 +19,15 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import kDriveCore
 import OrderedCollections
 
-public struct DriveContext: Sendable, Equatable {
-    public let drive: Drive
-    public let account: Account
-    public let user: User
-}
-
-// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
-final class ObservedDrives: ObservableObject {
-    @Published private(set) var wrappedValue: [DriveContext] = []
+final class ObservedAvailableDrives: ObservableObject {
+    @Published private(set) var wrappedValue: [AvailableDriveContext] = []
     private var cancellable: AnyCancellable?
 
-    // periphery:ignore
     init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
@@ -42,32 +35,16 @@ final class ObservedDrives: ObservableObject {
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .allDrivesPublisher()
+            .allAvailableDrivesPublisher()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] drives in
-                self?.wrappedValue = drives
+            .sink { [weak self] availableDrives in
+                self?.wrappedValue = availableDrives
             }
     }
 
     deinit { cancellable?.cancel() }
 
-    var projectedValue: ObservedDrives {
+    var projectedValue: ObservedAvailableDrives {
         self
-    }
-}
-
-public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func allDrivesPublisher() -> AnyPublisher<[DriveContext], Never> {
-        map { usersDict in
-            usersDict.values.flatMap { user in
-                user.accounts.values.flatMap { account in
-                    account.drives.values.map { drive in
-                        DriveContext(drive: drive, account: account, user: user)
-                    }
-                }
-            }
-        }
-        .removeDuplicates()
-        .eraseToAnyPublisher()
     }
 }
