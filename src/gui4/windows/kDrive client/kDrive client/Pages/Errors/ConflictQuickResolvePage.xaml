@@ -47,7 +47,7 @@
                       VerticalAlignment="Bottom" />
 
             <TextBlock Grid.Column="2"
-                       Text="{x:Bind kDrive:Localizer.Instance.GetString('errorPageTitle')}"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('conflictErrorTitle')}"
                        FontSize="{StaticResource TitleTextBlockFontSize}"
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
@@ -58,54 +58,153 @@
         <ScrollView Grid.Row="1"
                     Padding="0"
                     Margin="0">
-            <Grid>
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <Grid.RowDefinitions>
-                    <!-- SyncDir -->
                     <RowDefinition Height="Auto" />
-                    <!-- Conflicts -->
                     <RowDefinition Height="Auto" />
-                    <!-- Files -->
                     <RowDefinition Height="Auto" />
-                    <!-- Other -->
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0"
+                            Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}">
+                    <TextBlock FontWeight="SemiBold"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString1i('labelManyConflictTitle', _errorPageVM.ConflictsCount), Mode=OneWay}" />
 
-                <errors:ErrorList Grid.Row="0"
-                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncFolder')}"
-                                  Errors="{x:Bind _errorPageVM.SyncDirErrors, Mode=OneWay}"
-                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
-                                  Visibility="{x:Bind _errorPageVM.SyncDirErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
-
-                <StackPanel Grid.Row="1"
-                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                            Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}">
-                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('conflictErrorTitle'), Mode=OneWay}" />
-
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString1i('manyConflictErrorTitle', _errorPageVM.ConflictsCount), Mode=OneWay}"
-                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('manyConflictErrorDescription'), Mode=OneWay}">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-cross}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManage'), Mode=OneWay}"
-                                HorizontalAlignment="Left"
-                                Click="ManyConflicts_ActionClick" />
-                    </toolKit:SettingsCard>
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelChooseConflictVersion'), Mode=OneWay}" />
                 </StackPanel>
 
-                <errors:ErrorList Grid.Row="2"
-                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
-                                  Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
-                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
-                                  Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                <Border Grid.Row="1"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+                    <RadioButton x:Name="KeepMostRecentRadioButton"
+                                 GroupName="StrategySelectionRadioButtons"
+                                 Loaded="RadioButton_Loaded"
+                                 MinWidth="0"
+                                 Padding="0"
+                                 IsChecked="True"
+                                 HorizontalAlignment="Stretch">
 
-                <errors:ErrorList Grid.Row="3"
-                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
-                                  Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
-                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
-                                  Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                        <Grid Grid.Column="1"
+                              Grid.Row="0"
+                              HorizontalAlignment="Left"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal"
+                                        Grid.Row="0">
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictStrategyKeepMostRecentTitle')}"
+                                           VerticalAlignment="Center" />
+
+                                <Border Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                        Padding="{StaticResource Infomaniak.Style.Thickness.TextBadge}"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Left">
+                                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelRecommended')}"
+                                               FontSize="12"
+                                               Foreground="DarkGreen"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Grid.Row="1"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="WrapWholeWords"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictStrategyKeepMostRecentDescription')}" />
+                        </Grid>
+                    </RadioButton>
+                </Border>
+                <Border Grid.Row="2"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+
+                    <RadioButton x:Name="KeepRemoteRadioButton"
+                                 GroupName="StrategySelectionRadioButtons"
+                                 Loaded="RadioButton_Loaded"
+                                 MinWidth="0"
+                                 Padding="0"
+                                 HorizontalAlignment="Stretch">
+                        <Grid Grid.Column="1"
+                              Grid.Row="0"
+                              HorizontalAlignment="Left"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictStrategyKeepRemoteTitle')}"
+                                       VerticalAlignment="Center" />
+
+                            <TextBlock Grid.Row="1"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="WrapWholeWords"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString1i('labelConflictStrategyKeepRemoteDescription', _errorPageVM.ConflictsCount), Mode=OneWay}" />
+                        </Grid>
+                    </RadioButton>
+                </Border>
+
+                <Border Grid.Row="3"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+
+                    <RadioButton x:Name="KeepLocalRadioButton"
+                                 GroupName="StrategySelectionRadioButtons"
+                                 Loaded="RadioButton_Loaded"
+                                 MinWidth="0"
+                                 Padding="0"
+                                 HorizontalAlignment="Stretch">
+                        <Grid Grid.Column="1"
+                              Grid.Row="0"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictStrategyKeepLocalTitle')}"
+                                       VerticalAlignment="Center" />
+
+                            <TextBlock Grid.Row="1"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="WrapWholeWords"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString1i('labelConflictStrategyKeepLocalDescription', _errorPageVM.ConflictsCount), Mode=OneWay}" />
+                        </Grid>
+                    </RadioButton>
+                </Border>
+
+                <StackPanel Grid.Row="4"
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                            HorizontalAlignment="Right"
+                            Margin="{StaticResource Infomaniak.Style.Thickness.Top.S}">
+
+                    <Button x:Name="ApplyButton"
+                            Content="{x:Bind kDrive:Localizer.Instance.GetString1i('buttonApplyToXFiles', _errorPageVM.ConflictsCount), Mode=OneWay}"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Click="ApplyButton_Click" />
+
+                    <Button x:Name="ManageIndividuallyButton"
+                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageIndividually')}" />
+
+                </StackPanel>
             </Grid>
         </ScrollView>
     </Grid>

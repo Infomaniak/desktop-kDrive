@@ -1,6 +1,7 @@
 ﻿using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.CustomControls.Errors;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using static Infomaniak.kDrive.ViewModels.AppModel;
 
 namespace Infomaniak.kDrive.Pages.Errors
@@ -53,6 +56,25 @@ namespace Infomaniak.kDrive.Pages.Errors
             _viewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             Sync = _viewModel.SelectedSync;
             InitErrorLists();
+        }
+
+        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
+        {
+            if (Sync is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Attempted to resolve conflicts quickly, but no sync is currently selected.");
+            }
+
+            List<DbId> conflictsToResolve = Sync?.SyncErrors.Where(e => IsConflictUserResolvable(e)).Select(e => e.DbId).ToList() ?? new List<DbId>();
+
+            if (conflictsToResolve.Count == 0)
+            {
+                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                return true;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
         }
 
         private void OnSelectedSyncChanged(object? sender, SelectedSyncChangedEventArgs e)

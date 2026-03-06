@@ -63,7 +63,7 @@
                 <Border Grid.Column="2"
                         Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                        Padding="4,2"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.TextBadge}"
                         VerticalAlignment="Center"
                         Visibility="{x:Bind ShowMostRecentBadge, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelMostRecent')}"
