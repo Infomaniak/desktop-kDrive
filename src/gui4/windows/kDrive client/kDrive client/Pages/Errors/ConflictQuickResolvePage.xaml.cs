@@ -101,9 +101,9 @@ namespace Infomaniak.kDrive.Pages.Errors
                 return;
             }
 
-            if (_viewModel is null)
+            if (_errorPageVM is null)
             {
-                Logger.Log(Logger.Level.Error, "ViewModel is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
+                Logger.Log(Logger.Level.Error, "_errorPageVM is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -115,6 +115,10 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 Logger.Log(Logger.Level.Error, "Failed to resolve conflicts quickly. Re-enabling buttons to allow user to try again or manage individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            else
+            {
+                Frame.Navigate(typeof(ActivityPage));
             }
             ApplyButton.IsEnabled = true;
             ManageIndividuallyButton.IsEnabled = true;
