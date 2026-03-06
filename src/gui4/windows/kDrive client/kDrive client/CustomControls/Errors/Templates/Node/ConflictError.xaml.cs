@@ -37,9 +37,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
             };
 
-            List<Error> allConflict = Error.Sync.SyncErrors.Where(e => (e.ConflictType == ConflictType.EditEdit || e.ConflictType == ConflictType.CreateCreate)).ToList();
             // Set the content first to allow the dialog to measure properly
-            dialog.Content = new ConflictDialog(allConflict, dialog) { XamlRoot = xamlRoot };
+            dialog.Content = new ConflictDialog(Error, dialog) { XamlRoot = xamlRoot };
 
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
@@ -54,7 +53,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 }
                 else
                 {
-                    await Utility.OpenFolderSecurely(absolutPath);
+             //       await Utility.OpenFolderSecurely(absolutPath);
                 }
             }
         }

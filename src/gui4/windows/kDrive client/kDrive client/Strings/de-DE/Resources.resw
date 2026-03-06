@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 03 Mar 2026 10:32:55 +0100 
+  Exported at: Wed, 04 Mar 2026 12:59:04 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -252,6 +252,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Synchronisierungseinstellungen öffnen</value> 
   </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Pause</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Auffrischen</value> 
   </data> 
@@ -274,6 +277,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
     <value>Meine Auswahl speichern</value> 
   </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Suche</value> 
+  </data> 
   <data name="buttonSeeActivities" xml:space="preserve"> 
     <value>Siehe Aktivitäten</value> 
   </data> 
@@ -292,11 +298,17 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonSendLog" xml:space="preserve"> 
     <value>Debug-Ordner senden</value> 
   </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Einstellungen öffnen</value> 
+  </data> 
   <data name="buttonShowOffers" xml:space="preserve"> 
     <value>Zu den Angeboten</value> 
   </data> 
   <data name="buttonSignOut" xml:space="preserve"> 
     <value>Abmelden</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Start</value> 
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Kostenlos anfangen</value> 
@@ -809,6 +821,9 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>Kb</value> 
   </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Lokal</value> 
+  </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
   </data> 
@@ -830,6 +845,9 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Benachrichtigung</value> 
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>Online</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Ursprünglicher Standort :</value> 
@@ -1164,11 +1182,11 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   <data name="quotaExceededErrorTitle" xml:space="preserve"> 
     <value>Speicherkontingent überschritten</value> 
   </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Beta</value> 
+  </data> 
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Intern</value> 
-  </data> 
-  <data name="releaseChannelbeta" xml:space="preserve"> 
-    <value>Beta</value> 
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Standort auf kDrive</value> 

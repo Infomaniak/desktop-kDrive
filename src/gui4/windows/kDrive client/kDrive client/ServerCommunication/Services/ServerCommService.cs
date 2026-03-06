@@ -1,10 +1,4 @@
-﻿using DynamicData;
-using Infomaniak.kDrive.ServerCommunication.CommStruct;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.ServerCommunication.JsonConverters;
-using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,6 +6,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.JsonConverters;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
@@ -910,11 +910,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
+        public async Task<NodeConflictInfo?> GetNodeConflictInfo(DbId syncDbId, string relativePath, ReplicaSide replicaSide, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.RelativePath] = Utility.ToBase64String(relativePath),
+                [JsonKeys.ReplicaSide] = (int)replicaSide
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CONFLICT_INFO, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeConflictInfo))
+                return null;
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }; 
+            options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new IntToDateTimeConverter());
+
+            NodeConflictInfo? nodeVersionInfo = data.Params[JsonKeys.NodeConflictInfo].Deserialize<NodeConflictInfo>(options);
+            if (nodeVersionInfo is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeConflictInfo]}.");
+                return null;
+            }
+
+            return nodeVersionInfo;
+        }
+
         public async Task<bool> StartUpdate(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, [], cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data);
         }
+
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
             // First check the update state
@@ -932,6 +965,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
+            // UpdateState.NoUpdate means that the current setup does not allow for updates at all, so we should disable update functionality in the UI and clear any available update info.
             if (updateState == UpdateState.NoUpdate)
             {
                 _viewModel.Settings.UpdateManager.UpdateEnabled = false;
@@ -958,12 +992,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (updateState == UpdateState.Checking)
             {
-                // If we are currently checking for updates but we already have update info, we can keep showing the update info without refreshing it to avoid UI flickering.
-                // We will refresh the update info once the state changes to something other than checking.
                 return true;
             }
 
-            // If we are here, it means we are in a state where an update is available but not being checked for, which means we should have the update info available and can refresh it.
+            // If we are here, it means we are in a state where an update is available, we can fetch the version details.
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
             {

@@ -37,7 +37,7 @@
             </Border>
         </Grid>
         <!-- File name badge -->
-        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path}"
+        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path, Mode=OneWay}"
                                     NodeType="{x:Bind ViewModel.CurrentError.NodeType}" />
 
         <!-- Question -->
@@ -54,16 +54,21 @@
 
             <controls:ConflictVersionPresenter x:Name="RemoteVersionPresenter"
                                                Grid.Column="0"
-                                               ShowMostRecentBadge="False"
+                                               IsRemote="True"
                                                Selected="RemoteVersionPresenter_Selected"
-                                               Unselected="RemoteVersionPresenter_Unselected" />
+                                               Unselected="RemoteVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.RemoteVersionInfo, Mode=OneWay}"
+                                               NodeAbsolutePath="{x:Bind ViewModel.RemoteVersionAbsolutePath, Mode=OneWay}"
+                                               ShowMostRecentBadge="{x:Bind ViewModel.RemoteIsMostRecent, Mode=OneWay}" />
 
             <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
                                                Grid.Column="1"
-                                               ShowMostRecentBadge="True"
+                                               IsRemote="False"
                                                Selected="LocalVersionPresenter_Selected"
-                                               Unselected="LocalVersionPresenter_Unselected" />
-
+                                               Unselected="LocalVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.LocalVersionInfo, Mode=OneWay}"
+                                               NodeAbsolutePath="{x:Bind ViewModel.LocalVersionAbsolutePath, Mode=OneWay}"
+                                               ShowMostRecentBadge="{x:Bind ViewModel.LocalIsMostRecent, Mode=OneWay}" />
         </Grid>
     </StackPanel>
 </Page>

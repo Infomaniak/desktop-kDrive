@@ -376,6 +376,13 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
+    public class NodeConflictInfo
+    {
+        public string? AuthorName { get; set; }
+        public Int64? FileSize { get; set; }
+        public DateTime? LastModificationDate { get; set; }
+    }
+
     public class ErrorInfo
     {
         public DbId? DbId { get; set; }
