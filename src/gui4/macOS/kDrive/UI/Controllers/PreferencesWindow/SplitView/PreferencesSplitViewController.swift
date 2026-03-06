@@ -22,6 +22,7 @@ import kDriveCoreUI
 final class PreferencesSplitViewController: IKSplitViewController {
     static let sidebarWidth: CGFloat = 200
 
+    private let viewModel = PreferencesViewModel()
     private let repository = PreferencesRepository()
 
     override func viewDidLoad() {
@@ -32,7 +33,8 @@ final class PreferencesSplitViewController: IKSplitViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         Task {
-            try? await repository.refreshData()
+            async let _ = repository.refreshData()
+            async let _ = viewModel.refreshData()
         }
     }
 
@@ -62,7 +64,7 @@ extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate
         case .general:
             contentViewController = GeneralPreferencesViewController(repository: repository)
         case .accounts:
-            contentViewController = AccountsPreferencesViewController()
+            contentViewController = AccountsPreferencesViewController(viewModel: viewModel)
         case .advanced:
             contentViewController = AdvancedPreferencesViewController()
         default:

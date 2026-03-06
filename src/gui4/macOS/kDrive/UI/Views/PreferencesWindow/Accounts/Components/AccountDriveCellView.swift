@@ -16,14 +16,43 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct AccountDriveCellView: View {
+    let drive: any UIDriveRepresentation
+    let isSynchronized: Bool
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack(spacing: AppPadding.padding8) {
+            DriveBadgeView(color: drive.color ?? ColorToken.Drive.defaultColor.asColor)
+
+            Text(drive.name)
+                .font(.Tokens.body)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if isSynchronized {
+                Text(KDriveLocalizable.syncedDrive)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+
+                Button(KDriveLocalizable.buttonManage) {}
+                    .buttonStyle(.bordered)
+            } else {
+                Text(KDriveLocalizable.notSyncedDrive)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+
+                Button(KDriveLocalizable.buttonEnable) {}
+                    .buttonStyle(.bordered)
+            }
+        }
+        .padding(.leading, AppPadding.padding24)
     }
 }
 
 #Preview {
-    AccountDriveCellView()
+    AccountDriveCellView(drive: PreviewHelper.drive1, isSynchronized: true)
 }

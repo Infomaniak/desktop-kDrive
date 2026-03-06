@@ -21,7 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 class AccountsPreferencesViewController: TitledViewController<AccountsView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: AccountsView())
+    convenience init(viewModel: PreferencesViewModel) {
+        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: AccountsView(viewModel: viewModel))
     }
 }
