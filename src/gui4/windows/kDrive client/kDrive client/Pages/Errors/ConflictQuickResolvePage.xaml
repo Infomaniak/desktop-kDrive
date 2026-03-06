@@ -202,7 +202,8 @@
                             Click="ApplyButton_Click" />
 
                     <Button x:Name="ManageIndividuallyButton"
-                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageIndividually')}" />
+                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageIndividually')}"
+                            Click="ManageIndividuallyButton_Click"/>
 
                 </StackPanel>
             </Grid>

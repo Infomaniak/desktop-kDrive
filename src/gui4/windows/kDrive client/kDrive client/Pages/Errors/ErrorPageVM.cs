@@ -29,6 +29,9 @@ namespace Infomaniak.kDrive.Pages.Errors
         public ReadOnlyObservableCollection<Error> SyncDirErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
         public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
 
+        private string _conflitFilterText = "";
+        public ReadOnlyObservableCollection<Error> ConflictErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+
         public Sync? Sync
         {
             get => _sync;
@@ -58,25 +61,6 @@ namespace Infomaniak.kDrive.Pages.Errors
             InitErrorLists();
         }
 
-        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
-        {
-            if (Sync is null)
-            {
-                Logger.Log(Logger.Level.Warning, "Attempted to resolve conflicts quickly, but no sync is currently selected.");
-            }
-
-            List<DbId> conflictsToResolve = Sync?.SyncErrors.Where(e => IsConflictUserResolvable(e)).Select(e => e.DbId).ToList() ?? new List<DbId>();
-
-            if (conflictsToResolve.Count == 0)
-            {
-                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
-                return true;
-            }
-
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
-        }
-
         private void OnSelectedSyncChanged(object? sender, SelectedSyncChangedEventArgs e)
         {
             Sync = e.NewValue;
@@ -96,15 +80,18 @@ namespace Infomaniak.kDrive.Pages.Errors
                 OnPropertyChangingInUIThread(nameof(FileErrors));
                 OnPropertyChangingInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangingInUIThread(nameof(OtherErrors));
+                OnPropertyChangingInUIThread(nameof(ConflictErrors));
                 FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                ConflictErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OnPropertyChangedInUIThread(nameof(FileErrors));
                 OnPropertyChangedInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangedInUIThread(nameof(OtherErrors));
+                OnPropertyChangedInUIThread(nameof(ConflictErrors));
                 return;
             }
-            ConflictsCount = Sync.SyncErrors.Where(e => IsConflictUserResolvable(e)).Count();
+            ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
             HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
 
             _errorsSubscription.Add(Sync.SyncErrors
@@ -129,6 +116,16 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
+                .Filter(e => e.IsConflictUserResolvable())
+                .Sort(SortExpressionComparer<Error>.Ascending(e => e.DbId))
+                .Bind(out var conflictErrors)
+                .Subscribe());
+            OnPropertyChangingInUIThread(nameof(ConflictErrors));
+            ConflictErrors = conflictErrors;
+            OnPropertyChangedInUIThread(nameof(ConflictErrors));
+
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
                 .Filter(e => IsInOtherErrorList(e))
                 .Sort(SortExpressionComparer<Error>.Ascending(e => e.DbId))
                 .Bind(out var otherErrors)
@@ -143,16 +140,12 @@ namespace Infomaniak.kDrive.Pages.Errors
             if (error.ErrorLevel != ErrorLevel.Node)
                 return false;
 
-            if (HasManyConflicts && IsConflictUserResolvable(error))
+            if (HasManyConflicts && error.IsConflictUserResolvable())
                 return false;
 
             return true;
         }
 
-        private static bool IsConflictUserResolvable(Error error)
-        {
-            return error.ErrorLevel == ErrorLevel.Node && (error.ConflictType == ConflictType.CreateCreate || error.ConflictType == ConflictType.EditEdit);
-        }
 
         private static bool IsInSyncDirErrorList(Error error)
         {
@@ -174,7 +167,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private bool IsInOtherErrorList(Error error)
         {
-            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !IsConflictUserResolvable(error);
+            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable();
         }
 
         public void Dispose()

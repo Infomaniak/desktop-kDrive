@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 06 Mar 2026 14:25:39 +0100 
+  Exported at: Fri, 06 Mar 2026 15:51:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -328,6 +328,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonStart" xml:space="preserve"> 
     <value>Démarrage</value> 
   </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Commencer le choix des versions</value> 
+  </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Commencer gratuitement</value> 
   </data> 
@@ -357,6 +360,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="conflictErrorTitle" xml:space="preserve"> 
     <value>Conflits de versions</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Rechercher un fichier</value> 
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
     <value>Création d’un lien de partage…</value> 
@@ -776,6 +782,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   </data> 
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
     <value>Choisissez la version de vos fichiers que vous souhaitez conserver.</value> 
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Pour chaque fichiers sélectionnez la version à conserver.</value> 
   </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
     <value>Quelle version souhaitez-vous garder ?</value> 
@@ -1405,6 +1414,9 @@ Si le problème persiste, vous pouvez convertir la synchronisation en une synchr
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Stockage</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Traitement individuel</value> 
   </data> 
   <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
     <value>Mis sur liste noire temporaire</value> 

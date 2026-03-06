@@ -287,6 +287,9 @@
     <Page Update="Pages\ErrorPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Errors\ResolveManyConflictPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>

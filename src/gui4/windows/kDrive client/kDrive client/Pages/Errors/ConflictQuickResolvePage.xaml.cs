@@ -49,12 +49,6 @@ namespace Infomaniak.kDrive.Pages.Errors
                     _errorPageVM = new ErrorPageVM { Sync = e.NewValue };
             }
         }
-
-        private void ManyConflicts_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-
-        }
-
         private void RadioButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is RadioButton radioButton)
@@ -111,7 +105,16 @@ namespace Infomaniak.kDrive.Pages.Errors
             ApplyButton.IsEnabled = false;
             ManageIndividuallyButton.IsEnabled = false;
 
-            if (!await _errorPageVM.SolveConflictsQuick(resolutionStrategy))
+            if (_errorPageVM.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "_errorPageVM.Sync is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                ApplyButton.IsEnabled = true;
+                ManageIndividuallyButton.IsEnabled = true;
+                return;
+            }
+
+            if (!await _errorPageVM.Sync.SolveConflictsQuick(resolutionStrategy))
             {
                 Logger.Log(Logger.Level.Error, "Failed to resolve conflicts quickly. Re-enabling buttons to allow user to try again or manage individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -122,6 +125,11 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
             ApplyButton.IsEnabled = true;
             ManageIndividuallyButton.IsEnabled = true;
+        }
+
+        private void ManageIndividuallyButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ResolveManyConflictPage));
         }
     }
 }
