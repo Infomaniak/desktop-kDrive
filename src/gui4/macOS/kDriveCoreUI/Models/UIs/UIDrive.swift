@@ -35,7 +35,7 @@ extension UIHexColor {
     }
 }
 
-public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {
+public protocol UIDriveRepresentation: Sendable, Equatable, Hashable, Identifiable {
     var id: Int { get }
     var name: String { get }
     var hexColor: UIHexColor? { get }
