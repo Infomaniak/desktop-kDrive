@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ViewModels.AppModel;
@@ -30,7 +31,9 @@ namespace Infomaniak.kDrive.Pages.Errors
         public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
 
         private string _conflitFilterText = "";
-        public ReadOnlyObservableCollection<Error> ConflictErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+        // Emits a new filter predicate each time _conflitFilterText changes, causing DynamicData to re-evaluate the ConflictErrors list.
+        private readonly BehaviorSubject<Func<Error, bool>> _conflictFilterSubject = new(e => e.IsConflictUserResolvable());
+        public ReadOnlyObservableCollection<Error> FilteredConflictErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
 
         public Sync? Sync
         {
@@ -52,6 +55,12 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             get => _conflictsCount;
             private set => SetPropertyInUIThread(ref _conflictsCount, value);
+        }
+
+        public string ConflictFilterText
+        {
+            get => _conflitFilterText;
+            set => SetConflictFilterText(value);
         }
 
         public ErrorPageVM()
@@ -80,19 +89,30 @@ namespace Infomaniak.kDrive.Pages.Errors
                 OnPropertyChangingInUIThread(nameof(FileErrors));
                 OnPropertyChangingInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangingInUIThread(nameof(OtherErrors));
-                OnPropertyChangingInUIThread(nameof(ConflictErrors));
+                OnPropertyChangingInUIThread(nameof(FilteredConflictErrors));
                 FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
-                ConflictErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                FilteredConflictErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OnPropertyChangedInUIThread(nameof(FileErrors));
                 OnPropertyChangedInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangedInUIThread(nameof(OtherErrors));
-                OnPropertyChangedInUIThread(nameof(ConflictErrors));
+                OnPropertyChangedInUIThread(nameof(FilteredConflictErrors));
+                ConflictsCount = 0;
+                HasManyConflicts = false;
                 return;
             }
-            ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
-            HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
+
+            // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .Filter(e => e.IsConflictUserResolvable())
+                .QueryWhenChanged(q => q.Count)
+                .Subscribe(count =>
+                {
+                    ConflictsCount = count;
+                    HasManyConflicts = count > _maxConflictsForIndividualDisplay;
+                }));
 
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
@@ -114,15 +134,18 @@ namespace Infomaniak.kDrive.Pages.Errors
             SyncDirErrors = syncDirErrors;
             OnPropertyChangedInUIThread(nameof(SyncDirErrors));
 
+            // Reset the filter predicate for the new Sync, then subscribe using the observable overload
+            // so the list re-filters automatically when _conflictFilterSubject emits a new predicate.
+            _conflictFilterSubject.OnNext(ConflictFilter);
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
-                .Filter(e => e.IsConflictUserResolvable())
+                .Filter(_conflictFilterSubject)
                 .Sort(SortExpressionComparer<Error>.Ascending(e => e.DbId))
                 .Bind(out var conflictErrors)
                 .Subscribe());
-            OnPropertyChangingInUIThread(nameof(ConflictErrors));
-            ConflictErrors = conflictErrors;
-            OnPropertyChangedInUIThread(nameof(ConflictErrors));
+            OnPropertyChangingInUIThread(nameof(FilteredConflictErrors));
+            FilteredConflictErrors = conflictErrors;
+            OnPropertyChangedInUIThread(nameof(FilteredConflictErrors));
 
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
@@ -134,6 +157,21 @@ namespace Infomaniak.kDrive.Pages.Errors
             OtherErrors = otherErrors;
             OnPropertyChangedInUIThread(nameof(OtherErrors));
         }
+
+        /// <summary>
+        /// Updates the filter text and pushes a new predicate to <see cref="_conflictFilterSubject"/>,
+        /// which triggers DynamicData to re-evaluate every item in <see cref="FilteredConflictErrors"/>.
+        /// </summary>
+        public void SetConflictFilterText(string filterText)
+        {
+            _conflitFilterText = filterText;
+            _conflictFilterSubject.OnNext(ConflictFilter);
+        }
+
+        // Predicate combining the resolvable check with a case-insensitive path match.
+        private Func<Error, bool> ConflictFilter => e =>
+            e.IsConflictUserResolvable() &&
+            (string.IsNullOrEmpty(_conflitFilterText) || e.Path.Contains(_conflitFilterText, StringComparison.OrdinalIgnoreCase));
 
         private bool IsInFileErrorsList(Error error)
         {
@@ -176,6 +214,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 subscription?.Dispose();
             }
+            _conflictFilterSubject.Dispose();
             _viewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
         }
     }

@@ -14,9 +14,10 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
-          RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -24,7 +25,7 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0"
               Height="{StaticResource Infomaniak.Style.Spacing.XL}"
-              Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}">
+              Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -57,7 +58,7 @@
         </Grid>
 
         <StackPanel Grid.Row="1"
-                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}">
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.M}">
             <TextBlock FontWeight="SemiBold"
                        Text="{x:Bind kDrive:Localizer.Instance.GetString1i('labelManyConflictTitle', _errorPageVM.ConflictsCount), Mode=OneWay}" />
 
@@ -67,7 +68,7 @@
 
         <Grid  Grid.Row="2"
                Padding="0"
-               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+               RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}"
                ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -80,15 +81,90 @@
             <AutoSuggestBox Grid.Row="0"
                             Grid.Column="0"
                             PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString('conflictsSearchBoxPlaceholder')}"
+                            Text="{x:Bind _errorPageVM.ConflictFilterText, Mode=TwoWay}"
                             QueryIcon="Find"
                             IsSuggestionListOpen="False"
                             HorizontalAlignment="Left"
-                            TextChanged="SearchBox_TextChanged" />
+                            MinWidth="180" />
 
             <Button Grid.Row="0"
                     Grid.Column="1"
                     Style="{ThemeResource AccentButtonStyle}"
-                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonStartConflictsResolution')}" />
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonStartConflictsResolution')}"
+                    Click="ResolveManyConflictButton_Click" />
+
+            <ListView Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      ItemsSource="{x:Bind _errorPageVM.FilteredConflictErrors, Mode=OneWay}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False"
+                      BorderThickness="0"
+                      VerticalAlignment="Top">
+
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:Error">
+                        <Border Background="{ThemeResource LayerFillColorDefault}"
+                                Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="1"
+                                CornerRadius="1"
+                                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
+                            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <controls:SvgIcon Grid.Column="0"
+                                                  UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}"
+                                                  VerticalAlignment="Center"
+                                                  Height="14"
+                                                  Width="14" />
+
+                                <TextBlock Grid.Column="1"
+                                           VerticalAlignment="Center"
+                                           Text="{x:Bind Path, Mode=OneWay}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock Text="{x:Bind DestinationPath, Mode=OneWay}" />
+                                    </ToolTipService.ToolTip>
+                                </TextBlock>
+
+                                <Button Grid.Column="2"
+                                        Content="{x:Bind kDrive:Localizer.Instance.GetString('conflictErrorAction')}"
+                                        Margin="{StaticResource Infomaniak.Style.Thickness.Right.S}"
+                                        Click="ResolveOneConflictButton_Click" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Margin"
+                                Value="0" />
+                        <Setter Property="Padding"
+                                Value="0" />
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment"
+                                Value="Stretch" />
+                    </Style>
+
+                </ListView.ItemContainerStyle>
+            </ListView>
+            <StackPanel Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        VerticalAlignment="Center"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                        Visibility="{x:Bind _errorPageVM.FilteredConflictErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}">
+                <controls:SvgIcon Height="120"
+                                  UriString="{ThemeResource Infomaniak.Custom.Images.servin}" />
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelNoConflictsFound')}"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

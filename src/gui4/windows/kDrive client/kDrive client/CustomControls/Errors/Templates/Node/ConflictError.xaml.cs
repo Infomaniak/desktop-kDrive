@@ -44,18 +44,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
 
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                string absolutPath = Path.Combine(Error.Sync?.LocalPath ?? "", Error.Path);
-                if (string.IsNullOrEmpty(Path.GetDirectoryName(absolutPath)))
-                {
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
-                else
-                {
-             //       await Utility.OpenFolderSecurely(absolutPath);
-                }
-            }
+            _ = await dialog.ShowAsync();
         }
     }
 }
