@@ -65,21 +65,6 @@ ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vect
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractErrorResolveConflictsJob::getSyncPal(const int64_t syncDbId, std::shared_ptr<SyncPal> &syncPal) {
-    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
-    }
-    if (!syncPalMapIt->second) {
-        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
-    }
-    syncPal = syncPalMapIt->second;
-    return ExitCode::Ok;
-}
-
 ExitInfo AbstractErrorResolveConflictsJob::fixConflictsAndNotify(const std::shared_ptr<SyncPal> &syncPal,
                                                                  const std::vector<Error> &keepLocalErrors,
                                                                  const std::vector<Error> &keepRemoteErrors) {

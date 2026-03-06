@@ -57,18 +57,13 @@ ExitInfo SyncOfflineFilesSizeJob::serializeOutputParms() {
 ExitInfo SyncOfflineFilesSizeJob::process() {
     std::vector<std::shared_ptr<SyncPal>> syncPals;
 
-    {
-        auto lock = std::scoped_lock(_commManager->appServer().syncPalMapMutex);
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        return exitInfo;
+    }
 
-        auto it = std::find_if(_commManager->appServer().syncPalMap.begin(), _commManager->appServer().syncPalMap.end(),
-                               [this](auto const &pair) {
-                                   const auto &syncpal = pair.second;
-                                   return syncpal && syncpal->syncDbId() == _syncDbId && syncpal->vfs();
-                               });
-
-        if (it != _commManager->appServer().syncPalMap.end()) {
-            syncPals.push_back(it->second);
-        }
+    if (syncPal && syncPal->vfs()) {
+        syncPals.push_back(syncPal);
     }
 
     // Estimate offline file sizes

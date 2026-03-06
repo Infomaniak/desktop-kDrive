@@ -140,4 +140,19 @@ void AbstractGuiJob::addError(const Error &error) {
     if (_commManager) _commManager->appServer().addError(error);
 }
 
+ExitInfo AbstractGuiJob::getSyncPal(const int64_t syncDbId, std::shared_ptr<SyncPal> &syncPal) {
+    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+        return ExitCode::DataError;
+    }
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+        return ExitCode::DataError;
+    }
+    syncPal = syncPalMapIt->second;
+    return ExitCode::Ok;
+}
+
 } // namespace KDC

@@ -39,12 +39,17 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
     _keepRemoteErrors(keepRemoteErrorList) {}
 
 ExitInfo ConflictingFilesCorrector::runJob() {
-    resolveConflicts(_keepLocalErrors, true);
-    resolveConflicts(_keepRemoteErrors, false);
+    resolveConflicts(_keepLocalErrors, ConflictResolutionStrategy::KeepLocal);
+    resolveConflicts(_keepRemoteErrors, ConflictResolutionStrategy::KeepRemote);
     return ExitCode::Ok;
 }
 
-void ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &errorList, bool keepLocal) {
+ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &errorList, ConflictResolutionStrategy strategy) {
+    if (strategy != ConflictResolutionStrategy::KeepLocal && strategy != ConflictResolutionStrategy::KeepRemote) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid conflict resolution strategy: " << strategy);
+        return ExitCode::LogicError;
+    }
+
     for (auto &error: errorList) {
         bool exists = false;
         IoError ioError = IoError::Success;
@@ -61,13 +66,13 @@ void ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &error
             continue;
         }
 
-        if (keepLocal) {
+        if (strategy == ConflictResolutionStrategy::KeepLocal) {
             if (keepLocalVersion(error)) {
                 deleteError(error.dbId());
             } else {
                 _nbErrors++;
             }
-        } else {
+        } else if (strategy == ConflictResolutionStrategy::KeepRemote) {
             if (keepRemoteVersion(error)) {
                 deleteError(error.dbId());
             } else {
@@ -75,6 +80,8 @@ void ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &error
             }
         }
     }
+
+    return ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {

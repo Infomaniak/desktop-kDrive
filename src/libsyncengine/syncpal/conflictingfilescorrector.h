@@ -38,7 +38,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
 
 
     private:
-        void resolveConflicts(const std::vector<Error> &errorList, bool keepLocal);
+        ExitInfo resolveConflicts(const std::vector<Error> &errorList, ConflictResolutionStrategy strategy);
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
         void deleteError(int64_t errorDbId);

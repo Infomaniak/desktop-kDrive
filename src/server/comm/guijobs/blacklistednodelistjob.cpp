@@ -58,16 +58,13 @@ ExitInfo BlacklistedNodeListJob::serializeOutputParms() {
 }
 
 ExitInfo BlacklistedNodeListJob::process() {
-    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-    auto &syncPalMap = _commManager->appServer().syncPalMap;
-    auto it = syncPalMap.find(_syncDbId);
-    if (it == syncPalMap.end()) {
-        LOG_WARN(_logger, "BlacklistedNodeListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        return exitInfo;
     }
 
     NodeSet nodeIdSet;
-    if (ExitInfo exitInfo = it->second->syncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
+    if (ExitInfo exitInfo = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
         LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: " << exitInfo);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;

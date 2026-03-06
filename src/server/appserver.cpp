@@ -1222,7 +1222,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (!keepLocalErrorList.empty() || !keepRemoteErrorList.empty()) {
                     exitCode = syncPalMapIt->second->fixConflictingFilesAsync(keepLocalErrorList, keepRemoteErrorList);
                     if (exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles for syncDbId=" << sync.dbId());
+                        LOG_WARN(_logger, "Error in SyncPal::setUpConflictingFilesCorrector for syncDbId=" << sync.dbId());
                         break;
                     }
                 }

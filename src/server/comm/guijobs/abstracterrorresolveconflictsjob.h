@@ -39,7 +39,6 @@ class AbstractErrorResolveConflictsJob : public AbstractGuiJob {
         ExitInfo fetchAllErrors(std::vector<Error> &errorList);
         ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, int64_t &syncDbId);
         ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, const std::vector<Error> &list2, int64_t &syncDbId);
-        ExitInfo getSyncPal(int64_t syncDbId, std::shared_ptr<SyncPal> &syncPal);
         ExitInfo fixConflictsAndNotify(const std::shared_ptr<SyncPal> &syncPal, const std::vector<Error> &keepLocalErrors,
                                        const std::vector<Error> &keepRemoteErrors);
 };
