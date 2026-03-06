@@ -147,10 +147,10 @@ void TestGuiCommChannel::testErrorResolveConflictsJob() {
         auto resolveJob = std::dynamic_pointer_cast<ErrorResolveConflictsJob>(job);
         CPPUNIT_ASSERT(resolveJob);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, resolveJob->_keepLocalErrorDbIdList.size());
-        CPPUNIT_ASSERT_EQUAL(int64_t{10}, resolveJob->_keepLocalErrorDbIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(int64_t{20}, resolveJob->_keepLocalErrorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(int32_t{10}, resolveJob->_keepLocalErrorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(int32_t{20}, resolveJob->_keepLocalErrorDbIdList.at(1));
         CPPUNIT_ASSERT_EQUAL(size_t{1}, resolveJob->_keepRemoteErrorDbIdList.size());
-        CPPUNIT_ASSERT_EQUAL(int64_t{30}, resolveJob->_keepRemoteErrorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(int32_t{30}, resolveJob->_keepRemoteErrorDbIdList.at(0));
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
