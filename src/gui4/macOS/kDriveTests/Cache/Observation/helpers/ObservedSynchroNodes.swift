@@ -19,24 +19,15 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import kDriveCore
 import OrderedCollections
 
-public struct SynchroNodeContext: Sendable, Equatable {
-    public let node: SynchroNode
-    public let synchro: Synchro
-    public let drive: Drive
-    public let account: Account
-    public let user: User
-}
-
-// periphery:ignore - Will be moved to the test target
 @MainActor
 @propertyWrapper
 final class ObservedSynchroNodes: ObservableObject {
     @Published private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
-    // periphery:ignore
     init(
         synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
@@ -56,36 +47,5 @@ final class ObservedSynchroNodes: ObservableObject {
 
     var projectedValue: ObservedSynchroNodes {
         self
-    }
-}
-
-public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func synchroNodesPublisher(for synchroDbId: Int32) -> AnyPublisher<[SynchroNodeContext], Never> {
-        map { usersDict in
-            var allNodes: [SynchroNodeContext] = []
-
-            for user in usersDict.values {
-                for account in user.accounts.values {
-                    for drive in account.drives.values {
-                        if let synchro = drive.synchros[synchroDbId] {
-                            for node in synchro.synchNodes.values {
-                                let context = SynchroNodeContext(
-                                    node: node,
-                                    synchro: synchro,
-                                    drive: drive,
-                                    account: account,
-                                    user: user
-                                )
-                                allNodes.append(context)
-                            }
-                        }
-                    }
-                }
-            }
-
-            return allNodes.sorted { $0.node.date > $1.node.date }
-        }
-        .removeDuplicates()
-        .eraseToAnyPublisher()
     }
 }

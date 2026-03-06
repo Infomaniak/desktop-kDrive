@@ -134,6 +134,7 @@
 				Cache/Observation/helpers/ObservedDrive.swift,
 				Cache/Observation/helpers/ObservedDrives.swift,
 				Cache/Observation/helpers/ObservedSynchro.swift,
+				Cache/Observation/helpers/ObservedSynchroNodes.swift,
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
