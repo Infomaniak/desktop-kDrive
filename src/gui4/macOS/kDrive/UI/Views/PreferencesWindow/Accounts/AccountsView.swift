@@ -25,7 +25,7 @@ struct AccountsView: View {
 
     var body: some View {
         Form {
-            ForEach(users) { user in
+            ForEach(users) { _ in
                 UserSection(
                     user: PreviewHelper.user,
                     drives: [

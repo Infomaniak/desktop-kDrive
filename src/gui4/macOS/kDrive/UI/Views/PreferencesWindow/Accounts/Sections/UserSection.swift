@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -30,6 +31,11 @@ struct DriveContext: Sendable, Identifiable {
 }
 
 struct UserSection: View {
+    @State private var isShowingDisconnectUserAlert = false
+
+    @State private var isShowingErrorAlert = false
+    @State private var error: DomainError?
+
     let user: UIUser
     let drives: [DriveContext]
 
@@ -42,23 +48,20 @@ struct UserSection: View {
         }
     }
 
+    enum DomainError: LocalizedError {
+        case impossibleToDeleteUser
+
+        var errorDescription: String? {
+            switch self {
+            case .impossibleToDeleteUser:
+                return KDriveLocalizable.errorDeletingAccount
+            }
+        }
+    }
+
     var body: some View {
         Section {
-            HStack(spacing: AppPadding.padding8) {
-                if let avatar = user.avatar {
-                    AvatarView(image: avatar)
-                        .frame(width: 26, height: 26)
-                }
-
-                VStack(alignment: .leading) {
-                    Text(user.name)
-                        .font(.Tokens.body)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                    Text(user.email)
-                        .font(.Tokens.subheadline)
-                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                }
-            }
+            UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
             ForEach(drives) { context in
                 HStack(spacing: AppPadding.padding8) {
@@ -89,10 +92,30 @@ struct UserSection: View {
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
-                // TODO: Remove user
+                isShowingDisconnectUserAlert = true
             }
             .buttonStyle(.borderless)
             .tint(.red)
+            .alert(KDriveLocalizable.dialogRemoveAccountTitle, isPresented: $isShowingDisconnectUserAlert) {
+                Button(KDriveLocalizable.buttonKeepAccount, role: .cancel) {}
+                Button(KDriveLocalizable.buttonLogOut, role: .destructive) {
+                    logOutAccount()
+                }
+            } message: {
+                Text(KDriveLocalizable.dialogRemoveAccountContentMac(user.name))
+            }
+            .alert(isPresented: $isShowingErrorAlert, error: error) {}
+        }
+    }
+
+    private func logOutAccount() {
+        Task {
+            do {
+                try await UserJobs().userDelete(dbId: Int32(user.dbId))
+            } catch {
+                self.error = DomainError.impossibleToDeleteUser
+                isShowingErrorAlert = true
+            }
         }
     }
 }
