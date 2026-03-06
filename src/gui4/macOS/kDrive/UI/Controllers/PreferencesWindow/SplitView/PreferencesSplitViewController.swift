@@ -34,7 +34,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         super.viewWillAppear()
         Task {
             async let _ = repository.refreshData()
-            async let _ = viewModel.refreshData()
+            async let _ = viewModel.fetchInitialData()
         }
     }
 

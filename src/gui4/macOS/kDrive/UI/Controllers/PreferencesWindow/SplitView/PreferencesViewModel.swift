@@ -43,7 +43,7 @@ public class PreferencesViewModel: ObservableObject {
             }
     }
 
-    func refreshData() {
+    func fetchInitialData() {
         Task {
             let users = await cache.getUsers()
             updateUsers(users)
@@ -51,6 +51,12 @@ public class PreferencesViewModel: ObservableObject {
             await users.values.asyncForEach { user in
                 _ = try? await DriveJobs().availableDrives(userDbId: user.dbId)
             }
+        }
+    }
+
+    func refreshData() async {
+        await users.asyncForEach { user in
+            _ = try? await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
         }
     }
 
