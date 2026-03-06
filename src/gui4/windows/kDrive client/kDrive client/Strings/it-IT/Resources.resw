@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 06 Mar 2026 11:35:46 +0100 
+  Exported at: Fri, 06 Mar 2026 14:25:39 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -170,6 +170,9 @@
   <data name="buttonAdvancedParameters" xml:space="preserve"> 
     <value>Impostazioni avanzate</value> 
   </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Applicare a %@ file</value> 
+  </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Annulla</value> 
   </data> 
@@ -235,6 +238,9 @@
   </data> 
   <data name="buttonManageDiskSpace" xml:space="preserve"> 
     <value>Gestire lo spazio su disco</value> 
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Trattare i file singolarmente</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Aprire la cartella di debug</value> 
@@ -768,11 +774,32 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
   </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Scegliere la versione dei file che si desidera conservare.</value> 
+  </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
     <value>Quale versione si vuole mantenere?</value> 
   </data> 
   <data name="labelConflictDialogTitle" xml:space="preserve"> 
     <value>Scegliere la versione da conservare</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>Per ogni conflitto, verrà mantenuta automaticamente la versione modificata più di recente (locale o online). Questa è la scelta più sicura nella maggior parte dei casi.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>Conservare le versioni più recenti</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Creare un %@.</value> 
@@ -823,6 +850,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="labelLocal" xml:space="preserve"> 
     <value>Locale</value> 
   </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive. </value> 
+  </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
   </data> 
@@ -850,6 +880,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Posizione originale :</value> 
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Recommandé</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Riportarlo nella posizione originale.</value> 
@@ -986,7 +1019,7 @@ Controllare e rinominare i file con caratteri insoliti, quindi riprovare.</value
     <value>L’ultimo trasferimento non è riuscito. Controllare la connessione a Internet e assicurarsi che almeno un utente di kDrive sia connesso. I trasferimenti sono limitati a 10 al giorno.</value> 
   </data> 
   <data name="manyConflictErrorDescription" xml:space="preserve"> 
-    <value>Des versions différentes de ces fichiers ont été détectées.</value> 
+    <value>Sono state rilevate diverse versioni di questi file.</value> 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitti di versione rilevati</value> 
@@ -1025,7 +1058,7 @@ Se il problema persiste, contattate il nostro team di assistenza.</value>
     <value>Non si dispone di un account</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
-    <value>Nessun risultato trovato"</value> 
+    <value>Nessun risultato trovato</value> 
   </data> 
   <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve"> 
     <value>Spazio su disco insufficiente</value> 
