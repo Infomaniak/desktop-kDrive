@@ -406,8 +406,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
     private:
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
-                                            const std::vector<Error> &keepRemoteErrorList,
-                                            std::vector<int32_t> &removedErrorsDbIds);
+                                            const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
