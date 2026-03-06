@@ -18,37 +18,7 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
-
-// periphery:ignore - Will be moved to the test target
-@MainActor
-@propertyWrapper
-final class ObservedSynchros: ObservableObject {
-    @Published private(set) var wrappedValue: [SynchroContext] = []
-    private var cancellable: AnyCancellable?
-
-    // periphery:ignore
-    init(
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .allSynchrosPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] synchros in
-                self?.wrappedValue = synchros
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    var projectedValue: ObservedSynchros {
-        self
-    }
-}
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func allSynchrosPublisher() -> AnyPublisher<[SynchroContext], Never> {
