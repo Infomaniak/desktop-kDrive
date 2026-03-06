@@ -108,7 +108,7 @@ public class ConflictDialogVM : UISafeObservableObject
             if (cts.Token.IsCancellationRequested) return;
             if (t.IsCompletedSuccessfully)
             {
-                LocalVersionInfo = t.Result; 
+                LocalVersionInfo = t.Result;
                 RefreshMostRecentFlags();
             }
             else
@@ -159,21 +159,25 @@ public class ConflictDialogVM : UISafeObservableObject
         }
     }
 
-    public void SaveCurrentErrorChoice(bool keepLocal)
+    public void SaveCurrentErrorChoice(ConflictResolutionStrategy conflictResolutionStrategy)
     {
         if (CurrentError is null)
         {
             Logger.Log(Logger.Level.Error, "Attempted to save user choice but CurrentError is null.");
             return;
         }
-        if (keepLocal)
+        if (conflictResolutionStrategy == ConflictResolutionStrategy.KeepLocal)
         {
             _keepLocalIds.Add(CurrentError.DbId);
+            return;
         }
-        else
+
+        if (conflictResolutionStrategy == ConflictResolutionStrategy.KeepRemote)
         {
             _keepRemoteIds.Add(CurrentError.DbId);
+            return;
         }
+        Logger.Log(Logger.Level.Error, $"Attempted to save user choice with an invalid conflict resolution strategy: {conflictResolutionStrategy}");
     }
 
     public async Task<bool> ApplyUserChoices()
