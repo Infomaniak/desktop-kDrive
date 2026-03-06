@@ -98,6 +98,12 @@
 /* loco:695e58701870be5cd709d2a2 */
 "buttonKDriveOnline" = "kDrive Online";
 
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Keep the account";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Sign out";
+
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Login";
 
@@ -148,6 +154,11 @@
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copying Link…";
 
+/* loco:69a99165aefa9c7b52041154 */
+"dialogRemoveAccountContentMac" = "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Sign out of this account?";
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Do not join";
 /* loco:696a260311ac2de6c6029683 */
@@ -189,6 +200,8 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Looks like we cannot load the app…";
 
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "An error occurred while deleting your account.";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Help us improve kDrive";
 
