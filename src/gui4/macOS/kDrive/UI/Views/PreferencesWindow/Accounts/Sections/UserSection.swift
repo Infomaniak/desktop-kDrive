@@ -37,15 +37,12 @@ struct UserSection: View {
     @State private var error: DomainError?
 
     let user: UIUser
-    let drives: [DriveContext]
 
-    private var orderedDrives: [DriveContext] {
-        return drives.sorted {
-            if $0.isSynchronized != $1.isSynchronized {
-                return $0.isSynchronized && !$1.isSynchronized
-            }
-            return $0.drive.name < $1.drive.name
-        }
+    let synchronizedDrives: [UIDrive]
+    let availableDrives: [UIAvailableDrive]
+
+    private var orderedSynchronizedDrives: [UIDrive] {
+        return synchronizedDrives.sorted { $0.name < $1.name }
     }
 
     enum DomainError: LocalizedError {
@@ -63,32 +60,12 @@ struct UserSection: View {
         Section {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
-            ForEach(drives) { context in
-                HStack(spacing: AppPadding.padding8) {
-                    DriveBadgeView(color: context.drive.color ?? ColorToken.Drive.defaultColor.asColor)
+            ForEach(orderedSynchronizedDrives) { drive in
+                AccountDriveCellView(drive: drive, isSynchronized: true)
+            }
 
-                    Text(context.drive.name)
-                        .font(.Tokens.body)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    if context.isSynchronized {
-                        Text(KDriveLocalizable.syncedDrive)
-                            .font(.Tokens.body)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
-
-                        Button(KDriveLocalizable.buttonManage) {}
-                            .buttonStyle(.bordered)
-                    } else {
-                        Text(KDriveLocalizable.notSyncedDrive)
-                            .font(.Tokens.body)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
-
-                        Button(KDriveLocalizable.buttonEnable) {}
-                            .buttonStyle(.bordered)
-                    }
-                }
-                .padding(.leading, AppPadding.padding24)
+            ForEach(availableDrives) { drive in
+                AccountDriveCellView(drive: drive, isSynchronized: false)
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
@@ -123,9 +100,7 @@ struct UserSection: View {
 #Preview {
     UserSection(
         user: PreviewHelper.user,
-        drives: [
-            DriveContext(drive: PreviewHelper.drive1, isSynchronized: true),
-            DriveContext(drive: PreviewHelper.drive2, isSynchronized: false)
-        ]
+        synchronizedDrives: [PreviewHelper.drive1],
+        availableDrives: [PreviewHelper.availableDrive1]
     )
 }

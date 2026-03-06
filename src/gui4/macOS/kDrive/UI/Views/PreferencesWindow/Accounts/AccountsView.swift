@@ -18,20 +18,19 @@
 
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 import SwiftUI
 
 struct AccountsView: View {
-    let users: [UIUser] = [PreviewHelper.user]
+    @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
         Form {
-            ForEach(users) { _ in
+            ForEach(viewModel.users) { user in
                 UserSection(
-                    user: PreviewHelper.user,
-                    drives: [
-                        DriveContext(drive: PreviewHelper.drive1, isSynchronized: true),
-                        DriveContext(drive: PreviewHelper.drive2, isSynchronized: false)
-                    ]
+                    user: user,
+                    synchronizedDrives: viewModel.synchronizedDrive[user.id, default: []],
+                    availableDrives: viewModel.availableDrive[user.id, default: []]
                 )
             }
 
@@ -48,5 +47,5 @@ struct AccountsView: View {
 }
 
 #Preview {
-    AccountsView()
+    AccountsView(viewModel: PreferencesViewModel())
 }
