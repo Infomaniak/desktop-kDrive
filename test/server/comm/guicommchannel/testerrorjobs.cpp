@@ -168,9 +168,9 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
     (void) queryObj.set("num", toInt(RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK));
 
     Poco::JSON::Array errorDbIdArr;
-    (void) errorDbIdArr.add(static_cast<int64_t>(100));
-    (void) errorDbIdArr.add(static_cast<int64_t>(200));
-    (void) errorDbIdArr.add(static_cast<int64_t>(300));
+    (void) errorDbIdArr.add(static_cast<int32_t>(100));
+    (void) errorDbIdArr.add(static_cast<int32_t>(200));
+    (void) errorDbIdArr.add(static_cast<int32_t>(300));
 
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("errorDbIdList", errorDbIdArr);
@@ -187,9 +187,9 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
         auto quickJob = std::dynamic_pointer_cast<ErrorResolveConflictsQuickJob>(job);
         CPPUNIT_ASSERT(quickJob);
         CPPUNIT_ASSERT_EQUAL(size_t{3}, quickJob->_errorDbIdList.size());
-        CPPUNIT_ASSERT_EQUAL(int64_t{100}, quickJob->_errorDbIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(int64_t{200}, quickJob->_errorDbIdList.at(1));
-        CPPUNIT_ASSERT_EQUAL(int64_t{300}, quickJob->_errorDbIdList.at(2));
+        CPPUNIT_ASSERT_EQUAL(int32_t{100}, quickJob->_errorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(int32_t{200}, quickJob->_errorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(int32_t{300}, quickJob->_errorDbIdList.at(2));
         CPPUNIT_ASSERT(ConflictResolutionStrategy::KeepLocal == quickJob->_strategy);
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
