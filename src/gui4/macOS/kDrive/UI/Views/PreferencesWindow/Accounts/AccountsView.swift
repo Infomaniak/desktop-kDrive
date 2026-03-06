@@ -43,6 +43,9 @@ struct AccountsView: View {
             }
         }
         .groupedFormatStyle()
+        .task {
+            await viewModel.refreshData()
+        }
     }
 }
 
