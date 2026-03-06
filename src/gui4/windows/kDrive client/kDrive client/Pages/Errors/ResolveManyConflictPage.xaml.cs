@@ -49,10 +49,10 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
         }
 
-        private void BreadcrumbActivity_Click(object sender, object e)
+        private void BreadcrumbConflict_Click(object sender, object e)
         {
-            Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
-            Frame.Navigate(typeof(ActivityPage));
+            Logger.Log(Logger.Level.Debug, "Navigating to Conflict quick");
+            Frame.Navigate(typeof(ConflictQuickResolvePage));
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)

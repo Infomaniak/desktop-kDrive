@@ -33,10 +33,10 @@ namespace Infomaniak.kDrive.Pages.Errors
                 _errorPageVM.Dispose();
         }
 
-        private void BreadcrumbActivity_Click(object sender, object e)
+        private void BreadcrumbError_Click(object sender, object e)
         {
             Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
-            Frame.Navigate(typeof(ActivityPage));
+            Frame.Navigate(typeof(ErrorPage));
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
