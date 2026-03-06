@@ -39,8 +39,12 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
     _keepRemoteErrors(keepRemoteErrorList) {}
 
 ExitInfo ConflictingFilesCorrector::runJob() {
-    resolveConflicts(_keepLocalErrors, ConflictResolutionStrategy::KeepLocal);
-    resolveConflicts(_keepRemoteErrors, ConflictResolutionStrategy::KeepRemote);
+    if (ExitInfo exitInfo = resolveConflicts(_keepLocalErrors, ConflictResolutionStrategy::KeepLocal); !exitInfo) {
+        return exitInfo;
+    }
+    if (ExitInfo exitInfo = resolveConflicts(_keepRemoteErrors, ConflictResolutionStrategy::KeepRemote); !exitInfo) {
+        return exitInfo;
+    }
     return ExitCode::Ok;
 }
 
@@ -72,12 +76,16 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
             } else {
                 _nbErrors++;
             }
-        } else if (strategy == ConflictResolutionStrategy::KeepRemote) {
+            continue;
+        }
+
+        if (strategy == ConflictResolutionStrategy::KeepRemote) {
             if (keepRemoteVersion(error)) {
                 deleteError(error.dbId());
             } else {
                 _nbErrors++;
             }
+            continue;
         }
     }
 

@@ -1214,9 +1214,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 std::vector<Error> keepLocalErrorList;
                 std::vector<Error> keepRemoteErrorList;
                 if (keepLocalVersion) {
-                    ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepLocalErrorList);
+                    exitCode = ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepLocalErrorList);
                 } else {
-                    ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepRemoteErrorList);
+                    exitCode = ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepRemoteErrorList);
+                }
+
+                if (exitCode != ExitCode::Ok) {
+                    LOG_WARN(_logger, "Error in ServerRequests::getConflictList for syncDbId=" << sync.dbId() << " : code=" << exitCode);
+                    break;
                 }
 
                 if (!keepLocalErrorList.empty() || !keepRemoteErrorList.empty()) {
@@ -2449,7 +2454,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int progressPe
     }
 }
 
-void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const {
+void AppServer::sendNodeFixConflictedFilesCompleted(const int syncDbId, const qint64 nbErrors) const {
     if (useOldCommServer()) {
         int id = 0;
 

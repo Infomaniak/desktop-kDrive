@@ -26,12 +26,12 @@ namespace KDC {
 // on the provided dbId list and strategy.
 class ErrorResolveConflictsQuickJob : public AbstractErrorResolveConflictsJob {
     public:
-        ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int requestId,
+        ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        std::vector<int64_t> _errorDbIdList;
+        std::vector<int32_t> _errorDbIdList;
         ConflictResolutionStrategy _strategy = ConflictResolutionStrategy::Unknown;
 
         ExitInfo deserializeInputParms() override;

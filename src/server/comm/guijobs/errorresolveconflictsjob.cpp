@@ -28,7 +28,7 @@ static const auto inParamsKeepRemoteErrorDbIdList = "keepRemoteErrorDbIdList";
 
 namespace KDC {
 
-ErrorResolveConflictsJob::ErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int requestId,
+ErrorResolveConflictsJob::ErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                                    const Poco::DynamicStruct &inParams,
                                                    std::shared_ptr<AbstractCommChannel> channel) :
     AbstractErrorResolveConflictsJob(commManager, requestId, inParams, channel) {
@@ -61,8 +61,12 @@ ExitInfo ErrorResolveConflictsJob::process() {
     for (const auto &error: errorList) {
         if (keepLocalDbIdSet.contains(error.dbId())) {
             keepLocalErrors.push_back(error);
-        } else if (keepRemoteDbIdSet.contains(error.dbId())) {
+            continue;
+        }
+
+        if (keepRemoteDbIdSet.contains(error.dbId())) {
             keepRemoteErrors.push_back(error);
+            continue;
         }
     }
 
@@ -71,7 +75,7 @@ ExitInfo ErrorResolveConflictsJob::process() {
         return ExitCode::Ok;
     }
 
-    int64_t syncDbId = 0;
+    int32_t syncDbId = 0;
     if (ExitInfo exitInfo = getSyncDbIdFromErrors(keepLocalErrors, keepRemoteErrors, syncDbId); !exitInfo) {
         return exitInfo;
     }
@@ -81,7 +85,7 @@ ExitInfo ErrorResolveConflictsJob::process() {
         return exitInfo;
     }
 
-    return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);   
+    return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);
 }
 
 } // namespace KDC

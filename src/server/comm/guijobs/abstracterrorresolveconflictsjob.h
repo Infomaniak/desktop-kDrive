@@ -30,15 +30,15 @@ class SyncPal;
 
 class AbstractErrorResolveConflictsJob : public AbstractGuiJob {
     public:
-        AbstractErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int requestId,
+        AbstractErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                          const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     protected:
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
 
         ExitInfo fetchAllErrors(std::vector<Error> &errorList);
-        ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, int64_t &syncDbId);
-        ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, const std::vector<Error> &list2, int64_t &syncDbId);
+        ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, int32_t &syncDbId);
+        ExitInfo getSyncDbIdFromErrors(const std::vector<Error> &list1, const std::vector<Error> &list2, int32_t &syncDbId);
         ExitInfo fixConflictsAndNotify(const std::shared_ptr<SyncPal> &syncPal, const std::vector<Error> &keepLocalErrors,
                                        const std::vector<Error> &keepRemoteErrors);
 };

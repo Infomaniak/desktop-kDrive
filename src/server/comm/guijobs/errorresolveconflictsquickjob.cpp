@@ -30,7 +30,7 @@ static const auto inParamsStrategy = "strategy";
 
 namespace KDC {
 
-ErrorResolveConflictsQuickJob::ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int requestId,
+ErrorResolveConflictsQuickJob::ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                                              const Poco::DynamicStruct &inParams,
                                                              std::shared_ptr<AbstractCommChannel> channel) :
     AbstractErrorResolveConflictsJob(commManager, requestId, inParams, channel) {
@@ -71,7 +71,7 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
     }
 
     // Validate that all errors share the same syncDbId
-    int64_t syncDbId = 0;
+    int32_t syncDbId = 0;
     if (ExitInfo exitInfo = getSyncDbIdFromErrors(matchedErrors, syncDbId); !exitInfo) {
         return exitInfo;
     }

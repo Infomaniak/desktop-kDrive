@@ -26,13 +26,13 @@ namespace KDC {
 // on the provided dbId lists.
 class ErrorResolveConflictsJob : public AbstractErrorResolveConflictsJob {
     public:
-        ErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        ErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int32_t requestId, const Poco::DynamicStruct &inParams,
                                  std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        std::vector<int64_t> _keepLocalErrorDbIdList;
-        std::vector<int64_t> _keepRemoteErrorDbIdList;
+        std::vector<int32_t> _keepLocalErrorDbIdList;
+        std::vector<int32_t> _keepRemoteErrorDbIdList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo process() override;

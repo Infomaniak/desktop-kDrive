@@ -187,7 +187,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                     std::vector<int64_t> &removedErrorsDbIds);
+                                     std::vector<int32_t> &removedErrorsDbIds);
 
         // TODO: Remove this in favor of `fixConflictingFiles`.
         // The asynchronous behavior is now handled by the new CommLayer design.
@@ -406,8 +406,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
     private:
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
-                                                const std::vector<Error> &keepRemoteErrorList,
-                                                std::vector<int64_t> &removedErrorsDbIds);
+                                            const std::vector<Error> &keepRemoteErrorList,
+                                            std::vector<int32_t> &removedErrorsDbIds);
         log4cplus::Logger _logger;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).

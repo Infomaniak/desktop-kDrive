@@ -34,7 +34,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
         ExitInfo runJob() override;
 
         uint64_t nbErrors() const { return _nbErrors; }
-        std::vector<int64_t> removedErrorsDbIds() const { return _removedErrorsDbIds; }
+        std::vector<int32_t> removedErrorsDbIds() const { return _removedErrorsDbIds; }
 
 
     private:
@@ -46,7 +46,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         const std::vector<Error> _keepLocalErrors;
         const std::vector<Error> _keepRemoteErrors;
-        std::vector<int64_t> _removedErrorsDbIds;
+        std::vector<int32_t> _removedErrorsDbIds;
         uint64_t _nbErrors = 0;
 };
 

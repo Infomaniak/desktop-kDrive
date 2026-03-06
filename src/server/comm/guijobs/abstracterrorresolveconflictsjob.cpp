@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-AbstractErrorResolveConflictsJob::AbstractErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int requestId,
+AbstractErrorResolveConflictsJob::AbstractErrorResolveConflictsJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
                                                                    const Poco::DynamicStruct &inParams,
                                                                    std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {}
@@ -38,20 +38,19 @@ ExitInfo AbstractErrorResolveConflictsJob::fetchAllErrors(std::vector<Error> &er
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, int64_t &syncDbId) {
-    std::vector<Error> empty;
+ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, int32_t &syncDbId) {
+    const std::vector<Error> empty;
     return getSyncDbIdFromErrors(list1, empty, syncDbId);
 }
 
 ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, const std::vector<Error> &list2,
-                                                                 int64_t &syncDbId) {
-
-    std::set<int64_t> syncDbIdSet;
+                                                                 int32_t &syncDbId) {
+    std::set<int32_t> syncDbIdSet;
     for (const auto &error: list1) {
-        syncDbIdSet.insert(error.syncDbId());
+        (void) syncDbIdSet.insert(error.syncDbId());
     }
     for (const auto &error: list2) {
-        syncDbIdSet.insert(error.syncDbId());
+        (void) syncDbIdSet.insert(error.syncDbId());
     }
 
     if (syncDbIdSet.empty() || syncDbIdSet.size() > 1) {
@@ -68,7 +67,7 @@ ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vect
 ExitInfo AbstractErrorResolveConflictsJob::fixConflictsAndNotify(const std::shared_ptr<SyncPal> &syncPal,
                                                                  const std::vector<Error> &keepLocalErrors,
                                                                  const std::vector<Error> &keepRemoteErrors) {
-    std::vector<int64_t> removedErrorsDbIds;
+    std::vector<int32_t> removedErrorsDbIds;
     if (ExitInfo exitInfo = syncPal->fixConflictingFiles(keepLocalErrors, keepRemoteErrors, removedErrorsDbIds); !exitInfo) {
         LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles: " << exitInfo);
         return exitInfo;

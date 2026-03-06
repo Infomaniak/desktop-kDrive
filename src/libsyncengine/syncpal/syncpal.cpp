@@ -1067,7 +1067,7 @@ ExitCode SyncPal::excludeListUpdated() {
 
 ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
                                            const std::vector<Error> &keepRemoteErrorList) {
-    std::vector<int64_t> removedErrorsDbIds; // Not used in (legacy) async mode
+    std::vector<int32_t> removedErrorsDbIds; // Not used in (legacy) async mode
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList, removedErrorsDbIds);
     _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
@@ -1075,7 +1075,7 @@ ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalEr
 }
 
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                      std::vector<int64_t> &removedErrorsDbIds) {
+                                      std::vector<int32_t> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList, removedErrorsDbIds);
     _conflictingFilesCorrector->setMainCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     if (ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously(); !exitInfo) {
@@ -1088,7 +1088,7 @@ ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorLi
 
 void SyncPal::setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                              const std::vector<Error> &keepRemoteErrorList,
-                                             std::vector<int64_t> &removedErrorsDbIds) {
+                                             std::vector<int32_t> &removedErrorsDbIds) {
     bool restartSync = isRunning();
     if (restartSync) {
         stop();
