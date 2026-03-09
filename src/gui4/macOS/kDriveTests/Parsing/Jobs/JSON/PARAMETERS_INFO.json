@@ -1,0 +1,35 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 9,
+  "params": {
+    "parametersInfo": {
+      "autoStart": true,
+      "darkTheme": false,
+      "dialogGeometry": {
+        "": "AdnQywADAAAAAAH/AAAAngAABK0AAANRAAAB/wAAAJ4AAAStAAADUQAAAAAAAAAABsAAAAH/AAAAngAABK0AAANR",
+        "ParametersDialog": "AdnQywADAAAAAAPsAAAAIQAABlwAAAIyAAAD7AAAACEAAAZcAAACMgAAAAAAAAAABsAAAAPsAAAAIQAABlwAAAIy"
+      },
+      "distributionChannel": 0,
+      "extendedLog": false,
+      "language": 1,
+      "logLevel": 0,
+      "matomoEnabled": false,
+      "maxAllowedCpu": 50,
+      "monoIcons": false,
+      "moveToTrash": true,
+      "notificationsDisabled": 0,
+      "proxyConfigInfo": {
+        "hostName": "",
+        "needsAuth": false,
+        "port": 0,
+        "pwd": "",
+        "type": 1,
+        "user": ""
+      },
+      "purgeOldLogs": true,
+      "sentryEnabled": false,
+      "useLog": true
+    }
+  }
+}

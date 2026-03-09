@@ -1635,12 +1635,6 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Se ha producido un error técnico. La sincronización se reanudará lo antes posible. Si el error persiste, contacte con nuestro equipo de soporte.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
-        <source>The drive containing your synchronization folder is no longer connected. (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
-        <translation>La unidad que contiene su carpeta de sincronización ya no está conectada (error %1).
-Vuelva a conectarla para reanudar la sincronización.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="401"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
         <translation>El número de vigilancias de inotify es insuficiente (error %1).&lt;br&gt;Puede aumentar este número editando &apos;/etc/sysctl.conf&apos;.</translation>
@@ -1854,6 +1848,11 @@ Vuelva a conectarla para reanudar la sincronización.</translation>
         <location filename="../src/gui/parametersdialog.cpp" line="779"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Has excedido tu cuota. Aumente su cuota de espacio para volver a habilitar la carga de archivos.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
+        <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
+        <translation>La unidad que contiene su carpeta de sincronización ya no está conectada (error %1).&lt;br&gt;Vuelva a conectarla para reanudar la sincronización.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="413"/>
@@ -2724,17 +2723,17 @@ Vuelva a conectarla para reanudar la sincronización.</translation>
         <translation>¡No tienes permiso para escribir en la carpeta seleccionada!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2031"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2032"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>La carpeta local %1 contiene una carpeta ya sincronizada.¡Elige otra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2039"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>La carpeta local %1 está contenida en una carpeta ya sincronizada.¡Elige otra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2047"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2048"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>La carpeta local %1 ya está sincronizada. ¡Seleccione otra!</translation>
     </message>
@@ -2892,8 +2891,8 @@ Vuelva a conectarla para reanudar la sincronización.</translation>
     </message>
     <message>
         <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires on a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 requiere un área de notificación (bandeja del sistema) funcional. Si utiliza XFCE, siga &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;estas instrucciones&lt;/a&gt;. De lo contrario, instale una aplicación de bandeja del sistema como “trayer” y vuelva a intentarlo.</translation>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 requiere una bandeja del sistema funcional. Si está utilizando XFCE, siga &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;estas instrucciones&lt;/a&gt;. De lo contrario, instale una aplicación de bandeja del sistema como «trayer» e inténtelo de nuevo.</translation>
     </message>
 </context>
 <context>

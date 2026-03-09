@@ -44,8 +44,8 @@ namespace Infomaniak.kDrive.ViewModels
         private ImageSource? _avatarImageSource = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
-        private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
+        private readonly ObservableCollection<Account> _accounts = [];
+        private readonly ObservableCollection<DriveAvailable> _drivesAvailable = [];
         private bool _driveRefreshInProgress = false;
         private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
@@ -145,7 +145,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // Combined collection of all drives (configured in db and available)
-        public ObservableCollection<IDrive> AllDrives { get; } = new();
+        public ObservableCollection<IDrive> AllDrives { get; } = [];
 
         public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
         {
@@ -193,9 +193,7 @@ namespace Infomaniak.kDrive.ViewModels
          */
         private void MergeDrives()
         {
-            List<IDrive> drives = new();
-            foreach (var drive in Drives)
-                drives.Add(drive);
+            List<IDrive> drives = [.. Drives];
 
             foreach (var drive in DrivesAvailable)
                 if (drives.FirstOrDefault(d => d.DriveId == drive.DriveId) is null)

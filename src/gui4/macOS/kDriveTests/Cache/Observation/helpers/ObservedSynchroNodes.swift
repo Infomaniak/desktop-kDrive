@@ -19,47 +19,33 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import kDriveCore
 import OrderedCollections
 
 @MainActor
 @propertyWrapper
-public final class ObservedSynchros: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroContext] = []
+final class ObservedSynchroNodes: ObservableObject {
+    @Published private(set) var wrappedValue: [SynchroNodeContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
+        synchroDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .allSynchrosPublisher()
+            .synchroNodesPublisher(for: synchroDbId)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] synchros in
-                self?.wrappedValue = synchros
+            .sink { [weak self] nodes in
+                self?.wrappedValue = nodes
             }
     }
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedSynchros { self }
-}
-
-public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func allSynchrosPublisher() -> AnyPublisher<[SynchroContext], Never> {
-        map { usersDict in
-            usersDict.values.flatMap { user in
-                user.accounts.values.flatMap { account in
-                    account.drives.values.flatMap { drive in
-                        drive.synchros.values.map {
-                            SynchroContext(synchro: $0, drive: drive, account: account, user: user)
-                        }
-                    }
-                }
-            }
-        }
-        .removeDuplicates()
-        .eraseToAnyPublisher()
+    var projectedValue: ObservedSynchroNodes {
+        self
     }
 }

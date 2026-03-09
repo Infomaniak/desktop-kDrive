@@ -114,7 +114,7 @@ struct XPCQueryFetcherTests {
 
         // WHEN
         do {
-            _ = try await queryFetcher.query(query, responseType: queryType)
+            try await queryFetcher.query(query, responseType: queryType)
 
             // THEN
             Issue.record("We should throw")
@@ -137,7 +137,7 @@ struct XPCQueryFetcherTests {
 
         // WHEN
         do {
-            _ = try await queryFetcher.query(query, responseType: CallbackMessage<AccountListResponse>.self)
+            try await queryFetcher.query(query, responseType: CallbackMessage<AccountListResponse>.self)
 
             // THEN
             Issue.record("We should throw")

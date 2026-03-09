@@ -7,16 +7,12 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.Pages.Settings;
 
 public sealed partial class DriveAdvancedSyncsPage : Page
 {
-    private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+    private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     private IDrive? _baseDrive;
     private Drive? ManagedDrive { get; set; }
 
@@ -50,7 +46,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
             ManagedDrive = drive;
         }
-        else if (_viewModel.AllDrives.FirstOrDefault(d => (d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId), null) is not null)
+        else if (_viewModel.AllDrives.FirstOrDefault(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId, null) is not null)
         {
             // Can happen if a user uses the back button after setting up a new drive.
             Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");

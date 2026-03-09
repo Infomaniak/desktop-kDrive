@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive.ViewModels
         /** The list of users setup in the application.
          *  This is an observable collection, so the UI can bind to it and be notified of changes.
          */
-        private ObservableCollection<User> _users = new();
+        private ObservableCollection<User> _users = [];
 
         /** The dispatcher queue for the UI thread.
          *  This is used to marshal calls to the UI thread when updating observable item.
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
         // The list of server level error
-        public ObservableCollection<Error> AppErrors = new();
+        public ObservableCollection<Error> AppErrors = [];
 
         // Helpers - Agregated collections
         /** The list of active syncs across all users.

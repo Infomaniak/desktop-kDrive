@@ -102,6 +102,8 @@ namespace Infomaniak.kDrive.Pages.Errors
                 HasManyConflicts = false;
                 return;
             }
+            ConflictsCount = Sync.SyncErrors.Where(e => IsConflictUserResolvable(e)).Count();
+            HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
 
             // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
             _errorsSubscription.Add(Sync.SyncErrors
@@ -188,12 +190,12 @@ namespace Infomaniak.kDrive.Pages.Errors
         private static bool IsInSyncDirErrorList(Error error)
         {
             // List of Types of errors to be included in the SyncDirErrors list:
-            List<Type> syncDirErrorTypes = new List<Type>
-            {
+            List<Type> syncDirErrorTypes =
+            [
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirAccessError),
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirDiskMissing),
                 typeof(CustomControls.Errors.Templates.SyncPal.DataErrorSyncDirChanged)
-            };
+            ];
 
             Type? errorType = ErrorFactory.GetBestControlType(error);
             if (errorType is null)

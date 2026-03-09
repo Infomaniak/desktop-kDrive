@@ -1,13 +1,8 @@
 using DynamicData;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.CustomControls.DriveSetupContentDialog;
 
@@ -15,9 +10,9 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public partial class DriveSetupContentDialogVM : UISafeObservableObject
     {
-        private IList<NewSync> _initialState;
+        private readonly IList<NewSync> _initialState;
 
-        private IList<NewSync> _newSyncs;
+        private readonly IList<NewSync> _newSyncs;
         public IList<NewSync> NewSyncs
         {
             get => _newSyncs;
@@ -41,7 +36,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         public DriveSetupContentDialogVM(IList<NewSync> newSyncs)
         {
-            _initialState = new List<NewSync>(newSyncs.Select(ns => new NewSync(ns)));
+            _initialState = [.. newSyncs.Select(ns => new NewSync(ns))];
             _newSyncs = newSyncs;
         }
 

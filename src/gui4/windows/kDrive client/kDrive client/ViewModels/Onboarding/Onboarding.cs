@@ -23,7 +23,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public event EventHandler? DrivesAvailable;
 
-        public ObservableCollection<NewSync> NewSyncs { get; } = new();
+        public ObservableCollection<NewSync> NewSyncs { get; } = [];
 
         public OAuth2State CurrentOAuth2State
         {
@@ -39,7 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public void Dispose()
         {
-            _ = StopDriveAvailabilityWatcherAsync();
+            StopDriveAvailabilityWatcherAsync();
         }
 
         public void StartDriveAvailabilityWatcher()

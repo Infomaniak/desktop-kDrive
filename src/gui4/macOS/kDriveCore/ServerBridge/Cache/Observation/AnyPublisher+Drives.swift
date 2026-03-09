@@ -18,38 +18,12 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
 
 public struct DriveContext: Sendable, Equatable {
     public let drive: Drive
     public let account: Account
     public let user: User
-}
-
-@MainActor
-@propertyWrapper
-public final class ObservedDrives: ObservableObject {
-    @Published public private(set) var wrappedValue: [DriveContext] = []
-    private var cancellable: AnyCancellable?
-
-    public init(
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .allDrivesPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] drives in
-                self?.wrappedValue = drives
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    public var projectedValue: ObservedDrives { self }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

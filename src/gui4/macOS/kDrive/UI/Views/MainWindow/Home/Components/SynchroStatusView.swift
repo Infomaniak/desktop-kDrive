@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import Lottie
@@ -134,7 +135,7 @@ struct SynchroStatusView: View {
     }
 
     /// We use a random image to serve as a redacted view
-    @ViewBuilder private var redactedAnimation: some View {
+    private var redactedAnimation: some View {
         KDriveResources.checkmark.swiftUIImage
             .resizable()
     }
@@ -142,8 +143,8 @@ struct SynchroStatusView: View {
     private func didTapStateButton(for state: HomeState) {
         switch state {
         case .synchroIsRunning:
-            // TODO: Navigate to activities
-            break
+            @InjectService var router: MainViewRouter
+            router.setCurrentTab(.activities)
         case .synchroIsPaused:
             // TODO: Enable synchro
             break

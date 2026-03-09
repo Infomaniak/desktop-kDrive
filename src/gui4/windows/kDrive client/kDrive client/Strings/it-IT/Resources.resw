@@ -783,9 +783,6 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
     <value>Scegliere la versione dei file che si desidera conservare.</value> 
   </data> 
-  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
-    <value>Per ogni file, selezionare la versione da conservare.</value> 
-  </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
     <value>Quale versione si vuole mantenere?</value> 
   </data> 

@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         // Sync UI properties
         private bool _showIncomingActivity = true;
         private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
 
@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // The list of sync and node errors
-        public ObservableCollection<Error> SyncErrors = new();
+        public ObservableCollection<Error> SyncErrors = [];
 
         public SyncErrorStates SyncErrorState
         {

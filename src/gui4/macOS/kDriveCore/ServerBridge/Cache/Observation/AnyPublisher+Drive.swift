@@ -18,55 +18,7 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
-
-@MainActor
-@propertyWrapper
-public final class ObservedDrive: ObservableObject {
-    @Published public private(set) var wrappedValue: Drive?
-    private var cancellable: AnyCancellable?
-
-    public init(
-        userDbId: Int32,
-        accountDbId: Int32,
-        driveDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .drivePublisher(
-                userDbId: userDbId,
-                accountDbId: accountDbId,
-                driveDbId: driveDbId
-            )
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] drive in
-                self?.wrappedValue = drive
-            }
-    }
-
-    public init(
-        driveDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .drivePublisher(driveDbId: driveDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] drive in
-                self?.wrappedValue = drive
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    public var projectedValue: ObservedDrive { self }
-}
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func driveEventPublisher(

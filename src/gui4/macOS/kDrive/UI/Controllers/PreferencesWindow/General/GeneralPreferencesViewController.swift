@@ -20,8 +20,8 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-class GeneralPreferencesViewController: TitledViewController<Text> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.general.title, contentView: Text("Hello, World!"))
+class GeneralPreferencesViewController: TitledViewController<GeneralPreferencesView> {
+    convenience init(repository: PreferencesRepository) {
+        self.init(toolbarTitle: SidebarItem.general.title, contentView: GeneralPreferencesView(repository: repository))
     }
 }

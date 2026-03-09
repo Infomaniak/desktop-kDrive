@@ -9,7 +9,7 @@ namespace Infomaniak.kDrive
     internal class Localizer : UISafeObservableObject
     {
         public static Localizer Instance { get; } = new Localizer();
-        private static ResourceContext context = ResourceContext.GetForViewIndependentUse();
+        private static readonly ResourceContext context = ResourceContext.GetForViewIndependentUse();
 
         public void SetLanguage(Types.Language language)
         {

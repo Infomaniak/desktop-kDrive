@@ -19,20 +19,16 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import kDriveCore
 import OrderedCollections
-
-public struct AvailableDriveContext: Sendable, Equatable {
-    public let availableDrive: AvailableDrive
-    public let user: User
-}
 
 @MainActor
 @propertyWrapper
-public final class ObservedAvailableDrives: ObservableObject {
-    @Published public private(set) var wrappedValue: [AvailableDriveContext] = []
+final class ObservedAvailableDrives: ObservableObject {
+    @Published private(set) var wrappedValue: [AvailableDriveContext] = []
     private var cancellable: AnyCancellable?
 
-    public init(
+    init(
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
@@ -48,19 +44,7 @@ public final class ObservedAvailableDrives: ObservableObject {
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedAvailableDrives { self }
-}
-
-public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func allAvailableDrivesPublisher() -> AnyPublisher<[AvailableDriveContext], Never> {
-        map { usersDict in
-            usersDict.values.flatMap { user in
-                user.availableDrives.values.compactMap { availableDrive in
-                    AvailableDriveContext(availableDrive: availableDrive, user: user)
-                }
-            }
-        }
-        .removeDuplicates()
-        .eraseToAnyPublisher()
+    var projectedValue: ObservedAvailableDrives {
+        self
     }
 }

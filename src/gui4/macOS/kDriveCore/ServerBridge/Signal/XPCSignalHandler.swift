@@ -40,6 +40,8 @@ enum SignalError: Error {
     case unableToGetSyncFileItemFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
+    case unableToGetVersionInfoFromSignal
+    case unableToGetUpdateStateFromSignal
     case unsupported(_ num: SignalNum)
 }
 
@@ -50,6 +52,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let driveHandler = DriveSignalHandler()
     private let synchroHandler = SynchroSignalHandler()
     private let utilitySignalHandler = UtilitySignalHandler()
+    private let updaterSignalHandler = UpdaterSignalHandler()
 
     func handleServerSignal(_ signal: Data?) async {
         do {
@@ -124,6 +127,12 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
             try await utilitySignalHandler.handleErrorCleared()
+
+        case .UPDATER_SHOW_DIALOG:
+            try await updaterSignalHandler.handleShowDialog(signal)
+
+        case .UPDATER_STATE_CHANGED:
+            try await updaterSignalHandler.handleStateChanged(signal)
 
         default:
             throw SignalError.unsupported(signalNum)

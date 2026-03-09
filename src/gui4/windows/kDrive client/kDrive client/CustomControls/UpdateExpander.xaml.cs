@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class UpdateExpander : SettingsExpander
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         public UpdateExpander()

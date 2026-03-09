@@ -17,11 +17,13 @@
  */
 
 import Foundation
+import OrderedCollections
 
 /// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCache: Sendable {
     // MARK: - User
 
+    func getUsers() async -> OrderedDictionary<Int32, User>
     func getUser(apiId: Int32) async -> User?
     func getUser(dbId: Int32) async -> User?
     func getFirstAvailableUser() async -> User?
@@ -63,6 +65,11 @@ public protocol CoherentCache: Sendable {
     // MARK: - SynchroContexts
 
     func getSynchroContexts() async -> [SynchroContext]
+    func getSynchroContext(_ synchroDbId: Int32) async -> SynchroContext?
+
+    // MARK: - SynchroNodeContexts
+
+    func getSynchroNodeContexts(_ synchroDbId: Int32) async -> [SynchroNodeContext]
 
     // MARK: - Errors
 

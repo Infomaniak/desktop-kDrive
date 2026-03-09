@@ -33,7 +33,6 @@ class GetDriveUserInfoJob : public AbstractTokenNetworkJob {
 
     protected:
         ExitInfo handleJsonResponse(const std::string &replyBody) override;
-        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;

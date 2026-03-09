@@ -37,7 +37,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _name = "";
         private Color _color = Color.Blue;
         private bool _isFreeOffer = true; // Indicates if the drive is a free offer
-        private readonly  ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private readonly ObservableCollection<Sync> _syncs = [];
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
@@ -48,7 +48,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         // Drive UI properties
         private bool _displayRemoteSpaceWarning = false;
-        private readonly ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+        private readonly ObservableCollection<Sync> _advancedSyncs = [];
 
 
         public Drive(DbId dbId, Account account)

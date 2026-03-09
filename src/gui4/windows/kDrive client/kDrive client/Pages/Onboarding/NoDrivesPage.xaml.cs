@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {

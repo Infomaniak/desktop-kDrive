@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -37,7 +36,7 @@ namespace Infomaniak.kDrive.ViewModels
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
         private IDrive? drive;
-        private ObservableCollection<NodeId> _excludedNodeIds = new ObservableCollection<NodeId>();
+        private ObservableCollection<NodeId> _excludedNodeIds = [];
 
         public NewSync() { }
         public NewSync(NewSync other)

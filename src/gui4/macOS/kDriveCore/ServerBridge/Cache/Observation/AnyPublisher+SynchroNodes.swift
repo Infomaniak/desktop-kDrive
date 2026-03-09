@@ -18,7 +18,6 @@
 
 import Combine
 import Foundation
-import InfomaniakDI
 import OrderedCollections
 
 public struct SynchroNodeContext: Sendable, Equatable {
@@ -27,34 +26,6 @@ public struct SynchroNodeContext: Sendable, Equatable {
     public let drive: Drive
     public let account: Account
     public let user: User
-}
-
-@MainActor
-@propertyWrapper
-public final class ObservedSynchroNodes: ObservableObject {
-    @Published public private(set) var wrappedValue: [SynchroNodeContext] = []
-    private var cancellable: AnyCancellable?
-
-    public init(
-        synchroDbId: Int32,
-        cacheObservation: CoherentCacheObservable? = nil
-    ) {
-        let cacheObservation =
-            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-
-        cancellable = cacheObservation.usersPublisher
-            .synchroNodesPublisher(for: synchroDbId)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] nodes in
-                self?.wrappedValue = nodes
-            }
-    }
-
-    deinit { cancellable?.cancel() }
-
-    public var projectedValue: ObservedSynchroNodes {
-        self
-    }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {

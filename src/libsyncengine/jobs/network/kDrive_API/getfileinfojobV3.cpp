@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,21 +49,21 @@ ExitInfo GetFileInfoJobV3::handleResponse(std::istream &is) {
     if (!dataObj) return ExitCode::Ok;
 
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedByKey, _lastModifiedByUserId)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     if (tmp != dirKey) {
         if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
     }
 

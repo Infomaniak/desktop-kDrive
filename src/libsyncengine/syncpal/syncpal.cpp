@@ -1079,14 +1079,15 @@ ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalEr
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
                                       std::vector<int32_t> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
-    _conflictingFilesCorrector->setMainCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
-    auto conflictingFilesCorrectorPtr = _conflictingFilesCorrector; // Keep a local copy of the shared_ptr to ensure the object is
-                                                                    // not destroyed while running synchronously
-    if (ExitInfo exitInfo = conflictingFilesCorrectorPtr->runSynchronously(); !exitInfo) {
+    ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
+
+    if (exitInfo) removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+
+    handlePropagatorJobsCompletion(_conflictingFilesCorrector);
+    if (!exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
         return exitInfo.code();
     }
-    removedErrorsDbIds = conflictingFilesCorrectorPtr->removedErrorsDbIds();
     return ExitCode::Ok;
 }
 
