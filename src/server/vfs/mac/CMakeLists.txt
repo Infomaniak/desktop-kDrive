@@ -4,9 +4,11 @@ find_package(Qt6)
 add_library("${APPLICATION_EXECUTABLE}_vfs_mac" SHARED
         vfs_mac.h vfs_mac.cpp
         ../../comm/litesynccommclient_mac.h ../../comm/litesynccommclient_mac.mm
+        ../../comm/iconhelper.h ../../comm/iconhelper.mm
 )
 
 set_property(SOURCE ../../comm/litesynccommclient_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+set_property(SOURCE ../../comm/iconhelper.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
 set_target_properties("${APPLICATION_EXECUTABLE}_vfs_mac"
         PROPERTIES

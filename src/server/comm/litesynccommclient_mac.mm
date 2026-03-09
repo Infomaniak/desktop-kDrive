@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,16 +19,17 @@
 #import "litesynccommclient_mac.h"
 #import "../extensions/MacOSX/kDriveLiteSync/Extension/xpcLiteSyncExtensionProtocol.h"
 #import "../extensions/MacOSX/kDriveLiteSync/kDriveModel/xpcLiteSyncExtensionRemoteProtocol.h"
-
-#import <Cocoa/Cocoa.h>
-#import <SystemExtensions/SystemExtensions.h>
-#import <Foundation/Foundation.h>
-
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/permissionsholder.h"
+
+#import <Cocoa/Cocoa.h>
+#import <SystemExtensions/SystemExtensions.h>
+#import <Foundation/Foundation.h>
+
+#import "iconhelper.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -428,7 +429,7 @@ class LiteSyncCommClientPrivate {
 
 - (BOOL)setThumbnail:(NSString *)path image:(NSImage *)image {
     // Get modification date
-    NSDictionary *fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
+    /*NSDictionary *fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
     if (!fileAttribs) {
         NSLog(@ "[KD] Error in NSFileManager::attributesOfItemAtPath: path=%@", path);
         return false;
@@ -438,7 +439,7 @@ class LiteSyncCommClientPrivate {
     if (!modificationDate) {
         NSLog(@ "[KD] Error in NSDictionary::objectForKey:NSFileModificationDate: path=%@", path);
         return false;
-    }
+    }*/
 
     // Set icon (!!! touch modification date !!!)
     /*if (![[NSWorkspace sharedWorkspace] setIcon:image forFile:path options:0]) {
@@ -446,37 +447,13 @@ class LiteSyncCommClientPrivate {
         return false;
     }*/
 
-    // Create destination (file URL)
-    CFURLRef url = (__bridge CFURLRef) [NSURL fileURLWithPath:path];
-
-    // Create image destination for PNG
-    CGImageDestinationRef destination = CGImageDestinationCreateWithURL(url, kUTTypePNG, 1, NULL);
-    if (!destination) {
-        NSLog(@ "[KD] Failed to create image destination: path=%@", path);
+    if (![IconHelper setCustomIcon:image forPath:path]) {
+        NSLog(@ "[KD] Error in setPersistentCustomIcon: path=%@", path);
         return false;
     }
-
-    // Convert NSImage to CGImage
-    NSRect rect = NSZeroRect;
-    CGImageRef cgImage = [image CGImageForProposedRect:&rect context:NULL hints:NULL];
-    if (!cgImage) {
-        NSLog(@ "[KD] Failed to convert image: path=%@", path);
-        CFRelease(destination);
-        return false;
-    }
-
-    // Add image with properties
-    CGImageDestinationAddImage(destination, cgImage, NULL);
-
-    // Finalize (write to disk)
-    BOOL success = CGImageDestinationFinalize(destination);
-
-    // Cleanup
-    CGImageRelease(cgImage);
-    CFRelease(destination);
 
     // Set modification date
-    NSDictionary *fileAttribModificationDate =
+    /*NSDictionary *fileAttribModificationDate =
             [NSDictionary dictionaryWithObjectsAndKeys:modificationDate, NSFileModificationDate, NULL];
     if (!fileAttribModificationDate) {
         NSLog(@ "[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys: path=%@", path);
@@ -486,9 +463,9 @@ class LiteSyncCommClientPrivate {
     if (![[NSFileManager defaultManager] setAttributes:fileAttribModificationDate ofItemAtPath:path error:NULL]) {
         NSLog(@ "[KD] Error in NSFileManager::setAttributes: path=%@", path);
         return false;
-    }
+    }*/
 
-    return success;
+    return true;
 }
 
 // xpcLiteSyncExtensionRemoteProtocol protocol implementation
