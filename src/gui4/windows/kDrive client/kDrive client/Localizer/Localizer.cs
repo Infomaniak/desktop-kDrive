@@ -59,6 +59,11 @@ namespace Infomaniak.kDrive
             return GetString(key, new object?[] { arg1 });
         }
 
+        public string GetString1i(string key, int arg1)
+        {
+            return GetString(key, new object?[] { arg1 });
+        }
+
         public string GetString1i2i(string key, int arg1, int arg2)
         {
             return GetString(key, new object?[] { arg1, arg2 });
