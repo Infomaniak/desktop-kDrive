@@ -66,7 +66,7 @@ enum class TrashSubDirectory {
     Files
 };
 
-// Get the user's home trash  subdirectory
+// Get the user trash subdirectory
 SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
     switch (trashSubDir) {
         case TrashSubDirectory::Info:
@@ -89,9 +89,10 @@ std::string getOriginalPath(const SyncPath &infoFile) {
     if (!file.is_open()) return "";
 
     std::string line;
+    static const std::string pathKey = "Path=";
     while (std::getline(file, line)) {
-        if (line.rfind("Path=", 0) != 0) continue;
-        return line.substr(5); // Remove the "Path=" prefix.
+        if (line.rfind(pathKey, 0) != 0) continue;
+        return line.substr(pathKey.size());
     }
 
     return "";
