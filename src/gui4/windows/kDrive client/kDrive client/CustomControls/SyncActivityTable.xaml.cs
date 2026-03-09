@@ -271,6 +271,14 @@ namespace Infomaniak.kDrive.CustomControls
                 _ => ""
             };
         }
+
+        private Visibility GetNoActivityGridVisibility(int activityCount, int errorCount)
+        {
+            if (activityCount == 0 && errorCount == 0)
+                return Visibility.Visible;
+
+            return Visibility.Collapsed;
+        }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
