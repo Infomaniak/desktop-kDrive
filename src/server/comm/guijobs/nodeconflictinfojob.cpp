@@ -144,19 +144,11 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int32_t 
 
 ExitInfo NodeConflictInfoJob::process() {
     // Look up SyncPal from syncPalMap
-    const auto &syncPalMap = _commManager->appServer().syncPalMap;
-    const auto syncPalMapIt = syncPalMap.find(_syncDbId);
-    if (syncPalMapIt == syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        return exitInfo;
     }
 
-    if (!syncPalMapIt->second) {
-        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
-    }
-
-    const auto &syncPal = syncPalMapIt->second;
     const int32_t userDbId = syncPal->userDbId();
     const int32_t driveId = syncPal->driveId();
     const SyncPath &localRootPath = syncPal->localPath();

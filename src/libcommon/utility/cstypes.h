@@ -311,4 +311,12 @@ enum class LogUploadState {
     EnumEnd
 };
 
+enum class ConflictResolutionStrategy {
+    Unknown,
+    KeepMostRecent,
+    KeepLocal,
+    KeepRemote,
+    EnumEnd
+};
+
 } // namespace KDC

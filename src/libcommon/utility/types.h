@@ -439,6 +439,7 @@ std::string toString(AppType e);
 std::string toString(CancelType e);
 std::string toString(sentry::ConfidentialityLevel e);
 std::string toString(ConflictType e);
+std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
 std::string toString(ExitCode e);
