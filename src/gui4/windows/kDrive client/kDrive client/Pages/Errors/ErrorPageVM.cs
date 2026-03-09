@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.Pages.Errors
                 HasManyConflicts = false;
                 return;
             }
-            ConflictsCount = Sync.SyncErrors.Where(e => IsConflictUserResolvable(e)).Count();
+            ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
             HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
 
             // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
