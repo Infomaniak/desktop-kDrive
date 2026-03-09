@@ -237,6 +237,11 @@ bool CommonUtility::isFAT(const SyncPath &targetPath) {
     return contains(getRootFsType(targetPath), fat);
 }
 
+bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
+    // Only File Systems supporting sparse files are compatible
+    return CommonUtility::isNTFS(targetPath) || CommonUtility::isAPFS(targetPath);
+}
+
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 #if defined(KD_MACOS)
     struct statfs stat;

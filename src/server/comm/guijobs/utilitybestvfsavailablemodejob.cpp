@@ -68,28 +68,21 @@ ExitInfo UtilityBestVfsAvailableModeJob::process() {
         return ExitCode::LogicError;
     }
 
-    // Check if VFS can be used on the given path
-#ifdef KD_WINDOWS
-    if (!CommonUtility::isNTFS(_path)) {
-        LOGW_DEBUG(_logger, L"The file system is not NTFS: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
+    // Checking the compatibility of the filesystem with LiteSync
+    if (!CommonUtility::isLiteSyncCompatible(_path)) {
+        LOGW_DEBUG(_logger, L"VFS is only available for NTFS or APFS file systems: " << Utility::formatSyncPath(_path));
         _bestMode = VirtualFileMode::Off;
         return ExitCode::Ok;
     }
 
+#if defined(KD_WINDOWS)
+    // Checking the compatibility of the path with LiteSync
     if (_path == _path.root_path()) {
         LOGW_DEBUG(_logger, L"The path is the root of a disk: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
         _bestMode = VirtualFileMode::Off;
         return ExitCode::Ok;
     }
 #endif // KD_WINDOWS
-
-#ifdef KD_MACOS
-    if (!CommonUtility::isAPFS(_path)) {
-        LOGW_DEBUG(_logger, L"The file system is not APFS: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
-        _bestMode = VirtualFileMode::Off;
-        return ExitCode::Ok;
-    }
-#endif // KD_MACOS
 
     _bestMode = mode;
     return ExitCode::Ok;

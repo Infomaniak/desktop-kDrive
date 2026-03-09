@@ -71,6 +71,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
         static bool isFAT(const SyncPath &targetPath);
+        static bool isLiteSyncCompatible(const SyncPath &targetPath);
         static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
