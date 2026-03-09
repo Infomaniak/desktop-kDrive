@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kDrive client", "kDrive client\kDrive client.csproj", "{BB22ACA5-CCBE-4FA0-B379-A79109A198EB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{930B6AD7-77A5-4253-A43E-E10DED8F6D54} = {930B6AD7-77A5-4253-A43E-E10DED8F6D54}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootstrapper", "Bootstrapper\Bootstrapper.csproj", "{930B6AD7-77A5-4253-A43E-E10DED8F6D54}"
 EndProject
