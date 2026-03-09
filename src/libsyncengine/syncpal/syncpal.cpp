@@ -322,11 +322,10 @@ ExitCode SyncPal::clearNodes() {
 }
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
-    auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
-    if (!jobPtr && _conflictingFilesCorrector) {
-        jobPtr = _conflictingFilesCorrector;
-    }
+    handlePropagatorJobsCompletion(SyncJobManagerSingleton::instance()->getJob(jobId));
+}
 
+void SyncPal::handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr) {
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");

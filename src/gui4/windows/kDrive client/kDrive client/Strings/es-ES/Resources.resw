@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 06 Mar 2026 17:02:18 +0100 
+  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -74,13 +74,13 @@
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versión %@ (build %@)
-© 2019-%@ Infomaniak Network SA</value> 
+© 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Acerca de kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>Desarrollado y alojado exclusivamente en Suiza, kDrive ofrece una protección completa de sus datos, sin reventa ni seguimiento, en centros con certificación ISO, con cifrado y almacenamiento de múltiples copias de seguridad.</value> 
+    <value>Desarrollado y alojado exclusivamente en Suiza, kDrive garantiza una protección total de sus datos, sin reventa ni espionaje, en centros con certificación ISO, con cifrado y copia de seguridad en varios soportes.</value> 
   </data> 
   <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
     <value>Actividades visibles</value> 
@@ -199,6 +199,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonCreateNewSync" xml:space="preserve"> 
     <value>Crear una nueva sincronización</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Ubicación personalizada</value> 
   </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Ubicación por defecto</value> 
@@ -431,8 +434,8 @@ Esta carpeta no debe estar incluida en ninguna otra carpeta de sincronización y
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Añadir una regla de exclusión</value> 
   </data> 
-  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
-    <value>Desconectarás {0} de la aplicación.
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Desconectarás %@ de la aplicación.
 
 La carpeta de sincronización permanecerá en su ordenador, pero ya no se sincronizará con kDrive.
 
