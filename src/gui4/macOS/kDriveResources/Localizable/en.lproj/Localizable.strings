@@ -43,6 +43,8 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "My activity only";
 
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "The application is up to date";
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Automatic updates";
 
