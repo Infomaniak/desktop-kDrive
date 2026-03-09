@@ -60,6 +60,7 @@ void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
+    _fixImpossibleMove = {};
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     auto start = std::chrono::steady_clock::now();
@@ -100,13 +101,13 @@ void ComputeFSOperationWorker::execute() {
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
-    if (ok && !stopAsked()) {
+    if (ok && !stopAsked() && !_fixImpossibleMove.isActive) {
         sentry::pTraces::scoped::ExploreLocalSnapshot perfMonitor(syncDbId());
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
-    if (ok && !stopAsked()) {
+    if (ok && !stopAsked() && !_fixImpossibleMove.isActive) {
         sentry::pTraces::scoped::ExploreRemoteSnapshot perfMonitor(syncDbId());
         exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
@@ -120,7 +121,6 @@ void ComputeFSOperationWorker::execute() {
         _syncPal->operationSet(ReplicaSide::Local)->clear();
         _syncPal->operationSet(ReplicaSide::Remote)->clear();
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
-
     } else {
         /* If the current snapshot state does not reveal any operation, we store the current revision number.
          * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher
@@ -248,18 +248,20 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath)) return ExitCode::Ok;
 
         // Delete operation
-        const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                        dbNode.created().has_value() ? dbNode.created().value() : 0,
-                                                        dbModificationTime, dbNode.size(), dbPath);
-        opSet->insertOp(fsOp);
-        logOperationGeneration(snapshot->side(), fsOp);
+        if (!_fixImpossibleMove.isActive) {
+            const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                            dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                            dbModificationTime, dbNode.size(), dbPath);
+            opSet->insertOp(fsOp);
+            logOperationGeneration(snapshot->side(), fsOp);
 
-        if (nodeIdReused) (void) _localReusedIds.insert(nodeId);
+            if (nodeIdReused) (void) _localReusedIds.insert(nodeId);
 
-        if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
-            return ExitCode::SystemError;
+            if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
+                return ExitCode::SystemError;
+            }
         }
         return ExitCode::Ok;
     }
@@ -298,14 +300,18 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     if (dbNode.type() == NodeType::File &&
         (modifiedTimeDiffIsEnough || !sameSize || (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local))) {
         // Edit operation
-        const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
-                                                        snapshotModificationTime, snapshot->size(nodeId), snapshotPath);
-        opSet->insertOp(fsOp);
-        logOperationGeneration(snapshot->side(), fsOp);
+        if (!_fixImpossibleMove.isActive) {
+            const auto fsOp =
+                    std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
+                                                  snapshotModificationTime, snapshot->size(nodeId), snapshotPath);
+            opSet->insertOp(fsOp);
+            logOperationGeneration(snapshot->side(), fsOp);
+        }
     }
 
     // Detect MOVE
     if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId)) {
+        bool fixingMoveOp = false;
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation
@@ -319,7 +325,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                 // folder)
                 SyncPath parentDbPath;
                 bool found = false;
-                if (!_syncDbReadOnlyCache.path(side, snapshot->parentId(nodeId), parentDbPath, found)) {
+                const auto parentNodeId = snapshot->parentId(nodeId);
+                if (!_syncDbReadOnlyCache.path(side, parentNodeId, parentDbPath, found)) {
                     LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentDbPath");
                     setExitCause(ExitCause::DbAccessError);
                     return ExitCode::DbError;
@@ -330,14 +337,25 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                     return ExitCode::DataError;
                 }
 
+                if (!_fixImpossibleMove.isActive) {
+                    opSet->clear(); // Ignore all other operations for now
+                    _fixImpossibleMove = {.side = side, .parentNodeId = parentNodeId, .isActive = true};
+                }
+                if (_fixImpossibleMove.parentNodeId == parentNodeId) {
+                    // Fix only move operations whose parent is _fixImpossibleMove.parentNodeId
+                    fixingMoveOp = true;
+                }
+
                 destinationPath = parentDbPath / snapshotName;
             }
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
                                                  snapshotModificationTime, snapshot->size(nodeId), dbPath, destinationPath);
         }
 
-        opSet->insertOp(fsOp);
-        logOperationGeneration(snapshot->side(), fsOp);
+        if (!_fixImpossibleMove.isActive || fixingMoveOp) {
+            opSet->insertOp(fsOp);
+            logOperationGeneration(snapshot->side(), fsOp);
+        }
     }
 
     return ExitCode::Ok;
