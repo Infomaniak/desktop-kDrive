@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.CustomControls
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    await Utility.OpenFolderSecurely(activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
