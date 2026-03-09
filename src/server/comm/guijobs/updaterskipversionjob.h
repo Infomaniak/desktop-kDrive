@@ -29,7 +29,7 @@ class UpdaterSkipVersionJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        std::string _skippedVersion;
+        CommString _skippedVersion;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; };

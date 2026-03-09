@@ -54,7 +54,7 @@ ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
 }
 
 ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
-    writeParamValue(outParamsLinkUrl, _linkUrl);
+    writeParamValue(outParamsLinkUrl, CommonUtility::str2CommString(_linkUrl));
 
     return ExitCode::Ok;
 }

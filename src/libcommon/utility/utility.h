@@ -277,6 +277,7 @@ struct COMMON_EXPORT CommonUtility {
         // CommString conversion functions
 #if defined(KD_WINDOWS)
         static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
+        static CommString syncPath2CommString(const SyncPath &s) { return s.native(); }
         static std::string commString2Str(const CommString &s) { return KDC::CommonUtility::ws2s(s); }
         static std::wstring commString2WStr(const CommString &s) { return s; }
         static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
