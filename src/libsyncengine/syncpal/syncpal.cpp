@@ -323,6 +323,14 @@ ExitCode SyncPal::clearNodes() {
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
     auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
+
+    // _conflictingFilesCorrector may run synchronously (i.e. without SyncJobManager).
+    // If other jobs also move to synchronous execution, SyncPal should maintain
+    // an internal map to associate jobId with the actual job instance.
+    if (!jobPtr && _conflictingFilesCorrector) {
+        jobPtr = _conflictingFilesCorrector;
+    }
+
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
@@ -334,7 +342,6 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
             LOG_SYNCPAL_INFO(_logger, "Job aborted, not restarting SyncPal");
             return;
         }
-
         std::shared_ptr<AbstractPropagatorJob> abstractJob = std::dynamic_pointer_cast<AbstractPropagatorJob>(jobPtr);
         if (abstractJob && abstractJob->restartSyncPal()) {
             LOG_SYNCPAL_INFO(_logger, "Restarting SyncPal");

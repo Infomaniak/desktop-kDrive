@@ -928,7 +928,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }; 
+            };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
 
@@ -1192,6 +1192,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
             return true;
+        }
+
+        public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.KeepLocalErrorDbIdList] = JsonSerializer.SerializeToNode(keepLocalErrorDbIds),
+                [JsonKeys.KeepRemoteErrorDbIdList] = JsonSerializer.SerializeToNode(keepRemoteErrorDbIds)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.ErrorDbIdList] = JsonSerializer.SerializeToNode(errorDbIds),
+                [JsonKeys.Strategy] = (int)strategy
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
         // Signals

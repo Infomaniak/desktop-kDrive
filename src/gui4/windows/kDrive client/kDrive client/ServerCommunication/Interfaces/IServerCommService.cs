@@ -117,6 +117,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
+        Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
