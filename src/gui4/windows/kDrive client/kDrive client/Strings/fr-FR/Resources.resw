@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 09 Mar 2026 08:15:39 +0100 
+  Exported at: Mon, 09 Mar 2026 08:39:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -74,7 +74,7 @@
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@ (build %@)
-2019-%@ Infomaniak Network SA</value> 
+2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>À propos de kDrive</value> 
@@ -431,8 +431,8 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Ajouter une règle d’exclusion</value> 
   </data> 
-  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
-    <value>Vous allez déconnecter {0} de l’application.
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Vous allez déconnecter %@ de l’application.
 
 Le dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.
 

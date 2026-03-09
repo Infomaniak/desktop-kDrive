@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 09 Mar 2026 08:15:39 +0100 
+  Exported at: Mon, 09 Mar 2026 08:39:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -74,7 +74,7 @@
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versione %@ (build %@)
-© 2019-%@ Infomaniak Network SA</value> 
+© 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Informazioni su kDrive</value> 
@@ -431,8 +431,8 @@ Questa cartella non deve essere inclusa in altre cartelle di sincronizzazione e 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Aggiungere una regola di esclusione</value> 
   </data> 
-  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
-    <value>Si disconnette {0} dall'applicazione.
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Si disconnette %@ dall'applicazione.
 
 La cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.
 
