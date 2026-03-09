@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 04 Mar 2026 09:33:39 +0100
+ * Exported at: Thu, 05 Mar 2026 14:19:08 +0100
  */
 
 
@@ -65,6 +65,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Fermer";
 
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Connecter un compte";
+
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Continuer";
 
@@ -74,6 +77,11 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
 
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Déconnecter ce compte";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Activer";
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Partager une idée";
 
@@ -91,6 +99,12 @@
 
 /* loco:695e58701870be5cd709d2a2 */
 "buttonKDriveOnline" = "kDrive en ligne";
+
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Garder le compte";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Déconnecter";
 
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Se connecter";
@@ -150,6 +164,11 @@
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copie du lien…";
 
+/* loco:69a99165aefa9c7b52041154 */
+"dialogRemoveAccountContentMac" = "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Se déconnecter de ce compte ?";
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Ne pas adhérer";
 /* loco:696a260311ac2de6c6029683 */
@@ -191,6 +210,8 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Il semble que nous ne pouvons pas charger l'application…";
 
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "Une erreur s'est produite lors de la suppression de votre compte.";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aidez-nous à améliorer kDrive";
 
@@ -318,6 +339,8 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Besoin d’aide ?";
 
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Non synchronisé";
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
@@ -431,6 +454,9 @@
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synchronisé";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Synchronisé";
 
 /* loco:698b2ff6c504d956e009aad2 */
 "syncedFromComputer" = "Synchronisé à partir de votre ordinateur";

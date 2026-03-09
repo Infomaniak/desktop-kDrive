@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 04 Mar 2026 09:33:39 +0100
+ * Exported at: Thu, 05 Mar 2026 14:19:08 +0100
  */
 
 
@@ -65,6 +65,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Chiudere";
 
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Collegare un account";
+
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Continua";
 
@@ -74,6 +77,11 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
 
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Disconnettere questo account";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Abilitazione";
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Condividere un’idea";
 
@@ -91,6 +99,12 @@
 
 /* loco:695e58701870be5cd709d2a2 */
 "buttonKDriveOnline" = "kDrive online";
+
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Mantenere il conto";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Esci";
 
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Accedi";
@@ -150,6 +164,11 @@
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
 
+/* loco:69a99165aefa9c7b52041154 */
+"dialogRemoveAccountContentMac" = "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Uscire da questo account?";
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Non aderire";
 /* loco:696a260311ac2de6c6029683 */
@@ -191,6 +210,8 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Sembra che non riusciamo a caricare l'applicazione…";
 
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "Si è verificato un errore durante la cancellazione dell'account.";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aiutaci a migliorare kDrive";
 
@@ -318,6 +339,9 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Avete bisogno di aiuto?";
 
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Non sincronizzato";
+
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizzare kDrive nelle impostazioni di macOS:";
@@ -431,6 +455,9 @@
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizzato";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Sincronizzato";
 
 /* loco:698b2ff6c504d956e009aad2 */
 "syncedFromComputer" = "Sincronizzato dal computer";

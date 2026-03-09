@@ -57,6 +57,10 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - USER
 
+    public func getUsers() async -> OrderedDictionary<Int32, User> {
+        return users
+    }
+
     public func getUser(dbId: Int32) -> User? {
         users[dbId]
     }

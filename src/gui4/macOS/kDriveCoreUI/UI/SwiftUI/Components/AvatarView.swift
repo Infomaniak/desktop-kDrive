@@ -16,12 +16,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-class AccountsPreferencesViewController: TitledViewController<AccountsView> {
-    convenience init(viewModel: PreferencesViewModel) {
-        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: AccountsView(viewModel: viewModel))
+public struct AvatarView: View {
+    let image: Image
+
+    public init(image: Image) {
+        self.image = image
     }
+
+    public var body: some View {
+        image
+            .resizable()
+            .scaledToFill()
+            .clipShape(.circle)
+    }
+}
+
+#Preview {
+    AvatarView(image: KDriveResources.person.swiftUIImage)
 }

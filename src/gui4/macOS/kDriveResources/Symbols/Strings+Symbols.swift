@@ -50,12 +50,18 @@ public enum KDriveLocalizable {
   public static let buttonCancel = KDriveLocalizable.tr("Localizable", "buttonCancel", fallback: "Cancel")
   /// loco:696a343b72b6dc32e00557a4
   public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
+  /// loco:698b1376f55227e2c30a2fe4
+  public static let buttonConnectAccount = KDriveLocalizable.tr("Localizable", "buttonConnectAccount", fallback: "Connect an account")
   /// loco:691deb0be15255c13908ba42
   public static let buttonContinue = KDriveLocalizable.tr("Localizable", "buttonContinue", fallback: "Continue")
   /// loco:698a09c2c9fb920b0c03e782
   public static let buttonCopyShareLink = KDriveLocalizable.tr("Localizable", "buttonCopyShareLink", fallback: "Copy share link")
   /// loco:68e673c48af12c42e80027c8
   public static let buttonCreateAccount = KDriveLocalizable.tr("Localizable", "buttonCreateAccount", fallback: "Create an account")
+  /// loco:698b14e52445668d9d0495a2
+  public static let buttonDisconnectAccount = KDriveLocalizable.tr("Localizable", "buttonDisconnectAccount", fallback: "Disconnect this account")
+  /// loco:698b0aefb16a3916fc004f32
+  public static let buttonEnable = KDriveLocalizable.tr("Localizable", "buttonEnable", fallback: "Enable")
   /// loco:6992eca9a8cb168fe70c0922
   public static let buttonFeedback = KDriveLocalizable.tr("Localizable", "buttonFeedback", fallback: "Share an idea")
   /// loco:6930506962426d4ff30af473
@@ -68,8 +74,12 @@ public enum KDriveLocalizable {
   public static let buttonKDriveIsActivated = KDriveLocalizable.tr("Localizable", "buttonKDriveIsActivated", fallback: "I’ve activated kDrive")
   /// loco:695e58701870be5cd709d2a2
   public static let buttonKDriveOnline = KDriveLocalizable.tr("Localizable", "buttonKDriveOnline", fallback: "kDrive Online")
+  /// loco:698c6b43a4de4c85ae0ef552
+  public static let buttonKeepAccount = KDriveLocalizable.tr("Localizable", "buttonKeepAccount", fallback: "Keep the account")
   /// loco:68e673b2042a15d8470f9452
   public static let buttonLogin = KDriveLocalizable.tr("Localizable", "buttonLogin", fallback: "Login")
+  /// loco:6992d8c3845cd53c31059f53
+  public static let buttonLogOut = KDriveLocalizable.tr("Localizable", "buttonLogOut", fallback: "Sign out")
   /// loco:697a2658a44fbad34f011962
   public static let buttonManage = KDriveLocalizable.tr("Localizable", "buttonManage", fallback: "Manage")
   /// loco:68b04d823f2b735c170caea2
@@ -110,6 +120,12 @@ public enum KDriveLocalizable {
   public static let buttonWakeUp = KDriveLocalizable.tr("Localizable", "buttonWakeUp", fallback: "Wake-up")
   /// loco:698b244d7e73966ce3096b02
   public static let copyingLink = KDriveLocalizable.tr("Localizable", "copyingLink", fallback: "Copying Link…")
+  /// loco:69a99165aefa9c7b52041154
+  public static func dialogRemoveAccountContentMac(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "dialogRemoveAccountContentMac", String(describing: p1), fallback: "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.")
+  }
+  /// loco:698c6b10661f3226080d11a2
+  public static let dialogRemoveAccountTitle = KDriveLocalizable.tr("Localizable", "dialogRemoveAccountTitle", fallback: "Sign out of this account?")
   /// loco:698af1c80126fd2db302b783
   public static let doNotJoin = KDriveLocalizable.tr("Localizable", "doNotJoin", fallback: "Do not join")
   /// loco:696a260311ac2de6c6029683
@@ -138,6 +154,8 @@ public enum KDriveLocalizable {
   public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive waking up")
   /// loco:6998110a3f9ff4c3230a4eb2
   public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
+  /// loco:69aa7fb3753c400c81087842
+  public static let errorDeletingAccount = KDriveLocalizable.tr("Localizable", "errorDeletingAccount", fallback: "An error occurred while deleting your account.")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4
@@ -230,6 +248,8 @@ public enum KDriveLocalizable {
   public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92
   public static let notificationsDisabledNever = KDriveLocalizable.tr("Localizable", "notificationsDisabledNever", fallback: "Never")
+  /// loco:698b0aaddee0bf9fb206a694
+  public static let notSyncedDrive = KDriveLocalizable.tr("Localizable", "notSyncedDrive", fallback: "Not synchronized")
   /// loco:693050ed6a0836d25507da22
   public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings:")
   /// loco:6930509e14b396d6fc04b0f2
@@ -302,6 +322,8 @@ public enum KDriveLocalizable {
   public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")
   }
+  /// loco:698b0d2d968b4ae2ca022542
+  public static let syncedDrive = KDriveLocalizable.tr("Localizable", "syncedDrive", fallback: "Synced")
   /// loco:698b2ff6c504d956e009aad2
   public static let syncedFromComputer = KDriveLocalizable.tr("Localizable", "syncedFromComputer", fallback: "Synced from your computer")
   /// loco:698a08bdb6b870234906e103
