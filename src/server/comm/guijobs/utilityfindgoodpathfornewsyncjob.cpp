@@ -39,7 +39,7 @@ UtilityFindGoodPathForNewSyncJob::UtilityFindGoodPathForNewSyncJob(std::shared_p
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in UtilityFindGoodPathForNewSyncJob::readParamValue: error=";
-    std::string pathStr;
+    CommString pathStr;
     try {
         readParamValue(inParamsBasePath, pathStr);
     } catch (const Poco::Exception &pocoException) {
@@ -52,8 +52,8 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
-    writeParamValue(outParamsGoodPath, _goodPath.native());
-    writeParamValue(outParamsErrorMessage, _errorMessage);
+    writeParamValue(outParamsGoodPath, CommonUtility::syncPath2CommString(_goodPath));
+    writeParamValue(outParamsErrorMessage, CommonUtility::str2CommString(_errorMessage));
     return ExitCode::Ok;
 }
 

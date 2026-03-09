@@ -321,10 +321,10 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
         return ExitCode::DbError;
     }
 
-    const QString qPath = QString::fromStdString(path.string());
+    const QString qPath = Path2QStr(path);
     QString qError;
     if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << QStr2Str(qError));
         return ExitCode::Ok;
     }
 
@@ -358,12 +358,12 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
 }
 
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
-    const QString qBasePath = QString::fromStdString(basePath.string());
+    const QString qBasePath = Path2QStr(basePath);
     QString qPath;
     QString qError;
     const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
-    path = qPath.toStdString();
-    error = qError.toStdString();
+    path = QStr2Path(qPath);
+    error = QStr2Str(qError);
     return exitInfo;
 }
 
