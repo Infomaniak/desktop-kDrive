@@ -163,13 +163,13 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     NodeId parentNodeid;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDbReadOnlyCache.parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
+    if (!_syncDbReadOnlyCache.parentId(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentId");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
     }
     if (!parentNodeIsFoundInDb) {
-        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId);
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node parent ID for node ID=" << nodeId);
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
@@ -313,8 +313,27 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                                                  snapshotModificationTime, snapshot->size(nodeId), dbPath);
         } else {
             // Move operation
+            auto destinationPath = snapshotPath;
+            if (dbPath == snapshotPath) {
+                // The parents are different but the path is the same (new parent has been renamed with the name of a deleted
+                // folder)
+                SyncPath parentDbPath;
+                bool found = false;
+                if (!_syncDbReadOnlyCache.path(side, snapshot->parentId(nodeId), parentDbPath, found)) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentDbPath");
+                    setExitCause(ExitCause::DbAccessError);
+                    return ExitCode::DbError;
+                }
+                if (!found) {
+                    LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node parent path for node ID=" << nodeId);
+                    setExitCause(ExitCause::DbEntryNotFound);
+                    return ExitCode::DataError;
+                }
+
+                destinationPath = parentDbPath / snapshotName;
+            }
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, snapshotPath);
+                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, destinationPath);
         }
 
         opSet->insertOp(fsOp);
@@ -357,7 +376,6 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
-
 
         if (dbNode.type() != nodeType) {
             ++nodesIdsIt;
@@ -648,7 +666,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
             return true;
         }
 
-        if (!_syncDbReadOnlyCache.parent(side, tmpNodeId, tmpNodeId, found)) {
+        if (!_syncDbReadOnlyCache.parentId(side, tmpNodeId, tmpNodeId, found)) {
             LOG_WARN(_logger, "Error in SyncDb::parent");
             break;
         }
