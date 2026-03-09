@@ -322,15 +322,10 @@ ExitCode SyncPal::clearNodes() {
 }
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
-    auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
+    handlePropagatorJobsCompletion(SyncJobManagerSingleton::instance()->getJob(jobId));
+}
 
-    // _conflictingFilesCorrector may run synchronously (i.e. without SyncJobManager).
-    // If other jobs also move to synchronous execution, SyncPal should maintain
-    // an internal map to associate jobId with the actual job instance.
-    if (!jobPtr && _conflictingFilesCorrector) {
-        jobPtr = _conflictingFilesCorrector;
-    }
-
+void SyncPal::handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr) {
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
@@ -1083,14 +1078,15 @@ ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalEr
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
                                       std::vector<int32_t> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
-    _conflictingFilesCorrector->setMainCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
-    auto conflictingFilesCorrectorPtr = _conflictingFilesCorrector; // Keep a local copy of the shared_ptr to ensure the object is
-                                                                    // not destroyed while running synchronously
-    if (ExitInfo exitInfo = conflictingFilesCorrectorPtr->runSynchronously(); !exitInfo) {
+    ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
+
+    if (exitInfo) removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+
+    handlePropagatorJobsCompletion(_conflictingFilesCorrector);
+    if (!exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
         return exitInfo.code();
     }
-    removedErrorsDbIds = conflictingFilesCorrectorPtr->removedErrorsDbIds();
     return ExitCode::Ok;
 }
 
