@@ -161,8 +161,8 @@ bool isInTrash(const SyncPath &absoluteFilePath) {
             const auto fileTrashParentName = entry.path().filename().stem();
             return std::filesystem::exists(getTrashSubDir(TrashSubDirectory::Files) / fileTrashParentName / relativePath);
         }
-    } catch (const std::exception &e) {
-        std::cerr << "Exception caught in `isInTrash`: " << e.what() << std::endl;
+    } catch (const std::filesystem::filesystem_error &e) {
+        std::cerr << "File system exception caught in `isInTrash`: " << e.what() << std::endl;
     }
 
     return false;
