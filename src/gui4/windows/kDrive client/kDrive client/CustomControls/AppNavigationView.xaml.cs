@@ -19,17 +19,33 @@ namespace Infomaniak.kDrive.CustomControls
         public Frame Frame { get { return ContentFrame; } }
         private readonly Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
-            { "HomePage", new List<Type>() {
+            {
+                "HomePage", new List<Type>() {
                 typeof(Pages.HomePage),
                 typeof(Pages.DriveAccessDeniedPage),
                 typeof(Pages.LogginErrorPage),
                 typeof(Pages.NotRenewErrorPage),
                 typeof(Pages.MaintenanceErrorPage),
                 typeof(Pages.AsleepErrorPage)
-            } },
-            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.Errors.ErrorPage), typeof(Pages.Errors.ConflictQuickResolvePage), typeof(Pages.Errors.ResolveManyConflictPage) } },
-            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage), typeof(Pages.Settings.TemplateExclusionPage) } },
-            { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
+            }},
+            {
+                "ActivityPage", new List<Type>() {
+                typeof(Pages.ActivityPage),
+                typeof(Pages.Errors.ErrorPage),
+                typeof(Pages.Errors.ConflictQuickResolvePage),
+                typeof(Pages.Errors.ResolveManyConflictPage)
+            }},
+            {
+                "SettingsPage", new List<Type>() {
+                typeof(Pages.Settings.SettingsPage),
+                typeof(Pages.Settings.DriveManagementPage),
+                typeof(Pages.Settings.DriveAdvancedSyncsPage),
+                typeof(Pages.Settings.TemplateExclusionPage)
+            }},
+            {
+                "StoragePage", new List<Type>() {
+                typeof(Pages.StoragePage)
+            }}
         };
 
         public AppNavigationView()
@@ -89,17 +105,28 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (item is not null)
             {
+                if (ContentFrame.CurrentSourcePageType.Name == item?.Tag?.ToString())
+                    return;
+
+                if (item?.Tag?.ToString() == "Settings" && ContentFrame.CurrentSourcePageType.Name == "SettingsPage")
+                    return;
                 // Navigate to the selected page
                 if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
-                {
-                    if (ContentFrame.CurrentSourcePageType.Name != item?.Tag?.ToString())
-                        ContentFrame.Navigate(pageTypes.FirstOrDefault());
-                    return;
-                }
-
-
+                    ContentFrame.Navigate(pageTypes.FirstOrDefault());
+                else
+                    ContentFrame.Navigate(typeof(SettingsPage));
             }
-            ContentFrame.Navigate(typeof(SettingsPage));
+        }
+
+        private bool GetSyncSelectorIsEnabled(Sync? SelectedSync, object currentContent)
+        {
+            if (SelectedSync is null)
+                return false;
+
+            if (_navigationItemToPage["SettingsPage"].Contains(currentContent.GetType()))
+                return false;
+
+            return true;
         }
 
         private void UpdateSelectedItem()
@@ -111,12 +138,12 @@ namespace Infomaniak.kDrive.CustomControls
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;
         }
+
         private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
             if (ContentFrame.CanGoBack)
             {
                 ContentFrame.GoBack();
-                SelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)ContentFrame).Content.GetType().Name);
             }
         }
 
