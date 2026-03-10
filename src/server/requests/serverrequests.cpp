@@ -981,8 +981,9 @@ ExitInfo ServerRequests::getPathByNodeId(const int userDbId, const int driveId, 
 ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
-    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+    if (const auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
+
         return exitInfo;
     }
 
