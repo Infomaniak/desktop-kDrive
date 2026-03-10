@@ -29,11 +29,22 @@ struct VersionManagementView: View {
     @State private var updateState = UIUpdateState.upToDate
     @State private var newVersionInfo: UIVersionInfo?
 
+    @State private var isShowingError = false
+    @State private var error: DomainError?
 
     @State private var versionTask: Task<Void, Never>?
 
     @ObservedObject var repository: PreferencesRepository
 
+    enum DomainError: LocalizedError {
+        case cannotStartInstall
+
+        var errorDescription: String? {
+            switch self {
+            case .cannotStartInstall:
+                return KDriveLocalizable.errorStartingInstaller
+            }
+        }
     var body: some View {
         HStack {
             if updateState.isUpdateAvailable, let newVersionInfo {
@@ -66,11 +77,17 @@ struct VersionManagementView: View {
         .onReceive(updaterCacheObservable.updateStatePublisher.map { UIUpdateState(updateState: $0) }) {
             handleUpdateState($0)
         }
+        .alert(isPresented: $isShowingError, error: error) {}
     }
 
     private func updateApp() {
         Task {
-            try await UpdaterJobs().startInstaller()
+            do {
+                try await UpdaterJobs().startInstaller()
+            } catch {
+                self.error = .cannotStartInstall
+                isShowingError = true
+            }
         }
     }
 
