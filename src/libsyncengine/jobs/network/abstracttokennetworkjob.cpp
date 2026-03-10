@@ -39,7 +39,7 @@ constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 namespace KDC {
 std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
 std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
-
+std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const int userDbId, const int userId, const int driveDbId,
                                                  const int driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),

@@ -112,6 +112,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
+
+        friend class TestServerRequests;
 };
 
 } // namespace KDC
