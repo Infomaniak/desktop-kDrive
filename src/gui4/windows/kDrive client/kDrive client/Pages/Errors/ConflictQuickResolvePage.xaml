@@ -36,7 +36,7 @@
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        VerticalAlignment="Bottom"
-                       PointerPressed="BreadcrumbActivity_Click" />
+                       PointerPressed="BreadcrumbError_Click" />
 
             <FontIcon Grid.Column="1"
                       Glyph="&#xE76C;"
@@ -51,8 +51,7 @@
                        FontSize="{StaticResource TitleTextBlockFontSize}"
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                       VerticalAlignment="Bottom"
-                       PointerPressed="BreadcrumbActivity_Click" />
+                       VerticalAlignment="Bottom" />
         </Grid>
 
         <ScrollView Grid.Row="1"
@@ -202,7 +201,8 @@
                             Click="ApplyButton_Click" />
 
                     <Button x:Name="ManageIndividuallyButton"
-                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageIndividually')}" />
+                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageIndividually')}"
+                            Click="ManageIndividuallyButton_Click"/>
 
                 </StackPanel>
             </Grid>

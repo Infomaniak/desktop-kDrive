@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ViewModels.AppModel;
@@ -28,6 +29,11 @@ namespace Infomaniak.kDrive.Pages.Errors
         public ReadOnlyObservableCollection<Error> FileErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
         public ReadOnlyObservableCollection<Error> SyncDirErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
         public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+
+        private string _conflitFilterText = "";
+        // Emits a new filter predicate each time _conflitFilterText changes, causing DynamicData to re-evaluate the ConflictErrors list.
+        private readonly BehaviorSubject<Func<Error, bool>> _conflictFilterSubject = new(e => e.IsConflictUserResolvable());
+        public ReadOnlyObservableCollection<Error> FilteredConflictErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
 
         public Sync? Sync
         {
@@ -51,30 +57,17 @@ namespace Infomaniak.kDrive.Pages.Errors
             private set => SetPropertyInUIThread(ref _conflictsCount, value);
         }
 
+        public string ConflictFilterText
+        {
+            get => _conflitFilterText;
+            set => SetConflictFilterText(value);
+        }
+
         public ErrorPageVM()
         {
             _viewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             Sync = _viewModel.SelectedSync;
             InitErrorLists();
-        }
-
-        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
-        {
-            if (Sync is null)
-            {
-                Logger.Log(Logger.Level.Warning, "Attempted to resolve conflicts quickly, but no sync is currently selected.");
-            }
-
-            List<DbId> conflictsToResolve = Sync?.SyncErrors.Where(e => IsConflictUserResolvable(e)).Select(e => e.DbId).ToList() ?? new List<DbId>();
-
-            if (conflictsToResolve.Count == 0)
-            {
-                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
-                return true;
-            }
-
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
         }
 
         private void OnSelectedSyncChanged(object? sender, SelectedSyncChangedEventArgs e)
@@ -96,16 +89,32 @@ namespace Infomaniak.kDrive.Pages.Errors
                 OnPropertyChangingInUIThread(nameof(FileErrors));
                 OnPropertyChangingInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangingInUIThread(nameof(OtherErrors));
+                OnPropertyChangingInUIThread(nameof(FilteredConflictErrors));
                 FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                FilteredConflictErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OnPropertyChangedInUIThread(nameof(FileErrors));
                 OnPropertyChangedInUIThread(nameof(SyncDirErrors));
                 OnPropertyChangedInUIThread(nameof(OtherErrors));
+                OnPropertyChangedInUIThread(nameof(FilteredConflictErrors));
+                ConflictsCount = 0;
+                HasManyConflicts = false;
                 return;
             }
-            ConflictsCount = Sync.SyncErrors.Where(e => IsConflictUserResolvable(e)).Count();
+            ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
             HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
+
+            // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .Filter(e => e.IsConflictUserResolvable())
+                .QueryWhenChanged(q => q.Count)
+                .Subscribe(count =>
+                {
+                    ConflictsCount = count;
+                    HasManyConflicts = count > _maxConflictsForIndividualDisplay;
+                }));
 
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
@@ -127,6 +136,19 @@ namespace Infomaniak.kDrive.Pages.Errors
             SyncDirErrors = syncDirErrors;
             OnPropertyChangedInUIThread(nameof(SyncDirErrors));
 
+            // Reset the filter predicate for the new Sync, then subscribe using the observable overload
+            // so the list re-filters automatically when _conflictFilterSubject emits a new predicate.
+            _conflictFilterSubject.OnNext(ConflictFilter);
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .Filter(_conflictFilterSubject)
+                .Sort(SortExpressionComparer<Error>.Ascending(e => e.DbId))
+                .Bind(out var conflictErrors)
+                .Subscribe());
+            OnPropertyChangingInUIThread(nameof(FilteredConflictErrors));
+            FilteredConflictErrors = conflictErrors;
+            OnPropertyChangedInUIThread(nameof(FilteredConflictErrors));
+
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
                 .Filter(e => IsInOtherErrorList(e))
@@ -138,21 +160,32 @@ namespace Infomaniak.kDrive.Pages.Errors
             OnPropertyChangedInUIThread(nameof(OtherErrors));
         }
 
+        /// <summary>
+        /// Updates the filter text and pushes a new predicate to <see cref="_conflictFilterSubject"/>,
+        /// which triggers DynamicData to re-evaluate every item in <see cref="FilteredConflictErrors"/>.
+        /// </summary>
+        public void SetConflictFilterText(string filterText)
+        {
+            _conflitFilterText = filterText;
+            _conflictFilterSubject.OnNext(ConflictFilter);
+        }
+
+        // Predicate combining the resolvable check with a case-insensitive path match.
+        private Func<Error, bool> ConflictFilter => e =>
+            e.IsConflictUserResolvable() &&
+            (string.IsNullOrEmpty(_conflitFilterText) || e.Path.Contains(_conflitFilterText, StringComparison.OrdinalIgnoreCase));
+
         private bool IsInFileErrorsList(Error error)
         {
             if (error.ErrorLevel != ErrorLevel.Node)
                 return false;
 
-            if (HasManyConflicts && IsConflictUserResolvable(error))
+            if (HasManyConflicts && error.IsConflictUserResolvable())
                 return false;
 
             return true;
         }
 
-        private static bool IsConflictUserResolvable(Error error)
-        {
-            return error.ErrorLevel == ErrorLevel.Node && (error.ConflictType == ConflictType.CreateCreate || error.ConflictType == ConflictType.EditEdit);
-        }
 
         private static bool IsInSyncDirErrorList(Error error)
         {
@@ -174,7 +207,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private bool IsInOtherErrorList(Error error)
         {
-            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !IsConflictUserResolvable(error);
+            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable();
         }
 
         public void Dispose()
@@ -183,6 +216,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 subscription?.Dispose();
             }
+            _conflictFilterSubject.Dispose();
             _viewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
         }
     }

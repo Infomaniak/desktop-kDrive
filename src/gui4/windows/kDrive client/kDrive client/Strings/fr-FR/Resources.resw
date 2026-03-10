@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 06 Mar 2026 14:25:39 +0100 
+  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -74,13 +74,13 @@
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@ (build %@)
-2019-%@ Infomaniak Network SA</value> 
+2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>À propos de kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>Développé et hébergé exclusivement en Suisse, kDrive assure une protection complète de vos données, sans revente ni suivi, dans des centres certifiés ISO, avec cryptage et stockage multi-sauvegarde.</value> 
+    <value>Développé et hébergé exclusivement en Suisse, kDrive assure une protection totale de vos données, sans revente ni espionnage, dans des centres certifiés ISO, avec chiffrement et sauvegarde sur plusieurs supports.</value> 
   </data> 
   <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
     <value>Activités visibles</value> 
@@ -199,6 +199,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonCreateNewSync" xml:space="preserve"> 
     <value>Créer une nouvelle synchronisation</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Emplacement personnalisé</value> 
   </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Emplacement par défaut</value> 
@@ -328,6 +331,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonStart" xml:space="preserve"> 
     <value>Démarrage</value> 
   </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Commencer le choix des versions</value> 
+  </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Commencer gratuitement</value> 
   </data> 
@@ -357,6 +363,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="conflictErrorTitle" xml:space="preserve"> 
     <value>Conflits de versions</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Rechercher un fichier</value> 
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
     <value>Création d’un lien de partage…</value> 
@@ -425,8 +434,8 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Ajouter une règle d’exclusion</value> 
   </data> 
-  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
-    <value>Vous allez déconnecter {0} de l’application.
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Vous allez déconnecter %@ de l’application.
 
 Le dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.
 
@@ -777,6 +786,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
     <value>Choisissez la version de vos fichiers que vous souhaitez conserver.</value> 
   </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Pour chaque fichiers sélectionnez la version à conserver.</value> 
+  </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
     <value>Quelle version souhaitez-vous garder ?</value> 
   </data> 
@@ -871,6 +883,9 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
   <data name="labelNewSync" xml:space="preserve"> 
     <value>nouvelle synchronisation</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Aucun conflits ne correspond à votre recherche</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
@@ -1405,6 +1420,9 @@ Si le problème persiste, vous pouvez convertir la synchronisation en une synchr
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Stockage</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Traitement individuel</value> 
   </data> 
   <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
     <value>Mis sur liste noire temporaire</value> 

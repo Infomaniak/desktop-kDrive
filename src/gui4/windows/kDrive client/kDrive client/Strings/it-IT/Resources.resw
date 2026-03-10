@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 06 Mar 2026 14:25:39 +0100 
+  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -74,13 +74,13 @@
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versione %@ (build %@)
-© 2019-%@ Infomaniak Network SA</value> 
+© 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Informazioni su kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>Sviluppato e ospitato esclusivamente in Svizzera, kDrive offre una protezione completa dei vostri dati, senza rivendita o tracciamento, in centri certificati ISO, con crittografia e archiviazione multi-backup.</value> 
+    <value>Sviluppato e ospitato esclusivamente in Svizzera, kDrive garantisce una protezione totale dei vostri dati, senza rivendita o spionaggio, in centri certificati ISO, con crittografia e back-up su diversi supporti.</value> 
   </data> 
   <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
     <value>Attività visibili</value> 
@@ -199,6 +199,9 @@
   </data> 
   <data name="buttonCreateNewSync" xml:space="preserve"> 
     <value>Creare una nuova sincronizzazione</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Posizione personalizzata</value> 
   </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Posizione predefinita</value> 
@@ -328,6 +331,9 @@
   <data name="buttonStart" xml:space="preserve"> 
     <value>Inizio</value> 
   </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Iniziare a scegliere le versioni</value> 
+  </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Iniziare gratuitamente</value> 
   </data> 
@@ -357,6 +363,9 @@
   </data> 
   <data name="conflictErrorTitle" xml:space="preserve"> 
     <value>Versioni in conflitto</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Ricerca di un file</value> 
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
     <value>Creazione del link di condivisione…</value> 
@@ -425,8 +434,8 @@ Questa cartella non deve essere inclusa in altre cartelle di sincronizzazione e 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
     <value>Aggiungere una regola di esclusione</value> 
   </data> 
-  <data name="dialogRemoveAccountContentWindows" xml:space="preserve"> 
-    <value>Si disconnette {0} dall'applicazione.
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Si disconnette %@ dall'applicazione.
 
 La cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.
 
@@ -777,6 +786,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
     <value>Scegliere la versione dei file che si desidera conservare.</value> 
   </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Per ogni file, selezionare la versione da conservare.</value> 
+  </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
     <value>Quale versione si vuole mantenere?</value> 
   </data> 
@@ -871,6 +883,9 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>nuova sincronizzazione</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Nessun conflitto corrispondente alla tua ricerca</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notifica</value> 
@@ -1405,6 +1420,9 @@ Se il problema persiste, è possibile convertire la sincronizzazione in una sinc
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Stoccaggio</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Trattamento individuale</value> 
   </data> 
   <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
     <value>Inserito temporaneamente in lista nera</value> 

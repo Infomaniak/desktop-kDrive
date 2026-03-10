@@ -300,6 +300,20 @@ namespace Infomaniak.kDrive.ViewModels
             });
         }
 
+        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
+        {
+            List<DbId> conflictsToResolve = SyncErrors.Where(e => e.IsConflictUserResolvable()).Select(e => e.DbId).ToList() ?? new List<DbId>();
+
+            if (conflictsToResolve.Count == 0)
+            {
+                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                return true;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
+        }
+
         public async Task<List<NodeId>?> GetExcludedNodeIds()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

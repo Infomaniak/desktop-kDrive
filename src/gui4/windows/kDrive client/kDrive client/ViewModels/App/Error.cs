@@ -128,5 +128,10 @@ namespace Infomaniak.kDrive.ViewModels
             var path = side == ReplicaSide.Local ? DestinationPath : Path;
             return await commService.GetNodeConflictInfo(Sync.DbId, path, side, cancellationToken);
         }
+
+        public bool IsConflictUserResolvable()
+        {
+            return ErrorLevel == ErrorLevel.Node && (ConflictType == ConflictType.CreateCreate || ConflictType == ConflictType.EditEdit);
+        }
     }
 }

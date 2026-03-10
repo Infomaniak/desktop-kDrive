@@ -51,8 +51,7 @@
                        FontSize="{StaticResource TitleTextBlockFontSize}"
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                       VerticalAlignment="Bottom"
-                       PointerPressed="BreadcrumbActivity_Click" />
+                       VerticalAlignment="Bottom" />
         </Grid>
 
         <ScrollView Grid.Row="1"
