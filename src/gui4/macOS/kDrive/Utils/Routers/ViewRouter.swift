@@ -18,7 +18,6 @@
 
 import Combine
 import Foundation
-import kDriveCoreUI
 
 protocol RouterTab: Equatable, Hashable {
     associatedtype Detail: RouterDetail
