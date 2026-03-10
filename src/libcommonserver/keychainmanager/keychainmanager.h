@@ -60,8 +60,8 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         std::string _package{DEFAULT_PACKAGE};
         std::string _service{DEFAULT_SERVICE};
 
-        static const std::string dummyKeychainKey;
-        static const std::string dummyData;
+        static constexpr const char *dummyKeychainKey = "dummy_kdrive_keychain_key";
+        static constexpr const char *dummyData = "dummy";
 
         friend class TestKeyChainManager;
 };
@@ -74,7 +74,6 @@ class KeyChainManagerSingleton {
         friend class TestKeyChainManager;
 
     private:
-        static std::shared_ptr<KeyChainManager> _instance;
         static std::unique_ptr<IKeychainStore> _store;
 };
 

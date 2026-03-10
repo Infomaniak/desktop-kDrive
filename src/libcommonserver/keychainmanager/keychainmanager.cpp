@@ -24,10 +24,6 @@
 
 namespace KDC {
 
-const std::string KeyChainManager::dummyKeychainKey("dummy_kdrive_keychain_key");
-const std::string KeyChainManager::dummyData("dummy");
-
-std::shared_ptr<KeyChainManager> KeyChainManagerSingleton::_instance = nullptr;
 std::unique_ptr<IKeychainStore> KeyChainManagerSingleton::_store = nullptr;
 
 KeyChainManager::KeyChainManager(std::unique_ptr<IKeychainStore> store) :
@@ -38,17 +34,18 @@ KeyChainManager::KeyChainManager(std::unique_ptr<IKeychainStore> store) :
 }
 
 std::shared_ptr<KeyChainManager> KeyChainManagerSingleton::instance() noexcept {
-    if (_instance == nullptr) {
+    std::shared_ptr<KeyChainManager> instance = nullptr;
+    if (instance == nullptr) {
         try {
             auto store = _store ? std::move(_store) : std::make_unique<KeychainStore>();
-            _instance = std::make_shared<KeyChainManager>(std::move(store));
+            instance = std::make_shared<KeyChainManager>(std::move(store));
 
         } catch (...) {
             return nullptr;
         }
     }
 
-    return _instance;
+    return instance;
 }
 
 bool KeyChainManager::writeDummyTest() {

@@ -80,7 +80,7 @@ void TestTheme::testSystrayIcons() {
     if (testhelpers::isRunningOnCI(false)) return;
 #endif
 
-    int argc = 1;
+    int32_t argc = 1;
     QGuiApplication app(argc, nullptr);
     (void) setlocale(LC_ALL, "C"); // QGuiApplication changes the locale
 
