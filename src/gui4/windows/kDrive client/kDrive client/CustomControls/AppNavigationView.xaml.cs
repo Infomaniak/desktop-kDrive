@@ -105,11 +105,14 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (item is not null)
             {
+                // If the selected item is already displayed, do nothing
                 if (ContentFrame.CurrentSourcePageType.Name == item?.Tag?.ToString())
                     return;
 
-                if (item?.Tag?.ToString() == "Settings" && ContentFrame.CurrentSourcePageType.Name == "SettingsPage")
+                // We cannot set the tag of the SettingsItem because it is handled by the navigationView it self.
+                if (item == SettingsItem as NavigationViewItemBase && ContentFrame.CurrentSourcePageType.Name == "SettingsPage")
                     return;
+
                 // Navigate to the selected page
                 if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
                     ContentFrame.Navigate(pageTypes.FirstOrDefault());
