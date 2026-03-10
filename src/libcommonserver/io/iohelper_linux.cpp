@@ -38,6 +38,8 @@
 #include <Poco/File.h>
 #include "utility/utility.h"
 
+#include <QFile>
+
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
@@ -131,42 +133,7 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 }
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
-    std::string desktopType;
-    if (!Utility::getLinuxDesktopType(desktopType)) {
-        desktopType = "GNOME";
-    }
-
-    std::string command;
-    if (desktopType == "GNOME") {
-        command = "gio trash \"" + itemPath.string() + "\"";
-    } else if (desktopType == "KDE") {
-        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
-    } else {
-        // Not implemented for the others distros
-        return true;
-    }
-
-    const SyncPath trashPath = Utility::getTrashPath();
-
-    // Check if the trash/files & trash/info path exists and create it if needed
-    if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
-        if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
-            return false;
-        }
-
-        if (!std::filesystem::create_directories(trashPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
-            return false;
-        }
-    }
-
-    if (const auto result = system(command.c_str()); result) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
-        return false;
-    }
-
-    return true;
+    return QFile(itemPath).moveToTrash();
 }
 
 bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
@@ -195,7 +162,7 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
         std::string mountPoint = ent->mnt_dir;
         bool matches = false;
         if (mountPoint == "/" || (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
-                   (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/'))) {
+                                  (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/'))) {
             matches = true;
         }
 

@@ -305,7 +305,12 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+#else
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(dirpath.filename());
 #endif
@@ -316,7 +321,12 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
@@ -468,9 +478,13 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
                                             filename)); // The local file has been moved to trash.
-
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
