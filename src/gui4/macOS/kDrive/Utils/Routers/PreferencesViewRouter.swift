@@ -18,7 +18,7 @@
 
 import kDriveCoreUI
 
-typealias PreferencesViewRouter = ViewRouter<MainViewTab>
+typealias PreferencesViewRouter = ViewRouter<PreferencesViewTab>
 
 extension SidebarItem {
     var preferencesViewTab: PreferencesViewTab? {
