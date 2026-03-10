@@ -56,6 +56,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+            Frame.Navigate(typeof(Pages.HomePage));
 
             // Add an infobadge to SettingsItem
             var infoBadge = new InfoBadge()
@@ -106,11 +107,11 @@ namespace Infomaniak.kDrive.CustomControls
             if (item is not null)
             {
                 // If the selected item is already displayed, do nothing
-                if (ContentFrame.CurrentSourcePageType.Name == item?.Tag?.ToString())
+                if (ContentFrame.CurrentSourcePageType?.Name == item?.Tag?.ToString())
                     return;
 
                 // We cannot set the tag of the SettingsItem because it is handled by the navigationView it self.
-                if (item == SettingsItem as NavigationViewItemBase && ContentFrame.CurrentSourcePageType.Name == "SettingsPage")
+                if (item == SettingsItem as NavigationViewItemBase && ContentFrame.CurrentSourcePageType?.Name == "SettingsPage")
                     return;
 
                 // Navigate to the selected page
