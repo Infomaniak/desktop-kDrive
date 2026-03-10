@@ -38,7 +38,7 @@ UtilityIsPathValidForNewSyncJob::UtilityIsPathValidForNewSyncJob(std::shared_ptr
 
 ExitInfo UtilityIsPathValidForNewSyncJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in UtilityIsPathValidForNewSyncJob::readParamValue: error=";
-    std::string pathStr;
+    CommString pathStr;
     try {
         readParamValue(inParamsPath, pathStr);
     } catch (const Poco::Exception &pocoException) {

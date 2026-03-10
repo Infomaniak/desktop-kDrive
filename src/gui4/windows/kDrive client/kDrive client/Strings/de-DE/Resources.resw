@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
+  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,7 +73,7 @@
     <value>German</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@ (build %@)
+    <value>Version %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
@@ -771,7 +771,8 @@ Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die not
     <value>Verschachtelte Synchronisationen</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Dieser Artikel ist auf diesem Gerät nicht verfügbar. Er wird in Ihrem Browser geöffnet.</value> 
+    <value>Dieses Element ist auf diesem Gerät nicht verfügbar.
+Es wird in Ihrem Browser geöffnet.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
@@ -1415,7 +1416,7 @@ Wenn das Problem weiterhin besteht, können Sie die Synchronisierung in eine Sta
     <value>Lite Sync-Plugin kann nicht starten</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Aktivitäten</value> 
+    <value>Tätigkeit</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
     <value>Startseite</value> 

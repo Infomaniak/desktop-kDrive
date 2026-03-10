@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
+  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,7 +73,7 @@
     <value>Spanish</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Versión %@ (build %@)
+    <value>Versión %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
@@ -771,7 +771,8 @@ Por favor, restaure la carpeta, asegúrese de que tiene los derechos de acceso n
     <value>Sincronizaciones anidadas</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Este artículo no está disponible en este dispositivo. Se abrirá en su navegador.</value> 
+    <value>Este artículo no está disponible en este dispositivo.
+Se abrirá en su navegador.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
@@ -1415,7 +1416,7 @@ Si el problema persiste, puede convertir la sincronización a una sincronizació
     <value>El plugin Lite Sync no puede iniciarse</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Actividades</value> 
+    <value>Actividad</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
     <value>Inicio</value> 

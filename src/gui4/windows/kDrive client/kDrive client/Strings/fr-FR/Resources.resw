@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 09 Mar 2026 15:02:20 +0100 
+  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,8 +73,8 @@
     <value>French</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@ (build %@)
-2019-%@ Infomaniak Network SA - </value> 
+    <value>Version %@.%@
+© 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>À propos de kDrive</value> 
@@ -769,7 +769,8 @@ Veuillez restaurer le dossier, vous assurer que vous avez les droits d'accès n�
     <value>Synchronisations imbriquées</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Cet élément n’est pas disponible sur cet appareil. Il s’ouvrira dans votre navigateur.</value> 
+    <value>Cet élément n’est pas disponible sur cet appareil. 
+Il s’ouvrira dans votre navigateur.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Droits d’accès modifiés</value> 
@@ -1413,7 +1414,7 @@ Si le problème persiste, vous pouvez convertir la synchronisation en une synchr
     <value>Le plugin Lite Sync ne peut pas démarrer</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Activités</value> 
+    <value>Activité</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
     <value>Accueil</value> 

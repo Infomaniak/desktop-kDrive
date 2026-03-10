@@ -49,7 +49,7 @@ ExitInfo NodeConflictInfoJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
 
-        std::string relativePathStr;
+        CommString relativePathStr;
         readParamValue(inParamsRelativePath, relativePathStr);
         _relativePath = SyncPath(relativePathStr);
 
