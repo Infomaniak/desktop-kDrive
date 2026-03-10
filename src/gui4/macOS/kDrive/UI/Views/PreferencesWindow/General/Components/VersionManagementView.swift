@@ -29,6 +29,9 @@ struct VersionManagementView: View {
     @State private var updateState = UIUpdateState.upToDate
     @State private var newVersionInfo: UIVersionInfo?
 
+
+    @State private var versionTask: Task<Void, Never>?
+
     @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
@@ -74,12 +77,14 @@ struct VersionManagementView: View {
     private func handleUpdateState(_ state: UIUpdateState) {
         updateState = state
 
-        Task {
+        versionTask?.cancel()
+        versionTask = Task { @MainActor in
             let channel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
             guard let newVersion = try? await UpdaterJobs().versionInfo(channel: channel) else {
                 return
             }
 
+            guard !Task.isCancelled else { return }
             withAnimation {
                 newVersionInfo = UIVersionInfo(versionInfo: newVersion)
             }
