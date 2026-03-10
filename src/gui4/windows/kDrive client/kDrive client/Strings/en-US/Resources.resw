@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 10:11:41 +0100 
+  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,7 +73,7 @@
     <value>English</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@ (build %@)
+    <value>Version %@.%@
 © 2019–%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
@@ -771,7 +771,8 @@ Please restore the folder, make sure you have the necessary access rights, or de
     <value>Nested synchronizations</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>This item is not available on this device. It will open in your browser.</value> 
+    <value>This item is not available on this device.
+It will open in your browser.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
@@ -1415,7 +1416,7 @@ If the problem continues, you can convert the synchronization to a standard sync
     <value>Lite Sync plugin cannot start</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Activities</value> 
+    <value>Activity</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
     <value>Home</value> 

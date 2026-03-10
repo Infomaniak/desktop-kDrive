@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 10:11:41 +0100 
+  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,7 +73,7 @@
     <value>Italian</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Versione %@ (build %@)
+    <value>Versione %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
@@ -769,7 +769,8 @@ Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o 
     <value>Sincronizzazioni annidate</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Questo articolo non è disponibile su questo dispositivo. Si aprirà nel browser.</value> 
+    <value>Questo articolo non è disponibile su questo dispositivo.
+Si aprirà nel browser.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
