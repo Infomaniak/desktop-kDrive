@@ -182,16 +182,25 @@
 
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizingTemplate">
-                                <ProgressRing Height="16"
-                                              Width="16"
-                                              IsIndeterminate="False"
-                                              kDrive:AncestorSource.AncestorType="ContentControl"
-                                              Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
+                                <Grid kDrive:AncestorSource.AncestorType="ContentControl">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=syncInProgressTooltip'}" />
+                                        <TextBlock>
+                                            <Run Text="{Binding DataContext.ProgressPercent, Mode=OneWay}" />
+                                            <Run Text="%" />
+                                        </TextBlock>
                                     </ToolTipService.ToolTip>
-                                </ProgressRing>
+                                    <ProgressRing Height="16"
+                                                  Width="16"
+                                                  Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                                  IsIndeterminate="False"
+                                                  kDrive:AncestorSource.AncestorType="ContentControl"
+                                                  Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
+
+                                    </ProgressRing>
+                                    <Rectangle  Width="32"
+                                                Height="32"
+                                                Fill="Transparent" />
+                                </Grid>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizedFlyoutTemplate">
