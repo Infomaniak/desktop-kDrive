@@ -69,13 +69,11 @@ struct VersionManagementView: View {
                 Button(KDriveLocalizable.buttonUpdate, action: updateApp)
             }
         }
-        .task {
+        .task(id: repository.parametersInfo.distributionChannel) {
             guard let currentUpdateState = try? await UpdaterJobs().updaterState() else {
                 return
             }
-
-            let updateState = UIUpdateState(updateState: currentUpdateState)
-            handleUpdateState(updateState)
+            handleUpdateState(UIUpdateState(updateState: currentUpdateState))
         }
         .onReceive(updaterCacheObservable.updateStatePublisher.map { UIUpdateState(updateState: $0) }) {
             handleUpdateState($0)
