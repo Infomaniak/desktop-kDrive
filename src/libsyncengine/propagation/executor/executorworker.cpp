@@ -968,7 +968,32 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return ExitCode::DataError;
         }
 
-        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        // Get the parent corresponding node
+        NodeId parentLocalNodeId;
+        bool found = false;
+        if (!_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, *parentNode->id(), parentLocalNodeId, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_SYNCPAL_WARN(_logger,
+                             "Node not found for id='" << parentNode->id()->c_str() << "' side='" << ReplicaSide::Remote << "'");
+            return ExitCode::DataError;
+        }
+
+        // Get the parent corresponding path
+        SyncPath parentLocalPath;
+        if (!_syncPal->syncDb()->path(ReplicaSide::Local, parentLocalNodeId, parentLocalPath, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_SYNCPAL_WARN(_logger,
+                             "Node not found for id='" << parentLocalNodeId.c_str() << "' side='" << ReplicaSide::Local << "'");
+            return ExitCode::DataError;
+        }
+
+        relativeDestLocalFilePath = parentLocalPath / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
