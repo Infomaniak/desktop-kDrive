@@ -60,21 +60,6 @@ namespace Infomaniak.kDrive.CustomControls
                 Refresh();
         }
 
-        // The version to display in the expander either the current app version or the available update version
-        public static readonly DependencyProperty DisplayedVersionProperty =
-         DependencyProperty.Register(
-             nameof(DisplayedVersion),
-             typeof(AppVersion),
-             typeof(UpdateExpander),
-             new PropertyMetadata(null));
-
-        public AppVersion? DisplayedVersion
-        {
-            get => (AppVersion?)GetValue(DisplayedVersionProperty);
-            set => SetValue(DisplayedVersionProperty, value);
-
-        }
-
         public void Refresh()
         {
             if (ViewModel.Settings is null)
@@ -85,13 +70,11 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (ViewModel.Settings.UpdateManager.AvailableUpdate is AppVersion updateVersion)
             {
-                base.Description = Localizer.Instance.GetString("updateAvailable", updateVersion.Tag);
-                DisplayedVersion = updateVersion;
+                base.Description = Localizer.Instance.GetString("updateAvailable", $"{updateVersion.Tag}.{updateVersion.BuildVersion}");
             }
             else if (ViewModel.Settings.AppVersion is AppVersion AppVersionInfo)
             {
                 base.Description = Localizer.Instance.GetString("appUpToDate");
-                DisplayedVersion = AppVersionInfo;
             }
             UpdateInternalChannelComboBoxVisibility();
         }
