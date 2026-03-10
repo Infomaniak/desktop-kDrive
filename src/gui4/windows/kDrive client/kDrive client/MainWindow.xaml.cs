@@ -19,6 +19,8 @@
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using System;
 
 namespace Infomaniak.kDrive
 {
@@ -33,6 +35,42 @@ namespace Infomaniak.kDrive
             Utility.SetWindowProperties(this, 900, 600, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
+        }
+
+        private void AppTitleBar_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            RefreshTitleBarContentPosition();
+        }
+
+        private void NavView_PaneChanged(NavigationView sender, object args)
+        {
+            RefreshTitleBarContentPosition();
+        }
+
+        public void RefreshTitleBarContentPosition()
+        {
+            // Ensure TitleBarContentPanel is always positioned to the right of the NavigationView's left pane,
+            if (NavView.PaneDisplayMode != NavigationViewPaneDisplayMode.Left)
+                return;
+
+            double titleBarContentPanelOffsetIfCentered = (AppTitleBar.ActualWidth / 2) - (TitleBarContentPanel.ActualWidth / 2);
+
+            if (NavView.IsPaneOpen && titleBarContentPanelOffsetIfCentered < NavView.OpenPaneLength)
+            {
+                TitleBarContentPanel.HorizontalAlignment = HorizontalAlignment.Left;
+                TitleBarContentPanel.Margin = new Thickness(NavView.OpenPaneLength - 15 , 0, 0, 0);
+            }
+            else if (!NavView.IsPaneOpen || titleBarContentPanelOffsetIfCentered > NavView.OpenPaneLength)
+            {
+                TitleBarContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
+                TitleBarContentPanel.Margin = new Thickness(0);
+            }
+
+        }
+
+        private void AppTitleBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            RefreshTitleBarContentPosition();
         }
     }
 }

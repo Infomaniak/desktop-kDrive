@@ -44,25 +44,17 @@
 
         <!-- Title bar -->
         <Border x:Name="AppTitleBar"
+                SizeChanged="AppTitleBar_SizeChanged"
+                Loaded="AppTitleBar_Loaded"
                 Grid.Row="0"
                 VerticalAlignment="Top">
             <Grid Height="{StaticResource Infomaniak.Style.Spacing.XXXL}"
                   VerticalAlignment="Top"
                   Margin="16,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <!-- Left: Logo + Text -->
-                    <ColumnDefinition Width="*" />
-                    <!-- Middle: Search Box (centered) -->
-                    <ColumnDefinition Width="Auto" />
-                    <!-- Right: Profile Picture -->
-                </Grid.ColumnDefinitions>
-
                 <!-- Left: Logo + App Name -->
-                <controls:AppTitleBarLogo Grid.Column="0" />
+                <controls:AppTitleBarLogo />
 
-                <StackPanel Grid.Column="0"
-                            Grid.ColumnSpan="3"
+                <StackPanel x:Name="TitleBarContentPanel"
                             Height="32"
                             Orientation="Horizontal"
                             HorizontalAlignment="Center"
@@ -79,6 +71,8 @@
 
         <!-- NavigationView -->
         <controls:AppNavigationView x:Name="NavView"
-                                    Grid.Row="1" />
+                                    Grid.Row="1"
+                                    PaneClosing="NavView_PaneChanged"
+                                    PaneOpening="NavView_PaneChanged" />
     </Grid>
 </Window>
