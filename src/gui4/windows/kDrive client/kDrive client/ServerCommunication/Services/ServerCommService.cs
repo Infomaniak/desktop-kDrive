@@ -1579,13 +1579,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
 
+                Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
+                {
+                    // We never want to remove an item that as sucessfully completed
+                    if (item.Status == SyncFileStatus.Success)
+                        return false;
+
+                    if (!string.IsNullOrEmpty(info.RemoteNodeId) && !string.IsNullOrEmpty(item.RemoteNodeId) && info.RemoteNodeId == item.RemoteNodeId)
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.LocalNodeId) && !string.IsNullOrEmpty(item.LocalNodeId) && info.LocalNodeId == item.LocalNodeId)
+                        return true;
+
+                    return false;
+                };
+
                 // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => a.Status == fileItemInfo.Status || (a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 
                 // Create new item
-                var newItem = new SyncFileItem(sync);
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
+                var newItem = new SyncFileItem(sync, fileItemInfo);
 
                 const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
