@@ -45,25 +45,28 @@ struct VersionManagementView: View {
                 return KDriveLocalizable.errorStartingInstaller
             }
         }
+    }
+
+    private var subtitle: String {
+        if updateState.isUpdateAvailable, let newVersionInfo {
+            return KDriveLocalizable.updateAvailable(newVersionInfo.tag)
+        } else {
+            return KDriveLocalizable.appUpToDate
+        }
+    }
+
     var body: some View {
         HStack {
-            if updateState.isUpdateAvailable, let newVersionInfo {
-                VStack(alignment: .leading) {
-                    Text(KDriveLocalizable.updateSettings)
-                    Text(KDriveLocalizable.updateAvailable(newVersionInfo.tag))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading) {
+                Text(KDriveLocalizable.updateSettings)
+                Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
+            if updateState.isUpdateAvailable, newVersionInfo != nil {
                 Button(KDriveLocalizable.buttonUpdate, action: updateApp)
-            } else {
-                VStack(alignment: .leading) {
-                    Text(KDriveLocalizable.updateSettings)
-                    Text(KDriveLocalizable.appUpToDate)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
             }
         }
         .task {
