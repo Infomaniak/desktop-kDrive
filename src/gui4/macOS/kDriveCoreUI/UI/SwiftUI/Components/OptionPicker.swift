@@ -19,18 +19,18 @@
 import kDriveCoreUI
 import SwiftUI
 
-struct OptionPicker<Option: PreferenceOption>: View {
+public struct OptionPicker<Option: PreferenceOption>: View {
     let label: String
     let options: [Option]
     let selection: Binding<Option>
 
-    init(_ label: String, options: [Option], selection: Binding<Option>) {
+    public init(_ label: String, options: [Option], selection: Binding<Option>) {
         self.label = label
         self.options = options
         self.selection = selection
     }
 
-    var body: some View {
+    public var body: some View {
         Picker(label, selection: selection) {
             ForEach(options) { option in
                 Text(option.label)
