@@ -18,10 +18,11 @@
 
 import Cocoa
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
     convenience init(drive: UIDrive) {
-        self.init(toolbarTitle: "!Gestion du kDrive", contentView: SyncedKDriveView(drive: drive))
+        self.init(toolbarTitle: KDriveLocalizable.labelkDriveManagement, contentView: SyncedKDriveView(drive: drive))
     }
 }

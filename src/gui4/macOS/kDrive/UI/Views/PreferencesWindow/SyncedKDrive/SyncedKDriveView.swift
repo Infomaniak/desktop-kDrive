@@ -27,14 +27,14 @@ struct SyncedKDriveView: View {
     var body: some View {
         Form {
             Section {
-                IKLabeledContent("!Emplacement") {
+                IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
                     Button("/Users/valentin/kDrive", action: openSynchroInFinder)
                         .buttonStyle(.borderless)
                         .tint(.accent)
                 }
 
-                IKLabeledContent("!Synchronisation") {
-                    Button("!Gérer") {
+                IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
+                    Button(KDriveLocalizable.buttonManage) {
                         // TODO: Navigate to synchro management
                     }
                     .disabled(true)
@@ -48,8 +48,8 @@ struct SyncedKDriveView: View {
 
             Section {
                 VStack(alignment: .leading) {
-                    Text("!Mode de synchronisation des fichiers")
-                    Text("!Définissez comment vos fichiers sont stockés et accessibles.")
+                    Text(KDriveLocalizable.fileSyncMode)
+                    Text(KDriveLocalizable.fileSyncModeDescription)
                         .foregroundStyle(.secondary)
                         .font(.callout)
                 }
@@ -57,7 +57,7 @@ struct SyncedKDriveView: View {
 
             Section {
                 Button(role: .destructive, action: removePrincipalSynchro) {
-                    Text("!Supprimer la synchronisation")
+                    Text(KDriveLocalizable.buttonRemoveSync)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(.rect)
@@ -68,7 +68,7 @@ struct SyncedKDriveView: View {
             Section {
                 Button(action: navigateToAdvancedSynchro) {
                     HStack {
-                        Text("!Synchronisation avancée")
+                        Text(KDriveLocalizable.advancedSyncTitle)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .foregroundStyle(.primary)
 
