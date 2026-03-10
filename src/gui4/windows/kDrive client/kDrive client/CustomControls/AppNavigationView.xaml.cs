@@ -126,6 +126,9 @@ namespace Infomaniak.kDrive.CustomControls
             if (SelectedSync is null)
                 return false;
 
+            if (currentContent is null)
+                return false;
+
             if (_navigationItemToPage["SettingsPage"].Contains(currentContent.GetType()))
                 return false;
 
