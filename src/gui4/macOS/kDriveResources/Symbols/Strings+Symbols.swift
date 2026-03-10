@@ -158,6 +158,8 @@ public enum KDriveLocalizable {
   public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
   /// loco:69aa7fb3753c400c81087842
   public static let errorDeletingAccount = KDriveLocalizable.tr("Localizable", "errorDeletingAccount", fallback: "An error occurred while deleting your account.")
+  /// loco:69afcc9e14a34ba0f30ee2a2
+  public static let errorStartingInstaller = KDriveLocalizable.tr("Localizable", "errorStartingInstaller", fallback: "Error while trying to start the installer")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4

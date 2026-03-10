@@ -214,6 +214,8 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Se ha producido un error al eliminar tu cuenta.";
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Error while trying to start the installer";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Ayúdanos a mejorar kDrive";
 

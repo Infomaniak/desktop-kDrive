@@ -214,6 +214,8 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Si è verificato un errore durante la cancellazione dell'account.";
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Errore durante il tentativo di avviare il programma di installazione";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aiutaci a migliorare kDrive";
 
