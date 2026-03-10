@@ -16,15 +16,79 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
 struct SyncedKDriveView: View {
     let drive: UIDrive
 
     var body: some View {
-        Text("Hello, World!")
+        Form {
+            Section {
+                IKLabeledContent("!Emplacement") {
+                    Button("/Users/valentin/kDrive", action: openSynchroInFinder)
+                        .buttonStyle(.borderless)
+                        .tint(.accent)
+                }
+
+                IKLabeledContent("!Synchronisation") {
+                    Button("!Gérer") {
+                        // TODO: Navigate to synchro management
+                    }
+                    .disabled(true)
+                }
+            } header: {
+                HStack {
+                    DriveBadgeView(color: drive.color ?? ColorToken.Drive.defaultColor.asColor)
+                    Text(drive.name)
+                }
+            }
+
+            Section {
+                VStack(alignment: .leading) {
+                    Text("!Mode de synchronisation des fichiers")
+                    Text("!Définissez comment vos fichiers sont stockés et accessibles.")
+                        .foregroundStyle(.secondary)
+                        .font(.callout)
+                }
+            }
+
+            Section {
+                Button(role: .destructive, action: removePrincipalSynchro) {
+                    Text("!Supprimer la synchronisation")
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Section {
+                Button(action: navigateToAdvancedSynchro) {
+                    HStack {
+                        Text("!Synchronisation avancée")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundStyle(.primary)
+
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(.secondary)
+                    }
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .groupedFormatStyle()
+    }
+
+    private func openSynchroInFinder() {}
+
+    private func removePrincipalSynchro() {}
+
+    private func navigateToAdvancedSynchro() {
+        // TODO: Navigate to advanced synchros
     }
 }
 
