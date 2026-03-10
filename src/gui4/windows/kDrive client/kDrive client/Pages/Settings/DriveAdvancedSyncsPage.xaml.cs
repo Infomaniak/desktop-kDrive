@@ -58,7 +58,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private void SetupNavBar(string driveName)
     {
-        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
+        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
     }
 
     private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -68,7 +68,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
-        else if (args.Index >= 1 && args.Index <= 2)
+        else if (args.Index == 1 )
         {
             Logger.Log(Logger.Level.Debug, "Navigating to DriveManagementPage");
             Frame.Navigate(typeof(DriveManagementPage), _baseDrive);

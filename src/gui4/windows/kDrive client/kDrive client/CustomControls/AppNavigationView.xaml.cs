@@ -78,31 +78,28 @@ namespace Infomaniak.kDrive.CustomControls
             UpdateSelectedItem();
         }
 
-        private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            GoToNavigationViewItemPage(args.SelectedItem as NavigationViewItem);
-        }
 
         private void OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            GoToNavigationViewItemPage(args.InvokedItem as NavigationViewItem);
+            GoToNavigationViewItemPage(args.InvokedItemContainer as NavigationViewItem);
 
         }
 
-        private void GoToNavigationViewItemPage(NavigationViewItem? item)
+        private void GoToNavigationViewItemPage(NavigationViewItemBase? item)
         {
             if (item is not null)
             {
                 // Navigate to the selected page
                 if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
                 {
-                    ContentFrame.Navigate(pageTypes.FirstOrDefault());
+                    if (ContentFrame.CurrentSourcePageType.Name != item?.Tag?.ToString())
+                        ContentFrame.Navigate(pageTypes.FirstOrDefault());
                     return;
                 }
 
-                Logger.Log(Logger.Level.Info, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
-                ContentFrame.Navigate(typeof(SettingsPage));
+
             }
+            ContentFrame.Navigate(typeof(SettingsPage));
         }
 
         private void UpdateSelectedItem()

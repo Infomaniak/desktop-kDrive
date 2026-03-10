@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar(string driveName)
         {
-            NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName };
+            NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), driveName };
         }
 
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -73,11 +73,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
                 Frame.Navigate(typeof(SettingsPage));
-            }
-            else if (args.Index == 1)
-            {
-                Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage focused on Account section");
-                Frame.Navigate(typeof(SettingsPage)); // TODO: Focus on account section
             }
         }
 
