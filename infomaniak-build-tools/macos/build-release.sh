@@ -100,6 +100,29 @@ make -j6 all install
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
 dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
 
+# Verify that no dylib targets a macOS version higher than expected.
+# arm64 requires at least 11.0, so even with MACOSX_DEPLOYMENT_TARGET=10.15,
+# universal binaries will have minos=11.0 for the arm64 slice.
+check_dylibs_minos() {
+  local max_allowed="$1"
+  local search_dir="$2"
+
+  local highest
+  highest=$(otool -l $(find "$search_dir" -iname '*.dylib') \
+    | awk '/minos/{print $2}' \
+    | sort -Vu \
+    | tail -1)
+
+  local greatest
+  greatest=$(printf '%s\n' "$max_allowed" "$highest" | sort -V | tail -1)
+
+  if [ "$greatest" != "$max_allowed" ]; then
+    echo "Error: found dylib(s) with minos > $max_allowed:" >&2
+    return 1
+  fi
+}
+
+check_dylibs_minos "11.0" "."
 popd
 
 # Sign
