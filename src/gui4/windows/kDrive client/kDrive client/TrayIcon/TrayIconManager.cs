@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.TrayIcon
         private string _currentIcon = "taskbar-ico";
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
-        private readonly List<IDisposable> _subscription = new List<IDisposable>();
+        private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
 
         public void Initialize()
         {
@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive.TrayIcon
             _appModel = appModel;
 
             // Subscribe to changes in the syncs collection, their statuses, and their errors
-            _subscription.Add(_appModel.AllSyncs
+            _subscriptions.Add(_appModel.AllSyncs
                 .ToObservableChangeSet()
                 .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
                 .AutoRefreshOnObservable(sync => sync.SyncErrors.ToObservableChangeSet()) // react when any sync's errors change
@@ -221,7 +221,7 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
-            foreach (var subscription in _subscription)
+            foreach (var subscription in _subscriptions)
             {
                 subscription.Dispose();
             }
