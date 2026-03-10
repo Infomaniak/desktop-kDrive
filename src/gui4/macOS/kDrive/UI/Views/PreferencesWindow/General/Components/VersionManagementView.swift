@@ -95,6 +95,8 @@ struct VersionManagementView: View {
     private func handleUpdateState(_ state: UIUpdateState) {
         updateState = state
 
+        guard state != .upToDate else { return }
+
         versionTask?.cancel()
         versionTask = Task { @MainActor in
             let channel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
