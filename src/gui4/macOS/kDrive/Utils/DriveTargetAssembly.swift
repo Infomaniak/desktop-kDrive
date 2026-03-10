@@ -34,7 +34,7 @@ final class DriveTargetAssembly: TargetAssembly {
                 MainWindowRouter()
             },
             Factory(type: MainViewRouter.self) { _, _ in
-                MainViewRouter()
+                MainViewRouter(defaultTab: .home)
             },
             Factory(type: InfomaniakLoginable.self) { _, _ in
                 InfomaniakLogin(config: Self.loginConfig)

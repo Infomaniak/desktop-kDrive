@@ -16,12 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import Foundation
 import kDriveCoreUI
 
+typealias MainViewRouter = ViewRouter<MainViewTab>
+
 extension SidebarItem {
-    var tab: MainViewTab? {
+    var mainViewTab: MainViewTab? {
         switch self {
         case .home:
             return .home
@@ -35,13 +35,13 @@ extension SidebarItem {
     }
 }
 
-enum MainViewTab: Equatable {
+enum MainViewTab: RouterTab {
     case home
     case activities
     case storage
     case blockingError
 
-    var rootPath: DetailsPath {
+    var rootPath: MainViewDetail {
         switch self {
         case .home:
             return .home
@@ -55,7 +55,7 @@ enum MainViewTab: Equatable {
     }
 }
 
-enum DetailsPath: Equatable {
+enum MainViewDetail: RouterDetail {
     case home
     case activities
     case storage
@@ -63,54 +63,4 @@ enum DetailsPath: Equatable {
 
     case activityError
     case versionConflict
-}
-
-enum ModalPath: Equatable {}
-
-struct Path: Equatable {
-    let mainTab: MainViewTab
-    let details: [DetailsPath]
-}
-
-// periphery:ignore - Some functions will be used later.
-final class MainViewRouter: ObservableObject {
-    @Published private(set) var currentPath = Path(mainTab: .home, details: [MainViewTab.home.rootPath])
-    @Published private(set) var currentModal: ModalPath?
-
-    private var pathCache: [MainViewTab: Path]
-
-    init() {
-        let homePath = Path(mainTab: .home, details: [MainViewTab.home.rootPath])
-        currentPath = homePath
-        pathCache = [.home: homePath]
-    }
-
-    @MainActor
-    func setCurrentTab(_ tab: MainViewTab) {
-        currentPath = pathCache[tab] ?? Path(mainTab: tab, details: [tab.rootPath])
-    }
-
-    @MainActor
-    func setCurrentModal(_ modal: ModalPath?) {
-        currentModal = modal
-    }
-
-    @MainActor
-    func append(_ detail: DetailsPath) {
-        var newDetails = currentPath.details
-        newDetails.append(detail)
-        let newPath = Path(mainTab: currentPath.mainTab, details: newDetails)
-        currentPath = newPath
-        pathCache[currentPath.mainTab] = newPath
-    }
-
-    @MainActor
-    func removeLast(_ elementsToRemove: Int = 1) {
-        guard elementsToRemove < currentPath.details.count else { return }
-        var newDetails = currentPath.details
-        newDetails.removeLast(elementsToRemove)
-        let newPath = Path(mainTab: currentPath.mainTab, details: newDetails)
-        currentPath = newPath
-        pathCache[currentPath.mainTab] = newPath
-    }
 }
