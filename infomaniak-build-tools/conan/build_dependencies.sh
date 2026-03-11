@@ -172,6 +172,10 @@ if ! command -v conan >/dev/null 2>&1; then
   error "Conan is not installed. Please install it first."
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+  error "The json utility 'jq' is not available and is needed."
+fi
+
 # Check if a conan profile exists
 has_profile() {
   conan profile list 2>/dev/null | grep -v '\.cmake$' | grep -qx "$1"
