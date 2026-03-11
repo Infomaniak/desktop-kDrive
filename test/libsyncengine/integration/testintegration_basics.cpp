@@ -125,7 +125,7 @@ void TestIntegration::testRemoteChanges() {
         (void) createDirJob.runSynchronously();
         subDirId = createDirJob.nodeId();
 
-        fileId = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, filePath.filename());
+        fileId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filePath.filename());
     }
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
@@ -159,7 +159,7 @@ void TestIntegration::testRemoteChanges() {
 
     // Generate a move operation.
     filePath = subDirPath / "testFileRemote_renamed";
-    testhelpers::moveRemoteFile(_driveDbId, fileId, subDirId, filePath.filename());
+    testhelpers::moveRemoteItem(_driveDbId, fileId, subDirId, filePath.filename());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 

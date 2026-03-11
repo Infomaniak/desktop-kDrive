@@ -71,7 +71,7 @@ void TestIntegration::testCreateCreateConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Create a file on remote replica.
-    const auto remoteId = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testCreateCreatePseudoConflict"));
+    const auto remoteId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testCreateCreatePseudoConflict"));
 
     // Create a file on local replica.
     const SyncPath localFilePath = _syncPal->localPath() / "testCreateCreatePseudoConflict";
@@ -174,7 +174,7 @@ void TestIntegration::testMoveCreateConflict() {
     {
         // Create a file on remote replica.
         const SyncName newFilename = Str("testMoveCreateConflict2");
-        (void) testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, newFilename);
+        (void) testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, newFilename);
 
         // Rename a file on local replica.
         const SyncPath newLocalFilePath = _syncPal->localPath() / newFilename;
@@ -199,7 +199,7 @@ void TestIntegration::testEditDeleteConflict() {
 
         // Generate the test file
         const SyncName filename = Str("testEditDeleteConflict1");
-        const auto tmpNodeId = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        const auto tmpNodeId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Edit the file on remote replica.
@@ -435,7 +435,7 @@ void TestIntegration::testMoveDeleteConflict() {
         (void) IoHelper::renameItem(localPathA, localPathB, ioError);
 
         // Move A/AB to AB on remote replica
-        testhelpers::moveRemoteFile(_driveDbId, info.remoteNodeIdAB, tmpRemoteDir.id());
+        testhelpers::moveRemoteItem(_driveDbId, info.remoteNodeIdAB, tmpRemoteDir.id());
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -618,7 +618,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Move test file in subdirectory on remote replica
-    testhelpers::moveRemoteFile(_driveDbId, remoteFileNodeId, tmpRemoteDir.id());
+    testhelpers::moveRemoteItem(_driveDbId, remoteFileNodeId, tmpRemoteDir.id());
 
     // Move test file in subdirectory on local replica
     const SyncPath destinationLocalPath = _syncPal->localPath() / tmpRemoteDir.name() / originLocalPath.filename();
@@ -642,7 +642,7 @@ void TestIntegration::testMoveMoveSourceConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Move test file in subdirectory2 on remote replica
-    testhelpers::moveRemoteFile(_driveDbId, remoteFileNodeId, tmpRemoteDir2.id());
+    testhelpers::moveRemoteItem(_driveDbId, remoteFileNodeId, tmpRemoteDir2.id());
 
     // Move test file in subdirectory1 on local replica
     const SyncPath destinationLocalPath = _syncPal->localPath() / tmpRemoteDir1.name() / originLocalPath.filename();
@@ -661,8 +661,8 @@ void TestIntegration::testMoveMoveSourceConflict() {
 
 void TestIntegration::testMoveMoveDestConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    const auto remoteId1 = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict1"));
-    const auto remoteId2 = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict2"));
+    const auto remoteId1 = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict1"));
+    const auto remoteId2 = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testMoveMoveDestConflict2"));
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Rename test file 2 on remote replica
@@ -690,7 +690,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Move B to A/B on remote replica
-    testhelpers::moveRemoteFile(_driveDbId, tmpRemoteDirB.id(), tmpRemoteDirA.id());
+    testhelpers::moveRemoteItem(_driveDbId, tmpRemoteDirB.id(), tmpRemoteDirA.id());
 
     // Move A to B/A on local replica
     const SyncPath originLocalPathA = _syncPal->localPath() / tmpRemoteDirA.name();

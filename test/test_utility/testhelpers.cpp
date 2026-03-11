@@ -205,14 +205,14 @@ void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *c
     }
 }
 
-void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+void moveRemoteItem(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name /*= {}*/) {
     MoveJob job(nullptr, driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
 }
 
-NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) {
+NodeId duplicateRemoteItem(const int driveDbId, const NodeId &id, const SyncName &newName) {
     DuplicateJob job(nullptr, driveDbId, id, newName);
     (void) job.runSynchronously();
     return job.nodeId();
