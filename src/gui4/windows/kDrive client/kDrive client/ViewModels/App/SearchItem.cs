@@ -50,8 +50,8 @@ namespace Infomaniak.kDrive.ViewModels
         }
         public string? DisplayPath
         {
-            get => _path;
-            set => SetPropertyInUIThread(ref _path, value);
+            get => _displayPath;
+            set => SetPropertyInUIThread(ref _displayPath, value);
         }
 
         public DateTime? ModifiedTime
