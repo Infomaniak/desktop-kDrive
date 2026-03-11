@@ -207,16 +207,26 @@ log "Using '$conan_profile' profile for Conan."
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
+
+conan_remote_list_json="$(conan remote list --format=json)"
+
 if [ -n "$(
-  conan remote list --format=json | jq -e \
+  jq -e \
     --arg name "$local_recipe_remote_name" \
     --arg url "$conan_remote_base_folder" \
-    '.[] | select(.name == $name and .url == $url and .enabled == true)'
+    '.[] | select(.name == $name and .url == $url and .enabled == true)' \
+    <<< "$conan_remote_list_json"
 )" ]; then
+  # Here, we check that the remote with the name '$local_recipe_remote_name' has the correct path and is enabled.
   log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 else
-  if [ -n "$(conan remote list --format=json | jq -e --arg name "$local_recipe_remote_name" '.[] | select(.name == $name)')" ]; then
-    # here, there is a remote with the same name but different url or disabled, so we remove it first to avoid conflicts.
+  if [ -n "$(
+    jq -e \
+      --arg name "$local_recipe_remote_name" \
+      '.[] | select(.name == $name)' \
+      <<< "$conan_remote_list_json"
+  )" ]; then
+    # Here, there is a remote with the same name but different url or disabled, so we remove it first to avoid conflicts and add the correct one.
     conan remote remove "$local_recipe_remote_name"
   fi
   log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
