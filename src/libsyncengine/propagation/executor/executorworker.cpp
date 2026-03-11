@@ -173,6 +173,8 @@ void ExecutorWorker::execute() {
                         setProgressComplete(syncOp, SyncFileStatus::Ignored);
                     } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                         setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
+                    } else if (syncOp->affectedNode() && syncOp->hasConflict()) {
+                        setProgressComplete(syncOp, SyncFileStatus::Conflict);
                     } else {
                         setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                     }

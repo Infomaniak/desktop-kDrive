@@ -1585,10 +1585,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (item.Status == SyncFileStatus.Success)
                         return false;
 
-                    if (!string.IsNullOrEmpty(info.RemoteNodeId) && !string.IsNullOrEmpty(item.RemoteNodeId) && info.RemoteNodeId == item.RemoteNodeId)
+
+                    if (Error.IsConflictUserResolvable(item.Conflict) && !sync.SyncErrors.Any(e => e.IsConflictUserResolvable() && e.Path == item.Path))
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.RemoteNodeId) && !string.IsNullOrEmpty(item.RemoteNodeId) && info.RemoteNodeId == item.RemoteNodeId && !Error.IsConflictUserResolvable(item.Conflict))
                         return true;
 
                     if (!string.IsNullOrEmpty(info.LocalNodeId) && !string.IsNullOrEmpty(item.LocalNodeId) && info.LocalNodeId == item.LocalNodeId)
+                        return true;
+
+                    if (!sync.SyncErrors.Any(e => e.Path == item.Path))
                         return true;
 
                     return false;

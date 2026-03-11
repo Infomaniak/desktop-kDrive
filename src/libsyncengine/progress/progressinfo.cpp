@@ -152,7 +152,11 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     }
 
     SyncFileItem &item = it->second.front().item();
-    item.setStatus(status);
+    /*if (item.conflict() != ConflictType::None && status == SyncFileStatus::Success)
+        item.setStatus(SyncFileStatus::Conflict);
+    else*/
+        item.setStatus(status);
+
     item.setProgress(100); // 100%
 
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);

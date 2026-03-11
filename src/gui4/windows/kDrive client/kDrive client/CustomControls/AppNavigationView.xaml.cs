@@ -130,7 +130,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (currentContent is null)
                 return false;
 
-            if (_navigationItemToPage["SettingsPage"].Contains(currentContent.GetType()))
+            if (_navigationItemToPage.TryGetValue("SettingsPage", out var settingsPages) && settingsPages.Contains(currentContent.GetType()))
                 return false;
 
             return true;

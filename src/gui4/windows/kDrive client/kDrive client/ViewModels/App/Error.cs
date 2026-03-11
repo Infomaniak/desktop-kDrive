@@ -131,7 +131,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         public bool IsConflictUserResolvable()
         {
-            return ErrorLevel == ErrorLevel.Node && (ConflictType == ConflictType.CreateCreate || ConflictType == ConflictType.EditEdit);
+            return ErrorLevel == ErrorLevel.Node && IsConflictUserResolvable(ConflictType);
+        }
+
+        public static bool IsConflictUserResolvable(ConflictType conflictType)
+        {
+            return conflictType == ConflictType.CreateCreate || conflictType == ConflictType.EditEdit;
         }
     }
 }
