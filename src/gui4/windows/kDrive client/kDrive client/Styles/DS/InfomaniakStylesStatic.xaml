@@ -46,6 +46,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Edition.list-bullets">ms-appx:///Assets/DS/Icons/Edition/list-bullets.svg</x:String>
 
     <!-- Essentials -->
+    <x:String x:Key="Infomaniak.DS.Icons.Essentials.house">ms-appx:///Assets/DS/Icons/Essentials/house.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.bell">ms-appx:///Assets/DS/Icons/Essentials/bell.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.cog">ms-appx:///Assets/DS/Icons/Essentials/cog.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.maintenance">ms-appx:///Assets/DS/Icons/Essentials/maintenance.svg</x:String>
@@ -60,6 +61,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Network.cloud-offline">ms-appx:///Assets/DS/Icons/Network/cloud-offline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Network.cloud">ms-appx:///Assets/DS/Icons/Network/cloud.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Network.hardware">ms-appx:///Assets/DS/Icons/Network/hardware.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Network.hardware-outline">ms-appx:///Assets/DS/Icons/Network/hardware-outline.svg</x:String>
 
     <!-- Security -->
     <x:String x:Key="Infomaniak.DS.Icons.Security.lock">ms-appx:///Assets/DS/Icons/Security/lock.svg</x:String>
