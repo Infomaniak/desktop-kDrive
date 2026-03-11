@@ -14,7 +14,7 @@ set(testsyncengine_SRCS
         # Utility
         ../test.cpp
         test.cpp
-        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp ../test_utility/testhelper_requests.h
+        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp ../test_utility/testhelpers_requests.h ../test_utility/testhelpers_requests.cpp
         ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
         ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h

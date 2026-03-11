@@ -56,6 +56,7 @@
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
+#include "test_utility/testhelpers_requests.h"
 
 using namespace CppUnit;
 using namespace std::chrono;
