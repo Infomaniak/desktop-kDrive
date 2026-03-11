@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -96,7 +97,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             try
             {
-                var result = await commService.SearchItem(ViewModel.SelectedSync.DbId, sender.Text, token);
+                var result = await commService.SearchItem(ViewModel.SelectedSync, sender.Text, token);
                 if (token.IsCancellationRequested)
                 {
                     return;
@@ -118,7 +119,6 @@ namespace Infomaniak.kDrive.CustomControls
                 }
 
                 List<ISearchBoxResultItem> items = [];
-
                 if (result.Count == 0)
                 {
                     items.Add(new SearchBoxNotFoundItem());
@@ -157,10 +157,22 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            sender.Text = "";
 
-            if (args.ChosenSuggestion is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
+            ISearchBoxResultItem? resultItem = args.ChosenSuggestion as ISearchBoxResultItem;
+
+            // If the user has not selected a suggestion, attempt to find an exact match in the suggestion list.
+            // Otherwise, use the first suggestion if available. If no suggestions exist, there is no result to process.
+            List<ISearchBoxResultItem>? currentSuggestions = sender.ItemsSource as List<ISearchBoxResultItem>;
+            if (resultItem is null)
+                resultItem = currentSuggestions?.FirstOrDefault(i => i.SearchItem?.Name == sender.Text);
+
+            if (resultItem is null)
+                resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions[0] : null;
+
+            sender.Text = "";
+            if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
+                Logger.Log(Logger.Level.Info, "QuerySubmitted but no result match the query.");
                 return;
             }
 

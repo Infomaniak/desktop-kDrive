@@ -675,11 +675,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
+        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
         {
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sync is null.");
+                return null;
+            }
+
             var parms = new JsonObject
             {
-                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.SyncDbId] = sync.DbId,
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
@@ -719,6 +725,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.Name!,
                     item.Type!.Value,
                     item.Path!,
+                    System.IO.Path.Combine(System.IO.Path.GetFileName(sync.LocalPath) ?? "", item.Path!),
                     item.ModifiedTime!.Value,
                     item.Size!.Value,
                     item.IsAvailableLocally!.Value

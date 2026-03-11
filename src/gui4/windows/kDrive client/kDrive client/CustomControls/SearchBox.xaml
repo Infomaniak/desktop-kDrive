@@ -51,7 +51,7 @@
                                        TextWrapping="Wrap"/>
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
                                        TextWrapping="Wrap">
-                                 <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                                 <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                                  <Run Text=" -" />
                                  <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                                  <Run Text="-" />
@@ -75,7 +75,7 @@
                            Grid.Row="1"
                            Foreground="{ThemeResource TextFillColorSecondary}"
                            TextTrimming="CharacterEllipsis">
-                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                    <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text=" -" />
                     <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                     <Run Text="-" />
@@ -136,6 +136,7 @@
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
                                Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
 
                 <TextBlock Grid.Column="1"
@@ -145,7 +146,7 @@
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
-                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            TextTrimming="CharacterEllipsis">
                     <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text="-" />
