@@ -19,10 +19,10 @@
 #include "testhelpers.h"
 #include "localtemporarydirectory.h"
 #include "io/iohelper.h"
-#include "jobs/network/kDrive_API/createdirjob.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
