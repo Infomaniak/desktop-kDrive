@@ -20,6 +20,9 @@ import Cocoa
 
 public extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
+
+    static let titleLabel = NSToolbarItem.Identifier("TitleLabel")
+    static let goBack = NSToolbarItem.Identifier("GoBack")
 }
 
 open class IKSplitViewController: NSSplitViewController {
@@ -55,11 +58,20 @@ public extension IKSplitViewController {
 
 extension IKSplitViewController: NSToolbarDelegate {
     open func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [
+            .trackingSplitView,
+            .goBack,
+            .titleLabel
+        ]
     }
 
     open func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [
+            .trackingSplitView,
+            .space,
+            .titleLabel,
+            .flexibleSpace
+        ]
     }
 
     open func toolbar(
@@ -70,6 +82,10 @@ extension IKSplitViewController: NSToolbarDelegate {
         switch itemIdentifier {
         case .trackingSplitView:
             return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
+        case .goBack:
+            return NSGoBackToolbarItem()
+        case .titleLabel:
+            return NSToolbarTitleItem()
         default:
             return nil
         }

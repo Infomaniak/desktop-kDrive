@@ -16,19 +16,27 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCoreUI
-import kDriveResources
-import SwiftUI
+import AppKit
 
-final class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
-    convenience init(drive: UIDrive) {
-        @InjectService var router: PreferencesViewRouter
-        self.init(
-            toolbarTitle: KDriveLocalizable.labelkDriveManagement,
-            navigableRouter: router,
-            contentView: SyncedKDriveView(drive: drive)
-        )
+public final class NSToolbarTitleItem: NSToolbarItem {
+    public var stringValue: String {
+        get {
+            return textField.stringValue
+        }
+        set {
+            textField.stringValue = newValue
+        }
+    }
+
+    private lazy var textField: NSTextField = {
+        let label = NSTextField(labelWithString: "")
+        label.font = .titleBarFont(ofSize: 13)
+        label.alignment = .center
+        return label
+    }()
+
+    public init() {
+        super.init(itemIdentifier: .titleLabel)
+        view = textField
     }
 }

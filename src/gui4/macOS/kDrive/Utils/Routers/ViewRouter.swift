@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import kDriveCoreUI
 
 protocol RouterTab: Equatable, Hashable {
     associatedtype Detail: RouterDetail
@@ -34,13 +35,17 @@ struct Path<Tab: RouterTab>: Equatable {
 enum ModalPath: Equatable {}
 
 // periphery:ignore - Some functions will be used later.
-final class ViewRouter<Tab: RouterTab>: ObservableObject {
+final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     typealias RouterPath = Path<Tab>
 
     @Published private(set) var currentPath: RouterPath
     @Published private(set) var currentModal: ModalPath?
 
     private var pathCache: [Tab: RouterPath]
+
+    var hasDeepNavigated: Bool {
+        return currentPath.details.count > 1
+    }
 
     init(defaultTab: Tab) {
         let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])

@@ -16,19 +16,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCoreUI
-import kDriveResources
-import SwiftUI
+import AppKit
 
-final class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
-    convenience init(drive: UIDrive) {
-        @InjectService var router: PreferencesViewRouter
-        self.init(
-            toolbarTitle: KDriveLocalizable.labelkDriveManagement,
-            navigableRouter: router,
-            contentView: SyncedKDriveView(drive: drive)
-        )
+public final class NSGoBackToolbarItem: NSToolbarItem {
+    public init() {
+        super.init(itemIdentifier: .goBack)
+        image = NSImage(systemSymbolName: "chevron.left", accessibilityDescription: nil)
     }
 }

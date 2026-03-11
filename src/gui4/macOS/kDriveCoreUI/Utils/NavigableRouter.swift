@@ -16,19 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCoreUI
-import kDriveResources
-import SwiftUI
+import Foundation
 
-final class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
-    convenience init(drive: UIDrive) {
-        @InjectService var router: PreferencesViewRouter
-        self.init(
-            toolbarTitle: KDriveLocalizable.labelkDriveManagement,
-            navigableRouter: router,
-            contentView: SyncedKDriveView(drive: drive)
-        )
-    }
+public protocol NavigableRouter {
+    @MainActor
+    var hasDeepNavigated: Bool { get }
+
+    @MainActor
+    func removeLast(_ elementsToRemove: Int)
 }
