@@ -257,6 +257,8 @@ bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
     return CommonUtility::isAPFS(targetPath);
 #elif defined(KD_WINDOWS)
     return CommonUtility::isNTFS(targetPath);
+#else
+    return false;
 #endif
 }
 
