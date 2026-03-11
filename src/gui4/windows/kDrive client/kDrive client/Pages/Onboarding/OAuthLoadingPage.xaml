@@ -49,6 +49,7 @@
         <Button Grid.Row="2"
                 x:Name="RestartOAuthButton"
                 Content="{x:Bind kDrive:Localizer.Instance.GetString('openLoginPage')}"
+                Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
                 Style="{StaticResource AccentButtonStyle}"
                 Click="RestartOAuthButton_Click"
                 IsEnabled="False" />

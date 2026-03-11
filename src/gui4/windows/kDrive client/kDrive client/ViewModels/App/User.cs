@@ -42,6 +42,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _email = "";
         private byte[]? _avatar;
         private ImageSource? _avatarImageSource = null;
+        private ImageSource? _avatarImageSourcex24 = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
@@ -100,7 +101,9 @@ namespace Infomaniak.kDrive.ViewModels
                     AppModel.UIThreadDispatcher.TryEnqueue(async () =>
                     {
                         _avatarImageSource = await ByteArrayToImageSource(_avatar); // ByteArrayToImageSource need to be run in the UI thread
+                        _avatarImageSourcex24 = await ByteArrayToImageSource(_avatar, 24); // smaller size
                         OnPropertyChanged(nameof(AvatarImageSource));
+                        OnPropertyChanged(nameof(AvatarImageSourcex24));
                     });
                 }
             }
@@ -109,6 +112,11 @@ namespace Infomaniak.kDrive.ViewModels
         public ImageSource? AvatarImageSource
         {
             get => _avatarImageSource;
+        }
+
+        public ImageSource? AvatarImageSourcex24
+        {
+            get => _avatarImageSourcex24;
         }
 
         public bool IsConnected
@@ -147,7 +155,7 @@ namespace Infomaniak.kDrive.ViewModels
         // Combined collection of all drives (configured in db and available)
         public ObservableCollection<IDrive> AllDrives { get; } = [];
 
-        public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
+        public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData, int decodePixelWidth = 0)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
@@ -157,6 +165,11 @@ namespace Infomaniak.kDrive.ViewModels
             stream.Seek(0);
 
             var bitmap = new BitmapImage();
+            if (decodePixelWidth > 0)
+            {
+                bitmap.DecodePixelType = DecodePixelType.Logical;
+                bitmap.DecodePixelWidth = decodePixelWidth;
+            }
             await bitmap.SetSourceAsync(stream);
             return bitmap;
         }
