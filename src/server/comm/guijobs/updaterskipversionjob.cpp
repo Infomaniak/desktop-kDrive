@@ -51,7 +51,8 @@ ExitInfo UpdaterSkipVersionJob::deserializeInputParms() {
 }
 
 ExitInfo UpdaterSkipVersionJob::process() {
-    AbstractUpdater::skipVersion(_skippedVersion);
+    std::string skippedVersionStr = CommonUtility::commString2Str(_skippedVersion);
+    AbstractUpdater::skipVersion(skippedVersionStr);
 
     return ExitCode::Ok;
 }

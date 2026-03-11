@@ -20,18 +20,14 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
-using System.Linq;
-using System.Reactive.Linq;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
+        private bool _isInitialized = false;
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        private ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
+        private readonly ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
         private string _lottieRessourceKey = "Infomaniak.Custom.Animations.loader-stroke";
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
@@ -41,10 +37,18 @@ namespace Infomaniak.kDrive.OnBoarding
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 850, 530, false);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
-            ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
             UpdateLottieSource(_lottieRessourceKey, 130, 1);
             Closed += OnBoardingWindow_Closed;
+            Activated += OnBoardingWindow_Activated;
+        }
+
+        private void OnBoardingWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (_isInitialized)
+                return;
+            ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
+            _isInitialized = true;
         }
 
         private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)

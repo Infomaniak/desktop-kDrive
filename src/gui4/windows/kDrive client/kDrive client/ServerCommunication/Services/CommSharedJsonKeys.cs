@@ -56,6 +56,10 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string ErrorInfo = "errorInfo";
         static public string ErrorInfoList = "errorInfoList";
         static public string ErrorMessage = "errorMessage";
+        static public string KeepLocalErrorDbIdList = "keepLocalErrorDbIdList";
+        static public string KeepRemoteErrorDbIdList = "keepRemoteErrorDbIdList";
+        static public string ErrorDbIdList = "errorDbIdList";
+        static public string Strategy = "strategy";
 
         static public string NodeId = "nodeId";
         static public string NodeInfo = "nodeInfo";
@@ -97,5 +101,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Percentage = "percentage";
 
         static public string IncludeArchivedLogs = "includeArchivedLogs";
+
+        static public string RelativePath = "relativePath";
+        static public string ReplicaSide = "replicaSide";
+        static public string NodeConflictInfo = "nodeConflictInfo";
     }
 }

@@ -23,30 +23,73 @@ public struct ParametersInfoResponse: Codable, Sendable {
 }
 
 public struct ParametersInfo: Codable, Sendable {
-    let language: KDC.Language
-    let monoIcons: Bool
-    let autoStart: Bool
-    let moveToTrash: Bool
-    let notificationsDisabled: KDC.NotificationsDisabled
-    let useLog: Bool
-    let logLevel: KDC.LogLevel
-    let extendedLog: Bool
-    let purgeOldLogs: Bool
-    let proxyConfigInfo: ProxyConfigInfo
-    let darkTheme: Bool
-    let maxAllowedCpu: Int32
-    let distributionChannel: KDC.VersionChannel
-    let sentryEnabled: Bool
-    let matomoEnabled: Bool
+    public let language: KDC.Language
+    public let monoIcons: Bool
+    public let autoStart: Bool
+    public let moveToTrash: Bool
+    public let notificationsDisabled: KDC.NotificationsDisabled
+    public let useLog: Bool
+    public let logLevel: KDC.LogLevel
+    public let extendedLog: Bool
+    public let purgeOldLogs: Bool
+    public let proxyConfigInfo: ProxyConfigInfo
+    public let darkTheme: Bool
+    public let maxAllowedCpu: Int32
+    public let distributionChannel: KDC.VersionChannel
+    public let sentryEnabled: Bool
+    public let matomoEnabled: Bool
+
+    public init(
+        language: KDC.Language,
+        monoIcons: Bool,
+        autoStart: Bool,
+        moveToTrash: Bool,
+        notificationsDisabled: KDC.NotificationsDisabled,
+        useLog: Bool,
+        logLevel: KDC.LogLevel,
+        extendedLog: Bool,
+        purgeOldLogs: Bool,
+        proxyConfigInfo: ProxyConfigInfo,
+        darkTheme: Bool,
+        maxAllowedCpu: Int32,
+        distributionChannel: KDC.VersionChannel,
+        sentryEnabled: Bool,
+        matomoEnabled: Bool
+    ) {
+        self.language = language
+        self.monoIcons = monoIcons
+        self.autoStart = autoStart
+        self.moveToTrash = moveToTrash
+        self.notificationsDisabled = notificationsDisabled
+        self.useLog = useLog
+        self.logLevel = logLevel
+        self.extendedLog = extendedLog
+        self.purgeOldLogs = purgeOldLogs
+        self.proxyConfigInfo = proxyConfigInfo
+        self.darkTheme = darkTheme
+        self.maxAllowedCpu = maxAllowedCpu
+        self.distributionChannel = distributionChannel
+        self.sentryEnabled = sentryEnabled
+        self.matomoEnabled = matomoEnabled
+    }
 }
 
 public struct ProxyConfigInfo: Codable, Sendable {
-    let type: KDC.ProxyType
-    @Base64CodedString var hostName: String
-    let port: Int32
-    let needsAuth: Bool
-    @Base64CodedString var user: String
-    @Base64CodedString var pwd: String
+    public let type: KDC.ProxyType
+    @Base64CodedString public var hostName: String
+    public let port: Int32
+    public let needsAuth: Bool
+    @Base64CodedString public var user: String
+    @Base64CodedString public var pwd: String
+
+    public init(type: KDC.ProxyType, hostName: String, port: Int32, needsAuth: Bool, user: String, pwd: String) {
+        self.type = type
+        _hostName = Base64CodedString(wrappedValue: hostName)
+        self.port = port
+        self.needsAuth = needsAuth
+        _user = Base64CodedString(wrappedValue: user)
+        _pwd = Base64CodedString(wrappedValue: pwd)
+    }
 }
 
 public struct ParametersUpdateQuery: Codable, Sendable {

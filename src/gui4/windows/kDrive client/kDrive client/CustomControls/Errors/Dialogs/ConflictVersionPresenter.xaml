@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.ConflictVersionPresenter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:kDrive="using:Infomaniak.kDrive"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+        <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Border BorderBrush="{x:Bind GetBorderBrush(IsSelected), Mode=OneWay}"
+            BorderThickness="1"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+        <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+
+            <!-- Header: cloud icon + label + badge + view button -->
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <controls:SvgIcon Grid.Column="0"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Network.cloud}"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Width="14"
+                                  Height="14"
+                                  VerticalAlignment="Center"
+                                  Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <TextBlock Grid.Column="1"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelOnline')}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <controls:SvgIcon Grid.Column="0"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Devices.computer}"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Width="14"
+                                  Height="14"
+                                  VerticalAlignment="Center"
+                                  Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
+
+                <TextBlock Grid.Column="1"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelLocal')}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind IsRemote, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
+
+                <!-- "Most recent" badge -->
+                <Border Grid.Column="2"
+                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.TextBadge}"
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind ShowMostRecentBadge, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelMostRecent')}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
+                </Border>
+
+                <!-- View button -->
+                <Button x:Name="ViewButton"
+                        Grid.Column="4"
+                        Style="{ThemeResource SubtleButtonStyle}"
+                        Padding="4"
+                        MinWidth="0"
+                        VerticalAlignment="Center"
+                        Click="ViewButton_Click">
+                    <StackPanel>
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.eye}"
+                                          Width="16"
+                                          Height="16"
+                                          VerticalAlignment="Center"
+                                          Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                          Visibility="{x:Bind ViewButton.IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                        <ProgressRing Height="12"
+                                      Width="12"
+                                      IsActive="True"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                      Visibility="{x:Bind ViewButton.IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}" />
+
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Details -->
+            <Border Background="{ThemeResource LayerFillColorAltBrush}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+                <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="0"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelAuthor')}"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="0"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="100"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.AuthorName, Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
+
+                    <Rectangle Height="1"
+                               Grid.ColumnSpan="2"
+                               Grid.Row="1"
+                               Fill="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="0"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="2"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="70"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
+                    <Rectangle Height="1"
+                               Grid.ColumnSpan="2"
+                               Grid.Row="3"
+                               Fill="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+
+                    <TextBlock Grid.Row="4"
+                               Grid.Column="0"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelDate')}"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <controls:ContentLoader Grid.Row="4"
+                                            Grid.Column="1"
+                                            MinHeight="12"
+                                            MinWidth="130"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+                                            IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                            HorizontalAlignment="Right">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBlock Text="{x:Bind NodeInfo.LastModificationDate, Converter={StaticResource DateTimeToStringConverter}, ConverterParameter='format=g', Mode=OneWay}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
+
+                </Grid>
+            </Border>
+
+            <!-- Selected button -->
+            <ToggleButton x:Name="RemoteTogglebutton"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Center"
+                          IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                          Checked="RemoteTogglebutton_Checked"
+                          Unchecked="RemoteTogglebutton_Unchecked">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+                                      Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                      Width="16"
+                                      Height="16"
+                                      Visibility="{x:Bind RemoteTogglebutton.IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                    <TextBlock Text="{x:Bind GetToggleButtonText(RemoteTogglebutton.IsChecked), Mode=OneWay}" />
+                </StackPanel>
+            </ToggleButton>
+        </StackPanel>
+    </Border>
+</UserControl>

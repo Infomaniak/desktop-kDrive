@@ -4,11 +4,8 @@ global using DriveId = System.Int64;
 global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;
-using Infomaniak.kDrive.ViewModels;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 
 namespace Infomaniak.kDrive.Types

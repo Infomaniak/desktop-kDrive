@@ -16,94 +16,42 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-protocol PreferenceOption: Identifiable, Sendable, Hashable {
-    var label: String { get }
-}
-
-enum LanguageOption: String, CaseIterable, PreferenceOption {
-    var id: String {
-        rawValue
-    }
-
-    case system
-    case french
-    case english
-    case german
-    case spanish
-    case italian
-
-    var label: String {
-        switch self {
-        case .system:
-            return KDriveLocalizable.labelSameAsSystem
-        case .french:
-            return "Français"
-        case .english:
-            return "English"
-        case .german:
-            return "Deutsch"
-        case .spanish:
-            return "Español"
-        case .italian:
-            return "Italiano"
-        }
-    }
-}
-
-enum NotificationOption: String, CaseIterable, PreferenceOption {
-    var id: String {
-        rawValue
-    }
-
-    case always
-    case never
-    case forOneHour
-    case untilTomorrow
-    case forThreeDays
-    case forOneWeek
-
-    var label: String {
-        switch self {
-        case .always:
-            return KDriveLocalizable.notificationsDisabledAlways
-        case .never:
-            return KDriveLocalizable.notificationsDisabledNever
-        case .forOneHour:
-            return KDriveLocalizable.forOneHour
-        case .untilTomorrow:
-            return KDriveLocalizable.untilTomorrow
-        case .forThreeDays:
-            return KDriveLocalizable.forThreeDays
-        case .forOneWeek:
-            return KDriveLocalizable.forOneWeek
-        }
-    }
-}
-
 struct GeneralPreferencesMiscSection: View {
-    @State private var languageOption = LanguageOption.system
-    @State private var notificationOption = NotificationOption.always
+    @ObservedObject var repository: PreferencesRepository
+
+    @State private var language: UIAppLanguage = .english
+    @State private var notificationsState: UINotificationState = .never
     @State private var launchOnStartup = true
+    @State private var moveDeletedFilesToTrash = true
 
     var body: some View {
         Section {
             OptionPicker(
                 KDriveLocalizable.languageSetting,
-                options: LanguageOption.allCases,
-                selection: $languageOption
+                options: UIAppLanguage.allCases,
+                selection: $language
             )
+            .onChange(of: language) { newValue in
+                updateValue(\.$language, \.language, newValue: newValue)
+            }
 
             OptionPicker(
                 KDriveLocalizable.labelNotifications,
-                options: NotificationOption.allCases,
-                selection: $notificationOption
+                options: UINotificationState.allCases,
+                selection: $notificationsState
             )
+            .onChange(of: notificationsState) { newValue in
+                updateValue(\.$notificationsState, \.notificationsState, newValue: newValue)
+            }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
+                .onChange(of: launchOnStartup) { newValue in
+                    updateValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue)
+                }
 
             HStack {
                 VStack(alignment: .leading) {
@@ -114,24 +62,45 @@ struct GeneralPreferencesMiscSection: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: .constant(true))
+                Toggle(KDriveLocalizable.moveDeletedFilesToRecycleBinSetting, isOn: $moveDeletedFilesToTrash)
                     .labelsHidden()
             }
-        }
-        .task {
-            do {
-                let utilityJobs = UtilityJobs()
-
-                async let launchOnStartup = utilityJobs.hasSystemLaunchOnStartup()
-
-                self.launchOnStartup = try await launchOnStartup
-            } catch {
-                print("Zut")
+            .onChange(of: moveDeletedFilesToTrash) { newValue in
+                updateValue(\.$moveDeletedFilesToTrash, \.moveDeletedFilesToTrash, newValue: newValue)
             }
         }
+        .onAppear {
+            updatePropertiesFromParametersInfo(repository.parametersInfo)
+        }
+        .onChange(of: repository.parametersInfo) { newValue in
+            updatePropertiesFromParametersInfo(newValue)
+        }
+    }
+
+    private func updateValue<T: Equatable>(
+        _ stateKeyPath: KeyPath<Self, Binding<T>>,
+        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
+        newValue: T
+    ) {
+        Task {
+            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
+
+            do {
+                try await repository.update(repositoryKeyPath, value: newValue)
+            } catch {
+                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
+            }
+        }
+    }
+
+    private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
+        language = parametersInfo.language
+        notificationsState = parametersInfo.notificationsState
+        launchOnStartup = parametersInfo.launchOnStartup
+        moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
     }
 }
 
 #Preview {
-    GeneralPreferencesMiscSection()
+    GeneralPreferencesMiscSection(repository: PreferencesRepository())
 }

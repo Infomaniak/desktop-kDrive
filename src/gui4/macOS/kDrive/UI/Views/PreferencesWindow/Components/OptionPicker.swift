@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct OptionPicker<Option: PreferenceOption>: View {
@@ -39,6 +40,8 @@ struct OptionPicker<Option: PreferenceOption>: View {
     }
 }
 
+@available(macOS 14.0, *)
 #Preview {
-    OptionPicker("My Picker", options: NotificationOption.allCases, selection: .constant(.always))
+    @Previewable @State var selection = UINotificationState.always
+    OptionPicker("My Picker", options: UINotificationState.allCases, selection: $selection)
 }

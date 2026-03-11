@@ -231,6 +231,7 @@ void TestTypes::testToString() {
     testToStringIntValues<UpdateState>();
     testToStringIntValues<VersionChannel>();
     testToStringIntValues<Platform>();
+    testToStringIntValues<ConflictResolutionStrategy>();
     testToStringIntValues<sentry::ConfidentialityLevel>();
 }
 

@@ -20,10 +20,12 @@ import kDriveCoreUI
 import SwiftUI
 
 struct GeneralPreferencesView: View {
+    @ObservedObject var repository: PreferencesRepository
+
     var body: some View {
         Form {
-            GeneralPreferencesVersionSection()
-            GeneralPreferencesMiscSection()
+            GeneralPreferencesVersionSection(repository: repository)
+            GeneralPreferencesMiscSection(repository: repository)
             GeneralPreferencesHelpSection()
         }
         .groupedFormatStyle()
@@ -31,5 +33,5 @@ struct GeneralPreferencesView: View {
 }
 
 #Preview {
-    GeneralPreferencesView()
+    GeneralPreferencesView(repository: PreferencesRepository())
 }

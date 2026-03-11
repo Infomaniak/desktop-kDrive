@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class WelcomePage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
         public WelcomePage()
@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 _onBoardingViewModel = obvm;
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 1);
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 0);
             }
         }
 

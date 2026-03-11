@@ -85,8 +85,12 @@ set(server_SRCS
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+    comm/guijobs/nodeconflictinfojob.h comm/guijobs/nodeconflictinfojob.cpp
 
     comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp
+    comm/guijobs/errorresolveconflictsjob.h comm/guijobs/errorresolveconflictsjob.cpp
+    comm/guijobs/errorresolveconflictsquickjob.h comm/guijobs/errorresolveconflictsquickjob.cpp
     
     comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
@@ -127,7 +131,6 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfojob.h comm/guijobs/signalsyncprogressinfojob.cpp
     comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
-    comm/guijobs/signalnodefixconflictedfilescompletedjob.h comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp

@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -42,7 +41,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
-                if(!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
+                if (!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to refresh available drives for user in DriveSelectionPage");
                     obvm.Reset();
@@ -129,6 +128,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     {
         public DataTemplate? SingleAccountDriveTemplate { get; set; }
         public DataTemplate? MultiAccountDriveTemplate { get; set; }
+        public DataTemplate? SingleAccountDriveDisabledTemplate { get; set; }
+        public DataTemplate? MultiAccountDriveDisabledTemplate { get; set; }
 
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
@@ -139,10 +140,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (user is null)
             {
                 Logger.Log(Logger.Level.Warning, "DriveTemplateSelector: User not found for drive");
-                return SingleAccountDriveTemplate; // Fallback to single account template
+                return drive.IsConfigured ? SingleAccountDriveDisabledTemplate : SingleAccountDriveTemplate; // Fallback to single account template
             }
 
-            return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
+            if (drive.IsConfigured)
+                return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveDisabledTemplate : SingleAccountDriveDisabledTemplate;
+            else
+                return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
         }
     }
 }

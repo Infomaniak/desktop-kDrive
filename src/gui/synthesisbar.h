@@ -51,6 +51,8 @@ class SynthesisBar : public QWidget {
         QDateTime _notificationsDisabledUntilDateTime;
         bool _debugCrash{false};
         bool _systemMove{false};
+        std::map<NotificationsDisabled, QString> _notificationsDisabledMap;
+        std::map<NotificationsDisabled, QString> _notificationsDisabledForPeriodMap;
 
         /**
          * @brief Map of the `Disable notifications` submenu items when notifications are never or always disabled

@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.CustomControls
         public string ItemPath
         {
             get => (string)GetValue(ItemPathProperty);
-            set => SetValue(ItemPathProperty,value);
+            set => SetValue(ItemPathProperty, value);
         }
 
         public NodeType? NodeType

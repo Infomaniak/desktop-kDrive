@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.CustomControls
             Cancelled
         }
 
-        private DriveSetupContentDialogVM _driveSetupContentDialogVM;
+        private readonly DriveSetupContentDialogVM _driveSetupContentDialogVM;
         public DriveSetupResult Result { get; private set; }
 
         public DriveSetupContentDialog(XamlRoot xamlRoot, IList<NewSync> newSyncs)

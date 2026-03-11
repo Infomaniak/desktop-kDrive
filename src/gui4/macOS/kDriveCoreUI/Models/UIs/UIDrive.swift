@@ -35,7 +35,7 @@ extension UIHexColor {
     }
 }
 
-public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {
+public protocol UIDriveRepresentation: Sendable, Equatable, Hashable, Identifiable {
     var id: Int { get }
     var name: String { get }
     var hexColor: UIHexColor? { get }
@@ -97,7 +97,9 @@ public extension UIAvailableDrive {
 // MARK: - UIDrive
 
 public struct UIDrive: UIDriveRepresentation {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         return dbId
     }
 

@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
     public sealed partial class DriveManagementPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public Drive? ManagedDrive { get; set; }
         public IDrive? BaseDrive { get; set; }
@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
                 ManagedDrive = drive;
             }
-            else if (ViewModel.AllDrives.FirstOrDefault(d => (d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId), null) is not null)
+            else if (ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null) is not null)
             {
                 // Can happen if a user uses the back button after setting up a new drive.
                 Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -219,7 +219,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
-            List<NewSync> newSyncs = new() { newSync };
+            List<NewSync> newSyncs = [newSync];
 
             CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
             await dialog.ShowAsync();

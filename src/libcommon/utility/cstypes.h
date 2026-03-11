@@ -73,6 +73,13 @@ enum class ErrorLevel {
     EnumEnd
 };
 
+enum class ReplicaSide {
+    Unknown,
+    Local,
+    Remote,
+    EnumEnd
+};
+
 enum class ExitCode {
     Ok,
     Unknown,
@@ -301,6 +308,14 @@ enum class LogUploadState {
     Failed,
     CancelRequested,
     Canceled,
+    EnumEnd
+};
+
+enum class ConflictResolutionStrategy {
+    Unknown,
+    KeepMostRecent,
+    KeepLocal,
+    KeepRemote,
     EnumEnd
 };
 

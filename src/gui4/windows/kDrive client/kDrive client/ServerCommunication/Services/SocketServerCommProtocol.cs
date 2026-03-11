@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
@@ -30,7 +29,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Networking.Connectivity;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
@@ -68,7 +66,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public Task Initialize()
         {
-            _ = Task.Run(ReconnectLoop);
+            Task.Run(ReconnectLoop);
             return Task.CompletedTask;
         }
 
@@ -335,7 +333,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case CommMessageType.Signal:
                     // Signal
                     SignalNum signalNum = (SignalNum)data.Num;
-                    RaiseSignal(signalNum, data.Params ?? new JsonObject());
+                    RaiseSignal(signalNum, data.Params ?? []);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unknown message type: {data.Type}");

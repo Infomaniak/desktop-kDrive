@@ -181,14 +181,15 @@ namespace Infomaniak.kDrive
 
         public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            ContentDialog dialog = new ContentDialog();
-
-            dialog.XamlRoot = xamlRoot;
-            dialog.Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title");
-            dialog.PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText");
-            dialog.DefaultButton = defaultButton;
-            dialog.Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content");
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = xamlRoot,
+                Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
+                PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText"),
+                SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText"),
+                DefaultButton = defaultButton,
+                Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content")
+            };
             return dialog;
         }
 

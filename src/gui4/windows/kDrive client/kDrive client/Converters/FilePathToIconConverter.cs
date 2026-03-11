@@ -18,8 +18,8 @@ namespace Infomaniak.kDrive.Converters
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "FilePathToIconConverter: value is not a string or Uri.");
-                throw new ArgumentException("Invalid item type", nameof(value));
+                Logger.Log(Logger.Level.Error, "FilePathToIconConverter: value is not a string or Uri.");
+                path = "";
             }
 
             string extension = System.IO.Path.GetExtension(path).ToLowerInvariant().TrimEnd();

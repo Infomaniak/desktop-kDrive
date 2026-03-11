@@ -77,14 +77,17 @@ enum class RequestNum {
     NODE_SUBFOLDERS2,
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
+    NODE_CONFLICT_INFO,
     ERROR_INFOLIST,
     ERROR_INFOLIST_LEGACY,
     ERROR_GET_CONFLICTS_LEGACY,
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
+    ERROR_RESOLVE_CONFLICTS_LEGACY,
     ERROR_RESOLVE_CONFLICTS,
-    ERROR_RESOLVE_UNSUPPORTED_CHAR,
+    ERROR_RESOLVE_CONFLICTS_QUICK,
+    ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
     EXCLTEMPL_GETEXCLUDED,
     EXCLTEMPL_GETLIST,
     EXCLTEMPL_SETUSERLIST,
@@ -180,6 +183,8 @@ inline std::string toString(RequestNum e) {
             return "NODE_FOLDER_SIZE";
         case RequestNum::NODE_CREATEMISSINGFOLDERS:
             return "NODE_CREATEMISSINGFOLDERS";
+        case RequestNum::NODE_CONFLICT_INFO:
+            return "NODE_CONFLICT_INFO";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
         case RequestNum::ERROR_INFOLIST_LEGACY:
@@ -192,10 +197,14 @@ inline std::string toString(RequestNum e) {
             return "ERROR_DELETE_SYNC";
         case RequestNum::ERROR_DELETE_INVALIDTOKEN:
             return "ERROR_DELETE_INVALIDTOKEN";
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY:
+            return "ERROR_RESOLVE_CONFLICTS_LEGACY";
         case RequestNum::ERROR_RESOLVE_CONFLICTS:
             return "ERROR_RESOLVE_CONFLICTS";
-        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR:
-            return "ERROR_RESOLVE_UNSUPPORTED_CHAR";
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK:
+            return "ERROR_RESOLVE_CONFLICTS_QUICK";
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY:
+            return "ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY";
         case RequestNum::EXCLTEMPL_GETEXCLUDED:
             return "EXCLTEMPL_GETEXCLUDED";
         case RequestNum::EXCLTEMPL_GETLIST:

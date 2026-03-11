@@ -19,7 +19,7 @@
 import Combine
 import Foundation
 @testable import InfomaniakDI
-import kDriveCore
+@testable import kDriveCore
 import Testing
 
 extension ObservedUser {

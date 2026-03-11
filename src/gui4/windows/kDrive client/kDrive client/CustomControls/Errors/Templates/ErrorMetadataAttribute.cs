@@ -1,6 +1,5 @@
 ﻿using Infomaniak.kDrive.Types;
 using System;
-using System.Collections.Generic;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates
 {

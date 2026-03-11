@@ -30,8 +30,8 @@ namespace Infomaniak.kDrive.Pages
 {
     public partial class SpecialErroBasePage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        private List<SyncErrorStates> _handledErrorStates;
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly List<SyncErrorStates> _handledErrorStates;
         public AppModel ViewModel => _viewModel;
         public SpecialErroBasePage(List<SyncErrorStates> syncErrorStates)
         {

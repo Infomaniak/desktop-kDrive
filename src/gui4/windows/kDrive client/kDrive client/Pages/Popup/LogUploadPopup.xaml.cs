@@ -7,7 +7,7 @@ namespace Infomaniak.kDrive.Pages.Popup
 {
     public sealed partial class LogUploadPopup : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public CheckBox LastSessionCheckBox => CheckBox;
         public LogUploadPopup()

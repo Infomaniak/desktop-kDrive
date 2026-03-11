@@ -1,24 +1,22 @@
 using Infomaniak.kDrive.OnBoarding;
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.Types;
-using Microsoft.UI;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class OAuthLoadingPage : Page
     {
-        private static TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
 

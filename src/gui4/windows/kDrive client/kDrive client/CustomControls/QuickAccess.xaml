@@ -105,7 +105,7 @@
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                 <controls:SvgIcon Height="16"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonKDriveOnline')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

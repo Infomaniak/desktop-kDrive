@@ -62,6 +62,7 @@ void AddDriveWizard::setButtonIcon(const QColor &value) {
 
 void AddDriveWizard::initUI() {
     setResizable(true);
+    setMinimumWidth(800);
 
     QVBoxLayout *mainLayout = this->mainLayout();
     mainLayout->setContentsMargins(boxHMargin, boxVTMargin, boxHMargin, boxVBMargin);

@@ -28,10 +28,6 @@ class UnknownRequestJob : public AbstractGuiJob {
                           const std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Output parameters
-        std::string _error;
-        std::string _errorDescr;
-
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;

@@ -99,7 +99,12 @@ void TestIntegration::testLocalChanges() {
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif
@@ -172,7 +177,12 @@ void TestIntegration::testRemoteChanges() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif

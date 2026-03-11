@@ -21,14 +21,19 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 extension NSToolbarItem.Identifier {
-    static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
+    static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
+    static let syncControlsGroup = NSToolbarItem.Identifier("SyncControlsGroup")
+    static let searchGroup = NSToolbarItem.Identifier("SearchGroup")
+    static let pauseResumeButton = NSToolbarItem.Identifier("PauseResumeButton")
 }
 
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
+    @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
 
     private let viewModel = MainViewModel()
 
@@ -56,6 +61,17 @@ final class MainViewController: IKSplitViewController {
         router.$currentModal
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
                 self?.onModalPathChange(newPath)
+            }
+
+        viewModel.$currentSynchroContext
+            .receiveOnMain(store: &bindStore) { [weak self] _ in
+                guard let self else { return }
+                refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
+            }
+
+        synchroStateObserver.synchroStatePublisher
+            .receiveOnMain(store: &bindStore) { [weak self] synchroState in
+                self?.refreshPauseResumeToolbarItem(synchroState)
             }
     }
 
@@ -130,14 +146,21 @@ final class MainViewController: IKSplitViewController {
 extension MainViewController {
     override func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         var initialItems = super.toolbarAllowedItemIdentifiers(toolbar)
-        initialItems.append(.searchTextField)
+        initialItems.append(contentsOf: [.supportGroup, .syncControlsGroup, .searchGroup])
 
         return initialItems
     }
 
     override func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         var initialItems = super.toolbarDefaultItemIdentifiers(toolbar)
-        initialItems.append(.searchTextField)
+        initialItems.append(contentsOf: [
+            .flexibleSpace,
+            .supportGroup,
+            .space,
+            .syncControlsGroup,
+            .space,
+            .searchGroup
+        ])
 
         return initialItems
     }
@@ -152,10 +175,122 @@ extension MainViewController {
         }
 
         switch itemIdentifier {
-        case .searchTextField:
-            return NSSearchToolbarItem(itemIdentifier: .searchTextField)
+        case .supportGroup:
+            return makeSupportGroup()
+        case .syncControlsGroup:
+            return makeSyncControlsGroup()
+        case .searchGroup:
+            return makeSearchGroup()
         default:
             return nil
         }
+    }
+
+    // MARK: - Toolbar Item Factories
+
+    private func makeSupportGroup() -> NSToolbarItemGroup {
+        let helpButton = NSToolbarItem(itemIdentifier: .init("HelpButton"))
+        helpButton.image = KDriveResources.headphones.image
+        helpButton.label = "Help"
+        helpButton.target = self
+        helpButton.action = #selector(openHelpURL)
+
+        let group = NSToolbarItemGroup(itemIdentifier: .supportGroup)
+        group.subitems = [helpButton]
+        return group
+    }
+
+    private func makeSyncControlsGroup() -> NSToolbarItemGroup {
+        let pauseResumeButton = NSToolbarItem(itemIdentifier: .pauseResumeButton)
+        pauseResumeButton.target = self
+        pauseResumeButton.action = #selector(togglePauseResume)
+        updatePauseResumeButton(pauseResumeButton, state: synchroStateObserver.synchroState)
+
+        let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
+        settingsButton.image = KDriveResources.cog.image
+        settingsButton.label = KDriveLocalizable.buttonSettings
+        settingsButton.target = nil
+        settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
+
+        let group = NSToolbarItemGroup(itemIdentifier: .syncControlsGroup)
+        group.subitems = [pauseResumeButton, settingsButton]
+        return group
+    }
+
+    private func makeSearchGroup() -> NSToolbarItemGroup {
+        let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
+        searchButton.image = KDriveResources.magnifyingGlass.image
+        searchButton.label = KDriveLocalizable.buttonSearch
+        searchButton.target = nil
+        searchButton.action = nil
+
+        let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
+        group.subitems = [searchButton]
+        return group
+    }
+
+    // MARK: - Toolbar Actions
+
+    @objc private func openHelpURL() {
+        NSWorkspace.shared.open(URLConstants.help)
+    }
+
+    @objc private func togglePauseResume() {
+        guard let synchro = viewModel.currentSynchro else { return }
+        let syncDbId = Int32(synchro.dbId)
+
+        Task {
+            do {
+                switch synchroStateObserver.synchroState.status {
+                case .starting, .running, .idle:
+                    try await SyncJobs().stopSync(syncDbId: syncDbId)
+                case .pauseAsked, .paused, .stopAsked, .stopped, .error:
+                    try await SyncJobs().startSync(syncDbId: syncDbId)
+                }
+            } catch {
+                IKLogger.general.error("Failed to toggle sync pause/resume: \(error)")
+            }
+        }
+    }
+
+    // MARK: - Toolbar State Updates
+
+    private func refreshPauseResumeToolbarItem(_ state: UISynchroState) {
+        guard let toolbar = view.window?.toolbar else { return }
+
+        for item in toolbar.items {
+            if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup {
+                if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier == .pauseResumeButton }) {
+                    updatePauseResumeButton(pauseResumeItem, state: state)
+                }
+            }
+        }
+    }
+
+    private func updatePauseResumeButton(_ item: NSToolbarItem, state: UISynchroState) {
+        let hasBlockingError = viewModel.currentBlockingError != nil
+
+        guard !hasBlockingError else {
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
+            return
+        }
+
+        switch state.status {
+        case .starting, .running, .idle:
+            setPauseResumeAppearance(item, showPause: true, enabled: true)
+        case .pauseAsked, .paused, .stopAsked, .stopped:
+            setPauseResumeAppearance(item, showPause: false, enabled: true)
+        case .error:
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
+        }
+    }
+
+    private func setPauseResumeAppearance(_ item: NSToolbarItem, showPause: Bool, enabled: Bool) {
+        let image = showPause ? KDriveResources.pause.image : KDriveResources.play.image
+        let label = showPause ? KDriveLocalizable.buttonPause : KDriveLocalizable.buttonStart
+
+        item.image = image
+        item.label = label
+        item.isEnabled = enabled
     }
 }

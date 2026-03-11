@@ -104,6 +104,43 @@ make -j6 all install
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
 dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
 
+# Verify that no dylib targets a macOS version higher than expected.
+# Each architecture slice is checked independently: arm64 requires at least 11.0,
+# so the effective max for arm64 is max(max_allowed, 11.0).
+check_dylibs_minos() (
+  set +x
+  local max_allowed="$1"
+  local search_dir="$2"
+  local failed=0
+
+  # Effective max per arch: arm64 can't go below 11.0
+  local max_x86_64="$max_allowed"
+  local max_arm64
+  max_arm64=$(printf '%s\n' "$max_allowed" "11.0" | sort -V | tail -1)
+
+  while IFS= read -r dylib; do
+    for arch in x86_64 arm64; do
+      local minos
+      minos=$(otool -arch "$arch" -l "$dylib" 2>/dev/null | awk '/minos/{print $2}' | sort -Vu | tail -1)
+      [ -z "$minos" ] && continue
+
+      local arch_max
+      [ "$arch" = "arm64" ] && arch_max="$max_arm64" || arch_max="$max_x86_64"
+
+      if [ "$(printf '%s\n' "$arch_max" "$minos" | sort -V | tail -1)" != "$arch_max" ]; then
+        echo "  $dylib ($arch minos=$minos > $arch_max)" >&2
+        failed=1
+      fi
+    done
+  done < <(find "$search_dir" -iname '*.dylib')
+
+  if [ "$failed" -eq 1 ]; then
+    echo "Error: dylib(s) above have a minos exceeding the allowed maximum" >&2
+    return 1
+  fi
+)
+
+check_dylibs_minos "$MACOSX_DEPLOYMENT_TARGET" "."
 popd
 
 # Sign

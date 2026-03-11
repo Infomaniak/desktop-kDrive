@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         // Sync UI properties
         private bool _showIncomingActivity = true;
         private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
 
@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // The list of sync and node errors
-        public ObservableCollection<Error> SyncErrors = new();
+        public ObservableCollection<Error> SyncErrors = [];
 
         public SyncErrorStates SyncErrorState
         {
@@ -298,6 +298,20 @@ namespace Infomaniak.kDrive.ViewModels
                     //SyncErrorState = SyncErrorStates.LoggedOut;
                 }
             });
+        }
+
+        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
+        {
+            List<DbId> conflictsToResolve = SyncErrors.Where(e => e.IsConflictUserResolvable()).Select(e => e.DbId).ToList() ?? new List<DbId>();
+
+            if (conflictsToResolve.Count == 0)
+            {
+                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                return true;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
         }
 
         public async Task<List<NodeId>?> GetExcludedNodeIds()

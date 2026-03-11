@@ -201,7 +201,7 @@ void TestGuiCommChannel::testUpdaterSkipVersionJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto updaterSkipVersionJob = std::dynamic_pointer_cast<UpdaterSkipVersionJob>(job);
         CPPUNIT_ASSERT(updaterSkipVersionJob);
-        CPPUNIT_ASSERT_EQUAL(std::string{"3.8.2 (build 1)"}, updaterSkipVersionJob->_skippedVersion);
+        CPPUNIT_ASSERT(CommonUtility::str2CommString("3.8.2 (build 1)") == updaterSkipVersionJob->_skippedVersion);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
