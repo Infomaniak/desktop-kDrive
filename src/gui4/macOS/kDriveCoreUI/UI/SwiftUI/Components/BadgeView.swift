@@ -31,7 +31,13 @@ public struct BadgeView: View {
         return (squareSize - iconSize) / 2
     }
 
-    public init(image: Image, color: Color, iconSize: CGFloat = 12, squareSize: CGFloat = 20, radius: CGFloat = AppRadius.radius4) {
+    public init(
+        image: Image,
+        color: Color,
+        iconSize: CGFloat = 12,
+        squareSize: CGFloat = 20,
+        radius: CGFloat = AppRadius.radius4
+    ) {
         self.image = image
         self.color = color
 
