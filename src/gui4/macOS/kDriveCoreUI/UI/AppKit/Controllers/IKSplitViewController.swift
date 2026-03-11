@@ -69,6 +69,7 @@ extension IKSplitViewController: NSToolbarDelegate {
         return [
             .trackingSplitView,
             .space,
+            .goBack,
             .titleLabel,
             .flexibleSpace
         ]

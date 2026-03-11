@@ -22,5 +22,6 @@ public final class NSGoBackToolbarItem: NSToolbarItem {
     public init() {
         super.init(itemIdentifier: .goBack)
         image = NSImage(systemSymbolName: "chevron.left", accessibilityDescription: nil)
+        isEnabled = false
     }
 }

@@ -56,13 +56,7 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
         super.viewDidAppear()
 
         updateTitle()
-        appendNavigationToolbarItemIfNecessary()
-    }
-
-    override open func viewWillDisappear() {
-        super.viewWillDisappear()
-
-        removeNavigationToolbarItem()
+        enableNavigationToolbarItemIfNecessary()
     }
 
     private func updateTitle() {
@@ -74,25 +68,18 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
         }
     }
 
-    private func appendNavigationToolbarItemIfNecessary() {
-        guard navigableRouter?.hasDeepNavigated == true else {
+    private func enableNavigationToolbarItemIfNecessary() {
+        guard let goBackItem = view.window?.toolbar?.items.first(where: { $0.itemIdentifier == .goBack }) else {
             return
         }
 
-        view.window?.toolbar?.validateVisibleItems()
-        view.window?.toolbar?.insertItem(withItemIdentifier: .goBack, at: 2)
-
-        if let goBackItem = view.window?.toolbar?.items.first(where: { $0.itemIdentifier == .goBack }) {
+        let shouldBeEnabled = navigableRouter?.hasDeepNavigated == true
+        if shouldBeEnabled {
             goBackItem.target = self
             goBackItem.action = #selector(goBackInHistory)
+        } else {
+            goBackItem.isEnabled = false
         }
-    }
-
-    private func removeNavigationToolbarItem() {
-        guard let goBackItemIndex = view.window?.toolbar?.items.firstIndex(where: { $0.itemIdentifier == .goBack }) else {
-            return
-        }
-        view.window?.toolbar?.removeItem(at: goBackItemIndex)
     }
 
     @objc private func goBackInHistory() {
