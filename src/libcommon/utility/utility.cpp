@@ -237,9 +237,27 @@ bool CommonUtility::isFAT(const SyncPath &targetPath) {
     return contains(getRootFsType(targetPath), fat);
 }
 
+bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
+#if defined(KD_MACOS)
+    // Tested OK: APFS, HFS+, exFAT
+    // Tested KO: FAT32
+    return !CommonUtility::isFAT(targetPath);
+#elif defined(KD_WINDOWS)
+    // Tested OK: NTFS, exFAT, FAT32
+    return true;
+#else
+    // Tested OK: EXT4
+    return true;
+#endif
+}
+
 bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
     // Only File Systems supporting sparse files are compatible
-    return CommonUtility::isNTFS(targetPath) || CommonUtility::isAPFS(targetPath);
+#if defined(KD_MACOS)
+    return CommonUtility::isAPFS(targetPath);
+#elif defined(KD_WINDOWS)
+    return CommonUtility::isNTFS(targetPath);
+#endif
 }
 
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
