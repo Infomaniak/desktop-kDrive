@@ -121,7 +121,7 @@ ExitInfo ServerRequests::deleteUser(int userDbId) {
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    AbstractTokenNetworkJob::clearCacheForUser(userDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
@@ -137,11 +137,12 @@ ExitInfo ServerRequests::deleteAccount(int accountDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Account with id=" << accountDbId << " not found");
         return ExitCode::DataError;
     }
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteDrive(int driveDbId) {
+ExitInfo ServerRequests::deleteDrive(int32_t driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {
@@ -152,8 +153,7 @@ ExitCode ServerRequests::deleteDrive(int driveDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
         return ExitCode::DataError;
     }
-
-    AbstractTokenNetworkJob::clearCacheForDrive(driveDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }

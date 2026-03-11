@@ -39,7 +39,7 @@ constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 namespace KDC {
 std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
 std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
-
+std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const int userDbId, const int userId, const int driveDbId,
                                                  const int driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),
@@ -84,6 +84,7 @@ ExitCause AbstractTokenNetworkJob::getExitCause() const {
 }
 
 void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const int userDbId) {
+    const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
         const std::shared_ptr<Login> currentLogin = it->second.first;
         // get new credentials
@@ -93,6 +94,12 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const in
         currentLogin->setApiToken(newApiToken);
         currentLogin->setKeychainKey(newKeychainKey);
     }
+}
+
+void AbstractTokenNetworkJob::clearCache() {
+    const std::scoped_lock lock(_cacheMutex);
+    _driveToApiKeyMap.clear();
+    _userToApiKeyMap.clear();
 }
 
 std::string AbstractTokenNetworkJob::getSpecificUrl() {
@@ -333,6 +340,7 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::Drive:
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
+            const std::scoped_lock lock(_cacheMutex);
             if (_driveDbId) {
                 if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
                     // driveDbId found in Drive cache
@@ -424,6 +432,7 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         }
         case ApiType::Profile:
         case ApiType::DriveByUser: {
+            const std::scoped_lock lock(_cacheMutex);
             if (const auto it = _userToApiKeyMap.find(_userDbId); it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache
                 _userId = it->second.second;
@@ -478,6 +487,8 @@ std::string AbstractTokenNetworkJob::contentType() {
 }
 
 ExitInfo AbstractTokenNetworkJob::refreshToken() {
+    const std::scoped_lock lock(_cacheMutex);
+
     _accessTokenAlreadyRefreshed = true;
     const auto it = _userToApiKeyMap.find(_userDbId);
     if (it == _userToApiKeyMap.end()) {
@@ -522,6 +533,7 @@ ExitInfo AbstractTokenNetworkJob::refreshToken() {
 }
 
 long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
+    const std::scoped_lock lock(_cacheMutex);
     const auto it = _userToApiKeyMap.find(_userDbId);
     if (it == _userToApiKeyMap.end()) {
         LOG_WARN(_logger, "User cache not set for userDbId=" << _userDbId);
