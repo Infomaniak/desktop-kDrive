@@ -207,11 +207,20 @@ log "Using '$conan_profile' profile for Conan."
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
-if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
-    log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
-    conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
+if [ -n "$(
+  conan remote list --format=json | jq -e \
+    --arg name "$local_recipe_remote_name" \
+    --arg url "$conan_remote_base_folder" \
+    '.[] | select(.name == $name and .url == $url and .enabled == true)'
+)" ]; then
+  log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 else
-    log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
+  if [ -n "$(conan remote list --format=json | jq -e --arg name "$local_recipe_remote_name" '.[] | select(.name == $name)')" ]; then
+    # here, there is a remote with the same name but different url or disabled, so we remove it first to avoid conflicts.
+    conan remote remove "$local_recipe_remote_name"
+  fi
+  log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
+  conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
