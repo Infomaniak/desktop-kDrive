@@ -146,14 +146,6 @@ namespace Infomaniak.kDrive.CustomControls
             SelectedItem = newSelectedItem;
         }
 
-        private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
-        {
-            if (ContentFrame.CanGoBack)
-            {
-                ContentFrame.GoBack();
-            }
-        }
-
         private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");

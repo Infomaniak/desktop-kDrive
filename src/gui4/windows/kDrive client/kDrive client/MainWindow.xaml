@@ -43,36 +43,44 @@
         </Grid.RowDefinitions>
 
         <!-- Title bar -->
-        <Border x:Name="AppTitleBar"
-                SizeChanged="AppTitleBar_SizeChanged"
-                Loaded="AppTitleBar_Loaded"
-                Grid.Row="0"
-                VerticalAlignment="Top">
-            <Grid Height="{StaticResource Infomaniak.Style.Spacing.XXXL}"
-                  VerticalAlignment="Top"
-                  Margin="16,4">
-                <!-- Left: Logo + App Name -->
-                <controls:AppTitleBarLogo />
-
-                <StackPanel x:Name="TitleBarContentPanel"
-                            Height="32"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <controls:SyncStartPauseButton />
+        <TitleBar x:Name="AppTitleBar"
+                  Grid.Row="0"
+                  Title="kDrive"
+                  Subtitle="Beta"
+                  IsBackButtonVisible="True"
+                  HorizontalContentAlignment="Stretch"
+                  IsBackButtonEnabled="{x:Bind AppNavView.Frame.CanGoBack, Mode=OneWay}"
+                  IsPaneToggleButtonVisible="False"
+                  BackRequested="AppTitleBar_BackRequested">
+            <TitleBar.IconSource>
+                <ImageIconSource>
+                    <ImageIconSource.ImageSource>
+                        <SvgImageSource UriSource="{StaticResource Infomaniak.Custom.Icons.kDrive}" />
+                    </ImageIconSource.ImageSource>
+                </ImageIconSource>
+            </TitleBar.IconSource>
+            <TitleBar.Content>
+                <Grid x:Name="TitleBarContentPanel"
+                      Height="32"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <controls:SyncStartPauseButton Grid.Column="0" />
 
                     <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
-                    <controls:SearchBox MinWidth="319"
+                    <controls:SearchBox Grid.Column="1"
+                                        MinWidth="319"
                                         Height="32" />
-                </StackPanel>
-            </Grid>
-        </Border>
+                </Grid>
+            </TitleBar.Content>
+        </TitleBar>
 
         <!-- NavigationView -->
         <controls:AppNavigationView x:Name="NavView"
-                                    Grid.Row="1"
-                                    PaneClosing="NavView_PaneChanged"
-                                    PaneOpening="NavView_PaneChanged" />
+                                    Grid.Row="1" />
     </Grid>
 </Window>
