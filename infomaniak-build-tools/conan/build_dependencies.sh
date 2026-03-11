@@ -148,6 +148,9 @@ if [[ $use_release_profile == true ]]; then
     if grep -q 'os=Macos' "$profile_path" && ! grep -q 'arch=armv8|x86_64' "$profile_path"; then
       error "Profile '$release_profile' must set arch=armv8|x86_64 for MacOS"
     fi
+    if grep -q 'os=Macos' "$profile_path" && ! grep -q 'os.version=10.15' "$profile_path"; then
+      error "Profile '$release_profile' must set os.version=10.15 for MacOS"
+    fi
 
     log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
