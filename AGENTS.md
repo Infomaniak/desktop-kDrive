@@ -69,6 +69,7 @@ clang-format -i <file>
 
 ### Infrastructure
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
+- Conan dependencies & recipes: `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
 ### Quick Find Commands
 ```bash
 # Find a class definition
