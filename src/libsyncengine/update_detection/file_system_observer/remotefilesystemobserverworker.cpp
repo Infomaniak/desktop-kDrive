@@ -519,16 +519,16 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
     }
 
-    for (const auto &movedItem: movedItems) {
+    for (const auto &[nodeId, actionCode]: movedItems) {
         // Items remaining in "movedItems" have been either blacklisted or whitelisted
-        switch (movedItem.second) {
+        switch (actionCode) {
             case ActionCode::ActionCodeMoveIn: {
                 sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
-                if (const auto exitInfo = exploreDirectory(movedItem.first); !exitInfo) return exitInfo;
+                if (const auto exitInfo = exploreDirectory(nodeId); !exitInfo) return exitInfo;
                 break;
             }
             case ActionCode::ActionCodeMoveOut: {
-                if (const auto exitInfo = removeItemFromSnapshot(movedItem.first); !exitInfo) return exitInfo;
+                if (const auto exitInfo = removeItemFromSnapshot(nodeId); !exitInfo) return exitInfo;
                 break;
             }
             default:
