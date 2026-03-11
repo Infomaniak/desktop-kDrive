@@ -9,6 +9,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Euria-review:
+  euria-review:
     uses: infomaniak/.github/.github/workflows/euria-review.yml@v2
     secrets: inherit
