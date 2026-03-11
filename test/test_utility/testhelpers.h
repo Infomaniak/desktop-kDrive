@@ -155,13 +155,4 @@ void setupLogging();
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
-NodeId createRemoteDir(const int driveDbId, const NodeId &remoteParentId, const SyncName &name);
-void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
-                    SyncTime *modificationTime = nullptr, int64_t *size = nullptr);
-void moveRemoteItem(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
-                    const SyncName &name = {});
-NodeId duplicateRemoteItem(const int driveDbId, const NodeId &id, const SyncName &newName);
-void deleteRemoteItem(const int driveDbId, const NodeId &id);
-SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
-
 } // namespace KDC::testhelpers

@@ -65,7 +65,6 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 
 target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
-        ${libsyncengine_NAME}
 )
 
 if(WIN32)
