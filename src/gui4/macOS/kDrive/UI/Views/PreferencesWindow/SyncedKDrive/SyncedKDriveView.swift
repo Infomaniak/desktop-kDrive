@@ -16,73 +16,188 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 import SwiftUI
+
+enum UISynchroMode: String, CaseIterable, Identifiable, Sendable {
+    case storeOnline
+    case availableOffline
+
+    var id: String {
+        return rawValue
+    }
+
+    var icon: Image {
+        switch self {
+        case .storeOnline:
+            return KDriveResources.cloud.swiftUIImage
+        case .availableOffline:
+            return KDriveResources.computerArrowUp.swiftUIImage
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .storeOnline:
+            return KDriveLocalizable.storedOnline
+        case .availableOffline:
+            return KDriveLocalizable.availableOffline
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .storeOnline:
+            return KDriveLocalizable.storedOnlineDescription
+        case .availableOffline:
+            return KDriveLocalizable.availableOfflineDescription
+        }
+    }
+}
 
 struct SyncedKDriveView: View {
     let drive: UIDrive
 
+    @State private var isLoading = false
+
+    @State private var mainSynchro: UISynchro?
+    @State private var mainSynchroMode = UISynchroMode.storeOnline
+    @State private var advancedSynchros = [UISynchro]()
+
     var body: some View {
         Form {
             Section {
-                IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
-                    Button("/Users/valentin/kDrive", action: openSynchroInFinder)
-                        .buttonStyle(.borderless)
-                        .tint(.accent)
-                }
-
-                IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
-                    Button(KDriveLocalizable.buttonManage) {
-                        // TODO: Navigate to synchro management
-                    }
-                    .disabled(true)
-                }
+                // Empty on purpose
             } header: {
                 HStack {
-                    DriveBadgeView(color: drive.color ?? ColorToken.Drive.defaultColor.asColor)
+                    BadgeView(
+                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        color: drive.color ?? ColorToken.Drive.defaultColor.asColor,
+                        iconSize: 16,
+                        squareSize: 26,
+                        radius: AppRadius.radius8
+                    )
                     Text(drive.name)
                 }
             }
 
-            Section {
-                VStack(alignment: .leading) {
-                    Text(KDriveLocalizable.fileSyncMode)
-                    Text(KDriveLocalizable.fileSyncModeDescription)
-                        .foregroundStyle(.secondary)
-                        .font(.callout)
-                }
-            }
-
-            Section {
-                Button(role: .destructive, action: removePrincipalSynchro) {
-                    Text(KDriveLocalizable.buttonRemoveSync)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(.rect)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Section {
-                Button(action: navigateToAdvancedSynchro) {
-                    HStack {
-                        Text(KDriveLocalizable.advancedSyncTitle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .foregroundStyle(.primary)
-
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
+            if let mainSynchro {
+                Section {
+                    IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
+                        Button(mainSynchro.localPath.path) {
+                            NSWorkspace.shared.open(mainSynchro.localPath)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(ColorToken.Action.primary.asColor)
                     }
-                    .contentShape(.rect)
+
+                    IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
+                        Button(KDriveLocalizable.buttonManage) {
+                            // TODO: Navigate to synchro management
+                        }
+                        .disabled(true)
+                    }
                 }
-                .buttonStyle(.plain)
+
+                Section {
+                    VStack(alignment: .leading, spacing: AppPadding.padding16) {
+                        VStack(alignment: .leading, spacing: AppPadding.padding2) {
+                            Text(KDriveLocalizable.fileSyncMode)
+                            Text(KDriveLocalizable.fileSyncModeDescription)
+                                .foregroundStyle(.secondary)
+                                .font(.callout)
+                        }
+
+                        Picker("", selection: $mainSynchroMode) {
+                            ForEach(UISynchroMode.allCases) { mode in
+                                HStack(alignment: .top) {
+                                    BadgeView(image: mode.icon, color: ColorToken.Action.primary.asColor)
+
+                                    VStack(alignment: .leading) {
+                                        Text(mode.title)
+                                        Text(mode.description)
+                                            .foregroundStyle(.secondary)
+                                            .font(.callout)
+                                    }
+                                }
+                                .tag(mode)
+                            }
+                        }
+                        .pickerStyle(.radioGroup)
+                        .labelsHidden()
+                    }
+                }
+
+                Section {
+                    Button(role: .destructive, action: removePrincipalSynchro) {
+                        Text(KDriveLocalizable.buttonRemoveSync)
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if !advancedSynchros.isEmpty {
+                Section {
+                    Button(action: navigateToAdvancedSynchro) {
+                        HStack {
+                            Text(KDriveLocalizable.advancedSyncTitle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .foregroundStyle(.primary)
+
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .groupedFormatStyle()
+        .task {
+            await fetchSynchros()
+        }
     }
 
-    private func openSynchroInFinder() {}
+    private func fetchSynchros() async {
+        withAnimation {
+            isLoading = true
+        }
+
+        @InjectService var coherentCache: CoherentCache
+        guard let driveSynchros = await coherentCache.getDrive(driveDbId: Int32(drive.dbId))?.synchros.values else {
+            return
+        }
+
+        var freshMainSynchro: UISynchro?
+        var freshAdvancedSynchros = [UISynchro]()
+
+        for synchro in driveSynchros {
+            let uiSynchro = UISynchro(synchro: synchro)
+
+            if uiSynchro.targetNodeId == nil, freshMainSynchro == nil {
+                freshMainSynchro = uiSynchro
+            } else {
+                freshAdvancedSynchros.append(uiSynchro)
+            }
+        }
+
+        withAnimation {
+            isLoading = false
+
+            mainSynchro = freshMainSynchro
+            mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
+
+            advancedSynchros = freshAdvancedSynchros
+        }
+    }
 
     private func removePrincipalSynchro() {}
 
