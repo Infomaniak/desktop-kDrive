@@ -89,11 +89,11 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1){};
+            execute(rights & 1) {};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute){};
+            execute(execute) {};
         bool read;
         bool write;
         bool execute;
@@ -154,5 +154,13 @@ void setupLogging();
  */
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
+
+void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
+                    SyncTime *modificationTime = nullptr, int64_t *size = nullptr);
+void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+                    const SyncName &name = {});
+NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName);
+void deleteRemoteItem(const int driveDbId, const NodeId &id);
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
 
 } // namespace KDC::testhelpers
