@@ -196,10 +196,9 @@ function clean_app_directory() {
 
   cd /app
 
-  # Remove Qt development tools from libexec (keep only QtWebEngineProcess)
   echo "  Removing Qt development tools..."
   cd ./usr/libexec
-  ls | grep -v "QtWebEngineProcess" | xargs rm -f
+  ls | xargs rm -f
   cd /app
 
   # Remove development plugins
@@ -241,14 +240,11 @@ function clean_app_directory() {
   rm -f assistant_*.qm designer_*.qm linguist_*.qm qt_help_*.qm
 
   # For other Qt translations, keep only supported languages
-  for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebengine qtwebsockets; do
+  for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebsockets; do
     # Remove all except de, es, fr, it, en
     ls ${prefix}_*.qm 2>/dev/null | grep -vE "_(de|es|fr|it|en)\.qm$" | xargs rm -f 2>/dev/null || true
   done
 
-  # Clean qtwebengine_locales - keep only de, en-US, en-GB, es, fr, it
-  cd qtwebengine_locales
-  ls *.pak | grep -vE "^(de|en-US|en-GB|es|fr|it)\.pak$" | xargs rm -f
   cd /app
 
   # Remove unnecessary system libraries
