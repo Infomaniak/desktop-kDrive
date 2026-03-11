@@ -8,8 +8,6 @@
  */
 
 
-/* loco:698053a65bddc8df790d0212 */
-" informationBlockSynchroErrorSubtitle" = "No se han podido sincronizar algunos archivos.";
 /* loco:69a57d074f11212a7007d403 */
 "aboutButton" = "About";
 
@@ -268,6 +266,9 @@
 
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Tu kDrive está lleno";
+
+/* loco:698053a65bddc8df790d0212 */
+"informationBlockSynchroErrorSubtitle" = "No se han podido sincronizar algunos archivos.";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activar kDrive.app";

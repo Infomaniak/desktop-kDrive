@@ -493,7 +493,7 @@
 "syncInProgressTooltip" = "Sincronizzazione";
 
 /* loco:698b0555781f2782a70727c2 */
-"syncModeApplying" = "La nuova modalità di sincronizzazione viene applicata..";
+"syncModeApplying" = "La nuova modalità di sincronizzazione viene applicata…";
 
 /* loco:698b1593acd7caac53091c62 */
 "syncRules" = "Regole di sincronizzazione";

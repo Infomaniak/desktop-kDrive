@@ -43,6 +43,7 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
 
     private var pathCache: [Tab: RouterPath]
 
+    @MainActor
     var hasDeepNavigated: Bool {
         return currentPath.details.count > 1
     }

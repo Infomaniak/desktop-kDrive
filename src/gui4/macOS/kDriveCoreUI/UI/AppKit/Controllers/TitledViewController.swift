@@ -61,7 +61,8 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
 
     override open func viewWillDisappear() {
         super.viewWillDisappear()
-        removeNavigationToolbarItemIfNecessary()
+
+        removeNavigationToolbarItem()
     }
 
     private func updateTitle() {
@@ -87,7 +88,7 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
         }
     }
 
-    private func removeNavigationToolbarItemIfNecessary() {
+    private func removeNavigationToolbarItem() {
         guard let goBackItemIndex = view.window?.toolbar?.items.firstIndex(where: { $0.itemIdentifier == .goBack }) else {
             return
         }
