@@ -43,6 +43,8 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo mi actividad";
 
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "La aplicación está actualizada";
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Actualizaciones automáticas";
 
@@ -212,6 +214,8 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Se ha producido un error al eliminar tu cuenta.";
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Error while trying to start the installer";
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Ayúdanos a mejorar kDrive";
 
