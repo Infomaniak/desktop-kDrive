@@ -36,7 +36,7 @@ enum UISynchroMode: String, CaseIterable, Identifiable, Sendable {
         case .storeOnline:
             return KDriveResources.cloud.swiftUIImage
         case .availableOffline:
-            return KDriveResources.computerArrowUp.swiftUIImage
+            return KDriveResources.computer.swiftUIImage
         }
     }
 
