@@ -522,12 +522,15 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
     for (const auto &movedItem: movedItems) {
         // Items remaining in "movedItems" have been either blacklisted or whitelisted
         switch (movedItem.second) {
-            case ActionCode::ActionCodeMoveIn:
+            case ActionCode::ActionCodeMoveIn: {
+                sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
                 if (const auto exitInfo = exploreDirectory(movedItem.first); !exitInfo) return exitInfo;
                 break;
-            case ActionCode::ActionCodeMoveOut:
+            }
+            case ActionCode::ActionCodeMoveOut: {
                 if (const auto exitInfo = removeItemFromSnapshot(movedItem.first); !exitInfo) return exitInfo;
                 break;
+            }
             default:
                 break;
         }
