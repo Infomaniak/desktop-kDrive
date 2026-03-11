@@ -93,6 +93,10 @@ class KDriveDesktop(ConanFile):
 
         self.output.info(f"Ubuntu {ubuntu_version} on {arch} meets minimum requirements.")
 
+    def configure(self):
+        if self.settings.os == "Macos":
+            self.settings.os.version = "10.15"
+
     def generate(self):
         """
         Generate the CMake toolchain file.
@@ -112,7 +116,7 @@ class KDriveDesktop(ConanFile):
 
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
-            tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
+            tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = self.settings.os.version
 
         tc.generate()
 
