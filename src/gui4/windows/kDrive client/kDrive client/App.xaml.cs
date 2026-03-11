@@ -156,7 +156,6 @@ namespace Infomaniak.kDrive
                 return;
             }
             CurrentWindow.Content = currentWindowContent;
-            (CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
