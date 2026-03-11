@@ -317,7 +317,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
 
     // Check the FS
     if (!CommonUtility::isSyncCompatible(path)) {
-        LOGW_INFO(Log::instance()->getLogger(), "Unsupported File System: " << Utility::formatSyncPath(path));
+        LOGW_INFO(Log::instance()->getLogger(), L"Unsupported File System: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
