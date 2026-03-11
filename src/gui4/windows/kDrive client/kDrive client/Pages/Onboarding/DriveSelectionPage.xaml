@@ -186,7 +186,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="12"
                             VerticalAlignment="Center">
-                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.AvatarImageSourcex24, Mode=OneWay}"
+                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.GetAvatarImageSource(48), Mode=OneWay}"
                                    Height="24"
                                    Width="24" />
                     <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"

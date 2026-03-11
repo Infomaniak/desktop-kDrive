@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
@@ -41,9 +42,6 @@ namespace Infomaniak.kDrive.ViewModels
         private string _name = "";
         private string _email = "";
         private byte[]? _avatar;
-        private ImageSource? _avatarImageSource = null;
-        private ImageSource? _avatarImageSourcex24 = null;
-        private ImageSource? _avatarImageSourcex44 = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
@@ -98,33 +96,8 @@ namespace Infomaniak.kDrive.ViewModels
             set
             {
                 if (SetPropertyInUIThread(ref _avatar, value))
-                {
-                    AppModel.UIThreadDispatcher.TryEnqueue(async () =>
-                    {
-                        _avatarImageSource = await ByteArrayToImageSource(_avatar); // ByteArrayToImageSource need to be run in the UI thread
-                        _avatarImageSourcex24 = await ByteArrayToImageSource(_avatar, 24);
-                        _avatarImageSourcex44 = await ByteArrayToImageSource(_avatar, 44);
-                        OnPropertyChanged(nameof(AvatarImageSource));
-                        OnPropertyChanged(nameof(AvatarImageSourcex24));
-                        OnPropertyChanged(nameof(AvatarImageSourcex44));
-                    });
-                }
+                    OnPropertyChangedInUIThread(nameof(GetAvatarImageSource));
             }
-        }
-
-        public ImageSource? AvatarImageSource
-        {
-            get => _avatarImageSource;
-        }
-
-        public ImageSource? AvatarImageSourcex24
-        {
-            get => _avatarImageSourcex24;
-        }
-
-        public ImageSource? AvatarImageSourcex44
-        {
-            get => _avatarImageSourcex44;
         }
 
         public bool IsConnected
@@ -163,22 +136,28 @@ namespace Infomaniak.kDrive.ViewModels
         // Combined collection of all drives (configured in db and available)
         public ObservableCollection<IDrive> AllDrives { get; } = [];
 
-        public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData, int decodePixelWidth = 0)
+        public ImageSource? GetAvatarImageSource(int size)
+        {
+            return ByteArrayToImageSource(_avatar, size);
+        }
+
+        public static ImageSource? ByteArrayToImageSource(byte[]? imageData, int decodePixelWidth)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
 
             using var stream = new InMemoryRandomAccessStream();
-            await stream.WriteAsync(imageData.AsBuffer());
+            stream.AsStreamForWrite().Write(imageData, 0, imageData.Length);
             stream.Seek(0);
 
             var bitmap = new BitmapImage();
             if (decodePixelWidth > 0)
             {
-                bitmap.DecodePixelType = DecodePixelType.Logical;
-                bitmap.DecodePixelWidth = decodePixelWidth;
+                bitmap.DecodePixelType = DecodePixelType.Physical;
+                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot.RasterizationScale ?? 1.0;
+                bitmap.DecodePixelWidth = (int)(decodePixelWidth * rasterization);
             }
-            await bitmap.SetSourceAsync(stream);
+            bitmap.SetSource(stream);
             return bitmap;
         }
 
