@@ -43,6 +43,7 @@ namespace Infomaniak.kDrive.ViewModels
         private byte[]? _avatar;
         private ImageSource? _avatarImageSource = null;
         private ImageSource? _avatarImageSourcex24 = null;
+        private ImageSource? _avatarImageSourcex44 = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
@@ -101,9 +102,11 @@ namespace Infomaniak.kDrive.ViewModels
                     AppModel.UIThreadDispatcher.TryEnqueue(async () =>
                     {
                         _avatarImageSource = await ByteArrayToImageSource(_avatar); // ByteArrayToImageSource need to be run in the UI thread
-                        _avatarImageSourcex24 = await ByteArrayToImageSource(_avatar, 24); // smaller size
+                        _avatarImageSourcex24 = await ByteArrayToImageSource(_avatar, 24);
+                        _avatarImageSourcex44 = await ByteArrayToImageSource(_avatar, 44);
                         OnPropertyChanged(nameof(AvatarImageSource));
                         OnPropertyChanged(nameof(AvatarImageSourcex24));
+                        OnPropertyChanged(nameof(AvatarImageSourcex44));
                     });
                 }
             }
@@ -117,6 +120,11 @@ namespace Infomaniak.kDrive.ViewModels
         public ImageSource? AvatarImageSourcex24
         {
             get => _avatarImageSourcex24;
+        }
+
+        public ImageSource? AvatarImageSourcex44
+        {
+            get => _avatarImageSourcex44;
         }
 
         public bool IsConnected
