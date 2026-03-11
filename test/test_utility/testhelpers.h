@@ -155,6 +155,7 @@ void setupLogging();
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
+NodeId createRemoteDir(const int driveDbId, const NodeId &remoteParentId, const SyncName &name);
 void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
                     SyncTime *modificationTime = nullptr, int64_t *size = nullptr);
 void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,

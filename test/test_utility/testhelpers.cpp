@@ -19,6 +19,7 @@
 #include "testhelpers.h"
 #include "localtemporarydirectory.h"
 #include "io/iohelper.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -175,6 +176,12 @@ void setupLogging() {
     if (!Log::instance(Path2WStr(logFilePath))) {
         assert(false);
     }
+}
+
+NodeId createRemoteDir(const int driveDbId, const NodeId &remoteParentId, const SyncName &name) {
+    CreateDirJob job(nullptr, driveDbId, remoteParentId, name);
+    (void) job.runSynchronously();
+    return job.nodeId();
 }
 
 void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime /*= nullptr*/,

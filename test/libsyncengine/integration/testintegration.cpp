@@ -728,18 +728,10 @@ void TestIntegration::testDeleteAndMoveCase() {
     NodeId nodeIdBB;
     NodeId nodeIdBBB;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
-        (void) jobA.runSynchronously();
-        nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("test"));
-        (void) jobAA.runSynchronously();
-        nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobB(nullptr, _driveDbId, tmpRemoteDir.id(), Str("B"));
-        (void) jobB.runSynchronously();
-        nodeIdB = jobB.nodeId();
-        CreateDirJob jobBB(nullptr, _driveDbId, jobB.nodeId(), Str("test"));
-        (void) jobBB.runSynchronously();
-        nodeIdBB = jobBB.nodeId();
+        nodeIdA = testhelpers::createRemoteDir(_driveDbId, tmpRemoteDir.id(), Str("A"));
+        nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("test"));
+        nodeIdB = testhelpers::createRemoteDir(_driveDbId, tmpRemoteDir.id(), Str("B"));
+        nodeIdBB = testhelpers::createRemoteDir(_driveDbId, nodeIdB, Str("test"));
 
         const auto filename = Str("test.txt");
         nodeIdAAA = testhelpers::duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
