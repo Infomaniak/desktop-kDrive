@@ -142,7 +142,7 @@ ExitInfo ServerRequests::deleteAccount(int accountDbId) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::deleteDrive(int driveDbId) {
+ExitInfo ServerRequests::deleteDrive(int32_t driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {

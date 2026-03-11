@@ -136,7 +136,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         // C/S requests (others)
         static ExitInfo deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitInfo deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitInfo deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteDrive(int32_t driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests

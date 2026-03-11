@@ -65,11 +65,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         static void updateLoginByUserDbId(const Login &login, int userDbId);
 
-        inline static void clearCache() {
-            std::scoped_lock lock(_cacheMutex);
-            _driveToApiKeyMap.clear();
-            _userToApiKeyMap.clear();
-        }
+        static void clearCache();
 
         ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
