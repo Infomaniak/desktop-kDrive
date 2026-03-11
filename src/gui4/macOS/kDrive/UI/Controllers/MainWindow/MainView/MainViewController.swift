@@ -107,7 +107,7 @@ final class MainViewController: IKSplitViewController {
         }
     }
 
-    func onPathChange(_ path: Path) {
+    func onPathChange(_ path: MainViewRouter.RouterPath) {
         let contentViewController: NSViewController
         switch path.details.last {
         case .home:

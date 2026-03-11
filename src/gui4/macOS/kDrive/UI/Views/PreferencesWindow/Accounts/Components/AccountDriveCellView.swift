@@ -38,18 +38,26 @@ struct AccountDriveCellView: View {
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                Button(KDriveLocalizable.buttonManage) {}
+                Button(KDriveLocalizable.buttonManage, action: manageSynchronizedDrive)
                     .buttonStyle(.bordered)
             } else {
                 Text(KDriveLocalizable.notSyncedDrive)
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                Button(KDriveLocalizable.buttonEnable) {}
+                Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
             }
         }
         .padding(.leading, AppPadding.padding24)
+    }
+
+    private func manageSynchronizedDrive() {
+        // TODO: Navigate to synchronized drive management
+    }
+
+    private func synchronizeDrive() {
+        // TODO: Show synchronization flow
     }
 }
 

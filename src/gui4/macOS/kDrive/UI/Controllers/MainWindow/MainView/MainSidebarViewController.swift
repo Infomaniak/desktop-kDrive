@@ -321,7 +321,10 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
         guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem,
-              let path = selectedItem.tab else { return }
+              let path = selectedItem.mainViewTab else {
+            return
+        }
+
         router.setCurrentTab(path)
     }
 
