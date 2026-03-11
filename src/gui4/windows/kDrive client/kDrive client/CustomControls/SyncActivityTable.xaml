@@ -164,8 +164,7 @@
                                                   Foreground="{ThemeResource colors.status.medium.warning}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
+                                        <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
                             </DataTemplate>
@@ -175,8 +174,7 @@
                                                   Foreground="{ThemeResource colors.status.medium.success}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />
+                                        <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
 
@@ -257,10 +255,10 @@
                                 <Button Grid.Column="2"
                                         Padding="0"
                                         BorderThickness="0"
-                                        Height="32"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
-                                        Background="Transparent">
+                                        Background="Transparent"
+                                        kDrive:AncestorSource.AncestorType="ContentControl">
                                     <Button.Content>
                                         <controls:SvgIcon Width="14"
                                                           Height="14"
