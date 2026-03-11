@@ -27,7 +27,10 @@ struct AccountDriveCellView: View {
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
-            DriveBadgeView(color: drive.color ?? ColorToken.Drive.defaultColor.asColor)
+            BadgeView(
+                image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                color: drive.color ?? ColorToken.Drive.defaultColor.asColor
+            )
 
             Text(drive.name)
                 .font(.Tokens.body)

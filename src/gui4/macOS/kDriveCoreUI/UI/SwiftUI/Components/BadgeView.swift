@@ -19,7 +19,7 @@
 import kDriveResources
 import SwiftUI
 
-public struct DriveBadgeView: View {
+public struct BadgeView: View {
     let image: Image
     let color: Color
 
@@ -63,6 +63,6 @@ public struct DriveBadgeView: View {
 }
 
 #Preview {
-    DriveBadgeView(image: KDriveResources.kdriveFoldersStacked.swiftUIImage, color: .yellow)
+    BadgeView(image: KDriveResources.kdriveFoldersStacked.swiftUIImage, color: .yellow)
         .padding()
 }
