@@ -143,7 +143,11 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
-    RemoteTemporaryDirectory nestedRemoteTmpDir(_driveDbId, remoteTmpDir.id(), "test_remote_FSO_nested");
+    const NodeId nestedRemoteTmpDirId =
+            testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("test_remote_FSO_nested"));
+    const NodeId nodeIdA = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("A"));
+    const NodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
+    const NodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
@@ -171,6 +175,19 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     }
 
     {
+        LOG_DEBUG(_logger, "***** test create directory *****");
+
+        const NodeId nodeIdC = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("C"));
+        const NodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
+
+        // Get activity from the server
+        _syncPal->_remoteFSObserverWorker->processEvents();
+
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdC));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdCC));
+    }
+
+    {
         LOG_DEBUG(_logger, "***** test edit file *****");
 
         testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
@@ -195,13 +212,26 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath(), _testFileId, nestedRemoteTmpDir.id());
+        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath(), _testFileId, nestedRemoteTmpDirId);
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDir.id(), _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDirId, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
+
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
+    }
+
+    {
+        LOG_DEBUG(_logger, "***** test move directory *****");
+
+        // Move /A to /B/A
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdA, nodeIdB);
+
+        // Get activity from the server
+        _syncPal->_remoteFSObserverWorker->processEvents();
     }
 
     {
