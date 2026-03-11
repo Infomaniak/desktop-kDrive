@@ -236,7 +236,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
-        CPPUNIT_ASSERT_EQUAL(nodeIdAA, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(nodeIdAA));
+        CPPUNIT_ASSERT_EQUAL(nodeIdA, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(nodeIdAA));
     }
 
     {
