@@ -170,6 +170,7 @@
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
                                HorizontalAlignment="Center"
+                               TextAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->
