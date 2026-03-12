@@ -115,11 +115,6 @@ namespace Infomaniak.kDrive.Pages
                 ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
         }
 
-        private void HideButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
-        }
-
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
             DetachHandlers();
