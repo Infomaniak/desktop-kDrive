@@ -37,9 +37,11 @@ constexpr char API_PREFIX_DESKTOP[] = "/desktop";
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
-std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
-std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
+
 std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
+AbstractTokenNetworkJob::UserCache AbstractTokenNetworkJob::_userToApiKeyMap;
+AbstractTokenNetworkJob::DriveCache AbstractTokenNetworkJob::_driveToApiKeyMap;
+
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const int userDbId, const int userId, const int driveDbId,
                                                  const int driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),
@@ -86,7 +88,7 @@ ExitCause AbstractTokenNetworkJob::getExitCause() const {
 void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const int userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
-        const std::shared_ptr<Login> currentLogin = it->second.first;
+        const std::shared_ptr<Login> currentLogin = it->second.login;
         // get new credentials
         const ApiToken newApiToken = login.apiToken();
         const std::string newKeychainKey = login.keychainKey();
@@ -402,8 +404,8 @@ void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 
     if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
-        _userDbId = it->second.first;
-        _driveId = it->second.second;
+        _userDbId = it->second.userDbId;
+        _driveId = it->second.driveId;
 
         return;
     }
@@ -431,8 +433,8 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
         LOG_WARN(_logger, err);
         throw std::runtime_error(err);
     } else {
-        _userId = it->second.second;
-        return it->second.first->apiToken();
+        _userId = it->second.userId;
+        return it->second.login->apiToken();
     }
 }
 
@@ -522,7 +524,7 @@ ExitInfo AbstractTokenNetworkJob::refreshToken() {
     }
 
     // userDbId found in User cache
-    const std::shared_ptr<Login> login = it->second.first;
+    const std::shared_ptr<Login> login = it->second.login;
     if (auto exitInfo = login->refreshToken(); !exitInfo) {
         LOG_WARN(_logger, "Failed to refresh token: code=" << exitInfo << " login error=" << login->error()
                                                            << " login error descr=" << login->errorDescr());
@@ -565,7 +567,7 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
         return 0;
     }
     // userDbId found in User cache
-    const std::shared_ptr<Login> login = it->second.first;
+    const std::shared_ptr<Login> login = it->second.login;
     return login->tokenUpdateDurationFromNow();
 }
 
