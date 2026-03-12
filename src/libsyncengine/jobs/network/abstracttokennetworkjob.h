@@ -110,7 +110,20 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 
+<<<<<<< HEAD
         friend class TestServerRequests;
+=======
+        // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
+        void loadUserInfoFromDriveDbId();
+
+        // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
+        void loadUserInfoFromUserDbId();
+
+        ApiToken retrieveApiTokenFromUserCache();
+        Account getAccount(const Drive &drive) const;
+        Drive getDrive(int driveDbId) const;
+        void setDriveDbIdFromDriveId();
+>>>>>>> eeffdd66f (refactor(abstract-token-network-job): enhance readability, flexibility and code reuse)
 };
 
 } // namespace KDC
