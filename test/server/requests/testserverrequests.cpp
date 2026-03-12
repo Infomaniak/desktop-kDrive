@@ -23,6 +23,7 @@
 #include "utility/types.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libsyncengine/jobs/network/abstracttokennetworkjob.h"
 
 #include "libparms/db/parmsdb.h"
 
@@ -94,5 +95,67 @@ void TestServerRequests::testGetPublicLink() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());
 }
+
+void TestServerRequests::testDeleteUser() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteUser(1));
+
+    // Check that user/account/drive have been removed from db
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(1, user, found));
+    CPPUNIT_ASSERT(!found);
+
+    Account account;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(!found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that user and drive have been removed from cache
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteAccount() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteAccount(1));
+
+    // Check that account/drive have been removed from db
+    Account account;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(!found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that drive has been removed from cache but not user
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteDrive() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteDrive(1));
+
+    // Check that drive has been removed from db
+    Drive drive;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that drive has been removed from cache
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
 
 } // namespace KDC

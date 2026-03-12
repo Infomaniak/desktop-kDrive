@@ -35,7 +35,7 @@
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Center"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}"
-              Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+              Visibility="{x:Bind GetNoActivityGridVisibility(ViewModel.SelectedSync.SyncActivities.Count, ViewModel.SelectedSync.SyncErrors.Count), Mode=OneWay}">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

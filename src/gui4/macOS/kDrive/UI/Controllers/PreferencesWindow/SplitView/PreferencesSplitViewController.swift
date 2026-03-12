@@ -17,17 +17,25 @@
  */
 
 import Cocoa
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 
 final class PreferencesSplitViewController: IKSplitViewController {
     static let sidebarWidth: CGFloat = 200
 
+    @LazyInjectService private var router: PreferencesViewRouter
+
     private let viewModel = PreferencesViewModel()
     private let repository = PreferencesRepository()
+
+    private var bindStore = Set<AnyCancellable>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
+        bindViewModel()
     }
 
     override func viewWillAppear() {
@@ -36,6 +44,17 @@ final class PreferencesSplitViewController: IKSplitViewController {
             async let _ = repository.refreshData()
             async let _ = viewModel.fetchInitialData()
         }
+    }
+
+    private func bindViewModel() {
+        router.$currentPath
+            .receiveOnMain(store: &bindStore) { [weak self] newPath in
+                self?.onPathChange(newPath)
+            }
+        router.$currentModal
+            .receiveOnMain(store: &bindStore) { [weak self] newPath in
+                self?.onModalPathChange(newPath)
+            }
     }
 
     private func setupSplitView() {
@@ -53,14 +72,18 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
     }
-}
 
-// MARK: - NavigableSidebarViewControllerDelegate
+    func onModalPathChange(_ modalPath: ModalPath?) {
+        if let modalPath {
+            // TODO: Present some modal view controller based on modalPath
+        } else if let presentedViewController = presentedViewControllers?.first {
+            dismiss(presentedViewController)
+        }
+    }
 
-extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate {
-    func sidebarViewController(_: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
-        var contentViewController: NSViewController
-        switch item {
+    func onPathChange(_ path: PreferencesViewRouter.RouterPath) {
+        let contentViewController: NSViewController
+        switch path.details.last {
         case .general:
             contentViewController = GeneralPreferencesViewController(repository: repository)
         case .accounts:
@@ -68,9 +91,21 @@ extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate
         case .advanced:
             contentViewController = AdvancedPreferencesViewController()
         default:
-            fatalError("Destination \(item) not handled")
+            contentViewController = GeneralPreferencesViewController(repository: repository)
         }
 
         switchContentViewController(destination: contentViewController)
+    }
+}
+
+// MARK: - NavigableSidebarViewControllerDelegate
+
+extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate {
+    func sidebarViewController(_: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
+        guard let preferencesViewTab = item.preferencesViewTab else {
+            return
+        }
+
+        router.setCurrentTab(preferencesViewTab)
     }
 }

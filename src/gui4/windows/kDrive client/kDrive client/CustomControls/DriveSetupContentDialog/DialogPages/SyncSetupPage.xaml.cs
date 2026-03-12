@@ -64,14 +64,14 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
+        private async void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
                 return;
             }
-            DriveSetupContentDialogVM.RevertCurrentSyncChanges();
+            await DriveSetupContentDialogVM.RevertCurrentSyncChanges();
 
             if (DriveSetupContentDialogVM.IsMultipleDrivesSetup())
             {

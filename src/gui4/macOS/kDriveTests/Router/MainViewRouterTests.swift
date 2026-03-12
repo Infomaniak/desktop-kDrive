@@ -25,7 +25,7 @@ struct MainViewRouterTests {
     @Test()
     func initialization() {
         // WHEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // THEN
         #expect(router.currentPath.mainTab == .home)
@@ -36,7 +36,7 @@ struct MainViewRouterTests {
     @Test()
     func setCurrentTabToActivity() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.setCurrentTab(.activities)
@@ -49,7 +49,7 @@ struct MainViewRouterTests {
     @Test()
     func setCurrentTabToStorage() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.setCurrentTab(.storage)
@@ -62,7 +62,7 @@ struct MainViewRouterTests {
     @Test()
     func setCurrentTabToBlockingError() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.setCurrentTab(.blockingError)
@@ -75,7 +75,7 @@ struct MainViewRouterTests {
     @Test()
     func pathCacheIsUsedWhenSwitchingTabs() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
         await router.append(.activityError)
 
         // WHEN - switch to activity and set some details
@@ -100,7 +100,7 @@ struct MainViewRouterTests {
     @Test()
     func appendAddsDetailToCurrentPath() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.append(.activityError)
@@ -112,7 +112,7 @@ struct MainViewRouterTests {
     @Test()
     func appendingUpdatesPathCache() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.append(.activityError)
@@ -128,7 +128,7 @@ struct MainViewRouterTests {
     @Test()
     func appendMultipleDetails() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.append(.activityError)
@@ -141,7 +141,7 @@ struct MainViewRouterTests {
     @Test()
     func removeLastRemovesSingleElement() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
         await router.append(.activityError)
         #expect(router.currentPath.details == [.home, .activityError])
 
@@ -155,7 +155,7 @@ struct MainViewRouterTests {
     @Test()
     func removeLastRemovesMultipleElements() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
         await router.append(.activityError)
         await router.append(.versionConflict)
         #expect(router.currentPath.details == [.home, .activityError, .versionConflict])
@@ -170,7 +170,7 @@ struct MainViewRouterTests {
     @Test()
     func removeLastDoesNotRemoveWhenElementsToRemoveExceedsCount() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
         #expect(router.currentPath.details == [.home])
 
         // WHEN - try to remove more elements than exist (should be a no-op)
@@ -183,7 +183,7 @@ struct MainViewRouterTests {
     @Test()
     func removeLastUpdatesPathCache() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
         await router.append(.activityError)
         await router.append(.versionConflict)
 
@@ -201,7 +201,7 @@ struct MainViewRouterTests {
     @Test()
     func setCurrentModalToValue() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN - ModalPath has no cases yet; verify setter is safe with nil
         await router.setCurrentModal(nil)
@@ -213,7 +213,7 @@ struct MainViewRouterTests {
     @Test()
     func switchingTabsDoesNotAffectModal() async {
         // GIVEN
-        let router = MainViewRouter()
+        let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
         await router.setCurrentTab(.activities)

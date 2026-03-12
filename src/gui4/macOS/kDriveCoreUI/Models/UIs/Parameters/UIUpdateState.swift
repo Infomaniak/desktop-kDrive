@@ -16,23 +16,37 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveResources
-import SwiftUI
+import Foundation
 
-struct VersionManagementCell: View {
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(KDriveLocalizable.updateSettings)
-                Text(KDriveLocalizable.updateAvailable("3.7.6"))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+public enum UIUpdateState {
+    case upToDate
+    case checking
+    case available
+    case downloading
+    case ready
 
-            Button(KDriveLocalizable.buttonUpdate) {
-                // TODO: Update app
-            }
+    case checkError
+    case downloadError
+    case updateError
+
+    public var isUpdateAvailable: Bool {
+        switch self {
+        case .available, .downloading, .ready:
+            return true
+        default:
+            return false
         }
+    }
+}
+
+public struct UIVersionInfo: Sendable {
+    public let channel: UIDistributionChannel
+    public let buildVersion: Int
+    public let tag: String
+
+    public init(channel: UIDistributionChannel, tag: String, buildVersion: Int) {
+        self.channel = channel
+        self.tag = tag
+        self.buildVersion = buildVersion
     }
 }

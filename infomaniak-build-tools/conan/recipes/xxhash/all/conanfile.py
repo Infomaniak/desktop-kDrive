@@ -68,7 +68,7 @@ class XxHashConan(ConanFile):
         if self.options.shared:
             self.options.rm_safe("fPIC")
         if self.settings.os == "Macos":
-            self.settings.os.version = "11.0"
+            self.settings.os.version = "10.15"
 
     def layout(self):
         cmake_layout(self, src_folder="src")

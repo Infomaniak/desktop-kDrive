@@ -22,36 +22,13 @@
         <!-- Data templates -->
         <DataTemplate x:Key="SingleAccountDriveTemplate"
                       x:DataType="types:IDrive">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <CheckBox Checked="DriveListCheckBox_Checked"
-                          Unchecked="DriveListCheckBox_Unchecked"
-                          HorizontalAlignment="Stretch"
-                          MinWidth="0"
-                          MinHeight="0" />
-
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                  Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Height="16" />
-                <TextBlock  Text="{x:Bind Name}"
-                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                            VerticalAlignment="Center" />
-            </StackPanel>
-        </DataTemplate>
-        <DataTemplate x:Key="MultiAccountDriveTemplate"
-                      x:DataType="types:IDrive">
-            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Column="0"
-                            Grid.Row="0"
-                            Orientation="Horizontal">
+            <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    MinHeight="44"
+                    MinWidth="280"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <CheckBox Checked="DriveListCheckBox_Checked"
                               Unchecked="DriveListCheckBox_Unchecked"
                               HorizontalAlignment="Stretch"
@@ -61,22 +38,127 @@
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
                                       Height="16" />
+                    <TextBlock  Text="{x:Bind Name}"
+                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Grid.Column="1"
-                           Grid.Row="0"
-                           Text="{x:Bind Name}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                           VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1"
-                           Grid.Row="1"
-                           Text="{x:Bind AccountName}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Foreground="{ThemeResource TextFillColorSecondary}" />
-            </Grid>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="SingleAccountDriveDisabledTemplate"
+                      x:DataType="types:IDrive">
+            <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
+                    Background="{ThemeResource ButtonDisabledBackgroundThemeBrush}"
+                    MinHeight="44"
+                    MinWidth="280"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <CheckBox IsChecked="True"
+                              HorizontalAlignment="Stretch"
+                              MinWidth="0"
+                              MinHeight="0" 
+                              IsEnabled="False"/>
+
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                      Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                      Height="16" />
+                    <TextBlock  Text="{x:Bind Name}"
+                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="MultiAccountDriveTemplate"
+                      x:DataType="types:IDrive">
+            <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    MinHeight="44"
+                    MinWidth="280"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Grid.Row="0"
+                                Orientation="Horizontal">
+                        <CheckBox Checked="DriveListCheckBox_Checked"
+                                  Unchecked="DriveListCheckBox_Unchecked"
+                                  HorizontalAlignment="Stretch"
+                                  MinWidth="0"
+                                  MinHeight="0" />
+
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                          Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
+                                          Height="16" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="0"
+                               Text="{x:Bind Name}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="1"
+                               Text="{x:Bind AccountName}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorSecondary}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="MultiAccountDriveDisabledTemplate"
+                      x:DataType="types:IDrive">
+            <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
+                    Background="{ThemeResource ButtonDisabledBackgroundThemeBrush}"
+                    MinHeight="44"
+                    MinWidth="280"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Grid.Row="0"
+                                Orientation="Horizontal">
+                        <CheckBox IsChecked="True"
+                                  HorizontalAlignment="Stretch"
+                                  MinWidth="0"
+                                  MinHeight="0" 
+                                  IsEnabled="False"/>
+
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                          Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                          Height="16" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="0"
+                               Text="{x:Bind Name}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="1"
+                               Text="{x:Bind AccountName}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                </Grid>
+            </Border>
         </DataTemplate>
         <local:DriveTemplateSelector x:Key="DriveTemplateSelector"
                                      SingleAccountDriveTemplate="{StaticResource SingleAccountDriveTemplate}"
-                                     MultiAccountDriveTemplate="{StaticResource MultiAccountDriveTemplate}" />
+                                     MultiAccountDriveTemplate="{StaticResource MultiAccountDriveTemplate}"
+                                     SingleAccountDriveDisabledTemplate="{StaticResource SingleAccountDriveDisabledTemplate}"
+                                     MultiAccountDriveDisabledTemplate="{StaticResource MultiAccountDriveDisabledTemplate}" />
     </Page.Resources>
 
     <Grid HorizontalAlignment="Center"
@@ -104,7 +186,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="12"
                             VerticalAlignment="Center">
-                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.AvatarImageSource, Mode=OneWay}"
+                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.GetAvatarImageSource(48), Mode=OneWay}"
                                    Height="24"
                                    Width="24" />
                     <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
@@ -152,17 +234,10 @@
                                              VerticalOffset="-80"
                                              IsEnabled="{x:Bind IsConfigured, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
-                                <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
-                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                        MinHeight="44"
-                                        MinWidth="280"
-                                        Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
-                                    <ContentControl Content="{x:Bind}"
-                                                    ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
-                                                    VerticalContentAlignment="Center"
-                                                    IsEnabled="{x:Bind IsConfigured, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
-                                </Border>
 
+                                <ContentControl Content="{x:Bind}"
+                                                ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
+                                                VerticalContentAlignment="Center" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

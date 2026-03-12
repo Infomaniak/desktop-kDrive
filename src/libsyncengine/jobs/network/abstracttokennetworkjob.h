@@ -66,8 +66,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
-        inline static void clearCacheForUser(UserDbId userDbId) { _userToApiKeyMap.erase(userDbId); }
-        inline static void clearCacheForDrive(DriveDbId driveDbId) { _driveToApiKeyMap.erase(driveDbId); }
+        static void clearCache();
 
         ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
@@ -92,7 +91,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, int>> _userToApiKeyMap;
 
         // Drive cache: <driveDbId, <userDbId, driveId>>
-        static std::unordered_map<DriveDbId, std::pair<int, int>> _driveToApiKeyMap;
+        static std::unordered_map<int, std::pair<int, int>> _driveToApiKeyMap;
+        static std::recursive_mutex _cacheMutex;
 
         ApiType _apiType{ApiType::Drive};
         UserDbId _userDbId{0};
@@ -109,6 +109,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
+
+        friend class TestServerRequests;
 };
 
 } // namespace KDC

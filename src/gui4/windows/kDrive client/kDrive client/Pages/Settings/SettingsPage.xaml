@@ -250,13 +250,13 @@
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                                             <controls:ContentLoader Height="36"
                                                                     Width="36"
-                                                                    IsLoading="{x:Bind AvatarImageSource, Converter={StaticResource IsNullToBoolOrVisibilityConverter} , Mode=OneWay}"
+                                                                    IsLoading="{x:Bind Avatar, Converter={StaticResource IsNullToBoolOrVisibilityConverter} , Mode=OneWay}"
                                                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}">
                                                 <controls:ContentLoader.LoaderContent>
                                                     <PersonPicture Height="36"
                                                                    Width="36"
                                                                    HorizontalAlignment="Left"
-                                                                   ProfilePicture="{x:Bind AvatarImageSource, Mode=OneWay}" />
+                                                                   ProfilePicture="{x:Bind GetAvatarImageSource(36), Mode=OneWay}" />
                                                 </controls:ContentLoader.LoaderContent>
                                             </controls:ContentLoader>
                                             <StackPanel>
