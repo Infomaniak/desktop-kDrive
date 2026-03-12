@@ -29,6 +29,14 @@ namespace Infomaniak.kDrive.OnBoarding
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private readonly ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
         private string _lottieRessourceKey = "Infomaniak.Custom.Animations.loader-stroke";
+        private DispatcherTimer? _columnAnimationTimer;
+        private double _contentStartWidth;
+        private double _lottieStartWidth;
+        private double _contentTargetWidth;
+        private double _lottieTargetWidth;
+        private LottiePosition _targetPosition;
+        private DateTimeOffset _animationStartTime;
+        private const double AnimationDurationMs = 300;
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
@@ -78,5 +86,80 @@ namespace Infomaniak.kDrive.OnBoarding
                 Logger.Log(Logger.Level.Warning, $"Lottie resource key '{ressourceKey}' not found or is not a string.");
             }
         }
+
+        public enum LottiePosition
+        {
+            FullWindow,
+            Right
+        }
+        public void SetLottiePosition(LottiePosition lottiePosition)
+        {
+            double totalWidth = ContentColumn.ActualWidth + LottieColumn.ActualWidth;
+            if (totalWidth <= 0)
+            {
+                ApplyLottiePosition(lottiePosition);
+                return;
+            }
+
+            _columnAnimationTimer?.Stop();
+            _contentStartWidth = ContentColumn.ActualWidth;
+            _lottieStartWidth = LottieColumn.ActualWidth;
+            _targetPosition = lottiePosition;
+
+            switch (lottiePosition)
+            {
+                case LottiePosition.FullWindow:
+                    _contentTargetWidth = 0;
+                    _lottieTargetWidth = totalWidth;
+                    break;
+                case LottiePosition.Right:
+                    _contentTargetWidth = totalWidth * (1.63 / 2.63);
+                    _lottieTargetWidth = totalWidth * (1.0 / 2.63);
+                    break;
+                default:
+                    return;
+            }
+
+            _animationStartTime = DateTimeOffset.Now;
+            _columnAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            _columnAnimationTimer.Tick += OnColumnAnimationTick;
+            _columnAnimationTimer.Start();
+        }
+
+        private void OnColumnAnimationTick(object? sender, object e)
+        {
+            double elapsed = (DateTimeOffset.Now - _animationStartTime).TotalMilliseconds;
+            double t = Math.Clamp(elapsed / AnimationDurationMs, 0.0, 1.0);
+            double easedT = EaseInOutQuad(t);
+
+            ContentColumn.Width = new GridLength(_contentStartWidth + (_contentTargetWidth - _contentStartWidth) * easedT, GridUnitType.Pixel);
+            LottieColumn.Width = new GridLength(_lottieStartWidth + (_lottieTargetWidth - _lottieStartWidth) * easedT, GridUnitType.Pixel);
+
+            if (t >= 1.0)
+            {
+                _columnAnimationTimer!.Stop();
+                _columnAnimationTimer.Tick -= OnColumnAnimationTick;
+                _columnAnimationTimer = null;
+                ApplyLottiePosition(_targetPosition);
+            }
+        }
+
+        private void ApplyLottiePosition(LottiePosition lottiePosition)
+        {
+            switch (lottiePosition)
+            {
+                case LottiePosition.FullWindow:
+                    ContentColumn.Width = new GridLength(0, GridUnitType.Pixel);
+                    LottieColumn.Width = new GridLength(1, GridUnitType.Star);
+                    break;
+                case LottiePosition.Right:
+                    ContentColumn.Width = new GridLength(1.63, GridUnitType.Star);
+                    LottieColumn.Width = new GridLength(1, GridUnitType.Star);
+                    break;
+            }
+        }
+
+        private static double EaseInOutQuad(double t) =>
+            t < 0.5 ? 2 * t * t : 1 - Math.Pow(-2 * t + 2, 2) / 2;
     }
 }
