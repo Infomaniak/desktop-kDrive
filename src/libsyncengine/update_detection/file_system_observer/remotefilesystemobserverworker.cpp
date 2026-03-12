@@ -247,7 +247,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
         }
 
         // Look for new actions
-        exitInfo = processActions(dataObj->getArray(actionsKey));
+        exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionFilesKey));
         if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
             tryToInvalidateSnapshot();
@@ -555,7 +555,6 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
     actionInfoList.clear();
     actionInfoList.reserve(actionArray->size());
 
-
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
 
@@ -605,7 +604,8 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
+ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
+                                                        const Poco::JSON::Array::Ptr actionFilesArray) {
     if (!actionArray) return ExitCode::Ok;
 
     ActionInfoList actionInfoList;

@@ -75,6 +75,7 @@ static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
+static const std::string actionFilesKey = "action_files";
 static const std::string actionKey = "action";
 static const std::string fileIdKey = "file_id";
 static const std::string fileTypeKey = "file_type";

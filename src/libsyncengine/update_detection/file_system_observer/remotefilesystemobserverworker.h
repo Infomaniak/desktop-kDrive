@@ -71,8 +71,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         using ActionInfoList = std::vector<ActionInfo>;
         ExitInfo createActionInfoList(const Poco::JSON::Array::Ptr actionArray, ActionInfoList &actionInfoList);
-        ExitInfo processActions(Poco::JSON::Array::Ptr filesArray);
-        ExitInfo extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitInfo processActions(const Poco::JSON::Array::Ptr actionsArray, const Poco::JSON::Array::Ptr actionFilesArray);
+        ExitInfo extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
         void keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) const;
