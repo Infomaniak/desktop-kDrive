@@ -134,7 +134,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
     return ExitCode::Ok;
 }
 
-void VfsMac::stopImpl() {
+void VfsMac::stopImpl(bool /*unregister*/) {
     LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams.syncDbId);
 
     if (!_connector) {

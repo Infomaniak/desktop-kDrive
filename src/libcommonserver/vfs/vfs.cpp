@@ -109,9 +109,9 @@ ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connecti
     return ExitCode::Ok;
 }
 
-void Vfs::stop() {
+void Vfs::stop(bool unregister) {
     if (_started) {
-        stopImpl();
+        stopImpl(unregister);
         _started = false;
     }
 }
