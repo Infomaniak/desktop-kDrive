@@ -152,10 +152,7 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     }
 
     SyncFileItem &item = it->second.front().item();
-    /*if (item.conflict() != ConflictType::None && status == SyncFileStatus::Success)
-        item.setStatus(SyncFileStatus::Conflict);
-    else*/
-        item.setStatus(status);
+    item.setStatus(status);
 
     item.setProgress(100); // 100%
 
