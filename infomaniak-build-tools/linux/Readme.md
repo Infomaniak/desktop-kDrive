@@ -63,44 +63,7 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-<<<<<<< HEAD
-=======
-## Qt 6.2.3
 
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In QT 6.2.3, select :
-- Desktop gcc 64-bits
-- Qt 5 Compatibility Module
-
-In Qt 6.2.3 Additional Libraries, select :
-- Qt Positioning
-- Qt WebChannel
-
-If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
-```bash
-sudo apt install libxcb-cursor0
-```
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
->
-> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
-
-```bash
-cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake ..
-sudo cmake --build . --target install
-```
-
->>>>>>> refs/rewritten/develop-22
 ## CPPUnit
 
 ```bash

@@ -59,41 +59,7 @@ Once installed, run the following command :
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
-<<<<<<< HEAD
-=======
-## QT 6.2.3
 
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In `QT 6.2.3`, select:
-- macOS
-- Sources
-- QT 5 Compatibility Module
-
-In `Qt 6.2.3 Additional Libraries`, select:
-- Qt Positioning
-- Qt WebChannel
-
-Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
-
-```bash
-export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
-export ALTOOL_USERNAME=<email address>
-export QTDIR=~/Qt/6.2.3/macos
-```
-
-## Sentry
-
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
-
-```bash
-cd ~/Projects/sentry-native
-cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
-cmake --build build --parallel
-sudo cmake --install build
-```
-
->>>>>>> refs/rewritten/develop-22
 ## CPPUnit
 
 Download and build `CPPUnit`:
