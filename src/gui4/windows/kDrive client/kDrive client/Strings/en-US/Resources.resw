@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
+  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -282,6 +282,9 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Release notes</value> 
   </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Remove synchronization</value> 
+  </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Resume synchronization</value> 
   </data> 
@@ -450,9 +453,6 @@ This action is permanent.
 To sync your drive again, you will need to reconnect it later.
 
 Before continuing, make sure all your files are up to date and fully synchronized.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Remove synchronization</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Remove synchronization?</value> 
@@ -741,6 +741,9 @@ Free up space or upgrade your offer to synchronize this file.</value>
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/help</value> 
   </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
@@ -1246,9 +1249,6 @@ Please wait a few moments.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Location on kDrive</value> 
-  </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Remove synchronization</value> 
   </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Reserved name</value> 

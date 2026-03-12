@@ -491,7 +491,12 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.HelpDeskUri);
+            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+
             await Task.Delay(1000);
             if (control is not null)
                 control.IsEnabled = true;
@@ -502,7 +507,11 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.FeedbackUri);
+            if(!await kDrive.Localizer.Instance.TryLaunchUriAsync("feedbackURL"))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to launch Feedback URI.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
             await Task.Delay(1000);
             if (control is not null)
                 control.IsEnabled = true;
