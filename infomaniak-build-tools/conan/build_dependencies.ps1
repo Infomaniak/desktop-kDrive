@@ -143,7 +143,7 @@ if ($CI) {
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
     # Call vcvarsall.bat to set up the environment for MSVC
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build/vcvars64.bat"
+    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     Log "CI mode enabled."
     $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Because of the CI User on Windows, we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
     Log "SSL_CERT_FILE set to $($env:SSL_CERT_FILE)"
