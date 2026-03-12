@@ -489,11 +489,13 @@
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="OpenDebugFolderButton_Click"
+                                                  IsActionIconVisible="False"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                                <toolKit:SettingsCard.ActionIcon>
-                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
-                                                      Foreground="{ThemeResource TextFillColorPrimary}" />
-                                </toolKit:SettingsCard.ActionIcon>
+                                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                                                  Height="14"
+                                                  Width="14"
+                                                  Foreground="{ThemeResource TextFillColorPrimary}"
+                                                  Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}" />
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
