@@ -470,7 +470,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
     if (!actionArray) return ExitCode::Ok;
 
-    std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>> movedItems;
+    MoveItemMap movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
@@ -613,8 +613,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::processAction(
-        ActionInfo &actionInfo, std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>> &movedItems) {
+ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, MoveItemMap &movedItems) {
     _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
 
     // Process action
@@ -719,8 +718,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(
     return ExitCode::Ok;
 }
 
-void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(
-        const ActionInfo &actionInfo, std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>> &movedItems) {
+void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) {
     if (!movedItems.contains(actionInfo.snapshotItem.id())) {
         // Keep track of moved items
         (void) movedItems.try_emplace(actionInfo.snapshotItem.id(), actionInfo.actionCode);
@@ -731,12 +729,11 @@ void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(
 }
 
 ExitInfo RemoteFileSystemObserverWorker::removeItemFromSnapshot(const NodeId &id) {
-    if (!_liveSnapshot.removeItem(id)) {
-        LOG_SYNCPAL_WARN(_logger, "Fail to remove item for ID: " << id);
-        tryToInvalidateSnapshot();
-        return ExitCode::BackError;
-    }
-    return ExitCode::Ok;
+    if (_liveSnapshot.removeItem(id)) return ExitCode::Ok;
+
+    LOG_SYNCPAL_WARN(_logger, "Fail to remove item for ID: " << id);
+    tryToInvalidateSnapshot();
+    return ExitCode::BackError;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights,
