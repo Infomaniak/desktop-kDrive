@@ -90,7 +90,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ApiType getApiType() const { return _apiType; }
 
     private:
-        // User cache: <userDbId, <Login, userId>>
         struct LoginEntry {
                 std::shared_ptr<Login> login;
                 int userId{0};
@@ -100,10 +99,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         static UserCache _userToApiKeyMap;
 
         // Drive cache: <driveDbId, <userDbId, driveId>>
-<<<<<<< HEAD
-        static std::unordered_map<int, std::pair<int, int>> _driveToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
-=======
         using DriveDbId = int32_t;
         using DriveId = int32_t;
         struct UserEntry {
@@ -112,7 +108,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
         using DriveCache = std::unordered_map<DriveDbId, UserEntry>;
         static DriveCache _driveToApiKeyMap;
->>>>>>> 8fb52a8f5 (refactor(abstract-token-network-job): enhance readability of cache-related data structures)
 
         ApiType _apiType{2};
         int _userDbId{0};
@@ -130,9 +125,9 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 
-<<<<<<< HEAD
+
         friend class TestServerRequests;
-=======
+
         // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
         void loadUserInfoFromDriveDbId();
 
@@ -143,7 +138,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         Account getAccount(const Drive &drive) const;
         Drive getDrive(int driveDbId) const;
         void setDriveDbIdFromDriveId();
->>>>>>> eeffdd66f (refactor(abstract-token-network-job): enhance readability, flexibility and code reuse)
 };
 
 } // namespace KDC

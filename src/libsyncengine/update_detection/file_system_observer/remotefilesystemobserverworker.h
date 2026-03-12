@@ -68,6 +68,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
             private:
                 SyncName _path;
         };
+
+        using ActionInfoList = std::vector<ActionInfo>;
+        ExitInfo createActionInfoList(const Poco::JSON::Array::Ptr actionArray, ActionInfoList &actionInfoList);
         ExitInfo processActions(Poco::JSON::Array::Ptr filesArray);
         ExitInfo extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;

@@ -550,18 +550,18 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
-    if (!actionArray) return ExitCode::Ok;
+ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::Array::Ptr actionArray,
+                                                              ActionInfoList &actionInfoList) {
+    actionInfoList.clear();
+    actionInfoList.reserve(actionArray->size());
 
-    MoveItemMap movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
-        if (stopAsked()) {
-            return ExitCode::Ok;
-        }
 
-        Poco::JSON::Object::Ptr actionObj = it->extract<Poco::JSON::Object::Ptr>();
+        if (stopAsked()) return ExitCode::Ok;
+
+        const Poco::JSON::Object::Ptr actionObj = it->extract<Poco::JSON::Object::Ptr>();
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) {
             return exitInfo;
@@ -599,7 +599,20 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             actionInfo.snapshotItem.setName(newName);
         }
 #endif
+        actionInfoList.push_back(actionInfo);
+    }
 
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
+    if (!actionArray) return ExitCode::Ok;
+
+    ActionInfoList actionInfoList;
+    if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
+
+    NodeIdSet movedItems;
+    for (auto &actionInfo: actionInfoList) {
         if (const auto exitInfo = processAction(actionInfo, movedItems); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
             return exitInfo;
