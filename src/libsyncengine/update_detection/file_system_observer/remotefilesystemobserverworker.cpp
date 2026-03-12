@@ -611,7 +611,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
     ActionInfoList actionInfoList;
     if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
 
-    NodeIdSet movedItems;
+    MoveItemMap movedItems;
     for (auto &actionInfo: actionInfoList) {
         if (const auto exitInfo = processAction(actionInfo, movedItems); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
