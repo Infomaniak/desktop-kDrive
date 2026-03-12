@@ -76,9 +76,9 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 void operator>>(QDataStream &in, DriveInfo &info) {
-    int dbId{0};
-    int id{0};
-    int accountDbId{0};
+    DriveDbId dbId{0};
+    DriveId id{0};
+    AccountDbId accountDbId{0};
     QString name;
     QColor color;
     bool notifications{false};

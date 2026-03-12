@@ -72,7 +72,7 @@ class DriveInfo {
                    lhs.accessDenied() == rhs.accessDenied();
         }
 
-    protected:
+    private:
         DriveDbId _dbId{0};
         DriveId _id{0};
         AccountDbId _accountDbId{0};
