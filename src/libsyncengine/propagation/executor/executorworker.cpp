@@ -173,8 +173,6 @@ void ExecutorWorker::execute() {
                         setProgressComplete(syncOp, SyncFileStatus::Ignored);
                     } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                         setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
-                    } else if (syncOp->affectedNode() && syncOp->hasConflict()) {
-                        setProgressComplete(syncOp, SyncFileStatus::Conflict);
                     } else {
                         setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                     }
@@ -276,6 +274,11 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
     } else {
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
+    }
+
+    if (syncOp->hasConflict() && status == SyncFileStatus::Success && (syncOp->conflict().type() == ConflictType::CreateCreate) ||
+        syncOp->conflict().type() == ConflictType::EditEdit) {
+        status = SyncFileStatus::Conflict;
     }
 
     if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
