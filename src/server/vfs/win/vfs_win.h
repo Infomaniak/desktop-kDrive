@@ -80,7 +80,7 @@ class VFS_EXPORT VfsWin : public Vfs {
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl() override;
+        void stopImpl(bool unregister) override;
 
         friend class TestWorkers;
 

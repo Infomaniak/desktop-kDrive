@@ -122,7 +122,7 @@ class Vfs : public QObject {
 
         /// Stop interaction with VFS provider. Like when the client application quits.
         /// Also deregister the folder with the sync provider, like when a folder is removed.
-        void stop();
+        void stop(bool unregister);
 
         /** Whether the socket api should show pin state options
          *
@@ -349,7 +349,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) = 0;
 
-        virtual void stopImpl() = 0;
+        virtual void stopImpl(bool unregister) = 0;
 
         log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
@@ -448,7 +448,8 @@ class VfsOff : public Vfs {
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl() override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

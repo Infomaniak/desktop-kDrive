@@ -131,7 +131,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncCacheMap() { _syncCacheMap.clear(); }
         void loadUsersInfo() { onLoadInfo(); }
 
-        [[nodiscard]] ExitInfo stopVfs(int syncDbId);
+        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);

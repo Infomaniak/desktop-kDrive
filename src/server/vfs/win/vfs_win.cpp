@@ -93,10 +93,11 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
     return ExitCode::Ok;
 }
 
-void VfsWin::stopImpl() {
+void VfsWin::stopImpl(bool unregister) {
     LOG_DEBUG(logger(), "stop: syncDbId=" << _vfsSetupParams.syncDbId);
 
-    if (vfsStop(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str()) != S_OK) {
+    if (vfsStop(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+                unregister) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStop: syncDbId=" << _vfsSetupParams.syncDbId);
     }
 

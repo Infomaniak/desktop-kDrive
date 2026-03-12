@@ -171,7 +171,7 @@ void TestWorkers::tearDown() {
     }
     if (_vfs) {
         // Stop Vfs
-        _vfs->stopImpl();
+        _vfs->stopImpl(true);
         _vfs = nullptr;
     }
     TestBase::stop();
