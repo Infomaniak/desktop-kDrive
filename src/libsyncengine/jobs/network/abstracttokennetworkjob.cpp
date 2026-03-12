@@ -41,7 +41,8 @@ std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, int>> AbstractTok
 std::unordered_map<DriveDbId, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
 std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
-                                                 const DriveDbId driveDbId, const int driveId, const bool returnJson /*= true*/) :
+                                                 const DriveDbId driveDbId, const DriveId driveId,
+                                                 const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
     _userId(userId),
