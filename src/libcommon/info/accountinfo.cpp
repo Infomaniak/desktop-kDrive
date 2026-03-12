@@ -28,7 +28,7 @@ static const auto accountInfoName = "name";
 
 namespace KDC {
 
-AccountInfo::AccountInfo(int dbId, int userDbId) :
+AccountInfo::AccountInfo(AccountDbId dbId, UserDbId userDbId) :
     _dbId(dbId),
     _userDbId(userDbId) {}
 

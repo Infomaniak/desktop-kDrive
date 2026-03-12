@@ -231,7 +231,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
-            int userDbId;
+            UserDbId userDbId = 0;
             bool connected;
             QString connexionError;
             paramsStream >> userDbId;
@@ -242,7 +242,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_REMOVED: {
-            int userDbId;
+            UserDbId userDbId = 0;
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
@@ -263,7 +263,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
-            int accountDbId;
+            AccountDbId accountDbId = 0;
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
@@ -284,7 +284,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
-            int driveDbId;
+            DriveDbId driveDbId = 0;
             qint64 total;
             qint64 used;
             paramsStream >> driveDbId;
@@ -295,14 +295,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_REMOVED: {
-            int driveDbId;
+            DriveDbId driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveRemoved(driveDbId);
             break;
         }
         case SignalNum::DRIVE_DELETE_FAILED: {
-            int driveDbId;
+            DriveDbId driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveDeletionFailed(driveDbId);
@@ -323,14 +323,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_REMOVED: {
-            int syncDbId;
+            SyncDbId syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncRemoved(syncDbId);
             break;
         }
         case SignalNum::SYNC_PROGRESSINFO: {
-            int syncDbId;
+            SyncDbId syncDbId = 0;
             SyncStatus status;
             SyncStep step;
             qint64 currentFile;
@@ -352,7 +352,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
-            int syncDbId;
+            SyncDbId syncDbId = 0;
             SyncFileItemInfo itemInfo;
             paramsStream >> syncDbId;
             paramsStream >> itemInfo;
@@ -361,14 +361,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
-            int syncDbId;
+            SyncDbId syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
             break;
         }
         case SignalNum::SYNC_DELETE_FAILED: {
-            int syncDbId;
+            SyncDbId syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
@@ -384,7 +384,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED: {
-            int syncDbId = 0;
+            SyncDbId syncDbId = 0;
             QVariant var;
             paramsStream >> syncDbId;
             paramsStream >> var;

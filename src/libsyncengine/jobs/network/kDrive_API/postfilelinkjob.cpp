@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-PostFileLinkJob::PostFileLinkJob(int driveDbId, const NodeId &nodeId) :
+PostFileLinkJob::PostFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;

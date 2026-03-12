@@ -134,18 +134,18 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
-        static ExitInfo deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitInfo deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteAccount(AccountDbId accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(SyncDbId syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
         static ExitInfo loadAccountInfo(Account &account, bool &updated);
-        static ExitInfo loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+        static ExitInfo loadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                                       bool &quotaUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);
-        static ExitInfo getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
+        static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
         static void userToUserInfo(const User &user, UserInfo &userInfo);

@@ -58,44 +58,44 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertUser(const User &user);
         bool updateUser(const User &user, bool &found);
-        bool deleteUser(int dbId, bool &found);
-        bool selectUser(int dbId, User &user, bool &found);
-        bool selectUserByUserId(int userId, User &user, bool &found);
-        bool selectUserFromAccountDbId(int dbId, User &user, bool &found);
-        bool selectUserFromDriveDbId(int dbId, User &user, bool &found);
+        bool deleteUser(UserDbId dbId, bool &found);
+        bool selectUser(UserDbId dbId, User &user, bool &found);
+        bool selectUserByUserId(UserId userId, User &user, bool &found);
+        bool selectUserFromAccountDbId(UserDbId dbId, User &user, bool &found);
+        bool selectUserFromDriveDbId(UserDbId dbId, User &user, bool &found);
         bool selectAllUsers(std::vector<User> &userList);
         bool selectLastConnectedUser(User &user, bool &found);
-        bool getNewUserDbId(int &dbId);
+        bool getNewUserDbId(UserDbId &dbId);
 
         bool insertAccount(const Account &account);
         bool updateAccount(const Account &account, bool &found);
-        bool deleteAccount(int dbId, bool &found);
-        bool selectAccount(int dbId, Account &account, bool &found);
+        bool deleteAccount(AccountDbId dbId, bool &found);
+        bool selectAccount(AccountDbId dbId, Account &account, bool &found);
         bool selectAllAccounts(std::vector<Account> &accountList);
-        bool selectAllAccounts(int userDbId, std::vector<Account> &accountList);
-        bool accountFromUserDbIdAndAccountId(int userDbId, int accountId, Account &account, bool &found);
-        bool getNewAccountDbId(int &dbId);
+        bool selectAllAccounts(UserDbId userDbId, std::vector<Account> &accountList);
+        bool accountFromUserDbIdAndAccountId(UserDbId userDbId, AccountId accountId, Account &account, bool &found);
+        bool getNewAccountDbId(AccountDbId &dbId);
 
         bool insertDrive(const Drive &drive);
         bool updateDrive(const Drive &drive, bool &found);
-        bool deleteDrive(int dbId, bool &found);
-        bool selectDrive(int dbId, Drive &drive, bool &found);
-        bool selectDriveByDriveId(int driveId, Drive &drive, bool &found);
+        bool deleteDrive(DriveDbId dbId, bool &found);
+        bool selectDrive(DriveDbId dbId, Drive &drive, bool &found);
+        bool selectDriveByDriveId(DriveId driveId, Drive &drive, bool &found);
         bool selectAllDrives(std::vector<Drive> &driveList);
-        bool selectAllDrives(int accountDbId, std::vector<Drive> &driveList);
-        bool driveDbId(int accountDbId, int driveId, int &dbId);
-        bool getNewDriveDbId(int &dbId);
+        bool selectAllDrives(AccountDbId accountDbId, std::vector<Drive> &driveList);
+        bool driveDbId(AccountDbId accountDbId, DriveId driveId, DriveDbId &dbId);
+        bool getNewDriveDbId(DriveDbId &dbId);
 
         bool insertSync(const Sync &sync);
         bool updateSync(const Sync &sync, bool &found);
-        bool setSyncPaused(int dbId, bool value, bool &found);
-        bool setSyncHasFullyCompleted(int dbId, bool value, bool &found);
-        bool deleteSync(int dbId, bool &found);
-        bool selectSync(int dbId, Sync &sync, bool &found);
+        bool setSyncPaused(SyncDbId dbId, bool value, bool &found);
+        bool setSyncHasFullyCompleted(SyncDbId dbId, bool value, bool &found);
+        bool deleteSync(SyncDbId dbId, bool &found);
+        bool selectSync(SyncDbId dbId, Sync &sync, bool &found);
         bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);
         bool selectAllSyncs(std::vector<Sync> &syncList);
-        bool selectAllSyncs(int driveDbId, std::vector<Sync> &syncList);
-        bool getNewSyncDbId(int &dbId);
+        bool selectAllSyncs(DriveDbId driveDbId, std::vector<Sync> &syncList);
+        bool getNewSyncDbId(SyncDbId &dbId);
 
         bool insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &constraintError);
         bool updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found);

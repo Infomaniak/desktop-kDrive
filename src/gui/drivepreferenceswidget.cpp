@@ -757,7 +757,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                 return;
             }
 
-            int driveId{driveInfoMapIt->second.id()};
+            DriveId driveId{driveInfoMapIt->second.id()};
 
             ConfirmSynchronizationDialog confirmSynchronizationDialog(_gui, _userDbId, driveId, serverFolderNodeId,
                                                                       localFolderName, localFolderSize, serverFolderName,
@@ -934,7 +934,7 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
         return;
     }
 
-    int driveId{driveInfoMapIt->second.id()};
+    DriveId driveId{driveInfoMapIt->second.id()};
 
     NodeInfo nodeInfo;
     if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);

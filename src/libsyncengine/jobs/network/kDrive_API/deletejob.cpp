@@ -28,7 +28,7 @@
 
 namespace KDC {
 
-DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
+DeleteJob::DeleteJob(const DriveDbId driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
                      const SyncPath &absoluteLocalFilepath, const NodeType nodeType) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _remoteItemId(remoteItemId),
@@ -38,7 +38,7 @@ DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const Node
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
-DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId) :
+DeleteJob::DeleteJob(const DriveDbId driveDbId, const NodeId &remoteItemId) :
     DeleteJob(driveDbId, remoteItemId, {}, {}, NodeType::Unknown) {}
 
 ExitInfo DeleteJob::canRun() {

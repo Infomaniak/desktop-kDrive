@@ -24,7 +24,7 @@ namespace KDC {
 
 class GetThumbnailJob : public AbstractTokenNetworkJob {
     public:
-        GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width);
+        GetThumbnailJob(DriveDbId driveDbId, NodeId nodeId, unsigned width);
 
     private:
         virtual std::string getSpecificUrl() override;

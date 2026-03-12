@@ -33,13 +33,12 @@
 
 namespace KDC::testhelpers {
 
-NodeId createRemoteDir(const int driveDbId, const NodeId &remoteParentId, const SyncName &name);
-void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
+NodeId createRemoteDir(const DriveDbId driveDbId, const NodeId &remoteParentId, const SyncName &name);
+void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncTime *creationTime = nullptr,
                     SyncTime *modificationTime = nullptr, int64_t *size = nullptr);
-void moveRemoteItem(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+void moveRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name = {});
-NodeId duplicateRemoteItem(const int driveDbId, const NodeId &id, const SyncName &newName);
-void deleteRemoteItem(const int driveDbId, const NodeId &id);
-SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
+NodeId duplicateRemoteItem(const DriveDbId driveDbId, const NodeId &id, const SyncName &newName);
+void deleteRemoteItem(const DriveDbId driveDbId, const NodeId &id);
 
 } // namespace KDC::testhelpers

@@ -1432,7 +1432,7 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
     return true;
 }
 
-bool ParmsDb::deleteUser(int dbId, bool &found) {
+bool ParmsDb::deleteUser(UserDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -1454,7 +1454,7 @@ bool ParmsDb::deleteUser(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
+bool ParmsDb::selectUser(UserDbId dbId, User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
@@ -1498,7 +1498,7 @@ bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectUserByUserId(int userId, User &user, bool &found) {
+bool ParmsDb::selectUserByUserId(UserId userId, User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
@@ -1542,7 +1542,7 @@ bool ParmsDb::selectUserByUserId(int userId, User &user, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectUserFromAccountDbId(int dbId, User &user, bool &found) {
+bool ParmsDb::selectUserFromAccountDbId(UserDbId dbId, User &user, bool &found) {
     Account account;
     if (!ParmsDb::instance()->selectAccount(dbId, account, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAccount");
@@ -1556,7 +1556,7 @@ bool ParmsDb::selectUserFromAccountDbId(int dbId, User &user, bool &found) {
     return selectUser(account.userDbId(), user, found);
 }
 
-bool ParmsDb::selectUserFromDriveDbId(int dbId, User &user, bool &found) {
+bool ParmsDb::selectUserFromDriveDbId(UserDbId dbId, User &user, bool &found) {
     Drive drive;
     if (!ParmsDb::instance()->selectDrive(dbId, drive, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
@@ -1655,7 +1655,7 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
     return true;
 }
 
-bool ParmsDb::getNewUserDbId(int &dbId) {
+bool ParmsDb::getNewUserDbId(UserDbId &dbId) {
     std::vector<User> userList;
     if (!selectAllUsers(userList)) {
         LOG_WARN(_logger, "Error in selectAllUsers");
@@ -1719,7 +1719,7 @@ bool ParmsDb::updateAccount(const Account &account, bool &found) {
     return true;
 }
 
-bool ParmsDb::deleteAccount(int dbId, bool &found) {
+bool ParmsDb::deleteAccount(AccountDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId = 0;
@@ -1741,7 +1741,7 @@ bool ParmsDb::deleteAccount(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
+bool ParmsDb::selectAccount(const AccountDbId dbId, Account &account, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
@@ -1805,7 +1805,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
     return true;
 }
 
-bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList) {
+bool ParmsDb::selectAllAccounts(UserDbId userDbId, std::vector<Account> &accountList) {
     const std::scoped_lock lock(_mutex);
 
     accountList.clear();
@@ -1837,7 +1837,7 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
     return true;
 }
 
-bool ParmsDb::accountFromUserDbIdAndAccountId(int userDbId, int accountId, Account &account, bool &found) {
+bool ParmsDb::accountFromUserDbIdAndAccountId(UserDbId userDbId, AccountId accountId, Account &account, bool &found) {
     found = false;
     std::vector<Account> accountList;
     if (!selectAllAccounts(userDbId, accountList)) {
@@ -1856,7 +1856,7 @@ bool ParmsDb::accountFromUserDbIdAndAccountId(int userDbId, int accountId, Accou
     return true;
 }
 
-bool ParmsDb::getNewAccountDbId(int &dbId) {
+bool ParmsDb::getNewAccountDbId(AccountDbId &dbId) {
     std::vector<Account> accountList;
     if (!selectAllAccounts(accountList)) {
         LOG_WARN(_logger, "Error in selectAllAccounts");
@@ -1927,10 +1927,10 @@ bool ParmsDb::updateDrive(const Drive &drive, bool &found) {
     return true;
 }
 
-bool ParmsDb::deleteDrive(int dbId, bool &found) {
+bool ParmsDb::deleteDrive(DriveDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_DRIVE_REQUEST_ID));
@@ -1949,7 +1949,7 @@ bool ParmsDb::deleteDrive(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
+bool ParmsDb::selectDrive(DriveDbId dbId, Drive &drive, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
@@ -1990,7 +1990,7 @@ bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectDriveByDriveId(int driveId, Drive &drive, bool &found) {
+bool ParmsDb::selectDriveByDriveId(DriveId driveId, Drive &drive, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
@@ -2038,7 +2038,7 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
 
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_DRIVES_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_DRIVES_REQUEST_ID);
@@ -2048,21 +2048,21 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
             break;
         }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 0, id));
-        int driveId;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 1, driveId));
-        int accountDbId;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 2, accountDbId));
+        DriveDbId id = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 0, id));
+        DriveId driveId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 1, driveId));
+        AccountDbId accountDbId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 2, accountDbId));
         std::string driveName;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 3, driveName));
-        int64_t size;
+        int64_t size = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_REQUEST_ID, 4, size));
         std::string color;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_REQUEST_ID, 5, color));
-        int notifications;
+        int notifications = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 6, notifications));
-        int admin;
+        int admin = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 7, admin));
 
         driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
@@ -2073,7 +2073,7 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
     return true;
 }
 
-bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
+bool ParmsDb::selectAllDrives(AccountDbId accountDbId, std::vector<Drive> &driveList) {
     const std::scoped_lock lock(_mutex);
 
     driveList.clear();
@@ -2081,7 +2081,7 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, accountDbId));
 
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID);
@@ -2091,19 +2091,19 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
             break;
         }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 0, id));
-        int driveId;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, driveId));
+        DriveDbId id = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 0, id));
+        DriveId driveId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 1, driveId));
         std::string driveName;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 2, driveName));
-        int64_t size;
+        int64_t size = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 3, size));
         std::string color;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 4, color));
-        int notifications;
+        int notifications = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 5, notifications));
-        int admin;
+        int admin = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
         (void) driveList.emplace_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
@@ -2114,7 +2114,7 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
     return true;
 }
 
-bool ParmsDb::driveDbId(int accountDbId, int driveId, int &dbId) {
+bool ParmsDb::driveDbId(AccountDbId accountDbId, DriveId driveId, DriveDbId &dbId) {
     std::vector<Drive> driveList;
     if (!selectAllDrives(accountDbId, driveList)) {
         LOG_WARN(_logger, "Error in selectAllDrives");
@@ -2132,7 +2132,7 @@ bool ParmsDb::driveDbId(int accountDbId, int driveId, int &dbId) {
     return true;
 }
 
-bool ParmsDb::getNewDriveDbId(int &dbId) {
+bool ParmsDb::getNewDriveDbId(DriveDbId &dbId) {
     std::vector<Drive> driveList;
     if (!selectAllDrives(driveList)) {
         LOG_WARN(_logger, "Error in selectAllDrives");
@@ -2195,7 +2195,7 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     int64_t listingCursorTimestamp;
     sync.listingCursor(listingCursor, listingCursorTimestamp);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_REQUEST_ID));
@@ -2228,7 +2228,7 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     return true;
 }
 
-bool ParmsDb::setSyncPaused(int dbId, bool value, bool &found) {
+bool ParmsDb::setSyncPaused(SyncDbId dbId, bool value, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2251,7 +2251,7 @@ bool ParmsDb::setSyncPaused(int dbId, bool value, bool &found) {
     return true;
 }
 
-bool ParmsDb::setSyncHasFullyCompleted(int dbId, bool value, bool &found) {
+bool ParmsDb::setSyncHasFullyCompleted(SyncDbId dbId, bool value, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2274,7 +2274,7 @@ bool ParmsDb::setSyncHasFullyCompleted(int dbId, bool value, bool &found) {
     return true;
 }
 
-bool ParmsDb::deleteSync(int dbId, bool &found) {
+bool ParmsDb::deleteSync(SyncDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -2371,7 +2371,7 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
+bool ParmsDb::selectSync(SyncDbId dbId, Sync &sync, bool &found) {
     static const char *requestId = SELECT_SYNC_REQUEST_ID;
 
     const std::scoped_lock lock(_mutex);
@@ -2409,10 +2409,10 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
             break;
         }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
-        int driveDbId;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
+        SyncDbId id = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
+        DriveDbId driveDbId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
         SyncName localPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
         std::string localNodeId;
@@ -2423,15 +2423,15 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, targetNodeId));
         SyncName dbPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, dbPath));
-        int paused;
+        int paused = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, paused));
-        int supportVfs;
+        int supportVfs = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, supportVfs));
-        int virtualFileMode;
+        int virtualFileMode = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, virtualFileMode));
-        int notificationsDisabled;
+        int notificationsDisabled = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, notificationsDisabled));
-        int hasFullyCompleted;
+        int hasFullyCompleted = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, hasFullyCompleted));
         std::string navigationPaneClsid;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, navigationPaneClsid));
@@ -2451,7 +2451,7 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
     return true;
 }
 
-bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
+bool ParmsDb::selectAllSyncs(DriveDbId driveDbId, std::vector<Sync> &syncList) {
     const std::scoped_lock lock(_mutex);
 
     syncList.clear();
@@ -2468,8 +2468,8 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
             break;
         }
 
-        int id;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
+        SyncDbId id = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
         SyncName localPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
         std::string localNodeId;
@@ -2480,15 +2480,15 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, targetNodeId));
         SyncName dbPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, dbPath));
-        int paused;
+        int paused = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, paused));
-        int supportVfs;
+        int supportVfs = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, supportVfs));
-        int virtualFileMode;
+        int virtualFileMode = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, virtualFileMode));
-        int notificationsDisabled;
+        int notificationsDisabled = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, notificationsDisabled));
-        int hasFullyCompleted;
+        int hasFullyCompleted = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, hasFullyCompleted));
         std::string navigationPaneClsid;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, navigationPaneClsid));
@@ -2508,7 +2508,7 @@ bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
     return true;
 }
 
-bool ParmsDb::getNewSyncDbId(int &dbId) {
+bool ParmsDb::getNewSyncDbId(SyncDbId &dbId) {
     std::vector<Sync> syncList;
     if (!selectAllSyncs(syncList)) {
         LOG_WARN(_logger, "Error in selectAllSyncs");

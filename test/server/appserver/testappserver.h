@@ -38,7 +38,7 @@ class MockAppServer : public AppServer {
             _loadAccountInfo = f;
         };
         void setLoadDriveInfoFunction(
-                const std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId,
+                const std::function<ExitInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId,
                                              bool &updated, bool &quotaUpdated)> &f) {
             _loadDriveInfo = f;
         };

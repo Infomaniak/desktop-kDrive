@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetSizeJob : public AbstractTokenNetworkJob {
     public:
-        GetSizeJob(int userDbId, int driveId, const NodeId &nodeId);
-        GetSizeJob(int driveDbId, const NodeId &nodeId);
+        GetSizeJob(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
+        GetSizeJob(DriveDbId driveDbId, const NodeId &nodeId);
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline int64_t size() const { return _size; }

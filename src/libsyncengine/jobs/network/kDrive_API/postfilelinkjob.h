@@ -24,7 +24,7 @@ namespace KDC {
 
 class PostFileLinkJob : public AbstractTokenNetworkJob {
     public:
-        PostFileLinkJob(int driveDbId, const NodeId &nodeId);
+        PostFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId);
 
     private:
         virtual std::string getSpecificUrl() override;

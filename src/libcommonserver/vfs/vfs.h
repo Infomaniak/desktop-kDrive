@@ -41,15 +41,15 @@ namespace KDC {
 
 class Vfs;
 
-using VfsMap = std::unordered_map<int, std::shared_ptr<Vfs>>;
+using VfsMap = std::unordered_map<SyncDbId, std::shared_ptr<Vfs>>;
 
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) :
             logger(logger) {}
-        int syncDbId{-1};
-        int driveId{-1};
-        int userId{-1};
+        SyncDbId syncDbId{-1};
+        DriveId driveId{-1};
+        UserId userId{-1};
         SyncPath localPath;
         SyncPath targetPath;
         std::string namespaceCLSID;

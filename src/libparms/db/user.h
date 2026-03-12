@@ -36,10 +36,10 @@ class PARMS_EXPORT User {
              const std::string &email = std::string(), const std::string &avatarUrl = std::string(),
              std::shared_ptr<std::vector<char>> avatar = nullptr, bool toMigrate = false);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserId(int userId) { _userId = userId; }
-        inline int userId() const { return _userId; }
+        inline void setDbId(UserDbId dbId) { _dbId = dbId; }
+        inline UserDbId dbId() const { return _dbId; }
+        inline void setUserId(UserId userId) { _userId = userId; }
+        inline UserId userId() const { return _userId; }
         inline const std::string &keychainKey() const { return _keychainKey; }
         inline void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
         inline const std::string &name() const { return _name; }
@@ -57,8 +57,8 @@ class PARMS_EXPORT User {
 
     private:
         log4cplus::Logger _logger;
-        int _dbId;
-        int _userId;
+        UserDbId _dbId;
+        UserId _userId;
         std::string _keychainKey;
         std::string _name;
         std::string _email;

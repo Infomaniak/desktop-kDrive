@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &filepath, const NodeId &parentId,
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &filepath, const NodeId &parentId,
                            const SyncName &name, const std::string &color /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
@@ -35,7 +35,7 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const 
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &parentId, const SyncName &name) :
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &parentId, const SyncName &name) :
     CreateDirJob(vfs, driveDbId, "", parentId, name) {}
 
 CreateDirJob::~CreateDirJob() {

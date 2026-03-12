@@ -48,8 +48,15 @@ namespace KDC {
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
+using UserDbId = int64_t;
+using AccountDbId = int64_t;
+using DriveDbId = int64_t;
+using SyncDbId = int64_t;
 using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
+using UserId = int64_t;
+using AccountId = int64_t;
+using DriveId = int64_t;
 using NodeId = std::string;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;

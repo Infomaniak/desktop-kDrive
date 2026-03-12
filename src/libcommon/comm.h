@@ -364,6 +364,8 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_SHOW_DIALOG";
         case SignalNum::UPDATER_STATE_CHANGED:
             return "UPDATER_STATE_CHANGED";
+        case SignalNum::LOGIN_SEND_AUTHORIZATION_CODE:
+            return "LOGIN_SEND_AUTHORIZATION_CODE";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_ERROR_ADDED_LEGACY:

@@ -32,12 +32,12 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        void setDbId(const int driveDbId) { _dbId = driveDbId; }
-        int dbId() const { return _dbId; }
-        void setId(const int driveId) { _id = driveId; }
-        int id() const { return _id; }
-        void setAccountDbId(const int accountDbId) { _accountDbId = accountDbId; }
-        int accountDbId() const { return _accountDbId; }
+        void setDbId(const DriveDbId driveDbId) { _dbId = driveDbId; }
+        DriveDbId dbId() const { return _dbId; }
+        void setId(const DriveId driveId) { _id = driveId; }
+        DriveId id() const { return _id; }
+        void setAccountDbId(const AccountDbId accountDbId) { _accountDbId = accountDbId; }
+        AccountDbId accountDbId() const { return _accountDbId; }
         void setName(const QString &name) { _name = name; }
         const QString &name() const { return _name; }
         void setSize(const int64_t size) { _size = size; }
@@ -73,9 +73,9 @@ class DriveInfo {
         }
 
     protected:
-        int _dbId{0};
-        int _id{0};
-        int _accountDbId{0};
+        DriveDbId _dbId{0};
+        DriveId _id{0};
+        AccountDbId _accountDbId{0};
         QString _name;
         int64_t _size{0};
         QColor _color;

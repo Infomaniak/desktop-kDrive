@@ -109,7 +109,7 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::deleteUser(int userDbId) {
+ExitInfo ServerRequests::deleteUser(UserDbId userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
@@ -126,7 +126,7 @@ ExitInfo ServerRequests::deleteUser(int userDbId) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::deleteAccount(int accountDbId) {
+ExitInfo ServerRequests::deleteAccount(AccountDbId accountDbId) {
     // Delete account (and linked drives/syncs by cascade)
     bool found = false;
     if (!ParmsDb::instance()->deleteAccount(accountDbId, found)) {
@@ -141,7 +141,7 @@ ExitInfo ServerRequests::deleteAccount(int accountDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteDrive(int driveDbId) {
+ExitCode ServerRequests::deleteDrive(DriveDbId driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {
@@ -158,7 +158,7 @@ ExitCode ServerRequests::deleteDrive(int driveDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteSync(int syncDbId) {
+ExitCode ServerRequests::deleteSync(SyncDbId syncDbId) {
     // Delete Sync in DB
     bool found;
     if (!ParmsDb::instance()->deleteSync(syncDbId, found)) {
@@ -606,7 +606,7 @@ ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const
     }
 
     if (!found) {
-        int accountDbId = 0;
+        AccountDbId accountDbId = 0;
         if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
             return ExitCode::DbError;
@@ -626,7 +626,7 @@ ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const
     }
 
     // Create Drive in DB if needed
-    int driveDbId = 0;
+    DriveDbId driveDbId = 0;
     if (!ParmsDb::instance()->driveDbId(account.dbId(), driveId, driveDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
         return ExitCode::DbError;
@@ -681,7 +681,7 @@ ExitInfo ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 #endif
 
     // Create Sync in DB
-    int syncDbId;
+    SyncDbId syncDbId;
     if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
         return ExitCode::DbError;
@@ -1062,10 +1062,8 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
     Account account;
     bool updated = false;
     bool quotaUpdated = false;
-    uint64_t newAccountId = 0;
-    if (const auto exitInfo =
-                loadDriveInfo(driveUpdated, static_cast<uint64_t>(account.accountId()), newAccountId, updated, quotaUpdated);
-        !exitInfo) {
+    AccountId newAccountId = 0;
+    if (const auto exitInfo = loadDriveInfo(driveUpdated, account.accountId(), newAccountId, updated, quotaUpdated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in User::loadDriveInfo");
         return exitInfo;
     }
@@ -1725,7 +1723,7 @@ ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                                        bool &quotaUpdated) {
     newAccountId = 0;
     updated = false;
@@ -1809,7 +1807,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const uint64_t previousAcco
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+ExitInfo ServerRequests::getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
@@ -1939,7 +1937,7 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInf
         userCreated = false;
     } else {
         // Create User in DB
-        int dbId;
+        UserDbId dbId = 0;
         if (!ParmsDb::instance()->getNewUserDbId(dbId)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewUserDbId");
             return ExitCode::DbError;

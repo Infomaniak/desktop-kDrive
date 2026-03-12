@@ -29,17 +29,17 @@ namespace KDC {
 class PARMS_EXPORT Sync {
     public:
         Sync();
-        Sync(int dbId, int driveDbId, const SyncPath &localPath, const NodeId &localNodeId, const SyncPath &targetPath,
+        Sync(SyncDbId dbId, DriveDbId driveDbId, const SyncPath &localPath, const NodeId &localNodeId, const SyncPath &targetPath,
              const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
              VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
              int64_t listingCursorTimestamp = 0);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
-        inline int driveDbId() const { return _driveDbId; }
+        inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
+        inline SyncDbId dbId() const { return _dbId; }
+        inline void setDriveDbId(DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        inline DriveDbId driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const SyncPath &localPath) { _localPath = localPath; }
         inline const SyncPath &localPath() const { return _localPath; }
         inline void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
@@ -72,8 +72,8 @@ class PARMS_EXPORT Sync {
         }
 
     private:
-        int _dbId{0};
-        int _driveDbId{0};
+        SyncDbId _dbId{0};
+        DriveDbId _driveDbId{0};
         SyncPath _localPath;
         NodeId _localNodeId;
         SyncPath _targetPath;

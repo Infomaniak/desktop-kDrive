@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libparms/parmslib.h"
+#include "utility/types.h"
 
 #include <string>
 
@@ -45,15 +46,15 @@ class PARMS_EXPORT Drive {
         };
 
         Drive();
-        Drive(int dbId, int driveId, int accountDbId, const std::string &name = std::string(), int64_t size = int64_t(),
-              const std::string &color = std::string(), bool notifications = true, bool admin = true);
+        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(),
+              int64_t size = int64_t(), const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
-        void setDbId(int dbId) { _dbId = dbId; }
-        [[nodiscard]] int dbId() const { return _dbId; }
-        void setDriveId(int driveId) { _driveId = driveId; }
-        [[nodiscard]] int driveId() const { return _driveId; }
-        void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
-        [[nodiscard]] int accountDbId() const { return _accountDbId; }
+        void setDbId(DriveDbId dbId) { _dbId = dbId; }
+        [[nodiscard]] DriveDbId dbId() const { return _dbId; }
+        void setDriveId(DriveId driveId) { _driveId = driveId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
+        void setAccountDbId(AccountDbId accountDbId) { _accountDbId = accountDbId; }
+        [[nodiscard]] AccountDbId accountDbId() const { return _accountDbId; }
         void setName(const std::string &newDriveName) { _name = newDriveName; }
         [[nodiscard]] const std::string &name() const { return _name; }
         void setSize(int64_t newSize) { _size = newSize; }
@@ -79,9 +80,9 @@ class PARMS_EXPORT Drive {
 
     private:
         log4cplus::Logger _logger;
-        int _dbId{0};
-        int _driveId{0};
-        int _accountDbId{0};
+        DriveDbId _dbId{0};
+        DriveId _driveId{0};
+        AccountDbId _accountDbId{0};
         std::string _name;
         int64_t _size{0};
         std::string _color; // #RRGGBB format

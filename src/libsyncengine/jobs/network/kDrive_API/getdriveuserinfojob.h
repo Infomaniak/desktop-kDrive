@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetDriveUserInfoJob : public AbstractTokenNetworkJob {
     public:
-        GetDriveUserInfoJob(int32_t userDbId, int32_t driveId, int32_t userId);
-        GetDriveUserInfoJob(int32_t driveDbId, int32_t userId);
+        GetDriveUserInfoJob(UserDbId userDbId, DriveId driveId, UserId userId);
+        GetDriveUserInfoJob(DriveDbId driveDbId, UserId userId);
 
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] const std::string &email() const { return _email; }
@@ -39,7 +39,7 @@ class GetDriveUserInfoJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &uri) override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
-        int _targetUserId;
+        UserId _targetUserId{0};
         std::string _name;
         std::string _email;
         std::string _avatarUrl;

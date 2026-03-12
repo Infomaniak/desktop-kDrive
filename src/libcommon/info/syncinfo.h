@@ -32,13 +32,14 @@ namespace KDC {
 class SyncInfo {
     public:
         SyncInfo() = default;
-        SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
-                 bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid);
+        SyncInfo(SyncDbId dbId, DriveDbId driveDbId, const QString &localPath, const QString &targetPath,
+                 const QString &targetNodeId, bool supportVfs, VirtualFileMode virtualFileMode,
+                 const QString &navigationPaneClsid);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
-        inline int driveDbId() const { return _driveDbId; }
+        inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
+        inline SyncDbId dbId() const { return _dbId; }
+        inline void setDriveDbId(DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        inline DriveDbId driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const QString &path) { _localPath = path; }
         inline const QString &localPath() const { return _localPath; }
         inline void setTargetPath(const QString &path) { _targetPath = path; }
@@ -62,8 +63,8 @@ class SyncInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list);
 
     protected:
-        int _dbId = 0;
-        int _driveDbId = 0;
+        SyncDbId _dbId = 0;
+        DriveDbId _driveDbId = 0;
         QString _localPath;
         QString _targetPath;
         QString _targetNodeId;

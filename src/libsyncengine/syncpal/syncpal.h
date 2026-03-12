@@ -82,7 +82,7 @@ class GetSizeJob;
 
 class SyncPal;
 
-using SyncPalMap = std::unordered_map<int, std::shared_ptr<SyncPal>>;
+using SyncPalMap = std::unordered_map<SyncDbId, std::shared_ptr<SyncPal>>;
 
 struct SyncPalInfo {
         SyncPalInfo() = default;

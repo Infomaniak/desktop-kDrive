@@ -217,7 +217,7 @@ ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+ExitInfo mockLoadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                            bool &quotaUpdated) {
     if (drive.dbId() == 11 && previousAccountId == accountIdA) {
         newAccountId = accountIdB;

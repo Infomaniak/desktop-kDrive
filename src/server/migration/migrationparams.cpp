@@ -269,7 +269,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     }
 
     if (!found) {
-        int userDbId;
+        UserDbId userDbId;
         if (!ParmsDb::instance()->getNewUserDbId(userDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewUserDbId");
             return ExitCode::DbError;
@@ -287,12 +287,12 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     }
 
     Account account;
-    int accountDbId = 0;
+    AccountDbId accountDbId = 0;
     std::string accountName;
 
     // Drive
     Drive drive;
-    int driveDbId;
+    DriveDbId driveDbId = 0;
     QString strDriveUrl = settings.value(QString(urlC)).toString();
     int driveId = extractDriveIdFromUrl(strDriveUrl.toStdString());
     if (!ParmsDb::instance()->selectDriveByDriveId(driveId, drive, found)) {
@@ -394,7 +394,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             settings.beginGroup(syncContent);
 
             // Create sync
-            int syncDbId;
+            SyncDbId syncDbId;
             if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
                 LOG_WARN(_logger, "Error in ParmsDb::getNewSyncDbId");
                 return ExitCode::DbError;
