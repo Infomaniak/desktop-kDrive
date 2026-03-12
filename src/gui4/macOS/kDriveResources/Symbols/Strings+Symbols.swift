@@ -18,6 +18,8 @@ public enum KDriveLocalizable {
   public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
   /// loco:69a6d9dd08a75d40410b53f6
   public static let accessibilityBetaProgramPicker = KDriveLocalizable.tr("Localizable", "accessibilityBetaProgramPicker", fallback: "Choosing a distribution channel")
+  /// loco:69b275fb3440db13f0011c03
+  public static let accessibilitySelectSynchroMode = KDriveLocalizable.tr("Localizable", "accessibilitySelectSynchroMode", fallback: "Select a synchronization mode")
   /// loco:6981cb92c70239c9ed0d45a3
   public static let activitiesTitleIdle = KDriveLocalizable.tr("Localizable", "activitiesTitleIdle", fallback: "Synchronization complete")
   /// loco:6981b68b50a70d64050197e2
@@ -98,6 +100,8 @@ public enum KDriveLocalizable {
   public static let buttonPause = KDriveLocalizable.tr("Localizable", "buttonPause", fallback: "Pause")
   /// loco:697b65a56840f9d35605a134
   public static let buttonRefresh = KDriveLocalizable.tr("Localizable", "buttonRefresh", fallback: "Refresh")
+  /// loco:69b275c6f0de2ef07706b5b3
+  public static let buttonRemove = KDriveLocalizable.tr("Localizable", "buttonRemove", fallback: "Remove")
   /// loco:698b07467beec481020cef52
   public static let buttonRemoveSync = KDriveLocalizable.tr("Localizable", "buttonRemoveSync", fallback: "Remove synchronization")
   /// loco:6964e1fd78f375ec03073c88
@@ -134,6 +138,10 @@ public enum KDriveLocalizable {
   }
   /// loco:698c6b10661f3226080d11a2
   public static let dialogRemoveAccountTitle = KDriveLocalizable.tr("Localizable", "dialogRemoveAccountTitle", fallback: "Sign out of this account?")
+  /// loco:698c7bc013e8b5bced08e614
+  public static let dialogSyncDeletionWarningContent = KDriveLocalizable.tr("Localizable", "dialogSyncDeletionWarningContent", fallback: "The local folder will remain on your computer, but it will no longer be synchronized with kDrive.\nThis action is permanent.\nTo sync your drive again, you will need to reconnect it later.\n\nBefore continuing, make sure all your files are up to date and fully synchronized.")
+  /// loco:698c7b5c30ae98f0e6043132
+  public static let dialogSyncDeletionWarningTitle = KDriveLocalizable.tr("Localizable", "dialogSyncDeletionWarningTitle", fallback: "Remove synchronization?")
   /// loco:698af1c80126fd2db302b783
   public static let doNotJoin = KDriveLocalizable.tr("Localizable", "doNotJoin", fallback: "Do not join")
   /// loco:696a260311ac2de6c6029683
@@ -166,6 +174,8 @@ public enum KDriveLocalizable {
   public static let errorDeletingAccount = KDriveLocalizable.tr("Localizable", "errorDeletingAccount", fallback: "An error occurred while deleting your account.")
   /// loco:69afcc9e14a34ba0f30ee2a2
   public static let errorStartingInstaller = KDriveLocalizable.tr("Localizable", "errorStartingInstaller", fallback: "Error while trying to start the installer")
+  /// loco:69b3e9128555b02b5001ee42
+  public static let errorWhileChangingSynchroMode = KDriveLocalizable.tr("Localizable", "errorWhileChangingSynchroMode", fallback: "Error while changing the mode of synchronization")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4
