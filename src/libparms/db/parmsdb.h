@@ -61,8 +61,8 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool deleteUser(UserDbId dbId, bool &found);
         bool selectUser(UserDbId dbId, User &user, bool &found);
         bool selectUserByUserId(UserId userId, User &user, bool &found);
-        bool selectUserFromAccountDbId(UserDbId dbId, User &user, bool &found);
-        bool selectUserFromDriveDbId(UserDbId dbId, User &user, bool &found);
+        bool selectUserFromAccountDbId(AccountDbId accountDbId, User &user, bool &found);
+        bool selectUserFromDriveDbId(DriveDbId driveDbId, User &user, bool &found);
         bool selectAllUsers(std::vector<User> &userList);
         bool selectLastConnectedUser(User &user, bool &found);
         bool getNewUserDbId(UserDbId &dbId);

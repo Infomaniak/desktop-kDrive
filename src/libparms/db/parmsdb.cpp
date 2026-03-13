@@ -1542,28 +1542,28 @@ bool ParmsDb::selectUserByUserId(UserId userId, User &user, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectUserFromAccountDbId(UserDbId dbId, User &user, bool &found) {
+bool ParmsDb::selectUserFromAccountDbId(AccountDbId accountDbId, User &user, bool &found) {
     Account account;
-    if (!ParmsDb::instance()->selectAccount(dbId, account, found)) {
+    if (!ParmsDb::instance()->selectAccount(accountDbId, account, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAccount");
         return false;
     }
     if (!found) {
-        LOG_WARN(_logger, "Account not found for accountDbId=" << dbId);
+        LOG_WARN(_logger, "Account not found for accountDbId=" << accountDbId);
         return false;
     }
 
     return selectUser(account.userDbId(), user, found);
 }
 
-bool ParmsDb::selectUserFromDriveDbId(UserDbId dbId, User &user, bool &found) {
+bool ParmsDb::selectUserFromDriveDbId(DriveDbId driveDbId, User &user, bool &found) {
     Drive drive;
-    if (!ParmsDb::instance()->selectDrive(dbId, drive, found)) {
+    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
         return false;
     }
     if (!found) {
-        LOG_WARN(_logger, "Drive not found for driveDbId=" << dbId);
+        LOG_WARN(_logger, "Drive not found for driveDbId=" << driveDbId);
         return false;
     }
 
