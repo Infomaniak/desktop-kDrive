@@ -269,7 +269,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     }
 
     if (!found) {
-        UserDbId userDbId;
+        UserDbId userDbId = 0;
         if (!ParmsDb::instance()->getNewUserDbId(userDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewUserDbId");
             return ExitCode::DbError;
