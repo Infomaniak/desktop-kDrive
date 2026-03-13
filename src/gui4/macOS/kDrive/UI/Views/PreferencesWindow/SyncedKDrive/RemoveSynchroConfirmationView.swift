@@ -26,17 +26,6 @@ struct RemoveSynchroConfirmationView: View {
 
     let synchroDbId: Int
 
-    enum ShowableError: LocalizedError {
-        case cannotRemoveSynchro
-
-        var errorDescription: String? {
-            switch self {
-            case .cannotRemoveSynchro:
-                return ""
-            }
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading) {
             Text(KDriveLocalizable.dialogSyncDeletionWarningTitle)
@@ -52,6 +41,7 @@ struct RemoveSynchroConfirmationView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonRemove) {
+                    removeSynchro()
                     dismiss()
                 }
             }
