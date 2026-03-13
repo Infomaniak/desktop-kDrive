@@ -580,7 +580,7 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
 bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
     // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
     // but for now it would require some refactoring to make it reusable, so we duplicate it here.
-
+    outLocalNodeId.reset();
     FileStat fileStat;
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(localAbsolutePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
@@ -593,7 +593,12 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
     } else if (ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(localAbsolutePath));
         return false;
+    } else if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error accessing item: " << Utility::formatSyncPath(localAbsolutePath)
+                                                             << L": " << Utility::formatIoError(ioError));
+        return false;
     }
+
     outLocalNodeId = std::to_string(fileStat.inode);
 
     DbNode dbNode;

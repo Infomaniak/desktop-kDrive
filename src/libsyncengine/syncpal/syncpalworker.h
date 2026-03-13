@@ -65,7 +65,7 @@ class SyncPalWorker : public ISyncWorker {
          * Returns false if the item is not in sync, or if an error occurred while trying to determine it
          * (e.g., file not found, I/O error, etc.). 
          */
-        bool isLocalItemInSyncWithDb(const SyncPath &localPath, std::optional<NodeId> &outLocalNodeId);
+        bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         void resetVfsFilesStatus();
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
