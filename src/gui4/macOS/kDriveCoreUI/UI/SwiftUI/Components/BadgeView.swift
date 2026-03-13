@@ -19,36 +19,56 @@
 import kDriveResources
 import SwiftUI
 
-public struct DriveBadgeView: View {
+public struct BadgeView: View {
+    let image: Image
     let color: Color
 
-    public init(color: Color) {
+    let iconSize: CGFloat
+    let squareSize: CGFloat
+    let radius: CGFloat
+
+    private var padding: CGFloat {
+        return (squareSize - iconSize) / 2
+    }
+
+    public init(
+        image: Image,
+        color: Color,
+        iconSize: CGFloat = 12,
+        squareSize: CGFloat = 20,
+        radius: CGFloat = AppRadius.radius4
+    ) {
+        self.image = image
         self.color = color
+
+        self.iconSize = iconSize
+        self.squareSize = squareSize
+        self.radius = radius
     }
 
     public var body: some View {
         if #available(macOS 26.0, *) {
             icon
-                .padding(AppPadding.padding4)
-                .glassEffect(.regular.tint(color), in: .rect(cornerRadius: AppRadius.radius4))
+                .padding(padding)
+                .glassEffect(.regular.tint(color), in: .rect(cornerRadius: radius))
         } else {
-            RoundedRectangle(cornerRadius: AppRadius.radius4)
+            RoundedRectangle(cornerRadius: radius)
                 .fill(color)
-                .frame(width: 20, height: 20)
+                .frame(width: squareSize, height: squareSize)
                 .overlay { icon }
         }
     }
 
     private var icon: some View {
-        KDriveResources.kdriveFoldersStacked.swiftUIImage
+        image
             .resizable()
             .scaledToFit()
             .foregroundStyle(.white)
-            .frame(width: 12, height: 12)
+            .frame(width: iconSize, height: iconSize)
     }
 }
 
 #Preview {
-    DriveBadgeView(color: .yellow)
+    BadgeView(image: KDriveResources.kdriveFoldersStacked.swiftUIImage, color: .yellow)
         .padding()
 }

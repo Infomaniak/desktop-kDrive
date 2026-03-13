@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 10 Mar 2026 14:58:16 +0100
+ * Exported at: Thu, 12 Mar 2026 09:15:02 +0100
  */
 
 
@@ -19,6 +19,9 @@
 
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Choisir le canal de distribution";
+
+/* loco:69b275fb3440db13f0011c03 */
+"accessibilitySelectSynchroMode" = "Sélectionner un mode de synchronisation";
 
 /* loco:6981cb92c70239c9ed0d45a3 */
 "activitiesTitleIdle" = "Synchronisation terminée";
@@ -135,6 +138,9 @@
 /* loco:697b65a56840f9d35605a134 */
 "buttonRefresh" = "Rafraîchir";
 
+/* loco:69b275c6f0de2ef07706b5b3 */
+"buttonRemove" = "Supprimer";
+
 /* loco:698b07467beec481020cef52 */
 "buttonRemoveSync" = "Supprimer la synchronisation";
 /* loco:6964e1fd78f375ec03073c88 */
@@ -182,6 +188,13 @@
 
 /* loco:698c6b10661f3226080d11a2 */
 "dialogRemoveAccountTitle" = "Se déconnecter de ce compte ?";
+
+/* loco:698c7bc013e8b5bced08e614 */
+"dialogSyncDeletionWarningContent" = "Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.\nCette action est permanente.\nPour synchroniser à nouveau votre lecteur, vous devrez le reconnecter plus tard.\n\nAvant de continuer, assurez-vous que tous vos fichiers sont à jour et entièrement synchronisés.";
+
+/* loco:698c7b5c30ae98f0e6043132 */
+"dialogSyncDeletionWarningTitle" = "Supprimer la synchronisation ?";
+
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Ne pas adhérer";
 /* loco:696a260311ac2de6c6029683 */
@@ -227,6 +240,10 @@
 "errorDeletingAccount" = "Une erreur s'est produite lors de la suppression de votre compte.";
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Erreur lors du démarrage du programme d'installation";
+
+/* loco:69b3e9128555b02b5001ee42 */
+"errorWhileChangingSynchroMode" = "Erreur lors du changement de mode de synchronisation";
+
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aidez-nous à améliorer kDrive";
 
