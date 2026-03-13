@@ -243,7 +243,6 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                              << L") removed from local replica. It will not be blacklisted.");
             removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
                                   // remove it from filesystem (we can have transient errors like file locks)
-            _syncPal->blacklistTemporarily(localNodeId, localPath, ReplicaSide::Local); 
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                                            << CommonUtility::s2ws(localNodeId)
