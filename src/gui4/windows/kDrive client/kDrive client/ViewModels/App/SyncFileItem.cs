@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.Types;
 using System;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -24,7 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _localPath = "";
         private string _parentFolderPath = "";
         private int _progressPercent = 0;
-        public Int64 _perationId = 0;
+        public Int64 _operationId = 0;
 
         public Sync Sync { get; }
 
@@ -32,6 +33,28 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncFileItem(Sync sync)
         {
             Sync = sync;
+        }
+
+        public SyncFileItem(Sync sync, SyncFileItemInfo info)
+        {
+            Sync = sync;
+            _type = info.Type ?? NodeType.File;
+            _path = info.Path ?? string.Empty;
+            _localPath = System.IO.Path.Combine(Sync.LocalPath, _path.TrimStart(System.IO.Path.DirectorySeparatorChar));
+            _parentFolderPath = System.IO.Path.GetDirectoryName(LocalPath) ?? "";
+            _newPath = info.NewPath ?? string.Empty;
+            _localNodeId = info.LocalNodeId ?? string.Empty;
+            _remoteNodeId = info.RemoteNodeId ?? string.Empty;
+            _direction = info.Direction ?? SyncDirection.Unknown;
+            _instruction = info.Instruction ?? SyncFileInstruction.None;
+            _status = info.Status ?? SyncFileStatus.Unknown;
+            _conflict = info.Conflict ?? ConflictType.None;
+            _inconsistency = info.Inconsistency ?? InconsistencyType.None;
+            _cancelType = info.CancelType ?? CancelType.None;
+            _size = info.Size ?? 0;
+            _error = info.Error ?? string.Empty;
+            _progressPercent = info.Progress ?? 0;
+            _operationId = info.OperationId ?? 0;
         }
 
         public NodeType Type
@@ -133,8 +156,8 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Int64 OperationId
         {
-            get => _perationId;
-            set => SetPropertyInUIThread(ref _perationId, value);
+            get => _operationId;
+            set => SetPropertyInUIThread(ref _operationId, value);
         }
 
         // Calculated properties

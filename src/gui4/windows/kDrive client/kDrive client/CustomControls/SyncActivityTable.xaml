@@ -164,8 +164,7 @@
                                                   Foreground="{ThemeResource colors.status.medium.warning}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
+                                        <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
                             </DataTemplate>
@@ -175,23 +174,31 @@
                                                   Foreground="{ThemeResource colors.status.medium.success}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />
+                                        <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />
                                     </ToolTipService.ToolTip>
                                 </controls:SvgIcon>
 
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizingTemplate">
-                                <ProgressRing Height="16"
-                                              Width="16"
-                                              IsIndeterminate="False"
-                                              kDrive:AncestorSource.AncestorType="ContentControl"
-                                              Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
+                                <Grid kDrive:AncestorSource.AncestorType="ContentControl">
                                     <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="ItemErrorToolTip"
-                                                 Content="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=syncInProgressTooltip'}" />
+                                        <TextBlock>
+                                            <Run Text="{Binding DataContext.ProgressPercent, Mode=OneWay}" />
+                                            <Run Text="%" />
+                                        </TextBlock>
                                     </ToolTipService.ToolTip>
-                                </ProgressRing>
+                                    <ProgressRing Height="16"
+                                                  Width="16"
+                                                  Background="{ThemeResource ButtonBackgroundThemeBrush}"
+                                                  IsIndeterminate="False"
+                                                  kDrive:AncestorSource.AncestorType="ContentControl"
+                                                  Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
+
+                                    </ProgressRing>
+                                    <Rectangle  Width="32"
+                                                Height="32"
+                                                Fill="Transparent" />
+                                </Grid>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizedFlyoutTemplate">
@@ -248,10 +255,10 @@
                                 <Button Grid.Column="2"
                                         Padding="0"
                                         BorderThickness="0"
-                                        Height="32"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
-                                        Background="Transparent">
+                                        Background="Transparent"
+                                        kDrive:AncestorSource.AncestorType="ContentControl">
                                     <Button.Content>
                                         <controls:SvgIcon Width="14"
                                                           Height="14"

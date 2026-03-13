@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
@@ -62,7 +63,13 @@ namespace Infomaniak.kDrive.ViewModels
 
                 return _syncStatus;
             }
-            set => SetPropertyInUIThread(ref _syncStatus, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _syncStatus, value) && (value == SyncStatus.Paused || value == SyncStatus.Stopped))
+                {
+                    AppModel.UIThreadDispatcher.TryEnqueue(ClearOngoingActivities);
+                }
+            }
         }
 
         public Sync(DbId dbId, Drive drive)
@@ -318,6 +325,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
+        }
+
+        public void ClearOngoingActivities()
+        {
+            var toBeRemoved = SyncActivities.Where(a => a.Status == SyncFileStatus.Syncing);
+            SyncActivities.RemoveMany(toBeRemoved);
         }
 
     }
