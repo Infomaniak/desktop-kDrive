@@ -37,7 +37,9 @@ namespace Infomaniak.kDrive.OnBoarding
         private LottiePosition _targetPosition = LottiePosition.Right;
         private DateTimeOffset _animationStartTime;
         private const double _animationDurationMs = 300;
-        private const double _defaultContentWidthRatio = 1.63 / 2.63;
+        private const double _contentColumnWeight = 1.63;
+        private const double _lottieColumnWeight = 1.0;
+        private const double _defaultContentWidthRatio = _contentColumnWeight / (_contentColumnWeight + _lottieColumnWeight);
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
@@ -98,7 +100,7 @@ namespace Infomaniak.kDrive.OnBoarding
         public void SetLottiePosition(LottiePosition lottiePosition)
         {
             double totalWidth = ContentColumn.ActualWidth + LottieColumn.ActualWidth;
-            if (totalWidth <= 0)
+            if (double.IsNaN(totalWidth) || double.IsInfinity(totalWidth) || totalWidth <= 0)
             {
                 ApplyLottiePosition(lottiePosition);
                 return;
@@ -124,7 +126,8 @@ namespace Infomaniak.kDrive.OnBoarding
             }
 
             _animationStartTime = DateTimeOffset.Now;
-            _columnAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            const double _animationFrameIntervalMs = 16; // ~60fps
+            _columnAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(_animationFrameIntervalMs) };
             _columnAnimationTimer.Tick += OnColumnAnimationTick;
             _columnAnimationTimer.Start();
         }
