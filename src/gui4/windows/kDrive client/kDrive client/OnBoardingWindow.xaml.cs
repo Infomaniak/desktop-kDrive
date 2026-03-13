@@ -34,9 +34,10 @@ namespace Infomaniak.kDrive.OnBoarding
         private double _lottieStartWidth;
         private double _contentTargetWidth;
         private double _lottieTargetWidth;
-        private LottiePosition _targetPosition;
+        private LottiePosition _targetPosition = LottiePosition.Right;
         private DateTimeOffset _animationStartTime;
-        private const double AnimationDurationMs = 300;
+        private const double _animationDurationMs = 300;
+        private const double _defaultContentWidthRatio = 1.63 / 2.63;
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
@@ -57,6 +58,8 @@ namespace Infomaniak.kDrive.OnBoarding
                 return;
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
             _isInitialized = true;
+            ApplyLottiePosition(_targetPosition);
+
         }
 
         private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
@@ -113,8 +116,8 @@ namespace Infomaniak.kDrive.OnBoarding
                     _lottieTargetWidth = totalWidth;
                     break;
                 case LottiePosition.Right:
-                    _contentTargetWidth = totalWidth * (1.63 / 2.63);
-                    _lottieTargetWidth = totalWidth * (1.0 / 2.63);
+                    _contentTargetWidth = totalWidth * _defaultContentWidthRatio;
+                    _lottieTargetWidth = totalWidth * (1 - _defaultContentWidthRatio);
                     break;
                 default:
                     return;
@@ -129,7 +132,7 @@ namespace Infomaniak.kDrive.OnBoarding
         private void OnColumnAnimationTick(object? sender, object e)
         {
             double elapsed = (DateTimeOffset.Now - _animationStartTime).TotalMilliseconds;
-            double t = Math.Clamp(elapsed / AnimationDurationMs, 0.0, 1.0);
+            double t = Math.Clamp(elapsed / _animationDurationMs, 0.0, 1.0);
             double easedT = EaseInOutQuad(t);
 
             ContentColumn.Width = new GridLength(_contentStartWidth + (_contentTargetWidth - _contentStartWidth) * easedT, GridUnitType.Pixel);
@@ -153,8 +156,8 @@ namespace Infomaniak.kDrive.OnBoarding
                     LottieColumn.Width = new GridLength(1, GridUnitType.Star);
                     break;
                 case LottiePosition.Right:
-                    ContentColumn.Width = new GridLength(1.63, GridUnitType.Star);
-                    LottieColumn.Width = new GridLength(1, GridUnitType.Star);
+                    ContentColumn.Width = new GridLength(_defaultContentWidthRatio, GridUnitType.Star);
+                    LottieColumn.Width = new GridLength(1 - _defaultContentWidthRatio, GridUnitType.Star);
                     break;
             }
         }
