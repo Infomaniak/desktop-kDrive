@@ -394,7 +394,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             settings.beginGroup(syncContent);
 
             // Create sync
-            SyncDbId syncDbId;
+            SyncDbId syncDbId = 0;
             if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
                 LOG_WARN(_logger, "Error in ParmsDb::getNewSyncDbId");
                 return ExitCode::DbError;

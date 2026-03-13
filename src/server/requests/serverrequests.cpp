@@ -681,7 +681,7 @@ ExitInfo ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 #endif
 
     // Create Sync in DB
-    SyncDbId syncDbId;
+    SyncDbId syncDbId = 0;
     if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
         return ExitCode::DbError;
