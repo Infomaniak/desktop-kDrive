@@ -48,7 +48,7 @@ void TestIntegration::testLocalChanges() {
 
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(filePath, &fileStat, exists);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
@@ -62,7 +62,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate an edit operation.
     testhelpers::generateOrEditTestFile(filePath);
-    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(filePath, &fileStat, exists);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
@@ -99,7 +99,12 @@ void TestIntegration::testLocalChanges() {
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif
@@ -132,7 +137,7 @@ void TestIntegration::testRemoteChanges() {
 
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(filePath, &fileStat, exists);
     CPPUNIT_ASSERT_EQUAL(fileInfoJob.size(), fileStat.size);
     CPPUNIT_ASSERT_EQUAL(fileInfoJob.modificationTime(), fileStat.modificationTime);
 
@@ -147,7 +152,7 @@ void TestIntegration::testRemoteChanges() {
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(filePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(filePath, &filestat, ioError);
     CPPUNIT_ASSERT_EQUAL(modificationTime, filestat.modificationTime);
     CPPUNIT_ASSERT_EQUAL(size, filestat.size);
     logStep("test edit remote file");
@@ -172,7 +177,12 @@ void TestIntegration::testRemoteChanges() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif
@@ -209,7 +219,7 @@ void TestIntegration::testUploadBigFile() {
 
     bool found = false;
     FileStat fileStat;
-    IoHelper::getFileStat(localFilePath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(localFilePath, &fileStat, found);
 
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 

@@ -105,8 +105,7 @@ void TestIntegration::testEditEditPseudoConflict() {
     // Check that the modification time has been updated in DB.
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(_syncPal->localPath() / dbNode.name(ReplicaSide::Local), &fileStat, exists,
-                          IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(_syncPal->localPath() / dbNode.name(ReplicaSide::Local), &fileStat, exists);
     std::optional<SyncTime> lastModified = std::nullopt;
     CPPUNIT_ASSERT_EQUAL(true,
                          _syncPal->syncDb()->lastModified(ReplicaSide::Remote, _testFileRemoteId, lastModified, found) && found);
@@ -217,7 +216,7 @@ void TestIntegration::testEditDeleteConflict() {
         // Edit operation has won.
         CPPUNIT_ASSERT(std::filesystem::exists(filepath));
         FileStat fileStat;
-        (void) IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+        (void) IoHelper::getFileStat(filepath, &fileStat, ioError);
         CPPUNIT_ASSERT_EQUAL(modificationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(size, fileStat.size);
         logStep("testEditDeleteConflict1");
@@ -254,7 +253,13 @@ void TestIntegration::testEditDeleteConflict() {
         // ... but the edited file has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
 
+#if defined(KD_LINUX)
+        CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+#else
         CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#endif
+
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
         testhelpers::eraseFromTrash(dirpath.filename());
 #endif

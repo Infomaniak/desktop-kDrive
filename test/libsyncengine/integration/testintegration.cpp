@@ -29,21 +29,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
-#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -53,6 +38,24 @@
 #include "syncpal/excludelistpropagator.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "update_detection/blacklist_changes_propagator/blacklistpropagator.h"
+
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
+
+#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
+#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 
 using namespace CppUnit;
 using namespace std::chrono;
@@ -88,7 +91,7 @@ void TestIntegration::setUp() {
     const User user(1, 12321, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId());
+    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
@@ -113,7 +116,7 @@ void TestIntegration::setUp() {
 
     FileStat fileStat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError);
 
     // This is an advanced sync. Define remote target path and remote target node ID.
     const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
@@ -134,7 +137,7 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
+    if (_syncPal) _syncPal->stop(false, true, false);
     _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();
@@ -215,7 +218,7 @@ void TestIntegration::inconsistencyTests() {
     testhelpers::generateOrEditTestFile(nameClashLocalPath);
     FileStat filestat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
@@ -231,8 +234,7 @@ void TestIntegration::inconsistencyTests() {
     // and a new edit operation, with the new path, is generated.
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError,
-                                 IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
     remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
 
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
@@ -303,7 +305,12 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+#else
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(dirpath.filename());
 #endif
@@ -314,7 +321,12 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
@@ -383,8 +395,7 @@ void TestIntegration::testExclusionTemplates() {
     const RemoteTemporaryDirectory exclusionTemplatesTestDir(_driveDbId, tmpRemoteDir.id(), "testDir");
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / exclusionTemplatesTestDir.name(), &filestat, found,
-                          IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / exclusionTemplatesTestDir.name(), &filestat, found);
     const auto dirLocalId = std::to_string(filestat.inode);
 
     const auto filename = "testExclusionTemplates";
@@ -394,7 +405,7 @@ void TestIntegration::testExclusionTemplates() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto excludedFilePath = _syncPal->localPath() / tmpRemoteDir.name() / testName;
-    IoHelper::getFileStat(excludedFilePath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(excludedFilePath, &filestat, found);
     auto fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath));
 
@@ -419,8 +430,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // ... but the local file is still excluded. A new file is therefore downloaded.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found,
-                          IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -448,8 +458,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found,
-                          IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -469,9 +478,13 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
                                             filename)); // The local file has been moved to trash.
-
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
@@ -486,8 +499,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found,
-                          IoHelper::PathCheckOption::Insensitive);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -565,7 +577,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        IoHelper::getFileStat(filepath, &fileStat, found);
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -584,7 +596,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        IoHelper::getFileStat(filepath, &fileStat, found);
         (void) IoHelper::setFileDates(filepath, timeInput, fileStat.modificationTime, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -610,7 +622,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        IoHelper::getFileStat(filepath, &fileStat, found);
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -890,7 +902,7 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return {};
