@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -678,14 +678,14 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     _statusBarWidget->setStatus(statusInfo);
 }
 
-void SynthesisPopover::refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoMapIt) {
+void SynthesisPopover::refreshStatusBar(std::map<int, DriveInfoClient>::const_iterator driveInfoMapIt) {
     _statusBarWidget->setCurrentDrive(driveInfoMapIt->first);
     _statusBarWidget->setSeveralSyncs(_gui->syncInfoMap().size() > 1);
 
     refreshStatusBar(driveInfoMapIt->second);
 }
 
-void SynthesisPopover::refreshStatusBar(DriveDbId driveDbId) {
+void SynthesisPopover::refreshStatusBar(int driveDbId) {
     refreshStatusBar(_gui->driveInfoMap().find(driveDbId));
 }
 

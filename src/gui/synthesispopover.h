@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,8 +131,8 @@ class SynthesisPopover : public QDialog {
         void getFirstSyncWithStatus(SyncStatus status, int driveDbId, int &syncDbId, bool &found);
         void getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found);
         void refreshStatusBar(const DriveInfoClient &driveInfo);
-        void refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoIt);
-        void refreshStatusBar(DriveDbId driveDbId);
+        void refreshStatusBar(std::map<int, DriveInfoClient>::const_iterator driveInfoIt);
+        void refreshStatusBar(int driveDbId);
         void setSynchronizedDefaultPage(QWidget **widget, QWidget *parent);
         void reset();
         void addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row = 0);

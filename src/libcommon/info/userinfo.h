@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@ namespace KDC {
 class UserInfo {
     public:
         UserInfo(int userDbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected);
-        UserInfo();
+        UserInfo() = default;
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserId(int userId) { _userId = userId; }
-        inline int userId() const { return _userId; }
+        inline void setDbId(UserDbId dbId) { _dbId = dbId; }
+        inline UserDbId dbId() const { return _dbId; }
+        inline void setUserId(UserId userId) { _userId = userId; }
+        inline UserId userId() const { return _userId; }
         inline void setName(const QString &name) { _name = name; }
         inline const QString &name() const { return _name; }
         inline void setEmail(const QString &email) { _email = email; }

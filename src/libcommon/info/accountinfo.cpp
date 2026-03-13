@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,14 +50,18 @@ void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, AccountInfo &accountInfo) {
+    int dbId = 0;
+    int userDbId = 0;
     QString name;
-    in >> accountInfo._dbId >> accountInfo._userDbId >> name;
+    in >> dbId >> userDbId >> name;
+    accountInfo.setDbId(dbId);
+    accountInfo.setUserDbId(userDbId);
     accountInfo._name = QStr2Str(name);
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const AccountInfo &accountInfo) {
-    out << accountInfo._dbId << accountInfo._userDbId << QString::fromStdString(accountInfo._name);
+    out << toInt(accountInfo._dbId) << toInt(accountInfo._userDbId) << QString::fromStdString(accountInfo._name);
     return out;
 }
 

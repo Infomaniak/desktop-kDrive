@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -231,7 +231,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
-            UserDbId userDbId = 0;
+            int userDbId = 0;
             bool connected;
             QString connexionError;
             paramsStream >> userDbId;
@@ -242,7 +242,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_REMOVED: {
-            UserDbId userDbId = 0;
+            int userDbId = 0;
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
@@ -263,7 +263,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
-            AccountDbId accountDbId = 0;
+            int accountDbId = 0;
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
@@ -284,7 +284,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
-            DriveDbId driveDbId = 0;
+            int driveDbId = 0;
             qint64 total;
             qint64 used;
             paramsStream >> driveDbId;
@@ -295,14 +295,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_REMOVED: {
-            DriveDbId driveDbId = 0;
+            int driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveRemoved(driveDbId);
             break;
         }
         case SignalNum::DRIVE_DELETE_FAILED: {
-            DriveDbId driveDbId = 0;
+            int driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveDeletionFailed(driveDbId);
@@ -323,14 +323,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_REMOVED: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncRemoved(syncDbId);
             break;
         }
         case SignalNum::SYNC_PROGRESSINFO: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             SyncStatus status;
             SyncStep step;
             qint64 currentFile;
@@ -352,7 +352,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             SyncFileItemInfo itemInfo;
             paramsStream >> syncDbId;
             paramsStream >> itemInfo;
@@ -361,14 +361,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
             break;
         }
         case SignalNum::SYNC_DELETE_FAILED: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
@@ -384,7 +384,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             QVariant var;
             paramsStream >> syncDbId;
             paramsStream >> var;

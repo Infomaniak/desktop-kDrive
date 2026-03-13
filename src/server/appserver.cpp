@@ -1023,7 +1023,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
-                resultStream << userInfo.dbId();
+                resultStream << toInt(userInfo.dbId());
             } else {
                 resultStream << QString::fromStdString(error);
                 resultStream << QString::fromStdString(errorDescr);
@@ -1309,7 +1309,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
 
-            DriveDbId driveDbId = 0;
+            int driveDbId = 0;
             ArgsWriter(params).write(driveDbId);
 
             // Get syncs to delete
@@ -1539,7 +1539,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
-                resultStream << syncInfo.dbId();
+                resultStream << toInt(syncInfo.dbId());
             }
 
             QTimer::singleShot(100, this, [=, this]() {
@@ -1748,7 +1748,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::NODE_PATH: {
-            SyncDbId syncDbId = 0;
+            int syncDbId = 0;
             QString nodeId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -2405,7 +2405,7 @@ void AppServer::sendErrorsCleared(SyncDbId syncDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
+        paramsStream << toInt(syncDbId);
         (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
     }
     if (useCommManager()) {
@@ -2461,7 +2461,7 @@ void AppServer::sendNodeFixConflictedFilesCompleted(const SyncDbId syncDbId, con
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
+        paramsStream << toInt(syncDbId);
         paramsStream << nbErrors;
         (void) OldCommServer::instance()->sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, params, id);
     }
@@ -4454,7 +4454,7 @@ void AppServer::sendUserStatusChanged(UserDbId userDbId, bool connected, QString
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << userDbId;
+        paramsStream << toInt(userDbId);
         paramsStream << connected;
         paramsStream << connexionError;
 
@@ -4471,7 +4471,7 @@ void AppServer::sendUserRemoved(UserDbId userDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << userDbId;
+        paramsStream << toInt(userDbId);
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
     }
@@ -4516,7 +4516,7 @@ void AppServer::sendAccountRemoved(AccountDbId accountDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << accountDbId;
+        paramsStream << toInt(accountDbId);
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
     }
@@ -4561,7 +4561,7 @@ void AppServer::sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << driveDbId;
+        paramsStream << toInt(driveDbId);
         paramsStream << total;
         paramsStream << used;
 
@@ -4578,7 +4578,7 @@ void AppServer::sendDriveRemoved(DriveDbId driveDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << driveDbId;
+        paramsStream << toInt(driveDbId);
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
     }
@@ -4608,7 +4608,7 @@ void AppServer::sendSyncRemoved(SyncDbId syncDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
+        paramsStream << toInt(syncDbId);
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
     }
@@ -4620,7 +4620,7 @@ void AppServer::sendSyncRemoved(SyncDbId syncDbId) const {
 void AppServer::sendSyncDeletionFailed(SyncDbId syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
-        const auto params = QByteArray(ArgsReader(syncDbId));
+        const auto params = QByteArray(ArgsReader(toInt(syncDbId)));
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_DELETE_FAILED, params, id);
     }
@@ -4633,7 +4633,7 @@ void AppServer::sendSyncDeletionFailed(SyncDbId syncDbId) const {
 void AppServer::sendDriveDeletionFailed(DriveDbId driveDbId) const {
     if (useOldCommServer()) {
         int id = 0;
-        const auto params = QByteArray(ArgsReader(driveDbId));
+        const auto params = QByteArray(ArgsReader(toInt(driveDbId)));
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::DRIVE_DELETE_FAILED, params, id);
     }
@@ -4664,7 +4664,7 @@ void AppServer::sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncS
         int id = 0;
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
+        paramsStream << toInt(syncDbId);
         paramsStream << status;
         paramsStream << step;
         paramsStream << static_cast<qint64>(progress._currentFile);
@@ -4686,7 +4686,7 @@ void AppServer::sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItemInfo 
 
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
-            paramsStream << syncDbId;
+            paramsStream << toInt(syncDbId);
             paramsStream << itemInfo;
             (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -4712,7 +4712,7 @@ void AppServer::sendVfsConversionCompleted(SyncDbId syncDbId) const {
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncDbId;
+        paramsStream << toInt(syncDbId);
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_VFS_CONVERSION_COMPLETED, params, id);
     }
     if (useCommManager()) {

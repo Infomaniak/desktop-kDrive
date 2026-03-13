@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,14 +78,18 @@ void SyncInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
-    in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
+    int dbId = 0; // must be int to work with QDataStreamd
+    int driveDbId = 0; // must be int to work with QDataStreamd
+    in >> dbId >> driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
             info._virtualFileMode >> info._navigationPaneClsid;
+    info.setDbId(dbId);
+    info.setDriveDbId(driveDbId);
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const SyncInfo &info) {
-    out << info._dbId << info._driveDbId << info._localPath << info._targetPath << info._targetNodeId << info._supportVfs
-        << info._virtualFileMode << info._navigationPaneClsid;
+    out << toInt(info._dbId) << toInt(info._driveDbId) << info._localPath << info._targetPath << info._targetNodeId
+        << info._supportVfs << info._virtualFileMode << info._navigationPaneClsid;
     return out;
 }
 

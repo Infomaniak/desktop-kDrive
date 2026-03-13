@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 void operator>>(QDataStream &in, DriveInfo &info) {
-    DriveDbId dbId{0};
-    DriveId id{0};
-    AccountDbId accountDbId{0};
+    int dbId{0}; // must be int to work with QDataStream
+    int id{0}; // must be int to work with QDataStream
+    int accountDbId{0}; // must be int to work with QDataStream
     QString name;
     QColor color;
     bool notifications{false};
@@ -105,8 +105,9 @@ void operator>>(QDataStream &in, DriveInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
-    out << info.dbId() << info.id() << info.accountDbId() << info.name() << info.color() << info.notifications() << info.admin()
-        << info.maintenance() << info.locked() << info.accessDenied() << info.packIsFree();
+    out << toInt(info.dbId()) << toInt(info.id()) << toInt(info.accountDbId()) << info.name() << info.color()
+        << info.notifications() << info.admin() << info.maintenance() << info.locked() << info.accessDenied()
+        << info.packIsFree();
     return out;
 }
 
