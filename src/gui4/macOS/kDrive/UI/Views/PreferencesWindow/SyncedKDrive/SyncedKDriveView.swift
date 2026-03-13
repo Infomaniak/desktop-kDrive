@@ -23,56 +23,30 @@ import kDriveResources
 import OrderedCollections
 import SwiftUI
 
-enum UISynchroMode: String, CaseIterable, Identifiable, Sendable {
-    case storeOnline
-    case availableOffline
-
-    var id: String {
-        return rawValue
-    }
-
-    var icon: Image {
-        switch self {
-        case .storeOnline:
-            return KDriveResources.cloud.swiftUIImage
-        case .availableOffline:
-            return KDriveResources.computer.swiftUIImage
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .storeOnline:
-            return KDriveLocalizable.storedOnline
-        case .availableOffline:
-            return KDriveLocalizable.availableOffline
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .storeOnline:
-            return KDriveLocalizable.storedOnlineDescription
-        case .availableOffline:
-            return KDriveLocalizable.availableOfflineDescription
-        }
-    }
-}
-
 struct SyncedKDriveView: View {
     let drive: UIDrive
-
-    @State private var isLoading = false
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
     @State private var advancedSynchros = [UISynchro]()
 
+    @State private var isShowingRemoveSynchroConfirmation = false
+    @State private var domainError: ShowableError?
+
+    enum ShowableError: LocalizedError {
+        case cannotChangeVFSMode
+
+        var errorDescription: String? {
+            switch self {
+            case .cannotChangeVFSMode:
+                return KDriveLocalizable.errorWhileChangingSynchroMode
+            }
+        }
+    }
+
     var body: some View {
         Form {
-            Section {
-                // Empty on purpose
-            } header: {
+            Section { /* Empty on purpose */ } header: {
                 HStack {
                     BadgeView(
                         image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
@@ -112,28 +86,25 @@ struct SyncedKDriveView: View {
                                 .font(.callout)
                         }
 
-                        Picker("", selection: $mainSynchroMode) {
+                        Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $mainSynchroMode) {
                             ForEach(UISynchroMode.allCases) { mode in
-                                HStack(alignment: .top) {
-                                    BadgeView(image: mode.icon, color: ColorToken.Action.primary.asColor)
-
-                                    VStack(alignment: .leading) {
-                                        Text(mode.title)
-                                        Text(mode.description)
-                                            .foregroundStyle(.secondary)
-                                            .font(.callout)
-                                    }
-                                }
-                                .tag(mode)
+                                UISynchroModeCell(mode: mode)
+                                    .tag(mode)
                             }
                         }
                         .pickerStyle(.radioGroup)
                         .labelsHidden()
+                        .disabled(!mainSynchro.supportsVirtualFileSystem)
+                        .onChange(of: mainSynchroMode) { newValue in
+                            switchSynchroMode(mainSynchro, mode: newValue)
+                        }
                     }
                 }
 
                 Section {
-                    Button(role: .destructive, action: removePrincipalSynchro) {
+                    Button(role: .destructive) {
+                        isShowingRemoveSynchroConfirmation = true
+                    } label: {
                         Text(KDriveLocalizable.buttonRemoveSync)
                             .foregroundStyle(.red)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,13 +135,13 @@ struct SyncedKDriveView: View {
         .task {
             await fetchSynchros()
         }
+        .sheet(isPresented: $isShowingRemoveSynchroConfirmation) {
+            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0)
+        }
+        .errorAlert(domainError)
     }
 
     private func fetchSynchros() async {
-        withAnimation {
-            isLoading = true
-        }
-
         @InjectService var coherentCache: CoherentCache
         guard let driveSynchros = await coherentCache.getDrive(driveDbId: Int32(drive.dbId))?.synchros.values else {
             return
@@ -190,8 +161,6 @@ struct SyncedKDriveView: View {
         }
 
         withAnimation {
-            isLoading = false
-
             mainSynchro = freshMainSynchro
             mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
 
@@ -199,7 +168,15 @@ struct SyncedKDriveView: View {
         }
     }
 
-    private func removePrincipalSynchro() {}
+    private func switchSynchroMode(_ synchro: UISynchro, mode: UISynchroMode) {
+        Task {
+            do {
+                try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
+            } catch {
+                throw ShowableError.cannotChangeVFSMode
+            }
+        }
+    }
 
     private func navigateToAdvancedSynchro() {
         // TODO: Navigate to advanced synchros
