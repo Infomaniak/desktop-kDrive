@@ -670,6 +670,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 std::optional<NodeId> localNodeId;
 
                 if (!dirIt->is_symlink() && dirIt->is_directory()) {
+#ifdef KD_WINDOWS
                     if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
                         // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
                         VfsStatus status;
@@ -679,7 +680,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                                                                                      << L": " << exitInfo);
                         }
                     }
-
+#endif // KD_WINDOWS
                     continue;
                 }
             } catch (std::filesystem::filesystem_error &) {
