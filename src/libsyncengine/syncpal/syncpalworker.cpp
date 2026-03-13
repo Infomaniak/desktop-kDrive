@@ -610,7 +610,7 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
     SyncPath localDbRelativePath;
     SyncPath remoteDbRelativePath;
     if (!_syncPal->syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for " << Utility::formatSyncPath(localAbsolutePath));
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
         return false;
     }
 
@@ -619,7 +619,7 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
         return false;
     }
 
-    SyncPath localRelativePath = CommonUtility::relativePath(_syncPal->localPath(), localAbsolutePath);
+    const SyncPath localRelativePath = CommonUtility::relativePath(_syncPal->localPath(), localAbsolutePath);
 
     if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
         return false;
@@ -662,7 +662,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 absolutePath = dirIt->path();
 
                 if (!dirIt->is_symlink() && dirIt->is_directory()) {
-                    // Fix directories sync status if needed to avoid having directories in false Syncing status.
+                    // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
                     std::optional<NodeId> localNodeId;
                     if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
                         VfsStatus status;
