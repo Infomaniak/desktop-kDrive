@@ -60,6 +60,7 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
+        bool isLocalItemInSyncWithDb(const SyncPath &localPath);
         void resetVfsFilesStatus();
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
