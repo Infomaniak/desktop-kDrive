@@ -607,6 +607,10 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
         return false;
     }
 
+    if (dbNode.type() != fileStat.nodeType) {
+        return false;
+    }
+
     SyncPath localDbRelativePath;
     SyncPath remoteDbRelativePath;
     if (!_syncPal->syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
@@ -615,7 +619,7 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
     }
 
     if (!found) {
-        LOG_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
+        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
         return false;
     }
 
@@ -660,13 +664,15 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 absolutePath = dirIt->path();
                 std::optional<NodeId> localNodeId;
 
-                if (!dirIt->is_symlink() && dirIt->is_directory() && isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
-                    // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
-                    VfsStatus status;
-                    status.isSyncing = false;
-                    if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), status); !exitInfo) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
-                                                                                 << L": " << exitInfo);
+                if (!dirIt->is_symlink() && dirIt->is_directory()) {
+                    if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
+                        // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
+                        VfsStatus status;
+                        status.isSyncing = false;
+                        if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), status); !exitInfo) {
+                            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
+                                                                                     << L": " << exitInfo);
+                        }
                     }
 
                     continue;
@@ -734,7 +740,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 continue;
 #else
                 continue;
-#endif // WIN32
+#endif // KD_WINDOWS
             }
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
