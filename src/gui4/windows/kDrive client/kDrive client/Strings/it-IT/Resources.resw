@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
+  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -282,6 +282,9 @@
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Note di rilascio</value> 
   </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Rimuovere la sincronizzazione</value> 
+  </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Riprendere la sincronizzazione</value> 
   </data> 
@@ -450,9 +453,6 @@ Questa azione è permanente.
 Per sincronizzare nuovamente l’unità, sarà necessario ricollegarla in seguito.
 
 Prima di continuare, assicurarsi che tutti i file siano aggiornati e completamente sincronizzati.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Rimuovere la sincronizzazione</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Rimuovere la sincronizzazione?</value> 
@@ -740,6 +740,9 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
   </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/it/aiuto</value> 
+  </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Accesso vietato</value> 
   </data> 
@@ -955,7 +958,7 @@ Si aprirà nel browser.</value>
     <value>%@ su %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
-    <value>gestione kDrive</value> 
+    <value>Gestione kDrive</value> 
   </data> 
   <data name="languageSetting" xml:space="preserve"> 
     <value>Lingua</value> 
@@ -1245,9 +1248,6 @@ Attendere qualche istante.</value>
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Posizione su kDrive</value> 
   </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Rimuovere la sincronizzazione</value> 
-  </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Nome riservato</value> 
   </data> 
@@ -1326,7 +1326,7 @@ Per l’accesso è necessaria una connessione a Internet.</value>
     <value>Sincronizzazione</value> 
   </data> 
   <data name="syncModeApplying" xml:space="preserve"> 
-    <value>La nuova modalità di sincronizzazione viene applicata..</value> 
+    <value>La nuova modalità di sincronizzazione viene applicata…</value> 
   </data> 
   <data name="syncRules" xml:space="preserve"> 
     <value>Regole di sincronizzazione</value> 

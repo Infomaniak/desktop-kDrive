@@ -58,11 +58,6 @@
                            Text="{x:Bind kDrive:Localizer.Instance.GetString('unavailableContentNoActivityDescription')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            TextWrapping="WrapWholeWords" />
-
-                <!--  Link  -->
-                <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonClose')}"
-                                 HorizontalAlignment="Center"
-                                 Click="UpToDateLink_Click" />
             </StackPanel>
         </Grid>
 

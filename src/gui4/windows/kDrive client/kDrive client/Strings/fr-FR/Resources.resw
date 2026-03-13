@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
+  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -136,7 +136,7 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Mises à jour automatiques</value> 
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
-    <value>Disponible hors ligne</value> 
+    <value>Disponibles hors ligne</value> 
   </data> 
   <data name="availableOfflineDescription" xml:space="preserve"> 
     <value>Vos fichiers sont copiés sur votre ordinateur.
@@ -281,6 +281,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Notes de mise à jour</value> 
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Supprimer la synchronisation</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Reprendre la synchronisation</value> 
@@ -450,9 +453,6 @@ Cette action est permanente.
 Pour synchroniser à nouveau votre lecteur, vous devrez le reconnecter plus tard.
 
 Avant de continuer, assurez-vous que tous vos fichiers sont à jour et entièrement synchronisés.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Supprimer la synchronisation</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Supprimer la synchronisation ?</value> 
@@ -696,7 +696,7 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
     <value>Mode de synchronisation des fichiers</value> 
   </data> 
   <data name="fileSyncModeDescription" xml:space="preserve"> 
-    <value>Définissez les modalités de stockage et d’accès à vos fichiers.</value> 
+    <value>Définissez comment vos fichiers sont stockés et accessibles.</value> 
   </data> 
   <data name="filesToExclude" xml:space="preserve"> 
     <value>Fichiers à exclure</value> 
@@ -739,6 +739,9 @@ Libérez de l’espace ou mettez à niveau votre offre pour synchroniser ce fich
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/fr/aide</value> 
   </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Accès interdit</value> 
@@ -943,7 +946,7 @@ Il s’ouvrira dans votre navigateur.</value>
     <value>Dossiers de synchronisation</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
-    <value>Localisation</value> 
+    <value>Emplacement</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronisation</value> 
@@ -955,7 +958,7 @@ Il s’ouvrira dans votre navigateur.</value>
     <value>%@ sur %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
-    <value>gestion de kDrive</value> 
+    <value>Gestion de kDrive</value> 
   </data> 
   <data name="languageSetting" xml:space="preserve"> 
     <value>Langue</value> 
@@ -1245,9 +1248,6 @@ Nous vous invitons à patienter quelques instants.</value>
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Localisation sur kDrive</value> 
   </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Supprimer la synchronisation</value> 
-  </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Nom réservé</value> 
   </data> 
@@ -1313,7 +1313,7 @@ Assurez-vous qu’il est correctement connecté, déverrouillé et accessible de
     <value>%@ utilisé</value> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
-    <value>Stocké en ligne</value> 
+    <value>Stockés en ligne</value> 
   </data> 
   <data name="storedOnlineDescription" xml:space="preserve"> 
     <value>Vos fichiers restent dans le nuage et n’occupent pas d’espace sur votre ordinateur.
