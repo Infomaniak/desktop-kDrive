@@ -30,13 +30,16 @@ public struct ResizableContainerView<Content: View>: View {
 
 open class TitledViewController<Content: View>: NSHostingController<ResizableContainerView<Content>> {
     public let toolbarTitle: String
+    public let navigableRouter: NavigableRouter?
 
     override open var acceptsFirstResponder: Bool {
         return true
     }
 
-    public init(toolbarTitle: String, contentView: Content) {
+    public init(toolbarTitle: String, navigableRouter: NavigableRouter? = nil, contentView: Content) {
         self.toolbarTitle = toolbarTitle
+        self.navigableRouter = navigableRouter
+
         super.init(rootView: ResizableContainerView(content: contentView))
     }
 
@@ -51,6 +54,35 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
 
     override open func viewDidAppear() {
         super.viewDidAppear()
+
+        updateTitle()
+        enableNavigationToolbarItemIfNecessary()
+    }
+
+    private func updateTitle() {
         view.window?.title = toolbarTitle
+        view.window?.titleVisibility = .hidden
+
+        if let titleItem = view.window?.toolbar?.items.first(where: { $0.itemIdentifier == .titleLabel }) as? NSToolbarTitleItem {
+            titleItem.stringValue = toolbarTitle
+        }
+    }
+
+    private func enableNavigationToolbarItemIfNecessary() {
+        guard let goBackItem = view.window?.toolbar?.items.first(where: { $0.itemIdentifier == .goBack }) else {
+            return
+        }
+
+        let shouldBeEnabled = navigableRouter?.hasDeepNavigated == true
+        if shouldBeEnabled {
+            goBackItem.target = self
+            goBackItem.action = #selector(goBackInHistory)
+        } else {
+            goBackItem.isEnabled = false
+        }
+    }
+
+    @objc private func goBackInHistory() {
+        navigableRouter?.removeLast(1)
     }
 }

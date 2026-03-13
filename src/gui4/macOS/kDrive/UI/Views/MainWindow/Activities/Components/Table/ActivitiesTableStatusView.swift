@@ -183,7 +183,7 @@ struct ActivitiesTableStatusView: View {
             loadingIndicatorShower.show(
                 SidebarNotificationState(
                     icon: .init(icon: KDriveResources.checkmarkCircle.image, tint: ColorToken.Status.Medium.success.asNSColor),
-                    text: .init(text: KDriveLocalizable.linkCopiedToClipboard),
+                    text: .init(text: KDriveLocalizable.linkCopiedToClipboardTitle),
                     showLoader: false,
                     duration: SidebarNotificationState.defaultDuration
                 )

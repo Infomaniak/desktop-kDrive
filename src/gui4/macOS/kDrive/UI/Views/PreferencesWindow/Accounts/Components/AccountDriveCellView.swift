@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -53,7 +54,10 @@ struct AccountDriveCellView: View {
     }
 
     private func manageSynchronizedDrive() {
-        // TODO: Navigate to synchronized drive management
+        guard let drive = drive as? UIDrive else { return }
+
+        @InjectService var router: PreferencesViewRouter
+        router.append(.syncedKDrive(drive))
     }
 
     private func synchronizeDrive() {
