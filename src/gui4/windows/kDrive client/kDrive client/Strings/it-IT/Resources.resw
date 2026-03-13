@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
+  Exported at: Fri, 13 Mar 2026 16:13:05 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -105,6 +105,21 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Solo la mia attività</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Sincronizzazione di una cartella con kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Scegliere la cartella del computer che si desidera sincronizzare con kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Cartella sincronizzata</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Personalizzare la posizione della cartella del computer su kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>Slot kDrive</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
     <value>Selezionare una cartella del computer da sincronizzare con kDrive.
@@ -309,6 +324,9 @@
   </data> 
   <data name="buttonSelect" xml:space="preserve"> 
     <value>selezionare</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Selezionare una cartella</value> 
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Selezionare le cartelle</value> 

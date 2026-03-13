@@ -57,7 +57,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:NewSync">
-                    <Border Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                    <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
                         <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"

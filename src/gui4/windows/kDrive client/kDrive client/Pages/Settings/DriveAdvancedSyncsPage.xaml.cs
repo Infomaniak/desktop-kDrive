@@ -68,7 +68,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
-        else if (args.Index == 1 )
+        else if (args.Index == 1)
         {
             Logger.Log(Logger.Level.Debug, "Navigating to DriveManagementPage");
             Frame.Navigate(typeof(DriveManagementPage), _baseDrive);
@@ -198,5 +198,24 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             control.Foreground = null;
             control.Foreground = curentForeground;
         }
+    }
+
+    private async void AddAdvancedSyncButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ManagedDrive is null)
+        {
+            Logger.Log(Logger.Level.Error, "Cannot add sync: ManagedDrive is null");
+            return;
+        }
+
+        Control? control = sender as Control;
+        if (control is not null)
+            control.IsEnabled = false;
+
+        CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, ManagedDrive);
+        _ = await dialog.ShowAsync();
+
+        if (control is not null)
+            control.IsEnabled = true;
     }
 }

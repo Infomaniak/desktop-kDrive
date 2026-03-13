@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
+  Exported at: Fri, 13 Mar 2026 16:13:05 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -105,6 +105,21 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Nur meine Aktivität</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Einen Ordner mit kDrive synchronisieren</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Wählen Sie den Ordner auf Ihrem Computer, der mit kDrive synchronisiert werden soll :</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Synchronisierter Ordner</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Passen Sie den Speicherort des Ordners Ihres Computers auf kDrive an :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>KDrive-Steckplatz</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
     <value>Wählen Sie einen Ordner auf Ihrem Computer, den Sie mit kDrive synchronisieren möchten.
@@ -309,6 +324,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonSelect" xml:space="preserve"> 
     <value>wählen Sie</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Einen Ordner auswählen</value> 
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Ordner auswählen</value> 

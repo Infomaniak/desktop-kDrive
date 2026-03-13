@@ -195,7 +195,8 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
-                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddAdvancedSync')}" />
+                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddAdvancedSync')}"
+                        Click="AddAdvancedSyncButton_Click"/>
                 <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>
