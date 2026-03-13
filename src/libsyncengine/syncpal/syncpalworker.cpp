@@ -631,8 +631,6 @@ bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, s
 
     if (dbNode.size() == fileStat.size && dbNode.lastModifiedLocal() == fileStat.modificationTime &&
         (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
-        SyncFileItem syncItem;
-        syncItem.setLocalNodeId(std::to_string(fileStat.inode));
         return true;
     }
 
