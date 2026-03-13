@@ -658,19 +658,17 @@ void SyncPalWorker::resetVfsFilesStatus() {
             SyncPath absolutePath;
             try {
                 absolutePath = dirIt->path();
+                std::optional<NodeId> localNodeId;
 
-                if (!dirIt->is_symlink() && dirIt->is_directory()) {
+                if (!dirIt->is_symlink() && dirIt->is_directory() && isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
                     // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
-                    std::optional<NodeId> localNodeId;
-                    if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
-                        VfsStatus status;
-                        status.isSyncing = false;
-                        if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), status); !exitInfo) {
-                            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
-                                                                                     << L": " << exitInfo);
-                            continue;
-                        }
+                    VfsStatus status;
+                    status.isSyncing = false;
+                    if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), status); !exitInfo) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
+                                                                                 << L": " << exitInfo);
                     }
+
                     continue;
                 }
             } catch (std::filesystem::filesystem_error &) {
