@@ -4163,7 +4163,7 @@ void AppServer::addError(const Error &error) {
             _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
-    } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
+    } else if (_updateManager && errorCopy.exitCode() == ExitCode::UpdateRequired) {
         _updateManager->updater()->unskipVersion();
     }
 
