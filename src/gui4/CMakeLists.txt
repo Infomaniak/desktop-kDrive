@@ -29,4 +29,10 @@ if(WIN32)
     add_custom_target(build_kDrive_client ALL
         DEPENDS "${CLIENT_STAMP}"
     )
+elseif(UNIX)
+    if (APPLE)
+        # TODO (WIP https://github.com/Infomaniak/desktop-kDrive/pull/1615) : add_subdirectory(macos)
+    else()
+        add_subdirectory(unix)
+    endif()
 endif()
