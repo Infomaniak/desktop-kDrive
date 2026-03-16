@@ -51,10 +51,12 @@ elseif(APPLE)
         COMMENT "Building kDrive client for macOS ${CMAKE_BUILD_TYPE}..."
         OUTPUT "${CLIENT_STAMP}"
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${CLIENT_DEST}"
+        COMMAND xcodebuild -version
         COMMAND sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
         COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration ${CMAKE_BUILD_TYPE} -derivedDataPath "${CLIENT_PATH}/build" build
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CLIENT_OUTPUT_DIRECTORY}/Build/Products/${CMAKE_BUILD_TYPE}/kDrive.app" "${CLIENT_DEST}"
         COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
+        COMMAND xcodebuild -version
         DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
         COMMAND sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
     )
