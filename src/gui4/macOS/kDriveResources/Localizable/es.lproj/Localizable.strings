@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 12 Mar 2026 09:15:02 +0100
+ * Exported at: Mon, 16 Mar 2026 09:01:42 +0100
  */
 
 
@@ -154,6 +154,12 @@
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Ver actividades";
+
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Seleccione una carpeta";
+
+/* loco:698c5cb5f86b52c6fc001fc4 */
+"buttonSelectFolders" = "Seleccionar carpetas";
 
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Abrir la configuración";
@@ -358,6 +364,9 @@
 /* loco:698a070557f1356c46048003 */
 "labelStatus" = "Estado";
 
+/* loco:69a07364c232b528bf01b672 */
+"labelSyncFolder" = "Carpetas de sincronización";
+
 /* loco:698c49120217e0fe6308b0c2 */
 "labelSyncLocation" = "Ubicación";
 
@@ -394,6 +403,21 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Nunca";
+/* loco:698c5ab9945b7c6d260d4c22 */
+"onBoardingAdvancedSettingsDriveTitle" = "Configurar la sincronización para este kDrive";
+
+/* loco:698c5b3fa3cb0fe14205ddb5 */
+"onboardingAdvancedSettingsDriveCustomizeLocation" = "Personaliza la ubicación de tu carpeta kDrive en tu ordenador:";
+
+/* loco:698c5bda2351f47094030442 */
+"onboardingAdvancedSettingsDriveCustomizeLocationTip" = "La carpeta seleccionada debe estar vacía para que la sincronización funcione correctamente.";
+
+/* loco:698c5c378bdea123d60afff7 */
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Elija las carpetas que desea sincronizar en este ordenador:";
+
+/* loco:698c5d476258b6cb2e047e2a */
+"onboardingAdvancedSettingsDriveExclusionTip" = "Las carpetas no seleccionadas seguirán siendo accesibles en línea.";
+
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizar kDrive en los ajustes de macOS:";
 

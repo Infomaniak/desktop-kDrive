@@ -112,6 +112,10 @@ public enum KDriveLocalizable {
   public static let buttonSearch = KDriveLocalizable.tr("Localizable", "buttonSearch", fallback: "Search")
   /// loco:6964e1dfed4b6acb0107409a
   public static let buttonSeeActivities = KDriveLocalizable.tr("Localizable", "buttonSeeActivities", fallback: "See activities")
+  /// loco:69b422d7b7de08855d023d32
+  public static let buttonSelectFolder = KDriveLocalizable.tr("Localizable", "buttonSelectFolder", fallback: "Select a folder")
+  /// loco:698c5cb5f86b52c6fc001fc4
+  public static let buttonSelectFolders = KDriveLocalizable.tr("Localizable", "buttonSelectFolders", fallback: "Select folders")
   /// loco:69a7ed31e3754291a4029e52
   public static let buttonSettings = KDriveLocalizable.tr("Localizable", "buttonSettings", fallback: "Open Settings")
   /// loco:69240f7b15d05a975c07dc13
@@ -260,6 +264,8 @@ public enum KDriveLocalizable {
   public static let labelSize = KDriveLocalizable.tr("Localizable", "labelSize", fallback: "Size")
   /// loco:698a070557f1356c46048003
   public static let labelStatus = KDriveLocalizable.tr("Localizable", "labelStatus", fallback: "Status")
+  /// loco:69a07364c232b528bf01b672
+  public static let labelSyncFolder = KDriveLocalizable.tr("Localizable", "labelSyncFolder", fallback: "Synchronization folders")
   /// loco:698c4ae9a90fef6269010692
   public static let labelSynchronisation = KDriveLocalizable.tr("Localizable", "labelSynchronisation", fallback: "Synchronization")
   /// loco:698c49120217e0fe6308b0c2
@@ -282,6 +288,16 @@ public enum KDriveLocalizable {
   public static let notificationsDisabledNever = KDriveLocalizable.tr("Localizable", "notificationsDisabledNever", fallback: "Never")
   /// loco:698b0aaddee0bf9fb206a694
   public static let notSyncedDrive = KDriveLocalizable.tr("Localizable", "notSyncedDrive", fallback: "Not synchronized")
+  /// loco:698c5b3fa3cb0fe14205ddb5
+  public static let onboardingAdvancedSettingsDriveCustomizeLocation = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveCustomizeLocation", fallback: "Customize the location of your kDrive folder on your computer:")
+  /// loco:698c5bda2351f47094030442
+  public static let onboardingAdvancedSettingsDriveCustomizeLocationTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveCustomizeLocationTip", fallback: "The selected folder must be empty for synchronization to work correctly.")
+  /// loco:698c5c378bdea123d60afff7
+  public static let onboardingAdvancedSettingsDriveExclusionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionDescription", fallback: "Choose the folders to synchronize on this computer:")
+  /// loco:698c5d476258b6cb2e047e2a
+  public static let onboardingAdvancedSettingsDriveExclusionTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionTip", fallback: "Unselected folders will remain accessible online.")
+  /// loco:698c5ab9945b7c6d260d4c22
+  public static let onBoardingAdvancedSettingsDriveTitle = KDriveLocalizable.tr("Localizable", "onBoardingAdvancedSettingsDriveTitle", fallback: "Set up synchronization for this kDrive")
   /// loco:693050ed6a0836d25507da22
   public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings:")
   /// loco:6930509e14b396d6fc04b0f2
