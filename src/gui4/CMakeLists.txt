@@ -34,7 +34,7 @@ elseif(APPLE)
     set(CLIENT_PROJECT "${CLIENT_PATH}/kDrive.xcodeproj")
     set(CLIENT_SCHEME "kDrive")
     set(CLIENT_OUTPUT_DIRECTORY "${CLIENT_PATH}/build/${CMAKE_BUILD_TYPE}")
-    set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/kDrive.app")
+    set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/kDrive_client4.app")
     set(CLIENT_STAMP "${CMAKE_BINARY_DIR}/client_build.stamp")
 
     file(GLOB_RECURSE CLIENT_SOURCES
@@ -55,6 +55,7 @@ elseif(APPLE)
         COMMAND sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
         COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration ${CMAKE_BUILD_TYPE} -derivedDataPath "${CLIENT_PATH}/build" build
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CLIENT_PATH}/build/Build/Products/${CMAKE_BUILD_TYPE}/kDrive.app" "${CLIENT_DEST}"
+        COMMAND ${CMAKE_COMMAND} -E rename "${CLIENT_DEST}/Contents/MacOS/kDrive" "${CLIENT_DEST}/Contents/MacOS/kDrive_client4"
         COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
         COMMAND xcodebuild -version
         DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
