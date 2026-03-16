@@ -147,6 +147,8 @@ class SyncDb : public Db {
 
         // Fix issue introduced in version 3.8.2.5/7 (windows): revert all local deletes not yet propagated to the remote side.
         bool revertAllLocalDeletes();
+        bool dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds);
+        bool fsFileLocalNodeIds(const SyncPath &localSyncPath, std::unordered_set<NodeId> &localFSNodeIds);
 
         // Use the actual encoding of local file names in DB.
         bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
