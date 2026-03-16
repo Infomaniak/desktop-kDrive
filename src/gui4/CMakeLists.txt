@@ -42,4 +42,10 @@ if(WIN32)
     install(DIRECTORY ${CLIENT_DEST}/ DESTINATION ${CMAKE_INSTALL_BINDIR}/client
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE
     )
+elseif(UNIX)
+    if (APPLE)
+        # TODO (WIP https://github.com/Infomaniak/desktop-kDrive/pull/1615) : add_subdirectory(macos)
+    else()
+        add_subdirectory(unix)
+    endif()
 endif()
