@@ -63,3 +63,7 @@ if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
             DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/
             USE_SOURCE_PERMISSIONS)
 endif()
+
+if(UNIX AND NOT APPLE)
+    add_subdirectory(unix)
+endif()
