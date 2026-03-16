@@ -548,7 +548,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
 
 #ifdef KD_WINDOWS
     // Fix a bug affecting kDrive for Windows versions 3.8.2.5 leading
-    if (dbFromVersionNumber == "3.8.2.5" || dbFromVersionNumber == "3.8.2.7") {
+    if (dbFromVersionNumber == "3.8.2 (build 5)" || dbFromVersionNumber == "3.8.2 (build 7)") {
         LOG_DEBUG(_logger, "Upgrade < 3.8.2.5 or 3.8.2.7 Sync DB - Reverting local deletes");
 
         if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST)) {
