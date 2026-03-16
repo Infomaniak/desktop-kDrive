@@ -68,5 +68,5 @@ elseif(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
-    add_subdirectory(unix)
+    add_subdirectory(linux)
 endif()
