@@ -142,7 +142,7 @@ class KDriveDesktop(ConanFile):
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
         # Qt 6.8.3 for Linux ARM, Qt 6.5.3 for other platforms
-        qt_version = "6.8.3" if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm") else "6.2.3"
+        qt_version = "6.8.3" if self.settings.os == "Linux" else "6.2.3"
         if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"):
             self.requires(f"qt/{qt_version}")
         else:
