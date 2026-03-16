@@ -587,7 +587,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             LOG_ERROR(_logger, "Error reverting all local deletes");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error reverting all local deletes");
-            return false;
+            return true;
         }
 
         freeRequests();
@@ -608,7 +608,7 @@ bool SyncDb::revertAllLocalDeletes() {
     ParmsDb::instance()->selectSync(_dbPath, sync, found);
     if (!found) {
         LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
-        return true;
+        return false;
     }
 
     if (sync.virtualFileMode() != VirtualFileMode::Win) {
@@ -621,7 +621,7 @@ bool SyncDb::revertAllLocalDeletes() {
         LOG_WARN(_logger, "Error getting local node ids from the DB, aborting local delete revert");
         KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
                                              "Error getting local node ids from the DB, aborting local delete revert");
-        return true;
+        return false;
     }
     if (localDbNodeIds.empty()) {
         return true;
@@ -635,7 +635,7 @@ bool SyncDb::revertAllLocalDeletes() {
         LOG_WARN(_logger, "Error getting local node ids from the file system, aborting local delete revert");
         KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
                                              "Error getting local node ids from the file system, aborting local delete revert");
-        return true;
+        return false;
     }
 
     // Remove from the DB all nodes that are not present on the local file system anymore.
