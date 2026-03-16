@@ -36,6 +36,7 @@ build-*/
 bld/
 [Bb]in/
 [Oo]bj/
+src/gui4/macOS/build/
 
 # Roslyn cache directories
 *.ide/
