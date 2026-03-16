@@ -65,5 +65,5 @@ if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 if(UNIX AND NOT APPLE)
-    add_subdirectory(unix)
+    add_subdirectory(linux)
 endif()
