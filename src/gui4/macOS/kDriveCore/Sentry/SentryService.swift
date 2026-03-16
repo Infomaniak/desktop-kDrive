@@ -38,11 +38,13 @@ public struct SentryService {
                 #if DEBUG || TEST
                 return nil
                 #else
-                if UserDefaults.shared.isSentryAuthorized {
-                    return event
-                } else {
-                    return nil
-                }
+                return nil
+                // TODO: Finish Sentry implementation
+//                if UserDefaults.shared.isSentryAuthorized {
+//                    return event
+//                } else {
+//                    return nil
+//                }
                 #endif
             }
         }
