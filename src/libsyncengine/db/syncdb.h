@@ -144,6 +144,10 @@ class SyncDb : public Db {
         bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);
         // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
         bool normalizeRemoteNames();
+
+        // Fix issue introduced in version 3.8.2.5/7 (windows): revert all local deletes not yet propagated to the remote side.
+        bool revertAllLocalDeletes();
+
         // Use the actual encoding of local file names in DB.
         bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
 
