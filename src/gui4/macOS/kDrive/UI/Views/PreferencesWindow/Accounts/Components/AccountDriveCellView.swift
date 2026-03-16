@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct AccountDriveCellView: View {
+    @State private var isShowingSynchronizeDriveView = false
+
     let drive: any UIDriveRepresentation
     let isSynchronized: Bool
 
@@ -51,6 +53,9 @@ struct AccountDriveCellView: View {
 
                 Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
+                    .sheet(isPresented: $isShowingSynchronizeDriveView) {
+                        SynchroConfigurationView(drive: drive)
+                    }
             }
         }
         .padding(.leading, AppPadding.padding24)
@@ -64,7 +69,7 @@ struct AccountDriveCellView: View {
     }
 
     private func synchronizeDrive() {
-        // TODO: Show synchronization flow
+        isShowingSynchronizeDriveView = true
     }
 }
 
