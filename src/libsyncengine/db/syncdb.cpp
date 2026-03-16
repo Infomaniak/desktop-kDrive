@@ -569,12 +569,19 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
                                                  "Error preparing select node by nodeId full request");
             return false;
         }
+        if (!createAndPrepareRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing select node by nodeId full request");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error preparing select node by nodeId full request");
+            return false;
+        }
 
 
         std::function freeRequests = [this]() {
             queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
             queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
             queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
+            queryFree(DELETE_NODE_REQUEST_ID);
         };
 
         if (!revertAllLocalDeletes()) {
