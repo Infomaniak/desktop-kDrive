@@ -66,3 +66,7 @@ elseif(APPLE)
         install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
     endif()
 endif()
+
+if(UNIX AND NOT APPLE)
+    add_subdirectory(unix)
+endif()
