@@ -213,7 +213,7 @@
 
     <AutoSuggestBox x:Name="TitleBarSearchBox"
                     QueryIcon="Find"
-                    PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString('searchBoxPlaceholder', ViewModel.SelectedSync.Drive.Name), Mode=OneWay}"
+                    PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString1s('searchBoxPlaceholder', ViewModel.SelectedSync.Drive.Name), Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"

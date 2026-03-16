@@ -276,6 +276,11 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
+    if (syncOp->hasConflict() && status == SyncFileStatus::Success && (syncOp->conflict().type() == ConflictType::CreateCreate) ||
+        syncOp->conflict().type() == ConflictType::EditEdit) {
+        status = SyncFileStatus::Conflict;
+    }
+
     if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
     }

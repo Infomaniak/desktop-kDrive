@@ -16,32 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-struct OptionPicker<Option: PreferenceOption>: View {
-    let label: String
-    let options: [Option]
-    let selection: Binding<Option>
-
-    init(_ label: String, options: [Option], selection: Binding<Option>) {
-        self.label = label
-        self.options = options
-        self.selection = selection
+final class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
+    convenience init(drive: UIDrive) {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.labelkDriveManagement,
+            navigableRouter: router,
+            contentView: SyncedKDriveView(drive: drive)
+        )
     }
-
-    var body: some View {
-        Picker(label, selection: selection) {
-            ForEach(options) { option in
-                Text(option.label)
-                    .tag(option)
-            }
-        }
-    }
-}
-
-@available(macOS 14.0, *)
-#Preview {
-    @Previewable @State var selection = UINotificationState.always
-    OptionPicker("My Picker", options: UINotificationState.allCases, selection: $selection)
 }

@@ -64,11 +64,6 @@
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
-
-                    <!-- Link -->
-                    <HyperlinkButton HorizontalAlignment="Center"
-                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonClose')}"
-                                     Click="HideButton_Click" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -170,6 +165,7 @@
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
                                HorizontalAlignment="Center"
+                               TextAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->

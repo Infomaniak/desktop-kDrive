@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
+  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -282,6 +282,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Anmerkungen zur Veröffentlichung</value> 
   </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Synchronisierung entfernen</value> 
+  </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Synchronisation fortsetzen</value> 
   </data> 
@@ -450,9 +453,6 @@ Diese Aktion ist dauerhaft.
 Um Ihr Laufwerk erneut zu synchronisieren, müssen Sie es später erneut anschliessen.
 
 Bevor Sie fortfahren, stellen Sie sicher, dass alle Ihre Dateien auf dem neuesten Stand und vollständig synchronisiert sind.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Synchronisierung entfernen</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Synchronisierung entfernen?</value> 
@@ -741,6 +741,9 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/de/hilfe</value> 
   </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Zugriff verweigert</value> 
@@ -1246,9 +1249,6 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Standort auf kDrive</value> 
-  </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Synchronisierung entfernen</value> 
   </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Reservierter Name</value> 

@@ -23,6 +23,7 @@
     <!-- Actions -->
     <x:String x:Key="Infomaniak.DS.Icons.Actions.power">ms-appx:///Assets/DS/Icons/Actions/power.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.share">ms-appx:///Assets/DS/Icons/Actions/share.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.star">ms-appx:///Assets/DS/Icons/Actions/star.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.trashbin">ms-appx:///Assets/DS/Icons/Actions/trashbin.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert">ms-appx:///Assets/DS/Icons/Actions/triangle-alert.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert-outline">ms-appx:///Assets/DS/Icons/Actions/triangle-alert-outline.svg</x:String>
@@ -105,6 +106,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-circle-cross">ms-appx:///Assets/DS/Icons/Documents/file-circle-cross.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-circle-plus">ms-appx:///Assets/DS/Icons/Documents/file-circle-plus.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-share">ms-appx:///Assets/DS/Icons/Documents/folder-share.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.folder-circle-arrow-right">ms-appx:///Assets/DS/Icons/Documents/folder-circle-arrow-right.svg</x:String>
 
     <!-- Devices -->

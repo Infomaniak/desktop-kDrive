@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Infomaniak.kDrive
@@ -92,6 +93,23 @@ namespace Infomaniak.kDrive
         public string GetString(string key)
         {
             return GetString(key, null);
+        }
+
+        public async Task<bool> TryLaunchUriAsync(string uriKey)
+        {
+            string uriString = GetString(uriKey);
+
+            if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uri))
+            {
+                Logger.Log(Logger.Level.Error, $"Invalid URI string for key {uriKey}: {uriString}");
+                return false;
+            }
+
+            bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
+            if (!success)
+                Logger.Log(Logger.Level.Error, $"Failed to launch URI: {uri}");
+
+            return success;
         }
 
         public string GetString(string key, params object?[]? args)

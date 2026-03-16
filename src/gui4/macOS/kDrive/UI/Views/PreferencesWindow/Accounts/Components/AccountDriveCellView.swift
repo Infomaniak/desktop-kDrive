@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -26,7 +27,10 @@ struct AccountDriveCellView: View {
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
-            DriveBadgeView(color: drive.color ?? ColorToken.Drive.defaultColor.asColor)
+            BadgeView(
+                image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                color: drive.color ?? ColorToken.Drive.defaultColor.asColor
+            )
 
             Text(drive.name)
                 .font(.Tokens.body)
@@ -38,18 +42,29 @@ struct AccountDriveCellView: View {
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                Button(KDriveLocalizable.buttonManage) {}
+                Button(KDriveLocalizable.buttonManage, action: manageSynchronizedDrive)
                     .buttonStyle(.bordered)
             } else {
                 Text(KDriveLocalizable.notSyncedDrive)
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                Button(KDriveLocalizable.buttonEnable) {}
+                Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
             }
         }
         .padding(.leading, AppPadding.padding24)
+    }
+
+    private func manageSynchronizedDrive() {
+        guard let drive = drive as? UIDrive else { return }
+
+        @InjectService var router: PreferencesViewRouter
+        router.append(.syncedKDrive(drive))
+    }
+
+    private func synchronizeDrive() {
+        // TODO: Show synchronization flow
     }
 }
 
