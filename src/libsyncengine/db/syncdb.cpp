@@ -576,21 +576,16 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             return false;
         }
 
-        std::function freeRequests = [this]() {
-            queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
-            queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
-            queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
-            queryFree(DELETE_NODE_REQUEST_ID);
-        };
-
         if (!revertAllLocalDeletes()) {
             LOG_ERROR(_logger, "Error reverting all local deletes");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error reverting all local deletes");
-            return true;
         }
 
-        freeRequests();
+        queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
+        queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
+        queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
+        queryFree(DELETE_NODE_REQUEST_ID);
     }
 #endif // KD_WINDOWS
 
@@ -602,7 +597,6 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
 bool SyncDb::revertAllLocalDeletes() {
     // Revert all local deletes by removing from the DB all nodes that are not present on the local file system anymore.
 
-    IoError ioError;
     Sync sync;
     bool found = false;
     ParmsDb::instance()->selectSync(_dbPath, sync, found);
@@ -724,7 +718,8 @@ bool SyncDb::dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds) {
 }
 
 bool SyncDb::fsFileLocalNodeIds(const SyncPath &localSyncPath, std::unordered_set<NodeId> &localFSNodeIds) {
-    IoError ioError;
+    IoError ioError = IoError::Unknown;
+
     try {
         IoHelper::DirectoryIterator dirIt;
         if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt) || ioError != IoError::Success) {
