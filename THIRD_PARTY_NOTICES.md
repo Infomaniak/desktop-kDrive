@@ -21,7 +21,7 @@ The exact set of redistributed binaries can vary by platform:
 
 ### log4cplus
 - **Version:** 2.1.2
-- **License:** Apache-2.0 AND BSD-2-Clause
+- **License:** Apache-2.0 OR BSD-2-Clause
 - **Copyright:** Copyright (c) 1999-2021 log4cplus project contributors
 - **Repository:** https://github.com/log4cplus/log4cplus
 - **Note:** Declared in `conanfile.py`.
@@ -345,8 +345,7 @@ notice, here is a blessing:
 ```
 
 ### GNU Lesser General Public License v2.1
-The full text of the LGPL v2.1 is available at:
-https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+The full text of the LGPL v2.1 is available in [`src/3rdparty/LICENSE.LGPL`](src/3rdparty/LICENSE.LGPL) and at: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 
 ### GNU Lesser General Public License v3.0
 The full text of the LGPL v3.0 is available at:
