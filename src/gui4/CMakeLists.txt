@@ -62,4 +62,18 @@ elseif(APPLE)
     add_custom_target(build_kDrive_client ALL
         DEPENDS "${CLIENT_STAMP}"
     )
+
+    # Ensure all C++ libraries and executables are built first with Xcode 16
+    # before switching to Xcode 26 for the Swift GUI build
+    add_dependencies(build_kDrive_client
+        ${libcommon_NAME}
+        ${libcommonserver_NAME}
+        ${libcommongui_NAME}
+        ${libsyncengine_NAME}
+        ${libparms_NAME}
+        ${APPLICATION_EXECUTABLE}
+        ${APPLICATION_CLIENT_EXECUTABLE}
+        updater
+        ${APPLICATION_EXECUTABLE}_vfs_mac
+    )
 endif()
