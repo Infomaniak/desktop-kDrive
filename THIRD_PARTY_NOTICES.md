@@ -113,7 +113,7 @@ The exact set of redistributed binaries can vary by platform:
 ### QProgressIndicator
 - **License:** MIT
 - **Copyright:** Copyright (c) 2011 Morgan Leborgne
-- **Repository:** https://github.com/mojocorp/QProgressIndicator
+- **Note:** Vendored in `src/3rdparty/`. No public upstream repository URL is referenced here because the previously used GitHub link is no longer available.
 
 ### SQLite
 - **License:** Public Domain
