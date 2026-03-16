@@ -547,9 +547,9 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
     }
 
 #ifdef KD_WINDOWS
-    // Fix a bug affecting kDrive for Windows versions 3.8.2.5 leading
-    if (dbFromVersionNumber == "3.8.2 (build 5)" || dbFromVersionNumber == "3.8.2 (build 7)") {
-        LOG_DEBUG(_logger, "Upgrade < 3.8.2.5 or 3.8.2.7 Sync DB - Reverting local deletes");
+    // Fix a bug affecting kDrive for Windows versions 3.8.2.5 leading to unwanted local deletes.
+    if (dbFromVersionNumber.starts_with("3.8.2 (")) {
+        LOG_DEBUG(_logger, "Upgrade from a 3.8.2 (build x) Sync DB - Reverting local deletes");
 
         if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST)) {
             LOG_ERROR(_logger, "Error preparing select node by parentNodeId root request");
@@ -576,14 +576,13 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             return false;
         }
 
-
         std::function freeRequests = [this]() {
             queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
             queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
             queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
             queryFree(DELETE_NODE_REQUEST_ID);
         };
-
+       
         if (!revertAllLocalDeletes()) {
             LOG_ERROR(_logger, "Error reverting all local deletes");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
@@ -612,6 +611,11 @@ bool SyncDb::revertAllLocalDeletes() {
         return true;
     }
 
+    if (sync.virtualFileMode() != VirtualFileMode::Win) {
+        LOG_INFO(_logger, "Sync is not in Win virtual file mode, skipping local delete revert");
+        return true;
+    }
+
     // Get the list of all the db nodes.
     std::unordered_set<DbNodeId> ids;
     if (!dbIds(ids, found)) {
@@ -621,7 +625,7 @@ bool SyncDb::revertAllLocalDeletes() {
         return false;
     }
     if (!found) {
-        LOG_DEBUG(_logger, "No node found in DB, nothing to revert")
+        LOG_DEBUG(_logger, "No node found in DB, nothing to revert");
         return true;
     }
 
@@ -664,7 +668,7 @@ bool SyncDb::revertAllLocalDeletes() {
 
     try {
         IoHelper::DirectoryIterator dirIt;
-        if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt, true) || ioError != IoError::Success) {
+        if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt) || ioError != IoError::Success) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getDirectoryIterator: Local " << Utility::formatIoError(localSyncPath, ioError));
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
@@ -683,7 +687,7 @@ bool SyncDb::revertAllLocalDeletes() {
                 LOGW_DEBUG(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
                 KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
                                                      "Error in IoHelper::getFileStat, aborting safely");
-                return false;
+                continue;
             }
 
             if (entryIoError != IoError::Success) {
@@ -733,7 +737,6 @@ bool SyncDb::revertAllLocalDeletes() {
         }
     }
 
-    // send a sentry with a recap fo the operation
     KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Info, "SyncDb::revertAllLocalDeletes",
                                          "Reverted local deletes by removing " + std::to_string(nodesToDelete.size()) +
                                                  " nodes  overall " + std::to_string(localDbNodeIds.size()) +
