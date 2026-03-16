@@ -570,9 +570,9 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             return false;
         }
         if (!createAndPrepareRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST)) {
-            LOG_ERROR(_logger, "Error preparing select node by nodeId full request");
+            LOG_ERROR(_logger, "Error preparing delete node request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
-                                                 "Error preparing select node by nodeId full request");
+                                                 "Error preparing delete node request");
             return false;
         }
 
@@ -618,7 +618,10 @@ bool SyncDb::revertAllLocalDeletes() {
 
     std::map<NodeId, DbNodeId> localDbNodeIds;
     if (!dbFileLocalNodeIds(localDbNodeIds)) {
-        return false;
+        LOG_WARN(_logger, "Error getting local node ids from the DB, aborting local delete revert");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
+                                             "Error getting local node ids from the DB, aborting local delete revert");
+        return true;
     }
     if (localDbNodeIds.empty()) {
         return true;
@@ -629,6 +632,9 @@ bool SyncDb::revertAllLocalDeletes() {
     const SyncPath &localSyncPath = sync.localPath();
 
     if (!fsFileLocalNodeIds(localSyncPath, localFSNodeIds)) {
+        LOG_WARN(_logger, "Error getting local node ids from the file system, aborting local delete revert");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
+                                             "Error getting local node ids from the file system, aborting local delete revert");
         return true;
     }
 
