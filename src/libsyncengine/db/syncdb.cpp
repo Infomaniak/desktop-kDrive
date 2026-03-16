@@ -687,7 +687,7 @@ bool SyncDb::revertAllLocalDeletes() {
                 continue;
             }
 
-            if (fileStat.nodeType != NodeType::Directory) {
+            if (fileStat.nodeType == NodeType::Directory) {
                 continue;
             }
 
