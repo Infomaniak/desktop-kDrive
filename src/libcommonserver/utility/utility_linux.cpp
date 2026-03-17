@@ -42,20 +42,6 @@ namespace KDC {
 
 static const auto mimeType = "x-scheme-handler/kdrive";
 
-SyncPath Utility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(logger(), "Path to HOME not found");
-        return {};
-    }
-
-    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
-        return std::string(xdgDataHomeEnv) + "/Trash/files/";
-    }
-
-    return std::string(homePathEnv) + "/.local/share/Trash/files/";
-}
-
 namespace {
 int parseLineForRamStatus(char *line) {
     int i = static_cast<int>(strlen(line));
@@ -290,7 +276,7 @@ bool Utility::registerLoginRedirection() {
 
     IoError ioError = IoError::Unknown;
     bool exists = false;
-    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists:" << Utility::formatIoError(urlSchemeDirPath, ioError));
         return false;
     }
