@@ -54,7 +54,7 @@ ExitInfo SyncStopJob::process() {
     _commManager->appServer().clearSyncCacheMap();
 
     // Stop SyncPal
-    if (const auto exitInfo = _commManager->appServer().stopSyncPal(_syncDbId, true); !exitInfo) {
+    if (const auto exitInfo = _commManager->appServer().stopSyncPal(_syncDbId, SyncPal::PauseCaller::User); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }

@@ -57,7 +57,8 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
     for (auto &error: errorList) {
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError,
+                                         IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(error.destinationPath(), ioError));
             _nbErrors++;

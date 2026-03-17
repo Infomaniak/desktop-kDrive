@@ -222,7 +222,8 @@ void AppServer::init() {
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
@@ -230,7 +231,8 @@ void AppServer::init() {
     std::filesystem::path pre334ConfigFilePath =
             std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
     bool oldConfigExists;
-    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError));
         throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
     }
@@ -416,7 +418,9 @@ void AppServer::init() {
             const auto noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
             bool noUpdateFlagFileExists = false;
             ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                ioError != IoError::Success) {
                 std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
                 LOG_ERROR(_logger, errorMsg);
                 KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
@@ -595,7 +599,7 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, false, true, true); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -629,7 +633,8 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 void AppServer::stopAllSyncPals() {
     const std::scoped_lock lock(syncPalMapMutex);
     for (const auto &[syncDbId, _]: syncPalMap) {
-        if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+        if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep);
+            !exitInfo) {
             LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
         }
     }
@@ -1220,7 +1225,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in ServerRequests::getConflictList for syncDbId=" << sync.dbId() << " : code=" << exitCode);
+                    LOG_WARN(_logger,
+                             "Error in ServerRequests::getConflictList for syncDbId=" << sync.dbId() << " : code=" << exitCode);
                     break;
                 }
 
@@ -1438,7 +1444,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=, this]() {
                 // Stop SyncPal
-                if (const auto exitInfo = stopSyncPal(syncDbId, true); !exitInfo) {
+                if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::User); !exitInfo) {
                     LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
                 }
 
@@ -1887,7 +1893,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString firstCreatedNodeId;
             for (auto &folderElt: folderList) {
                 if (folderElt.second.isEmpty()) {
-                    ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, parentNodeId);
+                    QString newNodeId;
+                    const ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, newNodeId);
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << driveDbId << " parentNodeId="
                                                                                         << parentNodeId.toStdString());
@@ -1897,8 +1904,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         break;
                     }
                     if (firstCreatedNodeId.isEmpty()) {
-                        firstCreatedNodeId = parentNodeId;
+                        firstCreatedNodeId = newNodeId;
                     }
+                    parentNodeId = newNodeId;
                 } else {
                     parentNodeId = folderElt.second;
                 }
@@ -2134,10 +2142,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            int driveDbId;
             QString basePath;
             QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
             paramsStream >> basePath;
 
             QString path;
@@ -3784,8 +3790,9 @@ bool AppServer::startClient() {
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
-                ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }
@@ -3928,7 +3935,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool clear) {
+ExitInfo AppServer::stopSyncPal(int syncDbId, SyncPal::PauseCaller caller, SyncPal::DbBehaviorAfterStop behavior) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Stop SyncPal
@@ -3945,7 +3952,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     unregisterSync(syncPalMapIt->second);
-    syncPalMapIt->second->stop(pausedByUser, quit, clear);
+    syncPalMapIt->second->stop(caller, behavior);
 
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId << " done");
 
@@ -3956,7 +3963,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
         return ExitCode::SystemError;
     }
@@ -4406,7 +4413,7 @@ void AppServer::addError(const Error &error) const {
             sendErrorRemoved(errorId);
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
-    } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
+    } else if (_updateManager && errorCopy.exitCode() == ExitCode::UpdateRequired) {
         _updateManager->updater()->unskipVersion();
     }
 

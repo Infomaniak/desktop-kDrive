@@ -1098,8 +1098,7 @@ void SynthesisPopover::onOpenFolderItem(const SynchronizedItem &item) {
 #ifdef Q_OS_WIN
     QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(fullFilePath)});
 #elif defined(Q_OS_MACX)
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file\"" + fullFilePath + "\""});
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
+    QProcess::startDetached("open", {"-R", "--", fullFilePath});
 #else
     QStringList args;
     args << "--session";

@@ -50,7 +50,7 @@ ExitInfo LocalMoveJob::canRun() {
     if (!isEqual) {
         // Check that we can move the file in destination
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
             return ExitCode::SystemError;
         }
@@ -67,7 +67,7 @@ ExitInfo LocalMoveJob::canRun() {
 
     // Check that the source file still exists.
     bool exists = false;
-    if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }

@@ -116,7 +116,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
     // Stop SyncPal (pause by user)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, SyncPal::PauseCaller::User);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
     // Resume SyncPal
@@ -126,7 +126,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop SyncPal (cleanup)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 

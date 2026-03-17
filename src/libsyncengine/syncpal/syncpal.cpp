@@ -784,15 +784,12 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
+ExitCode SyncPal::cancelAllDlDirectJobs() {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
     const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
-        if (quit) {
-            directDownloadJobsMapElt.second->setAdditionalCallback(nullptr);
-        }
         directDownloadJobsMapElt.second->abort();
     }
 
@@ -1227,7 +1224,7 @@ std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
     return std::chrono::steady_clock::now();
 }
 
-void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
+void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
             // Stop main worker
@@ -1237,12 +1234,12 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     }
 
     // Stop direct download jobs
-    cancelAllDlDirectJobs(quit);
+    (void) cancelAllDlDirectJobs();
 
-    if (pausedByUser) {
+    if (caller == PauseCaller::User) {
         // Set paused flag
-        ExitCode exitCode = setSyncPaused(true);
-        if (exitCode != ExitCode::Ok) {
+
+        if (const auto exitCode = setSyncPaused(true); exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
             addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         }
@@ -1254,7 +1251,7 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     // Free shared objects
     freeSharedObjects();
 
-    _syncDb->setAutoDelete(clear);
+    _syncDb->setAutoDelete(behavior == DbBehaviorAfterStop::Remove);
 }
 
 bool SyncPal::isPaused() const {
@@ -1432,7 +1429,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed with: " << Utility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
             }

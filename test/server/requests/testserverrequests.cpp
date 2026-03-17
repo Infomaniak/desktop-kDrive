@@ -96,6 +96,76 @@ void TestServerRequests::testGetPublicLink() {
     CPPUNIT_ASSERT(!url.empty());
 }
 
+void TestServerRequests::testFindGoodPathForNewSync() {
+    SyncPath localTempDirPath;
+    {
+        LocalTemporaryDirectory localTempDir("testFindGoodPathForNewSync");
+        localTempDirPath = localTempDir.path();
+        const SyncPath defaultPath = localTempDirPath / APPLICATION_NAME;
+
+        // Check with a valid path
+        SyncPath returnedPath;
+        std::string error;
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT_EQUAL(defaultPath, returnedPath);
+        CPPUNIT_ASSERT(error.empty());
+
+        // Check with an existing path
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // check an already synced & existing path
+        const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
+        (void) ParmsDb::instance()->insertSync(sync);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // Check an already synced but non-existing path
+        CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // check with an already synced parent path
+        const SyncPath childPath = defaultPath / "childFolder";
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
+                             ServerRequests::findGoodPathForNewSync(childPath, returnedPath, error));
+        CPPUNIT_ASSERT(returnedPath.empty());
+        CPPUNIT_ASSERT(!error.empty());
+
+        // Check with an existing path containing an already synced child
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+    }
+
+    // Check with a non-existing path containing an already synced child
+    SyncPath returnedPath;
+    std::string error;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
+                         ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
+    CPPUNIT_ASSERT(returnedPath.empty());
+    CPPUNIT_ASSERT(!error.empty());
+}
+
 void TestServerRequests::testDeleteUser() {
     AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
     AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
