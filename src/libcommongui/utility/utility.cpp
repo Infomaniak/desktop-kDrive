@@ -23,6 +23,10 @@
 #include <QThread>
 
 namespace KDC {
+
+static const QString commonDocumentsFolderName("Common documents");
+static const QString sharedFolderName("Shared");
+
 struct Period {
         const char *name;
         quint64 msec;
@@ -109,6 +113,18 @@ QString CommonGuiUtility::octetsToString(qint64 octets) {
     if (round) return s.arg(qRound(value));
 
     return s.arg(value, 0, 'g', 2);
+}
+
+QString CommonGuiUtility::treeItemIconPath(const QString &folderName, const bool isDisabled) {
+    QString iconPath;
+    if (folderName == sharedFolderName || isDisabled) {
+        iconPath = ":/client/resources/icons/document types/folder-disable.svg";
+    } else if (folderName == commonDocumentsFolderName) {
+        iconPath = ":/client/resources/icons/document types/folder-common-documents.svg";
+    } else {
+        iconPath = ":/client/resources/icons/actions/folder.svg";
+    }
+    return iconPath;
 }
 
 } // namespace KDC

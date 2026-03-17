@@ -126,7 +126,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // The item must exist locally for the job to run
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absolutePath(), exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(absolutePath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath(), ioError));
         return ExitCode::SystemError;
     }

@@ -49,7 +49,7 @@ void TestIntegration::testLocalChanges() {
 
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(filePath, &fileStat, exists);
+    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
@@ -63,7 +63,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate an edit operation.
     testhelpers::generateOrEditTestFile(filePath);
-    IoHelper::getFileStat(filePath, &fileStat, exists);
+    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
@@ -138,7 +138,7 @@ void TestIntegration::testRemoteChanges() {
 
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(filePath, &fileStat, exists);
+    IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT_EQUAL(fileInfoJob.size(), fileStat.size);
     CPPUNIT_ASSERT_EQUAL(fileInfoJob.modificationTime(), fileStat.modificationTime);
 
@@ -153,7 +153,7 @@ void TestIntegration::testRemoteChanges() {
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(filePath, &filestat, ioError);
+    (void) IoHelper::getFileStat(filePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT_EQUAL(modificationTime, filestat.modificationTime);
     CPPUNIT_ASSERT_EQUAL(size, filestat.size);
     logStep("test edit remote file");
@@ -220,7 +220,7 @@ void TestIntegration::testUploadBigFile() {
 
     bool found = false;
     FileStat fileStat;
-    IoHelper::getFileStat(localFilePath, &fileStat, found);
+    IoHelper::getFileStat(localFilePath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
 
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 

@@ -276,7 +276,7 @@ bool Utility::registerLoginRedirection() {
 
     IoError ioError = IoError::Unknown;
     bool exists = false;
-    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists:" << Utility::formatIoError(urlSchemeDirPath, ioError));
         return false;
     }

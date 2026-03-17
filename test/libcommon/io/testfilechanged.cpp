@@ -32,7 +32,7 @@ void TestIo::testFileChanged() {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         FileStat fileStat;
         IoError ioError = IoError::Success;
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         bool changed = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
@@ -47,7 +47,7 @@ void TestIo::testFileChanged() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         bool changed = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
@@ -65,7 +65,7 @@ void TestIo::testFileChanged() {
 
         FileStat fileStat;
         IoError ioError = IoError::Success;
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         bool changed = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileChanged(path, fileStat.size, fileStat.modificationTime, fileStat.creationTime,
@@ -96,7 +96,7 @@ void TestIo::testFileChanged() {
 
         FileStat fileStat;
         IoError ioError = IoError::Success;
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         // Editing
         {
@@ -123,7 +123,7 @@ void TestIo::testFileChanged() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
@@ -147,7 +147,7 @@ void TestIo::testFileChanged() {
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
-        IoHelper::getFileStat(path, &fileStat, ioError);
+        IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
         IoHelper::setFileHidden(path, true);
         bool changed = true;

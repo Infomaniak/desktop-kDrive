@@ -178,7 +178,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         FileStat filestat;
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
@@ -191,7 +191,7 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(folderPath, timestamp, timestamp + 10, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(folderPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
@@ -213,7 +213,7 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(filepath, timestamp, timestamp + 10, false);
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
@@ -228,12 +228,12 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
@@ -245,12 +245,12 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
 #endif
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(folderPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(folderPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
 #endif
@@ -265,10 +265,10 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
@@ -280,10 +280,10 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
@@ -297,10 +297,10 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 
@@ -312,10 +312,10 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(linkPath, linkTimestamp, linkTimestamp + 10, true);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(linkPath, &filestat, ioError);
+        (void) IoHelper::getFileStat(linkPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(linkTimestamp + 10, filestat.modificationTime);
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(timestamp + 10, filestat.modificationTime);
 #endif
@@ -327,7 +327,7 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(filepath, timestamp + 10, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS)
         // Creation date is set to modification date
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
@@ -343,7 +343,7 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(filepath, 0, timestamp, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, filestat.creationTime);
 #endif
@@ -356,7 +356,7 @@ void TestIo::testSetFileDates() {
         ioError = IoHelper::setFileDates(filepath, timestamp, 0, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        (void) IoHelper::getFileStat(filepath, &filestat, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
 #if defined(KD_MACOS)
         // Creation date is set to modification date = 0
         CPPUNIT_ASSERT(filestat.creationTime == 0);

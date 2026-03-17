@@ -160,6 +160,8 @@ std::string toString(const ExitCause e) {
             return "InvalidSize";
         case ExitCause::FileExists:
             return "FileExists";
+        case ExitCause::DirExists:
+            return "DirExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:

@@ -142,6 +142,16 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(logger(), "Path to HOME not found.");
+        return {};
+    }
+
+    return SyncPath(homePathEnv) / ".Trash";
+}
+
 bool Utility::registerLoginRedirection() {
     // Working directory path is like "<path to the app bundle>/Contents/MacOS"
     const std::string appBundlePath = CommonUtility::getAppWorkingDir().parent_path().parent_path().native();

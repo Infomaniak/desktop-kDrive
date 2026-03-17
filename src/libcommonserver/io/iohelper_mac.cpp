@@ -147,7 +147,6 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     ioError = IoError::Success;
 
     struct stat sb;
-
     if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
@@ -174,7 +173,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 IoError IoHelper::lock(const SyncPath &path) noexcept {
     // Set uchg flag to lock the item.
     if (chflags(path.string().c_str(), UF_IMMUTABLE)) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set uchg flag for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to set uchg flag for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;
@@ -183,9 +182,9 @@ IoError IoHelper::lock(const SyncPath &path) noexcept {
 IoError IoHelper::unlock(const SyncPath &path) noexcept {
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(path, &filestat, found);
+    IoHelper::getFileStat(path, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     if (!found) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Not found: " << Utility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;
     }
 
@@ -193,7 +192,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
     u_int flags = filestat._flags;
     flags &= static_cast<u_int>(~UF_IMMUTABLE);
     if (chflags(path.string().c_str(), flags)) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
     return IoError::Success;
@@ -202,9 +201,9 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
 IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(path, &filestat, found);
+    IoHelper::getFileStat(path, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     if (!found) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Not found: " << Utility::formatSyncPath(path));
         return IoError::NoSuchFileOrDirectory;
     }
 

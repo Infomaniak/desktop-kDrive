@@ -25,6 +25,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestServerRequests);
         CPPUNIT_TEST(testFixProxyConfig);
         CPPUNIT_TEST(testGetPublicLink);
+        CPPUNIT_TEST(testFindGoodPathForNewSync);
         CPPUNIT_TEST(testDeleteUser);
         CPPUNIT_TEST(testDeleteAccount);
         CPPUNIT_TEST(testDeleteDrive);
@@ -36,6 +37,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
 
         void testFixProxyConfig();
         void testGetPublicLink();
+        void testFindGoodPathForNewSync();
         void testDeleteUser();
         void testDeleteAccount();
         void testDeleteDrive();

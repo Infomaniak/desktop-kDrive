@@ -38,7 +38,7 @@ ExitInfo LocalCopyJob::canRun() {
     // Check that we can copy the file in destination
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
         return ExitCode::SystemError;
     }
@@ -53,7 +53,7 @@ ExitInfo LocalCopyJob::canRun() {
     }
 
     // Check that source file still exists
-    if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
         return ExitCode::SystemError;
     }
