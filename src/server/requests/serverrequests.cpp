@@ -369,7 +369,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPa
     return exitInfo;
 }
 
-ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -396,8 +396,8 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     int attempt = 1;
     forever {
-        ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
-        if (!exitInfo && exitInfo.cause() != ExitCause::FileExists) {
+        const auto exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
+        if (!exitInfo && exitInfo.cause() != ExitCause::DirExists) {
             LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder:" << exitInfo);
             return exitInfo;
         }
@@ -2066,7 +2066,7 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         if (!differentPaths) {
             error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return {ExitCode::InvalidSync, ExitCause::FileExists};
+            return {ExitCode::InvalidSync, ExitCause::DirExists};
         }
     }
 

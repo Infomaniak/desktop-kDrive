@@ -144,7 +144,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 
         // check with an already synced parent path
         const SyncPath childPath = defaultPath / "childFolder";
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown),
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
                              ServerRequests::findGoodPathForNewSync(childPath, returnedPath, error));
         CPPUNIT_ASSERT(returnedPath.empty());
         CPPUNIT_ASSERT(!error.empty());
@@ -157,10 +157,10 @@ void TestServerRequests::testFindGoodPathForNewSync() {
         CPPUNIT_ASSERT(error.empty());
     }
 
-    // Check with a non-existing path conatining an already synced child
+    // Check with a non-existing path containing an already synced child
     SyncPath returnedPath;
     std::string error;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown),
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
                          ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
     CPPUNIT_ASSERT(returnedPath.empty());
     CPPUNIT_ASSERT(!error.empty());
