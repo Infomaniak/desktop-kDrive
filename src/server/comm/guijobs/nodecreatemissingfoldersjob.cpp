@@ -72,20 +72,17 @@ ExitInfo NodeCreateMissingFoldersJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo NodeCreateMissingFoldersJob::process() {
-    // Pause all syncs of the drive
-    std::vector<int> pausedSyncs;
-
+ExitInfo NodeCreateMissingFoldersJob::pauseDriveSyncs(std::vector<int> &pausedSyncs) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveId() != _driveId || syncPal->isPaused()) continue;
         syncPal->pause();
         pausedSyncs.push_back(syncPalId);
     }
+    return ExitCode::Ok;
+}
 
-    // Create missing folders
-    NodeId firstCreatedNodeId;
-    std::vector<SyncName> folderNames;
+ExitInfo NodeCreateMissingFoldersJob::createMissingFolders(NodeId &firstCreatedNodeId) {
     for (const auto &folderName: _relativePath) {
         if (const auto exitCode = ServerRequests::createDir(_userDbId, _driveId, _parentNodeId, folderName, _parentNodeId);
             exitCode != ExitCode::Ok) {
@@ -95,35 +92,48 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
         }
         if (firstCreatedNodeId.empty()) firstCreatedNodeId = _parentNodeId;
     }
+    return ExitCode::Ok;
+}
 
-    // Add the first created node to the blacklist of every sync
+ExitInfo NodeCreateMissingFoldersJob::blacklistNodeOnAllDriveSyncs(const NodeId &nodeId) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveId() != _driveId) continue;
 
-        // Get blacklist
         NodeSet nodeIdSet;
         if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalId);
             addError(Error(ERR_ID, exitCode));
-
             return exitCode;
         }
 
-        // Insert the new folder node and set blacklist
-        (void) nodeIdSet.insert(firstCreatedNodeId);
+        (void) nodeIdSet.insert(nodeId);
         if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
             addError(Error(ERR_ID, exitCode));
-
             return exitCode;
         }
     }
+    return ExitCode::Ok;
+}
 
-    // Resume all paused syncs
+void NodeCreateMissingFoldersJob::resumeSyncs(const std::vector<int> &pausedSyncs) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto syncDbId: pausedSyncs) {
         if (_commManager->appServer().syncPalMap.contains(syncDbId)) _commManager->appServer().syncPalMap[syncDbId]->unpause();
     }
+}
 
+ExitInfo NodeCreateMissingFoldersJob::process() {
+    std::vector<int> pausedSyncs;
+    if (const auto exitInfo = pauseDriveSyncs(pausedSyncs); !exitInfo) return exitInfo;
+
+    NodeId firstCreatedNodeId;
+    if (const auto exitInfo = createMissingFolders(firstCreatedNodeId); !exitInfo) return exitInfo;
+
+    if (const auto exitInfo = blacklistNodeOnAllDriveSyncs(firstCreatedNodeId); !exitInfo) return exitInfo;
+
+    resumeSyncs(pausedSyncs);
     return ExitCode::Ok;
 }
 
