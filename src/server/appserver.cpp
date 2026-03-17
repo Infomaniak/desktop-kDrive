@@ -1870,7 +1870,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::NODE_CREATEMISSINGFOLDERS: {
+        case RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY: {
             int driveDbId;
             QList<QPair<QString, QString>> folderList;
             QDataStream paramsStream(params);

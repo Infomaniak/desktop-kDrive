@@ -1258,6 +1258,37 @@ ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNode
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::createDir(int32_t _userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+                                   NodeId &newNodeId) {
+    // Get drive data
+    std::shared_ptr<CreateDirJob> job = nullptr;
+    try {
+        job = std::make_shared<CreateDirJob>(nullptr, _userDbId, driveId, parentNodeId, dirName);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveId=" << driveId);
+        return exitInfo.code();
+    }
+
+    // Extract file ID
+    if (job->jsonRes()) {
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
+        }
+    }
+
+    if (newNodeId.empty()) return ExitCode::BackError;
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
     newNodeId = {};
     NodeId newNodeIdStr;

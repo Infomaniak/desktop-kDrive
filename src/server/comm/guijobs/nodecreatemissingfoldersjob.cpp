@@ -25,11 +25,13 @@
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsFolderList = "folderList";
+static const auto inParamsUserDbId = "userDbId";
+static const auto inParamsDriveId = "driveId";
+static const auto inParamsParentNodeId = "parentNodeId";
+static const auto inParamsRelativePath = "relativePath";
 
 // Output parameters keys
-static const auto outParamsParentNodeId = "parentNodeId";
+static const auto outParamsNodeId = "nodeId";
 
 namespace KDC {
 
@@ -40,16 +42,17 @@ NodeCreateMissingFoldersJob::NodeCreateMissingFoldersJob(std::shared_ptr<CommMan
     _requestNum = RequestNum::NODE_CREATEMISSINGFOLDERS;
 }
 
-void NodeCreateMissingFoldersJob::FolderItem::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, "name", name);
-    CommonUtility::readValueFromStruct(dstruct, "nodeId", nodeId);
-}
 
 ExitInfo NodeCreateMissingFoldersJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in NodeCreateMissingFoldersJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValues(inParamsFolderList, _folderList, dynamicVar2Struct<FolderItem>);
+        readParamValue(inParamsUserDbId, _userDbId);
+        readParamValue(inParamsDriveId, _driveId);
+        CommString commStr;
+        readParamValue(inParamsRelativePath, commStr);
+        _relativePath = SyncPath(commStr);
+        readParamValue(inParamsParentNodeId, commStr);
+        _parentNodeId = CommonUtility::commString2Str(commStr);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -64,27 +67,7 @@ ExitInfo NodeCreateMissingFoldersJob::deserializeInputParms() {
 }
 
 ExitInfo NodeCreateMissingFoldersJob::serializeOutputParms() {
-    writeParamValue(outParamsParentNodeId, _parentNodeId);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo NodeCreateMissingFoldersJob::getMissingFoldersInfo(const FolderItem &folderItem, MissingFoldersInfo &info) {
-    if (!folderItem.nodeId.empty()) {
-        info.parentNodeId = folderItem.nodeId;
-
-        return ExitCode::Ok;
-    }
-
-    if (const auto exitCode = ServerRequests::createDir(_driveDbId, info.parentNodeId, folderItem.name, info.parentNodeId);
-        exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << _driveDbId << " parentNodeId=" << info.parentNodeId);
-        addError(Error(ERR_ID, exitCode));
-
-        return exitCode;
-    }
-
-    if (info.firstCreatedNodeId.empty()) info.firstCreatedNodeId = info.parentNodeId;
+    writeParamValue(outParamsNodeId, _parentNodeId);
 
     return ExitCode::Ok;
 }
@@ -95,21 +78,27 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
 
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
-        if (!syncPal || syncPal->driveDbId() != _driveDbId || syncPal->isPaused()) continue;
+        if (!syncPal || syncPal->driveId() != _driveId || syncPal->isPaused()) continue;
         syncPal->pause();
         pausedSyncs.push_back(syncPalId);
     }
 
     // Create missing folders
-    MissingFoldersInfo foldersInfo;
-    foldersInfo.parentNodeId = NodeId(SyncDb::driveRootNode().nodeIdRemote().value());
-    for (const auto &folderItem: _folderList) {
-        if (const auto exitInfo = getMissingFoldersInfo(folderItem, foldersInfo); !exitInfo) return exitInfo;
+    NodeId firstCreatedNodeId;
+    std::vector<SyncName> folderNames;
+    for (const auto &folderName: _relativePath) {
+        if (const auto exitCode = ServerRequests::createDir(_userDbId, _driveId, _parentNodeId, folderName, _parentNodeId);
+            exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in Requests::createDir for driveId=" << _driveId << " parentNodeId=" << _parentNodeId);
+            addError(Error(ERR_ID, exitCode));
+            return exitCode;
+        }
+        if (firstCreatedNodeId.empty()) firstCreatedNodeId = _parentNodeId;
     }
 
     // Add the first created node to the blacklist of every sync
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
-        if (!syncPal || syncPal->driveDbId() != _driveDbId) continue;
+        if (!syncPal || syncPal->driveId() != _driveId) continue;
 
         // Get blacklist
         NodeSet nodeIdSet;
@@ -121,7 +110,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
         }
 
         // Insert the new folder node and set blacklist
-        (void) nodeIdSet.insert(foldersInfo.firstCreatedNodeId);
+        (void) nodeIdSet.insert(firstCreatedNodeId);
         if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
             addError(Error(ERR_ID, exitCode));
