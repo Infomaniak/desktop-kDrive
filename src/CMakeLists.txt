@@ -34,6 +34,8 @@ add_subdirectory(libparms)
 
 if(NOT BUILD_LIBRARIES_ONLY)
     if(BUILD_GUI)
+        # Enable/disable the build of the classical GUI. Setting it to OFF speeds up the CMake configuration step.
+        option(BUILD_CLASSICAL_GUI "Build the classical GUI" ON)
         if(BUILD_CLASSICAL_GUI)
             add_subdirectory(gui)
         endif()
