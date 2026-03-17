@@ -230,7 +230,6 @@ The project requires additional CMake variables for a correct build. To inject t
 1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
    ```cmake
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
-   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
@@ -301,7 +300,6 @@ CMake options:
 ```
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/CLion-build-debug/bin
 -DBUILD_UNIT_TESTS:BOOL=ON
 -DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
@@ -325,7 +323,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
--DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
 -DBUILD_TESTING=OFF
 ```

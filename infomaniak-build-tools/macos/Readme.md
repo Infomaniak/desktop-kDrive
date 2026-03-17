@@ -244,7 +244,6 @@ The project requires additional CMake variables for a correct build. To inject t
 1. Create or open `~/.conan2/profiles/debug_vars.cmake` and add the cache entries, for example:
    ```cmake
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
-   set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
@@ -317,7 +316,6 @@ CMake options:
 ```
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
 -DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
@@ -382,7 +380,6 @@ In the project build settings, paste the following lines in the `Initial Configu
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
 -DTEAM_IDENTIFIER_PREFIX=<team id>
--DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/install
 -DBUILD_TESTING=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
