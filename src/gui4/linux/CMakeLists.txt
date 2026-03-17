@@ -59,8 +59,10 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    ${libcommon_NAME}
 )
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src # libcommon header files
 )
