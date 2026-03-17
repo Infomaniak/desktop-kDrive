@@ -21,22 +21,7 @@ import QtQuick
 
 QtObject {
 
-    // -------------------------------------------------------------------------
-    // Theme control
-    // -------------------------------------------------------------------------
-
-    property int _themeMode: ThemeMode.System
-
-    function setThemeMode(mode) {
-        if (mode === ThemeMode.System || mode === ThemeMode.Light || mode === ThemeMode.Dark)
-            _themeMode = mode
-    }
-
-    readonly property bool darkMode: {
-        if (_themeMode === ThemeMode.Light) return false
-        if (_themeMode === ThemeMode.Dark)  return true
-        return Qt.styleHints.colorScheme === Qt.Dark
-    }
+    readonly property bool darkMode: ThemeMode.isDark
 
     // -------------------------------------------------------------------------
     // T1 — Primitives
