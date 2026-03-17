@@ -247,7 +247,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
         }
 
         // Look for new actions
-        exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionFilesKey));
+        exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey));
         if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
             tryToInvalidateSnapshot();
@@ -602,8 +602,10 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoMap(const Poco::JSON::A
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::fillActionFilesInfo(const Poco::JSON::Array::Ptr actionFilesArray,
-                                                             ActionInfoMap &actionInfoMap) {
+ExitInfo RemoteFileSystemObserverWorker::fillActionsFilesInfo(const Poco::JSON::Array::Ptr actionFilesArray,
+                                                              ActionInfoMap &actionInfoMap) {
+    assert(actionFilesArray && "Expected 'actions_files' array. Got nullptr.");
+
     for (auto it = actionFilesArray->begin(); it != actionFilesArray->end(); ++it) {
         if (stopAsked()) return ExitCode::Ok;
 
@@ -615,12 +617,12 @@ ExitInfo RemoteFileSystemObserverWorker::fillActionFilesInfo(const Poco::JSON::A
 }
 
 ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
-                                                        const Poco::JSON::Array::Ptr actionFilesArray) {
+                                                        const Poco::JSON::Array::Ptr actionsFilesArray) {
     if (!actionArray) return ExitCode::Ok;
 
     ActionInfoMap actionInfoMap;
     if (const auto exitInfo = createActionInfoMap(actionArray, actionInfoMap); !exitInfo) return exitInfo;
-    if (const auto exitInfo = fillActionFilesInfo(actionFilesArray, actionInfoMap)) return exitInfo;
+    if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoMap)) return exitInfo;
 
     MoveItemMap movedItems;
     for (auto &[_, actionInfo]: actionInfoMap) {
