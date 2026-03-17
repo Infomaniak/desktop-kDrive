@@ -568,16 +568,6 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoMap(const Poco::JSON::A
         // We do not record the ActionInfo in this case.
         if (actionInfo.path().empty()) continue;
 
-        // Check unsupported characters
-        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
-                                                                actionInfo.snapshotItem.type());
-            !exitInfo) {
-            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
-                return exitInfo;
-            }
-            continue;
-        }
-
         bool isWarning = false;
         if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
             if (isWarning) {
@@ -623,6 +613,18 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     ActionInfoMap actionInfoMap;
     if (const auto exitInfo = createActionInfoMap(actionArray, actionInfoMap); !exitInfo) return exitInfo;
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoMap)) return exitInfo;
+
+    // Filter out items whose names contain unsupported characters.
+    for (auto it = actionInfoMap.begin(); it != actionInfoMap.end();) {
+        const auto &[_, actionInfo] = *it;
+        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
+                                                                actionInfo.snapshotItem.type());
+            !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
+            it = actionInfoMap.erase(it);
+        } else
+            ++it;
+    }
 
     MoveItemMap movedItems;
     for (auto &[_, actionInfo]: actionInfoMap) {
@@ -708,11 +710,11 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj,
                                                                ActionInfoMap &actionInfoMap) {
     RemoteFileId fileId = 0;
-    if (!JsonParserUtility::extractValue(actionFileObj, fileIdKey, fileId)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, idKey, fileId)) return ExitCode::BackError;
 
     ActionInfo &actionInfo = actionInfoMap[fileId];
     std::string fileTypeString;
-    if (!JsonParserUtility::extractValue(actionFileObj, fileTypeKey, fileTypeString)) {
+    if (!JsonParserUtility::extractValue(actionFileObj, typeKey, fileTypeString)) {
         return ExitCode::BackError;
     }
     actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
@@ -722,8 +724,19 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
         if (!JsonParserUtility::extractValue(actionFileObj, sizeKey, fileSize, false)) {
             return ExitCode::BackError;
         }
-        actionInfo.snapshotItem.setSize(fileSize);
+        actionInfo.snapshotItem.setSize(static_cast<int64_t>(fileSize));
     }
+
+    SyncTime tmpTime = 0;
+    if (!JsonParserUtility::extractValue(actionFileObj, createdAtKey, tmpTime, false)) {
+        return ExitCode::BackError;
+    }
+    actionInfo.snapshotItem.setCreatedAt(tmpTime);
+
+    if (!JsonParserUtility::extractValue(actionFileObj, lastModifiedAtKey, tmpTime, false)) {
+        return ExitCode::BackError;
+    }
+    actionInfo.snapshotItem.setLastModified(tmpTime);
 
     std::string symbolicKeyString;
     if (!JsonParserUtility::extractValue(actionFileObj, symbolicLinkKey, symbolicKeyString, false)) {
@@ -931,6 +944,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const Syn
         ioError = Utility::tryCreateTmpFile(name);
     } else if (type == NodeType::Directory) {
         ioError = Utility::tryCreateTmpDir(name);
+    } else {
+        assert(false && "Unknown NodeType.");
     }
 
     if (ioError == IoError::AccessDenied) {
@@ -938,8 +953,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const Syn
         exitInfo = {ExitCode::SystemError, ExitCause::TmpDirAccessError};
         _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     } else if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
-                                            << SyncName2WStr(name) << L". Item is ignored.");
+        LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem: "
+                                            << Utility::formatIoError(ioError) << L", " << Utility::formatSyncName(name)
+                                            << L". Item is ignored.");
         _syncPal->addError(
                 Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
         exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
