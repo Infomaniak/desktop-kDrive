@@ -30,8 +30,7 @@ struct SynchroConfigurationView: View {
 
     @State private var isShowingFileImporter = false
 
-    let drive: any UIDriveRepresentation
-    let localFolder: URL?
+    let configuration: SynchroConfiguration
 
     private var driveLocationTipColor: Color {
         return isShowingSynchroLocationError ? ColorToken.Status.Medium.warning.asColor : ColorToken.Text.tertiary.asColor
@@ -46,7 +45,7 @@ struct SynchroConfigurationView: View {
                         color: ColorToken.Drive.defaultColor.asColor
                     )
 
-                    Text(drive.name)
+                    Text(configuration.drive.name)
                         .font(.Tokens.bodyEmphasized)
                         .foregroundStyle(ColorToken.Text.secondary.asColor)
                 }
@@ -126,11 +125,11 @@ struct SynchroConfigurationView: View {
             }
         }
         .onAppear {
-            synchroLocation = localFolder
+            synchroLocation = configuration.localFolder
         }
         .task {
             guard synchroLocation == nil else { return }
-            synchroLocation = try? await SyncCreationService().preferredLocalPath(for: drive.name)
+            synchroLocation = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name)
         }
     }
 
@@ -155,5 +154,5 @@ struct SynchroConfigurationView: View {
 }
 
 #Preview {
-    SynchroConfigurationView(drive: PreviewHelper.drive1, localFolder: nil)
+    SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: nil, blackList: []))
 }
