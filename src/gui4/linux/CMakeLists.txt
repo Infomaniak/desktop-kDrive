@@ -12,6 +12,7 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 set(GUI_SOURCE_FILES# C++ files for the GUI application
     src/main.cpp
+    src/types/ThemeMode.h
 )
 
 set(GUI_QML_FILES # .qml files for the app
@@ -49,4 +50,5 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/types
 )
