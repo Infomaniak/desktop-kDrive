@@ -742,7 +742,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
                 SyncFileItem syncItem;
                 std::optional<NodeId> localNodeId;
-                if (!dirIt->is_symlink() && isLocalItemInSyncWithDb(absolutePath, localNodeId) && localNodeId.has_value()) {
+                if (!entry.is_symlink() && isLocalItemInSyncWithDb(absolutePath, localNodeId) && localNodeId.has_value()) {
                     syncItem.setLocalNodeId(localNodeId.value());
                     if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(absolutePath, syncItem); !exitInfo) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(absolutePath)
