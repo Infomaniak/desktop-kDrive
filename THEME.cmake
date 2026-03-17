@@ -1,4 +1,4 @@
-set(KDRIVE_THEME_DIR "" CACHE STRING "Define directory containing a custom theme")
+set(KDRIVE_THEME_DIR "${CMAKE_CURRENT_LIST_DIR}/infomaniak" CACHE STRING "Define directory containing a custom theme")
 include("${KDRIVE_THEME_DIR}/kDrive.cmake")
 
 # Default dbus name and path
