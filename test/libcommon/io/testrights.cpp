@@ -642,9 +642,11 @@ void TestIo::testPermissionsHolder() {
 
     const auto filePath2 = tempDir.path() / "testPermissionsHolderFile2";
     testhelpers::generateOrEditTestFile(filePath2);
-    CPPUNIT_ASSERT(!std::filesystem::exists(filePath2));
+    CPPUNIT_ASSERT(std::filesystem::exists(filePath2));
 
     // Test with several instance of perms holder on the same folder
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
+
     bool dummyRead = false;
     bool write = false;
     bool dummyExec = false;
@@ -670,7 +672,7 @@ void TestIo::testPermissionsHolder() {
         CPPUNIT_ASSERT_EQUAL(true, write);
     }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-    CPPUNIT_ASSERT_EQUAL(false, write);
+    CPPUNIT_ASSERT_EQUAL(true, write);
 }
 
 } // namespace KDC

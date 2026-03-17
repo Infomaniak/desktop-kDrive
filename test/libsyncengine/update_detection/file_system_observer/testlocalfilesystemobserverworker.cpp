@@ -66,7 +66,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool exists = false;
-        IoHelper::getFileStat(filepath, &fileStat, exists);
+        IoHelper::getFileStat(filepath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
         _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
@@ -183,7 +183,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 
         FileStat fileStat;
         bool exists = false;
-        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
+        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
         itemId = std::to_string(fileStat.inode);
         _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
@@ -283,7 +283,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     FileStat fileStat;
     bool exists = false;
 
-    IoHelper::getFileStat(_rootFolderPath / makeNfcSyncName(), &fileStat, exists);
+    IoHelper::getFileStat(_rootFolderPath / makeNfcSyncName(), &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     const NodeId nfcNamedItemId = std::to_string(fileStat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(nfcNamedItemId));
 
@@ -292,7 +292,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the snapshot.
     slowObserver->waitForUpdate(previousRevision);
 
-    IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
+    IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
 
     // Check that only the last modified item is in the snapshot.
@@ -320,7 +320,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
 
         FileStat fileStat;
         bool exists = false;
-        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
+        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
         SyncPath path;
@@ -376,12 +376,12 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
 
         FileStat fileStat;
         bool exists = false;
-        IoHelper::getFileStat(destinationPath, &fileStat, exists);
+        IoHelper::getFileStat(destinationPath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
 
         testAbsolutePath = destinationPath / Str("test0.txt");
-        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
+        IoHelper::getFileStat(testAbsolutePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
     }
@@ -411,14 +411,14 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases1() {
     //// delete
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(sourcePath, &fileStat, exists);
+    IoHelper::getFileStat(sourcePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     NodeId initItemId = std::to_string(fileStat.inode);
 
     auto ioError = IoError::Unknown;
     IoHelper::deleteItem(sourcePath, ioError);
     //// create
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
-    IoHelper::getFileStat(sourcePath, &fileStat, exists);
+    IoHelper::getFileStat(sourcePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     NodeId newItemId = std::to_string(fileStat.inode);
     //// edit
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
@@ -442,14 +442,14 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     //// move
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(sourcePath, &fileStat, exists);
+    IoHelper::getFileStat(sourcePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     NodeId initItemId = std::to_string(fileStat.inode);
 
     auto ioError = IoError::Unknown;
     IoHelper::moveItem(sourcePath, destinationPath, ioError);
     //// create
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
-    IoHelper::getFileStat(sourcePath, &fileStat, exists);
+    IoHelper::getFileStat(sourcePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     NodeId newItemId = std::to_string(fileStat.inode);
     //// edit
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
@@ -506,7 +506,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     slowObserver->waitForUpdate(previousRevision);
 
     FileStat fileStat;
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError,
+                                                                    IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(_testFiles[0].first));
@@ -546,7 +547,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     SnapshotRevision previousRevision = _syncPal->liveSnapshot(ReplicaSide::Local).revision();
     generateOrEditTestFile(nfcFilePath);
-    IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
+    IoHelper::getFileStat(nfcFilePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
     NodeId nfcFileId = std::to_string(fileStat.inode);
 
     // Prepare the path of the NFD encoded file.
@@ -574,7 +575,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     slowObserver->waitForUpdate(previousRevision);
 
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::getFileStat(nfdFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     NodeId nfdFileId = std::to_string(fileStat.inode);
 

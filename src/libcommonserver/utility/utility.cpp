@@ -627,7 +627,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         bool exists = false;
         auto ioError = IoError::Unknown;
         // Check if item already exist (it should not exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
@@ -658,7 +658,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         output.close();
 
         // Check again if item already exist (it should exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
@@ -697,18 +697,6 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 
     return false;
 }
-
-#ifdef KD_MACOS
-SyncPath Utility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
-        return {};
-    }
-
-    return SyncPath(homePathEnv) / ".Trash";
-}
-#endif
 
 std::wstring Utility::formatStdError(const std::error_code &ec) {
 #if defined(KD_WINDOWS)
@@ -801,7 +789,8 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     }
 
     if (!diskMounted) {
-        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString()) << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
+        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString())
+                                    << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
         return ExitCause::SyncDirDiskMissing;
     }
     return ExitCause::SyncDirAccessError;

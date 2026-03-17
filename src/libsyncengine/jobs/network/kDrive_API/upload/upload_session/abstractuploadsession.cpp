@@ -164,7 +164,7 @@ ExitInfo AbstractUploadSession::canRun() {
     // Check that the item still exist
     bool exists = false;
     auto ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_filePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
         return ExitCode::SystemError;
     }
@@ -453,7 +453,6 @@ ExitInfo AbstractUploadSession::cancelSession() {
         for (const auto &[jobId, job]: _ongoingChunkJobs) {
             if (job.get() && job->sessionToken() == _sessionToken) {
                 LOG_INFO(_logger, "Aborting chunk job " << jobId);
-                job->setAdditionalCallback(nullptr);
                 job->abort();
             }
         }

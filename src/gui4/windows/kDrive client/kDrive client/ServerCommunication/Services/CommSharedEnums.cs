@@ -238,6 +238,7 @@ namespace Infomaniak.kDrive.Types
         ApiErr,
         InvalidSize,
         FileExists,
+        DirExists,
         FileAccessError,
         FileLocked,
         NotEnoughDiskSpace,

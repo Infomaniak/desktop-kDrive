@@ -218,7 +218,8 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     // Remove item from filesystem
     bool exists = false;
-    if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;

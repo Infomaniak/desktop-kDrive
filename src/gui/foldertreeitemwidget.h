@@ -80,7 +80,6 @@ class FolderTreeItemWidget : public QTreeWidget {
         QSet<const QTreeWidgetItem *> _newlyBlackListedItems;
 
         void initUI();
-        QString iconPath(const QString &folderName);
         QColor iconColor(const QString &folderName);
         void setFolderIcon();
         void setFolderIcon(QTreeWidgetItem *item, const QString &folderName);

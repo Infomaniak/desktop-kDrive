@@ -116,7 +116,8 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
-        appServer().addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        // TODO: try again later ("Host not found" on Windows when the app is started at PC boot)
+        // AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }

@@ -40,6 +40,8 @@
 
 #include <QFile>
 
+#include <QFile>
+
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
@@ -55,7 +57,6 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     ioError = IoError::Success;
 
     struct statx sb;
-
     if (statx(AT_FDCWD, path.string().c_str(), AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);

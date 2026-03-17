@@ -52,7 +52,7 @@ ExitInfo FileRescuer::createRescueFolderIfNeeded() const {
 
     bool exists = false;
     auto ioError = IoError::Unknown;
-    (void) IoHelper::checkIfPathExists(rescueFolderPath, exists, ioError);
+    (void) IoHelper::checkIfPathExists(rescueFolderPath, exists, ioError, IoHelper::PathCheckOption::Insensitive);
     if (ioError != IoError::Success) {
         // Failed to check directory existence
         LOGW_WARN(KDC::Log::instance()->getLogger(),
