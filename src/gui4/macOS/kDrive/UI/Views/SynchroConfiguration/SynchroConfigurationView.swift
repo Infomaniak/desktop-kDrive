@@ -23,7 +23,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SynchroConfigurationView: View {
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
     @State private var synchroLocation: URL?
     @State private var isShowingSynchroLocationError = false
@@ -42,7 +42,7 @@ struct SynchroConfigurationView: View {
                 HStack {
                     BadgeView(
                         image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
-                        color: ColorToken.Drive.defaultColor.asColor
+                        color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
                     )
 
                     Text(configuration.drive.name)
@@ -100,8 +100,14 @@ struct SynchroConfigurationView: View {
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
                     HStack {
-                        Button(KDriveLocalizable.buttonSelectFolders) {}
-                            .buttonStyle(.borderedProminent)
+                        Button(KDriveLocalizable.buttonSelectFolders) {
+                            viewModel.navigate(to: .selectFolders(configuration))
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Text(configuration.blackList.isEmpty ? "!Tous les dossiers du kDrive" : "!Tous les dossiers du kDrive")
+                            .font(.Tokens.subheadline)
+                            .foregroundStyle(driveLocationTipColor)
                     }
 
                     Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionTip)
@@ -113,15 +119,11 @@ struct SynchroConfigurationView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonValidate) {
-                    dismiss()
-                }
+                Button(KDriveLocalizable.buttonValidate) {}
             }
 
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
-                    dismiss()
-                }
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {}
             }
         }
         .onAppear {
@@ -129,7 +131,13 @@ struct SynchroConfigurationView: View {
         }
         .task {
             guard synchroLocation == nil else { return }
-            synchroLocation = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name)
+
+            guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
+                return
+            }
+
+            synchroLocation = localPath
+            viewModel.updateConfiguration(configuration.id, localFolder: localPath)
         }
     }
 
@@ -155,4 +163,5 @@ struct SynchroConfigurationView: View {
 
 #Preview {
     SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: nil, blackList: []))
+        .environmentObject(SynchroConfigurationFlowViewModel())
 }
