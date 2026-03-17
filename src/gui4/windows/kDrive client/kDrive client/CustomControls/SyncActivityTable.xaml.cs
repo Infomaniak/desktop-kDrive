@@ -130,10 +130,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void UpToDateLink_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
-        }
         private void ItemErrorIcon_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             Frame? frame = Utility.GetFrame(this);

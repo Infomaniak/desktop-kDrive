@@ -169,7 +169,7 @@
                         <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonHelpdesk'), Mode=OneWay}"
                                 Click="HelpDeskButton_Click" />
                     </toolKit:SettingsCard>
-                    
+
                     <!-- General - Feedback -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('feedbackSetting'), Mode=OneWay}">
                         <toolKit:SettingsCard.HeaderIcon>
@@ -489,11 +489,13 @@
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="OpenDebugFolderButton_Click"
+                                                  IsActionIconVisible="False"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                                <toolKit:SettingsCard.ActionIcon>
-                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
-                                                      Foreground="{ThemeResource TextFillColorPrimary}" />
-                                </toolKit:SettingsCard.ActionIcon>
+                                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                                                  Height="14"
+                                                  Width="14"
+                                                  Foreground="{ThemeResource TextFillColorPrimary}"
+                                                  Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}" />
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
@@ -520,7 +522,7 @@
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
                 </StackPanel>
-                
+
                 <controls:ConsentDialog x:Name="SentryContentDialog"
                                         Description="{x:Bind kDrive:Localizer.Instance.GetString('sentryDescription'), Mode=OneWay}"
                                         LogoUriStr="{ThemeResource Infomaniak.Custom.Icons.logo-sentry}"

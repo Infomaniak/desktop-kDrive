@@ -22,10 +22,14 @@ import OrderedCollections
 
 public extension UISynchro {
     init(synchro: Synchro) {
+        let targetNodeId = synchro.targetNodeId.isEmpty ? nil : synchro.targetNodeId
         self.init(
             dbId: Int(synchro.dbId),
             driveDbId: Int(synchro.driveDbId),
-            localPath: URL(fileURLWithPath: synchro.localPath)
+            localPath: URL(fileURLWithPath: synchro.localPath),
+            targetNodeId: targetNodeId,
+            supportsVirtualFileSystem: synchro.supportVfs,
+            useVirtualFileSystem: synchro.virtualFileMode == .Mac
         )
     }
 }

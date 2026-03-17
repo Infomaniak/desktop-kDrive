@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Mar 2026 13:56:37 +0100 
+  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -282,6 +282,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Notas de publicación</value> 
   </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Eliminar la sincronización</value> 
+  </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Reanudar la sincronización</value> 
   </data> 
@@ -450,9 +453,6 @@ Esta acción es permanente.
 Para volver a sincronizar tu unidad, tendrás que volver a conectarla más adelante.
 
 Antes de continuar, asegúrese de que todos sus archivos están actualizados y completamente sincronizados.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Eliminar la sincronización</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>¿Quitar la sincronización?</value> 
@@ -742,6 +742,9 @@ Libere espacio o actualice su paquete para sincronizar este archivo.</value>
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
   </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/es/ayuda</value> 
+  </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Acceso prohibido</value> 
   </data> 
@@ -957,7 +960,7 @@ Se abrirá en su navegador.</value>
     <value>%@ sobre %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
-    <value>gestión de kDrive</value> 
+    <value>Gestión de kDrive</value> 
   </data> 
   <data name="languageSetting" xml:space="preserve"> 
     <value>Idioma</value> 
@@ -1246,9 +1249,6 @@ Espere unos instantes.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Localización en kDrive</value> 
-  </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Eliminar la sincronización</value> 
   </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Nombre reservado</value> 
