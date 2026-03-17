@@ -51,11 +51,9 @@ struct SynchroConfigurationView: View {
                         .foregroundStyle(ColorToken.Text.secondary.asColor)
                 }
             } header: {
-                VStack {
-                    Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
-                        .font(.Tokens.headline)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                }
+                Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
+                    .font(.Tokens.headline)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             Section {
