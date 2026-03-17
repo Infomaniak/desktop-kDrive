@@ -10,12 +10,12 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup(REQUIRES 6.8)
 
 
-set(GUI_SOURCE_FILES# C++ files for the GUI application
+set(GUI_SOURCE_FILES # C++ files for the GUI application
     src/main.cpp
-    src/types/ThemeMode.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
+    qml/ThemeMode.qml
     qml/tokens/IKColors.qml
     qml/tokens/IKSpacing.qml
     qml/tokens/IKRadius.qml
@@ -60,5 +60,4 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/types
 )
