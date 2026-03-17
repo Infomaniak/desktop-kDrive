@@ -38,6 +38,7 @@ static constexpr uint64_t maxNumberParallelBigDownloads = 3; // Download max. 3 
 static const std::string mimeTypeJson = "application/json";
 static const std::string mimeTypeOctetStream = "application/octet-stream";
 static const std::string mimeTypeImageJpeg = "image/jpeg";
+static const std::string mimeTypeTextCsv = "text/csv";
 
 // Link content types
 static const std::string mimeTypeSymlink = "inode/symlink";
@@ -69,6 +70,7 @@ static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
 static const std::string preferenceKey = "preference";
+static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
@@ -95,6 +97,7 @@ static const std::string driveNameKey = "drive_name";
 static const std::string accountAdminKey = "account_admin";
 static const std::string capabilitiesKey = "capabilities";
 static const std::string canWriteKey = "can_write";
+static const std::string canShowKey = "can_show";
 static const std::string redirectUriKey = "redirect_uri";
 static const std::string symbolicLinkKey = "symbolic_link";
 
@@ -163,6 +166,7 @@ static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
+static const std::string modelKey = "model";
 
 /// Error codes
 enum class NetworkErrorCode {

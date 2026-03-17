@@ -281,10 +281,7 @@ void ParametersDialog::initUI() {
     connect(_errorsMenuBarWidget, &ErrorsMenuBarWidget::backButtonClicked, this, &ParametersDialog::onBackButtonClicked);
     connect(_preferencesWidget, &PreferencesWidget::displayErrors, this, &ParametersDialog::onDisplayGeneralErrors);
     connect(_preferencesWidget, &PreferencesWidget::setStyle, this, &ParametersDialog::onSetStyle);
-    connect(_preferencesWidget, &PreferencesWidget::undecidedListsCleared, _drivePreferencesWidget,
-            &DrivePreferencesWidget::undecidedListsCleared);
     connect(this, &ParametersDialog::clearErrors, this, &ParametersDialog::onClearErrors);
-    connect(this, &ParametersDialog::newBigFolder, _drivePreferencesWidget, &DrivePreferencesWidget::newBigFolderDiscovered);
 }
 
 QByteArray ParametersDialog::contents(const QString &path) {
@@ -327,6 +324,13 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::DataError:
         case ExitCode::DbError:
         case ExitCode::BackError:
+            if (exitCause == ExitCause::Http5xx) {
+                return tr(
+                        "A technical error has occurred.<br>"
+                        "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                        "persists.");
+            }
+            [[fallthrough]];
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -393,22 +397,18 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                     .arg(err);
 
         case ExitCause::LiteSyncNotAllowed: {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current().majorVersion() >= 15) {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                        .arg(err);
-            } else {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                        .arg(err);
-            }
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "You must allow:<br>"
+                      "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
+                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                    .arg(err);
         }
-        case ExitCause::UnableToCreateVfs: {
+        case ExitCause::LiteSyncExtNotRunning: {
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "The LiteSyncExt process is not currently running. Synchronization will resume as soon as it is started.")
+                    .arg(err);
+        }
+        case ExitCause::UnableToStartVfs: {
             if (CommonUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
@@ -477,6 +477,12 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, const Exit
             return tr(
                     "You are not authorised to access this kDrive.<br>"
                     "Synchronization has been paused. Please contact an administrator.");
+        case ExitCause::Http5xx: {
+            return tr(
+                    "A technical error has occurred.<br>"
+                    "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                    "persists.");
+        }
         default:
             return tr("A technical error has occurred (error %1).<br>"
                       "Synchronization will resume as soon as possible. Please contact our support team if the error "

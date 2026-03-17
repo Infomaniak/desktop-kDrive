@@ -20,20 +20,20 @@ import Foundation
 import InfomaniakDI
 
 public protocol ServerBridgeable: Sendable {
-    func getConnectedUser() async -> Bool
+    func getConnectedUser() async -> UIUser?
 }
 
 public struct ServerBridge: ServerBridgeable {
-    @LazyInjectService var coherentCache: CoherentCacheProtocol
+    @LazyInjectService private var coherentCache: CoherentCache
 
     public init() {}
 
-    public func getConnectedUser() async -> Bool {
+    public func getConnectedUser() async -> UIUser? {
         // TODO: fetch user form server as well, cache only for now
-        guard await coherentCache.getFirstAvailableUser() != nil else {
-            return false
+        guard let user = await coherentCache.getFirstAvailableUser() else {
+            return nil
         }
 
-        return true
+        return UIUser(user: user)
     }
 }

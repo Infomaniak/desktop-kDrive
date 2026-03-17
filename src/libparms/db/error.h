@@ -87,7 +87,6 @@ class PARMS_EXPORT Error {
 
     private:
         int64_t _dbId{0};
-        int64_t _time{0};
         ErrorLevel _level{ErrorLevel::Unknown};
         std::string _functionName;
         int _syncDbId{0};
@@ -102,6 +101,7 @@ class PARMS_EXPORT Error {
         InconsistencyType _inconsistencyType{InconsistencyType::None};
         CancelType _cancelType{CancelType::None};
         SyncPath _destinationPath;
+        int64_t _time{0};
 };
 
 } // namespace KDC

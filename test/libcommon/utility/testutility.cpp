@@ -315,7 +315,8 @@ void TestUtility::testCompressFile() {
 
     bool exists = false;
     IoError ioError = IoError::Unknown;
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::checkIfPathExists(outPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
@@ -333,7 +334,8 @@ void TestUtility::testCompressFile() {
     outPath = tmpDir.path() / "resFile.zip";
     (void) CommonUtility::compressFile(filePath.string(), outPath.string());
 
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::checkIfPathExists(outPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
@@ -345,21 +347,24 @@ void TestUtility::testCompressFile() {
     // Test with a non-existing file
     outPath = tmpDir.path() / "resNonExistingFile.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile("nonExistingFile.txt", outPath.string()));
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::checkIfPathExists(outPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with a non-existing output dir
     outPath = tmpDir.path() / "nonExistingDir" / "resNonExistingDir.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile(filePath.string(), outPath.string()));
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::checkIfPathExists(outPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
     // Test with wstring path
     outPath = tmpDir.path() / "resWstring.zip";
     (void) CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::checkIfPathExists(outPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 }
@@ -429,7 +434,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                     const std::string str = CommonUtility::generateRandomStringAlphaNum();
-                    const std::lock_guard lock(resultsMutex);
+                    const std::scoped_lock lock(resultsMutex);
                     if (!results.insert(str).second) {
                         err++;
                     }
@@ -441,6 +446,13 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         CPPUNIT_ASSERT(err == 0);
     }
 }
+
+void TestUtility::testGenerateUuid() {
+    const auto uuid = CommonUtility::generateUUID();
+    const auto regexPattern = std::regex(R"(^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$)");
+    CPPUNIT_ASSERT(std::regex_match(uuid, regexPattern));
+}
+
 void TestUtility::testLanguageCode() {
     // Only the C language is installed in docker
     if (Utility::userName() == "docker") return;
@@ -1090,6 +1102,10 @@ void TestUtility::testWriteValueToStruct() {
     const std::vector<Dummy> dummyValues{{4444, "poiuz"}, {3333, "lkjhg"}};
     CommonUtility::writeValuesToStruct(dstruct, "dummyValues", dummyValues, dummy2DynamicVar);
 
+    const std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> table = {{"first_name", "john"},
+                                                                                                     {"family_name", "does"}};
+    CommonUtility::writeValuesToStruct(dstruct, "table", table);
+
     // Read data
     CPPUNIT_ASSERT(dstruct["intValue"] == 555);
     CPPUNIT_ASSERT(dstruct["floatValue"] == 111.222f);
@@ -1137,12 +1153,26 @@ void TestUtility::testWriteValueToStruct() {
     CPPUNIT_ASSERT(dummyStruct["intValue"] == 3333);
     CommonUtility::convertToBase64Str("lkjhg", base64StrValue);
     CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
+
+    CPPUNIT_ASSERT(dstruct["table"].isStruct());
+    CPPUNIT_ASSERT(dstruct["table"].size() == 2);
+    Poco::DynamicStruct tableStruct = dstruct["table"].extract<Poco::DynamicStruct>();
+
+    auto toBase64 = [](const std::string &str) {
+        std::string base64StrValue;
+        CommonUtility::convertToBase64Str(str, base64StrValue);
+
+        return base64StrValue;
+    };
+
+    CPPUNIT_ASSERT(tableStruct["first_name"] == toBase64("john"));
+    CPPUNIT_ASSERT(tableStruct["family_name"] == toBase64("does"));
 }
 
 void TestUtility::testConvertFromBase64Str() {
     std::string value;
-    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqA==", value);
-    CPPUNIT_ASSERT(value == "abcdéàè");
+    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqCBmZ2hpams=", value);
+    CPPUNIT_ASSERT(value == "abcdéàè fghijk");
 
     CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", value);
     CPPUNIT_ASSERT(value == "每个人都有他的作战策略");
@@ -1154,12 +1184,12 @@ void TestUtility::testConvertFromBase64Str() {
     CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", wvalue);
     CPPUNIT_ASSERT(wvalue == L"每个人都有他的作战策略");
 
-    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    std::string blobStr("0123456789abcdefg hijklmnopqrtsuvwxyz");
     CommBLOB blob;
     (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
 
     CommBLOB blob2;
-    CommonUtility::convertFromBase64Str("MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6", blob2);
+    CommonUtility::convertFromBase64Str("MDEyMzQ1Njc4OWFiY2RlZmcgaGlqa2xtbm9wcXJ0c3V2d3h5eg==", blob2);
     CPPUNIT_ASSERT(blob == blob2);
 }
 

@@ -20,6 +20,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
@@ -457,8 +458,8 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
     int errId = -1;
     std::string error;
 
-    if (dbFromVersionNumber == "3.4.0") {
-        LOG_DEBUG(_logger, "Upgrade 3.4.0 Sync DB");
+    if (dbFromVersionNumber == "3.4.0.0") {
+        LOG_DEBUG(_logger, "Upgrade 3.4.0.0 Sync DB");
 
         // Upload session token table
         if (!createAndPrepareRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE)) return false;
@@ -469,8 +470,8 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.4.4 Sync DB");
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4.0")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.4.4.0 Sync DB");
 
         if (!createAndPrepareRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA)) return false;
         bool hasData = false;
@@ -490,7 +491,285 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
 
     if (!reinstateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.8.2.0")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.8.2.0 Sync DB - Removing Undecided list");
+
+        if (!createAndPrepareRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing select all sync node request");
+            return false;
+        }
+
+        if (!createAndPrepareRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing insert sync node request");
+            return false;
+        }
+        if (!createAndPrepareRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing delete all sync node by type request");
+            return false;
+        }
+
+        std::function freeRequests = [this]() {
+            queryFree(SELECT_ALL_SYNC_NODE_REQUEST_ID);
+            queryFree(INSERT_SYNC_NODE_REQUEST_ID);
+            queryFree(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID);
+        };
+
+        NodeSet blacklistedNodes;
+        NodeSet undecidedNodes;
+        if (!selectAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
+            LOG_ERROR(_logger, "Error selecting blacklisted sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!selectAllSyncNodes(fromInt<SyncNodeType>(3), undecidedNodes)) {
+            LOG_ERROR(_logger, "Error selecting undecided sync nodes");
+            freeRequests();
+            return false;
+        }
+        blacklistedNodes.insert(undecidedNodes.begin(), undecidedNodes.end());
+        if (!updateAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
+            LOG_ERROR(_logger, "Error updating blacklisted sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!updateAllSyncNodes(fromInt<SyncNodeType>(3), NodeSet())) { // Clear undecided nodes
+            LOG_ERROR(_logger, "Error clearing undecided sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!updateAllSyncNodes(fromInt<SyncNodeType>(2), NodeSet())) { // Clear WhiteList nodes
+            LOG_ERROR(_logger, "Error clearing whitelisted sync nodes");
+            freeRequests();
+            return false;
+        }
+
+        freeRequests();
+    }
+
+#ifdef KD_WINDOWS
+    // Fix a bug affecting kDrive for Windows versions 3.8.2.5 leading to unwanted local deletes.
+    if (dbFromVersionNumber.starts_with("3.8.2 (") || dbFromVersionNumber.starts_with("3.8.2.") ||
+        dbFromVersionNumber == "3.8.2") {
+        LOG_DEBUG(_logger, "Upgrade from a 3.8.2 (build x) Sync DB - Reverting local deletes");
+
+        if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing select node by parentNodeId root request");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error preparing select node by parentNodeId root request");
+            return false;
+        }
+        if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing select node by parentNodeId request");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error preparing select node by parentNodeId request");
+            return false;
+        }
+        if (!createAndPrepareRequest(SELECT_NODE_BY_NODEID_FULL_ID, SELECT_NODE_BY_NODEID_FULL)) {
+            LOG_ERROR(_logger, "Error preparing select node by nodeId full request");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error preparing select node by nodeId full request");
+            return false;
+        }
+        if (!createAndPrepareRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing delete node request");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error preparing delete node request");
+            return false;
+        }
+
+        if (!revertAllLocalDeletes()) {
+            LOG_ERROR(_logger, "Error reverting all local deletes");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
+                                                 "Error reverting all local deletes");
+        }
+
+        queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
+        queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
+        queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
+        queryFree(DELETE_NODE_REQUEST_ID);
+    }
+#endif // KD_WINDOWS
+
     LOG_DEBUG(_logger, "Upgrade of Sync DB successfully completed.");
+
+    return true;
+}
+
+bool SyncDb::revertAllLocalDeletes() {
+    // Revert all local deletes by removing from the DB all nodes that are not present on the local file system anymore.
+
+    Sync sync;
+    bool found = false;
+    ParmsDb::instance()->selectSync(_dbPath, sync, found);
+    if (!found) {
+        LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
+        return false;
+    }
+
+    if (sync.virtualFileMode() != VirtualFileMode::Win) {
+        LOG_INFO(_logger, "Sync is not in Win virtual file mode, skipping local delete revert");
+        return true;
+    }
+
+    std::map<NodeId, DbNodeId> localDbNodeIds;
+    if (!dbFileLocalNodeIds(localDbNodeIds)) {
+        LOG_WARN(_logger, "Error getting local node ids from the DB, aborting local delete revert");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
+                                             "Error getting local node ids from the DB, aborting local delete revert");
+        return false;
+    }
+    if (localDbNodeIds.empty()) {
+        return true;
+    }
+
+    // Get the list of all the local node ids from the file system.
+    std::unordered_set<NodeId> localFSNodeIds;
+    const SyncPath &localSyncPath = sync.localPath();
+
+    if (!fsFileLocalNodeIds(localSyncPath, localFSNodeIds)) {
+        LOG_WARN(_logger, "Error getting local node ids from the file system, aborting local delete revert");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
+                                             "Error getting local node ids from the file system, aborting local delete revert");
+        return false;
+    }
+
+    // Remove from the DB all nodes that are not present on the local file system anymore.
+    std::unordered_set<DbNodeId> nodesToDelete;
+    for (const auto &[dbLocalNodeId, dbId]: localDbNodeIds) {
+        if (!localFSNodeIds.contains(dbLocalNodeId)) {
+            LOG_INFO(_logger, "Node with local node id "
+                                      << dbLocalNodeId
+                                      << " is not present on the local file system anymore, it will be removed from the DB");
+            (void) nodesToDelete.insert(dbId);
+        }
+    }
+
+    for (const DbNodeId &dbNodeId: nodesToDelete) {
+        bool foundNode = false;
+        if (!deleteNode(dbNodeId, foundNode)) {
+            LOG_ERROR(_logger, "Error deleting node by dbId: " << dbNodeId);
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
+                                                 "Error deleting node by dbId: " + std::to_string(dbNodeId));
+            continue;
+        }
+    }
+
+    KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Info, "SyncDb::revertAllLocalDeletes",
+                                         "Reverted local deletes by removing " + std::to_string(nodesToDelete.size()) +
+                                                 " nodes  overall " + std::to_string(localDbNodeIds.size()) +
+                                                 " nodes with local node id in the DB");
+
+    return true;
+}
+
+bool SyncDb::dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds) {
+    bool found = false;
+
+    // Get the list of all the db nodes.
+    std::unordered_set<DbNodeId> ids;
+    if (!dbIds(ids, found)) {
+        LOG_ERROR(_logger, "Error selecting all nodes");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::dbFileLocalNodeIds",
+                                             "Error selecting all nodes");
+        return false;
+    }
+    if (!found) {
+        LOG_DEBUG(_logger, "No node found in DB, nothing to revert");
+        return true;
+    }
+
+    // Get the list of all the local node ids from the DB.
+    for (const DbNodeId &dbId: ids) {
+        DbNode dbNode;
+        if (!node(dbId, dbNode, found)) {
+            LOG_ERROR(_logger, "Error selecting node by dbId: " << dbId);
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::dbFileLocalNodeIds",
+                                                 "Error selecting node by dbId: " + std::to_string(dbId));
+            continue;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Node not found by dbId: " << dbId);
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::dbFileLocalNodeIds",
+                                                 "Node not found by dbId: " + std::to_string(dbId));
+            continue;
+        }
+
+        if (dbNode.type() == NodeType::Directory) {
+            continue;
+        }
+
+        if (!dbNode.hasLocalNodeId()) {
+            LOG_WARN(_logger, "Node with dbId " << dbId << " has no local node id, skipping it for local delete revert");
+            KDC::sentry::Handler::captureMessage(
+                    KDC::sentry::Level::Warning, "SyncDb::dbFileLocalNodeIds",
+                    "Node with dbId " + std::to_string(dbId) + " has no local node id, skipping it for local delete revert");
+            continue;
+        }
+
+        if (!localDbNodeIds.try_emplace(dbNode.nodeIdLocal().value(), dbId).second) {
+            LOG_WARN(_logger, "Duplicate local node id " << dbNode.nodeIdLocal().value() << " found for dbId " << dbId
+                                                         << ", skipping it for local delete revert");
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Warning, "SyncDb::dbFileLocalNodeIds",
+                                                 "Duplicate local node id " + dbNode.nodeIdLocal().value() + " found for dbId " +
+                                                         std::to_string(dbId) + ", skipping it for local delete revert");
+        }
+    }
+
+    return true;
+}
+
+bool SyncDb::fsFileLocalNodeIds(const SyncPath &localSyncPath, std::unordered_set<NodeId> &localFSNodeIds) {
+    IoError ioError = IoError::Unknown;
+
+    try {
+        IoHelper::DirectoryIterator dirIt;
+        if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt) || ioError != IoError::Success) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::getDirectoryIterator: Local " << Utility::formatIoError(localSyncPath, ioError));
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                                                 "Error in IoHelper::getRecursiveDirectoryIterator, aborting safely");
+            return false;
+        }
+
+        DirectoryEntry entry;
+        bool endOfDirectory = false;
+        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+            auto entryIoError = IoError::Success;
+
+            const auto &absolutePath = entry.path();
+            FileStat fileStat;
+            if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
+                LOGW_DEBUG(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
+                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                                                     "Error in IoHelper::getFileStat, aborting safely");
+                continue;
+            }
+
+            if (entryIoError != IoError::Success) {
+                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
+                KDC::sentry::Handler::captureMessage(
+                        KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                        "Error in IoHelper::getFileStat for path: " + absolutePath.string() + ", skipping it.");
+                continue;
+            }
+
+            if (fileStat.nodeType == NodeType::Directory) {
+                continue;
+            }
+
+            (void) localFSNodeIds.insert(std::to_string(fileStat.inode));
+        }
+    } catch (std::exception &e) {
+        LOG_WARN(_logger, "Exception caught in SyncDb::fsFileLocalNodeIds: " << e.what());
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                                             std::string("Exception caught in SyncDb::fsFileLocalNodeIds: ") + e.what());
+        return false;
+    } catch (...) {
+        LOG_WARN(_logger, "Exception caught in SyncDb::fsFileLocalNodeIds");
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                                             "Unknown exception caught in SyncDb::fsFileLocalNodeIds");
+        return false;
+    }
 
     return true;
 }
@@ -1483,8 +1762,8 @@ bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid
     return true;
 }
 
-// Returns the path from the root node to the node with ID nodeId, concatenating the respective names of the nodes along the
-// traversal-path
+// Returns the path from the root node to the node with ID nodeId, concatenating the respective names of the nodes along
+// the traversal-path
 bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found) {
     const std::scoped_lock lock(_mutex);
 
@@ -2509,7 +2788,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     bool exists = false;
     IoError existenceCheckError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError)) {
+    if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localDrivePath, existenceCheckError));
         return false;

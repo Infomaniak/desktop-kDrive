@@ -116,7 +116,7 @@ class Vfs : public QObject {
          * The plugin-specific work is done in startImpl().
          * Possible return values are:
          * - ExitCode::Ok: Everything went fine.
-         * - ExitCode::LiteSyncError, ExitCause::UnableToCreateVfs: The VFS provider could not be started.
+         * - ExitCode::LiteSyncError, ExitCause::UnableToStartVfs: The VFS provider could not be started.
          */
         ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 
@@ -292,6 +292,14 @@ class Vfs : public QObject {
          */
         virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
+        /** Set the list of applications that should not be hydrated.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the list was set.
+         * - ExitCode::LogicError, ExitCause::Unknown: An unknown error occurred.
+         */
+        virtual ExitInfo getFetchingAppList(AppTable &appTable) = 0;
+
         virtual void exclude(const SyncPath &) = 0;
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
@@ -378,8 +386,8 @@ class Vfs : public QObject {
         }
 
     private:
-        bool _extendedLog;
-        bool _started;
+        bool _extendedLog{false};
+        bool _started{false};
 };
 } // namespace KDC
 
@@ -427,6 +435,7 @@ class VfsOff : public Vfs {
         }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
         void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }

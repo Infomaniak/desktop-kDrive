@@ -19,6 +19,7 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -31,7 +32,7 @@ namespace Infomaniak.kDrive.OnBoarding
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
-
+        private string _lottieRessourceKey = "Infomaniak.Custom.Animations.loader-stroke";
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
@@ -39,13 +40,34 @@ namespace Infomaniak.kDrive.OnBoarding
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 850, 530, false);
+            AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
 
             if (ViewModel.Users.Any())
             {
                 // TODO: Go directly to Drive selection
             }
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
+            LottiePlayer.ActualThemeChanged += (s, e) =>
+            {
+                UpdateLottieSource(_lottieRessourceKey);
+            };
+            UpdateLottieSource(_lottieRessourceKey);
         }
 
+        public void UpdateLottieSource(string ressourceKey, int? height = null)
+            {
+            App.Current.Resources.TryGetValue(ressourceKey, out var sourceObj);
+            if (sourceObj is string source)
+            {
+                _lottieRessourceKey = ressourceKey;
+                LottiePlayer.UriSource = new System.Uri(source);
+                if (height is not null)
+                    LottiePlayer.Height = height.Value;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"Lottie resource key '{ressourceKey}' not found or is not a string.");
+            }
+        }
     }
 }

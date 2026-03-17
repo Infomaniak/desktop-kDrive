@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 namespace KDC {
@@ -98,6 +99,7 @@ enum class ExitCause {
     ApiErr,
     InvalidSize,
     FileExists,
+    DirExists,
     FileAccessError,
     FileLocked,
     NotEnoughDiskSpace,
@@ -110,12 +112,13 @@ enum class ExitCause {
     InconsistentPinState,
     FileSizeMismatch,
     UploadNotTerminated,
-    UnableToCreateVfs,
+    UnableToStartVfs,
     NotEnoughMemory,
     FileTooBig,
     MoveToTrashFailed,
     InvalidName,
     LiteSyncNotAllowed,
+    LiteSyncExtNotRunning,
     NotPlaceHolder,
     NetworkTimeout,
     SocketsDefuncted, // macOS: sockets defuncted by kernel
@@ -133,6 +136,7 @@ enum class ExitCause {
     FileOrDirectoryCorrupted,
     TmpDirAccessError,
     UpdateTreeIntegrityCheckFailed,
+    MissingReplyData,
     EnumEnd
 };
 
@@ -221,6 +225,42 @@ enum class SyncFileStatus {
     Inconsistency,
     Ignored,
     Syncing,
+    EnumEnd
+};
+
+enum class SyncNodeType {
+    Undefined = 0,
+    BlackList = 1, // Nodes that are excluded from sync
+    TmpRemoteBlacklist = 4, // Blacklisted temporarily
+    TmpLocalBlacklist = 5, // Blacklisted temporarily
+    EnumEnd = 6
+};
+
+enum class SyncStatus {
+    Undefined,
+    Starting,
+    Running,
+    Idle,
+    PauseAsked,
+    Paused,
+    StopAsked,
+    Stopped,
+    Error,
+    EnumEnd
+};
+
+enum class SyncStep {
+    None = 0,
+    Idle,
+    UpdateDetection1, // Compute operations
+    UpdateDetection2, // Update Trees
+    Reconciliation1, // Platform Inconsistency Checker
+    Reconciliation2, // Conflict Finder
+    Reconciliation3, // Conflict Resolver
+    Reconciliation4, // Operation Generator
+    Propagation1, // Sorter
+    Propagation2, // Executor
+    Done,
     EnumEnd
 };
 

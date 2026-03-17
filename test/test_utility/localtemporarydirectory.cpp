@@ -46,7 +46,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
     _path = std::filesystem::canonical(_path); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    IoHelper::getFileStat(_path, &fileStat, ioError);
+    IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
     _id = std::to_string(fileStat.inode);
 }
 
@@ -63,7 +63,7 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
     DirectoryEntry entry;
     ioError = IoError::Success;
     bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
         (void) IoHelper::unlock(entry.path());
         (void) IoHelper::setRights(entry.path(), true, true, true, ioError);
     }

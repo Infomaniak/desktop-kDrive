@@ -60,7 +60,6 @@ void runKillCommand(pid_t pid) {
     if (pid <= 1) return;
 
     NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
-    LOG_DEBUG(Log::instance()->getLogger(), "Running kill command: " << killCommand.UTF8String);
     system(killCommand.UTF8String);
 }
 
@@ -68,9 +67,10 @@ void Utility::restartFinderExtension() {
     NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
     NSString *processName = [NSString stringWithFormat:@"%@.Extension", bundleID];
     NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:processName];
-    LOG_DEBUG(Log::instance()->getLogger(), "Killing Finder Extension");
+    LOG_DEBUG(logger(), "Killing Finder Extension");
     for (NSRunningApplication *app: apps) {
         if (app.terminated) continue;
+        LOG_DEBUG(logger(), "Killing process: " << app.processIdentifier);
         runKillCommand(app.processIdentifier);
     }
 
@@ -81,18 +81,18 @@ void Utility::restartFinderExtension() {
     // The commands below aims to simulate this manipulation.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e ignore -i %@", processName];
-      LOG_DEBUG(Log::instance()->getLogger(), "Running ignore Finder Extension command: " << runCommand.UTF8String);
+      LOG_DEBUG(logger(), "Running ignore Finder Extension command: " << runCommand.UTF8String);
       system(runCommand.UTF8String);
     });
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e use -i %@", processName];
-      LOG_DEBUG(Log::instance()->getLogger(), "Running use Finder Extension command: " << runCommand.UTF8String);
+      LOG_DEBUG(logger(), "Running use Finder Extension command: " << runCommand.UTF8String);
       system(runCommand.UTF8String);
     });
 }
 
-NSArray *getPIDsForProcessName(NSString *processName) {
+NSMutableArray *getPIDsForProcessName(NSString *processName) {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/bin/ps"];
     [task setArguments:@[ @"-axo", @"pid,comm" ]];
@@ -108,7 +108,7 @@ NSArray *getPIDsForProcessName(NSString *processName) {
     NSArray *lines = [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
 
     for (NSString *line in lines) {
-        if ([line rangeOfString:processName].location != NSNotFound && ![line rangeOfString:@"grep"].location != NSNotFound) {
+        if ([line rangeOfString:processName].location != NSNotFound && [line rangeOfString:@"grep"].location == NSNotFound) {
             NSArray *fields = [line componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
             for (NSString *field in fields) {
                 if (!field || [field length] == 0 || [field isEqualToString:processName]) continue;
@@ -124,7 +124,7 @@ NSArray *getPIDsForProcessName(NSString *processName) {
 }
 
 void Utility::restartLoginItemAgent() {
-    LOG_DEBUG(Log::instance()->getLogger(), "Killing Login Item Agent");
+    LOG_DEBUG(logger(), "Killing Login Item Agent");
     NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
     NSString *processName =
             [NSString stringWithFormat:@"%@%@.LoginItemAgent", [NSString stringWithUTF8String:TEAM_IDENTIFIER_PREFIX], bundleID];
@@ -133,8 +133,17 @@ void Utility::restartLoginItemAgent() {
     if (pids.count == 1) {
         NSNumber *pidNumber = [pids objectAtIndex:0];
         pid_t pid = [pidNumber longValue];
+        LOG_DEBUG(logger(), "Killing process: " << pid);
         runKillCommand(pid);
     }
+}
+
+bool Utility::isLiteSyncExtRunning() {
+    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString *processName = [NSString stringWithFormat:@"%@.LiteSyncExt", bundleID];
+    NSMutableArray *pids = getPIDsForProcessName(processName);
+    assert(pids.count <= 1);
+    return pids.count == 1;
 }
 
 bool Utility::hasLaunchOnStartup(const std::string &) {

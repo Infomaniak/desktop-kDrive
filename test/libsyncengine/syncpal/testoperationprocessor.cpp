@@ -86,7 +86,7 @@ void TestOperationProcessor::tearDown() {
     // Stop SyncPal and delete sync DB
     ParmsDb::instance()->close();
     if (_syncPal) {
-        _syncPal->stop(false, true, true);
+        _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     }
     ParmsDb::reset();
     TestBase::stop();

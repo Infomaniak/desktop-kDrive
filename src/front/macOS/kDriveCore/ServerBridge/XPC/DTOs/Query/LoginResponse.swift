@@ -18,6 +18,6 @@
 
 import Foundation
 
-struct LoginResponse: Codable {
+struct LoginResponse: Codable, Sendable {
     let userDbId: Int32
 }

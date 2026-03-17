@@ -85,7 +85,7 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
                  std::to_wstring(_vfsSetupParams.syncDbId).c_str(), _vfsSetupParams.localPath.filename().native().c_str(),
                  _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams.syncDbId);
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));
@@ -352,7 +352,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
         if (!isPlaceholder) {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            if (!IoHelper::getFileStat(fullPath, &fileStat, ioError)) {
+            if (!IoHelper::getFileStat(fullPath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError));
                 break;
             }
@@ -458,7 +458,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
     if (!isPlaceholder) {
         FileStat filestat;
         auto ioError = IoError::Success;
-        if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError)) {
+        if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePathStd, ioError));
             return ExitCode::SystemError;
         }

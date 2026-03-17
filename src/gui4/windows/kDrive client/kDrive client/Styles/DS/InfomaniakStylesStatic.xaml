@@ -24,7 +24,9 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.power">ms-appx:///Assets/DS/Icons/Actions/power.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.trashbin">ms-appx:///Assets/DS/Icons/Actions/trashbin.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert">ms-appx:///Assets/DS/Icons/Actions/triangle-alert.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert-outline">ms-appx:///Assets/DS/Icons/Actions/triangle-alert-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check">ms-appx:///Assets/DS/Icons/Actions/circle-check.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check-outline">ms-appx:///Assets/DS/Icons/Actions/circle-check-outline.svg</x:String>
 
     <!-- Books -->
     <x:String x:Key="Infomaniak.DS.Icons.Books.book">ms-appx:///Assets/DS/Icons/Books/book.svg</x:String>
@@ -83,6 +85,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open-file">ms-appx:///Assets/DS/Icons/Documents/folder-open-file.svg</x:String>
 
     <!-- Devices -->
     <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>

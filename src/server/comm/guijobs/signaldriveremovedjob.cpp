@@ -31,7 +31,6 @@ SignalDriveRemovedJob::SignalDriveRemovedJob(int driveDbId) :
 }
 
 ExitInfo SignalDriveRemovedJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsDriveDbId, _driveDbId);
     return ExitCode::Ok;
 }

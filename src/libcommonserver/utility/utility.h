@@ -77,6 +77,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
@@ -115,7 +116,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
         static void restartLoginItemAgent();
+        static bool isLiteSyncExtRunning();
 #endif
+        static bool isLiteSyncExtError(const ExitInfo &exitInfo);
+
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
@@ -215,23 +219,6 @@ struct COMMONSERVER_EXPORT Utility {
         static log4cplus::Logger _logger;
 
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
-};
-
-struct TimeCounter {
-        explicit TimeCounter(const std::string &name) :
-            _name(name) {}
-        void start() { _start = clock(); }
-        void end() {
-            _end = clock();
-            _total += (double) (_end - _start) / CLOCKS_PER_SEC;
-        }
-        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name << " value:" << _total); }
-
-    private:
-        std::string _name;
-        clock_t _start = 0;
-        clock_t _end = 0;
-        double _total = 0;
 };
 
 } // namespace KDC

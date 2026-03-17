@@ -104,7 +104,7 @@ void Utilities::traceFileDates(const wchar_t *filePath) {
                         stLastWriteTimeLocal.wHour, stLastWriteTimeLocal.wMinute, stLastWriteTimeLocal.wSecond);
         }
     } else {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
     }
 }
 
@@ -143,7 +143,7 @@ void Utilities::initPipeName(const wchar_t *appName) {
     wchar_t userName[DEFAULT_BUFLEN];
     GetUserName(userName, &len);
     s_pipeName = std::wstring(L"\\\\.\\pipe\\") + std::wstring(appName) + L"-" + std::wstring(userName, len);
-    TRACE_DEBUG(L"Init pipe: name = %ls", s_pipeName.c_str());
+    TRACE_DEBUG(L"Init pipe: name='%ls'", s_pipeName.c_str());
 }
 
 bool Utilities::connectToPipeServer() {
@@ -158,7 +158,7 @@ bool Utilities::connectToPipeServer() {
         return false;
     }
 
-    TRACE_DEBUG(L"Open pipe: name = %ls", s_pipeName.c_str());
+    TRACE_DEBUG(L"Open pipe: name='%ls'", s_pipeName.c_str());
     while (true) {
         s_pipe = CreateFile(s_pipeName.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (s_pipe != INVALID_HANDLE_VALUE) {
@@ -167,7 +167,7 @@ bool Utilities::connectToPipeServer() {
         }
 
         if (GetLastError() != ERROR_PIPE_BUSY) {
-            TRACE_ERROR(L"Failed to open sync engine pipe with error = %ls", getLastErrorMessage().c_str());
+            TRACE_ERROR(L"Failed to open sync engine pipe with error='%ls'", getLastErrorMessage().c_str());
             return false;
         }
 
@@ -391,7 +391,7 @@ bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool 
             return true;
         }
 
-        TRACE_ERROR(L"Failed to check if the item is a directory: %ls (%d)", path, ec.value());
+        TRACE_ERROR(L"Failed to check if the item is a directory: '%ls' (%d)", path, ec.value());
         return false;
     }
 
@@ -405,12 +405,12 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
     bool isSymlink = false;
     bool isJunction = false;
     if (!Utilities::checkIfIsLink(path, isSymlink, isJunction, exists)) {
-        TRACE_ERROR(L"Error in Utilities::checkIfIsLink: %ls", path);
+        TRACE_ERROR(L"Error in Utilities::checkIfIsLink: '%ls'", path);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", path);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", path);
         return true;
     }
 
@@ -421,12 +421,12 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
     } else {
         bool isDirectory = false;
         if (!Utilities::checkIfIsDirectory(path, isDirectory, exists)) {
-            TRACE_ERROR(L"Error in Utilities::checkIfDirectory : %ls", path);
+            TRACE_ERROR(L"Error in Utilities::checkIfDirectory: '%ls'", path);
             return false;
         }
 
         if (!exists) {
-            TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", path);
+            TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", path);
             return true;
         }
 

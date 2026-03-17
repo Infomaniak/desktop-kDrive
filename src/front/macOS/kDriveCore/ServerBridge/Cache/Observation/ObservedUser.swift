@@ -20,45 +20,54 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+public enum ObservationEvent<Some: Equatable>: Equatable {
+    case update(Some)
+    case removed
+}
+
+@MainActor
 @propertyWrapper
 public final class ObservedUser: ObservableObject {
     @Published public private(set) var wrappedValue: User?
-
     private var cancellable: AnyCancellable?
 
-    public init(id: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
-        let usersPublisher = cacheObservation.usersPublisher
+    public init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
-        cancellable = usersPublisher
-            .userPublisher(for: id)
+        cancellable = cacheObservation.usersPublisher
+            .userPublisher(userDbId: userDbId)
             .receive(on: DispatchQueue.main)
-            .assign(to: \.wrappedValue, onWeak: self)
+            .sink { [weak self] user in
+                self?.wrappedValue = user
+            }
     }
 
-    deinit {
-        cancellable?.cancel()
-    }
+    deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedUser { self }
 }
 
-extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func userPublisher(for id: Int32) -> AnyPublisher<User?, Never> {
-        map { $0[id] }
-            .removeDuplicates { $0 == $1 }
-            .eraseToAnyPublisher()
-    }
-}
-
-private extension Publisher {
-    /// Assigns values to a property on a weakly captured object to avoid retain cycles
-    func assign<Root: AnyObject>(
-        to keyPath: ReferenceWritableKeyPath<Root, Output>,
-        onWeak object: Root
-    ) -> AnyCancellable where Failure == Never {
-        sink { [weak object] value in
-            object?[keyPath: keyPath] = value
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+    func userEventPublisher(userDbId: Int32) -> AnyPublisher<ObservationEvent<User>, Never> {
+        map { usersDict -> User? in
+            usersDict[userDbId]
         }
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
+        }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    }
+
+    func userPublisher(userDbId: Int32) -> AnyPublisher<User?, Never> {
+        userEventPublisher(userDbId: userDbId)
+            .map { event -> User? in
+                switch event {
+                case let .update(user): return user
+                case .removed: return nil
+                }
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }

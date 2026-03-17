@@ -39,7 +39,7 @@ ExitInfo SyncStopJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncStopJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -51,8 +51,10 @@ ExitInfo SyncStopJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStopJob::process() {
+    _commManager->appServer().clearSyncCacheMap();
+
     // Stop SyncPal
-    if (const auto exitInfo = _commManager->appServer().stopSyncPal(_syncDbId, true); !exitInfo) {
+    if (const auto exitInfo = _commManager->appServer().stopSyncPal(_syncDbId, SyncPal::PauseCaller::User); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }

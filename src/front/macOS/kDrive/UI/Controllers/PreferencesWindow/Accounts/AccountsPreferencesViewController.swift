@@ -18,9 +18,10 @@
 
 import Cocoa
 import kDriveCoreUI
+import SwiftUI
 
-class AccountsPreferencesViewController: TitledViewController {
+class AccountsPreferencesViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.accounts.title)
+        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: Text("Hello, World!"))
     }
 }

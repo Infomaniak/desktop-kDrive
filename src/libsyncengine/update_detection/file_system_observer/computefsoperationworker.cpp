@@ -87,9 +87,6 @@ void ComputeFSOperationWorker::execute() {
     _syncPal->operationSet(ReplicaSide::Local)->clear();
     _syncPal->operationSet(ReplicaSide::Remote)->clear();
 
-    // Update SyncNode cache
-    updateSyncNode();
-
     // Update unsynced list cache
     updateUnsyncedList();
 
@@ -145,41 +142,6 @@ void ComputeFSOperationWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
-}
-
-// Remove deleted nodes from sync_node table & cache
-ExitCode ComputeFSOperationWorker::updateSyncNode(const SyncNodeType syncNodeType) {
-    NodeSet nodeIdSet;
-    if (auto exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
-        return exitCode;
-    }
-
-    std::erase_if(nodeIdSet, [this, &syncNodeType](auto &item) {
-        const bool ok = _syncPal->snapshot(CommonUtility::syncNodeTypeSide(syncNodeType))->exists(item);
-        return !ok;
-    });
-
-    if (auto exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
-        return exitCode;
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitCode ComputeFSOperationWorker::updateSyncNode() {
-    for (auto syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
-         syncNodeTypeIdx++) {
-        const auto syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
-
-        if (auto exitCode = updateSyncNode(syncNodeType); exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << syncNodeType);
-            return exitCode;
-        }
-    }
-
-    return ExitCode::Ok;
 }
 
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
@@ -272,7 +234,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             if (!nodeExistsInSnapshot) {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(localPath, exists, ioError) || ioError == IoError::AccessDenied) {
+                if (!IoHelper::checkIfPathExists(localPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+                    ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
                     return ExitCode::SystemError;
@@ -646,7 +609,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 }
 
 bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side,
-                                                  const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t size) {
+                                                  const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t /*size*/) {
     if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path) << L" (" << CommonUtility::s2ws(nodeId)
@@ -658,15 +621,6 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
     if (side == ReplicaSide::Remote) {
         // Check path length
         if (isPathTooLong(path, nodeId, type)) {
-            return true;
-        }
-
-        if (type == NodeType::Directory && isTooBig(snapshot, nodeId, size)) {
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item with " << Utility::formatSyncPath(path) << L" ("
-                                                                       << CommonUtility::s2ws(nodeId)
-                                                                       << L") because it is too big");
-            }
             return true;
         }
     }
@@ -726,75 +680,6 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
         }
 
         tmpNodeId = snapshot->parentId(tmpNodeId);
-    }
-
-    return false;
-}
-
-bool ComputeFSOperationWorker::isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const {
-    NodeIdSet whiteList;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-
-    NodeId tmpNodeId = nodeId;
-    while (!tmpNodeId.empty() && tmpNodeId != snapshot->rootFolderId()) {
-        if (whiteList.find(tmpNodeId) != whiteList.end()) {
-            return true;
-        }
-
-        tmpNodeId = snapshot->parentId(tmpNodeId);
-    }
-
-    return false;
-}
-
-bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
-                                        int64_t size) {
-    if (isWhitelisted(remoteSnapshot, remoteNodeId)) {
-        return false;
-    }
-
-    // Check if file already exist on local side
-    NodeId localNodeId;
-    bool found = false;
-    _syncDbReadOnlyCache.correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found);
-    if (found) {
-        // We already synchronize the item locally, keep it
-        return false;
-    }
-
-    // On first sync after migration from version under 3.4.0, the DB is empty but a big folder might as been whitelisted
-    // Therefor check also with path
-    SyncPath relativePath;
-    if (bool ignore = false; remoteSnapshot->path(remoteNodeId, relativePath, ignore)) {
-        if (ignore) {
-            notifyIgnoredItem(remoteNodeId, relativePath, remoteSnapshot->type(remoteNodeId));
-            return false;
-        }
-
-        localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
-        if (!localNodeId.empty()) {
-            // We already synchronize the item locally, keep it
-            return false;
-        }
-    }
-
-    if (ParametersCache::instance()->parameters().useBigFolderSizeLimit() &&
-        size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() &&
-        _sync.virtualFileMode() == VirtualFileMode::Off) {
-        // Update undecided list
-        NodeIdSet tmp;
-        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);
-
-        // Delete all create operations that might have already been created on children
-        deleteChildOpRecursively(remoteSnapshot, remoteNodeId, tmp);
-
-        tmp.insert(remoteNodeId);
-        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);
-
-        // Update unsynced list cache
-        updateUnsyncedList();
-
-        return true;
     }
 
     return false;
@@ -899,7 +784,8 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
     bool existsWithSameId = false;
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError)) {
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError,
+                                                   IoHelper::PathCheckOption::Insensitive)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
                                            << Utility::formatIoError(absolutePath, ioError));
 
@@ -968,10 +854,7 @@ void ComputeFSOperationWorker::deleteLocalDescendantOps(const NodeId &localNodeI
 
 void ComputeFSOperationWorker::updateUnsyncedList() {
     sentry::pTraces::scoped::UpdateUnsyncedList perfMonitor(syncDbId());
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, _remoteUnsyncedList);
-    NodeIdSet tmp;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, tmp);
-    _remoteUnsyncedList.merge(tmp);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _remoteUnsyncedList);
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, _remoteTmpUnsyncedList);
     _remoteUnsyncedList.merge(_remoteTmpUnsyncedList);
 
@@ -1053,7 +936,7 @@ void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const Syn
 
 ExitInfo ComputeFSOperationWorker::blacklistItem(const SyncPath &relativeLocalPath) {
     // Blacklist item
-    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath, false); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatSyncPath(relativeLocalPath));
         return exitInfo;
     }

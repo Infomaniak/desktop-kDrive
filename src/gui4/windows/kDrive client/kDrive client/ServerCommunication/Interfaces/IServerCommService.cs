@@ -1,8 +1,10 @@
 ﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Animation;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
@@ -55,6 +57,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
+
+        // Node-related requests
+        Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);
+        Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
+        Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
+        Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
+        Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task RefreshSettings(CancellationToken cancellationToken);
@@ -66,6 +76,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
+
+        // App-related requests
+        Task ActivateLoadInfo(CancellationToken cancellationToken);
+        Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
+
+        // Error-related requests
+        Task RefreshErrors(CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
@@ -90,5 +107,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for Update-related signals
         Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for error-related signals
+        Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);
+        Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args);
     }
 }

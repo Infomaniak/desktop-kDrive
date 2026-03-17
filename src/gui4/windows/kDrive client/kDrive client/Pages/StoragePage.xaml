@@ -98,13 +98,13 @@
                                                 Color3="#E0E0E0" />
                 <Grid>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               Foreground="{ThemeResource TextFillColorDisabled}">
+                               Foreground="{ThemeResource TextFillColorSecondary}">
                         <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                         <Run x:Uid="Page_StoragePage_Used" />
                     </TextBlock>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                HorizontalAlignment="Right"
-                               Foreground="{ThemeResource TextFillColorDisabled}">
+                               Foreground="{ThemeResource TextFillColorSecondary}">
                         <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                         <Run x:Uid="Page_StoragePage_Free" />
                     </TextBlock>
@@ -134,7 +134,7 @@
                                Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
                 </Grid>
                 <Rectangle Height="1"
                            Fill="LightGray"
@@ -163,7 +163,7 @@
                                Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
                 </Grid>
                 <Rectangle Height="1"
                            Fill="LightGray"
@@ -191,7 +191,7 @@
                                Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
                 </Grid>
             </StackPanel>
         </Grid>

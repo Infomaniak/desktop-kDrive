@@ -22,6 +22,9 @@ public enum AppPadding {
     public static let padding64: CGFloat = 64
     public static let padding48: CGFloat = 48
     public static let padding32: CGFloat = 32
+    public static let padding24: CGFloat = 24
     public static let padding16: CGFloat = 16
+    public static let padding12: CGFloat = 12
     public static let padding8: CGFloat = 8
+    public static let padding2: CGFloat = 2
 }

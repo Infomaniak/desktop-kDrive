@@ -56,6 +56,14 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
+std::string CsvFullFileListWithCursorJob::contentType() {
+    return mimeTypeJson;
+}
+
+std::string CsvFullFileListWithCursorJob::acceptHeader() {
+    return mimeTypeTextCsv + "," + mimeTypeJson;
+}
+
 void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
@@ -75,7 +83,7 @@ ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     const auto length = _ss.tellg();
     if (length == 0) {
         LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
-        return {};
+        return {ExitCode::BackError, ExitCause::FullListParsingError};
     }
 
     _ss.seekg(0, std::ios_base::beg);

@@ -27,6 +27,8 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/log/sentry/utility.h"
@@ -49,9 +51,11 @@ bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
     const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
-                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr)) ||
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::FullListParsingError)) ||
                                    (w2 && w2->exitCode() == ExitCode::BackError &&
-                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr));
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::FullListParsingError));
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
@@ -74,8 +78,12 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
     const auto invalidSyncError =
             (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
+    const auto invalidToken =
+            (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
+    const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
+                               (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
 
-    return dbError || systemError || updateRequired || invalidSyncError;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
 } // namespace
@@ -569,6 +577,75 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
     return true;
 }
 
+bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
+    // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
+    // but for now it would require some refactoring to make it reusable, so we duplicate it here.
+    outLocalNodeId.reset();
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(localAbsolutePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(localAbsolutePath, ioError));
+        return false;
+    }
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    } else if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error accessing item: " << Utility::formatSyncPath(localAbsolutePath) << L": "
+                                                             << Utility::formatIoError(ioError));
+        return false;
+    }
+
+    outLocalNodeId = std::to_string(fileStat.inode);
+
+    DbNode dbNode;
+    bool found = false;
+    if (!_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::node for " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    }
+
+    if (!found) {
+        return false;
+    }
+
+    if (dbNode.type() != fileStat.nodeType) {
+        return false;
+    }
+
+    SyncPath localDbRelativePath;
+    SyncPath remoteDbRelativePath;
+    if (!_syncPal->syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
+        return false;
+    }
+
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
+        return false;
+    }
+
+    const SyncPath localRelativePath = CommonUtility::relativePath(_syncPal->localPath(), localAbsolutePath);
+
+    if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
+        return false;
+    }
+
+    if (fileStat.nodeType == NodeType::Directory) {
+        return true;
+    }
+
+    if (dbNode.size() == fileStat.size && dbNode.lastModifiedLocal() == fileStat.modificationTime &&
+        (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
+        return true;
+    }
+
+    return false;
+}
+
 void SyncPalWorker::resetVfsFilesStatus() {
     if (_syncPal->vfsMode() == VirtualFileMode::Off) return;
     sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
@@ -589,10 +666,23 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
+                absolutePath = dirIt->path();
+                std::optional<NodeId> localNodeId;
+
                 if (!dirIt->is_symlink() && dirIt->is_directory()) {
+#ifdef KD_WINDOWS
+                    if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
+                        // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
+                        VfsStatus status;
+                        status.isSyncing = false;
+                        if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(dirIt->path(), status); !exitInfo) {
+                            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
+                                                                                     << L": " << exitInfo);
+                        }
+                    }
+#endif // KD_WINDOWS
                     continue;
                 }
-                absolutePath = dirIt->path();
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
@@ -637,7 +727,27 @@ void SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            if (!vfsStatus.isPlaceholder) continue;
+            if (!vfsStatus.isPlaceholder) {
+#if defined(KD_WINDOWS)
+                // Due to a bug introduced in kDrive 3.8.2.5, some files may have been reverted to regular files
+                // (i.e., no longer placeholders) while still being considered in sync with the database.
+                // As a corrective measure, we reconvert such files to placeholders when necessary to avoid misleading syncing
+                // status
+
+                SyncFileItem syncItem;
+                std::optional<NodeId> localNodeId;
+                if (!dirIt->is_symlink() && isLocalItemInSyncWithDb(absolutePath, localNodeId) && localNodeId.has_value()) {
+                    syncItem.setLocalNodeId(localNodeId.value());
+                    if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(absolutePath, syncItem); !exitInfo) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(absolutePath)
+                                                                                          << L": " << exitInfo);
+                    }
+                }
+                continue;
+#else
+                continue;
+#endif // KD_WINDOWS
+            }
 
             const PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
 #ifndef KD_WINDOWS // Handle by the API on windows.

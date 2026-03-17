@@ -64,7 +64,7 @@ void LocalFileSystemObserverWorker::stop() {
 
 ExitInfo LocalFileSystemObserverWorker::changesDetected(
         const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
-    const std::lock_guard lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
@@ -97,8 +97,8 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 bool existsWithSameId = false;
                 NodeId otherNodeId;
                 if (auto checkError = IoError::Success;
-                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
-                                                              checkError) &&
+                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, checkError,
+                                                              IoHelper::PathCheckOption::Insensitive) &&
                     !existsWithSameId) {
                     if (_liveSnapshot.removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
@@ -112,7 +112,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
         FileStat fileStat;
         auto ioError = IoError::Success;
-        if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
+        if (!IoHelper::getFileStat(
+                    absolutePath, &fileStat, ioError,
+                    IoHelper::PathCheckOption::Sensitive)) { // Sensitive existence check is needed for MOVE operation
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
             tryToInvalidateSnapshot();
             return ExitCode::SystemError;
@@ -479,7 +481,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         mainExitInfo = exitInfo;
     }
 
-    const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
         if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
@@ -557,7 +559,9 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
         return;
     }
-    (void) _syncPal->handleAccessDeniedItem(relativePath);
+    if (const auto exitInfo = _syncPal->handleAccessDeniedItem(relativePath, true); !exitInfo) {
+        // Do nothing, can happen if the sync is restarting
+    }
 }
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
@@ -588,7 +592,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     // Process all files
     try {
         IoHelper::DirectoryIterator dirIt;
-        if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
+        if (!IoHelper::getRecursiveDirectoryIterator(absoluteParentDirPath, ioError, dirIt, false)) {
             assert(ioError != IoError::Success && "Unexpected IoHelper::getDirectoryIterator return value.");
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
@@ -674,7 +678,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             FileStat fileStat;
             NodeId nodeId;
             if (!toExclude) {
-                if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError)) {
+                if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
                     dirIt.disableRecursionPending();
@@ -708,7 +712,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = _liveSnapshot.itemId(relativePath.parent_path());
                 if (parentNodeId.empty()) {
                     FileStat parentFileStat;
-                    if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, entryIoError)) {
+                    if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, entryIoError,
+                                               IoHelper::PathCheckOption::Insensitive)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                    << Utility::formatIoError(absolutePath.parent_path(), entryIoError));
                         return {ExitCode::SystemError, ExitCause::FileAccessError};

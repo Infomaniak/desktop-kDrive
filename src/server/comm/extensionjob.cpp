@@ -194,6 +194,13 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                     }
                 }
 
+                {
+                    const std::scoped_lock lock2(_dehydrationMutex);
+                    if (_nbOfOngoingDehydration > 0) {
+                        canCancelDehydration = true;
+                    }
+                }
+
                 // TODO: Should be a submenu, should use icons
                 auto makePinContextMenu = [this, channel](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration,
                                                           bool cancelHydration) {
@@ -583,6 +590,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     channel->sendMessage(response);
 }
 #endif
+
 #if defined(KD_MACOS)
 void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     // This command is the same as RETRIEVE_FILE_STATUS
@@ -593,7 +601,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration++;
     }
 
@@ -632,7 +640,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     }
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration--;
         if (_nbOfOngoingDehydration == 0) {
             _dehydrationCanceled = false;
@@ -746,8 +754,8 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
     bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
+    auto ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive) || !exists) {
         return;
     }
 
@@ -917,6 +925,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
     return true;
 }
 
+#if defined(KD_MACOS)
 bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
     const std::scoped_lock lock(AppServer::syncPalMapMutex);
 
@@ -935,6 +944,7 @@ bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString
 
     return true;
 }
+#endif
 
 void ExtensionJob::copyUrlToClipboard(const std::string &link) {
 #if defined(KD_WINDOWS)
@@ -1112,25 +1122,33 @@ void ExtensionJob::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChann
     channel->sendMessage(response);
 }
 
+#if defined(KD_MACOS)
 void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList) {
     // Process all files
     for (const auto &path: inFileList) {
         const FileData fileData = FileData::get(path);
-        if (fileData.isValid() && fileData.virtualFileMode == VirtualFileMode::Mac) {
-            const QFileInfo info(CommonUtility::commString2QStr(path));
-            if (info.isDir()) {
-                const QFileInfoList infoList =
-                        QDir(CommonUtility::commString2QStr(path)).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-                std::vector<CommString> fileList;
-                for (const auto &tmpInfo: qAsConst(infoList)) {
-                    const SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
-                    FileData tmpFileData = FileData::get(tmpPath);
-                    if (!tmpFileData.isValid()) continue;
+        if (!fileData.isValid() || fileData.isLink) continue;
+
+        if (fileData.isDirectory) {
+            auto ioError = IoError::Success;
+            IoHelper::DirectoryIterator dirIt;
+            bool endOfDir = false;
+            DirectoryEntry entry;
+
+            try {
+                if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
+                    LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+                    continue;
+                }
+
+                while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+                    FileData tmpFileData = FileData::get(entry.path());
+                    if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
 
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                         LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(tmpPath));
+                                  L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
                         continue;
                     }
 
@@ -1138,20 +1156,20 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
                         continue;
                     }
 
-                    fileList.push_back(tmpPath);
+                    outFileList.push_back(entry.path());
                 }
-
-                if (fileList.size() > 0) {
-                    processFileList(fileList, outFileList);
-                }
-            } else {
-                outFileList.push_back(path);
+            } catch (std::filesystem::filesystem_error &e) {
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
+            } catch (...) {
+                LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
             }
         } else {
             outFileList.push_back(path);
         }
     }
 }
+#endif
 
 CommString ExtensionJob::vfsPinActionText() {
     return CommonUtility::qStr2CommString(QObject::tr("Make available locally"));

@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kDrive client", "kDrive client\kDrive client.csproj", "{BB22ACA5-CCBE-4FA0-B379-A79109A198EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54} = {930B6AD7-77A5-4253-A43E-E10DED8F6D54}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootstrapper", "Bootstrapper\Bootstrapper.csproj", "{930B6AD7-77A5-4253-A43E-E10DED8F6D54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +38,18 @@ Global
 		{BB22ACA5-CCBE-4FA0-B379-A79109A198EB}.Release|x86.ActiveCfg = Release|x86
 		{BB22ACA5-CCBE-4FA0-B379-A79109A198EB}.Release|x86.Build.0 = Release|x86
 		{BB22ACA5-CCBE-4FA0-B379-A79109A198EB}.Release|x86.Deploy.0 = Release|x86
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|x64.Build.0 = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Debug|x86.Build.0 = Debug|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|ARM64.Build.0 = Release|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|x64.ActiveCfg = Release|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|x64.Build.0 = Release|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|x86.ActiveCfg = Release|Any CPU
+		{930B6AD7-77A5-4253-A43E-E10DED8F6D54}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

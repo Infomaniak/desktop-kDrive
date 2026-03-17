@@ -40,7 +40,8 @@ SocketCommChannel::~SocketCommChannel() {
 }
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
-    const int maxSize = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
+    const auto maxSize = static_cast<int>(
+            (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max())));
     int lenReceived = 0;
     try {
         /* This file is included by some files that also include "windef.h", which defines a macro "max()".

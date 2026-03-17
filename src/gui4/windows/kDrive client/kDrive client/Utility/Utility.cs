@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.WinUI;
-using Infomaniak.kDrive.Converters;
-using Infomaniak.kDrive.Types;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
-
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
+using WinRT.Interop;
 
 namespace Infomaniak.kDrive
 {
@@ -91,12 +92,12 @@ namespace Infomaniak.kDrive
             return true;
         }
 
-        public static string DefaultSyncPath(string DriveName)
+        public static string DefaultSyncPath(string DriveName, List<string>? reservedPaths = null)
         {
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string defaultPath = Path.Combine(userProfile, $"kDrive {DriveName}");
 
-            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage))
+            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage, reservedPaths))
             {
                 Logger.Log(Logger.Level.Warning, $"Default sync path '{defaultPath}' is not valid: {errorMessage}. Falling back to numbered paths.");
                 int number = 1;
@@ -104,7 +105,7 @@ namespace Infomaniak.kDrive
                 {
                     defaultPath = Path.Combine(userProfile, number > 0 ? $"kDrive ({number})" : "kDrive");
                     number++;
-                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage) && number < 500);
+                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage, reservedPaths) && number < 500);
 
                 if (number >= 500)
                 {
@@ -116,8 +117,14 @@ namespace Infomaniak.kDrive
             return defaultPath;
         }
 
-        public static bool CheckSyncPathValidity(string path, out string errorMessage)
+        public static bool CheckSyncPathValidity(string path, out string errorMessage, List<string>? reservedPaths = null)
         {
+            if (reservedPaths?.Contains(path) ?? false)
+            {
+                errorMessage = "The path is already in use by another sync.";
+                return false;
+            }
+
             errorMessage = string.Empty;
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -290,7 +297,13 @@ namespace Infomaniak.kDrive
         public static string GetLocalizedString(string key, params object?[]? args)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            string localizedString = resourceLoader.GetString(key) ?? string.Empty;
+            string? localizedString = resourceLoader.GetString(key);
+
+            if (localizedString is null || localizedString.Length == 0)
+            {
+                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                localizedString = key; // Fallback to the key itself if not found
+            }
 
             // Replace literal \r\n with real newlines
             localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
@@ -321,7 +334,7 @@ namespace Infomaniak.kDrive
                 }
             }
         }
- 
+
         public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
         {
             ContentDialog dialog = new ContentDialog();
@@ -334,6 +347,66 @@ namespace Infomaniak.kDrive
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
             var result = await dialog.ShowAsync();
             return result;
+        }
+
+
+        public static string? ToBase64String(string? data)
+        {
+            if (data is null)
+                return null;
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+        }
+
+        public static bool IsSubPathOf(string path, string prefix)
+        {
+            if (!path.StartsWith(prefix))
+                return false;
+
+            if (path.Length == prefix.Length)
+                return true;
+
+            char nextChar = path[prefix.Length];
+            return nextChar == Path.DirectorySeparatorChar || nextChar == Path.AltDirectorySeparatorChar;
+        }
+
+        public static Frame? GetFrame(Control control)
+        {
+            DependencyObject? parent = control;
+            while (parent is not null)
+            {
+                if (parent is Frame frame)
+                    return frame;
+
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        public static void BringCurrentWindowToFront()
+        {
+            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+
+            App? app = Application.Current as App;
+
+            if (app?.CurrentWindow is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
+                return;
+            }
+            app.CurrentWindow.Show();
+            app.CurrentWindow.Activate();
+            var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
+            if (hWnd == IntPtr.Zero)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                return;
+            }
+
+            SetForegroundWindow(hWnd);
         }
     }
 }

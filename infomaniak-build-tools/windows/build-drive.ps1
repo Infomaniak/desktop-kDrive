@@ -49,6 +49,10 @@ Param(
     # Unit tests: Flag to enable or disable the build of unit tests
     [switch] $unitTests,
 
+    # include new GUI: Flag to enable or disable the new GUI build. If included, any user in the internal release channel will be able to test it. 
+    # The legacy GUI will still be built and installed alongside and can be launched by clicking on kDrive logo on the top left corner of the new GUI.
+    [switch] $newGui,
+
     # Help: Displays the help message and exits
     [switch] $help
 )
@@ -66,6 +70,7 @@ $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
 $extPath = "$path/extensions/windows/cfapi"
+$clientPath = "$path/src/gui4/windows/kDrive client"
 $vfsDir = "$extPath/x64/Release"
 
 $msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
@@ -179,7 +184,6 @@ function Get-Aumid {
 
 function Get-Package-Name {
     param (
-        [string] $buildPath,
         [switch] $msi,
 		[switch] $exe
     )
@@ -199,15 +203,14 @@ function Get-Package-Name {
 
 function Get-Installer-Path {
     param (
-        [string] $buildPath,
         [string] $contentPath,
 		[switch] $msi
     )
 
 	if ($msi) {
-		$appName = Get-Package-Name $buildPath -msi
+		$appName = Get-Package-Name -msi
 	} else {
-		$appName = Get-Package-Name $buildPath -exe
+		$appName = Get-Package-Name -exe
 	}
     
     $installerPath = "$contentPath/$appName"
@@ -440,6 +443,8 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
+        [bool] $newGui,
+        [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
         [bool] $ci
@@ -521,6 +526,24 @@ function Prepare-Archive {
 
     }
 
+    Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
+
+    if ($newGui) {
+        # Copy client files
+        Write-Host "Copying new client files ($newGuiDir) to the archive ..."
+        Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
+
+        # Sign all the .exe, .dll and .xbf that have no signature yet
+        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll, *.xbf | Where-Object {
+            $signature = Get-AuthenticodeSignature $_.FullName
+            $signature.Status -eq 'NotSigned'
+        }
+        foreach ($file in $filesToSign) {
+            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $file.Name
+            Write-Host "Signed file: $($file.FullName)"
+        }
+    }
+
     Write-Host "Archive prepared."
 }
 
@@ -557,7 +580,7 @@ function Create-Archive {
 
     # Sign final installer
     $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-    $installerPath = Get-Installer-Path $buildPath $contentPath
+    $installerPath = Get-Installer-Path $contentPath
 
     if (Test-Path -Path $installerPath) {
         Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
@@ -587,7 +610,7 @@ function Create-MSI-Package {
 		$thumbprint = Get-Thumbprint $upload
 	}
 
-	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
+	$installerPath = Get-Installer-Path $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
 		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
@@ -782,7 +805,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -795,12 +818,10 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-if (!$ci -or $upload) {
-    Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
-        exit $LASTEXITCODE
-    }
+Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
+    exit $LASTEXITCODE
 }
 
 #################################################################################################

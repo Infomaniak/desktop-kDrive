@@ -17,9 +17,9 @@ namespace Infomaniak.kDrive.Converters
                 {
                     string resourceKey = direction switch
                     {
-                        SyncDirection.Up => "Infomaniak.DS.Icons.Devices.computer",
-                        SyncDirection.Down => "Infomaniak.DS.Icons.Network.globe",
-                        _ => "Infomaniak.DS.Icons.Devices.computer",
+                        SyncDirection.Up => "Infomaniak.Custom.Icons.Devices.computer-sync",
+                        SyncDirection.Down => "Infomaniak.Custom.Icons.Devices.cloud-sync",
+                        _ => "Infomaniak.Custom.Icons.Devices.computer-sync",
                     };
                     if (Application.Current.Resources[resourceKey] is string iconUriStr)
                     {

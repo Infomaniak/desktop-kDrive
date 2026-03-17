@@ -20,7 +20,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XL}">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <!-- Titre -->
                 <TextBlock x:Name="Title"
                            x:Uid="Page_Onboarding_WelcomePage_Title"
@@ -32,7 +32,7 @@
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondary}"
-                           MaxWidth="311" />
+                           MaxWidth="345" />
 
             </StackPanel>
             <!-- Boutons -->
@@ -40,12 +40,13 @@
                         HorizontalAlignment="Left"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <Button x:Uid="Page_Onboarding_WelcomePage_SignupButton"
-                        Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
+                        Style="{StaticResource SubtleButtonStyle}"
                         Click="SignupButton_Click" />
-                
-                <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                        Click="SigninButton_Click"
-                        x:Uid="Page_Onboarding_WelcomePage_SigninButton" />
+
+                <Button Click="SigninButton_Click"
+                        x:Uid="Page_Onboarding_WelcomePage_SigninButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        MinWidth="120"/>
             </StackPanel>
         </StackPanel>
     </Grid>

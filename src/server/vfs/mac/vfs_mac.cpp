@@ -68,21 +68,21 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
         installationDone = _connector->install(activationDone);
         if (!installationDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::install!");
-            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
     }
 
     if (!activationDone) {
         LOG_INFO(logger(), "LiteSync extension activation pending");
         connectionDone = false;
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     if (!connectionDone) {
         connectionDone = _connector->connect();
         if (!connectionDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::connect!");
-            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
     }
 
@@ -96,7 +96,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
     if (!_connector->vfsStart(_vfsSetupParams.syncDbId, _vfsSetupParams.localPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     if (std::list<SyncPath> filesToFix;
@@ -128,25 +128,23 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
                 ok = false;
             }
         }
-        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToCreateVfs);
+        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToStartVfs);
     }
 
     return ExitCode::Ok;
 }
 
-void VfsMac::stopImpl(bool unregister) {
+void VfsMac::stopImpl(bool /*unregister*/) {
     LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams.syncDbId);
 
-    if (unregister) {
-        if (!_connector) {
-            LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
-            return;
-        }
+    if (!_connector) {
+        LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
+        return;
+    }
 
-        if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
-            LOG_WARN(logger(), "Error in vfsStop!");
-            return;
-        }
+    if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
+        LOG_WARN(logger(), "Error in vfsStop!");
+        return;
     }
 }
 
@@ -337,20 +335,17 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &absolutePath, const SyncFi
         // If item is a directory, also convert items inside it
         ItemType itemType;
         if (!IoHelper::getItemType(absolutePath, itemType)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
             return ExitCode::SystemError;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -615,14 +610,22 @@ ExitInfo VfsMac::setAppExcludeList() {
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
-    AppTable tmpTable;
-    if (!_connector->vfsGetFetchingAppList(tmpTable)) {
+ExitInfo VfsMac::getFetchingAppList(AppTable &appTable) {
+    appTable.clear();
+    if (!_connector->vfsGetFetchingAppList(appTable)) {
         LOG_WARN(logger(), "Error in vfsGetFetchingAppList!");
         return ExitCode::LogicError;
     }
 
-    for (auto &[id, name]: tmpTable) {
+    return ExitCode::Ok;
+}
+
+ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
+    appTable.clear();
+    AppTable tmpTable;
+    if (const auto exitInfo = getFetchingAppList(tmpTable); !exitInfo) return exitInfo;
+
+    for (const auto &[id, name]: tmpTable) {
         appTable.emplace(QString::fromStdString(id), QString::fromStdString(name));
     }
 

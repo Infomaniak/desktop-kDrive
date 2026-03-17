@@ -20,8 +20,6 @@ using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -42,7 +40,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private long _requestIdCounter = 0;
         private string _inBuffer = "";
         private int _inBufferJsonBalance = 0;
-        private readonly ConcurrentDictionary<long, CommData?> _pendingRequests = new ConcurrentDictionary<long, CommData?>();
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests = [];
+        private bool _stopRequested = false;
         private long NextId
         {
             get
@@ -66,73 +65,90 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public new void Initialize()
         {
-            // Fetch the port from the .comm file
-            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
-            int port = int.Parse((File.ReadAllText(homePath)).Trim());
-
-
-            Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
-            try
-            {
-                _client = new TcpClient("localhost", port);
-                Logger.Log(Logger.Level.Info, "Connected to server.");
-            }
-            catch (SocketException ex)
-            {
-                Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
-                _client = null;
-            }
-
-            if (_client != null && _client.Connected)
-            {
-                _ = Task.Run(async () =>
-                {
-                    while (true)
-                    {
-                        try
-                        {
-                            while (_client.GetStream().DataAvailable || _inBuffer.Any())
-                            {
-                                await OnReadyReadAsync().ConfigureAwait(false);
-                            }
-                            await Task.Delay(100).ConfigureAwait(false); // Polling interval
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
-                        }
-                    }
-                });
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Client is null or not connected, read loop not started.");
-            }
+            _ = Task.Run(ReconnectLoop);
         }
 
         ~SocketServerCommProtocol()
         {
             _client?.Dispose();
+            _stopRequested = true;
+        }
+
+        private async Task ReconnectLoop()
+        {
+            string commPortFilePath = Path.Combine(
+               Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+               "kDrive",
+               ".comm"
+           );
+
+            while (!_stopRequested)
+            {
+                if (_client == null || !_client.Connected)
+                {
+                    try
+                    {
+                        int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
+
+                        Logger.Log(Logger.Level.Info, $"Attempting to connect to localhost:{port}");
+                        _client?.Dispose();
+                        _client = new TcpClient();
+                        await _client.ConnectAsync("localhost", port).ConfigureAwait(false);
+                        Logger.Log(Logger.Level.Info, "Connected to server.");
+                    }
+                    catch (SocketException ex)
+                    {
+                        Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 2 seconds...");
+                        _client = null;
+                        await Task.Delay(2000).ConfigureAwait(false);
+                        continue;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.Log(Logger.Level.Error, $".comm file not found at {commPortFilePath}. Retrying in 2 seconds...");
+                        await Task.Delay(2000).ConfigureAwait(false);
+                        continue;
+                    }
+                }
+
+                try
+                {
+                    while (_client.Connected)
+                    {
+                        while (_client.GetStream().DataAvailable || _inBuffer.Any())
+                        {
+                            await OnReadyReadAsync().ConfigureAwait(false);
+                        }
+                        await Task.Delay(100).ConfigureAwait(false); // Polling interval
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
+                    _client?.Dispose();
+                    _client = null;
+                }
+
+                Logger.Log(Logger.Level.Warning, "Disconnected from server, attempting to reconnect...");
+                // Small delay before attempting reconnect
+                await Task.Delay(2000).ConfigureAwait(false);
+            }
         }
 
         public new async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
             try
             {
-                if (_client == null)
+                // Wait asynchronously until the client is connected
+                while (_client == null || !_client.Connected)
                 {
-                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is null.");
-                    return new CommData();
-                }
-
-                if (!_client.Connected)
-                {
-                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is not connected.");
-                    return new CommData();
+                    Logger.Log(Logger.Level.Warning, "Client not connected, waiting to send request...");
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
                 long requestId = NextId;
-                _pendingRequests[requestId] = null;
+                _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
 
                 // Create the JSON object
                 var requestObj = new JsonObject
@@ -140,7 +156,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ["type"] = (int)CommMessageType.Request,
                     ["id"] = requestId,
                     ["num"] = (int)requestNum,
-                    ["params"] = parameters
+                    ["params"] = parameters.Deserialize<JsonNode>()
                 };
 
                 // Convert to JSON
@@ -170,39 +186,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-        private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken cancellationToken = default)
+        private Task<CommData> WaitForReplyAsync(long requestId, CancellationToken ct = default)
         {
-            var time = DateTime.UtcNow;
-            // Ensure the slot exists
-            _pendingRequests[requestId] = null;
 
-            while (true)
+            if (!_pendingRequests.TryGetValue(requestId, out var tcs))
             {
-                if (_pendingRequests.TryGetValue(requestId, out var reply))
-                {
-                    if (reply != null)
-                    {
-                        _pendingRequests.Remove(requestId, out _);
-                        var elapsed = DateTime.UtcNow - time;
-                        Logger.Log(Logger.Level.Extended, $"Respons for request (Id) {requestId} received after {elapsed.TotalMilliseconds} ms");
-                        return reply;
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Error, $"No request(Id) found for {requestId}");
-                    return new CommData();
-                }
-                await Task.Delay(10).ConfigureAwait(false);
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    var elapsed = DateTime.UtcNow - time;
-                    Logger.Log(Logger.Level.Info, $"Request(Id) {requestId} canceled before completion after {elapsed.TotalMilliseconds} ms");
-                    _pendingRequests.Remove(requestId, out _);
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
+                Logger.Log(Logger.Level.Error, $"RequestId {requestId} not found in pending requests.");
+                return Task.FromResult(new CommData());
             }
+
+            // Tie cancellation to the task
+            if (ct.CanBeCanceled)
+            {
+                ct.Register(() =>
+                {
+                    if (_pendingRequests.TryRemove(requestId, out var pending))
+                        pending.TrySetCanceled(ct);
+                });
+            }
+
+            return tcs.Task;
         }
+
 
         private async Task OnReadyReadAsync()
         {
@@ -224,16 +229,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 string str = Encoding.Unicode.GetString(jsonBytes, 0, bytesRead);
                 _inBuffer += str;
-
-                int endIndex = -1;
-                UpdateJsonBalance(str, ref _inBufferJsonBalance, ref endIndex);
-                if (endIndex != -1)
-                    jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                if (_inBufferJsonBalance != 0)
+                {
+                    int endIndex = -1;
+                    UpdateJsonBalance(str, ref _inBufferJsonBalance, ref endIndex);
+                    if (endIndex != -1)
+                        jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                    else
+                        jsonEndIndex = -1;
+                }
                 else
-                    jsonEndIndex = -1;
+                {
+                    UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
+                }
             }
             else
             {
+                _inBufferJsonBalance = 0;
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
             }
 
@@ -252,6 +264,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             string jsonString = _inBuffer.Substring(0, jsonEndIndex + 1);
+            if (!jsonString.EndsWith("}"))
+            {
+                Logger.Log(Logger.Level.Error, "unexpected end character");
+            }
             _inBuffer = _inBuffer.Substring(jsonEndIndex + 1);
 
             // Parse JSON
@@ -260,6 +276,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
+            Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonString}");
             var messageObj = JsonSerializer.Deserialize<CommData>(jsonString, options);
             if (messageObj == null)
             {
@@ -293,7 +310,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 case CommMessageType.Request:
                     Logger.Log(Logger.Level.Info, $"Received a reply for id {data.Id}");
-                    _pendingRequests[data.Id] = data;
+                    if (_pendingRequests.TryRemove(data.Id, out var tcs))
+                    {
+                        tcs.TrySetResult(data);
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Warning, $"Received reply for unknown request ID {data.Id}");
+                    }
                     break;
                 case CommMessageType.Signal:
                     // Signal

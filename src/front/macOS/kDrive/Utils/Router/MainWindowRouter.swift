@@ -20,8 +20,8 @@ import Cocoa
 
 enum WindowRoute {
     case preloading
-    case onboarding
-    case splitView
+    case onboarding(OnboardingStep? = nil)
+    case mainWindow
 }
 
 final class MainWindowRouter: WindowRouter {
@@ -39,11 +39,11 @@ final class MainWindowRouter: WindowRouter {
         case .preloading:
             let viewController = PreloadingViewController()
             mainWindowController.setViewController(viewController)
-        case .onboarding:
-            let viewController = OnboardingViewController()
+        case .onboarding(let step):
+            let viewController = OnboardingViewController(initialStep: step)
             mainWindowController.setViewController(viewController)
-        case .splitView:
-            let viewController = MainSplitViewController()
+        case .mainWindow:
+            let viewController = MainViewController()
             mainWindowController.setViewController(viewController)
         }
     }

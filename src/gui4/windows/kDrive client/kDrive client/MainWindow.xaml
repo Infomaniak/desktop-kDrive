@@ -81,73 +81,14 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
-                                    BorderThickness="1" />
+                                    BorderThickness="1"
+                                    IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- NavigationView -->
-        <NavigationView x:Name="navView"
-                        Grid.Row="1"
-                        PaneDisplayMode="Left"
-                        SelectionChanged="navView_SelectionChanged"
-                        IsBackEnabled="{x:Bind contentFrame.CanGoBack, Mode=OneWay}"
-                        BackRequested="navView_BackRequested"
-                        OpenPaneLength="280">
-            <NavigationView.Resources>
-                <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
-                <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            </NavigationView.Resources>
-
-            <NavigationView.PaneCustomContent>
-                <controls:SyncSelector HorizontalAlignment="Stretch"
-                                       Margin="4,9,4,20"
-                                       Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            </NavigationView.PaneCustomContent>
-
-            <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Home"
-                                    Tag="HomePage"
-                                    MinHeight="30"
-                                    IsSelected="True">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Home" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Activity"
-                                    Tag="ActivityPage"
-                                    MinHeight="30">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Sync" />
-                    </NavigationViewItem.Icon>
-                    <NavigationViewItem.InfoBadge>
-                        <InfoBadge x:Name="infoBadge1"
-                                   Value="4" />
-                    </NavigationViewItem.InfoBadge>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
-                                    Tag="StoragePage"
-                                    MinHeight="30">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="MapDrive" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-
-            <NavigationView.PaneFooter>
-                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
-                    <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
-                                        Tapped="NavigationViewItem_Tapped"
-                                        MinHeight="30"
-                                        IsEnabled="True">
-                        <NavigationViewItem.Icon>
-                            <SymbolIcon Symbol="Folder" />
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
-                </StackPanel>
-            </NavigationView.PaneFooter>
-
-            <Frame x:Name="contentFrame" />
-        </NavigationView>
+        <controls:AppNavigationView x:Name="NavView"
+                                    Grid.Row="1" />
     </Grid>
 </Window>

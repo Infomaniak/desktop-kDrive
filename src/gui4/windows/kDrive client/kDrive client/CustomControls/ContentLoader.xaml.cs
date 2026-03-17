@@ -1,18 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows.Automation.Peers;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -36,11 +23,19 @@ namespace Infomaniak.kDrive.CustomControls
             get { return (object)GetValue(LoaderContentProperty); }
             set { SetValue(LoaderContentProperty, value); }
         }
+        public double LoaderMinHeight
+        {
+            get { return (double)GetValue(MinLoaderHeightProperty); }
+            set { SetValue(MinLoaderHeightProperty, value); }
+        }
 
         public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register("IsLoading", typeof(bool), typeof(ContentLoader), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(ContentLoader), new PropertyMetadata(false));
 
         public static readonly DependencyProperty LoaderContentProperty =
-            DependencyProperty.Register("LoaderContent", typeof(object), typeof(ContentLoader), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(LoaderContent), typeof(object), typeof(ContentLoader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MinLoaderHeightProperty =
+            DependencyProperty.Register(nameof(LoaderMinHeight), typeof(double), typeof(ContentLoader), new PropertyMetadata(0.0));
     }
 }

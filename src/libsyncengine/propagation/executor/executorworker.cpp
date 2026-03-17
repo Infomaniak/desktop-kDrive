@@ -20,7 +20,7 @@
 
 #include "filerescuer.h"
 #include "jobs/local/localcreatedirjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
@@ -53,15 +53,8 @@ namespace KDC {
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName, false) {}
 
-void ExecutorWorker::executorCallback(UniqueId jobId) {
+void ExecutorWorker::executorCallback(const UniqueId jobId) {
     _terminatedJobs.push(jobId);
-}
-
-void ExecutorWorker::removeSyncNodeFromWhitelistIfSynced(const NodeId &nodeId) {
-    if (SyncNodeCache::instance()->contains(_syncPal->syncDbId(), SyncNodeType::WhiteList, nodeId)) {
-        // This item has been synchronized, it can now be removed from white list
-        (void) SyncNodeCache::instance()->deleteSyncNode(_syncPal->syncDbId(), nodeId);
-    }
 }
 
 void ExecutorWorker::execute() {
@@ -76,118 +69,113 @@ void ExecutorWorker::execute() {
     _opList = _syncPal->_syncOps->opSortedList();
     initProgressManager();
     uint64_t changesCounter = 0;
-    while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
-        // Create all the jobs
-        sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
-        while (!_opList.empty()) {
-            if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
-                executorExitInfo = exitInfo;
-                cancelAllOngoingJobs();
-                break;
-            }
 
-            sendProgress();
-
-            if (stopAsked()) {
-                cancelAllOngoingJobs();
-                break;
-            }
-
-            UniqueId opId = 0;
-            _opListMutex.lock();
-            if (!_opList.empty()) {
-                opId = _opList.front();
-                _opList.pop_front();
-            }
-            _opListMutex.unlock();
-
-            if (!opId) break;
-
-            SyncOpPtr syncOp = _syncPal->_syncOps->getOp(opId);
-
-            if (!syncOp) {
-                LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << opId);
-                continue;
-            }
-
-            changesCounter++;
-
-            std::shared_ptr<SyncJob> job = nullptr;
-            bool ignored = false;
-            bool bypassProgressComplete = false;
-            bool hydrating = false;
-            switch (syncOp->type()) {
-                case OperationType::Create: {
-                    executorExitInfo = handleCreateOp(syncOp, job, ignored, hydrating);
-                    break;
-                }
-                case OperationType::Edit: {
-                    executorExitInfo = handleEditOp(syncOp, job, ignored);
-                    break;
-                }
-                case OperationType::Move: {
-                    executorExitInfo = handleMoveOp(syncOp, ignored, bypassProgressComplete);
-                    break;
-                }
-                case OperationType::Delete: {
-                    executorExitInfo = handleDeleteOp(syncOp, ignored, bypassProgressComplete);
-                    break;
-                }
-                default: {
-                    LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
-                                                       << syncOp->type() << L" on file "
-                                                       << Utility::formatSyncName(syncOp->affectedNode()->name()));
-                    executorExitInfo = ExitCode::DataError;
-                }
-            }
-
-            // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
-            if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-                if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
-                continue;
-            }
-
-            if (!executorExitInfo) {
-                executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
-                if (!executorExitInfo) { // If the error is not handled, stop the execution
-                    increaseErrorCount(syncOp, executorExitInfo);
-                    cancelAllOngoingJobs();
-                    break;
-                } else { // If the error is handled, continue the execution
-                    if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
-                    continue;
-                }
-                if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
-            }
-
-            if (job) {
-                job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
-                SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
-                _ongoingJobs.insert({job->jobId(), job});
-                _jobToSyncOpMap.insert({job->jobId(), syncOp});
-            } else {
-                if (!bypassProgressComplete) {
-                    if (ignored) {
-                        setProgressComplete(syncOp, SyncFileStatus::Ignored);
-                    } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
-                        setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
-                    } else {
-                        setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
-                    }
-                }
-
-                if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
-            }
-        }
-
-        perfMonitor.stop();
-        sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
-        if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
+    // Create all the jobs
+    sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
+    while (!_opList.empty()) {
+        if (const auto exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
             executorExitInfo = exitInfo;
+            cancelAllOngoingJobs();
             break;
         }
-        perfMonitorwaitForAllJobsToFinish.stop();
+
+        sendProgress();
+
+        if (stopAsked()) {
+            cancelAllOngoingJobs();
+            break;
+        }
+
+        UniqueId opId = 0;
+        _opListMutex.lock();
+        if (!_opList.empty()) {
+            opId = _opList.front();
+            _opList.pop_front();
+        }
+        _opListMutex.unlock();
+        if (!opId) break;
+
+        SyncOpPtr syncOp = _syncPal->_syncOps->getOp(opId);
+        if (!syncOp) {
+            LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << opId);
+            continue;
+        }
+
+        changesCounter++;
+
+        std::shared_ptr<SyncJob> job = nullptr;
+        bool ignored = false;
+        bool bypassProgressComplete = false;
+        bool hydrating = false;
+        switch (syncOp->type()) {
+            case OperationType::Create: {
+                executorExitInfo = handleCreateOp(syncOp, job, ignored, hydrating);
+                break;
+            }
+            case OperationType::Edit: {
+                executorExitInfo = handleEditOp(syncOp, job, ignored);
+                break;
+            }
+            case OperationType::Move: {
+                executorExitInfo = handleMoveOp(syncOp, ignored, bypassProgressComplete);
+                break;
+            }
+            case OperationType::Delete: {
+                executorExitInfo = handleDeleteOp(syncOp, ignored, bypassProgressComplete);
+                break;
+            }
+            default: {
+                LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
+                                                   << syncOp->type() << L" on file "
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()));
+                executorExitInfo = ExitCode::DataError;
+            }
+        }
+
+        // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
+        if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
+            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            continue;
+        }
+
+        if (!executorExitInfo) {
+            executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
+            if (!executorExitInfo) { // If the error is not handled, stop the execution
+                increaseErrorCount(syncOp, executorExitInfo);
+                cancelAllOngoingJobs();
+                break;
+            }
+
+            // If the error is handled, continue the execution
+            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            continue;
+        }
+
+        if (job) {
+            job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
+            SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+            (void) _ongoingJobs.try_emplace(job->jobId(), job);
+            (void) _jobToSyncOpMap.try_emplace(job->jobId(), syncOp);
+        } else {
+            if (!bypassProgressComplete) {
+                if (ignored) {
+                    setProgressComplete(syncOp, SyncFileStatus::Ignored);
+                } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
+                    setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
+                } else {
+                    setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
+                }
+            }
+        }
     }
+
+    perfMonitor.stop();
+    sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
+    if (const auto exitInfo = waitForAllJobsToFinish(); !exitInfo) {
+        executorExitInfo = exitInfo;
+    }
+    perfMonitorwaitForAllJobsToFinish.stop();
+
 
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
@@ -199,7 +187,7 @@ void ExecutorWorker::execute() {
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
     }
 
-    _syncPal->vfs()->cleanUpStatuses();
+    (void) _syncPal->vfs()->cleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
@@ -334,7 +322,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         if (!isValidDestination(syncOp)) {
             if (syncOp->targetSide() == ReplicaSide::Remote) {
                 bool exists = false;
-                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError,
+                                                                                  IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger,
                               L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
                     return ExitCode::SystemError;
@@ -360,7 +349,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             ignored = true;
             LOGW_SYNCPAL_INFO(_logger,
                               L"Forbidden destination, operation ignored: " << Utility::formatSyncPath(absoluteLocalFilePath));
-            return ExitCode::Ok;
+            return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
@@ -504,7 +493,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
                 return ExitCode::SystemError;
@@ -538,7 +527,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+                if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError,
+                                                 IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(absoluteLocalFilePath, ioError));
                     return ExitCode::SystemError;
@@ -711,7 +701,7 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     // VfsWin::convertToPlaceholder needs only SyncFileItem::_localNodeId
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
         return ExitCode::SystemError;
     }
@@ -1055,7 +1045,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                                                              ? parentNode
                                                              : correspondingNodeInOtherTree(parentNode);
             if (!remoteParentNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Parent node not found for item with " << Utility::formatSyncPath(parentNode->getPath()));
                 return ExitCode::DataError;
             }
 
@@ -1181,7 +1172,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID");
             return ExitCode::DataError;
         }
-        job = std::make_shared<LocalDeleteJob>(_syncPal->syncInfo(), relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
+        job = std::make_shared<SyncLocalDeleteJob>(_syncPal, relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
     } else {
         try {
             job = std::make_shared<DeleteJob>(_syncPal->driveDbId(), syncOp->correspondingNode()->id().value_or(""),
@@ -1321,8 +1312,6 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     } else {
                         setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
-
-                    if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
                 }
             } else {
                 increaseErrorCount(syncOp, exitInfo);
@@ -1451,8 +1440,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
                 LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
-                _syncPal->handleAccessDeniedItem(relativeLocalPath);
-                return ExitCode::Ok;
+                return _syncPal->handleAccessDeniedItem(relativeLocalPath, false);
             }
             removeFromDb = false;
             break;
@@ -1461,7 +1449,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Delete the item from local replica
             const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
             if (!remoteNodeId.empty()) {
-                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
+                SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
                 deleteJob.setBypassCheck(true);
                 deleteJob.runSynchronously();
             }
@@ -2026,7 +2014,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     (void) job->runSynchronously();
 
     if (auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job)); tokenJob && tokenJob->hasErrorApi()) {
-        const auto code = getNetworkErrorCode(tokenJob->errorCode());
+        const auto code = getNetworkErrorCode(tokenJob->backError().code());
         if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::ForbiddenError) {
@@ -2096,7 +2084,6 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     for (const auto &job: _ongoingJobs) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
-            job.second->setAdditionalCallback(nullptr);
             job.second->abort();
         } else {
             remainingJobs.push_back(job.second);
@@ -2106,7 +2093,6 @@ void ExecutorWorker::cancelAllOngoingJobs() {
     // Then cancel jobs that are currently running
     for (const auto &job: remainingJobs) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
-        job->setAdditionalCallback(nullptr);
         job->abort();
     }
     _ongoingJobs.clear();
@@ -2188,7 +2174,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     if (opsExitInfo.cause() == ExitCause::NotFound || opsExitInfo.cause() == ExitCause::FileAccessError) {
         // Check that the root of the sync folder is still accessible
         bool exists = false;
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError)) {
+        if (IoError ioError = IoError::Success;
+            !IoHelper::checkIfPathExists(_syncPal->localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_syncPal->localPath(), ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
@@ -2229,7 +2216,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;
@@ -2240,7 +2227,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
         if (!localNode) return ExitCode::LogicError;
 
         const SyncPath relativeLocalFilePath = localNode->getPath();
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;

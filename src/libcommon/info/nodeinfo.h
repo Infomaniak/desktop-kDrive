@@ -24,6 +24,8 @@
 #include <QString>
 #include <QList>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class NodeInfo {
@@ -43,7 +45,10 @@ class NodeInfo {
         inline void setModtime(qint64 newModtime) { _modtime = newModtime; }
         inline const QString &path() const { return _path; }
         inline void setPath(const QString &newPath) { _path = newPath; }
+        inline bool accessDenied() const { return _accessDenied; }
+        inline void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         friend QDataStream &operator>>(QDataStream &in, NodeInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const NodeInfo &info);
 
@@ -53,10 +58,11 @@ class NodeInfo {
     private:
         QString _nodeId;
         QString _name;
-        qint64 _size;
+        qint64 _size = 0;
         QString _parentNodeId;
-        qint64 _modtime;
+        qint64 _modtime = 0;
         QString _path;
+        bool _accessDenied = false;
 };
 
 } // namespace KDC

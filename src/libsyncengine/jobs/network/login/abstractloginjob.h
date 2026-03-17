@@ -35,7 +35,7 @@ class AbstractLoginJob : public AbstractNetworkJob {
     private:
         std::string getSpecificUrl() override;
         std::string getUrl() override;
-        std::string getContentType() override;
+        std::string contentType() override;
 
         ExitInfo handleResponse(std::istream &inputStream) override;
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;

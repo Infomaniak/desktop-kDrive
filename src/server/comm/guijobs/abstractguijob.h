@@ -157,6 +157,11 @@ class AbstractGuiJob : public AbstractJob {
             CommonUtility::writeValuesToStruct(_outParams, key, values);
         }
 
+        template<typename T, typename H, typename A = std::allocator<T>>
+        void writeParamValues(const std::string &key, const std::unordered_map<std::string, T, H, std::equal_to<>, A> &values) {
+            CommonUtility::writeValuesToStruct(_outParams, key, values);
+        }
+
         friend class TestAbstractGuiJob;
         friend class TestGuiCommChannel;
 };
@@ -164,12 +169,5 @@ class AbstractGuiJob : public AbstractJob {
 using AbstractGuiJobSharedConst = std::function<std::shared_ptr<AbstractGuiJob>(
         std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
         std::shared_ptr<AbstractCommChannel> channel)>;
-
-template<class C>
-std::function<Poco::Dynamic::Var(const C &)> info2DynamicVar = [](const C &value) {
-    Poco::DynamicStruct structValue;
-    value.toDynamicStruct(structValue);
-    return structValue;
-};
 
 } // namespace KDC

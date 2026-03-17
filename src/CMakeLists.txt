@@ -35,6 +35,7 @@ add_subdirectory(libparms)
 if(NOT BUILD_LIBRARIES_ONLY)
     if(BUILD_GUI)
         add_subdirectory(gui)
+        add_subdirectory(gui4)
     endif()
     add_subdirectory(server)
 

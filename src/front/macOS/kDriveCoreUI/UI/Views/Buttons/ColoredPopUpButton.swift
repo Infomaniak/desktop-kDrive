@@ -29,8 +29,11 @@ public final class ColoredPopUpButton: NSPopUpButton {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func addItem(withTitle title: String, image: NSImage, color: NSColor) {
-        menu?.addItem(ColoredMenuItem(title: title, image: image, color: color))
+    public func addItem(withTitle title: String, image: NSImage, color: NSColor?, representedObject: Any? = nil) {
+        let item = ColoredMenuItem(title: title, image: image, color: color ?? ColorToken.Drive.defaultColor.asNSColor)
+        item.representedObject = representedObject
+
+        menu?.addItem(item)
     }
 }
 

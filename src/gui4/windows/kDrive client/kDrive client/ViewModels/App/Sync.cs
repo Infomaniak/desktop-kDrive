@@ -39,10 +39,10 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _supportOnlineMode = true;
         private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
+        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
         private bool _syncTypeMigrationInProgress = false;
-        private ObservableCollection<Errors.BaseError> _syncErrors = new();
         private SyncFileItem? _lastActivity;
 
         // Sync UI properties
@@ -56,6 +56,8 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     return SyncStatus.Offline;
                 }
+                if (_syncStatus == SyncStatus.Error)
+                    return SyncStatus.Paused;
                 return _syncStatus;
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
@@ -85,7 +87,6 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     LastActivity = null;
                 }
-
             };
         }
 
@@ -131,12 +132,13 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncType SyncType
         {
             get => _syncType;
-            set {
+            set
+            {
                 SetPropertyInUIThread(ref _syncType, value);
                 SetPropertyInUIThread(ref _isTypeOnline, value == SyncType.Online, nameof(IsTypeOnline));
             }
         }
-     
+
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
@@ -152,15 +154,18 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncActivities;
         }
 
+        // The list of sync and node errors
+        public ObservableCollection<Error> SyncErrors = new();
+
+        public SyncErrorStates SyncErrorState
+        {
+            get => _syncErrorState;
+            private set => SetPropertyInUIThread(ref _syncErrorState, value);
+        }
+
         public Drive Drive
         {
             get => _drive;
-        }
-
-        public ObservableCollection<Errors.BaseError> SyncErrors
-        {
-            get => _syncErrors;
-            set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
         public SyncFileItem? LastActivity
@@ -194,6 +199,81 @@ namespace Infomaniak.kDrive.ViewModels
             await Task.Delay(5000); // TODO: Replace with actual implementation
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
+        }
+
+        public async Task AddErrorAsync(Error error)
+        {
+            if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync {DbId}: Ignoring error {error.ExitCode} - {error.Path} with level {error.ErrorLevel}");
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
+            await Utility.RunOnUIThread(() => SyncErrors.Add(error));
+            RefreshErrorState();
+        }
+
+        public async Task RemoveErrorAsync(Error error, bool refreshErrorState = true)
+        {
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
+            await Utility.RunOnUIThread(() =>
+            {
+                if (!SyncErrors.Remove(error))
+                    Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
+            });
+
+            if (refreshErrorState)
+                RefreshErrorState();
+        }
+
+        public async Task ClearAllErrorsAsync()
+        {
+            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+            foreach (var error in SyncErrors)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                await RemoveErrorAsync(error, false);
+            }
+            RefreshErrorState();
+        }
+
+        public void RefreshErrorState()
+        {
+            if (SyncErrors.Count == 0)
+            {
+                SyncErrorState = SyncErrorStates.Undefined;
+                return;
+            }
+
+            foreach (var error in SyncErrors)
+            {
+                SyncErrorState = error.ExitCause switch
+                {
+                    Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
+                    Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
+                    Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
+                    Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
+                    Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
+                    Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
+                    _ => SyncErrorStates.Undefined
+                };
+                if (error.ExitCode == ExitCode.InvalidToken)
+                {
+                    SyncErrorState = SyncErrorStates.LoggingError;
+                }
+
+                if (SyncErrorState != SyncErrorStates.Undefined)
+                {
+                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
+                    return;
+                }
+            }
+
+            if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
+            {
+                //SyncErrorState = SyncErrorStates.LoggedOut;
+            }
         }
     }
 }

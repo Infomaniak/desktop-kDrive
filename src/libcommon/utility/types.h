@@ -36,6 +36,8 @@
 #include <variant>
 #include <signal.h>
 
+#include <Poco/DynamicStruct.h>
+
 #include <QDebug>
 
 namespace KDC {
@@ -175,6 +177,7 @@ struct SyncNameHashFunction {
 using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
 using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
 using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to<>>;
+using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
 
 //
 // Enums
@@ -282,6 +285,7 @@ enum class NodeStatus {
     PartiallyProcessed,
     Processed,
     ConflictOpGenerated,
+    ToDelete,
     EnumEnd
 };
 
@@ -339,45 +343,6 @@ enum class SignalType {
 #ifndef Q_OS_WIN
     Bus = SIGBUS
 #endif
-};
-
-enum class SyncNodeType {
-    Undefined = 0,
-    BlackList, // Nodes that are excluded from sync
-    WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-               // nodes in none of those lists are implicitly whitelisted
-    UndecidedList, // Considered as blacklisted until user action
-    TmpRemoteBlacklist, // Blacklisted temporarily
-    TmpLocalBlacklist, // Blacklisted temporarily
-    EnumEnd
-};
-
-enum class SyncStatus {
-    Undefined,
-    Starting,
-    Running,
-    Idle,
-    PauseAsked,
-    Paused,
-    StopAsked,
-    Stopped,
-    Error,
-    EnumEnd
-};
-
-enum class SyncStep {
-    None = 0,
-    Idle,
-    UpdateDetection1, // Compute operations
-    UpdateDetection2, // Update Trees
-    Reconciliation1, // Platform Inconsistency Checker
-    Reconciliation2, // Conflict Finder
-    Reconciliation3, // Conflict Resolver
-    Reconciliation4, // Operation Generator
-    Propagation1, // Sorter
-    Propagation2, // Executor
-    Done,
-    EnumEnd
 };
 
 enum class UploadSessionType {
@@ -665,6 +630,9 @@ struct VersionInfo {
             buildMinOsVersion.clear();
             downloadUrl.clear();
         }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+
 
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;

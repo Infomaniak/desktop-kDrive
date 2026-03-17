@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "utility_base.h"
 #include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
@@ -24,35 +25,11 @@
 #include <system_error>
 #include <sys/types.h>
 
-#if defined(KD_MACOS)
-#include <sys/statvfs.h>
-#include <sys/mount.h>
-#elif defined(KD_LINUX)
-#include <sys/statvfs.h>
-#include <sys/statfs.h>
-#elif defined(KD_WINDOWS)
-#include <fileapi.h>
-#endif
-
 #include <fstream>
 #include <random>
 #include <regex>
 #include <sstream>
 #include <signal.h>
-
-#if defined(KD_WINDOWS)
-#include <Poco/Util/WinRegistryKey.h>
-#endif
-
-#ifndef KD_WINDOWS
-#include <utf8proc.h>
-#endif
-
-#ifdef ZLIB_FOUND
-#include <zlib.h>
-#endif
-
-#include "utility_base.h"
 
 #include <QDir>
 #include <QTranslator>
@@ -65,14 +42,33 @@
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
 
-#if defined(Q_OS_MAC)
-#include <mach-o/dyld.h>
-#endif
-
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+#include <sys/statvfs.h>
+#include <uuid/uuid.h>
+#endif
+
+#if defined(KD_MACOS)
+#include <sys/mount.h>
+#include <mach-o/dyld.h>
+#elif defined(KD_LINUX)
+#include <sys/statfs.h>
+#elif defined(KD_WINDOWS)
+#include <fileapi.h>
+#include <Poco/Util/WinRegistryKey.h>
+#endif
+
+#ifndef KD_WINDOWS
+#include <utf8proc.h>
+#endif
+
+#ifdef ZLIB_FOUND
+#include <zlib.h>
+#endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -106,7 +102,7 @@ static std::default_random_engine gen(rd());
 
 std::string CommonUtility::generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
                                                 const int length /*= 10*/) {
-    const std::lock_guard<std::mutex> lock(_generateRandomStringMutex);
+    const std::scoped_lock lock(_generateRandomStringMutex);
 
     std::string tmp;
     tmp.reserve(static_cast<size_t>(length));
@@ -141,6 +137,16 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
 
     return generateRandomString(charArray, distrib, length);
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+std::string CommonUtility::generateUUID() {
+    uuid_t uuid = {0};
+    char uuidStr[37] = {0}; // 36 characters + '\0'
+    uuid_generate(uuid);
+    uuid_unparse(uuid, uuidStr);
+    return uuidStr;
+}
+#endif
 
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);
@@ -1375,12 +1381,6 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
         case KDC::SyncNodeType::BlackList:
             // List of remote directories excluded from sync.
             return ReplicaSide::Remote;
-        case KDC::SyncNodeType::WhiteList:
-            // List of large remote directories explicitly approved by the user.
-            return ReplicaSide::Remote;
-        case KDC::SyncNodeType::UndecidedList:
-            // List of large remote directories not yet approved by the user.
-            return ReplicaSide::Remote;
         case KDC::SyncNodeType::TmpRemoteBlacklist:
             // List of remote items temporarily excluded from sync.
             return ReplicaSide::Remote;
@@ -1421,7 +1421,7 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::stri
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
     b64in >> std::noskipws; // Does not stop decoding on space characters
-    b64in >> value;
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {

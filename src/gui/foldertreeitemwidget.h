@@ -65,7 +65,6 @@ class FolderTreeItemWidget : public QTreeWidget {
         QString _nodeId;
         bool _displayRoot;
         QSet<QString> _oldBlackList;
-        QSet<QString> _oldUndecidedList;
         static const QColor _folderIconColor;
         static const QSize _folderIconSize;
         static const QColor _sizeTextColor;
@@ -81,7 +80,6 @@ class FolderTreeItemWidget : public QTreeWidget {
         QSet<const QTreeWidgetItem *> _newlyBlackListedItems;
 
         void initUI();
-        QString iconPath(const QString &folderName);
         QColor iconColor(const QString &folderName);
         void setFolderIcon();
         void setFolderIcon(QTreeWidgetItem *item, const QString &folderName);
@@ -89,7 +87,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         QTreeWidgetItem *findFirstChild(QTreeWidgetItem *parent, const QString &text);
         void insertNode(QTreeWidgetItem *parent, const NodeInfo &nodeInfo);
         void updateDirectories(QTreeWidgetItem *item, const QString &nodeId, QList<NodeInfo> list);
-        ExitCode updateBlackUndecidedSet();
+        ExitCode updateBlacklistSet();
         void createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset);
         void removeChildNodeFromSet(const QString &nodeId, QSet<QString> &blackset);
         void createWhiteSet(QTreeWidgetItem *parentItem, QSet<QString> &whiteSet);

@@ -20,7 +20,7 @@ import Foundation
 import InfomaniakDI
 
 public protocol XPCQueryFetcherProtocol {
-    func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response?
+    func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response
 }
 
 struct XPCQueryFetcher: XPCQueryFetcherProtocol {
@@ -31,9 +31,10 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
     enum QueryError: Error {
         case noReplyData
+        case unableToDecodeReply(parsingError: Error)
     }
 
-    public func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response? {
+    public func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
         let requestData = try encoder.encode(request)
 
         let guiConnection = try await xpcConnectionProvider.guiConnection
@@ -41,8 +42,13 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
             throw QueryError.noReplyData
         }
 
-        let decodedMessage = try? decoder.decode(Response.self, from: replyData)
-        IKLogger.data.log("recv callback: \(String(describing: decodedMessage))")
-        return decodedMessage
+        do {
+            //IKLogger.data.log("recv raw: \(String(data: replyData, encoding: .utf8))")
+            let decodedMessage = try decoder.decode(Response.self, from: replyData)
+            IKLogger.data.log("recv callback: \(String(describing: decodedMessage))")
+            return decodedMessage
+        } catch {
+            throw QueryError.unableToDecodeReply(parsingError: error)
+        }
     }
 }

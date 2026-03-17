@@ -127,6 +127,18 @@ struct SyncProgress {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
+        enum class PauseCaller {
+            User = 0,
+            Sync,
+            EnumEnd
+        };
+
+        enum class DbBehaviorAfterStop {
+            Keep = 0,
+            Remove,
+            EnumEnd
+        };
+
         SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
@@ -196,7 +208,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          \param startDelay represents the time (expressed in seconds) the SyncPalWorker must wait before starting.
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
-        void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+        void stop(PauseCaller caller = PauseCaller::Sync, DbBehaviorAfterStop behavior = DbBehaviorAfterStop::Keep);
 
 
         /* The synchronization will be paused once the ongoing sync reach the Idle state.
@@ -231,7 +243,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
-        ExitCode cancelAllDlDirectJobs(bool quit);
+        ExitCode cancelAllDlDirectJobs();
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 
@@ -255,9 +267,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          tailored to the context.
          \return The exit info of the function.
          */
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause = ExitCause::FileAccessError);
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
-                                        std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
+        [[nodiscard]] ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
+                                                      ExitCause cause = ExitCause::FileAccessError);
+        [[nodiscard]] ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
+                                                      std::shared_ptr<Node> &localBlacklistedNode,
+                                                      std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();

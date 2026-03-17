@@ -1,0 +1,64 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Cocoa
+import kDriveCore
+import kDriveCoreUI
+import kDriveResources
+
+final class SidebarHeaderView: NSView {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupView()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+
+    private func setupView() {
+        let imageView = NSImageView(image: KDriveResources.kdriveAppIcon.image)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.imageScaling = .scaleProportionallyUpOrDown
+        addSubview(imageView)
+
+        let textField = NSTextField(labelWithString: Constants.appName)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.font = NSFont.Tokens.title3Emphasized
+        textField.textColor = ColorToken.Text.primary.asNSColor
+        textField.backgroundColor = .clear
+        addSubview(textField)
+
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            imageView.topAnchor.constraint(equalTo: topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            imageView.widthAnchor.constraint(equalToConstant: 24),
+            imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
+            textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: AppPadding.padding8),
+            textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+            textField.trailingAnchor.constraint(greaterThanOrEqualTo: trailingAnchor)
+        ])
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    SidebarHeaderView()
+}

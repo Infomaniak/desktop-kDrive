@@ -46,7 +46,7 @@ ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
         readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValue(inParamsNodeId, _nodeId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncGetPublicLinkUrlJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -54,7 +54,6 @@ ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
 }
 
 ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsLinkUrl, _linkUrl);
 
     return ExitCode::Ok;
@@ -63,7 +62,7 @@ ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
 ExitInfo SyncGetPublicLinkUrlJob::process() {
     const auto exitCode = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::getLinkUrl");
+        LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl");
         AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }

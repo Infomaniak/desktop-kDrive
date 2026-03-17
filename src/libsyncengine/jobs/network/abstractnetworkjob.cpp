@@ -46,15 +46,12 @@
 
 namespace KDC {
 
-std::string AbstractNetworkJob::_userAgent = std::string();
+const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
-AbstractNetworkJob::AbstractNetworkJob() {
-    if (_userAgent.empty()) {
-        _userAgent = KDC::CommonUtility::userAgentString();
-    }
-
+AbstractNetworkJob::AbstractNetworkJob() :
+    _requestUuid(CommonUtility::generateUUID()) {
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
@@ -102,6 +99,42 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
             return true;
         default:
             return false;
+    }
+}
+
+void AbstractNetworkJob::logRequestInfo() {
+    if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
+        LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
+        return;
+    }
+
+    LOG_DEBUG(_logger, "*** Request headers: ***");
+    LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
+    LOG_DEBUG(_logger, "Content-Type: " << contentType());
+    LOG_DEBUG(_logger, "Accept: " << acceptHeader());
+    LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        if (headerKey == "Authorization") continue;
+        LOG_DEBUG(_logger, headerKey << ": " << headerValue);
+    }
+    if (!_data.empty()) {
+        LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
+    }
+
+    if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
+
+    LOG_DEBUG(_logger, "*** Body: ***");
+    LOG_DEBUG(_logger, _data);
+}
+
+void AbstractNetworkJob::logReplyInfo() {
+    if (!isExtendedLog() || httpResponse().empty()) return;
+
+    LOG_DEBUG(_logger, "*** Reply headers: ***");
+
+    Poco::Net::NameValueCollection nvc(httpResponse());
+    for (auto it = nvc.begin(); it != nvc.end(); ++it) {
+        LOG_DEBUG(_logger, it->first << ": " << it->second);
     }
 }
 
@@ -234,7 +267,7 @@ bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) cons
 
 bool AbstractNetworkJob::hasErrorApi() const {
     if (hasHttpError()) return true;
-    if (_errorCode.empty()) return false;
+    if (!_backError.isValidError()) return false;
     return true;
 }
 
@@ -258,7 +291,7 @@ void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
 }
 
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         // Redirection case
@@ -282,7 +315,7 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
 }
 
 void AbstractNetworkJob::clearSession() {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         try {
@@ -322,19 +355,22 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
     // Set headers
     req.set("User-Agent", _userAgent);
-    req.setContentType(getContentType());
-    for (const auto &header: _rawHeaders) {
-        req.add(header.first, header.second);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
     }
 
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
+    logRequestInfo();
 
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
             stream.push_back(_session->sendRequest(req));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
@@ -350,7 +386,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Send data
     std::string::const_iterator itBegin = _data.begin();
     while (itBegin != _data.end()) {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (isAborted()) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborting HTTPS session");
             return {};
@@ -380,7 +416,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
             (void) stream.emplace_back(_session->receiveResponse(_httpResponse));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
@@ -407,6 +443,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
     LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << httpResponse().getStatus() << " / "
                                   << httpResponse().getReason());
+    logReplyInfo();
 
     if (Utility::isError500(httpResponse().getStatus())) {
         std::string replyBody;
@@ -419,7 +456,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             try {
-                const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+                const std::scoped_lock lock(_mutexSession);
                 return handleResponse(stream[0].get());
             } catch (const std::exception &e) {
                 LOG_WARN(_logger, "handleResponse exception: " << errorText(e));
@@ -444,7 +481,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             std::string replyBody;
             getStringFromStream(stream[0].get(), replyBody);
             LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-            (void) extractJsonError(replyBody);
+            _backError = BackError(replyBody);
             return {ExitCode::BackError, ExitCause::HttpErr};
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
@@ -522,7 +559,7 @@ ExitInfo AbstractNetworkJob::followRedirect() {
 }
 
 ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
     if (_session) {
         int err = _session->socket().getError();
         std::string errMsg = Poco::Error::getMessage(err);
@@ -612,21 +649,6 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
         jsonObj->stringify(os);
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
-    return ExitCode::Ok;
-}
-
-ExitInfo AbstractNetworkJob::extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
-    Poco::JSON::Object::Ptr jsonObj;
-    if (const auto exitInfo = extractJson(replyBody, jsonObj); !exitInfo) return exitInfo;
-
-    errorObjPtr = jsonObj->getObject(errorKey);
-    if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
-        return {};
-    }
-
     return ExitCode::Ok;
 }
 

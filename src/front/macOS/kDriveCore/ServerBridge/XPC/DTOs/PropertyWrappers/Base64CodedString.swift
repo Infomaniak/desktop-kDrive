@@ -18,34 +18,74 @@
 
 import Foundation
 
-@propertyWrapper
-public struct Base64CodedString: Codable {
-    public var wrappedValue: String
+@usableFromInline
+enum Base64Helper {
+    @usableFromInline
+    static func decode(_ base64: String) throws -> String {
+        guard let data = Data(base64Encoded: base64),
+              let decoded = String(data: data, encoding: .utf8)
+        else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: [],
+                    debugDescription: "Invalid base64 string"
+                )
+            )
+        }
+        return decoded
+    }
 
-    // Decode: base64 string → regular string
+    @usableFromInline
+    static func encode(_ string: String) -> String {
+        Data(string.utf8).base64EncodedString()
+    }
+}
+
+@propertyWrapper
+public struct Base64CodedString: Codable, Sendable {
+    public let wrappedValue: String
+
+    public init(wrappedValue: String) {
+        self.wrappedValue = wrappedValue
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let base64Encoded = try container.decode(String.self)
+        let encoded = try container.decode(String.self)
+        wrappedValue = try Base64Helper.decode(encoded)
+    }
 
-        guard let data = Data(base64Encoded: base64Encoded),
-              let decoded = String(data: data, encoding: .utf8) else {
-            throw DecodingError.dataCorruptedError(
-                in: container,
-                debugDescription: "Invalid base64 string"
-            )
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(Base64Helper.encode(wrappedValue))
+    }
+}
+
+@propertyWrapper
+public struct Base64CodedStrings: Codable, Sendable {
+    public let wrappedValue: [String]
+
+    public init(wrappedValue: [String]) {
+        self.wrappedValue = wrappedValue
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        var decoded: [String] = []
+
+        while !container.isAtEnd {
+            let encoded = try container.decode(String.self)
+            try decoded.append(Base64Helper.decode(encoded))
         }
 
         wrappedValue = decoded
     }
 
-    // Encode: regular string → base64 string
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        let base64Encoded = Data(wrappedValue.utf8).base64EncodedString()
-        try container.encode(base64Encoded)
-    }
-
-    public init(wrappedValue: String) {
-        self.wrappedValue = wrappedValue
+        var container = encoder.unkeyedContainer()
+        for string in wrappedValue {
+            try container.encode(Base64Helper.encode(string))
+        }
     }
 }
+

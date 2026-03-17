@@ -59,7 +59,8 @@ struct IoHelper {
     public:
         class DirectoryIterator {
             public:
-                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError);
+                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
+                                  bool skipPermissionDenied = true);
 
                 DirectoryIterator() = default;
                 //! Get the next directory entry.
@@ -78,6 +79,13 @@ struct IoHelper {
                 SyncPath _directoryPath;
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
+
+        enum class PathCheckOption {
+            Sensitive = 0,
+            Insensitive,
+            EnumEnd
+        };
+
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
@@ -101,12 +109,20 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+        static bool deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+
+        //! Returns the location of the kDrive temporary subdirectory.
+        /*!
+         \param directoryPath is the path to the kDrive temporary directory. Empty if there is an error.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
 
         //! Returns the directory location suitable for temporary files.
         /*! This directory is deleted at the end of the application run.
-          ! The location of this folder can be enforce with the env variable: KDRIVE_CACHE_PATH
+          ! The location of this folder can be enforced with the env variable: KDRIVE_CACHE_PATH
          \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -144,13 +160,14 @@ struct IoHelper {
          successfully retrieved, nullptr otherwise.
          !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
-        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists);
+        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
@@ -192,9 +209,10 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param exists is a boolean set with true if an item indicated by the path exists, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept;
+        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Checks if the item indicated by the specified path exists and has the specified node identifier.
         /*!
@@ -203,10 +221,11 @@ struct IoHelper {
          \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
          false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
-                                                    NodeId &otherNodeId, IoError &ioError) noexcept;
+                                                    NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -317,16 +336,29 @@ struct IoHelper {
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param iterator is the directory iterator that is set with the directory iterator for the specified path.
+         \param skipPermissionDenied is a flag that enables the omission of permission-less directories.
          \return true if no unexpected error occurred, false otherwise.
         */
-        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
-                                         DirectoryIterator &iterator) noexcept;
+        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError, DirectoryIterator &iterator,
+                                         bool skipPermissionDenied = true) noexcept;
+
+        //! Create a recursive directory iterator for the specified path. The iterator can be used to iterate over the items in
+        //! the directory.
+        /*!
+         \param path is the file system path of the directory to iterate over.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \param iterator is the directory iterator that is set with the directory iterator for the specified path.
+         \param skipPermissionDenied is a flag that enables the omission of permission-less directories.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getRecursiveDirectoryIterator(const SyncPath &path, IoError &ioError, DirectoryIterator &iterator,
+                                                  bool skipPermissionDenied = true) noexcept;
 
         //! Create a directory entry for the specified path.
         /*!
          * \param path is the file system path of the directory entry to create.
          * \param ioError holds the error returned when an underlying OS API call fails.
-         * \entry is the directory entry that is set with the directory entry for the specified path.
+         * \param entry is the directory entry that is set with the directory entry for the specified path.
          * \return true if no unexpected error occurred, false otherwise.
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
@@ -543,7 +575,12 @@ struct IoHelper {
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
+        static std::function<bool(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                  IoError &ioError)>
+                _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                                  IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
         static void setCacheDirectoryPath(const SyncPath &newPath);

@@ -31,7 +31,6 @@ SignalSyncAddedJob::SignalSyncAddedJob(const SyncInfo &syncInfo) :
 }
 
 ExitInfo SignalSyncAddedJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
     return ExitCode::Ok;
 }

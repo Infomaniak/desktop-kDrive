@@ -123,6 +123,12 @@
   <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
@@ -133,12 +139,6 @@
     <value />
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
-    <value />
-  </data>
-  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
@@ -201,28 +201,10 @@
   <data name="Global_Minute" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
-    <value />
-  </data>
   <data name="Global_SupportUrl" xml:space="preserve">
     <value />
   </data>
   <data name="Global_FAQUrl" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
@@ -232,9 +214,6 @@
     <value />
   </data>
   <data name="Global_LearnMoreButton.Content" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
     <value />
   </data>
   <data name="  /!\  Ressource naming convention" xml:space="preserve">
@@ -267,7 +246,22 @@
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
     <value />
   </data>
   <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
@@ -291,6 +285,9 @@
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
@@ -298,6 +295,9 @@
     <value />
   </data>
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
@@ -357,6 +357,9 @@
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value />
   </data>
@@ -379,6 +382,18 @@
     <value />
   </data>
   <data name="Page_HomePage_Hello.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
@@ -456,10 +471,10 @@
   <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+  <data name="CC_LicensesHyperLink_Text.TextTemplate" xml:space="preserve">
     <value />
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
@@ -475,7 +490,10 @@
   <data name="Page_SettingsPage_Notifications.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
+  <data name="CC_LicensesHyperLink_HyperLinkButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_LicensesHyperLink_HyperLinkButton.NavigateUri" xml:space="preserve">
     <value />
   </data>
   <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
@@ -496,10 +514,16 @@
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_SaveButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_CancelButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -745,9 +769,6 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
     <value />
   </data>
@@ -785,6 +806,18 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value />
   </data>
 </root>

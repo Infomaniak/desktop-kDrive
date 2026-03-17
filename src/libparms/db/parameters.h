@@ -62,13 +62,6 @@ class PARMS_EXPORT Parameters {
         inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
         inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
 
-        inline bool useBigFolderSizeLimit() const { return _useBigFolderSizeLimit; }
-        inline void setUseBigFolderSizeLimit(bool useBigFolderSizeLimit) { _useBigFolderSizeLimit = useBigFolderSizeLimit; }
-
-        inline int64_t bigFolderSizeLimit() const { return _bigFolderSizeLimit; }
-        inline int64_t bigFolderSizeLimitB() const { return _bigFolderSizeLimit * 1024 * 1024; }
-        inline void setBigFolderSizeLimit(int64_t bigFolderSizeLimit) { _bigFolderSizeLimit = bigFolderSizeLimit; }
-
         inline bool darkTheme() const { return _darkTheme; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
 
@@ -108,32 +101,38 @@ class PARMS_EXPORT Parameters {
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
+        bool sentryEnabled() const { return _sentryEnabled; }
+        void setSentryEnabled(bool value) { _sentryEnabled = value; }
+
+        bool matomoEnabled() const { return _matomoEnabled; }
+        void setMatomoEnabled(bool value) { _matomoEnabled = value; }
+
         static int _uploadSessionParallelJobsDefault;
 
     private:
-        Language _language;
-        bool _monoIcons;
-        bool _autoStart;
-        bool _moveToTrash;
-        NotificationsDisabled _notificationsDisabled;
-        bool _useLog;
-        LogLevel _logLevel;
-        bool _extendedLog;
-        bool _purgeOldLogs;
+        Language _language{Language::Default};
+        bool _monoIcons{false};
+        bool _autoStart{true};
+        bool _moveToTrash{true};
+        NotificationsDisabled _notificationsDisabled{NotificationsDisabled::Never};
+        bool _useLog{true};
+        LogLevel _logLevel{LogLevel::Debug};
+        bool _extendedLog{false};
+        bool _purgeOldLogs{true};
         ProxyConfig _proxyConfig;
-        bool _useBigFolderSizeLimit;
-        int64_t _bigFolderSizeLimit; // MB
-        bool _darkTheme;
-        bool _showShortcuts;
+        bool _darkTheme{false};
+        bool _showShortcuts{true};
         std::string _updateFileAvailable;
         std::string _updateTargetVersion;
         std::string _updateTargetVersionString;
-        bool _autoUpdateAttempted;
+        bool _autoUpdateAttempted{false};
         std::string _seenVersion;
         std::shared_ptr<std::vector<char>> _dialogGeometry;
-        int _maxAllowedCpu;
+        int _maxAllowedCpu{50};
         int _uploadSessionParallelJobs;
         VersionChannel _distributionChannel{VersionChannel::Prod};
+        bool _sentryEnabled{false};
+        bool _matomoEnabled{false};
 };
 
 } // namespace KDC

@@ -73,18 +73,45 @@
 
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
-                            <!-- Presentation -->
-                            <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation"
-                                                  Background="{ThemeResource LayerFillColorDefault}">
-                                <TreeView x:Name="sampleTreeView"
-                                          SelectionMode="Multiple" />
+                            <toolKit:SettingsCard HorizontalAlignment="Stretch"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  ContentAlignment="Vertical">
+                                <!-- Presentation -->
+                                <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0"
+                                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header"
+                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                                   TextWrapping="Wrap" />
+
+                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description"
+                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <controls:SyncExclusionSelector x:Name="ExclSelector"
+                                                                    Grid.Row="1"
+                                                                    DriveId="{x:Bind ManagedDrive.DriveId, Mode=OneWay}"
+                                                                    UserDbId="{x:Bind ManagedDrive.Account.User.DbId}"
+                                                                    SyncDbId="{x:Bind ManagedDrive.MainSync.DbId, Mode=OneWay}"
+                                                                    HorizontalAlignment="Stretch" />
+                                </Grid>
                             </toolKit:SettingsCard>
-                            <!-- TODO -->
-                            <toolKit:SettingsCard Header="Here will be the folder selection custom control wich will be implemented later"
-                                                  Background="{ThemeResource LayerFillColorDefault}" />
-                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-                                <Button Content="Sauvegarder mes choix"
-                                        Style="{ThemeResource AccentButtonStyle}" />
+                            <toolKit:SettingsCard Visibility="{x:Bind ExclSelector.HasPendingChanges, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                                    <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_CancelButton"
+                                            Click="CancelSyncSelection_click"
+                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
+                                    <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_SaveButton"
+                                            Style="{ThemeResource AccentButtonStyle}"
+                                            Click="SaveSyncSelection_click"
+                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
+                                </StackPanel>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
@@ -124,7 +151,8 @@
                                                  HorizontalAlignment="Stretch"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
                                                  Checked="LiteSyncRadioButtonChecked"
-                                                 Unchecked="LiteSyncRadioButtonUnchecked" />
+                                                 Unchecked="LiteSyncRadioButtonUnchecked"
+                                                 IsEnabled="False" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
@@ -151,7 +179,8 @@
                                                  GroupName="SyncModeRadioGroup"
                                                  MinWidth="0"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
-                                                 HorizontalAlignment="Stretch" />
+                                                 HorizontalAlignment="Stretch"
+                                                 IsEnabled="False" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
@@ -188,7 +217,7 @@
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </toolKit:SettingsCard.HeaderIcon>
                 </toolKit:SettingsCard>
-                
+
                 <!-- Advanced syncs -->
                 <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_AdvancedSyncs"
                                       IsClickEnabled="True"

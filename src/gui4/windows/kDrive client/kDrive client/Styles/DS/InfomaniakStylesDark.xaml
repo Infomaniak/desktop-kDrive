@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
@@ -14,15 +14,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see<http://www.gnu.org/licenses/> .
- -->
+ * along with this program.  If not, see<http://www.gnu.org/licenses/> .-->
 
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- kSuite gradient colors -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  kSuite gradient colors  -->
     <Color x:Key="kSuite.Gradient.lightblue">#1DDDFD</Color>
     <Color x:Key="kSuite.Gradient.darkblue">#337CFF</Color>
     <Color x:Key="kSuite.Gradient.purple">#A055FC</Color>
     <Color x:Key="kSuite.Gradient.pink">#F34BBB</Color>
     <Color x:Key="kSuite.Gradient.orange">#FD8C3D</Color>
+
+    <!--  status colors  -->
+    <Color x:Key="colors.status.medium.success">#5FC96B</Color>
+    <Color x:Key="colors.status.medium.warning">#FFB632</Color>
+    <Color x:Key="colors.status.medium.error">#FC776D</Color>
+    <Color x:Key="colors.status.medium.information">#48E0FF</Color>
 </ResourceDictionary>

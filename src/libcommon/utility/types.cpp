@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
+
 #include "types.h"
+
+#include "utility.h"
+
+#include <string>
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -154,6 +158,8 @@ std::string toString(const ExitCause e) {
             return "InvalidSize";
         case ExitCause::FileExists:
             return "FileExists";
+        case ExitCause::DirExists:
+            return "DirExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:
@@ -178,8 +184,8 @@ std::string toString(const ExitCause e) {
             return "FileSizeMismatch";
         case ExitCause::UploadNotTerminated:
             return "UploadNotTerminated";
-        case ExitCause::UnableToCreateVfs:
-            return "UnableToCreateVfs";
+        case ExitCause::UnableToStartVfs:
+            return "UnableToStartVfs";
         case ExitCause::NotEnoughMemory:
             return "NotEnoughMemory";
         case ExitCause::FileTooBig:
@@ -190,6 +196,8 @@ std::string toString(const ExitCause e) {
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::LiteSyncExtNotRunning:
+            return "LiteSyncExtNotRunning";
         case ExitCause::NotPlaceHolder:
             return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
@@ -224,6 +232,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::MissingReplyData:
+            return "MissingReplyData";
         default:
             return noConversionStr;
     }
@@ -332,6 +342,8 @@ std::string toString(const NodeStatus e) {
             return "Processed";
         case NodeStatus::ConflictOpGenerated:
             return "ConflictOpGenerated";
+        case NodeStatus::ToDelete:
+            return "ToDelete";
         default:
             return noConversionStr;
     }
@@ -381,10 +393,6 @@ std::string toString(const SyncNodeType e) {
             return "Undefined";
         case SyncNodeType::BlackList:
             return "BlackList";
-        case SyncNodeType::WhiteList:
-            return "WhiteList";
-        case SyncNodeType::UndecidedList:
-            return "UndecidedList";
         case SyncNodeType::TmpRemoteBlacklist:
             return "TmpRemoteBlacklist";
         case SyncNodeType::TmpLocalBlacklist:
@@ -889,6 +897,14 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
     const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
     const long index = it - exitCodeList.begin();
     return index;
+}
+
+void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, "channel", channel);
+    CommonUtility::writeValueToStruct(dstruct, "tag", tag);
+    CommonUtility::writeValueToStruct(dstruct, "buildVersion", buildVersion);
+    CommonUtility::writeValueToStruct(dstruct, "buildMinOsVersion", buildMinOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, "downloadUrl", downloadUrl);
 }
 
 } // namespace KDC

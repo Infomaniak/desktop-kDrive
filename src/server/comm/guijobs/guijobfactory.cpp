@@ -37,6 +37,42 @@
 #include "syncstartafterloginjob.h"
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
+#include "syncgetprivatelinkurljob.h"
+#include "syncsetsupportsvirtualfilesjob.h"
+#include "syncsetrootpinstatejob.h"
+#include "blacklistednodelistjob.h"
+#include "blacklistednodesetlistjob.h"
+#include "nodepathjob.h"
+#include "nodeinfojob.h"
+#include "nodesubfoldersjob.h"
+#include "nodesubfolders2job.h"
+#include "nodefoldersizejob.h"
+#include "nodecreatemissingfoldersjob.h"
+#include "errorinfolistjob.h"
+#if defined(KD_MACOS)
+#include "exclappgetlistjob.h"
+#include "exclappsetlistjob.h"
+#include "exclappgetfetchingapplistjob.h"
+#endif
+#include "excltemplgetexcludedjob.h"
+#include "excltemplgetlistjob.h"
+#include "excltemplsetlistjob.h"
+#include "excltemplpropagatechangejob.h"
+#include "parametersinfojob.h"
+#include "parametersupdatejob.h"
+#include "utilityactivateloadinfojob.h"
+#include "utilityfindgoodpathfornewsyncjob.h"
+#include "utilitybestvfsavailablemodejob.h"
+#include "utilityispathvalidfornewsyncjob.h"
+#include "utilitysetappstatejob.h"
+#include "utilitygetappstatejob.h"
+#include "utilitysendlogtosupportjob.h"
+#include "utilitycancellogtosupportjob.h"
+#include "utilitygetlogestimatedsizejob.h"
+#include "updaterversioninfojob.h"
+#include "updaterstatejob.h"
+#include "updaterstartinstallerjob.h"
+#include "updaterskipversionjob.h"
 
 namespace KDC {
 
@@ -59,8 +95,45 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
-                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>}};
+                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
+                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
+                {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
+                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
+                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+                {RequestNum::NODE_PATH, makeShared<NodePathJob>},
+                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
+                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
+                {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
+                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+#if defined(KD_MACOS)
+                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
+                {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
+                {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
+#endif
+                {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
+                {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
+                {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
+                {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
+                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
+                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
+                {RequestNum::UTILITY_BESTVFSAVAILABLEMODE, makeShared<UtilityBestVfsAvailableModeJob>},
+                {RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, makeShared<UtilityFindGoodPathForNewSyncJob>},
+                {RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, makeShared<UtilityIsPathValidForNewSyncJob>},
+                {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
+                {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
+                {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
+                {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
+                {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
+                {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
+                {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
+                {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},
+                {RequestNum::UPDATER_SKIP_VERSION, makeShared<UpdaterSkipVersionJob>}};
 }
+
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
                                                     int requestId, const Poco::DynamicStruct &inParams,

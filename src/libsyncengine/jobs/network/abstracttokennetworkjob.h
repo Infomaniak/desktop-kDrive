@@ -75,7 +75,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
     protected:
         std::string getSpecificUrl() override;
-        std::string getContentType() override;
+        std::string contentType() override;
 
         ExitInfo handleResponse(std::istream &is) override;
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;

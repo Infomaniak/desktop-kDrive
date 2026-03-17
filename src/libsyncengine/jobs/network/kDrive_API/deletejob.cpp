@@ -56,8 +56,8 @@ ExitInfo DeleteJob::canRun() {
     bool existsWithSameId = false;
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId,
-                                                   ioError)) {
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId, ioError,
+                                                   IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
         return ExitCode::SystemError;
     }
@@ -68,7 +68,7 @@ ExitInfo DeleteJob::canRun() {
     if (existsWithSameId) {
         FileStat filestat;
         ioError = IoError::Success;
-        if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
+        if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
             return ExitCode::SystemError;
         }

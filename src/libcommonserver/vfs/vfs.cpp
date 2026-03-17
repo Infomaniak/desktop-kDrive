@@ -34,9 +34,7 @@ using namespace KDC;
 
 Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent),
-    _vfsSetupParams(vfsSetupParams),
-    _extendedLog(false),
-    _started(false) {}
+    _vfsSetupParams(vfsSetupParams) {}
 
 void Vfs::starVfsWorkers() {
     // Start hydration/dehydration workers
@@ -134,7 +132,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
 
     bool exists = false;
     IoError ioError = IoError::Unknown;
-    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError};
     }

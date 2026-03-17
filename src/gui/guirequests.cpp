@@ -64,7 +64,7 @@ ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbI
     paramsStream << limit;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -83,7 +83,7 @@ ExitCode GuiRequests::getConflictList(const int driveDbId, const QList<ConflictT
     paramsStream << filter;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -377,14 +377,13 @@ ExitCode GuiRequests::getSyncStatus(const int syncDbId, SyncStatus &status) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::getBlacklistedNodeIdSet(const int syncDbId, QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    paramsStream << type;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_LIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_LIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -396,15 +395,14 @@ ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, 
     return exitCode;
 }
 
-ExitCode GuiRequests::setSyncIdSet(const int syncDbId, const SyncNodeType type, const QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::setBlacklistedNodeIdSet(const int syncDbId, const QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    paramsStream << type;
     paramsStream << syncIdSet;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_SETLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_SETLIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -465,10 +463,9 @@ ExitCode GuiRequests::getNodePath(const int syncDbId, const QString &nodeId, QSt
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(const int driveDbId, const QString &basePath, QString &path, QString &error) {
+ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
     paramsStream << basePath;
 
     QByteArray results;
@@ -672,27 +669,9 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::propagateSyncListChange(const int syncDbId, const bool restartSync) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << restartSync;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY, {}, results)) {
         return ExitCode::SystemError;
     }
 

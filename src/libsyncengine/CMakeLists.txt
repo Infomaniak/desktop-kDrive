@@ -17,7 +17,6 @@ set(syncengine_SRCS
     db/syncdb.h db/syncdb.cpp
     db/syncdbreadonlycache.h db/syncdbreadonlycache.cpp
     db/syncnode.h db/syncnode.cpp
-    olddb/oldsyncdb.h olddb/oldsyncdb.cpp
     # Login
     login/login.h login/login.cpp
     # Jobs
@@ -38,6 +37,7 @@ set(syncengine_SRCS
     jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     ### API v2 jobs
+    jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
@@ -78,7 +78,8 @@ set(syncengine_SRCS
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp
-    jobs/local/localdeletejob.h jobs/local/localdeletejob.cpp
+    jobs/local/genericlocaldeletejob.h jobs/local/genericlocaldeletejob.cpp
+    jobs/local/synclocaldeletejob.h jobs/local/synclocaldeletejob.cpp
     jobs/local/localcreatedirjob.h jobs/local/localcreatedirjob.cpp
     # Update Detection
     ## File System Observer
