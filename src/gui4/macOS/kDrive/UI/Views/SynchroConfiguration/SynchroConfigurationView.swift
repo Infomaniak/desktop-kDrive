@@ -16,20 +16,48 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct SynchroConfigurationView: View {
-    @State private var isShowingFileImporter = false
+    @Environment(\.dismiss) private var dismiss
 
     @State private var synchroLocation: URL?
+    @State private var isShowingSynchroLocationError = false
+
+    @State private var isShowingFileImporter = false
 
     let drive: any UIDriveRepresentation
+    let localFolder: URL?
+
+    private var driveLocationTipColor: Color {
+        return isShowingSynchroLocationError ? ColorToken.Status.Medium.warning.asColor : ColorToken.Text.tertiary.asColor
+    }
 
     var body: some View {
         Form {
+            Section {
+                HStack {
+                    BadgeView(
+                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        color: ColorToken.Drive.defaultColor.asColor
+                    )
+
+                    Text(drive.name)
+                        .font(.Tokens.bodyEmphasized)
+                        .foregroundStyle(ColorToken.Text.secondary.asColor)
+                }
+            } header: {
+                VStack {
+                    Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
+                        .font(.Tokens.headline)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                }
+            }
+
             Section {
                 VStack(alignment: .leading, spacing: AppPadding.padding16) {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
@@ -60,7 +88,7 @@ struct SynchroConfigurationView: View {
 
                     Text(KDriveLocalizable.onboardingAdvancedSettingsDriveCustomizeLocationTip)
                         .font(.Tokens.subheadline)
-                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        .foregroundStyle(driveLocationTipColor)
                 }
             }
 
@@ -88,29 +116,46 @@ struct SynchroConfigurationView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonValidate) {}
+                Button(KDriveLocalizable.buttonValidate) {
+                    dismiss()
+                }
             }
 
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonCancel, role: .cancel) {}
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    dismiss()
+                }
             }
+        }
+        .onAppear {
+            synchroLocation = localFolder
+        }
+        .task {
+            guard synchroLocation == nil else { return }
+            synchroLocation = try? await SyncCreationService().preferredLocalPath(for: drive.name)
         }
     }
 
     private func handleSelectedDirectory(_ result: Result<URL, Error>) {
-        guard case .success(let url) = result else {
+        isShowingSynchroLocationError = false
+
+        guard case .success(let selectedURL) = result else {
             return
         }
 
-        let folderContent = try? FileManager.default.contentsOfDirectory(atPath: url.path)
-        guard folderContent?.isEmpty != false else {
-            return
-        }
+        let oldValue = synchroLocation
+        synchroLocation = selectedURL
 
-        synchroLocation = url
+        Task {
+            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
+            if isPathValid == false {
+                synchroLocation = oldValue
+                isShowingSynchroLocationError = true
+            }
+        }
     }
 }
 
 #Preview {
-    SynchroConfigurationView(drive: PreviewHelper.drive1)
+    SynchroConfigurationView(drive: PreviewHelper.drive1, localFolder: nil)
 }
