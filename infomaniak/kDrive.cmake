@@ -2,7 +2,7 @@ set( APPLICATION_NAME       "kDrive" )
 set( APPLICATION_SHORTNAME  "kDrive" )
 set( APPLICATION_EXECUTABLE "kDrive" )
 set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
-set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+set( APPLICATION_CLIENTV4_EXECUTABLE "kdrive_qml" )
 set( APPLICATION_DOMAIN     "infomaniak.com" )
 set( APPLICATION_VENDOR     "Infomaniak Network SA" )
 
