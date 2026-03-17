@@ -5,7 +5,7 @@ endif()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick QuickControls2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -54,6 +54,8 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
 
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     Qt6::Core
+    Qt6::Gui
+    Qt6::Network
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
