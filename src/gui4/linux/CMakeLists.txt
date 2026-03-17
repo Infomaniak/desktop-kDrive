@@ -1,11 +1,9 @@
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") # This project should only be loaded on Linux
     message(FATAL_ERROR "CMake panic - Trying to load the Linux-specific GUI project on a non-Linux system. ")
-    return() # This project should only be loaded on Linux
 endif()
 
-project(kdrive-gui LANGUAGES C CXX)
+project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 
@@ -29,11 +27,11 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
 )
 
 
-qt_add_executable(kdrive-gui
+qt_add_executable(${APPLICATION_CLIENTV4_EXECUTABLE}
     ${GUI_SOURCE_FILES}
 )
 
-qt_add_qml_module(kdrive-gui
+qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
     URI KDriveLinux
     VERSION 1.0
     QML_FILES
@@ -42,10 +40,10 @@ qt_add_qml_module(kdrive-gui
         ${GUI_QML_RESOURCE_FILES}
 )
 
-target_link_libraries(kdrive-gui PRIVATE
+target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     Qt6::Quick
 )
 
-target_include_directories(kdrive-gui PRIVATE
+target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
