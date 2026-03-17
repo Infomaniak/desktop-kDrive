@@ -15,8 +15,15 @@ set(GUI_SOURCE_FILES# C++ files for the GUI application
     src/types/ThemeMode.h
 )
 
+set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
+    qml/tokens/IKColors.qml
+)
+
+set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 set(GUI_QML_FILES # .qml files for the app
     qml/Main.qml
+    ${GUI_QML_SINGLETON_FILES}
 )
 
 set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files, etc.)
