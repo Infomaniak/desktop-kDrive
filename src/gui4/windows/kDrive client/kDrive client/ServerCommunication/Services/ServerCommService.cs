@@ -877,6 +877,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(parentNodeId))
+                parentNodeId = "1";
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = drive.UserDbId,
+                [JsonKeys.DriveId] = drive.DriveId,
+                [JsonKeys.ParentNodeId] = Utility.ToBase64String(parentNodeId),
+                [JsonKeys.RelativePath] = Utility.ToBase64String(path),
+
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CREATEMISSINGFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeId))
+                return null;
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new Base64StringJsonConverter());
+            NodeId? nodeId = data.Params[JsonKeys.NodeId].Deserialize<NodeId>(options);
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}");
+                return null;
+            }
+
+            return nodeId;
+        }
+
         public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject

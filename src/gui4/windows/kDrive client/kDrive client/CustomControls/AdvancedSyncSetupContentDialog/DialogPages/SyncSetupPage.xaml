@@ -208,7 +208,7 @@
                     <Button Grid.Row="0"
                             Grid.Column="0"
                             Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelectFolder')}"
-                            Click="SelectRemoteFolder_Click" />
+                            Click="RemoteLocationButton_click" />
 
                     <Border Grid.Row="0"
                             Grid.Column="1"
@@ -216,7 +216,7 @@
                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                             HorizontalAlignment="Left"
-                            Visibility="{x:Bind IsStringEmptyToVisibility(AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, x:True), Mode=OneWay}">
+                            Visibility="{x:Bind IsStringEmptyToVisibility(AdvancedSyncSetupContentDialogVM.NewSync.RemotePath, x:True), Mode=OneWay}">
                         <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />

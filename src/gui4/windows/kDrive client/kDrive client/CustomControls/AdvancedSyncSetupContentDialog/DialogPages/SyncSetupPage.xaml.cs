@@ -129,9 +129,9 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             control.IsEnabled = true;
         }
 
-        private void Exclusionbutton_click(object sender, RoutedEventArgs e)
+        private void RemoteLocationButton_click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(SyncExclusionPage), AdvancedSyncSetupContentDialogVM);
+            Frame.Navigate(typeof(RemoteLocationSelectionPage), AdvancedSyncSetupContentDialogVM);
         }
 
         private Visibility IsStringEmptyToVisibility(string str, bool invert = false)
@@ -140,11 +140,6 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             if (invert)
                 isEmpty = !isEmpty;
             return isEmpty ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void SelectRemoteFolder_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
