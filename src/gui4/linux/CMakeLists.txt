@@ -17,6 +17,9 @@ set(GUI_SOURCE_FILES# C++ files for the GUI application
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
     qml/tokens/IKColors.qml
+    qml/tokens/IKSpacing.qml
+    qml/tokens/IKRadius.qml
+    qml/tokens/IKFonts.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
