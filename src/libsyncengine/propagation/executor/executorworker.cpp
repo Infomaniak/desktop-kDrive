@@ -1947,7 +1947,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << Utility::formatSyncName(node->name()) << L"\" removed from DB");
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncName(node->name()) << L" removed from DB");
     }
 
     return ExitCode::Ok;

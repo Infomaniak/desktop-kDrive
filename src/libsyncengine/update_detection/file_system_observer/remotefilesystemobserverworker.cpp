@@ -242,8 +242,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId
             }
         }
 
-        if (!JsonParserUtility::extractValue(dataObj, hasMoreKey, hasMore)) {
+        if (!JsonParserUtility::extractValue(resObj, hasMoreKey, hasMore)) {
             exitInfo = ExitCode::BackError;
+            break;
         }
 
         // Look for new actions
@@ -612,7 +613,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
 
     ActionInfoMap actionInfoMap;
     if (const auto exitInfo = createActionInfoMap(actionArray, actionInfoMap); !exitInfo) return exitInfo;
-    if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoMap)) return exitInfo;
+    if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoMap); !exitInfo) return exitInfo;
 
     // Filter out items whose names contain unsupported characters.
     for (auto it = actionInfoMap.begin(); it != actionInfoMap.end();) {
