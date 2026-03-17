@@ -23,22 +23,22 @@ Window {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: IKColors._themeMode === ThemeMode.System ? "System"
-                    : IKColors._themeMode === ThemeMode.Light  ? "Light"
+                text: ThemeMode._mode === ThemeMode.System ? "System"
+                    : ThemeMode._mode === ThemeMode.Light  ? "Light"
                     : "Dark"
-                color: IKColors.textPrimary
+                color: IKColors.contentPrimary
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Toggle theme"
                 onClicked: {
-                    if (IKColors._themeMode === ThemeMode.System)
-                        IKColors.setThemeMode(ThemeMode.Dark)
-                    else if (IKColors._themeMode === ThemeMode.Dark)
-                        IKColors.setThemeMode(ThemeMode.Light)
+                    if (ThemeMode._mode === ThemeMode.System)
+                        ThemeMode.set(ThemeMode.Dark)
+                    else if (ThemeMode._mode === ThemeMode.Dark)
+                        ThemeMode.set(ThemeMode.Light)
                     else
-                        IKColors.setThemeMode(ThemeMode.System)
+                        ThemeMode.set(ThemeMode.System)
                 }
             }
         }
