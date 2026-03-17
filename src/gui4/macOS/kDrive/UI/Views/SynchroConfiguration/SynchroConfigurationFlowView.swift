@@ -34,13 +34,13 @@ struct SynchroConfiguration: Sendable {
     }
 
     let drive: any UIDriveRepresentation
-    let localFolder: URL?
-    let blackList: [String]
+    var localFolder: URL?
+    var blackList: [String]
 }
 
 final class SynchroConfigurationFlowViewModel: ObservableObject {
-    @Published var state = SynchroConfigurationFlowState.driveSelector
-    @Published var configurations = [SynchroConfiguration.ID: SynchroConfiguration]()
+    @Published private(set) var state = SynchroConfigurationFlowState.driveSelector
+    @Published private(set) var configurations = [SynchroConfiguration.ID: SynchroConfiguration]()
 
     func setupConfigurations(_ newConfigurations: [SynchroConfiguration]) {
         for configuration in newConfigurations {
@@ -49,6 +49,32 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
 
         if configurations.count == 1, let configuration = configurations.values.first {
             state = .configureSynchro(configuration)
+        }
+    }
+
+    func updateConfiguration(_ id: SynchroConfiguration.ID, localFolder: URL? = nil, blackList: [String]? = nil) {
+        guard let configuration = configurations[id] else {
+            return
+        }
+
+        let updatedConfiguration = SynchroConfiguration(
+            drive: configuration.drive,
+            localFolder: localFolder ?? configuration.localFolder,
+            blackList: blackList ?? configuration.blackList
+        )
+        configurations[configuration.id] = updatedConfiguration
+    }
+
+    func navigate(to state: SynchroConfigurationFlowState) {
+        switch state {
+        case .driveSelector:
+            self.state = .driveSelector
+        case .configureSynchro(let synchroConfiguration):
+            guard let freshSynchro = configurations[synchroConfiguration.id] else { return }
+            self.state = .configureSynchro(freshSynchro)
+        case .selectFolders(let synchroConfiguration):
+            guard let freshSynchro = configurations[synchroConfiguration.id] else { return }
+            self.state = .selectFolders(freshSynchro)
         }
     }
 }
@@ -66,7 +92,7 @@ struct SynchroConfigurationFlowView: View {
             case .configureSynchro(let synchroConfiguration):
                 SynchroConfigurationView(configuration: synchroConfiguration)
             case .selectFolders(let synchroConfiguration):
-                Text("Hoy")
+                SelectSynchroFoldersView(configuration: synchroConfiguration)
             }
         }
         .environmentObject(viewModel)
