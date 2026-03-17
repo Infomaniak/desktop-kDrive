@@ -3789,7 +3789,7 @@ bool AppServer::startClient() {
 #if defined(__APPLE__)
         if (ParametersCache::instance()->parameters().distributionChannel() ==
             VersionChannel::Internal) { // The SwiftUI GUI is currently only for internal builds
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.app").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
             
             IoError ioError = IoError::Success;
             bool exists = false;
