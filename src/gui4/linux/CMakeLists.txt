@@ -32,7 +32,7 @@ qt_add_executable(${APPLICATION_CLIENTV4_EXECUTABLE}
 )
 
 qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
-    URI KDriveLinux
+    URI KDriveQml
     VERSION 1.0
     QML_FILES
         ${GUI_QML_FILES}
