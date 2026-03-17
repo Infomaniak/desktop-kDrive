@@ -26,7 +26,7 @@ Window {
                 text: ThemeMode._mode === ThemeMode.System ? "System"
                     : ThemeMode._mode === ThemeMode.Light  ? "Light"
                     : "Dark"
-                color: IKColors.contentPrimary
+                color: IKColors.textPrimary
             }
 
             Button {
