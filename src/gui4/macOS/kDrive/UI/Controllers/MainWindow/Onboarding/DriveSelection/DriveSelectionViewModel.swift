@@ -85,7 +85,7 @@ final class DriveSelectionViewModel: ObservableObject {
                     }
 
                     let syncOrigin = SyncOrigin.availableDrive(availableDrive)
-                    let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin)
+                    let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin.drive.name)
 
                     let newSyncCandidate = NewSyncCandidate(
                         origin: syncOrigin,

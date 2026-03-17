@@ -54,7 +54,7 @@ struct AccountDriveCellView: View {
                 Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
                     .sheet(isPresented: $isShowingSynchronizeDriveView) {
-                        SynchroConfigurationView(drive: drive)
+                        SynchroConfigurationView(drive: drive, localFolder: nil)
                     }
             }
         }

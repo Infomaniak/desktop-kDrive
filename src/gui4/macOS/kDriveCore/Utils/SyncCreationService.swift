@@ -22,7 +22,7 @@ public enum SyncOrigin: Sendable {
     case storedDrive(Drive)
     case availableDrive(AvailableDrive)
 
-    var drive: any DriveRepresentation {
+    public var drive: any DriveRepresentation {
         switch self {
         case .storedDrive(let drive):
             return drive
@@ -60,13 +60,13 @@ public struct NewSyncCandidate {
 
 public protocol SyncCreator: Sendable {
     func create(from sync: NewSyncCandidate) async throws -> SyncInfo
-    func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL
+    func preferredLocalPath(for driveName: String) async throws -> URL
 }
 
 public final class SyncCreationService: SyncCreator {
     private let useLightSyncIfPossible: Bool
 
-    init(useLightSyncIfPossible: Bool = true) {
+    public init(useLightSyncIfPossible: Bool = true) {
         self.useLightSyncIfPossible = useLightSyncIfPossible
     }
 
@@ -84,21 +84,21 @@ public final class SyncCreationService: SyncCreator {
         return syncInfo
     }
 
-    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL {
-        let defaultPath = computeDefaultFolderPath(drive: syncOrigin.drive)
+    public func preferredLocalPath(for driveName: String) async throws -> URL {
+        let defaultPath = computeDefaultFolderPath(driveName: driveName)
         let path = try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath.path)
         return URL(fileURLWithPath: path)
     }
 
-    private func computeDefaultFolderPath(drive: any DriveRepresentation) -> URL {
+    private func computeDefaultFolderPath(driveName: String) -> URL {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
 
-        var driveName = drive.name
+        var name = driveName
         if driveName.lowercased().hasPrefix("kdrive") {
-            driveName = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
+            name = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
         }
 
-        let folderName = "kDrive \(driveName)".trimmingCharacters(in: .whitespacesAndNewlines)
+        let folderName = "kDrive \(name)".trimmingCharacters(in: .whitespacesAndNewlines)
 
         return homeDirectory.appendingPathComponent(folderName)
     }
@@ -143,7 +143,7 @@ public final class SyncCreationService: SyncCreator {
         if let providedPath = sync.localFolder {
             return providedPath
         } else {
-            return try await preferredLocalPath(for: sync.origin)
+            return try await preferredLocalPath(for: sync.origin.drive.name)
         }
     }
 
