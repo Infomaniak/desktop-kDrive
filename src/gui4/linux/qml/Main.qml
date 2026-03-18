@@ -52,11 +52,11 @@ Window {
                 text: "Toggle theme"
                 onClicked: {
                     if (ThemeMode._mode === ThemeMode.System)
-                        ThemeMode.set(ThemeMode.Dark)
+                        ThemeMode.set(ThemeMode.Dark);
                     else if (ThemeMode._mode === ThemeMode.Dark)
-                        ThemeMode.set(ThemeMode.Light)
+                        ThemeMode.set(ThemeMode.Light);
                     else
-                        ThemeMode.set(ThemeMode.System)
+                        ThemeMode.set(ThemeMode.System);
                 }
             }
         }

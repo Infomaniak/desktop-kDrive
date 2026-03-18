@@ -21,9 +21,9 @@ import QtQuick
 
 QtObject {
     // T1 — Primitives
-    readonly property real s2:  2
-    readonly property real s4:  4
-    readonly property real s8:  8
+    readonly property real s2: 2
+    readonly property real s4: 4
+    readonly property real s8: 8
     readonly property real s12: 12
     readonly property real s16: 16
     readonly property real s24: 24
