@@ -30,12 +30,14 @@ QtObject {
 
     function set(mode) {
         if (mode === ThemeMode.System || mode === ThemeMode.Light || mode === ThemeMode.Dark)
-            _mode = mode // TODO add logging if the mode arg is invalid.
+            _mode = mode; // TODO add logging if the mode arg is invalid.
     }
 
     readonly property bool isDark: {
-        if (_mode === ThemeMode.Light) return false
-        if (_mode === ThemeMode.Dark)  return true
-        return Qt.styleHints.colorScheme === Qt.Dark
+        if (_mode === ThemeMode.Light)
+            return false;
+        if (_mode === ThemeMode.Dark)
+            return true;
+        return Qt.styleHints.colorScheme === Qt.Dark;
     }
 }
