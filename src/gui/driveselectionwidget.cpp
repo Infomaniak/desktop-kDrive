@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,16 +116,16 @@ void DriveSelectionWidget::onClick(bool checked) {
     if (_gui->driveInfoMap().size() > 0) {
         MenuWidget *menu = new MenuWidget(MenuWidget::List, this);
 
-        for (auto const &driveInfoMapElt: _gui->driveInfoMap()) {
+        for (auto const &[driveDbId, driveInfo]: _gui->driveInfoMap()) {
             QWidgetAction *selectDriveAction = new QWidgetAction(this);
-            selectDriveAction->setProperty(driveIdProperty, driveInfoMapElt.first);
-            MenuItemWidget *driveMenuItemWidget = new MenuItemWidget(driveInfoMapElt.second.name());
-            driveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg", driveInfoMapElt.second.color());
+            selectDriveAction->setProperty(driveIdProperty, static_cast<qint64>(driveDbId));
+            MenuItemWidget *driveMenuItemWidget = new MenuItemWidget(driveInfo.name());
+            driveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg", driveInfo.color());
 
-            const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoMapElt.second.accountDbId());
+            const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfo.accountDbId());
             if (accountInfoMapIt == _gui->accountInfoMap().end()) {
                 qCWarning(lcDriveSelectionWidget)
-                        << "Account not found in account map for accountDbId=" << driveInfoMapElt.second.accountDbId();
+                        << "Account not found in account map for accountDbId=" << driveInfo.accountDbId();
                 return;
             }
 
@@ -138,7 +138,7 @@ void DriveSelectionWidget::onClick(bool checked) {
 
             KDC::GuiUtility::StatusInfo statusInfo;
             statusInfo._disconnected = !userInfoMapIt->second.connected();
-            statusInfo._status = driveInfoMapElt.second.status();
+            statusInfo._status = driveInfo.status();
             driveMenuItemWidget->setRightIcon(QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo)), _menuRightIconSize);
 
             selectDriveAction->setDefaultWidget(driveMenuItemWidget);

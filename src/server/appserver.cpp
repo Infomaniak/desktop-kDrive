@@ -1037,11 +1037,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::USER_DBIDLIST: {
-            QList<UserDbId> list;
-            ExitCode exitCode = ServerRequests::getUserDbIdList(list);
+            QList<UserDbId> tmpList;
+            ExitCode exitCode = ServerRequests::getUserDbIdList(tmpList);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getUserDbIdList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            }
+
+            QList<qint64> list;
+            for (const auto userDbId: tmpList) {
+                list << static_cast<qint64>(userDbId);
             }
 
             resultStream << toInt(exitCode);

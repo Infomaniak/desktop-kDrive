@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
         if (syncInfoMap.size() == 1) {
             auto const &syncInfoMapElt = syncInfoMap.begin();
-            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
+            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), static_cast<qint64>(syncInfoMapElt->first));
             (void) connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
         } else if (syncInfoMap.size() > 1) {
             foldersMenuItemWidget->setHasSubmenu(true);
@@ -235,7 +235,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
             for (auto const &[syncId, syncInfo]: syncInfoMap) {
                 auto *openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncId);
+                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), static_cast<qint64>(syncId));
                 auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);

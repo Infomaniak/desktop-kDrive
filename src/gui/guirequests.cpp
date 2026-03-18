@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,16 +28,21 @@ bool GuiRequests::isConnnected() {
     return CommClient::isConnected();
 }
 
-ExitCode GuiRequests::getUserDbIdList(QList<int> &list) {
+ExitCode GuiRequests::getUserDbIdList(QList<UserDbId> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::USER_DBIDLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
     auto exitCode = ExitCode::Unknown;
+    QList<qint64> tmpList;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> list;
+    resultStream >> tmpList;
+
+    for (const auto userDbId: tmpList) {
+        list << static_cast<UserDbId>(userDbId);
+    }
 
     return exitCode;
 }
@@ -344,7 +349,7 @@ ExitCode GuiRequests::syncStop(const SyncDbId syncDbId) {
 ExitCode GuiRequests::getSyncStatus(const SyncDbId syncDbId, SyncStatus &status) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
+    paramsStream << static_cast<qint64>(syncDbId);
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_STATUS, params, results)) {
@@ -556,7 +561,9 @@ ExitCode GuiRequests::addSync(const UserDbId userDbId, const AccountId accountId
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode == ExitCode::Ok) {
-        resultStream >> syncDbId;
+        qint64 tmp = 0;
+        resultStream >> tmp;
+        syncDbId = static_cast<SyncDbId>(tmp);
     }
 
     return exitCode;
@@ -584,7 +591,9 @@ ExitCode GuiRequests::addSync(const DriveDbId driveDbId, const QString &localFol
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode == ExitCode::Ok) {
-        resultStream >> syncDbId;
+        qint64 tmp = 0;
+        resultStream >> tmp;
+        syncDbId = tmp;
     }
 
     return exitCode;
@@ -608,7 +617,7 @@ ExitCode GuiRequests::startSyncs(const UserDbId userDbId) {
 }
 
 ExitCode GuiRequests::deleteSync(const SyncDbId syncDbId) {
-    const auto params = QByteArray(ArgsReader(syncDbId));
+    const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId)));
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_DELETE, params, results, COMM_LONG_TIMEOUT)) {

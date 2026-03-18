@@ -537,7 +537,7 @@ void AppClient::onWizardDone(int res) {
     if (res == QDialog::Accepted) {
         // If one account is configured: enable autostart
         ExitCode exitCode;
-        QList<int> userDbIdList;
+        QList<UserDbId> userDbIdList;
         exitCode = GuiRequests::getUserDbIdList(userDbIdList);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient) << "Error in Requests::getUserDbIdList";

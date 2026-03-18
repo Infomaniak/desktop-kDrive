@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ struct GuiRequests {
 
         // C/S requests (access to DB)
         // Use COMM_SHORT_TIMEOUT
-        static ExitCode getUserDbIdList(QList<int> &list);
+        static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);

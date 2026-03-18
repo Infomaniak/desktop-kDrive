@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ class AddDriveWizard : public CustomDialog {
         QSet<QString> _blackList;
         QSet<QString> _whiteList;
         QString _localFolderPath;
-        qint64 _userDbId{0};
+        UserDbId _userDbId{0};
         DriveAvailableInfo _driveInfo;
-        qint64 _syncDbId{0};
+        SyncDbId _syncDbId{0};
         KDC::GuiUtility::WizardAction _action;
 
         void setButtonIcon(const QColor &value) override;
@@ -86,8 +86,9 @@ class AddDriveWizard : public CustomDialog {
         void initUI();
         void start();
         void startNextStep(bool backward = false);
-        bool addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath, const QString &serverFolderPath,
-                     bool liteSync, const QSet<QString> &blackList, const QSet<QString> &whiteList);
+        bool addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
+                     const QString &serverFolderPath, bool liteSync, const QSet<QString> &blackList,
+                     const QSet<QString> &whiteList);
 
     private slots:
         void onStepTerminated(bool next = true);
