@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 13 Mar 2026 16:13:05 +0100 
+  Exported at: Wed, 18 Mar 2026 16:47:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -117,6 +117,9 @@
   </data> 
   <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
     <value>Passen Sie den Speicherort des Ordners Ihres Computers auf kDrive an :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Wählen Sie den Ort des Ordners auf kDrive aus</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
     <value>KDrive-Steckplatz</value> 
@@ -330,6 +333,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Ordner auswählen</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Einen Ort auswählen</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
     <value>ausgewählt</value> 
@@ -904,6 +910,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>Sie verwenden kDrive auf einem neuen Computer, nachdem Sie von einem Backup wiederhergestellt haben.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Neuer Ordner</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>neue Synchronisation</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
@@ -1172,11 +1181,11 @@ das auf Ihre Bedürfnisse zugeschnitten ist.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Schön, dass Sie wieder da sind!</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>Sie haben einige Ordner ausgeschlossen</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>Alle kDrive-Ordner</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Benutzerdefinierte Auswahl</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>Die schnelle und sichere private Cloud, die in der Schweiz gehostet wird.

@@ -57,6 +57,26 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(UriSourceStringProperty, value);
         }
 
+
+        public static readonly DependencyProperty IsEnabledProperty =
+            DependencyProperty.Register(
+                nameof(IsEnabled),
+                typeof(bool),
+                typeof(SvgIcon),
+                new PropertyMetadata(true, OnIsEnabledChanged));
+
+        private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SvgIcon icon && icon._isLoaded)
+                icon.ScheduleRefresh();
+        }
+
+        public bool IsEnabled
+        {
+            get => (bool)GetValue(IsEnabledProperty);
+            set => SetValue(IsEnabledProperty, value);
+        }
+
         private static void OnUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgIcon icon && icon._isLoaded)
@@ -186,7 +206,8 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ApplyForeground(SvgDocument svgDoc)
         {
-            if (Foreground is SolidColorBrush solid)
+            var foreground = IsEnabled ? Foreground : ResolveDisabledForeground();
+            if (foreground is SolidColorBrush solid)
             {
                 var color = System.Drawing.Color.FromArgb(solid.Color.A, solid.Color.R, solid.Color.G, solid.Color.B);
                 foreach (var elem in svgDoc.Descendants().OfType<SvgVisualElement>())
@@ -197,6 +218,14 @@ namespace Infomaniak.kDrive.CustomControls
                         elem.Stroke = new SvgColourServer(color);
                 }
             }
+        }
+
+        private SolidColorBrush? ResolveDisabledForeground()
+        {
+            const string key = "TextFillColorDisabledBrush";
+            if (Application.Current.Resources.TryGetValue(key, out var res) && res is SolidColorBrush appBrush)
+                return appBrush;
+            return Foreground as SolidColorBrush;
         }
 
         private (double Width, double Height) ComputeRasterSize(SvgDocument svgDoc)

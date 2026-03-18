@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 13 Mar 2026 16:13:05 +0100 
+  Exported at: Wed, 18 Mar 2026 16:47:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -117,6 +117,9 @@
   </data> 
   <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
     <value>Personnalisez l'emplacement du dossier de votre ordinateur sur kDrive :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Choisissez l'emplacement du dossier sur kDrive</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
     <value>Emplacement kDrive</value> 
@@ -330,6 +333,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Sélectionner les dossiers</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Sélectionner un emplacement</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
     <value>sélectionné</value> 
@@ -902,6 +908,9 @@ Il s’ouvrira dans votre navigateur.</value>
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>Vous utilisez kDrive sur un nouvel ordinateur, après une restauration depuis une sauvegarde.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Nouveau dossier</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>nouvelle synchronisation</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
@@ -1119,7 +1128,7 @@ Si le problème persiste, contactez notre équipe d'assistance.</value>
     <value>Configurer la synchronisation pour ce kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
-    <value>Personnalisez lvemplacement de votre dossier kDrive sur votre ordinateur :</value> 
+    <value>Personnalisez l’emplacement de votre dossier kDrive sur votre ordinateur :</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
     <value>Le dossier sélectionné doit être vide pour que la synchronisation fonctionne correctement.</value> 
@@ -1170,11 +1179,11 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Content de vous retrouver !</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>Vous avez exclu des dossiers</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>Tous les dossiers kDrive</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Sélection personnalisée</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>Le cloud privé rapide et sécurisé, hébergé en Suisse.

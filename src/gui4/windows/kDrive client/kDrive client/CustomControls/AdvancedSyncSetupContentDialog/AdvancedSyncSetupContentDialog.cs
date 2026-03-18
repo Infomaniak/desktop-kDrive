@@ -16,7 +16,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         private readonly AdvancedSyncSetupContentDialogVM _advancedSyncSetupContentDialogVM;
-        public AdvancedSyncSetupResult Result { get; private set; }
+        public AdvancedSyncSetupResult Result { get; private set; } = AdvancedSyncSetupResult.Cancelled;
 
         public AdvancedSyncSetupContentDialog(XamlRoot xamlRoot, IDrive drive)
         {

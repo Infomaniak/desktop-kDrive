@@ -28,7 +28,7 @@
             <Setter Property="VerticalAlignment"
                     Value="Center" />
             <Setter Property="Margin"
-                    Value="{StaticResource Infomaniak.Style.Thickness.Left.S}" />
+                    Value="{StaticResource Infomaniak.Style.Thickness.Left.XXS}" />
             <Setter Property="Padding"
                     Value="{StaticResource Infomaniak.Style.Thickness.Right.S}" />
         </Style>
@@ -36,14 +36,16 @@
         <DataTemplate x:DataType="local:TreeItem2"
                       x:Key="FolderTemplate">
             <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}"
-                          IsExpanded="{x:Bind IsRoot}">
+                          IsExpanded="{x:Bind IsRoot}"
+                          PointerEntered="TreeViewItem_PointerEntered"
+                          PointerExited="TreeViewItem_PointerExited">
                 <Grid Style="{StaticResource TreeItemGridStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="28" />
                     </Grid.ColumnDefinitions>
 
                     <local:SvgIcon Grid.Column="0"
@@ -53,7 +55,7 @@
                                    VerticalAlignment="Center"
                                    Height="16"
                                    Width="16" />
-                    
+
                     <local:SvgIcon Grid.Column="0"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
@@ -85,22 +87,22 @@
                                          VerticalAlignment="Center"
                                          IsLoading="{x:Bind Node.IsLoadingSize, Mode=OneWay}"
                                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                                         MinWidth="40"
-                                         MinHeight="14"
+                                         LoaderMinHeight="16"
+                                         LoaderMinWidth="40"
                                          DataContextChanged="SizeContentLoader_DataContextChanged"
                                          Visibility="{x:Bind IsNotRoot, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <local:ContentLoader.LoaderContent>
                             <TextBlock Text="{x:Bind Node.Size, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
-                                       VerticalAlignment="Center"
-                                       MinWidth="40" />
+                                       VerticalAlignment="Center" />
                         </local:ContentLoader.LoaderContent>
                     </local:ContentLoader>
 
                     <Button Grid.Column="4"
                             VerticalAlignment="Center"
                             Style="{ThemeResource SubtleButtonStyle}"
-                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
+                            Padding="0"
                             IsEnabled="{x:Bind CanCreateSubFolder, Mode=OneWay}"
+                            Visibility="{x:Bind CreateSubFolderButtonVisibility, Mode=OneWay}"
                             Click="CreateFolderButton_Click">
                         <local:SvgIcon Height="16"
                                        Width="16"
@@ -129,15 +131,18 @@
 
                     <controls:ContentLoader Grid.Column="1"
                                             IsLoading="False"
-                                            MinWidth="150"
-                                            Height="32"
+                                            LoaderMinWidth="150"
+                                            Width="150"
+                                            LoaderMinHeight="16"
+                                            HorizontalAlignment="Left"
                                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
                         <controls:ContentLoader.LoaderContent>
-                            <TextBox PlaceholderText="Nouveau dossier"
+                            <TextBox PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString('labelNewFolder')}"
                                      VerticalAlignment="Center"
                                      HorizontalAlignment="Left"
                                      MinWidth="150"
                                      MaxWidth="220"
+                                     LostFocus="NewItemTextBox_LostFocus"
                                      KeyDown="NewItemTextBox_KeyDown" />
                         </controls:ContentLoader.LoaderContent>
                     </controls:ContentLoader>
@@ -213,34 +218,53 @@
                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                          LoaderMinHeight="200">
         <local:ContentLoader.LoaderContent>
-            <TreeView x:Name="FolderTree"
-                      Grid.ColumnSpan="2"
-                      Grid.Row="1"
-                      ItemsSource="{x:Bind _rootLevelItems, Mode=OneWay}"
-                      SelectionMode="Single"
-                      HorizontalAlignment="Stretch"
-                      Expanding="TreeView_Expanding"
-                      CanDrag="False"
-                      CanDragItems="False"
-                      CanReorderItems="False"
-                      ItemTemplateSelector="{StaticResource FolderTreeViewItemTemplateSelector_}"
-                      SelectionChanged="FolderTree_SelectionChanged">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelName')}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}" />
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           HorizontalAlignment="Right"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelsize')}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Margin="0,0,56,0" />
 
-                <!-- Container should stretch horrizontally -->
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="HorizontalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="VerticalContentAlignment"
-                                Value="Center" />
-                        <Setter Property="Padding"
-                                Value="0" />
-                        <Setter Property="Margin"
-                                Value="0" />
-
-                    </Style>
-                </TreeView.ItemContainerStyle>
-            </TreeView>
+                <TreeView x:Name="FolderTree"
+                          Grid.ColumnSpan="2"
+                          Grid.Row="1"
+                          ItemsSource="{x:Bind _rootLevelItems, Mode=OneWay}"
+                          SelectionMode="Single"
+                          HorizontalAlignment="Stretch"
+                          Expanding="TreeView_Expanding"
+                          CanDrag="False"
+                          CanDragItems="False"
+                          CanReorderItems="False"
+                          ItemTemplateSelector="{StaticResource FolderTreeViewItemTemplateSelector_}"
+                          SelectionChanged="FolderTree_SelectionChanged">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="HorizontalContentAlignment"
+                                    Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment"
+                                    Value="Center" />
+                            <Setter Property="Padding"
+                                    Value="0" />
+                            <Setter Property="Margin"
+                                    Value="0" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                </TreeView>
+            </Grid>
         </local:ContentLoader.LoaderContent>
     </local:ContentLoader>
 </UserControl>

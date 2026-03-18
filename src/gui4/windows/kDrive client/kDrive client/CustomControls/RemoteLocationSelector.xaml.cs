@@ -19,6 +19,7 @@ namespace Infomaniak.kDrive.CustomControls
         #region Private fields
         // Root level items displayed in the TreeView, it should only contain the drive itself
         private readonly ObservableCollection<TreeItem2> _rootLevelItems = [];
+        private TreeItem2? _currentFolderCreationItem;
         #endregion
 
         #region Constructor / lifecycle
@@ -153,6 +154,16 @@ namespace Infomaniak.kDrive.CustomControls
                 HasSelectedNode = true;
         }
 
+        private void RemoveCurrentFolderCreationItem()
+        {
+            if (_currentFolderCreationItem is not null && _currentFolderCreationItem.ParentItem is not null)
+            {
+                _currentFolderCreationItem.ParentItem.Children.Remove(_currentFolderCreationItem);
+                _currentFolderCreationItem.ParentItem.CanCreateSubFolder = true;
+                _currentFolderCreationItem = null;
+            }
+        }
+
         private async void CreateFolderButton_Click(object sender, RoutedEventArgs e)
         {
             Control? control = sender as Control;
@@ -169,13 +180,13 @@ namespace Infomaniak.kDrive.CustomControls
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
-
+            RemoveCurrentFolderCreationItem();
             treeItem.CanCreateSubFolder = false;
             // Create a temporary TreeItem with no Node, it will allow the user to enter the name of the new folder.
             // Once the name is entered, the real TreeItem with the Node will be created and replace the temporary one.
             TreeItem2 newItem = new TreeItem2(Drive, treeItem);
             treeItem.Children.Insert(0, newItem);
-
+            _currentFolderCreationItem = newItem;
             // Expand the parent item to make the new item visible and get its container
             TreeViewNode? node = FindNode(FolderTree.RootNodes, treeItem);
             if (node is not null)
@@ -271,10 +282,15 @@ namespace Infomaniak.kDrive.CustomControls
                 if (contentLoader is not null)
                     contentLoader.IsLoading = false;
 
-                parentTreeItem.Children.Remove(treeItem); // Remove the temporary item used for input
-                parentTreeItem.CanCreateSubFolder = true;
+                RemoveCurrentFolderCreationItem();
                 FolderTree.SelectedItem = newItem;
             }
+            else if (e.Key == Windows.System.VirtualKey.Escape)
+            {
+                e.Handled = true;
+                RemoveCurrentFolderCreationItem();
+            }
+
         }
 
         private async Task<TreeItem2?> CreateFolder(TreeItem2 parentItem, string folderName)
@@ -339,6 +355,31 @@ namespace Infomaniak.kDrive.CustomControls
             return null;
         }
 
+        private void TreeViewItem_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            TreeItem2? treeItem = (sender as FrameworkElement)?.DataContext as TreeItem2;
+            if (treeItem is not null)
+            {
+                treeItem.CreateSubFolderButtonVisibility = Visibility.Collapsed;
+            }
+
+        }
+
+        private void TreeViewItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            TreeItem2? treeItem = (sender as FrameworkElement)?.DataContext as TreeItem2;
+            if (treeItem is not null && treeItem.CanCreateSubFolder)
+            {
+                treeItem.CreateSubFolderButtonVisibility = Visibility.Visible;
+            }
+        }
+
+        private void NewItemTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox is not null && textBox.Text.Length == 0)
+                RemoveCurrentFolderCreationItem();
+        }
     }
 
     /// <summary>
@@ -352,6 +393,7 @@ namespace Infomaniak.kDrive.CustomControls
         private bool _isLoadingChildren = false;
         private bool _childrenLoaded = false;
         private bool _canCreateSubfolder = false;
+        private Visibility _createSubFolderButtonVisibility = Visibility.Collapsed;
         private bool _disposed = false;
         #endregion
 
@@ -380,6 +422,12 @@ namespace Infomaniak.kDrive.CustomControls
         {
             get => _canCreateSubfolder;
             set => SetPropertyInUIThread(ref _canCreateSubfolder, value);
+        }
+
+        public Visibility CreateSubFolderButtonVisibility
+        {
+            get => _createSubFolderButtonVisibility;
+            set => SetPropertyInUIThread(ref _createSubFolderButtonVisibility, value);
         }
 
         public IDrive Drive => _drive;

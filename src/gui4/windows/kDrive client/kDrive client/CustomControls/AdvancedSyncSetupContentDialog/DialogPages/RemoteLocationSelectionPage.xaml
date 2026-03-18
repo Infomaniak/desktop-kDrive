@@ -20,26 +20,16 @@
         <Grid.RowDefinitions>
             <!-- Title -->
             <RowDefinition Height="Auto" />
-
-            <!-- Message -->
-            <RowDefinition Height="Auto" />
-
-            <!-- Remote folder exclusion -->
+            
+            <!-- Remote folder selection -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionTitle')}"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('addAdvancedSyncRemoteFolderPageTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
-
-        <!-- Message -->
-        <TextBlock Grid.Row="1"
-                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionDescription')}"
-                   TextWrapping="WrapWholeWords"
-                   Style="{StaticResource BodyTextBlockStyle}"
-                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
+        
         <!-- Remote folder exclusion -->
         <controls:RemoteLocationSelector x:Name="RemoteLocationSelector"
                                          Drive="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive}"

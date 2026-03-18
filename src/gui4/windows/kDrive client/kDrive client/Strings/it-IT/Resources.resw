@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 13 Mar 2026 16:13:05 +0100 
+  Exported at: Wed, 18 Mar 2026 16:47:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -117,6 +117,9 @@
   </data> 
   <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
     <value>Personalizzare la posizione della cartella del computer su kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Scegliere la posizione della cartella su kDrive</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
     <value>Slot kDrive</value> 
@@ -330,6 +333,9 @@
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Selezionare le cartelle</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Selezionare una posizione</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
     <value>selezionato</value> 
@@ -902,6 +908,9 @@ Si aprirà nel browser.</value>
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>Si sta utilizzando kDrive su un nuovo computer, dopo il ripristino da un backup.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Nuova cartella</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>nuova sincronizzazione</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
@@ -1170,11 +1179,11 @@ oppure scegliete un pacchetto su misura per le vostre esigenze.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Bentornati!</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>Sono state escluse alcune cartelle</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>Tutte le cartelle di kDrive</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Selezione personalizzata</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>Il cloud privato veloce e sicuro, ospitato in Svizzera.

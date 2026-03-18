@@ -29,10 +29,7 @@
         <Grid.RowDefinitions>
             <!-- Title -->
             <RowDefinition Height="Auto" />
-
-            <!-- Drive -->
-            <RowDefinition Height="Auto" />
-
+            
             <!-- Local folder -->
             <RowDefinition Height="Auto" />
 
@@ -45,37 +42,8 @@
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
-        <!-- Drive -->
-        <Border Grid.Row="1"
-                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-                HorizontalAlignment="Left">
-            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <controls:SvgIcon Grid.Column="0"
-                                  Height="16"
-                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                  Foreground="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  VerticalAlignment="Center" />
-
-                <TextBlock Grid.Column="1"
-                           Text="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Name}"
-                           TextTrimming="CharacterEllipsis"
-                           Style="{StaticResource BodyTextBlockStyle}"
-                           VerticalAlignment="Center">
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Name}" />
-                </ToolTipService.ToolTip>
-                </TextBlock>
-            </Grid>
-        </Border>
-
         <!-- Local folder -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="1"
                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                 CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                 Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
@@ -159,7 +127,7 @@
         </Border>
 
         <!-- Remote folder -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="2"
                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                 CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                 Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
@@ -208,7 +176,7 @@
 
                     <Button Grid.Row="0"
                             Grid.Column="0"
-                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelectFolder')}"
+                            Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelectLocation')}"
                             Click="RemoteLocationButton_Click" />
 
                     <Border Grid.Row="0"
