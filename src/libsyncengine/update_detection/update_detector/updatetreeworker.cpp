@@ -1400,7 +1400,6 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     if (prevNode) {
         // Update children list
         for (const auto &[_, childNode]: prevNode->children()) {
-            // set new parent
             if (!tmpNode->insertChildren(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(childNode->name())
                                                                                         << L" parent node name="

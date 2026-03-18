@@ -68,9 +68,13 @@ void OperationGeneratorWorker::execute() {
         // Explore children even if node is processed
         for (const auto &child: currentNode->children()) {
             _queuedToExplore.push(child.second);
+            LOG_IF_FAIL(child.second->parentNode() == currentNode);
             if (child.second->parentNode() != currentNode) {
-                assert(false);
-                LOGW_SYNCPAL_WARN(_logger, L"Update of the node's father: " << SyncName2WStr(child.second->name()));
+                // Only occurs if there is a bug before.
+                sentry::Handler::captureMessage(sentry::Level::Warning, "OperationGeneratorWorker::execute",
+                                                "Invalid parent node");
+                // Fix the issue
+                LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << SyncName2WStr(child.second->name()));
                 child.second->setParentNode(currentNode);
             }
         }
@@ -243,6 +247,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     SyncOpPtr op = std::make_shared<SyncOperation>();
 
+    LOG_IF_FAIL(currentNode);
     LOG_IF_FAIL(currentNode->parentNode());
     LOG_IF_FAIL(currentNode->id().has_value());
 
