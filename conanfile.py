@@ -1,3 +1,5 @@
+import json
+import json
 import os
 import shutil
 import subprocess
@@ -191,6 +193,22 @@ class KDriveDesktop(ConanFile):
             # (checked in QtPublicCMakeVersionHelpers.cmake). Provide it via Conan instead
             # of relying on the system CMake (e.g. 3.22.1 on the CI runners).
             self.tool_requires("cmake/[>=3.25 <4]")
+
+    def _repo_version(self):
+        """Read version.json at the repo root and return a (major, minor, patch, build) tuple."""
+        version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
+        with open(version_file, "r") as f:
+            data = json.load(f)
+        v = data["Version"]
+        return v["major"], v["minor"], v["patch"], v["build"]
+
+    def _repo_version(self):
+        """Read version.json at the repo root and return a (major, minor, patch, build) tuple."""
+        version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
+        with open(version_file, "r") as f:
+            data = json.load(f)
+        v = data["Version"]
+        return v["major"], v["minor"], v["patch"], v["build"]
 
     def requirements(self):
         """
