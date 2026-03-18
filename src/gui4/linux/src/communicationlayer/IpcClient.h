@@ -21,6 +21,7 @@
 #include "libcommon/comm.h"
 
 #include <QTcpSocket>
+#include <cstdint>
 
 #include <Poco/Dynamic/Struct.h>
 
@@ -38,12 +39,12 @@ class IpcClient : public QObject {
 #else
         void connectToServer(quint16 port);
 #endif
-        int sendRequest(RequestNum num, const Poco::DynamicStruct &params = {});
+        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {});
 
     signals:
         void connected();
         void disconnected();
-        void messageReceived(int type, int id, int num, const Poco::DynamicStruct &params);
+        void messageReceived(uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct &params);
 
     private slots:
         void onConnected();
@@ -53,7 +54,7 @@ class IpcClient : public QObject {
     private:
         QTcpSocket *_socket;
         std::string _readBuffer;
-        QAtomicInt _nextId{0};
+        QAtomicInteger<int32_t> _nextId{0};
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
