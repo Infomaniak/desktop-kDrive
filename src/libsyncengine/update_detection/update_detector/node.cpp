@@ -178,6 +178,10 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
         }
     }
 
+    if (child->parentNode() != shared_from_this()) {
+        child->setParentNode(shared_from_this());
+    }
+
     _childrenById[*child->id()] = child;
 
     return true;

@@ -952,15 +952,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::DataError;
             }
 
-
-            // set new parent
-            if (!currentNode->setParentNode(parentNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name=" << SyncName2WStr(parentNode->name())
-                                                                                       << L" parent node name="
-                                                                                       << SyncName2WStr(currentNode->name()));
-                return ExitCode::DataError;
-            }
-
             // insert currentNode into children list of new parent
             if (!parentNode->insertChildren(currentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(currentNode->name())
@@ -1140,13 +1131,6 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
     // merging tmpNode's children to realNode
     for (auto &child: tmpNode->children()) {
-        if (!child.second->setParentNode(realNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name=" << SyncName2WStr(realNode->name())
-                                                                                   << L" parent node name="
-                                                                                   << SyncName2WStr(child.second->name()));
-            return false;
-        }
-
         if (!realNode->insertChildren(child.second)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(child.second->name())
                                                                                     << L" parent node name="
@@ -1361,7 +1345,7 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
     }
 
     if (!parentNode->insertChildren(node)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(node->name()).c_str()
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(node->name())
                                                                                 << L" parent node name="
                                                                                 << SyncName2WStr(parentNode->name()));
         return ExitCode::DataError;
@@ -1416,18 +1400,11 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     if (prevNode) {
         // Update children list
         for (const auto &[_, childNode]: prevNode->children()) {
+            // set new parent
             if (!tmpNode->insertChildren(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(childNode->name())
                                                                                         << L" parent node name="
                                                                                         << SyncName2WStr(tmpNode->name()));
-                return ExitCode::DataError;
-            }
-
-            // set new parent
-            if (!childNode->setParentNode(tmpNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name=" << SyncName2WStr(tmpNode->name())
-                                                                                       << L" parent node name="
-                                                                                       << SyncName2WStr(childNode->name()));
                 return ExitCode::DataError;
             }
 
