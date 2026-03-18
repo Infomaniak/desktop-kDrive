@@ -326,7 +326,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool isAdva
 
     if (ExitInfo exitInfo = checkSyncNesting(syncList, qPath, qError); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting: " << exitInfo << qError.toStdString());
-        return ExitCode::Ok;
+        return exitInfo.code() == ExitCode::InvalidSync ? ExitInfo(ExitCode::Ok) : exitInfo;
     }
 
     // If the directory exists, check if it is empty
