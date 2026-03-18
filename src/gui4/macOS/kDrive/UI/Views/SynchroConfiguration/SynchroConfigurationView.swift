@@ -36,6 +36,14 @@ struct SynchroConfigurationView: View {
         return isShowingSynchroLocationError ? ColorToken.Status.Medium.warning.asColor : ColorToken.Text.tertiary.asColor
     }
 
+    private var exclusionFoldersTip: String {
+        if configuration.blackList.isEmpty {
+            return KDriveLocalizable.onboardingExclusionSummaryNone
+        } else {
+            return KDriveLocalizable.onboardingExclusionSummarySome
+        }
+    }
+
     var body: some View {
         Form {
             Section {
@@ -105,7 +113,7 @@ struct SynchroConfigurationView: View {
                         }
                         .buttonStyle(.borderedProminent)
 
-                        Text(configuration.blackList.isEmpty ? "!Tous les dossiers du kDrive" : "!Tous les dossiers du kDrive")
+                        Text(exclusionFoldersTip)
                             .font(.Tokens.subheadline)
                             .foregroundStyle(driveLocationTipColor)
                     }
