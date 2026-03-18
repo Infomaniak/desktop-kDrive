@@ -283,7 +283,7 @@
     "virtualFileMode, "                                                                                                 \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                             \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                     \
+    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                     \
     "sharedFolderCursor, sharedFolderTimestamp) "                                                                       \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19);"
 
@@ -293,7 +293,7 @@
     "supportVfs=?8, "                                                                                                    \
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
     "userPrivateFolderCursor=?13, userPrivateFolderTimestamp=?14, "                                                      \
-    "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp=?16, "                                              \
+    "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimestamp=?16, "                                              \
     "sharedFolderCursor=?17, sharedFolderTimestamp=?18 "                                                                 \
     "WHERE dbId=?19;"
 
@@ -317,7 +317,7 @@
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
+    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
     "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
@@ -327,7 +327,7 @@
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
+    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
     "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
@@ -338,7 +338,7 @@
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimeStamp, "                                                           \
+    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
     "sharedFolderCursor, sharedFolderTimestamp "                                                                              \
     "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
@@ -349,7 +349,7 @@
     "notificationsDisabled, "                                                                                      \
     "hasFullyCompleted, navigationPaneClsid, "                                                                     \
     "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                        \
-    "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimeStamp, "                                            \
+    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                \
     "sharedFolderCursor, sharedFolderTimestamp "                                                                   \
     "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \

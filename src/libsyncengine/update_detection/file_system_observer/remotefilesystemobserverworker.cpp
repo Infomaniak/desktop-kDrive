@@ -721,9 +721,8 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
     SyncTime createdAtTime = 0;
     if (!JsonParserUtility::extractValue(actionFileObj, createdAtKey, createdAtTime, false)) return ExitCode::BackError;
 
-    SyncTime lastModifiedAtAtTime = 0;
-    if (!JsonParserUtility::extractValue(actionFileObj, lastModifiedAtKey, lastModifiedAtAtTime, false))
-        return ExitCode::BackError;
+    SyncTime lastModifiedAtTime = 0;
+    if (!JsonParserUtility::extractValue(actionFileObj, lastModifiedAtKey, lastModifiedAtTime, false)) return ExitCode::BackError;
 
     std::string symbolicKeyString;
     if (!JsonParserUtility::extractValue(actionFileObj, symbolicLinkKey, symbolicKeyString, false)) return ExitCode::BackError;
@@ -739,7 +738,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
         actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
         actionInfo.snapshotItem.setSize(static_cast<int64_t>(fileSize));
         actionInfo.snapshotItem.setCreatedAt(createdAtTime);
-        actionInfo.snapshotItem.setLastModified(lastModifiedAtAtTime);
+        actionInfo.snapshotItem.setLastModified(lastModifiedAtTime);
         actionInfo.snapshotItem.setIsLink(!symbolicKeyString.empty());
         actionInfo.snapshotItem.setCanWrite(canWrite);
     }
