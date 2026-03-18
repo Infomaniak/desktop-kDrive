@@ -1,3 +1,5 @@
+import json
+import json
 import os
 import textwrap
 
@@ -138,6 +140,22 @@ class KDriveDesktop(ConanFile):
             self.tool_requires("cmake/[>=3.16.Z]")
             self.tool_requires("ninja/[>=1.11.1]")
 
+    def _repo_version(self):
+        """Read version.json at the repo root and return a (major, minor, patch, build) tuple."""
+        version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
+        with open(version_file, "r") as f:
+            data = json.load(f)
+        v = data["Version"]
+        return v["major"], v["minor"], v["patch"], v["build"]
+
+    def _repo_version(self):
+        """Read version.json at the repo root and return a (major, minor, patch, build) tuple."""
+        version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
+        with open(version_file, "r") as f:
+            data = json.load(f)
+        v = data["Version"]
+        return v["major"], v["minor"], v["patch"], v["build"]
+
     def requirements(self):
         """
         Specify the dependencies required for this package.
@@ -147,9 +165,12 @@ class KDriveDesktop(ConanFile):
         :return: None
         """
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
-        # From local recipe, using the qt online installer.
-        # Qt 6.8.3 for Linux ARM, Qt 6.5.3 for other platforms
-        qt_version = "6.8.3" if self.settings.os == "Linux" else "6.2.3"
+        # Qt version selection:
+        #   - (repo version >= 4.0.0.0 or arm) on Linux  -> Qt 6.8.3
+        #   - otherwise                           -> Qt 6.2.3
+        qt_version = "6.2.3"
+        if self.settings.os == "Linux" and (self._repo_version() >= (4, 0, 0, 0) or str(self.settings.arch) == "armv8"):
+            qt_version = "6.8.3"
         self.requires(f"qt/{qt_version}")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
