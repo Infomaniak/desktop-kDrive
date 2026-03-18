@@ -388,8 +388,8 @@ class Vfs : public QObject {
         }
 
     private:
-        bool _extendedLog;
-        bool _started;
+        bool _extendedLog{false};
+        bool _started{false};
 };
 } // namespace KDC
 

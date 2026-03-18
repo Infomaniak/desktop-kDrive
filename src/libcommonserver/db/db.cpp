@@ -146,7 +146,7 @@ std::filesystem::path Db::makeDbName(UserId userId, AccountId accountId, DriveDb
     bool exists = false;
     IoError ioError = IoError::Success;
 
-    if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(dbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
         return {};
@@ -167,7 +167,7 @@ std::filesystem::path Db::makeDbName(UserId userId, AccountId accountId, DriveDb
     (void) dbPath.append(fileName);
 
     // If it exists already, the path is clearly usable
-    if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(dbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
         return {};
@@ -200,7 +200,7 @@ bool Db::exists() {
     } else {
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             return false;
         }
@@ -455,7 +455,7 @@ bool Db::checkConnect(const std::string &version) {
         // has become unavailable - and then some operations may cause crashes.
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             close();
             return false;
@@ -484,7 +484,7 @@ bool Db::checkConnect(const std::string &version) {
 
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError));
         return false;
     }

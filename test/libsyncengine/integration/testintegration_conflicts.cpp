@@ -106,7 +106,8 @@ void TestIntegration::testEditEditPseudoConflict() {
     // Check that the modification time has been updated in DB.
     FileStat fileStat;
     bool exists = false;
-    IoHelper::getFileStat(_syncPal->localPath() / dbNode.name(ReplicaSide::Local), &fileStat, exists);
+    IoHelper::getFileStat(_syncPal->localPath() / dbNode.name(ReplicaSide::Local), &fileStat, exists,
+                          IoHelper::PathCheckOption::Insensitive);
     std::optional<SyncTime> lastModified = std::nullopt;
     CPPUNIT_ASSERT_EQUAL(true,
                          _syncPal->syncDb()->lastModified(ReplicaSide::Remote, _testFileRemoteId, lastModified, found) && found);
@@ -218,7 +219,7 @@ void TestIntegration::testEditDeleteConflict() {
         // Edit operation has won.
         CPPUNIT_ASSERT(std::filesystem::exists(filepath));
         FileStat fileStat;
-        (void) IoHelper::getFileStat(filepath, &fileStat, ioError);
+        (void) IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
         CPPUNIT_ASSERT_EQUAL(modificationTime, fileStat.modificationTime);
         CPPUNIT_ASSERT_EQUAL(size, fileStat.size);
         logStep("testEditDeleteConflict1");

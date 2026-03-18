@@ -130,6 +130,18 @@ struct SyncProgress {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
+        enum class PauseCaller {
+            User = 0,
+            Sync,
+            EnumEnd
+        };
+
+        enum class DbBehaviorAfterStop {
+            Keep = 0,
+            Remove,
+            EnumEnd
+        };
+
         SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
@@ -210,7 +222,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          wait before starting.
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
-        void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+        void stop(PauseCaller caller = PauseCaller::Sync, DbBehaviorAfterStop behavior = DbBehaviorAfterStop::Keep);
 
 
         /* The synchronization will be paused once the ongoing sync reach the Idle state.
@@ -246,7 +258,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
-        ExitCode cancelAllDlDirectJobs(bool quit);
+        ExitCode cancelAllDlDirectJobs();
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 

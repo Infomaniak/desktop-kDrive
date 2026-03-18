@@ -20,6 +20,10 @@
 
 #define CSV_SEPARATOR @";"
 
+const int64_t fetchThumbnailTimeout = 10; // 10 seconds
+const NSString *pidKey = @"pids";
+const NSString *timeoutBlockKey = @"timeoutBlock";
+
 @implementation XPCService
 
 - (instancetype)init {
@@ -247,15 +251,43 @@
     assert(_fetchThumbnailMap);
 
     @synchronized(_fetchThumbnailMap) {
-        if (_fetchThumbnailMap[filePath] == nil) {
-            [_fetchThumbnailMap setObject:[[NSMutableSet alloc] init] forKey:filePath];
-
-            // Ask to the app to fetch the thumbnail
+        NSMutableDictionary *fetchData = _fetchThumbnailMap[filePath];
+        
+        if (fetchData == nil) {
+            // Create new entry with pids and timeout block
+            fetchData = [NSMutableDictionary dictionary];
+            fetchData[pidKey] = [[NSMutableSet alloc] init];
+            
+            // Create cancelable timeout block
+            __weak typeof(self) weakSelf = self;
+            dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
+                @synchronized (strongSelf->_fetchThumbnailMap) {
+                    NSMutableDictionary *data = strongSelf->_fetchThumbnailMap[filePath];
+                    if (data != nil) {
+                        NSLog(@"[KD] Fetch thumbnail has timed out for path %@, cancelling it.", filePath);
+                        [strongSelf updateThumbnailFetchStatus:nil filePath:filePath fileStatus:@"Cancelled"];
+                    }
+                }
+            });
+            fetchData[timeoutBlockKey] = timeoutBlock;
+            
+            [_fetchThumbnailMap setObject:fetchData forKey:filePath];
+            
+            // Schedule the timeout
+            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fetchThumbnailTimeout * NSEC_PER_SEC));
+            dispatch_after(time, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), timeoutBlock);
+            
+            // Ask the app to fetch the thumbnail
             [self sendMessage:filePath query:@"SET_THUMBNAIL" oneApp:TRUE];
         }
 
         // Store the pid
-        [[_fetchThumbnailMap objectForKey:filePath] addObject:[NSNumber numberWithInt:pid]];
+        [fetchData[pidKey] addObject:[NSNumber numberWithInt:pid]];
 
         // Stop the process
         NSLog(@"[KD] Stop process %@ opening thumbnail %@", [NSNumber numberWithInt:pid], filePath);
@@ -332,13 +364,20 @@
 
     NSLog(@"[KD] updateThumbnailFetchStatus %@ %@", filePath, fileStatus);
     @synchronized(_fetchThumbnailMap) {
-        if (_fetchThumbnailMap[filePath] == nil) {
+        NSMutableDictionary *fetchData = _fetchThumbnailMap[filePath];
+        if (fetchData == nil) {
             NSLog(@"[KD] Warning: File not registered %@", filePath);
             return;
         }
 
+        // Cancel the pending timeout block if it exists
+        dispatch_block_t timeoutBlock = fetchData[timeoutBlockKey];
+        if (timeoutBlock) {
+            dispatch_block_cancel(timeoutBlock);
+        }
+
         // Resume the stopped processes
-        for (NSNumber *pidNumber in _fetchThumbnailMap[filePath]) {
+        for (NSNumber *pidNumber in fetchData[pidKey]) {
             NSLog(@"[KD] Resume process %@ opening thumbnail %@", pidNumber, filePath);
             kill([pidNumber intValue], SIGCONT);
         }
@@ -380,6 +419,27 @@
     }
 
     return appList;
+}
+
+- (void)freeAllStoppedProcesses:(NSString *)path {
+    NSLog(@"[KD] Freeing all stopped processes for path: %@", path);
+    
+    @synchronized (_fetchThumbnailMap) {
+        for (NSString *filePath in _fetchThumbnailMap) {
+            if ([filePath hasPrefix:path]) {
+                NSLog(@"[KD] Freeing fetch thumbnail processes for file: %@", filePath);
+                [self updateThumbnailFetchStatus:nil filePath:filePath fileStatus:@"Cancelled"];
+            }
+        }
+    }
+    @synchronized (_fetchMap) {
+        for (NSString *filePath in _fetchMap) {
+            if ([filePath hasPrefix:path]) {
+                NSLog(@"[KD] Freeing fetch processes for file: %@", filePath);
+                [self updateFetchStatus:nil filePath:filePath fileStatus:@"Cancelled"];
+            }
+        }
+    }
 }
 
 - (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *)error {

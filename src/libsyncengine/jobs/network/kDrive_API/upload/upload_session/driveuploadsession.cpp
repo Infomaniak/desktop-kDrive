@@ -50,7 +50,8 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     // Retrieve creation date from the local file
     FileStat fileStat;
     auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(filepath, &fileStat, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;

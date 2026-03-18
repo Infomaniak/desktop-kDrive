@@ -219,5 +219,5 @@ constexpr auto REPARSE_MOUNTPOINT_HEADER_SIZE = 8;
 // Definitions for DeviceIoControl - End
 
 namespace KDC {
-PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError);
+PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError, const log4cplus::Logger &logger);
 }

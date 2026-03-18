@@ -53,7 +53,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
     // Retrieve creation date from the local file
     FileStat fileStat;
     auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;
@@ -79,7 +80,7 @@ ExitInfo UploadJob::canRun() {
     // Check that the item still exist
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteFilePath, ioError));
         return ExitCode::SystemError;
     }

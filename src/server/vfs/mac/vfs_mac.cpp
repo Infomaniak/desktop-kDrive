@@ -134,19 +134,17 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
     return ExitCode::Ok;
 }
 
-void VfsMac::stopImpl(bool unregister) {
+void VfsMac::stopImpl(bool /*unregister*/) {
     LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams.syncDbId);
 
-    if (unregister) {
-        if (!_connector) {
-            LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
-            return;
-        }
+    if (!_connector) {
+        LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
+        return;
+    }
 
-        if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
-            LOG_WARN(logger(), "Error in vfsStop!");
-            return;
-        }
+    if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
+        LOG_WARN(logger(), "Error in vfsStop!");
+        return;
     }
 }
 
@@ -337,20 +335,17 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &absolutePath, const SyncFi
         // If item is a directory, also convert items inside it
         ItemType itemType;
         if (!IoHelper::getItemType(absolutePath, itemType)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
             return ExitCode::SystemError;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
