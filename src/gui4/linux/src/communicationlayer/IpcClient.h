@@ -51,8 +51,11 @@ class IpcClient : public QObject {
 
     public:
         explicit IpcClient(QObject *parent = nullptr);
-
+#ifdef QT_DEBUG
         void connectToServer();
+#else
+        void connectToServer(quint16 port);
+#endif
         int sendRequest(RequestNum num, const Poco::DynamicStruct &params = {});
 
     signals:
@@ -70,7 +73,9 @@ class IpcClient : public QObject {
         std::string _readBuffer;
         QAtomicInt _nextId{0};
 
+#ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
+#endif
         void processBuffer();
         bool extractNextMessage(std::string &buffer, std::string &outMessage);
 };

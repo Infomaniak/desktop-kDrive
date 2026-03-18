@@ -20,6 +20,8 @@
 
 #include "libcommon/utility/utility.h"
 
+#include <QHostAddress>
+
 #include <filesystem>
 #include <fstream>
 
@@ -34,6 +36,18 @@ IpcClient::IpcClient(QObject *parent) :
 }
 
 
+#ifdef QT_DEBUG
+/**
+ * In debug mode, the port is read from the .comm file created by the server
+ */
+void IpcClient::connectToServer() {
+    const quint16 port = readPortFromCommFile();
+    if (port == 0) {
+        emit disconnected();
+        return;
+    }
+    _socket->connectToHost(QHostAddress::LocalHost, port);
+}
 quint16 IpcClient::readPortFromCommFile() {
     const std::filesystem::path commPath = CommonUtility::getAppSupportDir() / ".comm";
     std::ifstream commFile(commPath);
@@ -44,5 +58,18 @@ quint16 IpcClient::readPortFromCommFile() {
     commFile >> port;
     return port;
 }
+
+#else
+/**
+ * In release mode, the port is passed as a command-line argument by the server when launching the client.
+ */
+void IpcClient::connectToServer(quint16 port) {
+    if (port == 0) {
+        emit disconnected();
+        return;
+    }
+    _socket->connectToHost(QHostAddress::LocalHost, port);
+}
+#endif
 
 } // namespace KDC
