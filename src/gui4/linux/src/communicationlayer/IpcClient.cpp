@@ -53,7 +53,7 @@ void IpcClient::connectToServer() {
 }
 
 /**
- * Get the port number from the .comm file located in the application support directory.
+ * Get the port number from the .comm file written by the server's GuiCommServer (new JSON protocol).
  * @return the port read from the .comm file, or 0 if the file cannot be read
  */
 quint16 IpcClient::readPortFromCommFile() {
@@ -117,7 +117,7 @@ void IpcClient::onDisconnected() {
 }
 
 /**
- * Appends incoming bytes to the read buffer and triggers message extraction.
+ * Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer.
  */
 void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
