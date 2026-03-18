@@ -60,7 +60,7 @@ void TestAccountInfo::testDynamicStruct() {
 
     CPPUNIT_ASSERT_EQUAL(123, readInfo.dbId());
     CPPUNIT_ASSERT_EQUAL(456, readInfo.userDbId());
-    CPPUNIT_ASSERT_EQUAL(std::string{"filename"}, info.name());
+    CPPUNIT_ASSERT_EQUAL(std::string{"filename"}, readInfo.name());
 }
 
 void TestAccountInfo::testDataStream() {
