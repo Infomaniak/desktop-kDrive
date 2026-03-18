@@ -1910,8 +1910,8 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         if (!correspondingNode->setParentNode(parentNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node name="
-                                               << Utility::formatSyncName(parentNode->name()));
+                                               << Utility::formatSyncName(parentNode->name()) << L" parent node name="
+                                               << Utility::formatSyncName(correspondingNode->name()));
             return ExitCode::DataError;
         }
 

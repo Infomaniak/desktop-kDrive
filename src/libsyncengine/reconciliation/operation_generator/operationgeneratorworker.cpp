@@ -75,12 +75,7 @@ void OperationGeneratorWorker::execute() {
                                                 "Invalid parent node");
                 // Fix the issue
                 LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << SyncName2WStr(child.second->name()));
-                if (!child.second->setParentNode(currentNode)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                                       << Utility::formatSyncName(child.second->name()) << L" parent node name="
-                                                       << Utility::formatSyncName(currentNode->name()));
-                    continue;
-                }
+                child.second->setParentNode(currentNode);
             }
         }
 

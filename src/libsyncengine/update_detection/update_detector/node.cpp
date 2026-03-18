@@ -179,13 +179,7 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     }
 
     if (child->parentNode() != shared_from_this()) {
-        if (!child->setParentNode(shared_from_this())) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::setParentNode: node name="
-                                                            << Utility::formatSyncName(child->name()) << L" parent node name="
-                                                            << Utility::formatSyncName(name()));
-
-            return false;
-        }
+        child->setParentNode(shared_from_this());
     }
 
     _childrenById[*child->id()] = child;
