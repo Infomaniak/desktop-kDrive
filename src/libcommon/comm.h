@@ -182,6 +182,8 @@ inline std::string toString(RequestNum e) {
             return "NODE_SUBFOLDERS2";
         case RequestNum::NODE_FOLDER_SIZE:
             return "NODE_FOLDER_SIZE";
+        case RequestNum::NODE_CREATEMISSINGFOLDERS:
+            return "NODE_CREATEMISSINGFOLDERS";
         case RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY:
             return "NODE_CREATEMISSINGFOLDERS_LEGACY";
         case RequestNum::NODE_CONFLICT_INFO:

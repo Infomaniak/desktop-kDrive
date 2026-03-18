@@ -33,9 +33,10 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
         int32_t _userDbId = 0;
         int32_t _driveId = 0;
         SyncPath _relativePath;
+        NodeId _parentNodeId;
 
         // Output parameters
-        NodeId _parentNodeId;
+        NodeId _nodeId;
 
 
         ExitInfo deserializeInputParms() override;

@@ -41,10 +41,8 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const 
 CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int32_t userDbId, int32_t driveId, const NodeId &parentId,
                            const SyncName &name) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
-    _filePath(""),
     _parentDirId(parentId),
     _name(name),
-    _color(""),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }

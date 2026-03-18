@@ -1258,12 +1258,12 @@ ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNode
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(int32_t _userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+ExitCode ServerRequests::createDir(int32_t userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
                                    NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, _userDbId, driveId, parentNodeId, dirName);
+        job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());

@@ -475,7 +475,7 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
         CPPUNIT_ASSERT_EQUAL(NodeId{"0000"}, nodeCreateMissingFoldersJob->_parentNodeId);
         CPPUNIT_ASSERT_EQUAL(SyncPath{"Documents/NewFolder"}, nodeCreateMissingFoldersJob->_relativePath);
 
-        nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
+        nodeCreateMissingFoldersJob->_nodeId = NodeId("1111");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
