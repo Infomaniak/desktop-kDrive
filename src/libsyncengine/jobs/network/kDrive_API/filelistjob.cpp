@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-FileListJob::FileListJob(const int userDbId, const DriveId driveId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
+FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
     _userDbId{userDbId},
     _driveId{driveId},
     _fileId(std::move(fileId)),
@@ -33,7 +33,7 @@ FileListJob::FileListJob(const int userDbId, const DriveId driveId, NodeId fileI
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 
-FileListJob::FileListJob(const int driveDbId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
+FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
     _driveDbId{driveDbId},
     _fileId(std::move(fileId)),
     _translateV2ToV3(translateV2ToV3) {

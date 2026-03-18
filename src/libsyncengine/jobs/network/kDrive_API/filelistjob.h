@@ -27,8 +27,8 @@ namespace KDC {
 
 class FileListJob : public SyncJob {
     public:
-        FileListJob(int userDbId, int driveId, NodeId fileId = {}, bool translateV2ToV3 = false);
-        explicit FileListJob(int driveDbId, NodeId fileId = {}, bool translateV2ToV3 = false);
+        FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {}, bool translateV2ToV3 = false);
+        explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, bool translateV2ToV3 = false);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 
@@ -45,14 +45,11 @@ class FileListJob : public SyncJob {
         [[nodiscard]] std::string getConstructorFailureLogMessage(const std::exception &e) const;
         [[nodiscard]] std::string getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const;
 
-        using UserDbId = int32_t;
         UserDbId _userDbId{0};
 
-        using DriveId = int32_t;
         // The identifier of the drive in the local database
         DriveId _driveId{0};
 
-        using DriveDbId = int32_t;
         // The identifier of the drive in the local database
         DriveDbId _driveDbId{0};
 

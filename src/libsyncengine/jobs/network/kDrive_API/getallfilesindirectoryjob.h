@@ -27,8 +27,8 @@ namespace KDC {
 
 class GetAllFilesInDirectoryJob : public FileListJob {
     public:
-        GetAllFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, bool translateV2ToV3 = false);
-        explicit GetAllFilesInDirectoryJob(int driveDbId, NodeId fileId, bool translateV2ToV3 = false);
+        GetAllFilesInDirectoryJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId, bool translateV2ToV3 = false);
+        explicit GetAllFilesInDirectoryJob(DriveDbId driveDbId, NodeId fileId, bool translateV2ToV3 = false);
 
         void abort() override;
 

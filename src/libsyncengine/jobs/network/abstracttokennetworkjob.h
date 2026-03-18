@@ -94,14 +94,11 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 std::shared_ptr<Login> login;
                 int userId{0};
         };
-        using UserDbId = int32_t;
         using UserCache = std::unordered_map<UserDbId, LoginEntry>;
         static UserCache _userToApiKeyMap;
 
         // Drive cache: <driveDbId, <userDbId, driveId>>
         static std::recursive_mutex _cacheMutex;
-        using DriveDbId = int32_t;
-        using DriveId = int32_t;
         struct UserEntry {
                 UserDbId userDbId{0};
                 DriveId driveId{0};
@@ -110,10 +107,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         static DriveCache _driveToApiKeyMap;
 
         ApiType _apiType{2};
-        int _userDbId{0};
+        UserDbId _userDbId{0};
         int _userId{0};
-        int _driveDbId{0};
-        int _driveId{0};
+        DriveDbId _driveDbId{0};
+        DriveId _driveId{0};
         bool _returnJson{true};
         ApiToken _apiToken;
 

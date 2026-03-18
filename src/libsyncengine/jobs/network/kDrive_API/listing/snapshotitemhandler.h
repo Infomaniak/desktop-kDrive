@@ -24,7 +24,6 @@ namespace KDC {
 
 class SnapshotItemHandler {
     public:
-        using DriveDbId = int32_t;
         explicit SnapshotItemHandler(DriveDbId driveDbId, const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
