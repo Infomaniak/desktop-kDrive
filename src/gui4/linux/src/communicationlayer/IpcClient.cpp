@@ -76,5 +76,32 @@ void IpcClient::connectToServer(quint16 port) {
     _socket->connectToHost(QHostAddress::LocalHost, port);
 }
 #endif
+/**
+ * Extract the first complete JSON message from the buffer.
+ * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{' and ending with the matching '}'.
+ * @param outMessage The extracted JSON message, if a complete message is found at the beginning of the buffer. The message is removed from the buffer.
+ * @return true if a complete message was successfully extracted and removed from the buffer, false otherwise (if the buffer is empty, does not start with '{', or does not contain a complete JSON object).
+ */
+bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage) {
+    if (buffer.empty() || buffer[0] != '{') {
+        return false;
+    }
+
+    int balance = 1;
+    for (size_t i = 1; i < buffer.size(); ++i) {
+        if (buffer[i] == '{') {
+            ++balance;
+        } else if (buffer[i] == '}') {
+            --balance;
+            if (balance == 0) {
+                outMessage = buffer.substr(0, i + 1);
+                buffer.erase(0, i + 1);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 } // namespace KDC
