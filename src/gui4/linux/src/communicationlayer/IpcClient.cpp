@@ -83,7 +83,7 @@ void IpcClient::connectToServer(quint16 port) {
 /**
  * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
  * @param params Request parameters
- * @return the request ID, which can be used to match the response with the request, or -1 if the request could not be sent (e.g., if the socket is not connected)
+ * @return the request ID, which can be used to match the response with the request, or -1 if the request could not be sent (e.g. if the socket is not connected or if an error occurs while sending the data)
  */
 int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
     if (_socket->state() != QTcpSocket::ConnectedState) {
@@ -99,7 +99,13 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     msg.insert(MSG_REQUEST_PARAMS, params);
 
     const std::string json = Poco::Dynamic::structToString(msg);
-    _socket->write(json.data(), static_cast<qint64>(json.size()));
+    const auto jsonSize = static_cast<qint64>(json.size());
+    const qint64 written_data = _socket->write(json.data(), jsonSize);
+
+    if (written_data != jsonSize) { // write return -1 if an error occurs, or the number of bytes actually written (which can be less than the size of the data to write)
+        qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
+        return -1;
+    }
 
     return id;
 }
