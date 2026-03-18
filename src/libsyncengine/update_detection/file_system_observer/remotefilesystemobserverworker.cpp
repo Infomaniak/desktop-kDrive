@@ -841,8 +841,8 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
             break;
 
         default:
-            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item: "
-                                                << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item with "
+                                                << Utility::formatSyncName(actionInfo.snapshotItem.name()) << L" ("
                                                 << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
     }
 
