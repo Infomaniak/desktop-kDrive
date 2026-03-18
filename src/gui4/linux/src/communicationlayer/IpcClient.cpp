@@ -22,6 +22,9 @@
 
 #include <QHostAddress>
 
+#include <Poco/Dynamic/Struct.h>
+#include <Poco/JSON/Parser.h>
+
 #include <filesystem>
 #include <fstream>
 
@@ -76,6 +79,54 @@ void IpcClient::connectToServer(quint16 port) {
     _socket->connectToHost(QHostAddress::LocalHost, port);
 }
 #endif
+
+/**
+ * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
+ * @param params Request parameters
+ * @return the request ID, which can be used to match the response with the request
+ */
+int IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
+    const int id = _nextId.fetchAndAddOrdered(1);
+
+    Poco::DynamicStruct msg;
+    msg[MSG_TYPE] = 1; // cf. src/server/comm/guijobs/abstractguijob.h GuiJobType enum
+    msg[MSG_REQUEST_ID] = id;
+    msg[MSG_REQUEST_NUM] = static_cast<uint16_t>(num);
+    msg.insert(MSG_REQUEST_PARAMS, params);
+
+    const std::string json = Poco::Dynamic::structToString(msg);
+    _socket->write(json.data(), static_cast<qint64>(json.size()));
+
+    return id;
+}
+
+
+void IpcClient::onReadyRead() {
+    const QByteArray bytes = _socket->readAll();
+    _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
+    processBuffer();
+}
+
+void IpcClient::processBuffer() {
+    Poco::JSON::Parser parser;
+    std::string raw;
+    while (extractNextMessage(_readBuffer, raw)) {
+        try {
+            const Poco::Dynamic::Var var = parser.parse(raw);
+            const Poco::DynamicStruct msg = *var.extract<Poco::JSON::Object::Ptr>();
+
+            const int type = msg[MSG_TYPE];
+            const int id = msg[MSG_REQUEST_ID];
+            const int num = msg[MSG_REQUEST_NUM];
+            const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
+
+            emit messageReceived(type, id, num, params);
+        } catch (const Poco::Exception &) {
+            // TODO add logging when log4cplus is setup in the client
+        }
+    }
+}
+
 /**
  * Extract the first complete JSON message from the buffer.
  * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{' and ending with the matching '}'.
