@@ -55,7 +55,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
-        void keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems);
+        void keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) const;
         ExitInfo removeItemFromSnapshot(const NodeId &id);
 
         ExitInfo checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
