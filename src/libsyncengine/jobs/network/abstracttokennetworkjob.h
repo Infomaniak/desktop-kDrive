@@ -65,7 +65,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
-        int driveDbId() const { return _driveDbId; };
+        DriveDbId driveDbId() const { return _driveDbId; };
 
         static void updateLoginByUserDbId(const Login &login, int userDbId);
 
@@ -85,14 +85,14 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo handleJsonResponse(
                 const std::string &replyBody) override; // TODO : this method should be private and called for every job.
 
-        [[nodiscard]] int userId() const { return _userId; }
-        [[nodiscard]] int driveId() const { return _driveId; }
+        [[nodiscard]] UserId userId() const { return _userId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
         ApiType getApiType() const { return _apiType; }
 
     private:
         struct LoginEntry {
                 std::shared_ptr<Login> login;
-                int userId{0};
+                UserId userId{0};
         };
         using UserCache = std::unordered_map<UserDbId, LoginEntry>;
         static UserCache _userToApiKeyMap;
@@ -108,7 +108,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ApiType _apiType{2};
         UserDbId _userDbId{0};
-        int _userId{0};
+        UserId _userId{0};
         DriveDbId _driveDbId{0};
         DriveId _driveId{0};
         bool _returnJson{true};

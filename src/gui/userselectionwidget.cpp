@@ -75,11 +75,11 @@ void UserSelectionWidget::clear() {
     _downIconLabel->setVisible(false);
 }
 
-void UserSelectionWidget::addOrUpdateUser(int userDbId, const UserInfo &userInfo) {
+void UserSelectionWidget::addOrUpdateUser(UserDbId userDbId, const UserInfo &userInfo) {
     _userMap[userDbId] = userInfo;
 }
 
-void UserSelectionWidget::selectUser(int userDbId) {
+void UserSelectionWidget::selectUser(UserDbId userDbId) {
     if (_userMap.find(userDbId) != _userMap.end()) {
         _downIconLabel->setVisible(true);
         setUserAvatar(_userMap[userDbId].avatar());

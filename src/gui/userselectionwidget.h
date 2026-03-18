@@ -46,21 +46,21 @@ class UserSelectionWidget : public QPushButton {
         QSize sizeHint() const override;
 
         void clear();
-        void addOrUpdateUser(int userDbId, const UserInfo &userInfo);
-        void selectUser(int userDbId);
+        void addOrUpdateUser(UserDbId userDbId, const UserInfo &userInfo);
+        void selectUser(UserDbId userDbId);
 
     signals:
-        void userSelected(int userDbId);
+        void userSelected(UserDbId userDbId);
         void addUser();
 
     private:
         QSize _downIconSize;
         QColor _downIconColor;
         QSize _menuRightIconSize;
-        std::map<int, UserInfo> _userMap;
-        int _currentUserDbId;
-        QLabel *_userIconLabel;
-        QLabel *_downIconLabel;
+        std::map<UserDbId, UserInfo> _userMap;
+        UserDbId _currentUserDbId;
+        QLabel *_userIconLabel{nullptr};
+        QLabel *_downIconLabel{nullptr};
 
         void addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool current);
 
