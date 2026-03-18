@@ -71,11 +71,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         using RemoteFileId = int64_t;
         static RemoteFileId toRemoteFileId(const NodeId &nodeId) { return std::stoi(nodeId); };
-        using ActionInfoMap = std::unordered_map<RemoteFileId, ActionInfo>;
-        ExitInfo createActionInfoMap(const Poco::JSON::Array::Ptr actionArray, ActionInfoMap &actionInfoMap);
-        ExitInfo fillActionsFilesInfo(const Poco::JSON::Array::Ptr actionsFilesArray, ActionInfoMap &actionInfoMap);
+        using ActionInfoList = std::list<ActionInfo>;
+        ExitInfo createActionInfoList(const Poco::JSON::Array::Ptr actionArray, ActionInfoList &actionInfoList);
+        ExitInfo fillActionsFilesInfo(const Poco::JSON::Array::Ptr actionsFilesArray, ActionInfoList &actionInfoList);
         ExitInfo extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
-        ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoMap &actionInfoMap);
+        ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoList &actionInfoList);
 
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
