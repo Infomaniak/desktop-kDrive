@@ -127,11 +127,15 @@ struct SynchroConfigurationView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonValidate) {}
+                Button(KDriveLocalizable.buttonValidate) {
+                    viewModel.saveConfiguration()
+                }
             }
 
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonCancel, role: .cancel) {}
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    viewModel.cancelConfiguration()
+                }
             }
         }
         .onAppear {
@@ -171,5 +175,5 @@ struct SynchroConfigurationView: View {
 
 #Preview {
     SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: nil, blackList: []))
-        .environmentObject(SynchroConfigurationFlowViewModel())
+        .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
 }

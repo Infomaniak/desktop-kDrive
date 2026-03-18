@@ -28,6 +28,10 @@ struct AccountDriveCellView: View {
     let drive: any UIDriveRepresentation
     let isSynchronized: Bool
 
+    private var synchroConfiguration: SynchroConfiguration {
+        return SynchroConfiguration(drive: drive, localFolder: nil, blackList: [])
+    }
+
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             BadgeView(
@@ -55,9 +59,12 @@ struct AccountDriveCellView: View {
                 Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
                     .sheet(isPresented: $isShowingSynchronizeDriveView) {
-                        SynchroConfigurationFlowView(userDbId: userDbId, configurations: [
-                            SynchroConfiguration(drive: drive, localFolder: nil, blackList: [])
-                        ])
+                        SynchroConfigurationFlowView(userDbId: userDbId, configurations: [synchroConfiguration]) { config in
+                            isShowingSynchronizeDriveView = false
+                            print("New configuration added", config)
+                        } onCancel: {
+                            isShowingSynchronizeDriveView = false
+                        }
                     }
             }
         }
