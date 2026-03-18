@@ -1623,7 +1623,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto userDbId = static_cast<UserDbId>(tmpUserDbId);
             User user;
-            bool found = 0;
+            bool found = false;
             if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectUser");
                 resultStream << ExitCode::DbError;
