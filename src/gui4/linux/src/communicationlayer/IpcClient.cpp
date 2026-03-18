@@ -83,9 +83,13 @@ void IpcClient::connectToServer(quint16 port) {
 /**
  * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
  * @param params Request parameters
- * @return the request ID, which can be used to match the response with the request
+ * @return the request ID, which can be used to match the response with the request, or -1 if the request could not be sent (e.g., if the socket is not connected)
  */
 int IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
+    if (_socket->state() != QTcpSocket::ConnectedState) {
+        qDebug() << "[IpcClient] Cannot send request, socket not connected";
+        return -1;
+    }
     const int id = _nextId.fetchAndAddOrdered(1);
 
     Poco::DynamicStruct msg;
