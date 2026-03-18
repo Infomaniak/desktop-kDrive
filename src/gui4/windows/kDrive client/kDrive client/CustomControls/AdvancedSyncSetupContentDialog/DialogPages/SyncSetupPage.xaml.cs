@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Linq;
+using System.ComponentModel;
 using System.Threading;
 using Windows.Storage.Pickers;
 
@@ -33,6 +33,8 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
                 AdvancedSyncSetupContentDialogVM = viewModel;
                 AdvancedSyncSetupContentDialogVM.CurrentStepCancelled += AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
                 AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed += AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+                AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged += AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
+                UpdateCanGoNext();
             }
             else
             {
@@ -40,10 +42,38 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            AdvancedSyncSetupContentDialogVM!.CurrentStepCancelled -= AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
-            AdvancedSyncSetupContentDialogVM!.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+            if (AdvancedSyncSetupContentDialogVM is null)
+            {
+                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
+                return;
+            }
+
+            AdvancedSyncSetupContentDialogVM.CurrentStepCancelled -= AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
+            AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+            AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged -= AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
+        }
+
+        private void AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(NewSync.LocalPath) || e.PropertyName == nameof(NewSync.RemotePath) || e.PropertyName == nameof(NewSync.RemoteNodeId))
+                UpdateCanGoNext();
+        }
+
+        private void UpdateCanGoNext()
+        {
+            if (AdvancedSyncSetupContentDialogVM is null)
+            {
+                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM?.NewSync is null");
+                return;
+            }
+
+            AdvancedSyncSetupContentDialogVM.CanGoNext =
+                    !string.IsNullOrEmpty(AdvancedSyncSetupContentDialogVM.NewSync.LocalPath) &&
+                    !string.IsNullOrEmpty(AdvancedSyncSetupContentDialogVM.NewSync.RemotePath) &&
+                    !string.IsNullOrEmpty(AdvancedSyncSetupContentDialogVM.NewSync.RemoteNodeId);
         }
 
         private void AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
@@ -129,7 +159,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             control.IsEnabled = true;
         }
 
-        private void RemoteLocationButton_click(object sender, RoutedEventArgs e)
+        private void RemoteLocationButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(RemoteLocationSelectionPage), AdvancedSyncSetupContentDialogVM);
         }

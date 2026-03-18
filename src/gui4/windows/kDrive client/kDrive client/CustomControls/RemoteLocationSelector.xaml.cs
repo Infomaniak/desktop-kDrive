@@ -1,10 +1,10 @@
-using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,14 +14,11 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-
     public sealed partial class RemoteLocationSelector : UserControl
     {
         #region Private fields
-
         // Root level items displayed in the TreeView, it should only contain the drive itself
         private readonly ObservableCollection<TreeItem2> _rootLevelItems = [];
-
         #endregion
 
         #region Constructor / lifecycle
@@ -50,7 +47,7 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(DriveProperty, value);
         }
         public static readonly DependencyProperty DriveProperty =
-            DependencyProperty.Register(nameof(Drive), typeof(IDrive), typeof(SyncExclusionSelector), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Drive), typeof(IDrive), typeof(RemoteLocationSelector), new PropertyMetadata(null));
 
         public bool IsLoading
         {
@@ -58,26 +55,28 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(IsLoadingProperty, value);
         }
         public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(true));
+            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(RemoteLocationSelector), new PropertyMetadata(true));
 
-
-        // Internal root item
-        private TreeItem2 RootTreeItem
+        public bool HasSelectedNode
         {
-            get => (TreeItem2)GetValue(RootTreeItemProperty);
-            set => SetValue(RootTreeItemProperty, value);
+            get => (bool)GetValue(HasSelectedNodeProperty);
+            set => SetValue(HasSelectedNodeProperty, value);
         }
-        private static readonly DependencyProperty RootTreeItemProperty =
-            DependencyProperty.Register(nameof(RootTreeItem), typeof(TreeItem2), typeof(SyncExclusionSelector), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty HasSelectedNodeProperty =
+            DependencyProperty.Register(nameof(HasSelectedNode), typeof(bool), typeof(RemoteLocationSelector), new PropertyMetadata(false));
         #endregion
 
         #region Public methods
-
-
+        public NodeId? GetSelectedNodeId()
+        {
+            if (FolderTree.SelectedItem is TreeItem2 selectedItem)
+                return selectedItem.Node?.NodeId;
+            return null;
+        }
         #endregion
 
         #region Loading / refreshing
-        // Reload full state: exclusion map + tree items
         private async Task ReloadAsync()
         {
             IsLoading = true;
@@ -89,11 +88,6 @@ namespace Infomaniak.kDrive.CustomControls
         // Clear all tree items and dispose them
         private void ClearAllTreeItems()
         {
-            if (RootTreeItem is not null)
-            {
-                RootTreeItem.Dispose();
-                RootTreeItem = null;
-            }
             foreach (var item in _rootLevelItems)
             {
                 item.Dispose();
@@ -101,24 +95,16 @@ namespace Infomaniak.kDrive.CustomControls
             _rootLevelItems.Clear();
         }
 
-        // (Re)build root level items under the logical root folder using current exclusion map
         public async Task BuildRootLevelItemsAsync()
         {
-
-            if (RootTreeItem is not null)
-            {
-                RootTreeItem.Dispose();
-                RootTreeItem = null;
-            }
             _rootLevelItems.Clear();
 
             // Logical root node
             Node rootNode = new Node("", Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
-            RootTreeItem = new TreeItem2(rootNode, Drive.UserDbId, Drive, null);
-            _rootLevelItems.Add(RootTreeItem);
-            await RootTreeItem.LoadImmediateChildrenAsync();
+            _rootLevelItems.Add(new TreeItem2(rootNode, Drive, null));
+            await _rootLevelItems[0].LoadImmediateChildrenAsync();
+            await rootNode.LoadSize();
         }
-
         #endregion
 
         #region TreeView events
@@ -127,7 +113,7 @@ namespace Infomaniak.kDrive.CustomControls
             List<Task> tasks = [];
             if (args.Item is TreeItem2 item)
             {
-                foreach (var child in item.Children)
+                foreach (var child in item.Children.Where(i => i.Node is not null))
                 {
                     tasks.Add(child.LoadImmediateChildrenAsync());
                 }
@@ -136,49 +122,39 @@ namespace Infomaniak.kDrive.CustomControls
         }
         #endregion
 
-        #region Selection propagation helpers
-        private static TreeItem? ExtractTreeItemFromSender(object sender)
-        {
-            var control = sender as Control;
-            return control?.DataContext as TreeItem;
-        }
-
-
-        #endregion
-
         #region Misc UI helpers
 
         // Lazy load size
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Control)?.DataContext is TreeItem2 treeItem && treeItem.Node.Size == -1)
+            if ((sender as Control)?.DataContext is TreeItem2 treeItem && treeItem.Node is not null && treeItem.Node.Size == -1)
                 await treeItem.Node.LoadSize();
         }
         #endregion
 
         private void FolderTree_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
         {
-
             TreeItem2? selectedItem = args.AddedItems.FirstOrDefault() as TreeItem2;
             TreeItem2? previousItem = args.RemovedItems.FirstOrDefault() as TreeItem2;
 
             if (selectedItem is null)
             {
+                HasSelectedNode = false;
                 return;
             }
 
-            // If the selected item is access denied or the root of the drive, we revert the selection to the previously selected item
-            if (selectedItem.Node.AccessDenied || selectedItem.ParentItem is null)
-            {
-                DispatcherQueue.TryEnqueue(() => sender.SelectedItem = previousItem);
-            }
-
+            // If the selected item is not selectable (e.g. access denied, tmp node), revert the selection to the previous item
+            if (selectedItem.Node is null || selectedItem.Node.AccessDenied || selectedItem.ParentItem is null)
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    sender.SelectedItem = previousItem;
+                });
+            else
+                HasSelectedNode = true;
         }
 
         private async void CreateFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            //         public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
-
             Control? control = sender as Control;
             if (control is null)
             {
@@ -194,10 +170,175 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            // Here, we should add a tmp item just under this one in the tree view.
-            // the tmp item should have a textbox to enter the name of the new folder, and a confirm button to validate the creation.
-            // Once the name is entered and the confirm button is clicked, we should call the CreateMissingDirectories method to create the folder on the server, then replace the tmp item with the new folder item if the creation is successful, or show an error message if it fails.            
+            treeItem.CanCreateSubFolder = false;
+            // Create a temporary TreeItem with no Node, it will allow the user to enter the name of the new folder.
+            // Once the name is entered, the real TreeItem with the Node will be created and replace the temporary one.
+            TreeItem2 newItem = new TreeItem2(Drive, treeItem);
+            treeItem.Children.Insert(0, newItem);
+
+            // Expand the parent item to make the new item visible and get its container
+            TreeViewNode? node = FindNode(FolderTree.RootNodes, treeItem);
+            if (node is not null)
+                node.IsExpanded = true;
+
+            TreeViewNode? newItemNode = FindNode(FolderTree.RootNodes, newItem);
+            if (newItemNode is null)
+                return;
+
+            var container = await WaitForContainerAsync(newItemNode);
+            if (container is null)
+                return;
+
+            // Set the focus on the TextBox in the new item's template to allow the user to enter the folder name easily
+            var textBox = FindChild(container, typeof(TextBox)) as TextBox;
+            if (textBox is not null)
+            {
+                textBox.Focus(FocusState.Programmatic);
+                textBox.SelectAll();
+            }
         }
+
+        private Task<TreeViewItem?> WaitForContainerAsync(TreeViewNode node)
+        {
+            var tcs = new TaskCompletionSource<TreeViewItem?>();
+            var deadline = DateTime.UtcNow.AddSeconds(3);
+
+            void OnLayoutUpdated(object? s, object e)
+            {
+                var container = FolderTree.ContainerFromNode(node) as TreeViewItem;
+                if (container is not null || DateTime.UtcNow >= deadline)
+                {
+                    FolderTree.LayoutUpdated -= OnLayoutUpdated;
+                    tcs.TrySetResult(container);
+                }
+            }
+
+            FolderTree.LayoutUpdated += OnLayoutUpdated;
+            return tcs.Task;
+        }
+
+        private TreeViewNode? FindNode(IList<TreeViewNode> nodes, TreeItem2 target)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Content == target)
+                    return node;
+
+                var found = FindNode(node.Children, target);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        private async void NewItemTextBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            TextBox? textBox = sender as TextBox;
+            if (textBox is null)
+            {
+                Logger.Log(Logger.Level.Error, "NewItemTextBox_KeyDown: sender is not a TextBox.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                e.Handled = true;
+
+                var contentLoader = FindParent(textBox, typeof(ContentLoader)) as ContentLoader;
+                if (contentLoader is not null)
+                    contentLoader.IsLoading = true;
+
+                var treeItem = textBox.DataContext as TreeItem2;
+                var parentTreeItem = treeItem?.ParentItem;
+                if (treeItem is null || parentTreeItem is null)
+                {
+                    Logger.Log(Logger.Level.Error, "treeItem or parentTreeItem is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                var newItem = await CreateFolder(parentTreeItem, textBox.Text);
+
+                if (newItem is null)
+                {
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    if (contentLoader is not null)
+                        contentLoader.IsLoading = false;
+                    return;
+                }
+
+                if (contentLoader is not null)
+                    contentLoader.IsLoading = false;
+
+                parentTreeItem.Children.Remove(treeItem); // Remove the temporary item used for input
+                parentTreeItem.CanCreateSubFolder = true;
+                FolderTree.SelectedItem = newItem;
+            }
+        }
+
+        private async Task<TreeItem2?> CreateFolder(TreeItem2 parentItem, string folderName)
+        {
+            if (parentItem.Node is null)
+            {
+                Logger.Log(Logger.Level.Error, "Parent node is null.");
+                return null;
+            }
+            var parentNodeId = parentItem.Node.NodeId ?? "";
+
+            if (string.IsNullOrEmpty(parentNodeId))
+            {
+                parentNodeId = "1";
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            NodeId? newNodeId = await commService.CreateMissingDirectories(Drive, parentNodeId, folderName, CancellationToken.None);
+            if (newNodeId is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to create folder.");
+                return null;
+            }
+
+            // Add the node to the tree
+            var newTreeItem = new TreeItem2(new Node(newNodeId, folderName, 0, parentNodeId, System.IO.Path.Combine(parentItem.Node?.Path ?? "", folderName), Drive.UserDbId, Drive.DriveId, false), Drive, parentItem);
+            parentItem.Children.Insert(0, newTreeItem);
+            return newTreeItem;
+        }
+
+        private static object? FindParent(DependencyObject dependencyObject, Type ancestorType)
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
+            if (parent is null)
+                return null;
+
+            if (ancestorType.IsAssignableFrom(parent.GetType()))
+                return parent;
+
+            return FindParent(parent, ancestorType);
+        }
+
+        private static object? FindChild(DependencyObject parent, Type childType)
+        {
+            if (parent is null)
+                return null;
+
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+
+                if (childType.IsAssignableFrom(child.GetType()))
+                    return child;
+
+                object? result = FindChild(child, childType);
+                if (result is not null)
+                    return result;
+            }
+
+            return null;
+        }
+
     }
 
     /// <summary>
@@ -206,16 +347,16 @@ namespace Infomaniak.kDrive.CustomControls
     public class TreeItem2 : UISafeObservableObject, IDisposable
     {
         #region Private fields
-        private readonly DbId _userDbId = 0;
         private readonly IDrive _drive;
         private bool _isSelected = false;
         private bool _isLoadingChildren = false;
         private bool _childrenLoaded = false;
+        private bool _canCreateSubfolder = false;
         private bool _disposed = false;
         #endregion
 
         #region Public properties
-        public Node Node { get; private set; }
+        public Node? Node { get; private set; }
 
         public bool IsSelected
         {
@@ -235,6 +376,12 @@ namespace Infomaniak.kDrive.CustomControls
             private set => SetPropertyInUIThread(ref _childrenLoaded, value);
         }
 
+        public bool CanCreateSubFolder
+        {
+            get => _canCreateSubfolder;
+            set => SetPropertyInUIThread(ref _canCreateSubfolder, value);
+        }
+
         public IDrive Drive => _drive;
 
         public ObservableCollection<TreeItem2> Children { get; } = [];
@@ -243,22 +390,30 @@ namespace Infomaniak.kDrive.CustomControls
         public bool IsNotRoot => ParentItem is not null;
         #endregion
 
-        public TreeItem2(Node node, DbId userDbId, IDrive drive, TreeItem2? parentItem)
+        public TreeItem2(Node node, IDrive drive, TreeItem2? parentItem)
         {
             Node = node;
             ParentItem = parentItem;
-            _userDbId = userDbId;
+            _drive = drive;
+            _canCreateSubfolder = true;
+        }
+
+        // Constructor used for tmp nodes (the user is creating a new folder)
+        public TreeItem2(IDrive drive, TreeItem2? parentItem)
+        {
+            ParentItem = parentItem;
+            _canCreateSubfolder = false;
             _drive = drive;
         }
 
         // Lazy load direct child directories
         public async Task LoadImmediateChildrenAsync()
         {
-            if (_childrenLoaded)
+            if (_childrenLoaded || Node is null)
                 return;
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            List<Node>? nodes = await commService.GetSubFolders(_userDbId, _drive.DriveId, Node.NodeId, CancellationToken.None);
+            List<Node>? nodes = await commService.GetSubFolders(_drive.UserDbId, _drive.DriveId, Node.NodeId, CancellationToken.None);
             if (nodes is null)
             {
                 Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
@@ -270,7 +425,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             foreach (Node node in nodes)
-                Children.Add(new TreeItem2(node, _userDbId, _drive, this));
+                Children.Add(new TreeItem2(node, _drive, this));
             _childrenLoaded = true;
             IsLoadingChildren = false;
         }
@@ -294,11 +449,15 @@ namespace Infomaniak.kDrive.CustomControls
     {
         public DataTemplate? FolderTemplate { get; set; }
         public DataTemplate? AccessDeniedTemplate { get; set; }
+        public DataTemplate? NewNodeTemplate { get; set; }
 
         protected override DataTemplate? SelectTemplateCore(object item)
         {
             if (item is not TreeItem2 treeItem)
                 return base.SelectTemplateCore(item);
+
+            if (treeItem.Node is null)
+                return NewNodeTemplate;
 
             return treeItem.Node.AccessDenied ? AccessDeniedTemplate : FolderTemplate;
         }

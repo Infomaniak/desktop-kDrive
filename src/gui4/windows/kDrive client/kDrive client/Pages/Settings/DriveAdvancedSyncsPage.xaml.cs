@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -214,6 +215,37 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, ManagedDrive);
         _ = await dialog.ShowAsync();
+
+        if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)
+        {
+            Logger.Log(Logger.Level.Info, "User canceled advanced sync creation in content dialog");
+            if (control is not null)
+                control.IsEnabled = true;
+            return;
+        }
+
+        var newSync = dialog.GetNewSync();
+        if (newSync is null || newSync.Drive is null)
+        {
+            Logger.Log(Logger.Level.Error, "User confirmed new advanced sync creation in content dialog but GetNewSync returned null or newSync.Drive is null");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            if (control is not null)
+                control.IsEnabled = true;
+            return;
+        }
+
+        Logger.Log(Logger.Level.Info, "User confirmed new advanced sync creation in content dialog, creating sync");
+
+        var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+        Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
+        if (!await commService.AddSync(newSync, CancellationToken.None))
+        {
+            Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive");
+            if (control is not null)
+                control.IsEnabled = true;
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
 
         if (control is not null)
             control.IsEnabled = true;

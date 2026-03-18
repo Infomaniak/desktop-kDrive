@@ -41,7 +41,7 @@
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
         <!-- Remote folder exclusion -->
-        <controls:RemoteLocationSelector x:Name="ExclusionSelector"
+        <controls:RemoteLocationSelector x:Name="RemoteLocationSelector"
                                          Drive="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive}"
                                          Grid.Row="2" />
     </Grid>

@@ -18,6 +18,7 @@
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </Page.Resources>
     <Page.Transitions>
         <TransitionCollection>
@@ -146,7 +147,7 @@
 
                             <TextBlock Grid.Column="1"
                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                       Text="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, Mode=OneWay}"
+                                       Text="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, Converter={StaticResource StringPathToFileNameConverter} , Mode=OneWay}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        TextWrapping="NoWrap"
@@ -202,13 +203,13 @@
                     </Grid.ColumnDefinitions>
 
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, Mode=OneWay}" />
+                        <ToolTip Content="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.RemotePath, Mode=OneWay}" />
                     </ToolTipService.ToolTip>
 
                     <Button Grid.Row="0"
                             Grid.Column="0"
                             Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelectFolder')}"
-                            Click="RemoteLocationButton_click" />
+                            Click="RemoteLocationButton_Click" />
 
                     <Border Grid.Row="0"
                             Grid.Column="1"
@@ -230,7 +231,7 @@
 
                             <TextBlock Grid.Column="1"
                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                       Text="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, Mode=OneWay}"
+                                       Text="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.RemotePath, Converter={StaticResource StringPathToFileNameConverter} , Mode=OneWay}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        TextWrapping="NoWrap"

@@ -6,11 +6,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
-             xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d"
              HorizontalAlignment="Stretch"
-             Loaded="RemoteLocationSelector_Loaded">
+             Loaded="RemoteLocationSelector_Loaded"
+             Unloaded="RemoteLocationSelector_Unloaded">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -18,12 +19,18 @@
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
 
-        <Style x:Key="TreeItemGridStyle" TargetType="Grid">
-            <Setter Property="ColumnSpacing" Value="{StaticResource Infomaniak.Style.Spacing.XS}" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="{StaticResource Infomaniak.Style.Thickness.Left.S}" />
-            <Setter Property="Padding" Value="{StaticResource Infomaniak.Style.Thickness.Right.S}" />
+        <Style x:Key="TreeItemGridStyle"
+               TargetType="Grid">
+            <Setter Property="ColumnSpacing"
+                    Value="{StaticResource Infomaniak.Style.Spacing.XS}" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Margin"
+                    Value="{StaticResource Infomaniak.Style.Thickness.Left.S}" />
+            <Setter Property="Padding"
+                    Value="{StaticResource Infomaniak.Style.Thickness.Right.S}" />
         </Style>
 
         <DataTemplate x:DataType="local:TreeItem2"
@@ -77,7 +84,8 @@
                                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                          MinWidth="40"
                                          MinHeight="14"
-                                         DataContextChanged="SizeContentLoader_DataContextChanged">
+                                         DataContextChanged="SizeContentLoader_DataContextChanged"
+                                         Visibility="{x:Bind IsNotRoot, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <local:ContentLoader.LoaderContent>
                             <TextBlock Text="{x:Bind Node.Size, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
                                        VerticalAlignment="Center"
@@ -89,6 +97,7 @@
                             VerticalAlignment="Center"
                             Style="{ThemeResource SubtleButtonStyle}"
                             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
+                            IsEnabled="{x:Bind CanCreateSubFolder, Mode=OneWay}"
                             Click="CreateFolderButton_Click">
                         <local:SvgIcon Height="16"
                                        Width="16"
@@ -100,7 +109,42 @@
         </DataTemplate>
 
         <DataTemplate x:DataType="local:TreeItem2"
-                      x:Key="AccessDeneidDirectoryTemplate">
+                      x:Key="NewNodeTemplate">
+            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
+                <Grid Style="{StaticResource TreeItemGridStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <local:SvgIcon Grid.Column="0"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                   Foreground="{ThemeResource TextFillColorPrimary}"
+                                   VerticalAlignment="Center"
+                                   Height="16"
+                                   Width="16" />
+
+                    <controls:ContentLoader Grid.Column="1"
+                                            IsLoading="False"
+                                            MinWidth="150"
+                                            Height="32"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
+                        <controls:ContentLoader.LoaderContent>
+                            <TextBox PlaceholderText="Nouveau dossier"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Left"
+                                     MinWidth="150"
+                                     MaxWidth="220"
+                                     KeyDown="NewItemTextBox_KeyDown" />
+                        </controls:ContentLoader.LoaderContent>
+                    </controls:ContentLoader>
+
+                </Grid>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="local:TreeItem2"
+                      x:Key="AccessDeniedDirectoryTemplate">
             <TreeViewItem HorizontalAlignment="Stretch"
                           MinHeight="24">
                 <ToolTipService.ToolTip>
@@ -156,7 +200,8 @@
 
         <local:FolderTreeViewItemTemplateSelector2 x:Key="FolderTreeViewItemTemplateSelector_"
                                                    FolderTemplate="{StaticResource FolderTemplate}"
-                                                   AccessDeniedTemplate="{StaticResource AccessDeneidDirectoryTemplate}" />
+                                                   AccessDeniedTemplate="{StaticResource AccessDeniedDirectoryTemplate}"
+                                                   NewNodeTemplate="{StaticResource NewNodeTemplate}" />
     </UserControl.Resources>
 
     <local:ContentLoader x:Name="TreeViewContentLoader"
