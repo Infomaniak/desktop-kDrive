@@ -229,7 +229,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
             return KDRIVE_VERSION_MAJOR < 4;
 #else
-            return true;
+            return KDRIVE_VERSION_MAJOR < 4;
 #endif
         }
 
@@ -240,7 +240,12 @@ class AppServer : public SharedTools::QtSingleApplication {
             else
                 return true;
 #else
-            return false;
+            if constexpr (KDRIVE_VERSION_MAJOR < 4)
+                return false;
+            if (checkIfInitialized)
+                return _commManager != nullptr;
+            else
+                return true;
 #endif
         }
 
