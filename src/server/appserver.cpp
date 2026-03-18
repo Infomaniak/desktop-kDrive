@@ -2187,13 +2187,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QString path;
             QString error;
-            const auto exitCode = ServerRequests::findGoodPathForNewSync(basePath, path, error);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(basePath, path, error);
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << path;
             resultStream << error;
             break;
