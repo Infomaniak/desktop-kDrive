@@ -734,6 +734,8 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
     }
 
     for (auto &actionInfo: actionInfoList) {
+        if (actionInfo.snapshotItem.id() != std::to_string(fileId)) continue;
+
         actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
         actionInfo.snapshotItem.setSize(static_cast<int64_t>(fileSize));
         actionInfo.snapshotItem.setCreatedAt(createdAtTime);
