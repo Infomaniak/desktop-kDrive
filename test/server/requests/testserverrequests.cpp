@@ -162,10 +162,11 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     // Check with a non-existing path containing an already synced child
     SyncPath returnedPath;
     std::string error;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
                          ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
-    CPPUNIT_ASSERT(returnedPath.empty());
-    CPPUNIT_ASSERT(!error.empty());
+    CPPUNIT_ASSERT(!returnedPath.empty());
+    CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+    CPPUNIT_ASSERT(error.empty());
 }
 
 void TestServerRequests::testDeleteUser() {

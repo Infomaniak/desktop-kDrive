@@ -323,14 +323,23 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool isAdva
 
     const QString qPath = Path2QStr(path);
     QString qError;
-    ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError);
-    bool alreadyExists = exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::DirExists);
-    if (!exitInfo && !alreadyExists) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
+
+    if (ExitInfo exitInfo = checkSyncNesting(syncList, qPath, qError); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting: " << exitInfo << qError.toStdString());
         return ExitCode::Ok;
     }
 
     // If the directory exists, check if it is empty
+
+    // Check if the local directory already exists
+    IoError ioError = IoError::Success;
+    bool alreadyExists = false;
+    const bool success = IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
+    if (!success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
+        return ExitCode::SystemError;
+    }
+
     bool isEmpty = true;
     std::error_code ec;
     if (alreadyExists) {
@@ -352,7 +361,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool isAdva
 
     if (!isAdvancedSync && !isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
         bool containsNonExcludedFile = false;
-        if (exitInfo = folderContainsNonExcludedItem(path, containsNonExcludedFile); !exitInfo) {
+        if (ExitInfo exitInfo = folderContainsNonExcludedItem(path, containsNonExcludedFile); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), "Error in folderContainsNonExcludedItem: " << exitInfo);
             return exitInfo;
         }
@@ -432,23 +441,38 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     int attempt = 1;
     forever {
-        const auto exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
-        if (!exitInfo && exitInfo.cause() != ExitCause::DirExists) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder:" << exitInfo);
+        const ExitInfo exitInfo = checkSyncNesting(syncList, folder, error);
+        if (!exitInfo && (exitInfo.code() != ExitCode::InvalidSync ||
+                          attempt >= 100)) { // If the error is a sync nesting error, we can try another
+                                             // as the folder can just be already used by another sync
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting:" << exitInfo);
             return exitInfo;
         }
 
-        if (exitInfo.cause() != ExitCause::DirExists) {
-            break;
+        if (exitInfo) {
+            // Check if the local directory already exists
+            IoError ioError = IoError::Success;
+            bool alreadyExists = false;
+            const bool success = IoHelper::checkIfPathExists(QStr2Path(folder), alreadyExists, ioError,
+                                                             IoHelper::PathCheckOption::Insensitive);
+            if (!success) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
+                return ExitCode::SystemError;
+            }
+
+            if (!alreadyExists) {
+                break;
+            }
         }
 
         // Count attempts and give up eventually
-        attempt++;
-        if (attempt > 100) {
+        if (attempt >= 100) {
             LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
             error = QObject::tr("Can't find a valid path");
             return ExitCode::SystemError;
         }
+        attempt++;
 
         folder = basePath + " " + QString::number(attempt);
     }
@@ -2077,7 +2101,7 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
+ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     error.clear();
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
@@ -2118,23 +2142,8 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         if (!differentPaths) {
             error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return {ExitCode::InvalidSync, ExitCause::DirExists};
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
-    }
-
-    // Check if the local directory already exists
-    IoError ioError = IoError::Success;
-    bool found = false;
-    const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError, IoHelper::PathCheckOption::Insensitive);
-    if (!success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
-        error = QObject::tr("An error occurred while checking the local folder. Please try again.");
-        return ExitCode::SystemError;
-    }
-
-    if (found) {
-        error = QObject::tr("The local folder %1 already exists. Please pick another one!").arg(QDir::toNativeSeparators(path));
-        return {ExitCode::SystemError, ExitCause::DirExists};
     }
 
     return ExitCode::Ok;

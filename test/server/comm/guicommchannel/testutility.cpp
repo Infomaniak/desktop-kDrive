@@ -161,6 +161,7 @@ void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
 
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("path", "");
+    (void) queryParamsObj.set("isAdvancedSync", false);
     (void) queryObj.set("params", queryParamsObj);
     const auto queryStr = stringifyQueryObj(queryObj);
 
