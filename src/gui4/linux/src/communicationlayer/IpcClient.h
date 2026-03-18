@@ -59,7 +59,7 @@ class IpcClient : public QObject {
         static quint16 readPortFromCommFile();
 #endif
         void processBuffer();
-        bool extractNextMessage(std::string &buffer, std::string &outMessage);
+        static bool extractNextMessage(std::string &buffer, std::string &outMessage);
 };
 
 } // namespace KDC
