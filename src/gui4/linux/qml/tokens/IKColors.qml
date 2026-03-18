@@ -36,7 +36,7 @@ QtObject {
         readonly property color blue950: "#1F2547"
 
         // NeutralBlue
-        readonly property color neutralBlue50:  "#F6F8FC"
+        readonly property color neutralBlue50: "#F6F8FC"
         readonly property color neutralBlue100: "#EDF1F8"
         readonly property color neutralBlue200: "#DCEDF0"
         readonly property color neutralBlue300: "#C5CDDB"
@@ -66,8 +66,8 @@ QtObject {
 
         // Brand
         readonly property color infomaniak: "#0098FF"
-        readonly property color kDrive500:  "#FFB632"
-        readonly property color kDrive600:  "#FF9D0A"
+        readonly property color kDrive500: "#FFB632"
+        readonly property color kDrive600: "#FF9D0A"
     }
 
     // -------------------------------------------------------------------------
@@ -75,37 +75,37 @@ QtObject {
     // -------------------------------------------------------------------------
 
     // Accent
-    readonly property color accentPrimary:   darkMode ? _p.blue400   : _p.blue600
+    readonly property color accentPrimary: darkMode ? _p.blue400 : _p.blue600
     readonly property color accentSecondary: darkMode ? _p.kDrive600 : _p.kDrive500
 
     // Action
-    readonly property color actionPrimary:   accentPrimary
+    readonly property color actionPrimary: accentPrimary
     readonly property color actionOnPrimary: darkMode ? _p.neutralBlue800 : _p.neutralBlue100
-    readonly property color actionDisabled:  _p.gray400
+    readonly property color actionDisabled: _p.gray400
 
     // Text
-    readonly property color textPrimary:   darkMode ? _p.neutralBlue50  : _p.neutralBlue800
+    readonly property color textPrimary: darkMode ? _p.neutralBlue50 : _p.neutralBlue800
     readonly property color textSecondary: darkMode ? _p.neutralBlue200 : _p.neutralBlue600
-    readonly property color textTertiary:  darkMode ? _p.neutralBlue300 : _p.neutralBlue500
+    readonly property color textTertiary: darkMode ? _p.neutralBlue300 : _p.neutralBlue500
 
     // Surface
-    readonly property color surfacePrimary:   darkMode ? _p.neutralBlue800 : _p.neutralBlue50
+    readonly property color surfacePrimary: darkMode ? _p.neutralBlue800 : _p.neutralBlue50
     readonly property color surfaceSecondary: darkMode ? _p.neutralBlue700 : _p.neutralBlue100
-    readonly property color surfaceTertiary:  darkMode ? _p.neutralBlue600 : _p.neutralBlue200
+    readonly property color surfaceTertiary: darkMode ? _p.neutralBlue600 : _p.neutralBlue200
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
 
     // Status — Medium
-    readonly property color statusMediumSuccess:  darkMode ? _p.green400  : _p.green500
-    readonly property color statusMediumWarning:  darkMode ? _p.orange400 : _p.orange500
-    readonly property color statusMediumSecurity: darkMode ? _p.blue400   : _p.blue500
-    readonly property color statusMediumNeutral:  darkMode ? _p.gray400   : _p.gray500
+    readonly property color statusMediumSuccess: darkMode ? _p.green400 : _p.green500
+    readonly property color statusMediumWarning: darkMode ? _p.orange400 : _p.orange500
+    readonly property color statusMediumSecurity: darkMode ? _p.blue400 : _p.blue500
+    readonly property color statusMediumNeutral: darkMode ? _p.gray400 : _p.gray500
 
     // Status — Light
-    readonly property color statusLightWarning:  darkMode ? _p.brown950 : _p.orange100
-    readonly property color statusLightSecurity: darkMode ? _p.blue950  : _p.blue100
-    readonly property color statusLightNeutral:  darkMode ? _p.gray950  : _p.neutralBlue100
+    readonly property color statusLightWarning: darkMode ? _p.brown950 : _p.orange100
+    readonly property color statusLightSecurity: darkMode ? _p.blue950 : _p.blue100
+    readonly property color statusLightNeutral: darkMode ? _p.gray950 : _p.neutralBlue100
 
     // -------------------------------------------------------------------------
     // T3 — Contextual tokens
