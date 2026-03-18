@@ -35,7 +35,8 @@
 
         <DataTemplate x:DataType="local:TreeItem2"
                       x:Key="FolderTemplate">
-            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
+            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}"
+                          IsExpanded="{x:Bind IsRoot}">
                 <Grid Style="{StaticResource TreeItemGridStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -52,6 +53,7 @@
                                    VerticalAlignment="Center"
                                    Height="16"
                                    Width="16" />
+                    
                     <local:SvgIcon Grid.Column="0"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
@@ -64,6 +66,7 @@
                                Text="{x:Bind Node.Name}"
                                TextTrimming="CharacterEllipsis"
                                VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
                                MaxWidth="220">
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind Node.Name}" />
@@ -170,6 +173,7 @@
                                Foreground="{ThemeResource TextFillColorTertiary}"
                                Text="{x:Bind Node.Name}"
                                VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
                                MaxWidth="220">
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind Node.Name}" />

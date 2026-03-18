@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +18,7 @@ namespace Infomaniak.kDrive.CustomControls
         private readonly AdvancedSyncSetupContentDialogVM _advancedSyncSetupContentDialogVM;
         public AdvancedSyncSetupResult Result { get; private set; }
 
-        public AdvancedSyncSetupContentDialog(XamlRoot xamlRoot, Drive drive)
+        public AdvancedSyncSetupContentDialog(XamlRoot xamlRoot, IDrive drive)
         {
             _advancedSyncSetupContentDialogVM = new AdvancedSyncSetupContentDialogVM(drive);
             base.MinWidth = 540;

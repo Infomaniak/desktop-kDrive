@@ -203,9 +203,9 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private async void AddAdvancedSyncButton_Click(object sender, RoutedEventArgs e)
     {
-        if (ManagedDrive is null)
+        if (_baseDrive is null)
         {
-            Logger.Log(Logger.Level.Error, "Cannot add sync: ManagedDrive is null");
+            Logger.Log(Logger.Level.Error, "Cannot add sync: _baseDrive is null");
             return;
         }
 
@@ -213,7 +213,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         if (control is not null)
             control.IsEnabled = false;
 
-        CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, ManagedDrive);
+        CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, _baseDrive);
         _ = await dialog.ShowAsync();
 
         if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)

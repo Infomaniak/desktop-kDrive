@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using static Infomaniak.kDrive.CustomControls.AdvancedSyncSetupContentDialog;
@@ -21,7 +22,7 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetPropertyInUIThread(ref _canGoNext, value);
         }
 
-        public AdvancedSyncSetupContentDialogVM(Drive drive)
+        public AdvancedSyncSetupContentDialogVM(IDrive drive)
         {
             _newSync = new NewSync() { Drive = drive };
         }

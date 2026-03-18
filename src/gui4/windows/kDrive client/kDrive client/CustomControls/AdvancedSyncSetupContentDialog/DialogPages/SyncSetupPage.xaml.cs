@@ -137,7 +137,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
 
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
+            bool? result = await commServices.IsPathValidForNewSync(folder.Path, true, CancellationToken.None);
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();
