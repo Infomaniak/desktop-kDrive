@@ -125,6 +125,17 @@ void IpcClient::onReadyRead() {
     processBuffer();
 }
 
+/**
+ * Process the buffer to extract complete JSON messages and emit a signal for each message received.
+ * Each message is expected to be a JSON object with the following structure:
+ * {
+ *    "type": int, // 1 for requests, 2 for signals
+ *    "id": int, // request ID for requests, signal ID for signals
+ *    "num": int, // request number for requests, signal number for signals
+ *    "params": JSON object
+ * }
+ *
+ */
 void IpcClient::processBuffer() {
     Poco::JSON::Parser parser;
     std::string raw;
