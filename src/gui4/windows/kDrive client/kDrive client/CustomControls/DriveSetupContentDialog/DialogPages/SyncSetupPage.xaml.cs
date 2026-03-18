@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
 
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
+            bool? result = await commServices.IsPathValidForNewSync(folder.Path, false, CancellationToken.None);
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();

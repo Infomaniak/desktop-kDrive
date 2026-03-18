@@ -650,11 +650,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return result;
         }
-        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        public async Task<bool?> IsPathValidForNewSync(string path, bool isAdvancedSync, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path)
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.IsAdvancedSync] = isAdvancedSync
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
