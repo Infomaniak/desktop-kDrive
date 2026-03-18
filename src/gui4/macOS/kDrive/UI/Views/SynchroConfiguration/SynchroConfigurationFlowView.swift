@@ -82,6 +82,7 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
 struct SynchroConfigurationFlowView: View {
     @StateObject private var viewModel = SynchroConfigurationFlowViewModel()
 
+    let userDbId: Int
     let configurations: [SynchroConfiguration]
 
     var body: some View {
@@ -92,7 +93,7 @@ struct SynchroConfigurationFlowView: View {
             case .configureSynchro(let synchroConfiguration):
                 SynchroConfigurationView(configuration: synchroConfiguration)
             case .selectFolders(let synchroConfiguration):
-                SelectSynchroFoldersView(configuration: synchroConfiguration)
+                SelectSynchroFoldersView(userDbId: userDbId, configuration: synchroConfiguration)
             }
         }
         .environmentObject(viewModel)
@@ -103,5 +104,5 @@ struct SynchroConfigurationFlowView: View {
 }
 
 #Preview {
-    SynchroConfigurationFlowView(configurations: [])
+    SynchroConfigurationFlowView(userDbId: PreviewHelper.user.dbId, configurations: [])
 }

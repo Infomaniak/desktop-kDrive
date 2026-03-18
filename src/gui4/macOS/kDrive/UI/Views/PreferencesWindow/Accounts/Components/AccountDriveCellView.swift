@@ -24,6 +24,7 @@ import SwiftUI
 struct AccountDriveCellView: View {
     @State private var isShowingSynchronizeDriveView = false
 
+    let userDbId: Int
     let drive: any UIDriveRepresentation
     let isSynchronized: Bool
 
@@ -54,7 +55,9 @@ struct AccountDriveCellView: View {
                 Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
                     .buttonStyle(.bordered)
                     .sheet(isPresented: $isShowingSynchronizeDriveView) {
-                        SynchroConfigurationFlowView(configurations: [SynchroConfiguration(drive: drive, localFolder: nil, blackList: [])])
+                        SynchroConfigurationFlowView(userDbId: userDbId, configurations: [
+                            SynchroConfiguration(drive: drive, localFolder: nil, blackList: [])
+                        ])
                     }
             }
         }
@@ -74,5 +77,5 @@ struct AccountDriveCellView: View {
 }
 
 #Preview {
-    AccountDriveCellView(drive: PreviewHelper.drive1, isSynchronized: true)
+    AccountDriveCellView(userDbId: PreviewHelper.user.id, drive: PreviewHelper.drive1, isSynchronized: true)
 }
