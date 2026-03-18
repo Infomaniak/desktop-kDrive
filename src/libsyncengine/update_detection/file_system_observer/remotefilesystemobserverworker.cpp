@@ -550,14 +550,12 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::Array::Ptr actionArray,
-                                                              ActionInfoList &actionInfoList) {
-    actionInfoList.clear();
-    actionInfoList.reserve(actionArray->size());
+ExitInfo RemoteFileSystemObserverWorker::createActionInfoMap(const Poco::JSON::Array::Ptr actionArray,
+                                                             ActionInfoMap &actionInfoMap) {
+    actionInfoMap.clear();
+    actionInfoMap.reserve(actionArray->size());
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
-        sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
-
         if (stopAsked()) return ExitCode::Ok;
 
         const Poco::JSON::Object::Ptr actionObj = it->extract<Poco::JSON::Object::Ptr>();
@@ -598,7 +596,19 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
             actionInfo.snapshotItem.setName(newName);
         }
 #endif
-        actionInfoList.push_back(actionInfo);
+        actionInfoMap.insert({toRemoteFileId(actionInfo.snapshotItem.id()), actionInfo});
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::fillActionFilesInfo(const Poco::JSON::Array::Ptr actionFilesArray,
+                                                             ActionInfoMap &actionInfoMap) {
+    for (auto it = actionFilesArray->begin(); it != actionFilesArray->end(); ++it) {
+        if (stopAsked()) return ExitCode::Ok;
+
+        const auto actionFileObj = it->extract<Poco::JSON::Object::Ptr>();
+        if (const auto exitInfo = extractActionFileInfo(actionFileObj, actionInfoMap); !exitInfo) return exitInfo;
     }
 
     return ExitCode::Ok;
@@ -608,11 +618,13 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
                                                         const Poco::JSON::Array::Ptr actionFilesArray) {
     if (!actionArray) return ExitCode::Ok;
 
-    ActionInfoList actionInfoList;
-    if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
+    ActionInfoMap actionInfoMap;
+    if (const auto exitInfo = createActionInfoMap(actionArray, actionInfoMap); !exitInfo) return exitInfo;
+    if (const auto exitInfo = fillActionFilesInfo(actionFilesArray, actionInfoMap)) return exitInfo;
 
     MoveItemMap movedItems;
-    for (auto &actionInfo: actionInfoList) {
+    for (auto &[_, actionInfo]: actionInfoMap) {
+        sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
         if (const auto exitInfo = processAction(actionInfo, movedItems); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
             return exitInfo;
@@ -620,7 +632,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     }
 
     for (const auto &[nodeId, actionCode]: movedItems) {
-        // Items remaining in "movedItems" have been either blacklisted or whitelisted
+        // Items remaining in "movedItems" have been either blacklisted or whitelisted.
         switch (actionCode) {
             case ActionCode::ActionCodeMoveIn: {
                 if (_liveSnapshot.type(nodeId) != NodeType::Directory) break; // Do not explore if moved item is a file
@@ -647,7 +659,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     }
     actionInfo.actionCode = getActionCode(tmpStr);
 
-    int64_t tmpInt = 0;
+    RemoteFileId tmpInt = 0;
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
@@ -688,28 +700,39 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     }
     actionInfo.snapshotItem.setLastModified(tmpTime);
 
-    if (!JsonParserUtility::extractValue(actionObj, fileTypeKey, tmpStr)) {
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj,
+                                                               ActionInfoMap &actionInfoMap) {
+    RemoteFileId fileId = 0;
+    if (!JsonParserUtility::extractValue(actionFileObj, fileIdKey, fileId)) return ExitCode::BackError;
+
+    ActionInfo &actionInfo = actionInfoMap[fileId];
+    std::string fileTypeString;
+    if (!JsonParserUtility::extractValue(actionFileObj, fileTypeKey, fileTypeString)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setType(tmpStr == fileKey ? NodeType::File : NodeType::Directory);
+    actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
 
     if (actionInfo.snapshotItem.type() == NodeType::File) {
-        if (!JsonParserUtility::extractValue(actionObj, sizeKey, tmpInt, false)) {
+        uint64_t fileSize = 0;
+        if (!JsonParserUtility::extractValue(actionFileObj, sizeKey, fileSize, false)) {
             return ExitCode::BackError;
         }
-        actionInfo.snapshotItem.setSize(tmpInt);
+        actionInfo.snapshotItem.setSize(fileSize);
     }
 
-    if (!JsonParserUtility::extractValue(actionObj, symbolicLinkKey, tmpStr, false)) {
+    std::string symbolicKeyString;
+    if (!JsonParserUtility::extractValue(actionFileObj, symbolicLinkKey, symbolicKeyString, false)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setIsLink(!tmpStr.empty());
+    actionInfo.snapshotItem.setIsLink(!symbolicKeyString.empty());
 
-    if (auto capabilitiesObj = actionObj->getObject(capabilitiesKey); capabilitiesObj) {
+    if (auto capabilitiesObj = actionFileObj->getObject(capabilitiesKey); capabilitiesObj) {
         bool tmpBool = false;
-        if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, tmpBool)) {
-            return ExitCode::BackError;
-        }
+        if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, tmpBool)) return ExitCode::BackError;
+
         actionInfo.snapshotItem.setCanWrite(tmpBool);
     }
 

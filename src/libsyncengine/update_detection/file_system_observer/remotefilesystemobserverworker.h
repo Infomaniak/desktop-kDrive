@@ -69,18 +69,24 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 SyncName _path;
         };
 
-        using ActionInfoList = std::vector<ActionInfo>;
-        ExitInfo createActionInfoList(const Poco::JSON::Array::Ptr actionArray, ActionInfoList &actionInfoList);
-        ExitInfo processActions(const Poco::JSON::Array::Ptr actionsArray, const Poco::JSON::Array::Ptr actionFilesArray);
+        using RemoteFileId = int64_t;
+        static RemoteFileId toRemoteFileId(const NodeId &nodeId) { return std::stoi(nodeId); };
+        using ActionInfoMap = std::unordered_map<RemoteFileId, ActionInfo>;
+        ExitInfo createActionInfoMap(const Poco::JSON::Array::Ptr actionArray, ActionInfoMap &actionInfoMap);
+        ExitInfo fillActionFilesInfo(const Poco::JSON::Array::Ptr actionFilesArray, ActionInfoMap &actionInfoMap);
         ExitInfo extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoMap &actionInfoMap);
+
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
+        ExitInfo processActions(const Poco::JSON::Array::Ptr actionsArray, const Poco::JSON::Array::Ptr actionFilesArray);
+
         void keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) const;
         bool isDirectoryExplorationRequired(const ActionInfo &actionInfo, const MoveItemMap &movedItems) const;
+
         ExitInfo removeItemFromSnapshot(const NodeId &id);
 
         ExitInfo checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
-
         ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
         void countListingRequests();
