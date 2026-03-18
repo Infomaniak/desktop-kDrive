@@ -62,7 +62,7 @@ quint16 IpcClient::readPortFromCommFile() {
     if (!commFile.is_open()) {
         return 0;
     }
-    unsigned short port = 0;
+    quint16 port = 0;
     commFile >> port;
     return port;
 }
@@ -85,12 +85,12 @@ void IpcClient::connectToServer(quint16 port) {
  * @param params Request parameters
  * @return the request ID, which can be used to match the response with the request, or -1 if the request could not be sent (e.g., if the socket is not connected)
  */
-int IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
+int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
     if (_socket->state() != QTcpSocket::ConnectedState) {
         qDebug() << "[IpcClient] Cannot send request, socket not connected";
         return -1;
     }
-    const int id = _nextId.fetchAndAddOrdered(1);
+    const int32_t id = _nextId.fetchAndAddOrdered(1);
 
     Poco::DynamicStruct msg;
     msg[MSG_TYPE] = 1; // cf. src/server/comm/guijobs/abstractguijob.h GuiJobType enum
@@ -148,9 +148,9 @@ void IpcClient::processBuffer() {
             const Poco::Dynamic::Var var = parser.parse(raw);
             const Poco::DynamicStruct msg = *var.extract<Poco::JSON::Object::Ptr>();
 
-            const int type = msg[MSG_TYPE];
-            const int id = msg[MSG_REQUEST_ID];
-            const int num = msg[MSG_REQUEST_NUM];
+            const uint8_t type = msg[MSG_TYPE];
+            const int32_t id = msg[MSG_REQUEST_ID];
+            const uint8_t num = msg[MSG_REQUEST_NUM];
             const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
             emit messageReceived(type, id, num, params);
@@ -171,7 +171,7 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
         return false;
     }
 
-    int balance = 1;
+    uint8_t balance = 1;
     for (size_t i = 1; i < buffer.size(); ++i) {
         if (buffer[i] == '{') {
             ++balance;
