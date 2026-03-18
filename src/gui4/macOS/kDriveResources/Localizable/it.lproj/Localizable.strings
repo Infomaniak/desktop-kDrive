@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 16 Mar 2026 09:01:42 +0100
+ * Exported at: Wed, 18 Mar 2026 13:05:57 +0100
  */
 
 
@@ -443,6 +443,12 @@
 
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Bentornati!";
+
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Tutte le cartelle di kDrive";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Selezione personalizzata";
 
 /* loco:68e6739c8af12c42e80027c5 */
 "onboardingLoginDescription" = "Il cloud privato veloce e sicuro, ospitato in Svizzera.\n\nCollegatevi e mantenete i vostri documenti sincronizzati su tutti i vostri dispositivi.";

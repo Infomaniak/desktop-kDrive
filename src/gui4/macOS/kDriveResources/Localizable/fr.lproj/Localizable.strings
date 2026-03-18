@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 16 Mar 2026 09:01:42 +0100
+ * Exported at: Wed, 18 Mar 2026 13:05:57 +0100
  */
 
 
@@ -44,10 +44,46 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Mon activité uniquement";
 
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Synchroniser un dossier avec kDrive";
+
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Choisissez le dossier de votre ordinateur à synchronisés sur kDrive :";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Dossier synchronisé";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Personnalisez l'emplacement du dossier de votre ordinateur sur kDrive :";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "Emplacement kDrive";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Sélectionnez un dossier sur votre ordinateur à synchroniser avec kDrive.\nVous pouvez accéder à vos synchronisations avancées à partir du sélecteur de lecteur de la page d’accueil.";
+
+/* loco:698b0808eea225d30f014a63 */
+"advancedSyncSubtitle" = "Synchroniser un dossier avec kDrive";
+
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Synchronisations avancées";
+
+/* loco:6989c851ba57b190ff0ebbf2
+ * Allow tracking */
+"allowTrackingLabel" = "Permettre le suivi";
+
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’application est à jour";
+
+/* loco:698b051197064685c209f142 */
+"applyingChange" = "Appliquer le changement…";
+
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Supprime les journaux datant de plus de 7 jours pour économiser de l’espace.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Nettoyage automatique";
+
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Mises à jour automatiques";
 
@@ -56,6 +92,14 @@
 
 /* loco:69943068b17a2d5a500e16b2 */
 "availableOfflineDescription" = "Vos fichiers sont copiés sur votre ordinateur.\nVous pouvez les ouvrir à tout moment, même sans accès à Internet.";
+
+/* loco:699d9fd17806c8ed470fd2f2
+ * Error description when user doesn't have permission to access a kDrive */
+"backErrorDriveAccessErrorDescription" = "Vous n'avez pas l'autorisation d'accéder à ce kDrive. Veuillez vérifier vos droits ou contacter votre administrateur.";
+
+/* loco:699db8a1a58425c60d06a902 */
+"backErrorDriveAsleepDescription" = "Vous pouvez le réveiller à partir de l'interface web.";
+
 /* loco:698af17b4dd554948901a8b2 */
 "betaProgramDescription" = "Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.";
 

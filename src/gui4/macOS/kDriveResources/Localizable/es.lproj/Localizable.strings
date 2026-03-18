@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 16 Mar 2026 09:01:42 +0100
+ * Exported at: Wed, 18 Mar 2026 13:05:57 +0100
  */
 
 
@@ -445,6 +445,12 @@
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Bienvenido de nuevo";
 
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Todas las carpetas de kDrive";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Selección personalizada";
+
 /* loco:68e6739c8af12c42e80027c5 */
 "onboardingLoginDescription" = "La nube privada, rápida y segura, alojada en Suiza.\n\nConéctate y mantén tus documentos sincronizados en todos tus dispositivos.";
 
@@ -459,6 +465,12 @@
 
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Conectarse desde el navegador…";
+
+/* loco:698c68fe244b143eb00f5072 */
+"onboardingLoginProcessingDescription" = "Recuperar su información..";
+
+/* loco:698c68dd53b356ce140d32a2 */
+"onboardingLoginProcessingTitle" = "Un momento..";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "¡Bienvenido a kDrive!";

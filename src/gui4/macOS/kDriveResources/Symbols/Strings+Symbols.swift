@@ -316,6 +316,10 @@ public enum KDriveLocalizable {
   public static let onboardingDriveSelectionSyncInProgress = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionSyncInProgress", fallback: "Synchronization in progress")
   /// loco:691deaf47145f10ab4052cd2
   public static let onboardingDriveSelectionTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionTitle", fallback: "Welcome back!")
+  /// loco:698c5a5887eff04a98064d42
+  public static let onboardingExclusionSummaryNone = KDriveLocalizable.tr("Localizable", "onboardingExclusionSummaryNone", fallback: "All kDrive folders")
+  /// loco:698c5cfa7fb9b01ec80098c2
+  public static let onboardingExclusionSummarySome = KDriveLocalizable.tr("Localizable", "onboardingExclusionSummarySome", fallback: "Customized selection")
   /// loco:68e6739c8af12c42e80027c5
   public static let onboardingLoginDescription = KDriveLocalizable.tr("Localizable", "onboardingLoginDescription", fallback: "The fast, secure private cloud, hosted in Switzerland.\n\nLog in and keep your documents synchronized on all your devices.")
   /// loco:68e8fa543a683192560af9e2
