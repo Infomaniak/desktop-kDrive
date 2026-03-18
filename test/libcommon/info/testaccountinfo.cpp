@@ -32,7 +32,7 @@ void TestAccountInfo::testConstructors() {
     // Test parameterized constructor
     AccountInfo info2(42, 84);
     CPPUNIT_ASSERT_EQUAL(42, info2.dbId());
-    CPPUNIT_ASSERT_EQUAL(std::string{}, info1.name());
+    CPPUNIT_ASSERT_EQUAL(std::string{}, info2.name());
 }
 
 void TestAccountInfo::testGettersSetters() {
