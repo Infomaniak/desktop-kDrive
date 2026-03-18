@@ -161,27 +161,27 @@ class AppServer : public SharedTools::QtSingleApplication {
           \return ExitCode::Ok if no unexpected error occurred.
         */
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
-        [[nodiscard]] ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
+        [[nodiscard]] ExitInfo getVfs(SyncDbId syncDbId, std::shared_ptr<Vfs> &vfs);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        [[nodiscard]] ExitInfo stopSyncPal(SyncDbId syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
         void clearSyncCacheMap() { _syncCacheMap.clear(); }
         void triggerSyncProgressUpdate() { clearSyncCacheMap(); }
 
         void loadUsersInfo() { onLoadInfo(); }
 
-        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
+        [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
-        void stopSyncTask(int syncDbId);
-        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(int syncDbId, bool value);
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        void stopSyncTask(SyncDbId syncDbId);
+        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
         UpdateState getUpdateState() const;
         void startInstaller();
-        [[nodiscard]] ExitInfo getNodePath(int syncDbId, const NodeId &nodeId, CommString &path);
+        [[nodiscard]] ExitInfo getNodePath(SyncDbId syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
@@ -302,7 +302,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();

@@ -330,7 +330,7 @@ void ClientGui::showSynthesisDialog() {
     }
 }
 
-int ClientGui::driveErrorsCount(int driveDbId, bool unresolved) const {
+int ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) const {
     const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
     if (driveInfoMapIt == _driveInfoMap.end()) {
         qCDebug(lcClientGui()) << "Drive not found in drive map!";
@@ -340,7 +340,7 @@ int ClientGui::driveErrorsCount(int driveDbId, bool unresolved) const {
     return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoresolvedErrorsCount();
 }
 
-const QString ClientGui::folderPath(int syncDbId, const QString &filePath) const {
+const QString ClientGui::folderPath(const SyncDbId syncDbId, const QString &filePath) const {
     QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
@@ -350,7 +350,7 @@ const QString ClientGui::folderPath(int syncDbId, const QString &filePath) const
     return fullFilePath;
 }
 
-bool ClientGui::setCurrentUserDbId(int userDbId) {
+bool ClientGui::setCurrentUserDbId(const UserDbId userDbId) {
     const auto &userInfoMapIt = _userInfoMap.find(userDbId);
     if (userInfoMapIt == _userInfoMap.end()) {
         qCWarning(lcClientGui()) << "User not found in user map!";
@@ -381,7 +381,7 @@ bool ClientGui::setCurrentUserDbId(int userDbId) {
     return true;
 }
 
-bool ClientGui::setCurrentAccountDbId(int accountDbId) {
+bool ClientGui::setCurrentAccountDbId(const AccountDbId accountDbId) {
     const auto &accountInfoMapIt = _accountInfoMap.find(accountDbId);
     if (accountInfoMapIt == _accountInfoMap.end()) {
         qCWarning(lcClientGui()) << "Account not found in account map!";
@@ -407,7 +407,7 @@ bool ClientGui::setCurrentAccountDbId(int accountDbId) {
     return true;
 }
 
-bool ClientGui::setCurrentDriveDbId(int driveDbId) {
+bool ClientGui::setCurrentDriveDbId(const DriveDbId driveDbId) {
     const auto &driveInfoMapIt = _driveInfoMap.find(driveDbId);
     if (driveInfoMapIt == _driveInfoMap.end()) {
         qCWarning(lcClientGui()) << "Drive not found in drive map!";
@@ -424,11 +424,11 @@ bool ClientGui::setCurrentDriveDbId(int driveDbId) {
     return true;
 }
 
-void ClientGui::loadSyncInfoMap(int driveDbId, std::map<int, SyncInfoClient> &syncInfoMap) {
+void ClientGui::loadSyncInfoMap(const DriveDbId driveDbId, std::map<SyncDbId, SyncInfoClient> &syncInfoMap) {
     syncInfoMap.clear();
-    for (const auto &syncInfoMapElt: _syncInfoMap) {
-        if (syncInfoMapElt.second.driveDbId() == driveDbId) {
-            syncInfoMap.insert({syncInfoMapElt.first, syncInfoMapElt.second});
+    for (const auto &[syncDbId, syncInfo]: _syncInfoMap) {
+        if (syncInfo.driveDbId() == driveDbId) {
+            syncInfoMap.insert({syncDbId, syncInfo});
         }
     }
 }
@@ -1383,7 +1383,7 @@ void ClientGui::onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, i
         // Compute drive status
         const auto &driveInfoMapIt = _driveInfoMap.find(syncInfoMapIt->second.driveDbId());
         if (driveInfoMapIt != _driveInfoMap.end()) {
-            std::map<int, SyncInfoClient> syncInfoMap;
+            std::map<SyncDbId, SyncInfoClient> syncInfoMap;
             loadSyncInfoMap(driveInfoMapIt->first, syncInfoMap);
             driveInfoMapIt->second.updateStatus(syncInfoMap);
         }

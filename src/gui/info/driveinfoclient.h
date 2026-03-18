@@ -90,7 +90,7 @@ class DriveInfoClient : public DriveInfo {
         inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; }
         inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
 
-        void updateStatus(std::map<int, SyncInfoClient> &syncInfoMap);
+        void updateStatus(std::map<SyncDbId, SyncInfoClient> &syncInfoMap);
         QString folderPath(std::shared_ptr<std::map<int, SyncInfoClient>> syncInfoMap, int syncDbId,
                            const QString &filePath) const;
 

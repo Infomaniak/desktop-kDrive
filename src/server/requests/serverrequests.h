@@ -53,15 +53,15 @@ struct SYNCENGINE_EXPORT ServerRequests {
         // C/S requests (access to DB)
         // Use COMM_SHORT_TIMEOUT
         // TODO: Remove functions with QList parameter after switching to the new comm layer
-        static ExitCode getUserDbIdList(QList<int> &list);
-        static ExitCode getUserDbIdList(std::vector<int> &list);
+        static ExitCode getUserDbIdList(QList<UserDbId> &list);
+        static ExitCode getUserDbIdList(std::vector<UserDbId> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getUserInfoList(std::vector<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getAccountInfoList(std::vector<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
         static ExitCode getDriveInfoList(std::vector<DriveInfo> &list);
-        static ExitCode getDriveInfo(int driveDbId, DriveInfo &driveInfo);
+        static ExitCode getDriveInfo(DriveDbId driveDbId, DriveInfo &driveInfo);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
@@ -70,8 +70,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo isPathValidForNewSync(const SyncPath &path, bool &valid);
         static ExitInfo findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error);
         static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
-        static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
-        static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
+        static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const std::string &fileId, std::string &linkUrl);
+        static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitCode setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
@@ -80,14 +80,14 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
-        static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
+        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<ErrorInfo> &list);
         static ExitInfo getErrorInfoList(int limit, std::vector<ErrorInfo> &list);
-        static ExitCode getConflictList(int syncDbId, const std::unordered_set<ConflictType> &filter,
+        static ExitCode getConflictList(SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
                                         std::vector<Error> &errorLis);
-        static ExitCode getConflictErrorInfoList(int driveDbId, const std::unordered_set<ConflictType> &filter,
+        static ExitCode getConflictErrorInfoList(DriveDbId driveDbId, const std::unordered_set<ConflictType> &filter,
                                                  QList<ErrorInfo> &errorInfoList);
         static ExitCode deleteErrorsServer();
-        static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
+        static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
 #ifdef Q_OS_MAC
         static ExitCode deleteLiteSyncErrors();
@@ -100,38 +100,40 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
         static ExitInfo getUserAvailableDrives(
-                int userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
-        static ExitInfo getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
-        static ExitInfo addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                UserDbId userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailableInfo> &list);
+        static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitInfo addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+        static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitInfo addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+        static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
-        static ExitInfo addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+        static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
-        static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo,
+        static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const std::string &nodeId, NodeInfo &nodeInfo,
                                     bool withPath = false);
-        static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
+        static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
+                                    bool withPath = false);
 
-        static ExitInfo getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
-                                      const bool withPath = false);
+        static ExitInfo getSubFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
+                                      std::vector<NodeInfo> &list, const bool withPath = false);
 
-        static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+        static ExitInfo getSubFolders(UserDbId userDbId, DriveId driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false); // TODO: Delete after switching to the new comm layer
-        static ExitInfo getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath = false);
-        static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
-        static ExitCode createDir(int driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
-        static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
-        static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
-        static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
+        static ExitInfo getSubFolders(DriveDbId driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                      bool withPath = false);
+        static ExitInfo getSubFolders(DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitCode createDir(DriveDbId driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
+        static ExitCode createDir(DriveDbId driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
+        static ExitCode getPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl);
+        static ExitInfo getFolderSizeWithCallback(UserDbId userDbId, DriveId driveId, const NodeId &nodeId,
                                                   std::function<void(const QString &, qint64)> callback);
-        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t &result);
-        static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
-        static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
-        static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
+        static ExitInfo getFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, int64_t &result);
+        static ExitCode getNodeIdByPath(UserDbId userDbId, DriveId driveId, const SyncPath &path, QString &nodeId);
+        static ExitInfo getPathByNodeId(UserDbId userDbId, DriveId driveId, const QString &nodeId, QString &path);
+        static ExitInfo getPathByNodeId(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
         static ExitInfo deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!

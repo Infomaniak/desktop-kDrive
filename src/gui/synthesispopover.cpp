@@ -678,14 +678,14 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     _statusBarWidget->setStatus(statusInfo);
 }
 
-void SynthesisPopover::refreshStatusBar(std::map<int, DriveInfoClient>::const_iterator driveInfoMapIt) {
+void SynthesisPopover::refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoMapIt) {
     _statusBarWidget->setCurrentDrive(driveInfoMapIt->first);
     _statusBarWidget->setSeveralSyncs(_gui->syncInfoMap().size() > 1);
 
     refreshStatusBar(driveInfoMapIt->second);
 }
 
-void SynthesisPopover::refreshStatusBar(int driveDbId) {
+void SynthesisPopover::refreshStatusBar(const DriveDbId driveDbId) {
     refreshStatusBar(_gui->driveInfoMap().find(driveDbId));
 }
 
@@ -767,7 +767,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
 }
 
 void SynthesisPopover::handleRemovedDrives() {
-    std::map<int, SyncInfoClient> syncInfoMap;
+    std::map<SyncDbId, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
 
     if (syncInfoMap.empty()) _statusBarWidget->reset();

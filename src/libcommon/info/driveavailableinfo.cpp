@@ -29,8 +29,8 @@ static const auto driveAvailableInfoUserDbId = "userDbId";
 
 namespace KDC {
 
-DriveAvailableInfo::DriveAvailableInfo(const int driveId, const int userId, const int accountId, const QString &accountName,
-                                       const QString &name, const QString &color) :
+DriveAvailableInfo::DriveAvailableInfo(const DriveId driveId, const UserId userId, const AccountId accountId,
+                                       const QString &accountName, const QString &name, const QString &color) :
     _driveId(driveId),
     _userId(userId),
     _accountId(accountId),
@@ -68,12 +68,19 @@ void DriveAvailableInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info) {
-    in >> info._driveId >> info._userId >> info._accountId >> info._accountName >> info._name >> info._color >> info._userDbId;
+    qint64 driveId = 0;
+    qint64 userId = 0;
+    qint64 accountId = 0;
+    in >> driveId >> userId >> accountId >> info._accountName >> info._name >> info._color >> info._userDbId;
+    info.setDriveId(static_cast<DriveId>(driveId));
+    info.setUserId(static_cast<UserId>(userId));
+    info.setAccountId(static_cast<AccountId>(accountId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info) {
-    out << info._driveId << info._userId << info._accountId << info._accountName << info._name << info._color << info._userDbId;
+    out << static_cast<qint64>(info._driveId) << static_cast<qint64>(info._userId) << static_cast<qint64>(info._accountId)
+        << info._accountName << info._name << info._color << info._userDbId;
     return out;
 }
 

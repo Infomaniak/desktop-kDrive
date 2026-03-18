@@ -54,23 +54,23 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         bool isConnected();
         void hideAndShowTray();
         void showSynthesisDialog();
-        int driveErrorsCount(int driveDbId, bool unresolved) const;
+        int driveErrorsCount(DriveDbId driveDbId, bool unresolved) const;
         inline int generalErrorsCount() const { return _generalErrorsCounter; }
         inline int hasGeneralErrors() const { return _generalErrorsCounter > 0; }
-        const QString folderPath(int syncDbId, const QString &filePath) const;
-        inline const std::map<int, UserInfoClient> &userInfoMap() const noexcept { return _userInfoMap; }
-        inline const std::map<int, AccountInfo> &accountInfoMap() const noexcept { return _accountInfoMap; }
-        inline const std::map<int, DriveInfoClient> &driveInfoMap() const noexcept { return _driveInfoMap; }
-        inline std::map<int, DriveInfoClient> &driveInfoMap() noexcept { return _driveInfoMap; }
-        inline const std::map<int, SyncInfoClient> &syncInfoMap() const noexcept { return _syncInfoMap; }
-        inline std::map<int, SyncInfoClient> &syncInfoMap() noexcept { return _syncInfoMap; }
-        bool setCurrentUserDbId(int userDbId);
-        inline int currentUserDbId() const { return _currentUserDbId; }
-        bool setCurrentAccountDbId(int accountDbId);
-        inline int currentAccountDbId() const { return _currentAccountDbId; }
-        bool setCurrentDriveDbId(int driveDbId);
-        inline int currentDriveDbId() const { return _currentDriveDbId; }
-        void loadSyncInfoMap(int driveDbId, std::map<int, SyncInfoClient> &syncInfoMap);
+        const QString folderPath(SyncDbId syncDbId, const QString &filePath) const;
+        inline const std::map<UserDbId, UserInfoClient> &userInfoMap() const noexcept { return _userInfoMap; }
+        inline const std::map<AccountDbId, AccountInfo> &accountInfoMap() const noexcept { return _accountInfoMap; }
+        inline const std::map<DriveDbId, DriveInfoClient> &driveInfoMap() const noexcept { return _driveInfoMap; }
+        inline std::map<DriveDbId, DriveInfoClient> &driveInfoMap() noexcept { return _driveInfoMap; }
+        inline const std::map<SyncDbId, SyncInfoClient> &syncInfoMap() const noexcept { return _syncInfoMap; }
+        inline std::map<SyncDbId, SyncInfoClient> &syncInfoMap() noexcept { return _syncInfoMap; }
+        bool setCurrentUserDbId(UserDbId userDbId);
+        inline UserDbId currentUserDbId() const { return _currentUserDbId; }
+        bool setCurrentAccountDbId(AccountDbId accountDbId);
+        inline AccountDbId currentAccountDbId() const { return _currentAccountDbId; }
+        bool setCurrentDriveDbId(DriveDbId driveDbId);
+        inline DriveDbId currentDriveDbId() const { return _currentDriveDbId; }
+        void loadSyncInfoMap(SyncDbId syncDbId, std::map<SyncDbId, SyncInfoClient> &syncInfoMap);
         void activateLoadInfo(bool value = true);
         void computeOverallSyncStatus();
         bool loadInfoMaps();
@@ -131,14 +131,14 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QTimer _delayedTrayUpdateTimer;
         QDateTime _notificationEnableDate;
         AppClient *_app{nullptr};
-        std::map<int, UserInfoClient> _userInfoMap;
-        std::map<int, AccountInfo> _accountInfoMap;
-        std::map<int, DriveInfoClient> _driveInfoMap;
-        std::map<int, SyncInfoClient> _syncInfoMap;
+        std::map<UserDbId, UserInfoClient> _userInfoMap;
+        std::map<AccountDbId, AccountInfo> _accountInfoMap;
+        std::map<DriveDbId, DriveInfoClient> _driveInfoMap;
+        std::map<SyncDbId, SyncInfoClient> _syncInfoMap;
         int _generalErrorsCounter{0};
-        int _currentUserDbId{0};
-        int _currentAccountDbId{0};
-        int _currentDriveDbId{0};
+        UserDbId _currentUserDbId{0};
+        AccountDbId _currentAccountDbId{0};
+        SyncDbId _currentDriveDbId{0};
         QSet<int> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;

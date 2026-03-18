@@ -554,7 +554,7 @@ void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*
     }
 }
 
-bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
+bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<SyncDbId, SyncInfoClient> &syncInfoMap,
                                          QWidget *parent) {
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);

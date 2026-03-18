@@ -2999,7 +2999,7 @@ bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
     return true;
 }
 
-bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs) {
+bool ParmsDb::selectAllErrors(ErrorLevel level, SyncDbId syncDbId, int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
@@ -3058,7 +3058,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
     return true;
 }
 
-bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs) {
+bool ParmsDb::selectConflicts(const SyncDbId syncDbId, ConflictType filter, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
     std::string requestId = (filter == ConflictType::None ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID

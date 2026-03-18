@@ -29,7 +29,8 @@ namespace KDC {
 
 class UserInfo {
     public:
-        UserInfo(int userDbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected);
+        UserInfo(UserDbId userDbId, UserId userId, const QString &name, const QString &email, const QImage &avatar,
+                 bool connected);
         UserInfo() = default;
 
         inline void setDbId(UserDbId dbId) { _dbId = dbId; }
@@ -71,8 +72,8 @@ class UserInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list);
 
     private:
-        int _dbId{-1};
-        int _userId{-1};
+        UserDbId _dbId{-1};
+        UserId _userId{-1};
         QString _name;
         QString _email;
         QImage _avatar;

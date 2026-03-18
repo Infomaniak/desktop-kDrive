@@ -86,17 +86,17 @@ using SyncPalMap = std::unordered_map<SyncDbId, std::shared_ptr<SyncPal>>;
 
 struct SyncPalInfo {
         SyncPalInfo() = default;
-        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
+        SyncPalInfo(const DriveDbId driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
             driveDbId(driveDbId_),
             localPath(localPath_),
             targetPath(targetPath_) {}
 
-        int syncDbId{0};
-        int driveDbId{0};
-        int driveId{0};
-        int accountDbId{0};
-        int userDbId{0};
-        int userId{0};
+        SyncDbId syncDbId{0};
+        DriveDbId driveDbId{0};
+        DriveId driveId{0};
+        AccountDbId accountDbId{0};
+        UserDbId userDbId{0};
+        UserId userId{0};
         std::string driveName;
         SyncPath localPath;
         NodeId localNodeId;
@@ -151,12 +151,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline const SyncPalInfo &syncInfo() const { return _syncInfo; }
-        inline int syncDbId() const { return _syncInfo.syncDbId; }
-        inline int driveDbId() const { return _syncInfo.driveDbId; }
-        inline int driveId() const { return _syncInfo.driveId; }
-        inline int accountDbId() const { return _syncInfo.accountDbId; }
-        inline int userDbId() const { return _syncInfo.userDbId; }
-        inline int userId() const { return _syncInfo.userId; }
+        inline SyncDbId syncDbId() const { return _syncInfo.syncDbId; }
+        inline DriveDbId driveDbId() const { return _syncInfo.driveDbId; }
+        inline DriveId driveId() const { return _syncInfo.driveId; }
+        inline AccountDbId accountDbId() const { return _syncInfo.accountDbId; }
+        inline UserDbId userDbId() const { return _syncInfo.userDbId; }
+        inline UserId userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline const SyncPath &localPath() const { return _syncInfo.localPath; }

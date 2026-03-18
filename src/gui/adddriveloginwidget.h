@@ -45,7 +45,7 @@ class AddDriveLoginWidget : public QWidget {
 
     private:
         QString _codeVerifier;
-        int _userDbId{0};
+        qint64 _userDbId{0};
 
         QUrl generateAuthorizeUrl();
 

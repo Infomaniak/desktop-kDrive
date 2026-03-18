@@ -125,9 +125,9 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateError(const Error &err, bool &found);
         bool deleteAllErrorsByExitCode(ExitCode exitCode);
         bool deleteAllErrorsByExitCause(ExitCause exitCause);
-        bool selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs);
+        bool selectAllErrors(ErrorLevel level, SyncDbId syncDbId, int limit, std::vector<Error> &errs);
         bool selectAllErrors(int limit, std::vector<Error> &errs);
-        bool selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs);
+        bool selectConflicts(const SyncDbId syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
         bool deleteError(int64_t dbId, bool &found);
 

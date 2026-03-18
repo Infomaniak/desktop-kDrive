@@ -78,18 +78,18 @@ void SyncInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
-    int dbId = 0; // must be int to work with QDataStream
-    int driveDbId = 0; // must be int to work with QDataStream
+    qint64 dbId = 0;
+    qint64 driveDbId = 0;
     in >> dbId >> driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
             info._virtualFileMode >> info._navigationPaneClsid;
-    info.setDbId(dbId);
-    info.setDriveDbId(driveDbId);
+    info.setDbId(static_cast<SyncDbId>(dbId));
+    info.setDriveDbId(static_cast<DriveDbId>(driveDbId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const SyncInfo &info) {
-    out << toInt(info._dbId) << toInt(info._driveDbId) << info._localPath << info._targetPath << info._targetNodeId
-        << info._supportVfs << info._virtualFileMode << info._navigationPaneClsid;
+    out << static_cast<qint64>(info._dbId) << static_cast<qint64>(info._driveDbId) << info._localPath << info._targetPath
+        << info._targetNodeId << info._supportVfs << info._virtualFileMode << info._navigationPaneClsid;
     return out;
 }
 

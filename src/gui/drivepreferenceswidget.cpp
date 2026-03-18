@@ -619,7 +619,7 @@ bool DrivePreferencesWidget::addSync(const QString &localFolderPath, bool liteSy
 
     KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
 
-    int syncDbId{0};
+    qint64 syncDbId{0};
     if (const auto exitCode = GuiRequests::addSync(_driveDbId, localFolderPathNormalized, serverFolderPath, serverFolderNodeId,
                                                    liteSync, blackSet, whiteSet, syncDbId);
         exitCode != ExitCode::Ok) {

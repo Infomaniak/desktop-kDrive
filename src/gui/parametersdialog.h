@@ -109,8 +109,8 @@ class ParametersDialog : public CustomDialog {
         QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const;
         QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const;
 
-        void refreshErrorList(int driveDbId);
-        bool driveHasSyncs(int driveDbId) const;
+        void refreshErrorList(DriveDbId driveDbId);
+        bool driveHasSyncs(DriveDbId driveDbId) const;
 
     private slots:
         void onExit();
@@ -128,9 +128,9 @@ class ParametersDialog : public CustomDialog {
         void onOpenFolder(const QString &filePath);
         void onDebugReporterDone(bool retCode, const QString &debugId = QString());
         void retranslateUi();
-        void onPauseSync(int syncDbId = 0);
-        void onResumeSync(int syncDbId = 0);
-        void onClearErrors(int syncDbId, bool autoResolved);
+        void onPauseSync(DriveDbId syncDbId = 0);
+        void onResumeSync(DriveDbId syncDbId = 0);
+        void onClearErrors(DriveDbId syncDbId, bool autoResolved);
 };
 
 } // namespace KDC

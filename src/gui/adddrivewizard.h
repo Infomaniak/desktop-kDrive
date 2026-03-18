@@ -76,9 +76,9 @@ class AddDriveWizard : public CustomDialog {
         QSet<QString> _blackList;
         QSet<QString> _whiteList;
         QString _localFolderPath;
-        int _userDbId;
+        qint64 _userDbId{0};
         DriveAvailableInfo _driveInfo;
-        int _syncDbId{0};
+        qint64 _syncDbId{0};
         KDC::GuiUtility::WizardAction _action;
 
         void setButtonIcon(const QColor &value) override;

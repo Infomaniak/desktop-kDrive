@@ -50,14 +50,14 @@ struct GuiRequests {
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
-        static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);
-        static ExitCode getBlacklistedNodeIdSet(int syncDbId, QSet<QString> &syncIdSet);
-        static ExitCode setBlacklistedNodeIdSet(int syncDbId, const QSet<QString> &syncIdSet);
+        static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
+        static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
+        static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
+        static ExitCode getNodePath(SyncDbId syncDbId, const QString &nodeId, QString &path);
         static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
-        static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
+        static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
         static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
@@ -66,47 +66,49 @@ struct GuiRequests {
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
-        static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitCode getConflictList(int driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
+        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<ErrorInfo> &list);
+        static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
         static ExitCode deleteErrorsServer();
-        static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
+        static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
-        static ExitCode resolveConflictErrors(int driveDbId, bool keepLocalVersion);
-        static ExitCode resolveUnsupportedCharErrors(int driveDbId);
-        static ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
+        static ExitCode resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
+        static ExitCode resolveUnsupportedCharErrors(DriveDbId driveDbId);
+        static ExitCode setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
+        static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserDbId &userDbId, QString &error,
                                      QString &errorDescr);
-        static ExitCode getUserAvailableDrives(int userDbId, QList<DriveAvailableInfo> &list);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+        static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailableInfo> &list);
+        static ExitCode addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId);
-        static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                const QSet<QString> &blackList, const QSet<QString> &whiteList, SyncDbId &syncDbId);
+        static ExitCode addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, const QSet<QString> &blackList,
-                                const QSet<QString> &whiteList, int &syncDbId);
-        static ExitCode startSyncs(int userDbId);
-        static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
-        static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+                                const QSet<QString> &whiteList, SyncDbId &syncDbId);
+        static ExitCode startSyncs(UserDbId userDbId);
+        static ExitCode getNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
+                                    bool withPath = false);
+        static ExitInfo getSubFolders(UserDbId userDbId, DriveId driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
-        static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
-        static ExitCode createMissingFolders(int driveDbId, const QList<QPair<QString, QString>> &serverFolderList,
+        static ExitInfo getSubFolders(DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitCode createMissingFolders(DriveDbId driveDbId, const QList<QPair<QString, QString>> &serverFolderList,
                                              QString &nodeId);
-        static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
-        static ExitCode getFolderSize(int userDbId, int driveId, const QString &nodeId);
+        static ExitCode getPublicLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
+        static ExitCode getFolderSize(UserDbId userDbId, DriveId driveId, const QString &nodeId);
 
         // C/S requests (others)
-        static ExitCode syncStart(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode syncStop(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStart(SyncDbId syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStop(SyncDbId syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode searchItemInDrive(int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+        static ExitCode deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode searchItemInDrive(DriveDbId driveDbId, const QString &searchString, QList<SearchInfo> &list,
+                                          bool &hasMore,
                                           QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
+        static ExitCode deleteSync(SyncDbId syncDbId); // Asynchronous because it can be time consuming
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);

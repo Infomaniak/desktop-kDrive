@@ -131,8 +131,8 @@ class SynthesisPopover : public QDialog {
         void getFirstSyncWithStatus(SyncStatus status, int driveDbId, int &syncDbId, bool &found);
         void getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found);
         void refreshStatusBar(const DriveInfoClient &driveInfo);
-        void refreshStatusBar(std::map<int, DriveInfoClient>::const_iterator driveInfoIt);
-        void refreshStatusBar(int driveDbId);
+        void refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoIt);
+        void refreshStatusBar(DriveDbId driveDbId);
         void setSynchronizedDefaultPage(QWidget **widget, QWidget *parent);
         void reset();
         void addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row = 0);

@@ -30,15 +30,15 @@ namespace KDC {
 class DriveAvailableInfo {
     public:
         DriveAvailableInfo() = default;
-        DriveAvailableInfo(int driveId, int userId, int accountId, const QString &accountName, const QString &name,
+        DriveAvailableInfo(DriveId driveId, UserId userId, AccountId accountId, const QString &accountName, const QString &name,
                            const QString &color);
 
-        [[nodiscard]] int driveId() const { return _driveId; }
-        void setDriveId(const int driveId) { _driveId = driveId; }
-        [[nodiscard]] int userId() const { return _userId; }
-        void setUserId(const int userId) { _userId = userId; }
-        [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(const int accountId) { _accountId = accountId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
+        void setDriveId(const DriveId driveId) { _driveId = driveId; }
+        [[nodiscard]] UserId userId() const { return _userId; }
+        void setUserId(const UserId userId) { _userId = userId; }
+        [[nodiscard]] AccountId accountId() const { return _accountId; }
+        void setAccountId(const AccountId accountId) { _accountId = accountId; }
         [[nodiscard]] const QString &accountName() const { return _accountName; }
         void setAccountName(const QString &accountName) { _accountName = accountName; }
         [[nodiscard]] const QString &name() const { return _name; }
@@ -58,9 +58,9 @@ class DriveAvailableInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<DriveAvailableInfo> &list);
 
     private:
-        int _driveId{0};
-        int _userId{0};
-        int _accountId{0};
+        DriveId _driveId{0};
+        UserId _userId{0};
+        AccountId _accountId{0};
         QString _accountName;
         QString _name;
         QColor _color;

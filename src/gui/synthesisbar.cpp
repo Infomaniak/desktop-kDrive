@@ -93,7 +93,7 @@ void SynthesisBar::refreshErrorsButton() {
     bool drivesWithInfos = false;
 
     for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
-        std::map<int, SyncInfoClient> syncInfoMap;
+        std::map<SyncDbId, SyncInfoClient> syncInfoMap;
         _gui->loadSyncInfoMap(driveId, syncInfoMap);
         if (syncInfoMap.empty()) {
             driveInfo.setUnresolvedErrorsCount(0);
@@ -212,7 +212,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
     MatomoClient::sendVisit(MatomoNameField::PG_SynthesisPopover_KebabMenu);
     // Open Folder
-    std::map<int, SyncInfoClient> syncInfoMap;
+    std::map<SyncDbId, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
     if (!syncInfoMap.empty()) {
         auto *foldersMenuAction = new QWidgetAction(this);

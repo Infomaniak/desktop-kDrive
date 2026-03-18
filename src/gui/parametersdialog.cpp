@@ -1118,15 +1118,15 @@ void ParametersDialog::retranslateUi() {
     _defaultTextLabel->setText(tr("No kDrive configured!"));
 }
 
-void ParametersDialog::onPauseSync(int syncDbId) {
+void ParametersDialog::onPauseSync(const DriveDbId syncDbId) {
     emit executeSyncAction(ActionType::Stop, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onResumeSync(int syncDbId) {
+void ParametersDialog::onResumeSync(const DriveDbId syncDbId) {
     emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolved) {
+void ParametersDialog::onClearErrors(const DriveDbId driveDbId, const bool autoResolved) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *listWidgetToClear = nullptr;
 
@@ -1180,7 +1180,7 @@ void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolve
     }
 }
 
-void ParametersDialog::refreshErrorList(int driveDbId) {
+void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *autoresolvedErrorsListWidget = nullptr;
     QListWidget *unresolvedErrorsListWidget = nullptr;
@@ -1277,8 +1277,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     errorTabWidget->setCurrentIndex(autoresolvedErrorCount ? ErrorTabWidget::AutoResolveIndex : ErrorTabWidget::ToResolveIndex);
 }
 
-bool ParametersDialog::driveHasSyncs(int driveDbId) const {
-    std::map<int, SyncInfoClient> syncInfoMap;
+bool ParametersDialog::driveHasSyncs(const DriveDbId driveDbId) const {
+    std::map<SyncDbId, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(driveDbId, syncInfoMap);
     return !syncInfoMap.empty();
 }
