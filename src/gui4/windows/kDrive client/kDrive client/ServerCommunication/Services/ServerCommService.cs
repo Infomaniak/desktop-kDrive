@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-using DynamicData;
+﻿using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
@@ -1300,6 +1302,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
                     await HandleLogUploadProgressAsync(sender, args);
                     break;
+                case SignalNum.UTILITY_SHOW_NOTIFICATION:
+                    await HandleUtilityShowNotification(sender, args);
+                    break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
                     break;
@@ -1752,6 +1757,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+        }
+
+        public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
+                return;
+            }
+            string? title = signalData[JsonKeys.Title]?.GetValue<string>();
+            string? message = signalData[JsonKeys.Message]?.GetValue<string>();
+
+            // Decode base64 encoded 
+            title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
+            message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            if (title is null || message is null)
+            {
+                Logger.Log(Logger.Level.Error, "title or message is null.");
+                return;
+            }
+
+            App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
         }
 
         // Helpers

@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
+  Exported at: Thu, 19 Mar 2026 19:22:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -232,6 +232,9 @@
   </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Abilitazione</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Attivare nelle impostazioni di Windows</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Comprendere il problema</value> 
@@ -808,6 +811,9 @@ Si aprirà nel browser.</value>
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ fa</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Tutti i file</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Autore</value> 
   </data> 
@@ -977,6 +983,9 @@ Si aprirà nel browser.</value>
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Posizione</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Cartelle sincronizzate</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Sincronizzazione</value> 

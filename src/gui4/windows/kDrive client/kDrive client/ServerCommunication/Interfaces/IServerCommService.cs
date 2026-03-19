@@ -151,5 +151,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Event handlers for error-related signals
         Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);
         Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for app-related signals
+        Task HandleUtilityShowNotification(object? sender, SignalEventArgs args);
     }
 }

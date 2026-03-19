@@ -121,7 +121,6 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
                 }
             }
-
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
@@ -129,7 +128,7 @@ namespace Infomaniak.kDrive
             var currentWindowContent = CurrentWindow.Content;
 
             // Initialize notifications
-            _serviceProvider.GetRequiredService<NotificationManager>().Init();
+            ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
             // Display splash screen
             CurrentWindow.Content = new CustomControls.SplashScreen();
@@ -168,13 +167,11 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
-
-            _serviceProvider.GetRequiredService<NotificationManager>().ShowNotification("Test title", "The content is here!!!!!!");
         }
 
         void OnProcessExit(object sender, EventArgs e)
         {
-            _serviceProvider.GetRequiredService<NotificationManager>().Unregister();
+            ServiceProvider.GetRequiredService<NotificationManager>().Unregister();
         }
 
         private void RegisterOAuthProtocol()

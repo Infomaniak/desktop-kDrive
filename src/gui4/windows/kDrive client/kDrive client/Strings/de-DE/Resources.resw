@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
+  Exported at: Thu, 19 Mar 2026 19:22:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -232,6 +232,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Aktivieren Sie</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>In den Windows-Einstellungen aktivieren</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Das Problem verstehen</value> 
@@ -810,6 +813,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelAgo" xml:space="preserve"> 
     <value>vor %@</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Alle Ordner</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Autor</value> 
   </data> 
@@ -979,6 +985,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Standort</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synchronisierte Ordner</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronisierung</value> 

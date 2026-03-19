@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
+  Exported at: Thu, 19 Mar 2026 19:22:56 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -232,6 +232,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Activer</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Activer dans les paramètres Windows</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Comprendre le problème</value> 
@@ -808,6 +811,9 @@ Il s’ouvrira dans votre navigateur.</value>
   <data name="labelAgo" xml:space="preserve"> 
     <value>il y a %@</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Tous les dossiers</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Auteur</value> 
   </data> 
@@ -977,6 +983,9 @@ Il s’ouvrira dans votre navigateur.</value>
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Emplacement</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Dossiers synchronisés</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronisation</value> 
