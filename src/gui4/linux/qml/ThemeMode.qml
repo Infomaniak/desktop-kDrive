@@ -30,7 +30,7 @@ QtObject {
 
     function set(mode) {
         if (mode === ThemeMode.System || mode === ThemeMode.Light || mode === ThemeMode.Dark)
-            _mode = mode
+            _mode = mode // TODO add logging if the mode arg is invalid.
     }
 
     readonly property bool isDark: {
