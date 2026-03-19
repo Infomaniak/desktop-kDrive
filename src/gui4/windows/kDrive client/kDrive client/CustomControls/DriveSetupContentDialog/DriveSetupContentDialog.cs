@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.Content = frame;
             frame.Navigate(typeof(DriveSelectionPage), _driveSetupContentDialogVM);
             base.PrimaryButtonClick += DriveSetupContentDialog_PrimaryButtonClick;
-            base.SecondaryButtonClick += DriveSetupContentDialog_SecondaryButtonClick;
+            base.CloseButtonClick += DriveSetupContentDialog_SecondaryButtonClick;
             _driveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
         }
 

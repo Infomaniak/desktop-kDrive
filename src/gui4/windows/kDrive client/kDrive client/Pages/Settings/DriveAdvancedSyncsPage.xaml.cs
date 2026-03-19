@@ -282,7 +282,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         dialog.Content = exclusionPage;
 
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Secondary)
+        if (result == ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
             await exclusionPage.SaveChanges();
