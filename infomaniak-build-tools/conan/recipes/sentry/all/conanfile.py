@@ -65,6 +65,10 @@ class SentryNativeConan(ConanFile):
                         "Please install them manually."
                     )
 
+    def package_id(self):
+        # Include qt_version in package_id so builds with different Qt versions don't share cache
+        self.info.options.qt_version = self.options.qt_version
+
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
         # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
