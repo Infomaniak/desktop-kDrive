@@ -283,7 +283,7 @@ void SyncPalWorker::stop() {
     _unpauseAsked = true;
     ISyncWorker::stop();
 #if defined(KD_WINDOWS)
-    if (_resetVfsFilesStatusThread->joinable()) {
+    if (_resetVfsFilesStatusThread && _resetVfsFilesStatusThread->joinable()) {
         _resetVfsFilesStatusThread->join();
     }
 #endif
