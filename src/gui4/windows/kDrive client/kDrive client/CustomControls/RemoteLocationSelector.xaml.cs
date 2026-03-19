@@ -304,7 +304,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (string.IsNullOrEmpty(parentNodeId))
             {
-                parentNodeId = "1";
+                parentNodeId = App.Constants.Drive.RootNodeId;
             }
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

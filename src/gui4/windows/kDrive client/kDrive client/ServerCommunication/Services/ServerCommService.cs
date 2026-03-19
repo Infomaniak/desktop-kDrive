@@ -880,7 +880,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(parentNodeId))
-                parentNodeId = "1";
+                parentNodeId = App.Constants.Drive.RootNodeId;
 
             var parms = new JsonObject
             {
