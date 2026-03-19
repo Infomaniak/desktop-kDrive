@@ -132,7 +132,7 @@ void IpcClient::onDisconnected() {
  */
 void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
-    _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
+    (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
     processBuffer();
 }
 
