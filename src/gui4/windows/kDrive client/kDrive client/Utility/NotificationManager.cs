@@ -75,10 +75,11 @@ namespace Infomaniak.kDrive
             AppModel.UIThreadDispatcher.TryEnqueue(() => (App.Current as App)?.CurrentWindow?.AppWindow.Show());
         }
 
-        public void Unregister()
+        public async Task Unregister()
         {
             if (m_isRegistered)
             {
+                await AppNotificationManager.Default.RemoveAllAsync();
                 AppNotificationManager.Default.Unregister();
                 m_isRegistered = false;
             }
