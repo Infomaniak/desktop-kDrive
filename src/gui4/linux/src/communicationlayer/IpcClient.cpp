@@ -168,6 +168,7 @@ void IpcClient::processBuffer() {
 
 /**
  * Extract the first complete JSON message from the buffer.
+ * Here, we can count the brackets because every string is base64 encoded so it cannot contain brackets, and there are no escape characters in the JSON messages.
  * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{' and ending with the matching '}'.
  * @param outMessage The extracted JSON message, if a complete message is found at the beginning of the buffer. The message is removed from the buffer.
  * @return true if a complete message was successfully extracted and removed from the buffer, false otherwise (if the buffer is empty, does not start with '{', or does not contain a complete JSON object).
