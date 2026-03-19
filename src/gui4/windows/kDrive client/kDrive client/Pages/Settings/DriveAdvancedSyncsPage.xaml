@@ -44,7 +44,7 @@
                     </toolKit:SettingsCard>
 
                     <!--- Folder selection -->
-                    <toolKit:SettingsCard Header="Dossiers synchronisés">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncedFolders')}">
                         <!-- Presentation -->
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">

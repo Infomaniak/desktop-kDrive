@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             else if (Sync is null)
             {
                 Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncExclusionPage");
-                throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
+                throw new Exception("Invalid parameter type when navigating to SyncExclusionPage");
             }
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
