@@ -26,6 +26,7 @@
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
+#ifdef QT_DEBUG
     KDC::IpcClient client;
 
     QObject::connect(&client, &KDC::IpcClient::connected, [&client]() {
@@ -49,6 +50,6 @@ int main(int argc, char *argv[]) {
 
     qDebug() << "[IpcClient] Connecting to server...";
     client.connectToServer();
-
+#endif
     return QGuiApplication::exec();
 }
