@@ -57,8 +57,8 @@
         <!-- Success -->
         <DataTemplate x:Key="LastUploadStatusSuccessTemplate"
                       x:DataType="types:LogUploadState">
-            <local:SvgIcon Height="16"
-                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+                           Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
@@ -70,8 +70,8 @@
         <!-- Error -->
         <DataTemplate x:Key="LastUploadStatusErrorTemplate"
                       x:DataType="types:LogUploadState">
-            <local:SvgIcon Height="16"
-                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                           Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
                            VerticalAlignment="Center">
                 <ToolTipService.ToolTip>
@@ -83,8 +83,8 @@
         <!-- Canceled -->
         <DataTemplate x:Key="LastUploadStatusCancelRequestedTemplate"
                       x:DataType="types:LogUploadState">
-            <local:SvgIcon Height="16"
-                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
+                           Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center" />
         </DataTemplate>

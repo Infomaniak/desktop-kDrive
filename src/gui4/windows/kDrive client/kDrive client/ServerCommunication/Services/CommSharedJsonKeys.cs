@@ -62,6 +62,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Strategy = "strategy";
 
         static public string NodeId = "nodeId";
+        static public string ParentNodeId = "parentNodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
         static public string LocalFolderPath = "localFolderPath";

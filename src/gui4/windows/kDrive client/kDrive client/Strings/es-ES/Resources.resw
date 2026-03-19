@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
+  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,6 +72,9 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>Spanish</value>
   </metadata> 
+  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Compruebe que su conexión a Internet está activa, que el nombre no está ya en uso y que no contiene caracteres no válidos.</value> 
+  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versión %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
@@ -105,6 +108,24 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Solo mi actividad</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Sincronizar una carpeta con kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Elija la carpeta de su ordenador que desea sincronizar con kDrive :</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Carpeta sincronizada</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Personaliza la ubicación de la carpeta de tu ordenador en kDrive :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Elija la ubicación de la carpeta en kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>Ranura kDrive</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
     <value>Seleccione una carpeta de su ordenador para sincronizarla con kDrive.
@@ -310,8 +331,14 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="buttonSelect" xml:space="preserve"> 
     <value>seleccione</value> 
   </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Seleccione una carpeta</value> 
+  </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Seleccionar carpetas</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Seleccione una ubicación</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
     <value>seleccionado</value> 
@@ -886,6 +913,9 @@ Se abrirá en su navegador.</value>
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>Está utilizando kDrive en un ordenador nuevo, después de restaurarlo a partir de una copia de seguridad.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Nueva carpeta</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>nueva sincronización</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
@@ -1154,11 +1184,11 @@ o elija un paquete adaptado a sus necesidades.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Bienvenido de nuevo</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>Ha excluido algunas carpetas</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>Todas las carpetas de kDrive</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Selección personalizada</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>La nube privada, rápida y segura, alojada en Suiza.
@@ -1440,6 +1470,9 @@ Si el problema persiste, puede convertir la sincronización a una sincronizació
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>Abrir kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value> No se puede crear esta carpeta</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Acceso no autorizado</value> 

@@ -37,7 +37,7 @@
 
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
-                                      Height="16" />
+                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}"/>
                     <TextBlock  Text="{x:Bind Name}"
                                 Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                 VerticalAlignment="Center" />
@@ -61,7 +61,7 @@
 
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{ThemeResource TextFillColorDisabledBrush}"
-                                      Height="16" />
+                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                     <TextBlock  Text="{x:Bind Name}"
                                 Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                 Foreground="{ThemeResource TextFillColorDisabledBrush}"
@@ -96,7 +96,7 @@
 
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                           Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
-                                          Height="16" />
+                                          Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
@@ -138,7 +138,7 @@
 
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                           Foreground="{ThemeResource TextFillColorDisabledBrush}"
-                                          Height="16" />
+                                          Style="{StaticResource Infomaniak.Style.Icon.Size.S}"/>
                     </StackPanel>
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
