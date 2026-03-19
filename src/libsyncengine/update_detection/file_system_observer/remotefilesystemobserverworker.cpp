@@ -480,7 +480,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
     // Temporary mocks the long poll request as `listing/longpoll` does not exist in the API v3 yet.
     changes = true;
-    Utility::msleep(2000);
 
     return ExitCode::Ok;
 
