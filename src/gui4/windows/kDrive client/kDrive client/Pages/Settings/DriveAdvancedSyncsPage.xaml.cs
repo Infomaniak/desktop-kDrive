@@ -274,9 +274,9 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         ContentDialog dialog = new ContentDialog
         {
             XamlRoot = this.XamlRoot,
-            SecondaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
-            PrimaryButtonText = Localizer.Instance.GetString("buttonCancel"),
-            DefaultButton = ContentDialogButton.Secondary
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            PrimaryButtonText = Localizer.Instance.GetString("ButtonConfirm"),
+            DefaultButton = ContentDialogButton.Primary
         };
         var exclusionPage = new SyncExclusionPage(sync);
         dialog.Content = exclusionPage;

@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Title = Localizer.Instance.GetString("logUploadPopupTitle"),
                 DefaultButton = ContentDialogButton.Primary,
                 PrimaryButtonText = Localizer.Instance.GetString("buttonSend"),
-                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel")
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel")
             };
             var popupPage = new Pages.Popup.LogUploadPopup();
             dialog.Content = popupPage;

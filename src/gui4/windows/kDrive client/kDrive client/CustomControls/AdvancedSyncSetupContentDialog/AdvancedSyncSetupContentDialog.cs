@@ -24,9 +24,9 @@ namespace Infomaniak.kDrive.CustomControls
             base.MinWidth = 540;
             base.DataContext = _advancedSyncSetupContentDialogVM;
             base.XamlRoot = xamlRoot;
-            base.SecondaryButtonText = Localizer.Instance.GetString("buttonConfirm");
-            base.IsSecondaryButtonEnabled = false;
-            base.PrimaryButtonText = Localizer.Instance.GetString("buttonCancel");
+            base.PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm");
+            base.IsPrimaryButtonEnabled = false;
+            base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
             base.DefaultButton = ContentDialogButton.Secondary;
             var frame = new Frame();
             base.Content = frame;
@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void AdvancedSyncSetupContentDialogVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AdvancedSyncSetupContentDialogVM.CanGoNext))
-                base.IsSecondaryButtonEnabled = _advancedSyncSetupContentDialogVM.CanGoNext;
+                base.IsPrimaryButtonEnabled = _advancedSyncSetupContentDialogVM.CanGoNext;
         }
 
         private void AdvancedSyncSetupContentDialogVM_SetupFinished(object? sender, AdvancedSyncSetupResult e)

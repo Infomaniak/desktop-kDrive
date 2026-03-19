@@ -104,6 +104,8 @@ namespace Infomaniak.kDrive.ViewModels
                     LastActivity = null;
                 }
             };
+
+            RefreshHasExcludedFolder();
         }
 
         public DbId DbId
@@ -203,12 +205,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public bool? HasExcludedFolder
         {
-            get
-            {
-                if (_hasExcludedFolder is null) // If the value is not loaded yet, trigger the loading, UI will be updated once the loading is done
-                    RefreshHasExcludedFolder();
-                return _hasExcludedFolder;
-            }
+            get => _hasExcludedFolder;
             set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
         }
 
@@ -358,7 +355,7 @@ namespace Infomaniak.kDrive.ViewModels
             SyncActivities.RemoveMany(toBeRemoved);
         }
 
-        public void RefreshHasExcludedFolder()
+        private void RefreshHasExcludedFolder()
         {
             if (_hasExcludedFolderLoadingTask is not null && !_hasExcludedFolderLoadingTask.IsCompleted)
             {
