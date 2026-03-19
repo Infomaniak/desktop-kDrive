@@ -27,13 +27,31 @@
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
                 <toolKit:SettingsExpander.Items>
+                    <!-- Local path -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('localLocation')}">
                         <HyperlinkButton Content="{x:Bind LocalPath}"
                                          Click="LocalPathLink_Click" />
                     </toolKit:SettingsCard>
+
+                    <!-- Remote path -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('remoteLocation')}">
-                        <HyperlinkButton Content="{x:Bind RemotePath}"
-                                         Click="RemotePathLink_Click" />
+                        <HyperlinkButton Content="{x:Bind RemotePath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                         Click="RemotePathLink_Click">
+                            <ToolTipService.ToolTip>
+                                <TextBlock Text="{x:Bind RemotePath}" />
+                            </ToolTipService.ToolTip>
+                        </HyperlinkButton>
+                    </toolKit:SettingsCard>
+
+                    <!--- Folder selection -->
+                    <toolKit:SettingsCard Header="Dossiers synchronisés">
+                        <!-- Presentation -->
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+
+                            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelect')}"
+                                    Click="SyncExclusionButton_Click" />
+                        </StackPanel>
                     </toolKit:SettingsCard>
 
                     <!-- Lite sync -->
@@ -106,33 +124,6 @@
                         </Grid>
                     </toolKit:SettingsCard>
 
-                    <!--- Folder selection -->
-                    <toolKit:SettingsCard HorizontalAlignment="Stretch"
-                                          HorizontalContentAlignment="Stretch"
-                                          ContentAlignment="Vertical">
-                        <!-- Presentation -->
-                        <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                           TextWrapping="Wrap" />
-
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           TextWrapping="Wrap" />
-                            </StackPanel>
-                            <controls:SyncExclusionSelector Grid.Row="1"
-                                                            Sync="{x:Bind Mode=OneWay}"
-                                                            CanShowSaveMenu="True"
-                                                            HorizontalAlignment="Stretch" />
-                        </Grid>
-                    </toolKit:SettingsCard>
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
@@ -196,7 +187,7 @@
                     </ListView.ItemContainerStyle>
                 </ListView>
                 <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddAdvancedSync')}"
-                        Click="AddAdvancedSyncButton_Click"/>
+                        Click="AddAdvancedSyncButton_Click" />
                 <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>
