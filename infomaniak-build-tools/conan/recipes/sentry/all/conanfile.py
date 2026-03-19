@@ -23,8 +23,11 @@ class SentryNativeConan(ConanFile):
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
 
-    options = {"shared": [True, False]}
-    default_options = {"shared": True}
+    options = {
+        "shared": [True, False],
+        "qt_version": ["6.2.3", "6.5.3", "6.8.3"],
+    }
+    default_options = {"shared": True, "qt_version": "6.2.3"}
 
     @property
     def _is_linux_arm(self):
@@ -65,7 +68,7 @@ class SentryNativeConan(ConanFile):
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
         # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
-        self.requires("qt/[>=6 <7]", headers=True, libs=False, visible=False)
+        self.requires(f"qt/{self.options.qt_version}", headers=True, libs=False, visible=False)
 
         if self.settings.os == "Linux":
             # zlib is required explicitly because Crashpad uses it for compression

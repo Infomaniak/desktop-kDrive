@@ -142,10 +142,11 @@ class KDriveDesktop(ConanFile):
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
         # Qt 6.8.3 for Linux ARM, Qt 6.5.3 for other platforms
+        qt_version = "6.8.3" if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm") else "6.2.3"
         if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"):
-            self.requires("qt/6.8.3", override=True)
+            self.requires(f"qt/{qt_version}")
         else:
-            self.requires("qt/6.2.3", override=True)
+            self.requires(f"qt/{qt_version}")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         self.requires("log4cplus/2.1.2", options={
@@ -161,7 +162,7 @@ class KDriveDesktop(ConanFile):
         else:
             self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
 
-        self.requires("sentry/0.7.10")
+        self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
         self.requires("poco/1.13.3", options={ "shared": True })
 
     def _append_conan_vars_normalization(self):
