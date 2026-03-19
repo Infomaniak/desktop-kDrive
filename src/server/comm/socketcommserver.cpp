@@ -37,7 +37,7 @@ SocketCommChannel::~SocketCommChannel() {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 
-    if (_callbackThread->joinable()) {
+    if (_callbackThread && _callbackThread->joinable()) {
         _callbackThread->join();
     }
 }
