@@ -263,7 +263,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        Sync? sync = control.DataContext as Sync;
+        ISync? sync = control.DataContext as ISync;
         if (sync is null)
         {
             Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync exclusion button");
