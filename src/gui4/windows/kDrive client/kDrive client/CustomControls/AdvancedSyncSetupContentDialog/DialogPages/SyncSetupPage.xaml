@@ -29,7 +29,7 @@
         <Grid.RowDefinitions>
             <!-- Title -->
             <RowDefinition Height="Auto" />
-            
+
             <!-- Local folder -->
             <RowDefinition Height="Auto" />
 
@@ -109,8 +109,7 @@
                             </Grid.ColumnDefinitions>
                             <controls:SvgIcon Grid.Column="0"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
-                                              Height="16"
-                                              Width="16"
+                                              Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                               Foreground="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}" />
 
                             <TextBlock Grid.Column="1"
@@ -193,8 +192,7 @@
                             </Grid.ColumnDefinitions>
                             <controls:SvgIcon Grid.Column="0"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
-                                              Height="16"
-                                              Width="16"
+                                              Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                               Foreground="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}" />
 
                             <TextBlock Grid.Column="1"

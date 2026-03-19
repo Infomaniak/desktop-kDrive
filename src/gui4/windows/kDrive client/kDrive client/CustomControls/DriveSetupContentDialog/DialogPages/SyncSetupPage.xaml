@@ -56,7 +56,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <controls:SvgIcon Grid.Column="0"
-                                  Height="16"
+                                  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                   UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{x:Bind DriveSetupContentDialogVM.CurrentSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                   VerticalAlignment="Center" />
@@ -214,7 +214,7 @@
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                 Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
-                                          Height="16"
+                                          Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                           VerticalAlignment="Center" />
 

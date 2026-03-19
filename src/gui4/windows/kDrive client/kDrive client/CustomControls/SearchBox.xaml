@@ -42,8 +42,7 @@
 
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
-                               Width="16"
-                               Height="16"
+                               Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                UriString="{x:Bind SearchItem.Name, Converter={StaticResource FilePathToIconConverter}}" />
 
                 <TextBlock Grid.Column="1"
@@ -106,7 +105,7 @@
 
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
-                               Width="16"
+                               Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
 
                 <TextBlock Grid.Column="1"

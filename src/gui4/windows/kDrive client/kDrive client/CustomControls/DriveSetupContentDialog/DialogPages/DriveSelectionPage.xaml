@@ -74,7 +74,7 @@
 
                             <controls:SvgIcon Grid.Column="0"
                                               Grid.Row="0"
-                                              Height="16"
+                                              Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                               Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                               VerticalAlignment="Center" />

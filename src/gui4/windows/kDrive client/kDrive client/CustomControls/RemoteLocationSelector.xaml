@@ -53,16 +53,14 @@
                                    Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
                                    Visibility="{x:Bind IsRoot, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    VerticalAlignment="Center"
-                                   Height="16"
-                                   Width="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <local:SvgIcon Grid.Column="0"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
                                    Visibility="{x:Bind IsNotRoot, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    VerticalAlignment="Center"
-                                   Height="16"
-                                   Width="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <TextBlock Grid.Column="1"
                                Text="{x:Bind Node.Name}"
@@ -127,8 +125,7 @@
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
                                    VerticalAlignment="Center"
-                                   Height="16"
-                                   Width="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <controls:ContentLoader Grid.Column="1"
                                             IsLoading="False"
@@ -172,8 +169,7 @@
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-block}"
                                    Foreground="{ThemeResource TextFillColorTertiary}"
                                    VerticalAlignment="Center"
-                                   Height="16"
-                                   Width="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <TextBlock Grid.Column="1"
                                Foreground="{ThemeResource TextFillColorTertiary}"
@@ -201,8 +197,7 @@
                                    Foreground="{ThemeResource TextFillColorTertiary}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
-                                   Height="16"
-                                   Width="16"
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}" />
                 </Grid>
             </TreeViewItem>
