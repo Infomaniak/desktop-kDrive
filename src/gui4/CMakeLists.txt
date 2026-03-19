@@ -65,6 +65,11 @@ elseif(APPLE)
         DEPENDS "${CLIENT_STAMP}"
     )
 
+    # Install kDrive_client4.app inside the main kDrive.app for notarization
+    install(DIRECTORY "${CLIENT_DEST}"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS"
+            OPTIONAL)
+
     # Ensure all C++ libraries and executables are built first with Xcode 16
     # before switching to Xcode 26 for the Swift GUI build
     add_dependencies(build_kDrive_client
