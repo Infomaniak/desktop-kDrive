@@ -44,7 +44,7 @@ class IpcClient : public QObject {
     signals:
         void connected();
         void disconnected();
-        void messageReceived(uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct &params);
+        void messageReceived(uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct params);
 
     private slots:
         void onConnected();
