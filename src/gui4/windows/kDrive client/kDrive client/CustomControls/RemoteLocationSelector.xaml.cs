@@ -273,7 +273,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (newItem is null)
                 {
-                    Utility.ShowUnexpectedErrorTeachingTip();
+                    Utility.ShowTeachingTipFromKeys("UnableToCreateRemoteFolderTeachingTipTitle", "UnableToCreateRemoteFolderTeachingTipContent");
                     if (contentLoader is not null)
                         contentLoader.IsLoading = false;
                     return;

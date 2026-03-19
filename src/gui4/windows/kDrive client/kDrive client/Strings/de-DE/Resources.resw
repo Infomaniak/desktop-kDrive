@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 18 Mar 2026 16:47:56 +0100 
+  Exported at: Thu, 19 Mar 2026 10:47:57 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,6 +72,12 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>German</value>
   </metadata> 
+  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Überprüfen Sie die folgenden Punkte:
+ - Ihre Internetverbindung ist aktiv.
+ - Es gibt hier noch keine Dateien oder Ordner mit diesem Namen.
+ - Der Name enthält keine unzulässigen Zeichen.</value> 
+  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
@@ -1467,6 +1473,9 @@ Wenn das Problem weiterhin besteht, können Sie die Synchronisierung in eine Sta
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>KDrive öffnen</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value> Dieser Ordner kann nicht erstellt werden</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Unbefugter Zugang</value> 
