@@ -175,7 +175,12 @@ void IpcClient::processBuffer() {
  * @return true if a complete message was successfully extracted and removed from the buffer, false otherwise (if the buffer is empty, does not start with '{', or does not contain a complete JSON object).
  */
 bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage) {
-    if (buffer.empty() || buffer[0] != '{') {
+    if (buffer.empty()) {
+        return false;
+    }
+    
+    if (buffer[0] != '{') {
+        buffer.clear(); // Discard the buffer (same logic as Windows)
         return false;
     }
 
