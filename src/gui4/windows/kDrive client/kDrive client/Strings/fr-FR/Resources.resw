@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 14:03:38 +0100 
+  Exported at: Thu, 19 Mar 2026 15:25:27 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -807,6 +807,9 @@ Il s’ouvrira dans votre navigateur.</value>
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>il y a %@</value> 
+  </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Tous les dossiers</value> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Auteur</value> 

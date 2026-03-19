@@ -16,6 +16,7 @@
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
 
         <!-- Data template -->
         <DataTemplate x:Key="AdvancedSyncItemTemplate"
@@ -49,11 +50,37 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
-                            <controls:ContentLoader IsLoading="True"
-                                                    LoaderMinHeight="16"
-                                                    LoaderMinWidth="80">
+                            <controls:ContentLoader IsLoading="{x:Bind HasExcludedFodler, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                                                    LoaderMinHeight="12"
+                                                    Height="24"
+                                                    LoaderMinWidth="120">
                                 <controls:ContentLoader.LoaderContent>
-                                    <TextBlock Text="Tous les dossiers" />
+                                    <Grid>
+                                        <!-- No exclusion -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    Visibility="{x:Bind HasExcludedFodler, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                                                    VerticalAlignment="Center">
+                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
+                                                              Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
+                                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelAllFolders')}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal"
+                                                    Visibility="{x:Bind HasExcludedFodler, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                                                    VerticalAlignment="Center">
+
+                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
+                                                              Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
+                                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Grid>
                                 </controls:ContentLoader.LoaderContent>
                             </controls:ContentLoader>
                             <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelect')}"

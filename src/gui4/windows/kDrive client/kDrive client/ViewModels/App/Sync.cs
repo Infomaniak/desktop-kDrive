@@ -50,6 +50,8 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
+        private bool? _hasExcludedFolder = null;
+        private Task? _hasExcludedFolderLoadingTask = null;
 
 
         public SyncStatus SyncStatus
@@ -199,6 +201,17 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
+        public bool? HasExcludedFodler
+        {
+            get
+            {
+                if (_hasExcludedFolder is null) // If the value is not loaded yet, trigger the loading, UI will be updated once the loading is done
+                    RefreshHasExcludedFolder();
+                return _hasExcludedFolder;
+            }
+            set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
+        }
+
         public async Task<bool> Start()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
@@ -327,11 +340,38 @@ namespace Infomaniak.kDrive.ViewModels
             return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
         }
 
+        public async Task<bool> SetExcludedNodeIds(List<NodeId> excludedNodeIds)
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            if (!await commService.SetBlacklistedNodeIdList(DbId, excludedNodeIds, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                return false;
+            }
+            HasExcludedFodler = excludedNodeIds.Count > 0;
+            return true;
+        }
+
         public void ClearOngoingActivities()
         {
             var toBeRemoved = SyncActivities.Where(a => a.Status == SyncFileStatus.Syncing);
             SyncActivities.RemoveMany(toBeRemoved);
         }
 
+        public void RefreshHasExcludedFolder()
+        {
+            if (_hasExcludedFolderLoadingTask is not null && !_hasExcludedFolderLoadingTask.IsCompleted)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Already loading excluded folders, skipping refresh.");
+                return;
+            }
+            _hasExcludedFolderLoadingTask = Task.Run(async () =>
+            {
+                var excludedNodeIds = await GetExcludedNodeIds();
+                HasExcludedFodler = excludedNodeIds is not null && excludedNodeIds.Count > 0;
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFodler}");
+            });
+
+        }
     }
 }
