@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 10:47:57 +0100 
+  Exported at: Thu, 19 Mar 2026 11:07:28 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,10 +73,7 @@
     <value>French</value>
   </metadata> 
   <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Vérifiez les points suivants :
- - Votre connexion internet est active.
- - Aucun fichier ou dossier avec ce nom n’existe déjà ici.
- - Le nom ne contient pas de caractères non autorisés.</value> 
+    <value>Vérifiez que votre connexion internet est active, que ce nom n’est pas déjà utilisé et qu’il ne contient pas de caractères invalides.</value> 
   </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
@@ -1473,7 +1470,7 @@ Si le problème persiste, vous pouvez convertir la synchronisation en une synchr
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
-    <value> Impossible de créer ce dossier</value> 
+    <value>Impossible de créer ce dossier</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Accès non autorisé</value> 

@@ -1,5 +1,6 @@
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -137,7 +138,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
 
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? result = await commServices.IsPathValidForNewSync(folder.Path, true, CancellationToken.None);
+            bool? result = await commServices.IsPathValidForNewSync(folder.Path, SyncConfiguration.Advanced, CancellationToken.None);
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();

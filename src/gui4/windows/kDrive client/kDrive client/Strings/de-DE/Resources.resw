@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 10:47:57 +0100 
+  Exported at: Thu, 19 Mar 2026 11:07:28 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,10 +73,7 @@
     <value>German</value>
   </metadata> 
   <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Überprüfen Sie die folgenden Punkte:
- - Ihre Internetverbindung ist aktiv.
- - Es gibt hier noch keine Dateien oder Ordner mit diesem Namen.
- - Der Name enthält keine unzulässigen Zeichen.</value> 
+    <value>Vergewissern Sie sich, dass Ihre Internetverbindung aktiv ist, dass dieser Name nicht bereits verwendet wird und dass er keine ungültigen Zeichen enthält.</value> 
   </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@

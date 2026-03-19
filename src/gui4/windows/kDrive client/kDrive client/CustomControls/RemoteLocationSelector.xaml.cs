@@ -269,11 +269,11 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
                 }
 
-                var newItem = await CreateFolder(parentTreeItem, textBox.Text);
+                var newItem = await CreateFolder(parentTreeItem, textBox.Text.Trim());
 
                 if (newItem is null)
                 {
-                    Utility.ShowTeachingTipFromKeys("UnableToCreateRemoteFolderTeachingTipTitle", "UnableToCreateRemoteFolderTeachingTipContent");
+                    Utility.ShowTeachingTipFromKeys("UnableToCreateRemoteFolderTeachingTipTitle", "", "UnableToCreateRemoteFolderTeachingTipContent", TimeSpan.FromSeconds(10));
                     if (contentLoader is not null)
                         contentLoader.IsLoading = false;
                     return;
