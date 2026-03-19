@@ -12,10 +12,12 @@
         <!-- Data templates for different button states -->
         <DataTemplate x:Key="PauseButtonTemplate">
             <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}"
+                           Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
         </DataTemplate>
         <DataTemplate x:Key="StartButtonTemplate">
             <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Media.play}"
+                           Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </DataTemplate>
         <DataTemplate x:Key="LoadingButtonTemplate">

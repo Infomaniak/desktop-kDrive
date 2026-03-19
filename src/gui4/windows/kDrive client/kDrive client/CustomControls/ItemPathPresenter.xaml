@@ -51,8 +51,7 @@
                     VerticalAlignment="Center">
                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.copy-paste}"
                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                  Width="14"
-                                  Height="14" />
+                                  Style="{StaticResource Infomaniak.Style.Icon.Size.XS}" />
             </Button>
         </Grid>
     </Border>

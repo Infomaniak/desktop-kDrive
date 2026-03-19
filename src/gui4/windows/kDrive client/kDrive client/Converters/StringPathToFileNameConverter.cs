@@ -16,7 +16,9 @@ namespace Infomaniak.kDrive.Converters
                 if (path == "")
                     return path + "/";
 
-                return System.IO.Path.GetFileName(path);
+                var res = System.IO.Path.GetFileName(path);
+
+                return string.IsNullOrEmpty(res) ? path : res;
             }
             else if (value is null)
             {

@@ -119,8 +119,7 @@
                                 <controls:SvgIcon Grid.Column="0"
                                                   UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}"
                                                   VerticalAlignment="Center"
-                                                  Height="14"
-                                                  Width="14" />
+                                                  Style="{StaticResource Infomaniak.Style.Icon.Size.XS}" />
 
                                 <TextBlock Grid.Column="1"
                                            VerticalAlignment="Center"

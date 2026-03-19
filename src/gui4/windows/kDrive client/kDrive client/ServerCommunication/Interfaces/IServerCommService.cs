@@ -88,6 +88,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+        Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken);
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
 
         Task<NodeConflictInfo?> GetNodeConflictInfo(DbId syncDbId, string relativePath, ReplicaSide replicaSide, CancellationToken cancellationToken);

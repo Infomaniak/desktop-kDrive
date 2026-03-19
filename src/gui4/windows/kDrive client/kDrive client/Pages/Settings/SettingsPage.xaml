@@ -207,7 +207,7 @@
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center">
                                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
-                                                      Height="16"
+                                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                       VerticalAlignment="Center"
                                                       HorizontalAlignment="Center" />
@@ -492,8 +492,7 @@
                                                   IsActionIconVisible="False"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
-                                                  Height="14"
-                                                  Width="14"
+                                                  Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
                                                   Foreground="{ThemeResource TextFillColorPrimary}"
                                                   Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}" />
                             </toolKit:SettingsCard>

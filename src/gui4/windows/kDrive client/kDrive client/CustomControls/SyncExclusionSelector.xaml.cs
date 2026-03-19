@@ -176,7 +176,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         #endregion
 
-
         #region Public methods
         public async Task SaveChanges()
         {
@@ -705,7 +704,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load direct child directories
         public async Task LoadImmediateChildrenAsync()
         {
-            if (_childrenLoaded)
+            if (_childrenLoaded || Node.AccessDenied)
                 return;
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

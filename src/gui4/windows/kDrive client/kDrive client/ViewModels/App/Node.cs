@@ -100,9 +100,10 @@ namespace Infomaniak.kDrive.ViewModels
         }
         public async Task LoadSize()
         {
-            if (UserDbId == -1 || DriveId == -1 || NodeId == null)
+            if (UserDbId == -1 || DriveId == -1 || string.IsNullOrEmpty(NodeId))
             {
                 Logger.Log(Logger.Level.Error, "Cannot load node size: UserDbId, DriveId or NodeId is not set.");
+                return;
             }
             if (IsLoadingSize || AccessDenied)
             {
