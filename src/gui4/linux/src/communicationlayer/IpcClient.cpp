@@ -116,25 +116,18 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     return id;
 }
 
-/**
- * Forwards the socket connected() signal and notifies upper layers.
- */
+/**  Forwards the socket connected() signal and notifies upper layers. */
 void IpcClient::onConnected() {
     emit connected();
 }
 
-/**
- * Clears the read buffer to avoid processing stale data on next connection,
- * then notifies upper layers.
- */
+/** Clears the read buffer to avoid processing stale data on the next connection, then notifies upper layers. */
 void IpcClient::onDisconnected() {
     _readBuffer.clear();
     emit disconnected();
 }
 
-/**
- * Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer.
- */
+/** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
 void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
     (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
