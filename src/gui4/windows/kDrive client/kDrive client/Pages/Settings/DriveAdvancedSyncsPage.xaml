@@ -46,7 +46,6 @@
 
                     <!--- Folder selection -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncedFolders')}">
-                        <!-- Presentation -->
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
@@ -222,7 +221,6 @@
                 </ListView>
                 <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddAdvancedSync')}"
                         Click="AddAdvancedSyncButton_Click" />
-                <!-- TODO: Bind the button logic once the UI/UX is ready -->
             </StackPanel>
         </ScrollView>
     </Grid>
