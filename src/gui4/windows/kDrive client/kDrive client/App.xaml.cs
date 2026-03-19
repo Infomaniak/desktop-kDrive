@@ -32,13 +32,14 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
-
+using Microsoft.Windows.AppNotifications;
 
 namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
         private Window? _currentWindow;
+
         public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
         {
@@ -80,7 +81,9 @@ namespace Infomaniak.kDrive
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _services.AddSingleton<UserDefaults>();
             _services.AddSingleton<TrayIconManager>();
+            _services.AddSingleton<NotificationManager>();
             _serviceProvider = _services.BuildServiceProvider();
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             Logger.StartSentry();
             InitializeComponent();
@@ -125,6 +128,9 @@ namespace Infomaniak.kDrive
             CurrentWindow = new MainWindow();
             var currentWindowContent = CurrentWindow.Content;
 
+            // Initialize notifications
+            _serviceProvider.GetRequiredService<NotificationManager>().Init();
+
             // Display splash screen
             CurrentWindow.Content = new CustomControls.SplashScreen();
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
@@ -162,6 +168,13 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
+
+            _serviceProvider.GetRequiredService<NotificationManager>().ShowNotification("Test title", "The content is here!!!!!!");
+        }
+
+        void OnProcessExit(object sender, EventArgs e)
+        {
+            _serviceProvider.GetRequiredService<NotificationManager>().Unregister();
         }
 
         private void RegisterOAuthProtocol()
