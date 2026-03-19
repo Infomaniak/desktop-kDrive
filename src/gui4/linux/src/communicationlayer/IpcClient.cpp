@@ -100,9 +100,9 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
 
     const std::string json = Poco::Dynamic::structToString(msg);
     const auto jsonSize = static_cast<qint64>(json.size());
-    const qint64 written_data = _socket->write(json.data(), jsonSize);
+    const qint64 writtenData = _socket->write(json.data(), jsonSize);
 
-    if (written_data != jsonSize) { // write return -1 if an error occurs, or the number of bytes actually written (which can be less than the size of the data to write)
+    if (writtenData < 0) {
         qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
         return -1;
     }
