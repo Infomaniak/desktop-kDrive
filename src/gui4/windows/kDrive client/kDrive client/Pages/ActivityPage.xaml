@@ -106,8 +106,7 @@
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeMyActivity')}" />
 
-                        <controls:SvgIcon Height="16" 
-                                          Width="16"
+                        <controls:SvgIcon Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
@@ -116,9 +115,8 @@
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeAllActivities')}" />
-                        
-                        <controls:SvgIcon Height="16"
-                                          Width="16"
+
+                        <controls:SvgIcon Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>

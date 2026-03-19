@@ -26,6 +26,12 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(MinLoaderHeightProperty, value); }
         }
 
+        public double LoaderMinWidth
+        {
+            get { return (double)GetValue(MinLoaderWidthProperty); }
+            set { SetValue(MinLoaderWidthProperty, value); }
+        }
+
         public static readonly DependencyProperty IsLoadingProperty =
             DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(ContentLoader), new PropertyMetadata(false));
 
@@ -34,5 +40,8 @@ namespace Infomaniak.kDrive.CustomControls
 
         public static readonly DependencyProperty MinLoaderHeightProperty =
             DependencyProperty.Register(nameof(LoaderMinHeight), typeof(double), typeof(ContentLoader), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty MinLoaderWidthProperty =
+            DependencyProperty.Register(nameof(LoaderMinWidth), typeof(double), typeof(ContentLoader), new PropertyMetadata(0.0));
     }
 }

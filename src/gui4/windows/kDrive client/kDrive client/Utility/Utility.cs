@@ -302,7 +302,7 @@ namespace Infomaniak.kDrive
             ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
         }
 
-        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null)
+        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null, TimeSpan? maxDuration = null /* default is 5s*/)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -345,7 +345,7 @@ namespace Infomaniak.kDrive
 
             // ---- Auto close after 5 seconds ----
             _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            _autoCloseTimer.Interval = TimeSpan.FromSeconds(5);
+            _autoCloseTimer.Interval = maxDuration ?? TimeSpan.FromSeconds(5);
             _autoCloseTimer.IsRepeating = false;
             _autoCloseTimer.Tick += (_, _) =>
             {
