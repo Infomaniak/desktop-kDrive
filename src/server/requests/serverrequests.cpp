@@ -349,7 +349,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
         return ExitCode::Ok;
     }
 
-    if (CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
+    if (CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") == "1") {
         valid = true;
         return ExitCode::Ok;
     }
