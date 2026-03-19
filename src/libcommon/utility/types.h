@@ -56,7 +56,6 @@ using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
 using NodeId = std::string;
 using RemoteNodeId = NodeId;
-using RemoteNodeId = NodeId;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
