@@ -49,6 +49,13 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
+                            <controls:ContentLoader IsLoading="True"
+                                                    LoaderMinHeight="16"
+                                                    LoaderMinWidth="80">
+                                <controls:ContentLoader.LoaderContent>
+                                    <TextBlock Text="Tous les dossiers" />
+                                </controls:ContentLoader.LoaderContent>
+                            </controls:ContentLoader>
                             <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSelect')}"
                                     Click="SyncExclusionButton_Click" />
                         </StackPanel>
