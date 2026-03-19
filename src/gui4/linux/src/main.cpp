@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     });
 
     QObject::connect(&client, &KDC::IpcClient::messageReceived,
-                     [](int type, int id, int num, const Poco::DynamicStruct &params) {
+                     [](uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct &params) {
                          std::string numstr = type == 1 ? toString(static_cast<RequestNum>(num)):
                                                         toString(static_cast<SignalNum>(num));
 
