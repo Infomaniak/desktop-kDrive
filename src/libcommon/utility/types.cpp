@@ -893,6 +893,17 @@ std::string toString(const ConflictResolutionStrategy e) {
     }
 }
 
+std::string toString(const SyncConfiguration e) {
+    switch (e) {
+        case SyncConfiguration::Classic:
+            return "Classic";
+        case SyncConfiguration::Advanced:
+            return "Advanced";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);

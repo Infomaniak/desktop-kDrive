@@ -29,6 +29,11 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteUser);
         CPPUNIT_TEST(testDeleteAccount);
         CPPUNIT_TEST(testDeleteDrive);
+        CPPUNIT_TEST(testFolderContainsNonExcludedItemInvalidPath);
+        CPPUNIT_TEST(testFolderContainsNonExcludedItemEmptyDir);
+        CPPUNIT_TEST(testFolderContainsNonExcludedItemOnlyExcludedFiles);
+        CPPUNIT_TEST(testFolderContainsNonExcludedItemWithNonExcludedFile);
+        CPPUNIT_TEST(testFolderContainsNonExcludedItemMixed);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,6 +46,11 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testDeleteUser();
         void testDeleteAccount();
         void testDeleteDrive();
+        void testFolderContainsNonExcludedItemInvalidPath();
+        void testFolderContainsNonExcludedItemEmptyDir();
+        void testFolderContainsNonExcludedItemOnlyExcludedFiles();
+        void testFolderContainsNonExcludedItemWithNonExcludedFile();
+        void testFolderContainsNonExcludedItemMixed();
 
     private:
         int _driveDbId{0};

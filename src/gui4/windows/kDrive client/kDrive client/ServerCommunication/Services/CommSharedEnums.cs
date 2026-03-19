@@ -353,4 +353,9 @@ namespace Infomaniak.kDrive.Types
         KeepLocal,
         KeepRemote
     }
+    public enum SyncConfiguration
+    {
+        Classic,
+        Advanced
+    };
 }
