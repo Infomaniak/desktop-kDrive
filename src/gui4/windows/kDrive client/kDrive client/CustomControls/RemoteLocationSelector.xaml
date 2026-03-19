@@ -33,7 +33,7 @@
                     Value="{StaticResource Infomaniak.Style.Thickness.Right.S}" />
         </Style>
 
-        <DataTemplate x:DataType="local:TreeItem2"
+        <DataTemplate x:DataType="local:RemoteLocationSelectorTreeItem"
                       x:Key="FolderTemplate">
             <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}"
                           IsExpanded="{x:Bind IsRoot}"
@@ -112,7 +112,7 @@
             </TreeViewItem>
         </DataTemplate>
 
-        <DataTemplate x:DataType="local:TreeItem2"
+        <DataTemplate x:DataType="local:RemoteLocationSelectorTreeItem"
                       x:Key="NewNodeTemplate">
             <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
                 <Grid Style="{StaticResource TreeItemGridStyle}">
@@ -149,7 +149,7 @@
             </TreeViewItem>
         </DataTemplate>
 
-        <DataTemplate x:DataType="local:TreeItem2"
+        <DataTemplate x:DataType="local:RemoteLocationSelectorTreeItem"
                       x:Key="AccessDeniedDirectoryTemplate">
             <TreeViewItem HorizontalAlignment="Stretch"
                           MinHeight="24">
@@ -203,7 +203,7 @@
             </TreeViewItem>
         </DataTemplate>
 
-        <local:FolderTreeViewItemTemplateSelector2 x:Key="FolderTreeViewItemTemplateSelector_"
+        <local:RemoteLocationSelectorTreeViewTemplateSelector x:Key="RemoteLocationSelectorTreeViewTemplateSelector"
                                                    FolderTemplate="{StaticResource FolderTemplate}"
                                                    AccessDeniedTemplate="{StaticResource AccessDeniedDirectoryTemplate}"
                                                    NewNodeTemplate="{StaticResource NewNodeTemplate}" />
@@ -245,7 +245,7 @@
                           CanDrag="False"
                           CanDragItems="False"
                           CanReorderItems="False"
-                          ItemTemplateSelector="{StaticResource FolderTreeViewItemTemplateSelector_}"
+                          ItemTemplateSelector="{StaticResource RemoteLocationSelectorTreeViewTemplateSelector}"
                           SelectionChanged="FolderTree_SelectionChanged">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">

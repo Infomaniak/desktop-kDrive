@@ -18,8 +18,8 @@ namespace Infomaniak.kDrive.CustomControls
     {
         #region Private fields
         // Root level items displayed in the TreeView, it should only contain the drive itself
-        private readonly ObservableCollection<TreeItem2> _rootLevelItems = [];
-        private TreeItem2? _currentFolderCreationItem;
+        private readonly ObservableCollection<RemoteLocationSelectorTreeItem> _rootLevelItems = [];
+        private RemoteLocationSelectorTreeItem? _currentFolderCreationItem;
         #endregion
 
         #region Constructor / lifecycle
@@ -71,7 +71,7 @@ namespace Infomaniak.kDrive.CustomControls
         #region Public methods
         public NodeId? GetSelectedNodeId()
         {
-            if (FolderTree.SelectedItem is TreeItem2 selectedItem)
+            if (FolderTree.SelectedItem is RemoteLocationSelectorTreeItem selectedItem)
                 return selectedItem.Node?.NodeId;
             return null;
         }
@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             // Logical root node
             Node rootNode = new Node(App.Constants.Drive.RootNodeId, Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
-            _rootLevelItems.Add(new TreeItem2(rootNode, Drive, null));
+            _rootLevelItems.Add(new RemoteLocationSelectorTreeItem(rootNode, Drive, null));
             await _rootLevelItems[0].LoadImmediateChildrenAsync();
             await rootNode.LoadSize();
         }
@@ -119,7 +119,7 @@ namespace Infomaniak.kDrive.CustomControls
         private async void TreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
         {
             List<Task> tasks = [];
-            if (args.Item is TreeItem2 item)
+            if (args.Item is RemoteLocationSelectorTreeItem item)
             {
                 foreach (var child in item.Children.Where(i => i.Node is not null))
                 {
@@ -135,15 +135,15 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load size
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Control)?.DataContext is TreeItem2 treeItem && treeItem.Node is not null && treeItem.Node.Size == -1)
+            if ((sender as Control)?.DataContext is RemoteLocationSelectorTreeItem treeItem && treeItem.Node is not null && treeItem.Node.Size == -1)
                 await treeItem.Node.LoadSize();
         }
         #endregion
 
         private void FolderTree_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
         {
-            TreeItem2? selectedItem = args.AddedItems.FirstOrDefault() as TreeItem2;
-            TreeItem2? previousItem = args.RemovedItems.FirstOrDefault() as TreeItem2;
+            RemoteLocationSelectorTreeItem? selectedItem = args.AddedItems.FirstOrDefault() as RemoteLocationSelectorTreeItem;
+            RemoteLocationSelectorTreeItem? previousItem = args.RemovedItems.FirstOrDefault() as RemoteLocationSelectorTreeItem;
 
             if (selectedItem is null)
             {
@@ -182,7 +182,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            if (control.DataContext is not TreeItem2 treeItem)
+            if (control.DataContext is not RemoteLocationSelectorTreeItem treeItem)
             {
                 Logger.Log(Logger.Level.Error, "CreateFolderButton_Click: DataContext is not a TreeItem2.");
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -192,7 +192,7 @@ namespace Infomaniak.kDrive.CustomControls
             treeItem.CanCreateSubFolder = false;
             // Create a temporary TreeItem with no Node, it will allow the user to enter the name of the new folder.
             // Once the name is entered, the real TreeItem with the Node will be created and replace the temporary one.
-            TreeItem2 newItem = new TreeItem2(Drive!, treeItem);
+            RemoteLocationSelectorTreeItem newItem = new RemoteLocationSelectorTreeItem(Drive!, treeItem);
             treeItem.Children.Insert(0, newItem);
             _currentFolderCreationItem = newItem;
             // Expand the parent item to make the new item visible and get its container
@@ -236,7 +236,7 @@ namespace Infomaniak.kDrive.CustomControls
             return tcs.Task;
         }
 
-        private TreeViewNode? FindNode(IList<TreeViewNode> nodes, TreeItem2 target)
+        private TreeViewNode? FindNode(IList<TreeViewNode> nodes, RemoteLocationSelectorTreeItem target)
         {
             foreach (var node in nodes)
             {
@@ -268,7 +268,7 @@ namespace Infomaniak.kDrive.CustomControls
                 if (contentLoader is not null)
                     contentLoader.IsLoading = true;
 
-                var treeItem = textBox.DataContext as TreeItem2;
+                var treeItem = textBox.DataContext as RemoteLocationSelectorTreeItem;
                 var parentTreeItem = treeItem?.ParentItem;
                 if (treeItem is null || parentTreeItem is null)
                 {
@@ -301,7 +301,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
 
-        private async Task<TreeItem2?> CreateFolder(TreeItem2 parentItem, string folderName)
+        private async Task<RemoteLocationSelectorTreeItem?> CreateFolder(RemoteLocationSelectorTreeItem parentItem, string folderName)
         {
             if (parentItem.Node is null)
             {
@@ -324,7 +324,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Add the node to the tree
-            var newTreeItem = new TreeItem2(new Node(newNodeId, folderName, 0, parentNodeId, System.IO.Path.Combine(parentItem.Node?.Path ?? "", folderName), Drive!.UserDbId, Drive.DriveId, false), Drive!, parentItem);
+            var newTreeItem = new RemoteLocationSelectorTreeItem(new Node(newNodeId, folderName, 0, parentNodeId, System.IO.Path.Combine(parentItem.Node?.Path ?? "", folderName), Drive!.UserDbId, Drive.DriveId, false), Drive!, parentItem);
             parentItem.Children.Insert(0, newTreeItem);
             return newTreeItem;
         }
@@ -365,7 +365,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void TreeViewItem_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            TreeItem2? treeItem = (sender as FrameworkElement)?.DataContext as TreeItem2;
+            RemoteLocationSelectorTreeItem? treeItem = (sender as FrameworkElement)?.DataContext as RemoteLocationSelectorTreeItem;
             if (treeItem is not null)
             {
                 treeItem.CreateSubFolderButtonVisibility = Visibility.Collapsed;
@@ -375,7 +375,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void TreeViewItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            TreeItem2? treeItem = (sender as FrameworkElement)?.DataContext as TreeItem2;
+            RemoteLocationSelectorTreeItem? treeItem = (sender as FrameworkElement)?.DataContext as RemoteLocationSelectorTreeItem;
             if (treeItem is not null && treeItem.Node is not null)
             {
                 treeItem.CreateSubFolderButtonVisibility = Visibility.Visible;
@@ -390,10 +390,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
     }
 
-    /// <summary>
-    /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
-    /// </summary>
-    public class TreeItem2 : UISafeObservableObject, IDisposable
+    public class RemoteLocationSelectorTreeItem : UISafeObservableObject, IDisposable
     {
         #region Private fields
         private readonly IDrive _drive;
@@ -440,13 +437,13 @@ namespace Infomaniak.kDrive.CustomControls
 
         public IDrive Drive => _drive;
 
-        public ObservableCollection<TreeItem2> Children { get; } = [];
-        public TreeItem2? ParentItem { get; }
+        public ObservableCollection<RemoteLocationSelectorTreeItem> Children { get; } = [];
+        public RemoteLocationSelectorTreeItem? ParentItem { get; }
         public bool IsRoot => ParentItem is null;
         public bool IsNotRoot => ParentItem is not null;
         #endregion
 
-        public TreeItem2(Node node, IDrive drive, TreeItem2? parentItem)
+        public RemoteLocationSelectorTreeItem(Node node, IDrive drive, RemoteLocationSelectorTreeItem? parentItem)
         {
             Node = node;
             ParentItem = parentItem;
@@ -455,7 +452,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         // Constructor used for tmp nodes (the user is creating a new folder)
-        public TreeItem2(IDrive drive, TreeItem2? parentItem)
+        public RemoteLocationSelectorTreeItem(IDrive drive, RemoteLocationSelectorTreeItem? parentItem)
         {
             ParentItem = parentItem;
             _canCreateSubfolder = false;
@@ -481,7 +478,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             foreach (Node node in nodes)
-                Children.Add(new TreeItem2(node, _drive, this));
+                Children.Add(new RemoteLocationSelectorTreeItem(node, _drive, this));
             _childrenLoaded = true;
             IsLoadingChildren = false;
         }
@@ -501,7 +498,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
     }
 
-    public partial class FolderTreeViewItemTemplateSelector2 : DataTemplateSelector
+    public partial class RemoteLocationSelectorTreeViewTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? FolderTemplate { get; set; }
         public DataTemplate? AccessDeniedTemplate { get; set; }
@@ -509,7 +506,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         protected override DataTemplate? SelectTemplateCore(object item)
         {
-            if (item is not TreeItem2 treeItem)
+            if (item is not RemoteLocationSelectorTreeItem treeItem)
                 return base.SelectTemplateCore(item);
 
             if (treeItem.Node is null)
