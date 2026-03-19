@@ -441,21 +441,11 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
 #endif
     (void) queryObj.set("num", toInt(RequestNum::NODE_CREATEMISSINGFOLDERS));
 
-    Poco::JSON::Object folderObj1;
-    (void) folderObj1.set("name", toBase64(Str("someName")));
-    (void) folderObj1.set("nodeId", toBase64(Str("6666")));
-
-    Poco::JSON::Object folderObj2;
-    (void) folderObj2.set("name", toBase64(Str("someOtherName")));
-    (void) folderObj2.set("nodeId", toBase64(Str("7777")));
-
-    Poco::JSON::Array folderListObj;
-    (void) folderListObj.add(folderObj1);
-    (void) folderListObj.add(folderObj2);
-
     Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("driveDbId", 1);
-    (void) queryParamsObj.set("folderList", folderListObj);
+    (void) queryParamsObj.set("userDbId", 1);
+    (void) queryParamsObj.set("driveId", 1111);
+    (void) queryParamsObj.set("parentNodeId", toBase64(Str("0000")));
+    (void) queryParamsObj.set("relativePath", toBase64(Str("Documents/NewFolder")));
 
     (void) queryObj.set("params", queryParamsObj);
     const auto queryStr = stringifyQueryObj(queryObj);
@@ -467,7 +457,7 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     (void) answerObj.set("id", 1);
 
     Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("parentNodeId", toBase64(Str("1111")));
+    (void) paramsObj.set("nodeId", toBase64(Str("1111")));
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
@@ -480,13 +470,12 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeCreateMissingFoldersJob = std::dynamic_pointer_cast<NodeCreateMissingFoldersJob>(job);
         CPPUNIT_ASSERT(nodeCreateMissingFoldersJob);
-        CPPUNIT_ASSERT_EQUAL(1, nodeCreateMissingFoldersJob->_driveDbId);
-        CPPUNIT_ASSERT(NodeId{"6666"} == nodeCreateMissingFoldersJob->_folderList.at(0).nodeId);
-        CPPUNIT_ASSERT(CommString{Str("someName")} == nodeCreateMissingFoldersJob->_folderList.at(0).name);
-        CPPUNIT_ASSERT(NodeId{"7777"} == nodeCreateMissingFoldersJob->_folderList.at(1).nodeId);
-        CPPUNIT_ASSERT(CommString{Str("someOtherName")} == nodeCreateMissingFoldersJob->_folderList.at(1).name);
+        CPPUNIT_ASSERT_EQUAL(1, nodeCreateMissingFoldersJob->_userDbId);
+        CPPUNIT_ASSERT_EQUAL(1111, nodeCreateMissingFoldersJob->_driveId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"0000"}, nodeCreateMissingFoldersJob->_parentNodeId);
+        CPPUNIT_ASSERT_EQUAL(SyncPath{"Documents/NewFolder"}, nodeCreateMissingFoldersJob->_relativePath);
 
-        nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
+        nodeCreateMissingFoldersJob->_nodeId = NodeId("1111");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
