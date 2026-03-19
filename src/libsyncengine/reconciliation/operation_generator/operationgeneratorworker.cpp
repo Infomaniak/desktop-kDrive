@@ -66,18 +66,18 @@ void OperationGeneratorWorker::execute() {
         LOG_IF_FAIL(currentNode->id().has_value());
 
         // Explore children even if node is processed
-        for (const auto &child: currentNode->children()) {
-            _queuedToExplore.push(child.second);
-            LOG_IF_FAIL(child.second->parentNode() == currentNode);
-            if (child.second->parentNode() != currentNode) {
+        for (const auto &[_, child]: currentNode->children()) {
+            _queuedToExplore.push(child);
+            LOG_IF_FAIL(child->parentNode() == currentNode);
+            if (child->parentNode() != currentNode) {
                 // Only occurs if there is a bug before.
                 sentry::Handler::captureMessage(sentry::Level::Warning, "OperationGeneratorWorker::execute",
                                                 "Invalid parent node");
                 // Fix the issue
-                LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << SyncName2WStr(child.second->name()));
-                if (!child.second->setParentNode(currentNode)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                                       << Utility::formatSyncName(child.second->name()) << L" parent node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << Utility::formatSyncName(child->name()));
+                if (!child->setParentNode(currentNode)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node "
+                                                       << Utility::formatSyncName(child->name()) << L" parent node "
                                                        << Utility::formatSyncName(currentNode->name()));
                     continue;
                 }
@@ -92,7 +92,7 @@ void OperationGeneratorWorker::execute() {
         if (!correspondingNode &&
             (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
              currentNode->hasChangeEvent(OperationType::Move))) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(currentNode->name()));
             exitCode = ExitCode::DataError;
             break;
         }
