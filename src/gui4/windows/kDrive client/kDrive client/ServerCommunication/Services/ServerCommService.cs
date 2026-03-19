@@ -650,7 +650,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return result;
         }
-        public async Task<bool?> IsPathValidForNewSync(string path, , SyncConfiguration syncConfiguration, CancellationToken cancellationToken)
+        public async Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
