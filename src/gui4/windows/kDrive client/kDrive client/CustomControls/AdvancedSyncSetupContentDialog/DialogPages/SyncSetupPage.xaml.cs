@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         }
 
         // Navigation method
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is AdvancedSyncSetupContentDialogVM viewModel)
             {

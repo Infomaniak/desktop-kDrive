@@ -30,24 +30,15 @@ namespace Infomaniak.kDrive.CustomControls
             Unloaded += OnUnloaded;
         }
 
-        public static readonly DependencyProperty UriSourceProperty =
-            DependencyProperty.Register(
-                nameof(UriSource),
-                typeof(Uri),
-                typeof(SvgIcon),
-                new PropertyMetadata(null, OnUriChanged));
-
         public Uri? UriSource
         {
             get => (Uri?)GetValue(UriSourceProperty);
             set => SetValue(UriSourceProperty, value);
-
         }
-
-        public static readonly DependencyProperty UriSourceStringProperty =
+        public static readonly DependencyProperty UriSourceProperty =
             DependencyProperty.Register(
-                nameof(UriString),
-                typeof(string),
+                nameof(UriSource),
+                typeof(Uri),
                 typeof(SvgIcon),
                 new PropertyMetadata(null, OnUriChanged));
 
@@ -56,33 +47,37 @@ namespace Infomaniak.kDrive.CustomControls
             get => (string)GetValue(UriSourceStringProperty);
             set => SetValue(UriSourceStringProperty, value);
         }
-
-
-        public static readonly DependencyProperty IsEnabledProperty =
+        public static readonly DependencyProperty UriSourceStringProperty =
             DependencyProperty.Register(
-                nameof(IsEnabled),
+                nameof(UriString),
+                typeof(string),
+                typeof(SvgIcon),
+                new PropertyMetadata(null, OnUriChanged));
+
+
+
+        public bool IsIconEnabled
+        {
+            get => (bool)GetValue(IsIconEnabledProperty);
+            set => SetValue(IsIconEnabledProperty, value);
+        }
+        public static readonly DependencyProperty IsIconEnabledProperty =
+            DependencyProperty.Register(
+                nameof(IsIconEnabled),
                 typeof(bool),
                 typeof(SvgIcon),
-                new PropertyMetadata(true, OnIsEnabledChanged));
-
-        private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is SvgIcon icon && icon._isLoaded)
-                icon.ScheduleRefresh();
-        }
-
-        public bool IsEnabled
-        {
-            get => (bool)GetValue(IsEnabledProperty);
-            set => SetValue(IsEnabledProperty, value);
-        }
+                new PropertyMetadata(true, OnIconIsEnabledChanged));
 
         private static void OnUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgIcon icon && icon._isLoaded)
                 icon.ScheduleRefresh();
         }
-
+        private static void OnIconIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SvgIcon icon && icon._isLoaded)
+                icon.ScheduleRefresh();
+        }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -206,7 +201,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ApplyForeground(SvgDocument svgDoc)
         {
-            var foreground = IsEnabled ? Foreground : ResolveDisabledForeground();
+            var foreground = IsIconEnabled ? Foreground : ResolveDisabledForeground();
             if (foreground is SolidColorBrush solid)
             {
                 var color = System.Drawing.Color.FromArgb(solid.Color.A, solid.Color.R, solid.Color.G, solid.Color.B);

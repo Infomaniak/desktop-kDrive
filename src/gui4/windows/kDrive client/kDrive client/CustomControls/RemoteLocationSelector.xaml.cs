@@ -42,9 +42,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         #region Dependency Properties
 
-        public IDrive Drive
+        public IDrive? Drive
         {
-            get => (IDrive)GetValue(DriveProperty);
+            get => (IDrive?)GetValue(DriveProperty);
             set => SetValue(DriveProperty, value);
         }
         public static readonly DependencyProperty DriveProperty =
@@ -100,8 +100,15 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _rootLevelItems.Clear();
 
+            if (Drive is null)
+            {
+                Logger.Log(Logger.Level.Error, "Drive is null in BuildRootLevelItemsAsync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             // Logical root node
-            Node rootNode = new Node("", Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
+            Node rootNode = new Node(App.Constants.Drive.RootNodeId, Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
             _rootLevelItems.Add(new TreeItem2(rootNode, Drive, null));
             await _rootLevelItems[0].LoadImmediateChildrenAsync();
             await rootNode.LoadSize();
@@ -148,6 +155,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (selectedItem.Node is null || selectedItem.Node.AccessDenied || selectedItem.ParentItem is null)
                 DispatcherQueue.TryEnqueue(() =>
                 {
+                    HasSelectedNode = previousItem is not null;
                     sender.SelectedItem = previousItem;
                 });
             else
@@ -184,7 +192,7 @@ namespace Infomaniak.kDrive.CustomControls
             treeItem.CanCreateSubFolder = false;
             // Create a temporary TreeItem with no Node, it will allow the user to enter the name of the new folder.
             // Once the name is entered, the real TreeItem with the Node will be created and replace the temporary one.
-            TreeItem2 newItem = new TreeItem2(Drive, treeItem);
+            TreeItem2 newItem = new TreeItem2(Drive!, treeItem);
             treeItem.Children.Insert(0, newItem);
             _currentFolderCreationItem = newItem;
             // Expand the parent item to make the new item visible and get its container
@@ -273,7 +281,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (newItem is null)
                 {
-                    Utility.ShowTeachingTipFromKeys("UnableToCreateRemoteFolderTeachingTipTitle", "", "UnableToCreateRemoteFolderTeachingTipContent", TimeSpan.FromSeconds(10));
+                    Utility.ShowTeachingTipFromKeys("unableToCreateRemoteFolderTeachingTipTitle", "", "unableToCreateRemoteFolderTeachingTipContent", TimeSpan.FromSeconds(20));
                     if (contentLoader is not null)
                         contentLoader.IsLoading = false;
                     return;
@@ -308,7 +316,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            NodeId? newNodeId = await commService.CreateMissingDirectories(Drive, parentNodeId, folderName, CancellationToken.None);
+            NodeId? newNodeId = await commService.CreateMissingDirectories(Drive!, parentNodeId, folderName, CancellationToken.None);
             if (newNodeId is null)
             {
                 Logger.Log(Logger.Level.Error, "Failed to create folder.");
@@ -316,7 +324,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Add the node to the tree
-            var newTreeItem = new TreeItem2(new Node(newNodeId, folderName, 0, parentNodeId, System.IO.Path.Combine(parentItem.Node?.Path ?? "", folderName), Drive.UserDbId, Drive.DriveId, false), Drive, parentItem);
+            var newTreeItem = new TreeItem2(new Node(newNodeId, folderName, 0, parentNodeId, System.IO.Path.Combine(parentItem.Node?.Path ?? "", folderName), Drive!.UserDbId, Drive.DriveId, false), Drive!, parentItem);
             parentItem.Children.Insert(0, newTreeItem);
             return newTreeItem;
         }
@@ -368,7 +376,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void TreeViewItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             TreeItem2? treeItem = (sender as FrameworkElement)?.DataContext as TreeItem2;
-            if (treeItem is not null && treeItem.CanCreateSubFolder)
+            if (treeItem is not null && treeItem.Node is not null)
             {
                 treeItem.CreateSubFolderButtonVisibility = Visibility.Visible;
             }
@@ -376,7 +384,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void NewItemTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
+            TextBox? textBox = sender as TextBox;
             if (textBox is not null && textBox.Text.Length == 0)
                 RemoveCurrentFolderCreationItem();
         }

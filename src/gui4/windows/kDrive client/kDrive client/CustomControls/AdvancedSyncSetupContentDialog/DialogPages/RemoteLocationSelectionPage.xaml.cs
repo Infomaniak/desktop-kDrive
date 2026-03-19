@@ -45,6 +45,8 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            RemoteLocationSelector.Loaded -= RemoteLocationSelector_Loaded;
+
             if (AdvancedSyncSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");

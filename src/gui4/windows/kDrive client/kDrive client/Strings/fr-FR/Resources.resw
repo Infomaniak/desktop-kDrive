@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 11:07:28 +0100 
+  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -113,7 +113,7 @@
     <value>Synchroniser un dossier avec kDrive</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
-    <value>Choisissez le dossier de votre ordinateur à synchronisés sur kDrive :</value> 
+    <value>Choisissez le dossier de votre ordinateur à synchroniser sur kDrive :</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
     <value>Dossier synchronisé</value> 

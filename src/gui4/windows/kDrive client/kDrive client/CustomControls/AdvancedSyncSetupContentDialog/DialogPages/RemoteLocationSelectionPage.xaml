@@ -33,6 +33,6 @@
         <!-- Remote folder exclusion -->
         <controls:RemoteLocationSelector x:Name="RemoteLocationSelector"
                                          Drive="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive}"
-                                         Grid.Row="2" />
+                                         Grid.Row="1" />
     </Grid>
 </Page>

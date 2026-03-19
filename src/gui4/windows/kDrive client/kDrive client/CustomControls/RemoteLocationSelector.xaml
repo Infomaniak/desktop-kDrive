@@ -107,7 +107,8 @@
                         <local:SvgIcon Height="16"
                                        Width="16"
                                        UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-circle-plus}"
-                                       Foreground="{ThemeResource AccentAAFillColorDefaultBrush}" />
+                                       Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
+                                       IsIconEnabled="{x:Bind CanCreateSubFolder, Mode=OneWay}" />
                     </Button>
                 </Grid>
             </TreeViewItem>
@@ -133,7 +134,7 @@
                                             IsLoading="False"
                                             LoaderMinWidth="150"
                                             Width="150"
-                                            LoaderMinHeight="16"
+                                            LoaderMinHeight="24"
                                             HorizontalAlignment="Left"
                                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}">
                         <controls:ContentLoader.LoaderContent>
