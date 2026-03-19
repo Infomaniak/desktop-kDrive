@@ -50,7 +50,7 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
-                            <controls:ContentLoader IsLoading="{x:Bind HasExcludedFodler, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                            <controls:ContentLoader IsLoading="{x:Bind HasExcludedFolder, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
                                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                                     LoaderMinHeight="12"
                                                     Height="24"
@@ -59,7 +59,7 @@
                                     <Grid>
                                         <!-- No exclusion -->
                                         <StackPanel Orientation="Horizontal"
-                                                    Visibility="{x:Bind HasExcludedFodler, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                                    Visibility="{x:Bind HasExcludedFolder, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                                     VerticalAlignment="Center">
                                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
@@ -70,7 +70,7 @@
                                         </StackPanel>
 
                                         <StackPanel Orientation="Horizontal"
-                                                    Visibility="{x:Bind HasExcludedFodler, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                                    Visibility="{x:Bind HasExcludedFolder, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                                     VerticalAlignment="Center">
 

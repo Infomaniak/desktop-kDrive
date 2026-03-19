@@ -201,7 +201,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
-        public bool? HasExcludedFodler
+        public bool? HasExcludedFolder
         {
             get
             {
@@ -348,7 +348,7 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
                 return false;
             }
-            HasExcludedFodler = excludedNodeIds.Count > 0;
+            HasExcludedFolder = excludedNodeIds.Count > 0;
             return true;
         }
 
@@ -368,8 +368,8 @@ namespace Infomaniak.kDrive.ViewModels
             _hasExcludedFolderLoadingTask = Task.Run(async () =>
             {
                 var excludedNodeIds = await GetExcludedNodeIds();
-                HasExcludedFodler = excludedNodeIds is not null && excludedNodeIds.Count > 0;
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFodler}");
+                HasExcludedFolder = excludedNodeIds is not null && excludedNodeIds.Count > 0;
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
             });
 
         }
