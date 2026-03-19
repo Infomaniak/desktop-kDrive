@@ -358,9 +358,6 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Page Remove="CustomControls\AdvancedSyncSetupContentDialog.xaml" />
-  </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />
   </Target>
