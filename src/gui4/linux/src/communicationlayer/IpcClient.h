@@ -44,7 +44,14 @@ class IpcClient : public QObject {
     signals:
         void connected();
         void disconnected();
-        void messageReceived(uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct params);
+        /**
+         * Emitted when a complete JSON message has been received and parsed from the server.
+         * @param type   Message type (1 = request, 2 = signal — see GuiJobType in abstractguijob.h)
+         * @param id     Request ID matching the one returned by sendRequest(), or the signal ID for server-initiated signals
+         * @param num    Request number (RequestNum) or signal number (SignalNum) identifying the operation
+         * @param params Deserialized JSON parameters associated with the message
+         */
+        void messageReceived(uint8_t type, int32_t id, uint8_t num, Poco::DynamicStruct params);
 
     private slots:
         void onConnected();
