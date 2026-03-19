@@ -320,4 +320,10 @@ enum class ConflictResolutionStrategy {
     EnumEnd
 };
 
+enum class SyncConfiguration {
+    Classic,
+    Advanced,
+    EnumEnd
+};
+
 } // namespace KDC

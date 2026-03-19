@@ -30,7 +30,7 @@ class UtilityIsPathValidForNewSyncJob : public AbstractGuiJob {
     private:
         // Input parameters
         SyncPath _path;
-        bool _isAdvancedSync = false;
+        SyncConfiguration _syncConfig = SyncConfiguration::Classic;
 
         // Output parameters
         bool _isValid = false;
