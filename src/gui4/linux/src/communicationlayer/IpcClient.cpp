@@ -97,7 +97,12 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     msg[MSG_TYPE] = 1; // cf. src/server/comm/guijobs/abstractguijob.h GuiJobType enum
     msg[MSG_REQUEST_ID] = id;
     msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
-    msg.insert(MSG_REQUEST_PARAMS, params);
+
+    const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second;
+    if (!insertResult) {
+        qWarning() << "[IpcClient] Failed to insert request parameters into message";
+        return -1;
+    }
 
     const std::string json = Poco::Dynamic::structToString(msg);
     const auto jsonSize = static_cast<qint64>(json.size());
