@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm");
             base.IsPrimaryButtonEnabled = false;
             base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
-            base.DefaultButton = ContentDialogButton.Secondary;
+            base.DefaultButton = ContentDialogButton.Primary;
             var frame = new Frame();
             base.Content = frame;
             frame.Navigate(typeof(SyncSetupPage), _advancedSyncSetupContentDialogVM);
