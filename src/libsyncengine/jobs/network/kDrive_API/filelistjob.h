@@ -25,12 +25,6 @@
 
 namespace KDC {
 
-enum TranslationMode {
-    None,
-    V2ToV3,
-    V3ToV2
-};
-
 class FileListJob : public SyncJob {
     public:
         FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {},
@@ -68,9 +62,9 @@ class FileListJob : public SyncJob {
         // The deserialization of the request JSON result.
         NodeInfoList _nodeInfoList;
 
-        // If `_translateV2ToV3` is `true`, the identifier of the directory, that is `_fileId`, will
+        // If `_translateV2ToV3` is `TranslationMode::V2ToV3`, the identifier of the directory, that is `_fileId`, will
         // be translated in every underlying file listing requests.
-        bool _translateV2ToV3{false};
+        TranslationMode _translateV2ToV3{TranslationMode::V2ToV3};
 
     private:
         // The node info list as returned by the backend API v2

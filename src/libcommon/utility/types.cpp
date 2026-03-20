@@ -904,6 +904,19 @@ std::string toString(const SyncConfiguration e) {
     }
 }
 
+std::string toString(const TranslationMode e) {
+    switch (e) {
+        case TranslationMode::None:
+            return "None";
+        case TranslationMode::V2ToV3:
+            return "V2ToV3";
+        case TranslationMode::V3ToV2:
+            return "V3ToV2";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);

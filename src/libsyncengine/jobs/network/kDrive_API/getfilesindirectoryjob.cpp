@@ -27,23 +27,23 @@
 namespace KDC {
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, NodeId fileId, std::string cursorInput,
-                                               const bool translateV2ToV3 /*= false */) :
+                                               const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
+    if (translationMode == TranslationMode::V2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
 }
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
-                                               const bool translateV2ToV3 /*= false */) :
+                                               const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    if (translateV2ToV3) ApiTranslator::translateV2ToV3(driveDbId, _fileId);
+    if (translationMode == TranslationMode::V2ToV3) ApiTranslator::translateV2ToV3(driveDbId, _fileId);
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {

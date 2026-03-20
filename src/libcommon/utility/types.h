@@ -367,6 +367,12 @@ enum class UnicodeNormalization {
     NFD
 };
 
+enum TranslationMode {
+    None,
+    V2ToV3,
+    V3ToV2
+};
+
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
