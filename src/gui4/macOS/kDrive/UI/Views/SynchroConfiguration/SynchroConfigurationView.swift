@@ -115,7 +115,7 @@ struct SynchroConfigurationView: View {
 
                         Text(exclusionFoldersTip)
                             .font(.Tokens.subheadline)
-                            .foregroundStyle(driveLocationTipColor)
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
                     }
 
                     Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionTip)
