@@ -26,7 +26,7 @@ enum SynchroConfigurationFlowState {
     case selectFolders(SynchroConfiguration)
 }
 
-struct SynchroConfiguration: Sendable {
+struct SynchroConfiguration: Sendable, Identifiable {
     typealias ID = Int
 
     var id: ID {
@@ -42,10 +42,10 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
     @Published private(set) var state = SynchroConfigurationFlowState.driveSelector
     @Published private(set) var configurations = [SynchroConfiguration.ID: SynchroConfiguration]()
 
-    let onConfirm: (([SynchroConfiguration]) -> Void)?
+    let onConfirm: (([SynchroConfiguration]) async -> Void)?
     let onCancel: (() -> Void)?
 
-    init(onConfirm: (([SynchroConfiguration]) -> Void)?, onCancel: (() -> Void)?) {
+    init(onConfirm: (([SynchroConfiguration]) async -> Void)?, onCancel: (() -> Void)?) {
         self.onConfirm = onConfirm
         self.onCancel = onCancel
     }
@@ -86,9 +86,9 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
         }
     }
 
-    func saveConfiguration() {
+    func saveConfiguration() async {
         if configurations.count == 1 {
-            onConfirm?(Array(configurations.values))
+            await onConfirm?(Array(configurations.values))
         } else {
             navigate(to: .driveSelector)
         }

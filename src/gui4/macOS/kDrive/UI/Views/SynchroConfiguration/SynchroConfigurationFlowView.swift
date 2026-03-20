@@ -29,7 +29,7 @@ struct SynchroConfigurationFlowView: View {
     init(
         userDbId: Int,
         configurations: [SynchroConfiguration],
-        onConfirm: (([SynchroConfiguration]) -> Void)? = nil,
+        onConfirm: (([SynchroConfiguration]) async -> Void)? = nil,
         onCancel: (() -> Void)? = nil
     ) {
         self._viewModel = StateObject(wrappedValue: SynchroConfigurationFlowViewModel(onConfirm: onConfirm, onCancel: onCancel))
