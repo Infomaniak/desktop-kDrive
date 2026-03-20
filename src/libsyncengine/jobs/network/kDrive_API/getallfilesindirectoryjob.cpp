@@ -22,12 +22,12 @@
 namespace KDC {
 
 GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
-                                                     const bool translateV2ToV3) :
-    FileListJob(userDbId, driveId, std::move(fileId), translateV2ToV3) {}
+                                                     const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
+    FileListJob(userDbId, driveId, std::move(fileId), translationMode) {}
 
 GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, NodeId fileId,
-                                                     const bool translateV2ToV3 /*= false */) :
-    FileListJob(driveDbId, std::move(fileId), translateV2ToV3) {}
+                                                     const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
+    FileListJob(driveDbId, std::move(fileId), translationMode) {}
 
 
 void GetAllFilesInDirectoryJob::abort() {

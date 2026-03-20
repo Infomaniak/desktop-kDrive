@@ -25,10 +25,17 @@
 
 namespace KDC {
 
+enum TranslationMode {
+    None,
+    V2ToV3,
+    V3ToV2
+};
+
 class FileListJob : public SyncJob {
     public:
-        FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {}, bool translateV2ToV3 = false);
-        explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, bool translateV2ToV3 = false);
+        FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {},
+                    TranslationMode translationMode = TranslationMode::V2ToV3);
+        explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, TranslationMode translationMode = TranslationMode::V2ToV3);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 

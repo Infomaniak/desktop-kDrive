@@ -22,21 +22,23 @@
 
 namespace KDC {
 
-FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
+FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
+                         const TranslationMode translationMode /* TranslationMode::V2ToV3 */) :
     _userDbId{userDbId},
     _driveId{driveId},
     _fileId(std::move(fileId)),
-    _translateV2ToV3(translateV2ToV3) {
+    _translateV2ToV3(translationMode == TranslationMode::V2ToV3) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
     _driveDbId = ApiTranslator::getDriveDbId(_driveId);
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 
-FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId, const bool translateV2ToV3 /*= false */) :
+FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId,
+                         const TranslationMode translationMode /* TranslationMode::V2ToV3 */) :
     _driveDbId{driveDbId},
     _fileId(std::move(fileId)),
-    _translateV2ToV3(translateV2ToV3) {
+    _translateV2ToV3(translationMode == TranslationMode::V2ToV3) {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 
