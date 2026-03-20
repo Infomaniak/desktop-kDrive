@@ -13,8 +13,8 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('forbiddenActionErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errMoveCancelDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenActionTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errMoveCancelDescription', Error.NodeTypeTranslationKey)}"
                      Error="{x:Bind Error}">
         <local:ErrorCard.CustomContent>
             <controls:ItemPathPresenter RelativeItemPath="{x:Bind Error.DestinationPath}"

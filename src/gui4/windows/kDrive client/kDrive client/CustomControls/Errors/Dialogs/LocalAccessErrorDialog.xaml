@@ -13,10 +13,10 @@
         <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
             <TextBlock TextWrapping="Wrap"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}">
-            <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogDescription')}" />
+            <Run Text="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errDialogLocalFileAccessDescription', Error.NodeTypeTranslationKey)}" />
             <!-- <Hyperlink NavigateUri="https://support.infomaniak.com/" TODO: replace with actual FAQ link once available
                        UnderlineStyle="None">
-                <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogFaqLink')}" />
+                <Run Text="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errDialogLocalFileAccessFaqLink', 'labelFAQ')}" />
             </Hyperlink> -->
             </TextBlock>
 
@@ -24,7 +24,7 @@
                                         NodeType="{x:Bind Error.NodeType}" />
         </StackPanel>
         <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('localFileAccessErrorDialogLocationLabel')}" />
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errDialogLocalFileAccessLocationLabel', Error.NodeTypeTranslationKey)}" />
 
             <controls:ItemPathPresenter RelativeItemPath="{x:Bind FilePath}"
                                         HorizontalAlignment="Stretch"

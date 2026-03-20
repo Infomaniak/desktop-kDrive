@@ -16,7 +16,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private string DescriptionKey
         {
-            get => (Error.Sync?.Drive?.IsAdmin ?? false) ? "errFileTooBigDescriptionAdmin" : "errFileTooBigDescription";
+            get => (Error.Sync?.Drive?.IsAdmin ?? false) ? "errFileTooBigAdminDescription" : "errFileTooBigDescription";
         }
         public FileTooBigError(Error error)
         {

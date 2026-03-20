@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 20 Mar 2026 16:12:26 +0100 
+  Exported at: Fri, 20 Mar 2026 18:11:28 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -193,6 +193,9 @@
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
     <value>Applicare a %@ file</value> 
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Annulla</value> 
@@ -599,6 +602,15 @@ Chiedere l’accesso al proprietario o all’amministratore.</value>
     <value>Non si ha il permesso di eliminare questo file o cartella. Verrà ripristinato nella sua posizione originale.
 Chiedere l’accesso al proprietario o all’amministratore.</value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Le autorizzazioni di accesso del file sono state modificate, impedendo la sincronizzazione.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Consulta le domande frequenti per ripristinare l’accesso</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Ultimo percorso noto del file:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Un file o una cartella con questo nome esiste già.</value> 
   </data> 
@@ -630,16 +642,19 @@ Le modifiche saranno sincronizzate in seguito.</value>
     <value>Il file è stato modificato localmente mentre era stato eliminato sul kDrive remoto.
 La copia locale è stata salvata nella cartella di recupero.</value> 
   </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Questo file supera la dimensione massima autorizzata (50 GB).
+Contattare l'assistenza per sbloccare il limite.</value> 
+  </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Questo file supera la dimensione massima autorizzata (50 GB).
 Contattare l'amministratore per aumentare il limite di dimensione del file.</value> 
   </data> 
-  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
-    <value>Questo file supera la dimensione massima autorizzata (50 GB).
-Contattare l'assistenza per sbloccare il limite.</value> 
-  </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>File troppo voluminoso</value> 
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Accesso negato</value> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
     <value>Il nome del file contiene uno o più caratteri non supportati dall'applicazione Windows kDrive.</value> 
@@ -656,9 +671,11 @@ Contattare l'assistenza per sbloccare il limite.</value>
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Gli hard link non sono supportati per la sincronizzazione.</value> 
   </data> 
-  <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
-    <value>L'operazione eseguita su questo elemento è vietata.
-Richiedere l'accesso al proprietario o all'amministratore.</value> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Impossibile accedere a questo file sul computer. Verificare che esista ancora e che si disponga dei diritti per accedervi.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>File inaccessibile</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
     <value>Non si ha il permesso di spostare questo file o questa cartella qui; verrà ripristinato nella posizione originale.
@@ -773,9 +790,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Per tre giorni</value> 
   </data> 
-  <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
-    <value>Accesso negato</value> 
-  </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Ciao %@, %@</value> 
   </data> 
@@ -787,9 +801,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/it/aiuto</value> 
-  </data> 
-  <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
-    <value>Accesso vietato</value> 
   </data> 
   <data name="infomaniakSupport" xml:space="preserve"> 
     <value>Supporto Infomaniak</value> 
@@ -1037,24 +1048,6 @@ Si aprirà nel browser.</value>
   </data> 
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link copiato negli appunti</value> 
-  </data> 
-  <data name="localFileAccessDescription" xml:space="preserve"> 
-    <value>Impossibile accedere a questo file sul computer. Verificare che esista ancora e che si disponga dei diritti per accedervi.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
-    <value>Chiudi</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
-    <value>Le autorizzazioni di accesso del file sono state modificate, impedendo la sincronizzazione.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
-    <value>Consulta le domande frequenti per ripristinare l’accesso</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
-    <value>Ultimo percorso noto del file:</value> 
-  </data> 
-  <data name="localFileAccessErrorTitle" xml:space="preserve"> 
-    <value>File inaccessibile</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Posizione sul mio PC</value> 

@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 20 Mar 2026 16:12:26 +0100 
+  Exported at: Fri, 20 Mar 2026 18:11:28 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -193,6 +193,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
     <value>Anwenden auf %@ Dateien</value> 
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Abbrechen</value> 
@@ -600,6 +603,15 @@ Bitten Sie den Eigentümer oder Ihren Administrator um Zugriff.</value>
 Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
 </value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Letzter Dateispeicherort:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Eine Datei oder ein Ordner mit diesem Namen existiert bereits.</value> 
   </data> 
@@ -632,16 +644,19 @@ Ihre Änderungen werden zu einem späteren Zeitpunkt synchronisiert.</value>
     <value>Die Datei wurde lokal geändert, obwohl sie auf dem entfernten kDrive gelöscht worden war.
 Die lokale Kopie wurde im Wiederherstellungsordner gesichert.</value> 
   </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
+Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
+  </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Diese Datei überschreitet die maximal zulässige Dateigröße (50 GB).
 Wenden Sie sich an Ihren Administrator, um das Limit für die Dateigröße zu erhöhen.</value> 
   </data> 
-  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
-    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
-Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
-  </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>Ungenügende Datenmenge</value> 
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Zugriff verboten</value> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden.</value> 
@@ -658,9 +673,11 @@ Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value>
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Harte Verbindungen werden für die Synchronisierung nicht unterstützt.</value> 
   </data> 
-  <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
-    <value>Die Operation, die an diesem Element ausgeführt wird, ist verboten.
-Bitte fragen Sie den Eigentümer oder Ihren Administrator nach dem Zugriff.</value> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>Datei unzugänglich</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
     <value>Sie haben nicht die Erlaubnis, diese Datei oder diesen Ordner hierher zu verschieben. Er wird an seinem ursprünglichen Ort wiederhergestellt.
@@ -775,9 +792,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Drei Tage lang</value> 
   </data> 
-  <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
-    <value>Zugriff verboten</value> 
-  </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hallo %@, %@</value> 
   </data> 
@@ -789,9 +803,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/de/hilfe</value> 
-  </data> 
-  <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
-    <value>Zugriff verweigert</value> 
   </data> 
   <data name="infomaniakSupport" xml:space="preserve"> 
     <value>Infomaniak-Unterstützung</value> 
@@ -1039,24 +1050,6 @@ Es wird in Ihrem Browser geöffnet.</value>
   </data> 
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link in die Zwischenablage kopiert</value> 
-  </data> 
-  <data name="localFileAccessDescription" xml:space="preserve"> 
-    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
-    <value>Schliessen</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
-    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
-    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
-    <value>Letzter Dateispeicherort:</value> 
-  </data> 
-  <data name="localFileAccessErrorTitle" xml:space="preserve"> 
-    <value>Datei unzugänglich</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Standort auf meinem PC</value> 
