@@ -11,9 +11,9 @@ namespace Infomaniak.kDrive.CustomControls
         private const string AdvancedSyncIconUriResourceKey = "Infomaniak.DS.Icons.Documents.folder";
 
         // DependencyProperty
-        public ISync Sync
+        public ISync? Sync
         {
-            get => (ISync)GetValue(SyncProperty);
+            get => (ISync?)GetValue(SyncProperty);
             set => SetValue(SyncProperty, value);
         }
 
@@ -23,9 +23,9 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(IconUriProperty, value);
         }
 
-        public static readonly DependencyProperty SyncProperty = DependencyProperty.Register(nameof(Sync), typeof(ISync), typeof(SyncIcon), new PropertyMetadata("", OnSyncChanged));
+        public static readonly DependencyProperty SyncProperty = DependencyProperty.Register(nameof(Sync), typeof(ISync), typeof(SyncIcon), new PropertyMetadata(null, OnSyncChanged));
 
-        private static readonly DependencyProperty IconUriProperty = DependencyProperty.Register(nameof(IconUri), typeof(string), typeof(SyncIcon), new PropertyMetadata(null));
+        private static readonly DependencyProperty IconUriProperty = DependencyProperty.Register(nameof(IconUri), typeof(string), typeof(SyncIcon), new PropertyMetadata(""));
 
         public SyncIcon()
         {
@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             var application = Application.Current;
             if (application is not null && application.Resources.ContainsKey(iconKey))
-                control.IconUri = (string)application.Resources[iconKey];
+                control.IconUri = application.Resources[iconKey] as string ?? "";
             else
                 control.IconUri = "";
         }
