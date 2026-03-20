@@ -233,6 +233,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Activar</value> 
   </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Activar en la configuración de Windows</value> 
+  </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Entender el problema</value> 
   </data> 

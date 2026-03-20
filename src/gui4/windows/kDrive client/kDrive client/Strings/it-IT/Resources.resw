@@ -233,6 +233,9 @@
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Abilitazione</value> 
   </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Attivare nelle impostazioni di Windows</value> 
+  </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Comprendere il problema</value> 
   </data> 
