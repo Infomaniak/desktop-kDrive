@@ -116,7 +116,7 @@
                                        TextWrapping="Wrap" />
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
                                        TextWrapping="Wrap">
-                                 <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                                 <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                                  <Run Text=" -" />
                                  <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                             </TextBlock>

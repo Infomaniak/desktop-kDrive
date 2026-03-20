@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -162,12 +161,12 @@ namespace Infomaniak.kDrive.CustomControls
 
             // If the user has not selected a suggestion, attempt to find an exact match in the suggestion list.
             // Otherwise, use the first suggestion if available. If no suggestions exist, there is no result to process.
-            List<ISearchBoxResultItem>? currentSuggestions = sender.ItemsSource as List<ISearchBoxResultItem>;
+            IEnumerable<ISearchBoxResultItem>? currentSuggestions = sender.ItemsSource as IEnumerable<ISearchBoxResultItem>;
             if (resultItem is null)
                 resultItem = currentSuggestions?.FirstOrDefault(i => i.SearchItem?.Name == sender.Text);
 
             if (resultItem is null)
-                resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions[0] : null;
+                resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions.ElementAt(0) : null;
 
             sender.Text = "";
             if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)

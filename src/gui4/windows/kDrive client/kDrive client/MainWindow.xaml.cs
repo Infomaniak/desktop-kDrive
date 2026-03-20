@@ -20,9 +20,6 @@ using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using System;
-using System.Windows.Controls;
 
 namespace Infomaniak.kDrive
 {
@@ -38,9 +35,15 @@ namespace Infomaniak.kDrive
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
         }
-       
+
         private void AppTitleBar_BackRequested(TitleBar sender, object args)
         {
+            if (AppNavView?.Frame?.CanGoBack is null)
+            {
+                Logger.Log(Logger.Level.Warning, "BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
+                return;
+            }
+
             if (AppNavView.Frame.CanGoBack)
                 AppNavView.Frame.GoBack();
         }
