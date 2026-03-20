@@ -57,18 +57,12 @@ std::string GetFilesInDirectoryJob::getSpecificUrl() {
 }
 
 void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
-    if (_listingConf.dirOnly) {
-        uri.addQueryParameter("type[]", "dir");
-    }
-    if (_listingConf.withPath) {
-        uri.addQueryParameter("with", "path,capabilities");
-    } else {
-        uri.addQueryParameter("with", "capabilities");
-    }
+    if (_listingConf.dirOnly) uri.addQueryParameter("type[]", "dir");
 
-    if (!_cursorInput.empty()) {
-        uri.addQueryParameter("cursor", _cursorInput);
-    }
+    const auto withParameters = _listingConf.withPath ? "path,capabilities" : "capabilities";
+    uri.addQueryParameter("with", withParameters);
+
+    if (!_cursorInput.empty()) uri.addQueryParameter("cursor", _cursorInput);
 
     uri.addQueryParameter("limit", std::to_string(_listingConf.limit));
 }
@@ -76,7 +70,7 @@ void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
 ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
-        LOG_WARN(_logger, "Missing data array for files in directory");
+        LOG_WARN(_logger, "Missing data array for GetFilesInDirectoryJob.");
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
