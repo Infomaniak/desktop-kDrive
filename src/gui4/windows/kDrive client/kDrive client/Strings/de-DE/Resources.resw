@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 20 Mar 2026 12:23:49 +0100 
+  Exported at: Fri, 20 Mar 2026 16:12:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -309,7 +309,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Synchronisierung entfernen</value> 
   </data> 
-  <data name="buttonRenameFile" xml:space="preserve"> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
     <value>Datei umbenennen</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
@@ -610,6 +610,12 @@ Ihre Änderungen sind in einer separaten Datei neben dem Original verfügbar, de
 Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
 </value> 
   </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Der Name dieser Datei endet mit einem Leerzeichen, sodass sie nicht synchronisiert werden kann. Benennen Sie die Datei von kDrive online um.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Leerzeichen am Ende des Dateinamens</value> 
+  </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Dieses Element wurde durch eine benutzerdefinierte Vorlage von der Synchronisierung ausgeschlossen.
 Sie können diesen Benachrichtigungstyp in den Ausschlusseinstellungen deaktivieren.
@@ -640,11 +646,11 @@ Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value>
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden.</value> 
   </data> 
-  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Der Datei- oder Ordnername darf nicht mit einem Leerzeichen enden.</value> 
-  </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername darf nicht nur Leerzeichen enthalten.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Name enthält nur Leerzeichen</value> 
   </data> 
   <data name="errForbiddenCharTitle" xml:space="preserve"> 
     <value>Nicht unterstütztes Zeichen</value> 
@@ -664,6 +670,9 @@ Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
   <data name="errNameLengthDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername ist zu lang.</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name zu lang</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
   </data> 
@@ -676,12 +685,18 @@ Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>Der Dateipfad ist zu lang für dein Gerät. Kürze ihn und versuche es erneut.</value> 
   </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Pfad zu lang</value> 
+  </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Ihr kDrive ist voll.
 Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu synchronisieren.</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>Dieser Name ist vom System reserviert. Benenne das Element um und versuche es erneut.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Reservierter Name</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>Dieses Element wurde nach wiederholten Fehlern vorübergehend auf die Sperrliste gesetzt. Es wird später erneut versucht.</value> 
@@ -762,12 +777,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
     <value>Zugriff verboten</value> 
-  </data> 
-  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
-    <value>Name endet mit einem Leerzeichen</value> 
-  </data> 
-  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
-    <value>Name enthält nur Leerzeichen</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hallo %@, %@</value> 
@@ -871,6 +880,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
   </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>datei</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Mappe</value> 
   </data> 
@@ -882,6 +894,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   </data> 
   <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
     <value>Der Ordner wurde vielleicht auf ein anderes Laufwerk verschoben und dann wieder an seinen ursprünglichen Ort zurückgebracht.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>ordner</value> 
   </data> 
   <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
     <value>Ordner verschoben oder umbenannt</value> 
@@ -1105,9 +1120,6 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Mehr Speicherplatz, mehr Funktionen mit meiner kSuite+</value> 
   </data> 
-  <data name="nameLengthErrorTitle" xml:space="preserve"> 
-    <value>Name zu lang</value> 
-  </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Brauchen Sie Hilfe?</value> 
   </data> 
@@ -1247,9 +1259,6 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   <data name="pathCopiedToClipboard" xml:space="preserve"> 
     <value>In die Zwischenablage kopierter Pfad</value> 
   </data> 
-  <data name="pathLengthErrorTitle" xml:space="preserve"> 
-    <value>Pfad zu lang</value> 
-  </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Definieren Sie, wie sich kDrive mit dem Internet verbindet.</value> 
   </data> 
@@ -1291,9 +1300,6 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Standort auf kDrive</value> 
-  </data> 
-  <data name="reservedNameErrorTitle" xml:space="preserve"> 
-    <value>Reservierter Name</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
     <value>Suche in %@</value> 

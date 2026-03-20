@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 20 Mar 2026 12:23:49 +0100 
+  Exported at: Fri, 20 Mar 2026 16:12:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -309,7 +309,7 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Remove synchronization</value> 
   </data> 
-  <data name="buttonRenameFile" xml:space="preserve"> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
     <value>Rename file</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
@@ -610,6 +610,12 @@ Your changes are available in a separate file next to the original, with conflic
 Please ask the owner or your administrator for access.
 </value> 
   </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>The file's name ends with a space, preventing it from being synchronized. Rename the file from kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Space at the end of the file name</value> 
+  </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>This item has been excluded from synchronization by a custom template.
 You can disable this type of notification in the exclusion parameters.
@@ -640,11 +646,11 @@ Contact support to unlock the limit.</value>
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
     <value>The file name contains one or more characters not supported by the kDrive Windows application.</value> 
   </data> 
-  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
-    <value>The file or folder name cannot end with a space.</value> 
-  </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>The file or folder name cannot contain only spaces.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Name contains only spaces</value> 
   </data> 
   <data name="errForbiddenCharTitle" xml:space="preserve"> 
     <value>Character not supported</value> 
@@ -664,6 +670,9 @@ Please ask the owner or your administrator for access.
   <data name="errNameLengthDescription" xml:space="preserve"> 
     <value>The file or folder name is too long.</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name too long</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>There is not enough space on your computer to synchronize this file.</value> 
   </data> 
@@ -676,12 +685,18 @@ Please ask the owner or your administrator for access.
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>The file path is too long for your device. Shorten it and try again.</value> 
   </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Path too long</value> 
+  </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Your kDrive is full.
 Free up space or upgrade your offer to synchronize this file.</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>This name is reserved by the system. Rename the item and try again.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Reserved name</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>This item was temporarily blacklisted after repeated failures. It will be retried later.</value> 
@@ -762,12 +777,6 @@ Free up space or upgrade your offer to synchronize this file.</value>
   </data> 
   <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
     <value>Access denied</value> 
-  </data> 
-  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
-    <value>Name ends with a space</value> 
-  </data> 
-  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
-    <value>Name contains only spaces</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hello %@, %@</value> 
@@ -871,6 +880,9 @@ It will open in your browser.</value>
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
   </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>file</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Folder</value> 
   </data> 
@@ -882,6 +894,9 @@ It will open in your browser.</value>
   </data> 
   <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
     <value>The folder may have been moved to another disk and then returned to its original location.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>folder</value> 
   </data> 
   <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
     <value>Moved or renamed folder</value> 
@@ -1105,9 +1120,6 @@ Please check and rename any files with unusual characters, then try again.</valu
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>More storage, more features with my kSuite+</value> 
   </data> 
-  <data name="nameLengthErrorTitle" xml:space="preserve"> 
-    <value>Name too long</value> 
-  </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Need help?</value> 
   </data> 
@@ -1247,9 +1259,6 @@ Please wait a few moments.</value>
   <data name="pathCopiedToClipboard" xml:space="preserve"> 
     <value>Path copied to clipboard</value> 
   </data> 
-  <data name="pathLengthErrorTitle" xml:space="preserve"> 
-    <value>Path too long</value> 
-  </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Define how kDrive connects to the Internet.</value> 
   </data> 
@@ -1291,9 +1300,6 @@ Please wait a few moments.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Location on kDrive</value> 
-  </data> 
-  <data name="reservedNameErrorTitle" xml:space="preserve"> 
-    <value>Reserved name</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
     <value>Search in %@</value> 

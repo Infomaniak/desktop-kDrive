@@ -1228,10 +1228,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
-                Error error = new();
-                CommStruct.ConversionHelper.CopyToError(errorInfo, error);
-                error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                bool success = true;
+                Error error = new(errorInfo, ref success);
+                if (success)
+                    await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                else
+                    Logger.Log(Logger.Level.Error, $"Failed to create Error object from errorInfo with DbId {errorInfo.DbId}. Skipping this error.");
             }
             return true;
         }
@@ -1743,8 +1745,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            Error error = new Error(errorInfo);
-            if (error.Sync is null)
+            bool success = true;
+            Error error = new Error(errorInfo, ref success);
+            if (!success)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with dbId {errorInfo.SyncDbId} not found for error with dbId {errorInfo.DbId}.");
                 return;

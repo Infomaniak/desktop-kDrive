@@ -18,13 +18,13 @@
 
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.System;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -46,12 +46,21 @@ namespace Infomaniak.kDrive.ViewModels
         private CancelType _cancelType = CancelType.None;
         bool _autoResolved = false;
 
-
-        public Error()
+        // UI properties
+        public string NodeTypeTranslationKey => NodeType switch
         {
+            NodeType.File => "labelFileLowerCase",
+            NodeType.Directory => "labelFolderLowerCase",
+            _ => "labelFileLowerCase"
+        };
+
+
+        public Error(Sync sync)
+        {
+            _sync = sync;
         }
 
-        public Error(ErrorInfo errorInfo)
+        public Error(ErrorInfo errorInfo, ref bool sucess)
         {
             _DbId = errorInfo.DbId ?? _DbId;
             _timestamp = errorInfo.Time ?? _timestamp;
@@ -69,7 +78,15 @@ namespace Infomaniak.kDrive.ViewModels
             _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
 
             if (errorInfo.SyncDbId is not null)
-                Sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+            {
+                _sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+
+                if (_sync is null)
+                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+
+            }
+
+            sucess = _sync is not null;
         }
 
         public DbId DbId
@@ -90,10 +107,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _errorLevel, value);
         }
 
-        public Sync? Sync
+        public Sync Sync
         {
-            get => _sync;
-            set => SetPropertyInUIThread(ref _sync, value);
+            get => _sync ?? throw new InvalidOperationException("Sync property is not set for this Error instance.");
+            private set => SetPropertyInUIThread(ref _sync, value);
         }
 
         public ExitCode ExitCode
@@ -178,6 +195,30 @@ namespace Infomaniak.kDrive.ViewModels
         public static bool IsConflictUserResolvable(ConflictType conflictType)
         {
             return conflictType == ConflictType.CreateCreate || conflictType == ConflictType.EditEdit;
+        }
+
+        public async Task<bool> OpenItemInWebViewAsync()
+        {
+            if (string.IsNullOrEmpty(RemoteNodeId))
+            {
+                Logger.Log(Logger.Level.Error, "Error RemoteNodeId is null or empty. Cannot navigate to node.");
+                return false;
+            }
+
+            try
+            {
+                if (!await Launcher.LaunchUriAsync(App.Constants.Drive.itemUri(Sync.Drive.DriveId, RemoteNodeId)))
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}. Exception: {ex.Message}");
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -17,5 +17,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (!await Error.OpenItemInWebViewAsync())
+                Utility.ShowUnexpectedErrorTeachingTip();
+        }
     }
 }
