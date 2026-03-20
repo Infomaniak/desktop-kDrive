@@ -60,6 +60,7 @@ public enum KDriveResources {
   public static let magnifyingGlass = ImageAsset(name: "magnifying-glass")
   public static let moonSleep = ImageAsset(name: "moon-sleep")
   public static let pause = ImageAsset(name: "pause")
+  public static let pencil = ImageAsset(name: "pencil")
   public static let people = ImageAsset(name: "people")
   public static let person = ImageAsset(name: "person")
   public static let persons = ImageAsset(name: "persons")

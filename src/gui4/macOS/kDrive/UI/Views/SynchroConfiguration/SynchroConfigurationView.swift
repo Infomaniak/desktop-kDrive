@@ -36,6 +36,14 @@ struct SynchroConfigurationView: View {
         return isShowingSynchroLocationError ? ColorToken.Status.Medium.warning.asColor : ColorToken.Text.tertiary.asColor
     }
 
+    private var exclusionFoldersIcon: Image {
+        if configuration.blackList.isEmpty {
+            return KDriveResources.checkmarkCircle.swiftUIImage
+        } else {
+            return KDriveResources.pencil.swiftUIImage
+        }
+    }
+
     private var exclusionFoldersTip: String {
         if configuration.blackList.isEmpty {
             return KDriveLocalizable.onboardingExclusionSummaryNone
@@ -113,9 +121,13 @@ struct SynchroConfigurationView: View {
                         }
                         .buttonStyle(.borderedProminent)
 
-                        Text(exclusionFoldersTip)
-                            .font(.Tokens.subheadline)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        Label {
+                            Text(exclusionFoldersTip)
+                                .font(.Tokens.subheadline)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        } icon: {
+                            exclusionFoldersIcon
+                        }
                     }
 
                     Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionTip)
