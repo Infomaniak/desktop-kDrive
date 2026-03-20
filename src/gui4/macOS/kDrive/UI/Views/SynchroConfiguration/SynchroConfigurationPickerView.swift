@@ -26,39 +26,18 @@ struct SynchroConfigurationPickerView: View {
     var body: some View {
         Form {
             Section {} header: {
-                VStack(alignment: .leading, spacing: AppPadding.padding12) {
-                    Text("!Configurer vos kDrive")
-                    Text("!Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.")
+                VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                    Text(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionTitle)
+                        .font(.Tokens.headline)
+                    Text(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionDescription)
+                        .font(.Tokens.body)
                 }
+                .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             ForEach(Array(viewModel.configurations.values)) { configuration in
                 Section {
-                    HStack {
-                        HStack(alignment: .top) {
-                            BadgeView(
-                                image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
-                                color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
-                            )
-
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text("!Emplacement:")
-                                    Text("")
-                                }
-
-                                HStack {
-                                    Text("!Contenu synchronisé:")
-                                    Text("")
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Button("!Configurer") {
-                                viewModel.navigate(to: .configureSynchro(configuration))
-                            }
-                        }
-                    }
+                    ConfigurableSynchroView(configuration: configuration)
                 }
             }
         }
@@ -84,7 +63,8 @@ struct SynchroConfigurationPickerView: View {
 #Preview {
     let viewModel = SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil)
     viewModel.setupInitialConfigurations([
-        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: [])
+        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []),
+        SynchroConfiguration(drive: PreviewHelper.drive2, blackList: ["hey"])
     ])
 
     return SynchroConfigurationPickerView()
