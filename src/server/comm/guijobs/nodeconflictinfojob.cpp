@@ -49,7 +49,7 @@ ExitInfo NodeConflictInfoJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
 
-        std::string relativePathStr;
+        CommString relativePathStr;
         readParamValue(inParamsRelativePath, relativePathStr);
         _relativePath = SyncPath(relativePathStr);
 
@@ -117,7 +117,7 @@ ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int32_t 
     // Get file size and modification date from filesystem
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(localPath, &fileStat, ioError)) {
+    if (!IoHelper::getFileStat(localPath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat for " << Utility::formatIoError(localPath, ioError));
         return ExitCode::SystemError;
     }

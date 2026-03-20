@@ -128,10 +128,11 @@ void eraseFromTrash(const SyncPath &relativePath);
 #endif
 /**
  * Check whether a path indicates an item located in the trash.
- * @param relativePath SyncPath relative to the trash directory path.
- * @return true if `relativePath` indicated an existing item of the trash, false otherwise.
+ * @param path SyncPath relative to the trash directory path on Windows and MacOS, absolute path on Linux.
+ * @return true if `path` indicated an existing item of the trash, false otherwise.
  */
-bool isInTrash(const SyncPath &relativePath);
+bool isInTrash(const SyncPath &path);
+
 // Create two symbolic links that refer to each other:
 // filepath1 -> filepath2,
 // filepath2 -> filepath1

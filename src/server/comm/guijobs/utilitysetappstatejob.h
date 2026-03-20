@@ -30,7 +30,7 @@ class UtilitySetAppStateJob : public AbstractGuiJob {
     private:
         // Input parameters
         AppStateKey _key = AppStateKey::Unknown;
-        std::string _value;
+        CommString _value;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

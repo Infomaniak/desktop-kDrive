@@ -18,7 +18,9 @@
  -->
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+                    >
 
     <!-- Standard values -->
     <!-- FontFamily -->
@@ -64,6 +66,7 @@
     <x:Double x:Key="Infomaniak.Style.Spacing.XXXL">48</x:Double>
 
     <!-- Thickness -->
+    <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XXXS">2</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XXS">4</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XS">8</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.S">12</Thickness>
@@ -85,7 +88,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.M">0,16</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.L">0,24</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XL">0,32</Thickness>
-    
+
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XXS">0,4,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XS">0,8,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.S">0,12,0,0</Thickness>
@@ -98,6 +101,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.M">0,0,0,16</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.L">0,0,0,24</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Left.XXS">4,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XS">8,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.S">12,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.M">16,0,0,0</Thickness>
@@ -109,6 +113,11 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.M">0,0,16,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.L">0,0,24,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.XL">0,0,32,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Right.XXL">0,0,36,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Right.XXXL">0,0,48,0</Thickness>
+
+    <Thickness x:Key="Infomaniak.Style.Thickness.TextBadge">4,2</Thickness>
+
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XS">2</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.S">4</CornerRadius>
@@ -241,8 +250,22 @@
     </Style>
 
     <!-- Icons -->
+    <Style x:Key="Infomaniak.Style.Icon.Size.XXS"
+           TargetType="controls:SvgIcon">
+        <Setter Property="Width"
+                Value="12" />
+        <Setter Property="Height"
+                Value="12" />
+    </Style>
+    <Style x:Key="Infomaniak.Style.Icon.Size.XS"
+           TargetType="controls:SvgIcon">
+        <Setter Property="Width"
+                Value="14" />
+        <Setter Property="Height"
+                Value="14" />
+    </Style>
     <Style x:Key="Infomaniak.Style.Icon.Size.S"
-           TargetType="Image">
+           TargetType="controls:SvgIcon">
         <Setter Property="Width"
                 Value="16" />
         <Setter Property="Height"

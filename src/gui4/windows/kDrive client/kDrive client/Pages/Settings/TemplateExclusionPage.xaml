@@ -69,7 +69,7 @@
                                         <StackPanel Orientation="Horizontal"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-text}"
-                                                              Height="12"
+                                                              Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                             <TextBlock Grid.Column="1"
                                                        VerticalAlignment="Center"

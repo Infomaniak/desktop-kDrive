@@ -19,7 +19,7 @@
                 </ToolTipService.ToolTip>
                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Height="16" />
+                                  Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                 <TextBlock Text="{Binding Drive.Name}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
             </StackPanel>
@@ -39,7 +39,7 @@
                 </ToolTipService.ToolTip>
                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                   Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Height="16"
+                                  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                   VerticalAlignment="Center" />
                 <StackPanel Spacing="0">
                     <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"

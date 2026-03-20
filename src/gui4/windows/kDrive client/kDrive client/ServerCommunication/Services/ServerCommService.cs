@@ -650,11 +650,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return result;
         }
-        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        public async Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path)
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.SyncConfiguration] = (int)syncConfiguration
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -876,6 +877,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(parentNodeId))
+                parentNodeId = App.Constants.Drive.RootNodeId;
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = drive.UserDbId,
+                [JsonKeys.DriveId] = drive.DriveId,
+                [JsonKeys.ParentNodeId] = Utility.ToBase64String(parentNodeId),
+                [JsonKeys.RelativePath] = Utility.ToBase64String(path),
+
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CREATEMISSINGFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeId))
+                return null;
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new Base64StringJsonConverter());
+            NodeId? nodeId = data.Params[JsonKeys.NodeId].Deserialize<NodeId>(options);
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}");
+                return null;
+            }
+
+            return nodeId;
+        }
+
         public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -928,7 +961,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }; 
+            };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
 
@@ -1192,6 +1225,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
             return true;
+        }
+
+        public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.KeepLocalErrorDbIdList] = JsonSerializer.SerializeToNode(keepLocalErrorDbIds),
+                [JsonKeys.KeepRemoteErrorDbIdList] = JsonSerializer.SerializeToNode(keepRemoteErrorDbIds)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.ErrorDbIdList] = JsonSerializer.SerializeToNode(errorDbIds),
+                [JsonKeys.Strategy] = (int)strategy
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
         // Signals
@@ -1557,19 +1612,40 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
 
+                Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
+                {
+                    // We never want to remove an item that as sucessfully completed
+                    if (item.Status == SyncFileStatus.Success)
+                        return false;
+
+
+                    if (Error.IsConflictUserResolvable(item.Conflict) && !sync.SyncErrors.Any(e => e.IsConflictUserResolvable() && e.Path == item.Path))
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.RemoteNodeId) && !string.IsNullOrEmpty(item.RemoteNodeId) && info.RemoteNodeId == item.RemoteNodeId && !Error.IsConflictUserResolvable(item.Conflict))
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.LocalNodeId) && !string.IsNullOrEmpty(item.LocalNodeId) && info.LocalNodeId == item.LocalNodeId)
+                        return true;
+
+                    if (!sync.SyncErrors.Any(e => e.Path == item.Path))
+                        return true;
+
+                    return false;
+                };
+
                 // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => a.Status == fileItemInfo.Status || (a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 
                 // Create new item
-                var newItem = new SyncFileItem(sync);
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
+                var newItem = new SyncFileItem(sync, fileItemInfo);
 
                 const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
-                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
+                    activities.Insert(Math.Clamp(destIndex, 0, activities.Count), newItem);
                 }
                 else
                 {

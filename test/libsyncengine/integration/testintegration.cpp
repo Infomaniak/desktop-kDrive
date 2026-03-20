@@ -56,6 +56,7 @@
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
+#include "test_utility/testhelpers_requests.h"
 
 using namespace CppUnit;
 using namespace std::chrono;
@@ -116,7 +117,7 @@ void TestIntegration::setUp() {
 
     FileStat fileStat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError);
+    (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
     // This is an advanced sync. Define remote target path and remote target node ID.
     const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
@@ -137,7 +138,7 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    if (_syncPal) _syncPal->stop(false, true, false);
+    if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();
@@ -177,9 +178,10 @@ void TestIntegration::inconsistencyTests() {
     // Duplicate remote files to set up the tests.
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     _syncPal->pause();
-    const auto testForbiddenCharsRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testForbiddenChar"));
-    const auto testNameClashRemoteId1 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testNameClash"));
-    const auto testNameClashRemoteId2 = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("testnameclash1"));
+    const auto testForbiddenCharsRemoteId =
+            testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testForbiddenChar"));
+    const auto testNameClashRemoteId1 = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testNameClash"));
+    const auto testNameClashRemoteId2 = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("testnameclash1"));
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -218,7 +220,7 @@ void TestIntegration::inconsistencyTests() {
     testhelpers::generateOrEditTestFile(nameClashLocalPath);
     FileStat filestat;
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError);
+    (void) IoHelper::getFileStat(nameClashLocalPath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
@@ -234,7 +236,8 @@ void TestIntegration::inconsistencyTests() {
     // and a new edit operation, with the new path, is generated.
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError);
+    (void) IoHelper::getFileStat(_syncPal->localPath() / "testnameclash2", &filestat, ioError,
+                                 IoHelper::PathCheckOption::Insensitive);
     remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
 
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
@@ -275,7 +278,7 @@ void TestIntegration::testBreakCycle() {
     CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
     (void) dirJob.runSynchronously();
     // Move A/AA/AAA2 to A/AA/AAA/AAA2 on remote replica.
-    moveRemoteFile(_driveDbId, nodeIdAAA, dirJob.nodeId());
+    testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, dirJob.nodeId());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -290,7 +293,7 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testBlacklistDir");
     const auto filename = Str("testBlacklist");
-    const auto fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+    const auto fileId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto dirpath = _syncPal->localPath() / tmpRemoteDir.name();
@@ -305,24 +308,34 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+#else
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(dirpath.filename());
 #endif
 
     // Move a file inside a blacklisted directory.
-    moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
+    testhelpers::moveRemoteItem(_driveDbId, fileId, tmpRemoteDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
-    moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
+    testhelpers::moveRemoteItem(_driveDbId, fileId, _remoteSyncDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -385,17 +398,18 @@ void TestIntegration::testExclusionTemplates() {
     const RemoteTemporaryDirectory exclusionTemplatesTestDir(_driveDbId, tmpRemoteDir.id(), "testDir");
     FileStat filestat;
     bool found = false;
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / exclusionTemplatesTestDir.name(), &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / exclusionTemplatesTestDir.name(), &filestat, found,
+                          IoHelper::PathCheckOption::Insensitive);
     const auto dirLocalId = std::to_string(filestat.inode);
 
     const auto filename = "testExclusionTemplates";
     const SyncPath testName = "to_be_excluded";
-    const auto fileRemoteId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, testName);
-    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
+    const auto fileRemoteId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, testName);
+    testhelpers::moveRemoteItem(_driveDbId, fileRemoteId, tmpRemoteDir.id());
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     const auto excludedFilePath = _syncPal->localPath() / tmpRemoteDir.name() / testName;
-    IoHelper::getFileStat(excludedFilePath, &filestat, found);
+    IoHelper::getFileStat(excludedFilePath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     auto fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(std::filesystem::exists(excludedFilePath));
 
@@ -420,7 +434,8 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // ... but the local file is still excluded. A new file is therefore downloaded.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found,
+                          IoHelper::PathCheckOption::Insensitive);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -434,21 +449,22 @@ void TestIntegration::testExclusionTemplates() {
                                             exclusionTemplatesTestDir.name())); // The local directory has been deleted.
 
     // Move a file inside an excluded directory from remote replica.
-    moveRemoteFile(_driveDbId, fileRemoteId, exclusionTemplatesTestDir.id());
+    testhelpers::moveRemoteItem(_driveDbId, fileRemoteId, exclusionTemplatesTestDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
 
     // Move a file away from an excluded directory from remote replica.
-    moveRemoteFile(_driveDbId, fileRemoteId, tmpRemoteDir.id());
+    testhelpers::moveRemoteItem(_driveDbId, fileRemoteId, tmpRemoteDir.id());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / filename, &filestat, found,
+                          IoHelper::PathCheckOption::Insensitive);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -468,9 +484,13 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
                                             filename)); // The local file has been moved to trash.
-
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);
 #endif
@@ -485,7 +505,8 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
     // Local file ID has changed again.
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
-    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
+    IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found,
+                          IoHelper::PathCheckOption::Insensitive);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
@@ -563,7 +584,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found);
+        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -582,7 +603,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found);
+        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
         (void) IoHelper::setFileDates(filepath, timeInput, fileStat.modificationTime, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -608,7 +629,7 @@ void TestIntegration::testNegativeModificationTime() {
         testhelpers::generateOrEditTestFile(filepath);
         FileStat fileStat;
         bool found = false;
-        IoHelper::getFileStat(filepath, &fileStat, found);
+        IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -656,8 +677,8 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
 
-        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("AAAA"));
-        moveRemoteFile(_driveDbId, nodeIdAAAA, nodeIdAAA);
+        nodeIdAAAA = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, Str("AAAA"));
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAAA, nodeIdAAA);
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
@@ -667,10 +688,10 @@ void TestIntegration::testDeleteAndRecreateBranch() {
 
     {
         // Move test file outside the directory that we will delete
-        moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
 
         // Delete A/AA
-        deleteRemoteItem(_driveDbId, nodeIdAA);
+        testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
 
         // Create A/AA/AAA1
         CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
@@ -680,7 +701,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         (void) jobAAA1.runSynchronously();
 
         // Move back test file into AAA1
-        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA1.nodeId());
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAAA, jobAAA1.nodeId());
     }
 
     _syncPal->unpause();
@@ -713,24 +734,16 @@ void TestIntegration::testDeleteAndMoveCase() {
     NodeId nodeIdBB;
     NodeId nodeIdBBB;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
-        (void) jobA.runSynchronously();
-        nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("test"));
-        (void) jobAA.runSynchronously();
-        nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobB(nullptr, _driveDbId, tmpRemoteDir.id(), Str("B"));
-        (void) jobB.runSynchronously();
-        nodeIdB = jobB.nodeId();
-        CreateDirJob jobBB(nullptr, _driveDbId, jobB.nodeId(), Str("test"));
-        (void) jobBB.runSynchronously();
-        nodeIdBB = jobBB.nodeId();
+        nodeIdA = testhelpers::createRemoteDir(_driveDbId, tmpRemoteDir.id(), Str("A"));
+        nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("test"));
+        nodeIdB = testhelpers::createRemoteDir(_driveDbId, tmpRemoteDir.id(), Str("B"));
+        nodeIdBB = testhelpers::createRemoteDir(_driveDbId, nodeIdB, Str("test"));
 
         const auto filename = Str("test.txt");
-        nodeIdAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
-        moveRemoteFile(_driveDbId, nodeIdAAA, nodeIdAA);
-        nodeIdBBB = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
-        moveRemoteFile(_driveDbId, nodeIdBBB, nodeIdBB);
+        nodeIdAAA = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, nodeIdAA);
+        nodeIdBBB = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdBBB, nodeIdBB);
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
@@ -746,13 +759,13 @@ void TestIntegration::testDeleteAndMoveCase() {
     //             └── test.txt(bbb)
 
     // Delete aa
-    deleteRemoteItem(_driveDbId, nodeIdAA);
+    testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
     // Rename a
     (void) RenameJob(nullptr, _driveDbId, nodeIdA, Str("A2")).runSynchronously();
     // Move bb
-    moveRemoteFile(_driveDbId, nodeIdBB, nodeIdA);
+    testhelpers::moveRemoteItem(_driveDbId, nodeIdBB, nodeIdA);
     // Delete b
-    deleteRemoteItem(_driveDbId, nodeIdB);
+    testhelpers::deleteRemoteItem(_driveDbId, nodeIdB);
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -842,56 +855,6 @@ int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &pare
     if (!dataArray) return -1;
 
     return static_cast<int64_t>(dataArray->size());
-}
-
-void TestIntegration::editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime /*= nullptr*/,
-                                     SyncTime *modificationTime /*= nullptr*/, int64_t *size /*= nullptr*/) const {
-    const LocalTemporaryDirectory temporaryDir;
-    const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
-    testhelpers::generateOrEditTestFile(tmpFilePath);
-
-    const auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
-    UploadJob job(nullptr, driveDbId, tmpFilePath, remoteFileId, timestamp.count());
-    (void) job.runSynchronously();
-    if (creationTime) {
-        *creationTime = job.creationTime();
-    }
-    if (modificationTime) {
-        *modificationTime = job.modificationTime();
-    }
-    if (size) {
-        *size = job.size();
-    }
-}
-
-void TestIntegration::moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
-                                     const SyncName &name /*= {}*/) const {
-    MoveJob job(nullptr, driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
-    job.setBypassCheck(true);
-    (void) job.runSynchronously();
-}
-
-NodeId TestIntegration::duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const {
-    DuplicateJob job(nullptr, driveDbId, id, newName);
-    (void) job.runSynchronously();
-    return job.nodeId();
-}
-
-void TestIntegration::deleteRemoteItem(const int driveDbId, const NodeId &id) const {
-    DeleteJob job(driveDbId, id);
-    job.setBypassCheck(true);
-    (void) job.runSynchronously();
-}
-
-SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const {
-    IoError ioError(IoError::Unknown);
-    IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
-    bool endOfDir = false;
-    DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
-    }
-    return {};
 }
 
 void TestIntegration::testSynchronizationOfSymLinks() {

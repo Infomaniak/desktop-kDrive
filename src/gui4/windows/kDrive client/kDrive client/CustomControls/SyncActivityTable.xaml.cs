@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.CustomControls
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    await Utility.OpenFolderSecurely(activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
@@ -130,10 +130,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void UpToDateLink_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
-        }
         private void ItemErrorIcon_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             Frame? frame = Utility.GetFrame(this);
@@ -270,6 +266,14 @@ namespace Infomaniak.kDrive.CustomControls
                 SyncDirection.Down => Localizer.Instance.GetString("syncedFromKDriveWeb"),
                 _ => ""
             };
+        }
+
+        private Visibility GetNoActivityGridVisibility(int activityCount, int errorCount)
+        {
+            if (activityCount == 0 && errorCount == 0)
+                return Visibility.Visible;
+
+            return Visibility.Collapsed;
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector

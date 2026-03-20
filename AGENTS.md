@@ -69,6 +69,11 @@ clang-format -i <file>
 
 ### Infrastructure
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
+
+### Legal & Licensing
+- Third-party licenses and attributions: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+- Project license: [`LICENSE`](LICENSE) (GPL v3)
+
 ### Quick Find Commands
 ```bash
 # Find a class definition
@@ -92,4 +97,5 @@ rg -rn "TestClassName" test/
 - `clang-format` reports no diff on touched files.
 - New logic has a corresponding test in `test/`.
 - No hardcoded credentials or platform-specific paths in shared code.
+- New dependencies licenses are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 - CI passes: `kdrive-desktop-ci.yml`.

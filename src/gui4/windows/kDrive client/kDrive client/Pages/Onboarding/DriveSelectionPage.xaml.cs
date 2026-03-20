@@ -128,6 +128,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     {
         public DataTemplate? SingleAccountDriveTemplate { get; set; }
         public DataTemplate? MultiAccountDriveTemplate { get; set; }
+        public DataTemplate? SingleAccountDriveDisabledTemplate { get; set; }
+        public DataTemplate? MultiAccountDriveDisabledTemplate { get; set; }
 
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
@@ -138,10 +140,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (user is null)
             {
                 Logger.Log(Logger.Level.Warning, "DriveTemplateSelector: User not found for drive");
-                return SingleAccountDriveTemplate; // Fallback to single account template
+                return drive.IsConfigured ? SingleAccountDriveDisabledTemplate : SingleAccountDriveTemplate; // Fallback to single account template
             }
 
-            return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
+            if (drive.IsConfigured)
+                return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveDisabledTemplate : SingleAccountDriveDisabledTemplate;
+            else
+                return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
         }
     }
 }

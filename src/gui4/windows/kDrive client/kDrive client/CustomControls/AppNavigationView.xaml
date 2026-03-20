@@ -10,7 +10,6 @@
                 xmlns:kDrive="using:Infomaniak.kDrive"
                 mc:Ignorable="d"
                 PaneDisplayMode="Left"
-                SelectionChanged="OnSelectionChanged"
                 ItemInvoked="OnItemInvoked"
                 IsBackEnabled="{x:Bind ContentFrame.CanGoBack, Mode=OneWay}"
                 BackRequested="OnBackRequested"
@@ -35,7 +34,7 @@
         <controls:SyncSelector HorizontalAlignment="Stretch"
                                Margin="4,9,4,20"
                                Visibility="{x:Bind IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
-                               IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+                               IsEnabled="{x:Bind GetSyncSelectorIsEnabled(ViewModel.SelectedSync, ContentFrame.Content), Mode=OneWay}" />
     </NavigationView.PaneCustomContent>
 
     <NavigationView.MenuItems>
@@ -45,7 +44,9 @@
                             IsSelected="True"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
-                <SymbolIcon Symbol="Home" />
+                <controls:SvgIcon Height="32"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Essentials.house}"
+                                  Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleActivities'), Mode=OneWay}"
@@ -53,15 +54,24 @@
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
-                <SymbolIcon Symbol="Sync" />
+                <controls:SvgIcon Height="32"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
+                                  Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
+            <NavigationViewItem.InfoBadge>
+                <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+            </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"
                             Tag="StoragePage"
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
-                <SymbolIcon Symbol="MapDrive" />
+                <controls:SvgIcon Height="32"
+                                  UriString="{StaticResource Infomaniak.DS.Icons.Network.hardware-outline}"
+                                  Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
     </NavigationView.MenuItems>
@@ -72,7 +82,7 @@
                             MinHeight="30"
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
-                <controls:SvgIcon Height="16"
+                <controls:SvgIcon Height="32"
                                   UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
                                   Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>

@@ -14,6 +14,7 @@ Collaborate online on Office documents, organise meetings, share your work. Anyt
 Protect your data in a sovereign cloud exclusively developed and hosted in Switzerland. Infomaniak doesn’t analyze or resell your data.
 
 ### [Download the kDrive app here](https://www.infomaniak.com/en/apps/download-kdrive)
+Alternatively, you can retrieve the latest platform-specific direct download URLs here: https://www.infomaniak.com/drive/latest
 
 ## License & Contributions
 This project is under GPLv3 license.  

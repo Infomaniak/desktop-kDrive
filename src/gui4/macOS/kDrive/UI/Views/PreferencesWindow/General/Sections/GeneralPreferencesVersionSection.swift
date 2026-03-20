@@ -76,7 +76,7 @@ struct GeneralPreferencesVersionSection: View {
 
     var body: some View {
         Section {
-            VersionManagementCell()
+            VersionManagementView(repository: repository)
 
             // TODO: Automatic update is not available yet
             Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))

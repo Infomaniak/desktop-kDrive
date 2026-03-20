@@ -23,6 +23,7 @@
 
 // Input parameters keys
 static const auto inParamsPath = "path";
+static const auto inParamsSyncConfiguration = "syncConfiguration";
 
 // Output parameters keys
 static const auto outParamsIsValid = "isValid";
@@ -38,9 +39,11 @@ UtilityIsPathValidForNewSyncJob::UtilityIsPathValidForNewSyncJob(std::shared_ptr
 
 ExitInfo UtilityIsPathValidForNewSyncJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in UtilityIsPathValidForNewSyncJob::readParamValue: error=";
-    std::string pathStr;
+    CommString pathStr;
     try {
         readParamValue(inParamsPath, pathStr);
+        readParamValue(inParamsSyncConfiguration, _syncConfig);
+
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
         return ExitCode::LogicError;
@@ -56,7 +59,7 @@ ExitInfo UtilityIsPathValidForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityIsPathValidForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::isPathValidForNewSync(_path, _isValid); !exitInfo) {
+    if (const auto exitInfo = ServerRequests::isPathValidForNewSync(_path, _syncConfig, _isValid); !exitInfo) {
         LOGW_WARN(_logger, L"isPathValidForNewSync failed: " << Utility::formatSyncPath(_path));
         return exitInfo;
     }

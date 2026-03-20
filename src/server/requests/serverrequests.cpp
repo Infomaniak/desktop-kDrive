@@ -121,7 +121,7 @@ ExitInfo ServerRequests::deleteUser(int userDbId) {
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    AbstractTokenNetworkJob::clearCacheForUser(userDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
@@ -137,11 +137,12 @@ ExitInfo ServerRequests::deleteAccount(int accountDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Account with id=" << accountDbId << " not found");
         return ExitCode::DataError;
     }
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteDrive(int driveDbId) {
+ExitInfo ServerRequests::deleteDrive(int32_t driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {
@@ -152,8 +153,7 @@ ExitCode ServerRequests::deleteDrive(int driveDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
         return ExitCode::DataError;
     }
-
-    AbstractTokenNetworkJob::clearCacheForDrive(driveDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
@@ -312,7 +312,7 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
     return exitCode;
 }
 
-ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid) {
+ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
     valid = false;
 
     // Check the FS
@@ -328,53 +328,115 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
         return ExitCode::DbError;
     }
 
-    const QString qPath = QString::fromStdString(path.string());
+    const QString qPath = Path2QStr(path);
     QString qError;
-    if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
+
+    if (ExitInfo exitInfo = checkSyncNesting(syncList, qPath, qError); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting: " << exitInfo << qError.toStdString());
+        return exitInfo.code() == ExitCode::InvalidSync ? ExitInfo(ExitCode::Ok) : exitInfo;
+    }
+
+    if (syncConfig == SyncConfiguration::Advanced) {
+        valid = true;
         return ExitCode::Ok;
     }
 
-    // If the directory exists, check if it is empty
-    bool isEmpty = true;
-    std::error_code ec;
-    if (std::filesystem::exists(path, ec) && !ec) {
-        if (!std::filesystem::is_directory(path)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
-            valid = false;
-            return ExitCode::Ok;
-        }
-
-        isEmpty = std::filesystem::is_empty(path, ec);
-    }
-
-    if (ec) {
-        LOG_WARN(Log::instance()->getLogger(), "Error checking if path exists/is empty: " << ec.message());
-        valid = false;
+    // Check if the local directory already exists
+    auto ioError = IoError::Success;
+    bool alreadyExists = false;
+    if (const bool success = IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
+        !success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
         return ExitCode::SystemError;
     }
 
-    if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
-        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << Utility::formatSyncPath(path));
-        valid = false;
+    // If the directory exists, check if it is empty
+    if (!alreadyExists) {
+        valid = true;
         return ExitCode::Ok;
     }
 
-    valid = true;
+    if (CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") == "1") {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    bool isEmpty = true;
+    std::error_code ec;
+    if (!std::filesystem::is_directory(path, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Error checking if path is a directory: " << ec.message());
+        return ExitCode::SystemError;
+    }
+
+    isEmpty = std::filesystem::is_empty(path, ec);
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Error checking if path is empty: " << ec.message());
+        return ExitCode::SystemError;
+    }
+
+    if (isEmpty) {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    bool containsNonExcludedItem = false;
+    if (ExitInfo exitInfo = folderContainsNonExcludedItem(path, containsNonExcludedItem); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in folderContainsNonExcludedItem: " << exitInfo);
+        return exitInfo;
+    }
+    if (!containsNonExcludedItem) {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    LOGW_WARN(Log::instance()->getLogger(), L"The directory is not empty: " << Utility::formatSyncPath(path));
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile) {
+    auto ioError = IoError::Unknown;
+    IoHelper::DirectoryIterator dirIt(path, false, ioError);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::DirectoryIterator " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
+    }
+
+    containsNonExcludedFile = false;
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (!ExclusionTemplateCache::instance()->isExcluded(entry.path())) {
+            containsNonExcludedFile = true;
+            return ExitCode::Ok;
+        }
+    }
+
+    if (!endOfDirectory || ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error iterating directory with IoHelper::DirectoryIterator " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
+    }
+
     return ExitCode::Ok;
 }
 
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
-    const QString qBasePath = QString::fromStdString(basePath.string());
+    const QString qBasePath = Path2QStr(basePath);
     QString qPath;
     QString qError;
     const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
-    path = qPath.toStdString();
-    error = qError.toStdString();
+    path = QStr2Path(qPath);
+    error = QStr2Str(qError);
     return exitInfo;
 }
 
-ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -401,29 +463,44 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     int attempt = 1;
     forever {
-        ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
-        if (!exitInfo && exitInfo.cause() != ExitCause::FileExists) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder:" << exitInfo);
+        const ExitInfo exitInfo = checkSyncNesting(syncList, folder, error);
+        if (!exitInfo && (exitInfo.code() != ExitCode::InvalidSync ||
+                          attempt >= 100)) { // If the error is a sync nesting error, we can try another
+                                             // as the folder can just be already used by another sync
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting:" << exitInfo);
             return exitInfo;
         }
 
-        const bool isGood = !QFileInfo::exists(folder) && error.isEmpty();
-        if (isGood) {
-            break;
+        if (exitInfo) {
+            // Check if the local directory already exists
+            auto ioError = IoError::Success;
+            bool alreadyExists = false;
+            const bool success = IoHelper::checkIfPathExists(QStr2Path(folder), alreadyExists, ioError,
+                                                             IoHelper::PathCheckOption::Insensitive);
+            if (!success) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(folder, ioError));
+                return ExitCode::SystemError;
+            }
+
+            if (!alreadyExists) {
+                break;
+            }
         }
 
         // Count attempts and give up eventually
-        attempt++;
-        if (attempt > 100) {
+        if (attempt >= 100) {
             LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
             error = QObject::tr("Can't find a valid path");
             return ExitCode::SystemError;
         }
+        attempt++;
 
         folder = basePath + " " + QString::number(attempt);
     }
 
     path = folder;
+    error = "";
     return ExitCode::Ok;
 }
 
@@ -1263,6 +1340,37 @@ ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNode
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::createDir(int32_t userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+                                   NodeId &newNodeId) {
+    // Get drive data
+    std::shared_ptr<CreateDirJob> job = nullptr;
+    try {
+        job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveId=" << driveId);
+        return exitInfo.code();
+    }
+
+    // Extract file ID
+    if (job->jsonRes()) {
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
+        }
+    }
+
+    if (newNodeId.empty()) return ExitCode::BackError;
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
     newNodeId = {};
     NodeId newNodeIdStr;
@@ -1635,7 +1743,8 @@ bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
 
         auto ioError = IoError::Success;
         const SyncPath dest = sync.localPath() / error.destinationPath();
-        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
+        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError, IoHelper::PathCheckOption::Insensitive);
+            !success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
             exitInfo = ExitCode::SystemError;
@@ -2014,7 +2123,7 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
+ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     error.clear();
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
@@ -2022,11 +2131,11 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         return exitCode;
     }
 
-    // check if the local directory isn't used yet in another sync
-    Qt::CaseSensitivity cs = Qt::CaseSensitive;
+    auto cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
+    // check if the local directory isn't used yet in another sync
     QList<std::filesystem::path> existingSyncFolderList;
     for (const Sync &sync: syncList) {
         existingSyncFolderList << sync.localPath();
@@ -2055,7 +2164,7 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         if (!differentPaths) {
             error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return {ExitCode::InvalidSync, ExitCause::FileExists};
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
     }
 

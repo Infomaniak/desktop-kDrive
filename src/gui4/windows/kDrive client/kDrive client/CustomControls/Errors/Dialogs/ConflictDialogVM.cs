@@ -1,6 +1,8 @@
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +12,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors;
 public class ConflictDialogVM : UISafeObservableObject
 {
     private List<Error> _errors { get; init; }
+    private List<DbId> _keepLocalIds = new List<DbId>();
+    private List<DbId> _keepRemoteIds = new List<DbId>();
 
     private Error? _currentError;
 
@@ -57,7 +61,7 @@ public class ConflictDialogVM : UISafeObservableObject
     public string LocalVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.DestinationPath);
     public string RemoteVersionAbsolutePath => CurrentError is null ? "" : System.IO.Path.Combine(CurrentError.Sync?.LocalPath ?? "", CurrentError.Path);
 
-    public bool MultipleConflicts => _errors.Count > 1;
+    public bool HasMultipleConflicts => _errors.Count > 1;
 
     public int CurrentErrorIndex
     {
@@ -104,7 +108,7 @@ public class ConflictDialogVM : UISafeObservableObject
             if (cts.Token.IsCancellationRequested) return;
             if (t.IsCompletedSuccessfully)
             {
-                LocalVersionInfo = t.Result; 
+                LocalVersionInfo = t.Result;
                 RefreshMostRecentFlags();
             }
             else
@@ -153,5 +157,32 @@ public class ConflictDialogVM : UISafeObservableObject
             LocalIsMostRecent = false;
             RemoteIsMostRecent = false;
         }
+    }
+
+    public void SaveCurrentErrorChoice(ConflictResolutionStrategy conflictResolutionStrategy)
+    {
+        if (CurrentError is null)
+        {
+            Logger.Log(Logger.Level.Error, "Attempted to save user choice but CurrentError is null.");
+            return;
+        }
+        if (conflictResolutionStrategy == ConflictResolutionStrategy.KeepLocal)
+        {
+            _keepLocalIds.Add(CurrentError.DbId);
+            return;
+        }
+
+        if (conflictResolutionStrategy == ConflictResolutionStrategy.KeepRemote)
+        {
+            _keepRemoteIds.Add(CurrentError.DbId);
+            return;
+        }
+        Logger.Log(Logger.Level.Error, $"Attempted to save user choice with an invalid conflict resolution strategy: {conflictResolutionStrategy}");
+    }
+
+    public async Task<bool> ApplyUserChoices()
+    {
+        var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+        return await commService.ResolveConflicts(_keepLocalIds, _keepRemoteIds, CancellationToken.None);
     }
 }

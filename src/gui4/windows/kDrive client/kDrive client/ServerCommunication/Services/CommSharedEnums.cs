@@ -66,6 +66,7 @@ namespace Infomaniak.kDrive.Types
         NODE_SUBFOLDERS2,
         NODE_FOLDER_SIZE,
         NODE_CREATEMISSINGFOLDERS,
+        NODE_CREATEMISSINGFOLDERS_LEGACY,
         NODE_CONFLICT_INFO,
         ERROR_INFOLIST,
         ERROR_INFOLIST_LEGACY,
@@ -73,8 +74,10 @@ namespace Infomaniak.kDrive.Types
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
         ERROR_DELETE_INVALIDTOKEN,
+        ERROR_RESOLVE_CONFLICTS_LEGACY,
         ERROR_RESOLVE_CONFLICTS,
-        ERROR_RESOLVE_UNSUPPORTED_CHAR,
+        ERROR_RESOLVE_CONFLICTS_QUICK,
+        ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
         EXCLTEMPL_GETEXCLUDED,
         EXCLTEMPL_GETLIST,
         EXCLTEMPL_SETUSERLIST,
@@ -236,6 +239,7 @@ namespace Infomaniak.kDrive.Types
         ApiErr,
         InvalidSize,
         FileExists,
+        DirExists,
         FileAccessError,
         FileLocked,
         NotEnoughDiskSpace,
@@ -342,5 +346,16 @@ namespace Infomaniak.kDrive.Types
         Local,
         Remote
     };
-
+    public enum ConflictResolutionStrategy
+    {
+        Unknown,
+        KeepMostRecent,
+        KeepLocal,
+        KeepRemote
+    }
+    public enum SyncConfiguration
+    {
+        Classic,
+        Advanced
+    };
 }

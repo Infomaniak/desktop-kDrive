@@ -104,19 +104,21 @@
                 <ComboBoxItem>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <controls:SvgIcon Height="14"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeMyActivity')}" />
+
+                        <controls:SvgIcon Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeMyActivity')}" />
                     </StackPanel>
                 </ComboBoxItem>
                 <ComboBoxItem>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <controls:SvgIcon Height="14"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeAllActivities')}" />
+
+                        <controls:SvgIcon Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTypeAllActivities')}" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox.Items>

@@ -38,28 +38,6 @@ static const int logoIconSize = 30;
 
 Q_LOGGING_CATEGORY(lcSynthesisBar, "gui.synthesisbar", QtInfoMsg)
 
-const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisabledMap() {
-    static const std::map<NotificationsDisabled, QString> map = {
-            {NotificationsDisabled::Never, tr("Never")},
-            {NotificationsDisabled::OneHour, tr("During 1 hour")},
-            {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::ThreeDays, tr("During 3 days")},
-            {NotificationsDisabled::OneWeek, tr("During 1 week")},
-            {NotificationsDisabled::Always, tr("Always")}};
-    return map;
-}
-
-const std::map<NotificationsDisabled, QString> &SynthesisBar::notificationsDisabledForPeriodMap() {
-    static const std::map<NotificationsDisabled, QString> map = {
-            {NotificationsDisabled::Never, tr("Never")},
-            {NotificationsDisabled::OneHour, tr("For 1 more hour")},
-            {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
-            {NotificationsDisabled::ThreeDays, tr("For 3 more days")},
-            {NotificationsDisabled::OneWeek, tr("For 1 more week")},
-            {NotificationsDisabled::Always, tr("Always")}};
-    return map;
-}
-
 SynthesisBar::SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
     QWidget(parent),
     _gui(gui),
@@ -314,8 +292,8 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
             _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
-                    ? notificationsDisabledMap()
-                    : notificationsDisabledForPeriodMap();
+                    ? _notificationsDisabledMap
+                    : _notificationsDisabledForPeriodMap;
 
     for (auto const &[notifDisabled, str]: notificationMap) {
         auto *notificationAction = new QWidgetAction(this);
@@ -514,6 +492,19 @@ void SynthesisBar::retranslateUi() {
     _errorsButton->setToolTip(tr("Show errors and informations"));
     _infosButton->setToolTip(tr("Show informations"));
     _menuButton->setToolTip(tr("More actions"));
+    _notificationsDisabledMap = {{NotificationsDisabled::Never, tr("Never")},
+                                 {NotificationsDisabled::OneHour, tr("During 1 hour")},
+                                 {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+                                 {NotificationsDisabled::ThreeDays, tr("During 3 days")},
+                                 {NotificationsDisabled::OneWeek, tr("During 1 week")},
+                                 {NotificationsDisabled::Always, tr("Always")}};
+
+    _notificationsDisabledForPeriodMap = {{NotificationsDisabled::Never, tr("Never")},
+                                          {NotificationsDisabled::OneHour, tr("For 1 more hour")},
+                                          {NotificationsDisabled::UntilTomorrow, tr("Until tomorrow 8:00AM")},
+                                          {NotificationsDisabled::ThreeDays, tr("For 3 more days")},
+                                          {NotificationsDisabled::OneWeek, tr("For 1 more week")},
+                                          {NotificationsDisabled::Always, tr("Always")}};
 }
 
 } // namespace KDC

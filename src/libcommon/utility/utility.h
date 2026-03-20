@@ -277,6 +277,8 @@ struct COMMON_EXPORT CommonUtility {
         static ReplicaSide syncNodeTypeSide(SyncNodeType type);
 
         // CommString conversion functions
+        static CommString syncPath2CommString(const SyncPath &s) { return s.native(); }
+
 #if defined(KD_WINDOWS)
         static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
         static std::string commString2Str(const CommString &s) { return KDC::CommonUtility::ws2s(s); }

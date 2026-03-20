@@ -66,7 +66,7 @@ struct UserSection: View {
                     logOutAccount()
                 }
             } message: {
-                Text(KDriveLocalizable.dialogRemoveAccountContentMac(user.name))
+                Text(KDriveLocalizable.dialogRemoveAccountContent(user.name))
             }
             .alert(isPresented: $isShowingErrorAlert, error: error) {}
         }

@@ -10,6 +10,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:kDrive="using:Infomaniak.kDrive"
+      xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -34,12 +35,13 @@
                        FontSize="{StaticResource TitleTextBlockFontSize}"
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       VerticalAlignment="Bottom"
                        PointerPressed="BreadcrumbActivity_Click" />
 
             <FontIcon Grid.Column="1"
                       Glyph="&#xE76C;"
                       Width="24"
-                      FontSize="16"
+                      FontSize="14"
                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}"
                       VerticalAlignment="Bottom" />
@@ -49,18 +51,19 @@
                        FontSize="{StaticResource TitleTextBlockFontSize}"
                        FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                       VerticalAlignment="Center"
-                       PointerPressed="BreadcrumbActivity_Click" />
+                       VerticalAlignment="Bottom" />
         </Grid>
 
         <ScrollView Grid.Row="1"
                     Padding="0"
                     Margin="0">
-            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <!-- Files -->
-                    <RowDefinition Height="Auto" />
                     <!-- SyncDir -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Conflicts -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Files -->
                     <RowDefinition Height="Auto" />
                     <!-- Other -->
                     <RowDefinition Height="Auto" />
@@ -69,16 +72,39 @@
                 <errors:ErrorList Grid.Row="0"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncFolder')}"
                                   Errors="{x:Bind _errorPageVM.SyncDirErrors, Mode=OneWay}"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
                                   Visibility="{x:Bind _errorPageVM.SyncDirErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
-                
-                <errors:ErrorList Grid.Row="1"
-                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
-                                  Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
-                                  Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                            Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
+                            Visibility="{x:Bind _errorPageVM.HasManyConflicts, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('conflictErrorTitle'), Mode=OneWay}" />
+
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString1i('manyConflictErrorTitle', _errorPageVM.ConflictsCount), Mode=OneWay}"
+                                          Description="{x:Bind kDrive:Localizer.Instance.GetString('manyConflictErrorDescription'), Mode=OneWay}">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-circle-cross}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonManage'), Mode=OneWay}"
+                                HorizontalAlignment="Left"
+                                Click="ManyConflicts_ActionClick" />
+                    </toolKit:SettingsCard>
+                </StackPanel>
 
                 <errors:ErrorList Grid.Row="2"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
+                                  Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
+                                  Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+                <errors:ErrorList Grid.Row="3"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
                                   Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
                                   Visibility="{x:Bind _errorPageVM.OtherErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
             </Grid>
         </ScrollView>

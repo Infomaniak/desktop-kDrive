@@ -142,8 +142,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     return ExitCode::Ok;
 }
 
-void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> node,
-                                                       const InconsistencyType inconsistencyType) {
+void PlatformInconsistencyCheckerWorker::blacklistNode(std::shared_ptr<Node> node, const InconsistencyType inconsistencyType) {
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
     NodeIdPair nodeIDs;

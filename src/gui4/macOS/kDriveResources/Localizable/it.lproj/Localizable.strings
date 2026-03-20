@@ -4,12 +4,10 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 05 Mar 2026 14:19:08 +0100
+ * Exported at: Thu, 12 Mar 2026 09:15:02 +0100
  */
 
 
-/* loco:698053a65bddc8df790d0212 */
-" informationBlockSynchroErrorSubtitle" = "Non è stato possibile sincronizzare alcuni file.";
 /* loco:69a57d074f11212a7007d403 */
 "aboutButton" = "About";
 
@@ -22,6 +20,9 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Scelta del canale di distribuzione";
 
+/* loco:69b275fb3440db13f0011c03 */
+"accessibilitySelectSynchroMode" = "Selezionare una modalità di sincronizzazione";
+
 /* loco:6981cb92c70239c9ed0d45a3 */
 "activitiesTitleIdle" = "Sincronizzazione completata";
 
@@ -32,10 +33,10 @@
 "activitiesTitleNoActivity" = "Nessuna attività recente";
 
 /* loco:698c2d6ab41c289de2072ab2 */
-"activitiesTitleOffline" = "You are offline";
+"activitiesTitleOffline" = "Sei offline";
 
 /* loco:698c1fa979440e4f370444a2 */
-"activitiesTitlePause" = "Synchronisation paused";
+"activitiesTitlePause" = "Sincronizzazione in pausa";
 
 /* loco:6981b68a251c4a36c1078274 */
 "activitiesTypeAllActivities" = "Tutte le attività";
@@ -43,14 +44,24 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo la mia attività";
 
+/* loco:698b07cec1d08f40b50bc702 */
+"advancedSyncTitle" = "Sincronizzazioni avanzate";
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "L’applicazione è aggiornata";
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Aggiornamenti automatici";
 
+/* loco:698b06836cb93b812800d292 */
+"availableOffline" = "Disponibile offline";
+
+/* loco:69943068b17a2d5a500e16b2 */
+"availableOfflineDescription" = "I file vengono copiati sul computer.\nÈ possibile aprirli in qualsiasi momento, anche senza accesso a Internet.";
 /* loco:698af17b4dd554948901a8b2 */
 "betaProgramDescription" = "Ottenete l’accesso anticipato alle nuove versioni dell’applicazione prima che vengano rilasciate al pubblico e contribuite a migliorare l’applicazione condividendo con noi le vostre idee di miglioramento.";
 
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Partecipare al programma beta";
+
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Programma beta";
 /* loco:696a483470f3b70399021c12 */
@@ -123,9 +134,15 @@
 
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Pausa";
+
 /* loco:697b65a56840f9d35605a134 */
 "buttonRefresh" = "Aggiornare";
 
+/* loco:69b275c6f0de2ef07706b5b3 */
+"buttonRemove" = "Rimuovere";
+
+/* loco:698b07467beec481020cef52 */
+"buttonRemoveSync" = "Rimuovere la sincronizzazione";
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Riavviare la sincronizzazione";
 
@@ -134,11 +151,13 @@
 
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Ricerca";
+
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Vedere le attività";
 
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Aprire le impostazioni";
+
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Vedi le offerte";
 
@@ -164,15 +183,23 @@
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
 
-/* loco:69a99165aefa9c7b52041154 */
-"dialogRemoveAccountContentMac" = "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.";
+/* loco:698c6bbd94b70c0d3d09cde4 */
+"dialogRemoveAccountContent" = "Si disconnette %@ dall'applicazione.\n\nLa cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.\n\nTutti i dati rimarranno accessibili online su kDrive.";
 
 /* loco:698c6b10661f3226080d11a2 */
 "dialogRemoveAccountTitle" = "Uscire da questo account?";
+
+/* loco:698c7bc013e8b5bced08e614 */
+"dialogSyncDeletionWarningContent" = "La cartella locale rimarrà sul computer, ma non sarà più sincronizzata con kDrive.\nQuesta azione è permanente.\nPer sincronizzare nuovamente l’unità, sarà necessario ricollegarla in seguito.\n\nPrima di continuare, assicurarsi che tutti i file siano aggiornati e completamente sincronizzati.";
+
+/* loco:698c7b5c30ae98f0e6043132 */
+"dialogSyncDeletionWarningTitle" = "Rimuovere la sincronizzazione?";
+
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Non aderire";
+
 /* loco:696a260311ac2de6c6029683 */
-"driveAccessDeniedErrorDescription" = "Non si ha l’autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l’amministratore.";
+"driveAccessDeniedErrorDescription" = "Non si ha l'autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l'amministratore.";
 
 /* loco:696a25f0bcde38f2b9018124 */
 "driveAccessDeniedErrorTitle" = "Accesso negato a kDrive";
@@ -212,11 +239,22 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Si è verificato un errore durante la cancellazione dell'account.";
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Errore durante il tentativo di avviare il programma di installazione";
+
+/* loco:69b3e9128555b02b5001ee42 */
+"errorWhileChangingSynchroMode" = "Errore durante la modifica della modalità di sincronizzazione";
+
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aiutaci a migliorare kDrive";
 
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee";
+/* loco:698b05aa9eefd9ba070ce4a2 */
+"fileSyncMode" = "Modalità di sincronizzazione dei file";
+
+/* loco:698b05ecfd0cddb0b90c8b72 */
+"fileSyncModeDescription" = "Definire le modalità di archiviazione e accesso ai file.";
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Preferiti";
 
@@ -226,6 +264,14 @@
 /* loco:695e5889bc7544361b08b834 */
 "folderTrash" = "Rifiuti";
 
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "Per 1 ora";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "Per una settimana";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "Per tre giorni";
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Ciao %@, %@";
 
@@ -237,6 +283,9 @@
 
 /* loco:696a47fd5b6db1a9b1063182 */
 "informationBlockKDriveFullTitle" = "Il kDrive è pieno";
+
+/* loco:698053a65bddc8df790d0212 */
+"informationBlockSynchroErrorSubtitle" = "Non è stato possibile sincronizzare alcuni file.";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Attivare kDrive.app";
@@ -289,28 +338,16 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nome";
 
+
+
+
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notifica";
 
-/* loco:698b10ad0c20e31c9c00a5c2 */
-"notificationsDisabledAlways" = "Sempre";
-
-/* loco:698b1086dc2a328c000cfd92 */
-"notificationsDisabledNever" = "Mai";
-
-/* loco:698b111bc1341f8509093622 */
-"forOneHour" = "Per 1 ora";
-
-/* loco:698b115dd0d747974308d3b2 */
-"forOneWeek" = "Per una settimana";
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Spento";
 
-/* loco:698b1185c1341f8509093624 */
-"forThreeDays" = "Per tre giorni";
 
-/* loco:698b112a6dcfa5bb030c2f32 */
-"untilTomorrow" = "Fino a domani";
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Come il sistema";
@@ -321,14 +358,23 @@
 /* loco:698a070557f1356c46048003 */
 "labelStatus" = "Stato";
 
+/* loco:698c49120217e0fe6308b0c2 */
+"labelSyncLocation" = "Posizione";
+
+/* loco:698c4ae9a90fef6269010692 */
+"labelSynchronisation" = "Sincronizzazione";
+
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Tempo";
+
+/* loco:698c6a57a5f62ca5f1091942 */
+"labelkDriveManagement" = "Gestione kDrive";
 
 /* loco:698b0dd551a7a263e6030a72 */
 "languageSetting" = "Lingua";
 
 /* loco:698a1276e1c66ed33b03bf32 */
-"linkCopiedToClipboard" = "Link copiato negli appunti";
+"linkCopiedToClipboardTitle" = "Link copiato negli appunti";
 
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Spostare i file eliminati nel cestino del computer";
@@ -342,7 +388,11 @@
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "Non sincronizzato";
 
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Sempre";
 
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Mai";
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizzare kDrive nelle impostazioni di macOS:";
 
@@ -447,11 +497,23 @@
 /* loco:6979e265a8419bb7510c8122 */
 "storageUsageLabel" = "%@ su %@ utilizzato";
 
+/* loco:698b0623154e735e8b0a2542 */
+"storedOnline" = "Archiviato online";
+
+/* loco:69943031092bf608bc0c4304 */
+"storedOnlineDescription" = "I file rimangono nel cloud e non occupano spazio sul computer.\nPer l’accesso è necessaria una connessione a Internet.";
+
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Errore di sincronizzazione";
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronizzazione";
+
+/* loco:698b0555781f2782a70727c2 */
+"syncModeApplying" = "La nuova modalità di sincronizzazione viene applicata…";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Regole di sincronizzazione";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizzato";
@@ -512,6 +574,9 @@
 
 /* loco:6981e8f0f994e5f7bc040692 */
 "unavailableContentNoActivityTitle" = "Nessuna attività recente";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Fino a domani";
 
 /* loco:698af3afefd229ca780c59e2 */
 "updateAvailable" = "kDrive %@ disponibile";

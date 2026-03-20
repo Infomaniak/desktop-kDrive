@@ -82,6 +82,12 @@ struct IoHelper {
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
 
+        enum class PathCheckOption {
+            Sensitive = 0,
+            Insensitive,
+            EnumEnd
+        };
+
         static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
         static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
                                                            bool directoryIterationException = false);
@@ -160,13 +166,14 @@ struct IoHelper {
          successfully retrieved, nullptr otherwise.
          !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
-        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists);
+        static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
@@ -210,9 +217,10 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param exists is a boolean set with true if an item indicated by the path exists, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept;
+        static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Checks if the item indicated by the specified path exists and has the specified node identifier.
         /*!
@@ -221,10 +229,11 @@ struct IoHelper {
          \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
          false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
+         \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
-                                                    NodeId &otherNodeId, IoError &ioError) noexcept;
+                                                    NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -580,7 +589,12 @@ struct IoHelper {
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
+        static std::function<bool(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                  IoError &ioError)>
+                _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
+                                                  IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
         static void setCacheDirectoryPath(const SyncPath &newPath);

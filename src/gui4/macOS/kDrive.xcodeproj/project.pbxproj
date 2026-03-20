@@ -203,10 +203,23 @@
 				UI/UISynchroNodeTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
-				XPC/JSON/QuotaExceededError.json,
 				XPC/XPCQueryFetcherTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
+		};
+		A7854C9E2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				UI/SwiftUI/Components/OptionPicker.swift,
+			);
+			target = 37A1C4252E546A5200596DBB /* kDrive */;
+		};
+		A7854C9F2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				UI/SwiftUI/Components/OptionPicker.swift,
+			);
+			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
 		};
 		F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -228,6 +241,10 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A7854C9E2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
+				A7854C9F2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
+			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};

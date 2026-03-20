@@ -42,7 +42,7 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
 
     protected:
         void append(const log4cplus::spi::InternalLoggingEvent &event) override;
-        void customRollover(bool alreadyLocked = false);
+        void customRollover();
 
     private:
         int _expire = 0;

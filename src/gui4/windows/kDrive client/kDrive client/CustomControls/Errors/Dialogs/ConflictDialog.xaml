@@ -31,7 +31,7 @@
                     VerticalAlignment="Center"
                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XL}"
                     Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-                    Visibility="{x:Bind ViewModel.MultipleConflicts, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Visibility="{x:Bind ViewModel.HasMultipleConflicts, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1i2i('labelXoverY', ViewModel.CurrentErrorIndex, ViewModel.TotalErrors), Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
             </Border>

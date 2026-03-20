@@ -120,6 +120,7 @@ enum class ExitCause {
     ApiErr,
     InvalidSize,
     FileExists,
+    DirExists,
     FileAccessError,
     FileLocked,
     NotEnoughDiskSpace,
@@ -316,6 +317,12 @@ enum class ConflictResolutionStrategy {
     KeepMostRecent,
     KeepLocal,
     KeepRemote,
+    EnumEnd
+};
+
+enum class SyncConfiguration {
+    Classic,
+    Advanced,
     EnumEnd
 };
 
