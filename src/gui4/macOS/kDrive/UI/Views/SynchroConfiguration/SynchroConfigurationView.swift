@@ -127,8 +127,8 @@ struct SynchroConfigurationView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonValidate) {
-                    viewModel.saveConfiguration()
+                LoadingButton(action: viewModel.saveConfiguration) {
+                    Text(KDriveLocalizable.buttonValidate)
                 }
             }
 
