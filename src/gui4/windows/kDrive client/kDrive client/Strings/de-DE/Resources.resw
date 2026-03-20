@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
+  Exported at: Fri, 20 Mar 2026 12:23:49 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -308,6 +308,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Synchronisierung entfernen</value> 
+  </data> 
+  <data name="buttonRenameFile" xml:space="preserve"> 
+    <value>Datei umbenennen</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Synchronisation fortsetzen</value> 
@@ -634,14 +637,17 @@ Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value>
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>Ungenügende Datenmenge</value> 
   </data> 
-  <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von Ihrem Gerät nicht unterstützt werden</value> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden.</value> 
   </data> 
   <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername darf nicht mit einem Leerzeichen enden.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername darf nicht nur Leerzeichen enthalten.</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Harte Verbindungen werden für die Synchronisierung nicht unterstützt.</value> 
@@ -662,7 +668,10 @@ Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
     <value>Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
-    <value>Dieser Datei- oder Ordnername enthält nicht unterstützte Zeichen.</value> 
+    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung nicht unterstützt werden. Benennen Sie die Datei von kDrive online aus um.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>Der Dateipfad ist zu lang für dein Gerät. Kürze ihn und versuche es erneut.</value> 
@@ -756,9 +765,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
     <value>Name endet mit einem Leerzeichen</value> 
-  </data> 
-  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
-    <value>Nicht unterstützte Zeichen</value> 
   </data> 
   <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
     <value>Name enthält nur Leerzeichen</value> 
@@ -1126,9 +1132,6 @@ Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value>
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Nicht synchronisiert</value> 
   </data> 
-  <data name="notYetSupportedCharErrorTitle" xml:space="preserve"> 
-    <value>Nicht unterstütztes Zeichen</value> 
-  </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Immer</value> 
   </data> 
@@ -1166,7 +1169,7 @@ Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value>
     <value>Standort: %@</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Ihr kDrive einrichten</value> 
+    <value>Konfigurieren Sie Ihre kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
     <value>Nicht ausgewählte Ordner bleiben online verfügbar, ohne Speicherplatz zu belegen.</value> 

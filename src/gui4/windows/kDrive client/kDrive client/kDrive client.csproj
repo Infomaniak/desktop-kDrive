@@ -164,9 +164,6 @@
     <Page Update="CustomControls\Errors\Templates\Node\PathLengthError.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\NotYetSupportedCharError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharOnlySpacesError.xaml">
       <SubType>Designer</SubType>
     </Page>

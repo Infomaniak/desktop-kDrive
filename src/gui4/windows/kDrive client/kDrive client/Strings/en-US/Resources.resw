@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
+  Exported at: Fri, 20 Mar 2026 12:23:49 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -308,6 +308,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Remove synchronization</value> 
+  </data> 
+  <data name="buttonRenameFile" xml:space="preserve"> 
+    <value>Rename file</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Resume synchronization</value> 
@@ -634,14 +637,17 @@ Contact support to unlock the limit.</value>
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>Fichier trop volumineux</value> 
   </data> 
-  <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>The name of this file contains one or more characters that are not supported by your device</value> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>The file name contains one or more characters not supported by the kDrive Windows application.</value> 
   </data> 
   <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
     <value>The file or folder name cannot end with a space.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>The file or folder name cannot contain only spaces.</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Character not supported</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Hard links are not supported for synchronization.</value> 
@@ -662,7 +668,10 @@ Please ask the owner or your administrator for access.
     <value>There is not enough space on your computer to synchronize this file.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
-    <value>This file or folder name contains unsupported characters.</value> 
+    <value>The file name contains one or more characters not supported by the kDrive application. Rename the file from kDrive online.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Unsupported character</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>The file path is too long for your device. Shorten it and try again.</value> 
@@ -756,9 +765,6 @@ Free up space or upgrade your offer to synchronize this file.</value>
   </data> 
   <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
     <value>Name ends with a space</value> 
-  </data> 
-  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
-    <value>Unsupported character</value> 
   </data> 
   <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
     <value>Name contains only spaces</value> 
@@ -1126,9 +1132,6 @@ If the problem continues, contact our support team.</value>
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Not synchronized</value> 
   </data> 
-  <data name="notYetSupportedCharErrorTitle" xml:space="preserve"> 
-    <value>Unsupported character</value> 
-  </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Always</value> 
   </data> 
@@ -1166,7 +1169,7 @@ If the problem continues, contact our support team.</value>
     <value>Location: %@</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Set up your kDrive</value> 
+    <value>Configure your kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
     <value>Unselected folders will remain available online without using any disk space.</value> 

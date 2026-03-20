@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
+  Exported at: Fri, 20 Mar 2026 12:23:49 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -308,6 +308,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Eliminar la sincronización</value> 
+  </data> 
+  <data name="buttonRenameFile" xml:space="preserve"> 
+    <value>Cambiar el nombre del archivo</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Reanudar la sincronización</value> 
@@ -634,14 +637,17 @@ Ponte en contacto con el servicio de asistencia para desbloquear el límite.</va
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>Fichero demasiado voluminoso</value> 
   </data> 
-  <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>El nombre de este archivo contiene uno o más caracteres que no son compatibles con su dispositivo</value> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>El nombre del archivo contiene uno o más caracteres no admitidos por la aplicación kDrive de Windows.</value> 
   </data> 
   <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
     <value>El nombre del archivo o carpeta no puede terminar con un espacio.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>El nombre del archivo o carpeta no puede contener sólo espacios.</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Carácter no admitido</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>No se admiten enlaces duros para la sincronización.</value> 
@@ -662,7 +668,10 @@ Por favor, pida acceso al propietario o a su administrador.
     <value>No hay espacio suficiente en su ordenador para sincronizar este archivo.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
-    <value>El nombre de este archivo o carpeta contiene caracteres no admitidos.</value> 
+    <value>El nombre del archivo contiene uno o más caracteres no soportados por la aplicación kDrive. Cambie el nombre del archivo desde kDrive online.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Carácter no compatible</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>La ruta del archivo es demasiado larga para tu dispositivo. Acórtala y vuelve a intentarlo.</value> 
@@ -756,9 +765,6 @@ Libere espacio o actualice su paquete para sincronizar este archivo.</value>
   </data> 
   <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
     <value>El nombre termina con un espacio</value> 
-  </data> 
-  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
-    <value>Carácter no admitido</value> 
   </data> 
   <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
     <value>El nombre solo contiene espacios</value> 
@@ -1126,9 +1132,6 @@ Si el problema continúa, póngase en contacto con nuestro equipo de soporte.</v
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>No sincronizado</value> 
   </data> 
-  <data name="notYetSupportedCharErrorTitle" xml:space="preserve"> 
-    <value>Carácter no compatible</value> 
-  </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Siempre</value> 
   </data> 
@@ -1166,7 +1169,7 @@ Si el problema continúa, póngase en contacto con nuestro equipo de soporte.</v
     <value>Localización: %@</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Configura tu kDrive</value> 
+    <value>Configure sus kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
     <value>Las carpetas no seleccionadas permanecerán disponibles en línea sin utilizar espacio en disco.</value> 
