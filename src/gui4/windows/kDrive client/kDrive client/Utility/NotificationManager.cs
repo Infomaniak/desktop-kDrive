@@ -74,8 +74,11 @@ namespace Infomaniak.kDrive
         {
             if (m_isRegistered)
             {
-                await AppNotificationManager.Default.RemoveAllAsync();
-                AppNotificationManager.Default.Unregister();
+                AppNotificationManager notificationManager = AppNotificationManager.Default;
+
+                await notificationManager.RemoveAllAsync();
+                notificationManager.NotificationInvoked -= OnNotificationInvoked;
+                notificationManager.Unregister();
                 m_isRegistered = false;
             }
         }

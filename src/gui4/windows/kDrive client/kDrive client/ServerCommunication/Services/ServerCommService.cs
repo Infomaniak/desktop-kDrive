@@ -1771,8 +1771,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             string? message = signalData[JsonKeys.Message]?.GetValue<string>();
 
             // Decode base64 encoded 
-            title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
-            message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            try
+            {
+                title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
+                message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            }
+            catch (FormatException ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+
             if (title is null || message is null)
             {
                 Logger.Log(Logger.Level.Error, "title or message is null.");
