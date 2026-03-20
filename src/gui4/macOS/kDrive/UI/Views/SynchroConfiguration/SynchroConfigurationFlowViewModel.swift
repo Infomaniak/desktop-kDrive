@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import kDriveCoreUI
+import OrderedCollections
 
 enum SynchroConfigurationFlowState {
     case driveSelector
@@ -31,7 +32,7 @@ struct SynchroConfiguration: Sendable, Identifiable {
 
     struct LocalFolder: Sendable {
         var url: URL?
-        var isDefaultLocation = true
+        var isDefault = true
     }
 
     var id: ID {
@@ -43,16 +44,17 @@ struct SynchroConfiguration: Sendable, Identifiable {
     var localFolder: LocalFolder
     var blackList: [String]
 
-    init(drive: any UIDriveRepresentation, location: LocalFolder = LocalFolder(), blackList: [String]) {
+    init(drive: any UIDriveRepresentation, localFolder: LocalFolder = LocalFolder(), blackList: [String]) {
         self.drive = drive
-        localFolder = location
+        self.localFolder = localFolder
         self.blackList = blackList
     }
 }
 
+@MainActor
 final class SynchroConfigurationFlowViewModel: ObservableObject {
     @Published private(set) var state = SynchroConfigurationFlowState.driveSelector
-    @Published private(set) var configurations = [SynchroConfiguration.ID: SynchroConfiguration]()
+    @Published private(set) var configurations = OrderedDictionary<SynchroConfiguration.ID, SynchroConfiguration>()
 
     let onConfirm: (([SynchroConfiguration]) async -> Void)?
     let onCancel: (() -> Void)?
@@ -74,7 +76,7 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
 
     func updateConfiguration(
         _ id: SynchroConfiguration.ID,
-        location: SynchroConfiguration.LocalFolder? = nil,
+        localFolder: SynchroConfiguration.LocalFolder? = nil,
         blackList: [String]? = nil
     ) {
         guard let configuration = configurations[id] else {
@@ -83,7 +85,7 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
 
         let updatedConfiguration = SynchroConfiguration(
             drive: configuration.drive,
-            location: location ?? configuration.localFolder,
+            localFolder: localFolder ?? configuration.localFolder,
             blackList: blackList ?? configuration.blackList
         )
         configurations[configuration.id] = updatedConfiguration

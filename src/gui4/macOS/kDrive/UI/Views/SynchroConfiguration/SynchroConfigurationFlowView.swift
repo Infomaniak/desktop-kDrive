@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
 import kDriveCoreUI
 import SwiftUI
 
@@ -32,7 +31,7 @@ struct SynchroConfigurationFlowView: View {
         onConfirm: (([SynchroConfiguration]) async -> Void)? = nil,
         onCancel: (() -> Void)? = nil
     ) {
-        self._viewModel = StateObject(wrappedValue: SynchroConfigurationFlowViewModel(onConfirm: onConfirm, onCancel: onCancel))
+        _viewModel = StateObject(wrappedValue: SynchroConfigurationFlowViewModel(onConfirm: onConfirm, onCancel: onCancel))
 
         self.userDbId = userDbId
         self.configurations = configurations

@@ -139,7 +139,7 @@ struct SynchroConfigurationView: View {
             }
         }
         .onAppear {
-            synchroLocation = configuration.location.localFolder
+            synchroLocation = configuration.localFolder.url
         }
         .task {
             guard synchroLocation == nil else { return }
@@ -149,7 +149,7 @@ struct SynchroConfigurationView: View {
             }
 
             synchroLocation = localPath
-            viewModel.updateConfiguration(configuration.id, location: .init(localFolder: localPath, isDefaultLocation: true))
+            viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
         }
     }
 
@@ -165,15 +165,22 @@ struct SynchroConfigurationView: View {
 
         Task {
             let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
-            if isPathValid == false {
+            guard isPathValid == true else {
                 synchroLocation = oldValue
                 isShowingSynchroLocationError = true
+                return
             }
+
+            viewModel.updateConfiguration(configuration.id, localFolder: .init(url: selectedURL, isDefault: false))
         }
     }
 }
 
 #Preview {
-    SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, location: .init(), blackList: []))
-        .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
+    SynchroConfigurationView(configuration: SynchroConfiguration(
+        drive: PreviewHelper.drive1,
+        localFolder: .init(),
+        blackList: []
+    ))
+    .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
 }

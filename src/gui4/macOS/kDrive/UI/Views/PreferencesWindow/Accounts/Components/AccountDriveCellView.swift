@@ -31,7 +31,7 @@ struct AccountDriveCellView: View {
     let isSynchronized: Bool
 
     private var synchroConfiguration: SynchroConfiguration {
-        return SynchroConfiguration(drive: drive, location: .init(), blackList: [])
+        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [])
     }
 
     var body: some View {
@@ -71,7 +71,7 @@ struct AccountDriveCellView: View {
             }
         }
         .padding(.leading, AppPadding.padding24)
-        .alert("Blabla", isPresented: $isShowingGenericError) {}
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func manageSynchronizedDrive() {
@@ -110,7 +110,7 @@ struct AccountDriveCellView: View {
         let syncCandidate = NewSyncCandidate(
             origin: .availableDrive(drive),
             remoteFolder: .kDriveRoot,
-            localFolder: configuration.location.localFolder,
+            localFolder: configuration.localFolder.url,
             blackList: configuration.blackList
         )
 

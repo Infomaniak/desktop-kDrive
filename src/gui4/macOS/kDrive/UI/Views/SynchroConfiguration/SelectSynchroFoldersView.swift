@@ -51,6 +51,7 @@ struct NodesTree: Sendable, Identifiable {
     }
 
     let node: UINodeInfo
+    // periphery:ignore - Will be used later
     var children: [NodesTree]
 
     var isLeaf = false
@@ -116,6 +117,6 @@ struct SelectSynchroFoldersView: View {
 #Preview {
     SelectSynchroFoldersView(
         userDbId: PreviewHelper.user.dbId,
-        configuration: SynchroConfiguration(drive: PreviewHelper.drive1, location: .init(), blackList: [])
+        configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: .init(), blackList: [])
     )
 }
