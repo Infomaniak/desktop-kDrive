@@ -311,7 +311,7 @@ void TestIntegration::testBlacklist() {
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
-    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
