@@ -169,9 +169,9 @@ namespace Infomaniak.kDrive
             });
         }
 
-        void OnProcessExit(object sender, EventArgs e)
+        async void OnProcessExit(object? sender, EventArgs e)
         {
-            ServiceProvider.GetRequiredService<NotificationManager>().Unregister();
+            await ServiceProvider.GetRequiredService<NotificationManager>().UnregisterAsync();
         }
 
         private void RegisterOAuthProtocol()

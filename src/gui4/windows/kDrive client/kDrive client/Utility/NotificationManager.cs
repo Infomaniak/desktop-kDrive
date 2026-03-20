@@ -36,11 +36,6 @@ namespace Infomaniak.kDrive
             }
         }
 
-        ~NotificationManager()
-        {
-            Unregister();
-        }
-
         public void Init()
         {
             if (Availability != AppNotificationAvailability.Available)
@@ -75,7 +70,7 @@ namespace Infomaniak.kDrive
             AppModel.UIThreadDispatcher.TryEnqueue(() => (App.Current as App)?.CurrentWindow?.AppWindow.Show());
         }
 
-        public async Task Unregister()
+        public async Task UnregisterAsync()
         {
             if (m_isRegistered)
             {
