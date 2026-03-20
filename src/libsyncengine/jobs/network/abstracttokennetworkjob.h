@@ -22,6 +22,9 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
+#include "libparms/db/account.h"
+#include "libparms/db/drive.h"
+
 #include <unordered_map>
 
 namespace KDC {
@@ -63,6 +66,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
+        DriveDbId driveDbId() const { return _driveDbId; };
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
@@ -87,12 +91,20 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ApiType getApiType() const { return _apiType; }
 
     private:
-        // User cache: <userDbId, <Login, userId>>
-        static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> _userToApiKeyMap;
 
-        // Drive cache: <driveDbId, <userDbId, driveId>>
-        static std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> _driveToApiKeyMap;
+        struct LoginEntry {
+                std::shared_ptr<Login> login;
+                UserId userId{0};
+        };
+        using UserCache = std::unordered_map<UserDbId, LoginEntry>;
+        static UserCache _userToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
+        struct UserEntry {
+                UserDbId userDbId{0};
+                DriveId driveId{0};
+        };
+        using DriveCache = std::unordered_map<DriveDbId, UserEntry>;
+        static DriveCache _driveToApiKeyMap;
 
         ApiType _apiType{ApiType::Drive};
         UserDbId _userDbId{0};
@@ -109,6 +121,17 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
+
+        // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
+        void loadUserInfoFromDriveDbId();
+
+        // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
+        void loadUserInfoFromUserDbId();
+
+        ApiToken retrieveApiTokenFromUserCache();
+        Account getAccount(const Drive &drive) const;
+        Drive getDrive(int driveDbId) const;
+        void setDriveDbIdFromDriveId();
 
         friend class TestServerRequests;
 };
