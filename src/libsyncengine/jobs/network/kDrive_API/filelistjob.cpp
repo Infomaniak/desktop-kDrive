@@ -27,7 +27,7 @@ FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId 
     _userDbId{userDbId},
     _driveId{driveId},
     _fileId(std::move(fileId)),
-    _translateV2ToV3(translationMode) {
+    _translationMode(translationMode) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
     _driveDbId = ApiTranslator::getDriveDbId(_driveId);
@@ -38,7 +38,7 @@ FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId,
                          const TranslationMode translationMode /* TranslationMode::V2ToV3 */) :
     _driveDbId{driveDbId},
     _fileId(std::move(fileId)),
-    _translateV2ToV3(translationMode) {
+    _translationMode(translationMode) {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 

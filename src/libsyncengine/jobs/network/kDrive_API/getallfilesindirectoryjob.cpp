@@ -42,8 +42,8 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
             fileListJob =
-                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translateV2ToV3)
-                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translateV2ToV3);
+                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
+                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
