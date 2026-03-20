@@ -725,7 +725,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.Name!,
                     item.Type!.Value,
                     item.Path!,
-                    System.IO.Path.Combine(System.IO.Path.GetFileName(sync.LocalPath.TrimEnd('/').TrimEnd('\\')), item.Path!),
+                    System.IO.Path.Combine(sync.Drive.Name, item.Path!),
                     item.ModifiedTime!.Value,
                     item.Size!.Value,
                     item.IsAvailableLocally!.Value
