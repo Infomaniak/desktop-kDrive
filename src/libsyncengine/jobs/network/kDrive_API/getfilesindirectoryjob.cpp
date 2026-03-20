@@ -83,15 +83,11 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
 
-        NodeId nodeId;
-        if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
+        RemoteNodeId nodeId;
+        if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         SyncName rawName;
-        if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
+        if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         SyncName name;
         if (!Utility::normalizedSyncName(rawName, name)) {
@@ -101,7 +97,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
             continue;
         }
 
-        std::string path;
+        SyncName path;
         if (_listingConf.withPath) {
             SyncName rawPath;
             if (!JsonParserUtility::extractValue(obj, pathKey, rawPath))
@@ -120,20 +116,18 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, mandatory))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-        Poco::JSON::Object::Ptr capabilitiesObj = obj->getObject(capabilitiesKey);
         bool accessDenied = false;
-        if (capabilitiesObj) {
+        if (auto capabilitiesObj = obj->getObject(capabilitiesKey); capabilitiesObj) {
             bool canShow = true;
-            if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow)) {
+            if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow))
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
-            }
+
             accessDenied = !canShow;
         }
 
-        std::string parentId;
-        if (!JsonParserUtility::extractValue(obj, parentIdKey, parentId)) {
+        RemoteNodeId parentId;
+        if (!JsonParserUtility::extractValue(obj, parentIdKey, parentId))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
 
         NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
                           -1, // Size is not set as it can be long to calculate.
@@ -160,22 +154,20 @@ NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
 }
 
 ExitInfo GetFilesInDirectoryJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
-    }
+    _nodeInfoList.clear();
+
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
+    if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
+    if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
     return deserializeDataArray();
 }
