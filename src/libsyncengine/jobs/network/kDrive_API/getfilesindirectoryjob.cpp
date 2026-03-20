@@ -103,7 +103,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
 
         std::string path;
         if (_listingConf.withPath) {
-            std::string rawPath;
+            SyncName rawPath;
             if (!JsonParserUtility::extractValue(obj, pathKey, rawPath))
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
 
