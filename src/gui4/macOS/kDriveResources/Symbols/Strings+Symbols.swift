@@ -58,6 +58,8 @@ public enum KDriveLocalizable {
   public static let buttonCancel = KDriveLocalizable.tr("Localizable", "buttonCancel", fallback: "Cancel")
   /// loco:696a343b72b6dc32e00557a4
   public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
+  /// loco:698c5e4ec95ac47af70ec115
+  public static let buttonConfigure = KDriveLocalizable.tr("Localizable", "buttonConfigure", fallback: "Configure")
   /// loco:698b1376f55227e2c30a2fe4
   public static let buttonConnectAccount = KDriveLocalizable.tr("Localizable", "buttonConnectAccount", fallback: "Connect an account")
   /// loco:691deb0be15255c13908ba42
@@ -66,6 +68,8 @@ public enum KDriveLocalizable {
   public static let buttonCopyShareLink = KDriveLocalizable.tr("Localizable", "buttonCopyShareLink", fallback: "Copy share link")
   /// loco:68e673c48af12c42e80027c8
   public static let buttonCreateAccount = KDriveLocalizable.tr("Localizable", "buttonCreateAccount", fallback: "Create an account")
+  /// loco:698c5b6872ce37700303dac2
+  public static let buttonDefaultLocation = KDriveLocalizable.tr("Localizable", "buttonDefaultLocation", fallback: "Default location")
   /// loco:698b14e52445668d9d0495a2
   public static let buttonDisconnectAccount = KDriveLocalizable.tr("Localizable", "buttonDisconnectAccount", fallback: "Disconnect this account")
   /// loco:698b0aefb16a3916fc004f32
@@ -296,6 +300,18 @@ public enum KDriveLocalizable {
   public static let onboardingAdvancedSettingsDriveExclusionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionDescription", fallback: "Choose the folders to synchronize on this computer:")
   /// loco:698c5d476258b6cb2e047e2a
   public static let onboardingAdvancedSettingsDriveExclusionTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionTip", fallback: "Unselected folders will remain accessible online.")
+  /// loco:698c62f8bde3b880ce05ea53
+  public static let onboardingAdvancedSettingsDriveSelectionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionDescription", fallback: "For each kDrive, you can choose where it is synced on your computer and which folders to synchronize.")
+  /// loco:698c5f7af0e0abf8b4088952
+  public static func onboardingAdvancedSettingsDriveSelectionExclusion(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionExclusion", String(describing: p1), fallback: "Synchronized content: %@")
+  }
+  /// loco:698c60dcbfa94065d40ff072
+  public static func onboardingAdvancedSettingsDriveSelectionLocation(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionLocation", String(describing: p1), fallback: "Location: %@")
+  }
+  /// loco:698c62a71f3f2e07fe07ca17
+  public static let onboardingAdvancedSettingsDriveSelectionTitle = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionTitle", fallback: "Configure your kDrive")
   /// loco:698c5ab9945b7c6d260d4c22
   public static let onBoardingAdvancedSettingsDriveTitle = KDriveLocalizable.tr("Localizable", "onBoardingAdvancedSettingsDriveTitle", fallback: "Set up synchronization for this kDrive")
   /// loco:693050ed6a0836d25507da22
@@ -422,6 +438,10 @@ public enum KDriveLocalizable {
   public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
   /// loco:6981e8f0f994e5f7bc040692
   public static let unavailableContentNoActivityTitle = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityTitle", fallback: "No recent activity")
+  /// loco:698c7819acb0e0a2a0061c62
+  public static let unexpectedErrorTeachingTipContent = KDriveLocalizable.tr("Localizable", "unexpectedErrorTeachingTipContent", fallback: "Please try again in a few moments.\nIf the problem persists, please contact support.")
+  /// loco:698c7802bc26955c81077d42
+  public static let unexpectedErrorTeachingTipTitle = KDriveLocalizable.tr("Localizable", "unexpectedErrorTeachingTipTitle", fallback: "An unexpected error occurred")
   /// loco:698b112a6dcfa5bb030c2f32
   public static let untilTomorrow = KDriveLocalizable.tr("Localizable", "untilTomorrow", fallback: "Until tomorrow")
   /// loco:698af3afefd229ca780c59e2

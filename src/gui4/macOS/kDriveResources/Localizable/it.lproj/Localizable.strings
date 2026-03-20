@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 18 Mar 2026 13:05:57 +0100
+ * Exported at: Fri, 20 Mar 2026 08:29:44 +0100
  */
 
 
@@ -76,6 +76,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Chiudere";
 
+/* loco:698c5e4ec95ac47af70ec115 */
+"buttonConfigure" = "Configurare";
+
 /* loco:698b1376f55227e2c30a2fe4 */
 "buttonConnectAccount" = "Collegare un account";
 
@@ -87,6 +90,9 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
+
+/* loco:698c5b6872ce37700303dac2 */
+"buttonDefaultLocation" = "Posizione predefinita";
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Disconnettere questo account";
@@ -417,6 +423,18 @@
 /* loco:698c5d476258b6cb2e047e2a */
 "onboardingAdvancedSettingsDriveExclusionTip" = "Le cartelle non selezionate rimarranno accessibili online.";
 
+/* loco:698c62f8bde3b880ce05ea53 */
+"onboardingAdvancedSettingsDriveSelectionDescription" = "Per ogni kDrive è possibile scegliere la posizione di sincronizzazione sul computer e le cartelle da sincronizzare.";
+
+/* loco:698c5f7af0e0abf8b4088952 */
+"onboardingAdvancedSettingsDriveSelectionExclusion" = "Contenuto sincronizzato: %@";
+
+/* loco:698c60dcbfa94065d40ff072 */
+"onboardingAdvancedSettingsDriveSelectionLocation" = "Posizione: %@";
+
+/* loco:698c62a71f3f2e07fe07ca17 */
+"onboardingAdvancedSettingsDriveSelectionTitle" = "Configurare i kDrive";
+
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizzare kDrive nelle impostazioni di macOS:";
 
@@ -604,6 +622,12 @@
 
 /* loco:6981e8f0f994e5f7bc040692 */
 "unavailableContentNoActivityTitle" = "Nessuna attività recente";
+
+/* loco:698c7819acb0e0a2a0061c62 */
+"unexpectedErrorTeachingTipContent" = "Riprovare tra qualche istante.\nSe il problema persiste, contattare l’assistenza.";
+
+/* loco:698c7802bc26955c81077d42 */
+"unexpectedErrorTeachingTipTitle" = "Si è verificato un errore imprevisto";
 
 /* loco:698b112a6dcfa5bb030c2f32 */
 "untilTomorrow" = "Fino a domani";
