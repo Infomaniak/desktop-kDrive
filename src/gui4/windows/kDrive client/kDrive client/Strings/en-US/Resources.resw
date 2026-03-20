@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 13:02:15 +0100 
+  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -810,6 +810,9 @@ It will open in your browser.</value>
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ ago</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>All files</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Author</value> 
   </data> 
@@ -979,6 +982,9 @@ It will open in your browser.</value>
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Location</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synchronized folders</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronization</value> 

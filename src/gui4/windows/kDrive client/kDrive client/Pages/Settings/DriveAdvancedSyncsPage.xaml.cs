@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.Pages.DriveSetupContentDialog;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -250,5 +251,46 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         if (control is not null)
             control.IsEnabled = true;
+    }
+
+    private async void SyncExclusionButton_Click(object sender, RoutedEventArgs e)
+    {
+        Control? control = sender as Control;
+        if (control is null)
+        {
+            Logger.Log(Logger.Level.Error, "Sync exclusion button is null when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ISync? sync = control.DataContext as ISync;
+        if (sync is null)
+        {
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
+            DefaultButton = ContentDialogButton.Primary
+        };
+        var exclusionPage = new SyncExclusionPage(sync);
+        dialog.Content = exclusionPage;
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
+            await exclusionPage.SaveChanges();
+        }
+        else
+        {
+            Logger.Log(Logger.Level.Info, "User canceled sync exclusion changes");
+        }
+
     }
 }

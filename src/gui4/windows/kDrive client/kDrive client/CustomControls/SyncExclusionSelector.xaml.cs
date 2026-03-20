@@ -191,8 +191,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (Sync is ViewModels.Sync dbSync)
             {
                 IsLoading = true;
-                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                if (!await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None))
+                if (!await dbSync.SetExcludedNodeIds(GetExcludedNodeIds()))
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
                     Utility.ShowUnexpectedErrorTeachingTip();
