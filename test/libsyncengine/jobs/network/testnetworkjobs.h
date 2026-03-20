@@ -65,6 +65,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST(testExists);
+        CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -107,6 +108,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testSearch();
         void testGetInfoUserTrialsOn401Error();
         void testExists();
+        void testGetAllFilesInDirectory();
 
     private:
         bool createTestFiles();

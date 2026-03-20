@@ -22,6 +22,7 @@
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/duplicatejob.h"
 #include "jobs/network/getavatarjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
@@ -1560,13 +1561,12 @@ bool TestNetworkJobs::createTestFiles() {
     return true;
 }
 
-
 void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1608,6 +1608,69 @@ void TestNetworkJobs::testExists() {
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+}
+
+void TestNetworkJobs::testGetAllFilesInDirectory() {
+    const LocalTemporaryDirectory temporaryDirectory("testGetAllFilesInDirectory");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testGetAllFilesInDirectory");
+
+    for (const auto &fileName: {"test_file_A.txt", "test_file_B.txt"}) {
+        const SyncPath localFilePath = temporaryDirectory.path() / Str(fileName);
+        testhelpers::generateOrEditTestFile(localFilePath);
+
+        const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+        const auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+        auto modificationTimeIn = creationTimeIn;
+        (void) IoHelper::setFileDates(localFilePath, creationTimeIn.count(), modificationTimeIn.count(), false);
+
+        bool exists = false;
+        FileStat fileStat;
+        IoHelper::getFileStat(localFilePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+
+        UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                      creationTimeIn.count(), modificationTimeIn.count());
+        ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
+    }
+
+    GetAllFilesInDirectoryJob listFilesInDirectoryJob(DriveDbId{_driveDbId}, RemoteNodeId{remoteTmpDir.id()});
+    listFilesInDirectoryJob.setListingConf({.dirOnly = true});
+
+    auto exitCode = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().empty());
+
+    listFilesInDirectoryJob.setListingConf({.dirOnly = false});
+    exitCode = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
+    CPPUNIT_ASSERT_EQUAL(size_t{2}, listFilesInDirectoryJob.v3NodeInfoList().size());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(0).path().isEmpty());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(1).path().isEmpty());
+
+    std::set<QString> expectedNames{"test_file_A.txt", "test_file_B.txt"};
+    std::set<QString> names;
+    for (const auto &nodeInfo: listFilesInDirectoryJob.v3NodeInfoList()) {
+        names.emplace(nodeInfo.name());
+    }
+    CPPUNIT_ASSERT(expectedNames == names);
+
+    listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false});
+    exitCode = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
+    CPPUNIT_ASSERT_EQUAL(size_t{2}, listFilesInDirectoryJob.v3NodeInfoList().size());
+
+    const NodeInfo &nodeInfo1 = listFilesInDirectoryJob.v3NodeInfoList().at(0);
+    CPPUNIT_ASSERT(nodeInfo1.path().endsWith(nodeInfo1.name()));
+    CPPUNIT_ASSERT(!nodeInfo1.nodeId().isEmpty());
+    const auto parentNodeId = QString::fromStdString(remoteTmpDir.id());
+    CPPUNIT_ASSERT(nodeInfo1.parentNodeId() == parentNodeId);
+    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo1.size()); // Not computed because it is expensive.
+
+    const NodeInfo &nodeInfo2 = listFilesInDirectoryJob.v3NodeInfoList().at(1);
+    CPPUNIT_ASSERT(nodeInfo2.path().endsWith(nodeInfo2.name()));
+    CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
+    CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
+    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo2.size()); // Not computed because it is expensive.
 }
 
 } // namespace KDC

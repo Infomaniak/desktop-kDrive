@@ -36,6 +36,7 @@ void GetAllFilesInDirectoryJob::abort() {
 }
 
 ExitInfo GetAllFilesInDirectoryJob::runJob() {
+    _nodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;
     do {

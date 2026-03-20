@@ -104,9 +104,8 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         std::string path;
         if (_listingConf.withPath) {
             std::string rawPath;
-            if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) {
+            if (!JsonParserUtility::extractValue(obj, pathKey, rawPath))
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
-            }
 
             if (!Utility::normalizedSyncName(rawPath, path)) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
@@ -117,9 +116,9 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         }
 
         SyncTime modifiedTime = 0;
-        if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
+        const bool mandatory = false;
+        if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, mandatory))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
 
         Poco::JSON::Object::Ptr capabilitiesObj = obj->getObject(capabilitiesKey);
         bool accessDenied = false;
