@@ -91,8 +91,8 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const Us
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
         const std::shared_ptr<Login> currentLogin = it->second.login;
         // get new credentials
-        const ApiToken newApiToken = login.apiToken();
-        const std::string newKeychainKey = login.keychainKey();
+        const ApiToken &newApiToken = login.apiToken();
+        const std::string &newKeychainKey = login.keychainKey();
         // set new credentials to Login class
         currentLogin->setApiToken(newApiToken);
         currentLogin->setKeychainKey(newKeychainKey);
