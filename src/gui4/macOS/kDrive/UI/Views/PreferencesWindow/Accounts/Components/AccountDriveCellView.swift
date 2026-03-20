@@ -31,7 +31,7 @@ struct AccountDriveCellView: View {
     let isSynchronized: Bool
 
     private var synchroConfiguration: SynchroConfiguration {
-        return SynchroConfiguration(drive: drive, localFolder: nil, blackList: [])
+        return SynchroConfiguration(drive: drive, location: .init(), blackList: [])
     }
 
     var body: some View {
@@ -110,7 +110,7 @@ struct AccountDriveCellView: View {
         let syncCandidate = NewSyncCandidate(
             origin: .availableDrive(drive),
             remoteFolder: .kDriveRoot,
-            localFolder: configuration.localFolder,
+            localFolder: configuration.location.localFolder,
             blackList: configuration.blackList
         )
 

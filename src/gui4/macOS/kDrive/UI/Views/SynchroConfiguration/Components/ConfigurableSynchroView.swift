@@ -27,7 +27,7 @@ struct ConfigurableSynchroView: View {
 
     private var selectedLocationLabel: AttributedString {
         let folderPath: String
-        if let folderURL = configuration.localFolder {
+        if let folderURL = configuration.location.localFolder, !configuration.location.isDefaultLocation {
             folderPath = folderURL.path
         } else {
             folderPath = KDriveLocalizable.buttonDefaultLocation

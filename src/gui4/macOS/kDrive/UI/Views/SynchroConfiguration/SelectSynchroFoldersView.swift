@@ -116,6 +116,6 @@ struct SelectSynchroFoldersView: View {
 #Preview {
     SelectSynchroFoldersView(
         userDbId: PreviewHelper.user.dbId,
-        configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: nil, blackList: [])
+        configuration: SynchroConfiguration(drive: PreviewHelper.drive1, location: .init(), blackList: [])
     )
 }

@@ -139,7 +139,7 @@ struct SynchroConfigurationView: View {
             }
         }
         .onAppear {
-            synchroLocation = configuration.localFolder
+            synchroLocation = configuration.location.localFolder
         }
         .task {
             guard synchroLocation == nil else { return }
@@ -149,7 +149,7 @@ struct SynchroConfigurationView: View {
             }
 
             synchroLocation = localPath
-            viewModel.updateConfiguration(configuration.id, localFolder: localPath)
+            viewModel.updateConfiguration(configuration.id, location: .init(localFolder: localPath, isDefaultLocation: true))
         }
     }
 
@@ -174,6 +174,6 @@ struct SynchroConfigurationView: View {
 }
 
 #Preview {
-    SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, localFolder: nil, blackList: []))
+    SynchroConfigurationView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, location: .init(), blackList: []))
         .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
 }

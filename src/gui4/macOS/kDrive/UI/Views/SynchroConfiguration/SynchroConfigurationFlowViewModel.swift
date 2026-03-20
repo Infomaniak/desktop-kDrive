@@ -29,13 +29,25 @@ enum SynchroConfigurationFlowState {
 struct SynchroConfiguration: Sendable, Identifiable {
     typealias ID = Int
 
+    struct LocalFolder: Sendable {
+        var url: URL?
+        var isDefaultLocation = true
+    }
+
     var id: ID {
         drive.id
     }
 
     let drive: any UIDriveRepresentation
-    var localFolder: URL?
+
+    var localFolder: LocalFolder
     var blackList: [String]
+
+    init(drive: any UIDriveRepresentation, location: LocalFolder = LocalFolder(), blackList: [String]) {
+        self.drive = drive
+        localFolder = location
+        self.blackList = blackList
+    }
 }
 
 final class SynchroConfigurationFlowViewModel: ObservableObject {
@@ -60,14 +72,18 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
         }
     }
 
-    func updateConfiguration(_ id: SynchroConfiguration.ID, localFolder: URL? = nil, blackList: [String]? = nil) {
+    func updateConfiguration(
+        _ id: SynchroConfiguration.ID,
+        location: SynchroConfiguration.LocalFolder? = nil,
+        blackList: [String]? = nil
+    ) {
         guard let configuration = configurations[id] else {
             return
         }
 
         let updatedConfiguration = SynchroConfiguration(
             drive: configuration.drive,
-            localFolder: localFolder ?? configuration.localFolder,
+            location: location ?? configuration.localFolder,
             blackList: blackList ?? configuration.blackList
         )
         configurations[configuration.id] = updatedConfiguration
