@@ -22,6 +22,7 @@ using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,10 +39,38 @@ namespace Infomaniak.kDrive.ViewModels
         NodeType _nodeType = NodeType.Unknown;
         private string _path = "";
         private string _destinationPath = "";
+        private NodeId _localNodeId = "";
+        private NodeId _remoteNodeId = "";
         private ConflictType _conflictType = ConflictType.None;
         private InconsistencyType _inconsistencyType = InconsistencyType.None;
         private CancelType _cancelType = CancelType.None;
         bool _autoResolved = false;
+
+
+        public Error()
+        {
+        }
+
+        public Error(ErrorInfo errorInfo)
+        {
+            _DbId = errorInfo.DbId ?? _DbId;
+            _timestamp = errorInfo.Time ?? _timestamp;
+            _errorLevel = errorInfo.Level ?? _errorLevel;
+            _exitCode = errorInfo.ExitCode ?? _exitCode;
+            _exitCause = errorInfo.ExitCause ?? _exitCause;
+            _nodeType = errorInfo.NodeType ?? _nodeType;
+            _path = errorInfo.Path ?? _path;
+            _destinationPath = errorInfo.DestinationPath ?? _destinationPath;
+            _localNodeId = errorInfo.LocalNodeId ?? _localNodeId;
+            _remoteNodeId = errorInfo.RemoteNodeId ?? _remoteNodeId;
+            _conflictType = errorInfo.ConflictType ?? _conflictType;
+            _inconsistencyType = errorInfo.InconsistencyType ?? _inconsistencyType;
+            _cancelType = errorInfo.CancelType ?? _cancelType;
+            _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
+
+            if (errorInfo.SyncDbId is not null)
+                Sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+        }
 
         public DbId DbId
         {
@@ -95,6 +124,18 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _destinationPath;
             set => SetPropertyInUIThread(ref _destinationPath, value.Replace('\\', '/'));
+        }
+
+        public NodeId LocalNodeId
+        {
+            get => _localNodeId;
+            set => SetPropertyInUIThread(ref _localNodeId, value);
+        }
+
+        public NodeId RemoteNodeId
+        {
+            get => _remoteNodeId;
+            set => SetPropertyInUIThread(ref _remoteNodeId, value);
         }
 
         public ConflictType ConflictType

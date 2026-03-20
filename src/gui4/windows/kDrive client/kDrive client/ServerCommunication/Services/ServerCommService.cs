@@ -1737,15 +1737,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
-            Error error = new Error();
-            if (errorInfo == null)
+            if (errorInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from ${signalData[JsonKeys.ErrorInfo]}.");
                 return;
             }
 
-            ConversionHelper.CopyToError(errorInfo, error);
-            error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+            Error error = new Error(errorInfo);
+            if (error.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync with dbId {errorInfo.SyncDbId} not found for error with dbId {errorInfo.DbId}.");
+                return;
+            }
+
             await _viewModel.AddErrorAsync(error);
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
