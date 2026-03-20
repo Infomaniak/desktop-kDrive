@@ -27,9 +27,9 @@ namespace KDC {
 
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        GetFilesInDirectoryJob(int userDbId, int driveId, NodeId fileId, std::string cursorInput = {},
+        GetFilesInDirectoryJob(UserDbId userDbId, DriveId driveId, NodeId fileId, std::string cursorInput = {},
                                TranslationMode translationMode = TranslationMode::V2ToV3);
-        explicit GetFilesInDirectoryJob(int driveDbId, NodeId fileId, std::string cursorInput = {},
+        explicit GetFilesInDirectoryJob(DriveDbId driveDbId, NodeId fileId, std::string cursorInput = {},
                                         TranslationMode translationMode = TranslationMode::V2ToV3);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
@@ -59,7 +59,7 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         ExitInfo deserializeDataArray();
 
         // The remote identifier of the folder whose file list is queried.
-        NodeId _fileId;
+        RemoteNodeId _fileId;
 
         // If `_hasMore` is `true` a subsequent request is required.
         bool _hasMore{false};

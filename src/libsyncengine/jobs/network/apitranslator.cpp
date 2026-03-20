@@ -35,7 +35,7 @@ ApiTranslator::~ApiTranslator() {}
 DriveId ApiTranslator::getDriveId(const DriveDbId driveDbId) {
     Drive drive;
     bool found = false;
-    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+    if (!ParmsDb::instance()->selectDrive(static_cast<int>(driveDbId), drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive for driveDbId=" << driveDbId);
         assert(false);
     }

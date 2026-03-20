@@ -68,7 +68,7 @@ class FileListJob : public SyncJob {
 
     private:
         // The node info list as returned by the backend API v2
-        NodeInfoList v2NodeInfoList() const;
+        [[nodiscard]] NodeInfoList v2NodeInfoList() const;
 
         [[nodiscard]] std::string createLogMessage(const std::string &coreMsg) const;
 

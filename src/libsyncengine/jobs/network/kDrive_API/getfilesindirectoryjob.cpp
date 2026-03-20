@@ -26,9 +26,10 @@
 
 namespace KDC {
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int driveId, NodeId fileId, std::string cursorInput,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
+                                               std::string cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    AbstractTokenNetworkJob(ApiType::Drive, static_cast<int>(userDbId), 0, 0, static_cast<int>(driveId)),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
@@ -36,9 +37,9 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int userDbId, const int dri
     if (translationMode == TranslationMode::V2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const int driveDbId, NodeId fileId, std::string cursorInput,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId, std::string cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, static_cast<int>(driveDbId), 0),
     _fileId(std::move(fileId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
