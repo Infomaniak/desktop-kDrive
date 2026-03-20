@@ -161,6 +161,21 @@ namespace Infomaniak.kDrive
             }
         }
 
+        public static void SetWindowCurrentSize(Window window, int width, int height)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            if (appWindow is not null)
+            {
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
+            }
+        }
+
         // Convert any enum value to a string
         public static string ToString(Enum value)
         {

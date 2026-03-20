@@ -10,7 +10,6 @@
                 xmlns:kDrive="using:Infomaniak.kDrive"
                 mc:Ignorable="d"
                 PaneDisplayMode="Auto"
-                SelectionChanged="OnSelectionChanged"
                 ItemInvoked="OnItemInvoked"
                 IsPaneToggleButtonVisible="True"
                 IsBackButtonVisible="Collapsed"

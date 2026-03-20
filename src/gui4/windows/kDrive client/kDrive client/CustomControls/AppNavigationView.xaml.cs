@@ -99,7 +99,6 @@ namespace Infomaniak.kDrive.CustomControls
         private void OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             GoToNavigationViewItemPage(args.InvokedItemContainer as NavigationViewItem);
-
         }
 
         private void GoToNavigationViewItemPage(NavigationViewItemBase? item)
