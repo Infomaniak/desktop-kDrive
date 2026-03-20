@@ -9,16 +9,18 @@ namespace Infomaniak.kDrive.ViewModels
         private string _name;
         private NodeType _type;
         private string? _path;
+        private string? _displayPath;
         private DateTime? _modifiedTime;
         private Int64? _size;
         private bool _isAvailableLocally;
 
-        public SearchItem(NodeId nodeId, string name, NodeType type, string path, DateTime modifiedTime, Int64 size, bool isAvailableLocally)
+        public SearchItem(NodeId nodeId, string name, NodeType type, string path, string displayPath, DateTime modifiedTime, Int64 size, bool isAvailableLocally)
         {
             _nodeId = nodeId;
             _name = name;
             _type = type;
             _path = path;
+            _displayPath = displayPath;
             _modifiedTime = modifiedTime;
             _size = size;
             _isAvailableLocally = isAvailableLocally;
@@ -45,6 +47,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _path;
             set => SetPropertyInUIThread(ref _path, value);
+        }
+        public string? DisplayPath
+        {
+            get => _displayPath;
+            set => SetPropertyInUIThread(ref _displayPath, value);
         }
 
         public DateTime? ModifiedTime
