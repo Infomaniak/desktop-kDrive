@@ -22,6 +22,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import SwiftUI
 
 enum OnboardingLinks {
     static let shopDriveSelection = URL(string: "https://shop.infomaniak.com/order/select/drive")!
@@ -162,7 +163,27 @@ extension DriveSelectionViewController {
         viewModel.startSynchronization()
     }
 
-    @objc private func didTapAdvancedSettings() {}
+    @objc private func didTapAdvancedSettings() {
+        guard let currentUser = flowCoordinator.currentUser else { return }
+
+        var configurations = [SynchroConfiguration]()
+        for selectedDrive in viewModel.selectedDrives {
+            let configuration = SynchroConfiguration(
+                drive: selectedDrive,
+                localFolder: .init(url: nil, isDefault: true),
+                blackList: []
+            )
+            configurations.append(configuration)
+        }
+
+        let synchroConfigurationFlow = SynchroConfigurationFlowView(
+            userDbId: Int(currentUser.dbId),
+            configurations: configurations
+        )
+
+        let viewController = NSHostingController(rootView: synchroConfigurationFlow)
+        presentAsSheet(viewController)
+    }
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
         primaryButton.isEnabled = !selectedDrives.isEmpty
