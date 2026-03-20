@@ -12,7 +12,9 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('notYetSupportedCharErrorTitle')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errNotYetSupportedCharTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errNotYetSupportedCharDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonRenameFile')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>
