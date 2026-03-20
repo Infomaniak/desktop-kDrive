@@ -1025,7 +1025,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
-        bool bypassCheck = false;
+        bool bypassCheck = true;
         if (checkIfAnyParentHasMoveOperation(syncOp->affectedNode())) {
             // Get the parent corresponding node
             SyncPath relativeParentPath;
@@ -1075,7 +1075,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             }
         }
 
-        if (syncOp->hasConflict() || syncOp->isBreakingCycleOp()) {
+        if (syncOp->hasConflict() || syncOp->isBreakingCycleOp() || bypassCheck) {
             job->setBypassCheck(true);
         }
     }

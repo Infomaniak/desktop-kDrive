@@ -169,6 +169,8 @@ void TestIntegration::testAll() {
     testNegativeModificationTime();
     testDeleteAndRecreateBranch();
     testDeleteAndMoveCase();
+    testMoveDeleteRename();
+    testCreateMoveDeleteRename();
     testSymLinkWithTooManySymbolicLevels();
     testDirSymLinkWithTooManySymbolicLevels();
     testSynchronizationOfSymLinks();
@@ -778,6 +780,155 @@ void TestIntegration::testDeleteAndMoveCase() {
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdBBB));
 
     logStep("testDeleteAndMoveCase");
+}
+
+void TestIntegration::initTestMoveDeleteRename(const RemoteTemporaryDirectory &remoteTempDir, NodeId &nodeIdA, NodeId &nodeIdAA,
+                                               NodeId &nodeIdAAA, NodeId &nodeIdB) {
+    // Setup initial situation:
+    // .
+    // ├── A (a)
+    // │   └── AA (aa)
+    // │       └── AAA (aaa)
+    // └── B (b)
+
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, remoteTempDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobB(nullptr, _driveDbId, remoteTempDir.id(), Str("B"));
+        (void) jobB.runSynchronously();
+        nodeIdB = jobB.nodeId();
+
+        const auto filename = Str("AAA");
+        nodeIdAAA = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, nodeIdAA);
+    }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause(); // Synchronize the initial situation
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    _syncPal->pause();
+}
+
+
+void TestIntegration::testMoveDeleteRename() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Test: operations done on remote side
+    {
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testMoveDeleteRename1");
+        NodeId nodeIdA;
+        NodeId nodeIdAA;
+        NodeId nodeIdAAA;
+        NodeId nodeIdB;
+        initTestMoveDeleteRename(tmpRemoteDir, nodeIdA, nodeIdAA, nodeIdAAA, nodeIdB);
+        // Generate final situation on remote side:
+        // .
+        // └── A (b)
+        //     └── AA (aa)
+        //         └── AAA (aaa)
+
+        // Move aa
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAA, nodeIdB);
+        // Delete a
+        testhelpers::deleteRemoteItem(_driveDbId, nodeIdA);
+        // Rename b
+        testhelpers::renameRemoteItem(_driveDbId, nodeIdB, Str("A"));
+        _syncPal->unpause();
+        waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+        CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAAA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdB));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA"));
+    }
+
+    // Test: operations done on local side
+    {
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testMoveDeleteRename2");
+        NodeId nodeIdA;
+        NodeId nodeIdAA;
+        NodeId nodeIdAAA;
+        NodeId nodeIdB;
+        initTestMoveDeleteRename(tmpRemoteDir, nodeIdA, nodeIdAA, nodeIdAAA, nodeIdB);
+        // Generate final situation on local side:
+        // .
+        // └── A (b)
+        //     └── AA (aa)
+        //         └── AAA (aaa)
+        // Move aa
+        const auto moveSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
+        const auto moveDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "B" / "AA";
+        (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
+        // Delete a
+        const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+        (void) GenericLocalDeleteJob(deletedPath, true).runSynchronously();
+        // Rename b
+        const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
+        const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
+        (void) LocalMoveJob(renameSourcePath, renameDestPath).runSynchronously();
+
+        _syncPal->unpause();
+        waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+        CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAAA));
+        CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdB));
+        CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA"));
+    }
+
+    logStep("testMoveDeleteRename");
+}
+
+void TestIntegration::testCreateMoveDeleteRename() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Test: move grand children on remote side
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testMoveDeleteRename3");
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    NodeId nodeIdB;
+    initTestMoveDeleteRename(tmpRemoteDir, nodeIdA, nodeIdAA, nodeIdAAA, nodeIdB);
+
+    // Generate final situation on remote side:
+    // .
+    // └── A (b)
+    //     └── AA (bb)
+    //         └── AAA (aaa)
+
+    // Create bb
+    NodeId nodeIdBB;
+    CreateDirJob jobBB(nullptr, _driveDbId, nodeIdB, Str("AA"));
+    (void) jobBB.runSynchronously();
+    nodeIdBB = jobBB.nodeId();
+    // Move aaa
+    testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, nodeIdBB);
+    // Delete a
+    testhelpers::deleteRemoteItem(_driveDbId, nodeIdA);
+    // Rename b
+    testhelpers::renameRemoteItem(_driveDbId, nodeIdB, Str("A"));
+
+    _syncPal->updateTree(ReplicaSide::Remote)->clear();
+    _syncPal->updateTree(ReplicaSide::Local)->clear();
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
+    CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAAA));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdB));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdBB));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA"));
+
+    logStep("testCreateMoveDeleteRename");
 }
 
 void TestIntegration::waitForSyncToBeIdle(

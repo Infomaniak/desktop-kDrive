@@ -332,17 +332,22 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                     return ExitCode::DbError;
                 }
                 if (!found) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node parent path for node ID=" << nodeId);
-                    setExitCause(ExitCause::DbEntryNotFound);
-                    return ExitCode::DataError;
+                    // The parent does not exist yet, ignore this move operation for now
+                    // LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node parent path for node ID=" << nodeId);
+                    // setExitCause(ExitCause::DbEntryNotFound);
+                    // return ExitCode::DataError;
+                    LOG_SYNCPAL_DEBUG(_logger, "Ignoring move operation for now");
+                    return ExitCode::Ok;
                 }
 
                 if (!_fixImpossibleMove.isActive) {
                     opSet->clear(); // Ignore all other operations for now
                     _fixImpossibleMove = {.side = side, .parentNodeId = parentNodeId, .isActive = true};
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Impossible operation sequence detected. Propagating only move operation inside "
+                                                        << Utility::formatSyncPath(parentDbPath));
                 }
                 if (_fixImpossibleMove.parentNodeId == parentNodeId) {
-                    // Fix only move operations whose parent is _fixImpossibleMove.parentNodeId
+                    // Fix only move operations whose direct parent is _fixImpossibleMove.parentNodeId
                     fixingMoveOp = true;
                 }
 
