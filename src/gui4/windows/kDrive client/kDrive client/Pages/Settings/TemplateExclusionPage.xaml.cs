@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
                 PrimaryButtonText = Localizer.Instance.GetString("dialogNewExclusionRulePrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
                 DefaultButton = ContentDialogButton.Primary
             };
 

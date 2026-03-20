@@ -313,9 +313,16 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
 }
 
 ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
+    valid = false;
+
+    // Check the FS
+    if (!CommonUtility::isSyncCompatible(path)) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Unsupported File System: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+
     // Check for nested syncs
     std::vector<Sync> syncList;
-    valid = false;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;

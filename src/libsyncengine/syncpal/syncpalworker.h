@@ -47,7 +47,9 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
-        std::thread _resetVfsFilesStatusThread;
+#if defined(KD_WINDOWS)
+        std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
+#endif
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],

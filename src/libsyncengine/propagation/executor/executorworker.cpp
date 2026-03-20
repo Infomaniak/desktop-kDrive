@@ -262,8 +262,8 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
-    if (syncOp->hasConflict() && status == SyncFileStatus::Success && (syncOp->conflict().type() == ConflictType::CreateCreate) ||
-        syncOp->conflict().type() == ConflictType::EditEdit) {
+    if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
+        (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
         status = SyncFileStatus::Conflict;
     }
 

@@ -17,9 +17,9 @@
                 <ToolTipService.ToolTip>
                     <TextBlock Text="{Binding LocalPath}" />
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                  Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
+                <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
+                                   Height="16"
+                                   Width="16" />
                 <TextBlock Text="{Binding Drive.Name}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
             </StackPanel>
@@ -37,10 +37,9 @@
                         <Run Text="{Binding RemotePath}" />
                     </TextBlock>
                 </ToolTipService.ToolTip>
-                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                  Foreground="{Binding Drive.Color, Converter={StaticResource ColorToBrushConverter}}"
-                                  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                  VerticalAlignment="Center" />
+                <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
+                                   Height="16"
+                                   Width="16" />
                 <StackPanel Spacing="0">
                     <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

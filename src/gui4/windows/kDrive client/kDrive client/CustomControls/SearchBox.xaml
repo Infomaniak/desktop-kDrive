@@ -36,10 +36,30 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <ToolTipService.ToolTip>
+                    <ToolTip>
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('itemUnavailableBrowserFallback'), Mode=OneWay}"
+                                       Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
+                            <TextBlock Text="{x:Bind SearchItem.Name}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
+                                       TextWrapping="Wrap">
+                                 <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                                 <Run Text=" -" />
+                                 <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                                 <Run Text="-" />
+                                 <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </ToolTip>
+                </ToolTipService.ToolTip>
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
                                Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
@@ -49,17 +69,13 @@
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
                            TextTrimming="CharacterEllipsis"
-                           HorizontalAlignment="Left">
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="{x:Bind SearchItem.Name}" />
-                    </ToolTipService.ToolTip>
-                </TextBlock>
+                           HorizontalAlignment="Left" />
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
                            Foreground="{ThemeResource TextFillColorSecondary}"
                            TextTrimming="CharacterEllipsis">
-                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                    <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text=" -" />
                     <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                     <Run Text="-" />
@@ -90,8 +106,22 @@
                   PointerExited="Template_PointerExited"
                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">
                 <ToolTipService.ToolTip>
-                    <ToolTip Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
-                             Content="{x:Bind kDrive:Localizer.Instance.GetString('itemUnavailableBrowserFallback'), Mode=OneWay}" />
+                    <ToolTip>
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('itemUnavailableBrowserFallback'), Mode=OneWay}"
+                                       Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}"/>
+                            <TextBlock Text="{x:Bind SearchItem.Name}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
+                                       TextWrapping="Wrap">
+                                 <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                                 <Run Text=" -" />
+                                 <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </ToolTip>
                 </ToolTipService.ToolTip>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -99,29 +129,26 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
                                Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            Text="{x:Bind SearchItem.Name}"
-                           TextTrimming="CharacterEllipsis">
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="{x:Bind SearchItem.Name}" />
-                    </ToolTipService.ToolTip>
-                </TextBlock>
+                           TextTrimming="CharacterEllipsis" />
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="1"
-                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            TextTrimming="CharacterEllipsis">
-                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                    <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text="-" />
                     <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                 </TextBlock>

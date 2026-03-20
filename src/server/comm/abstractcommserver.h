@@ -32,7 +32,6 @@ class AbstractCommServer {
 
         virtual ~AbstractCommServer() {
             LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed");
-            log4cplus::threadCleanup();
         }
 
         std::string name() { return _name; }

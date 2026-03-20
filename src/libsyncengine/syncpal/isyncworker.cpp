@@ -37,7 +37,6 @@ ISyncWorker::~ISyncWorker() {
     }
     waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " destroyed");
-    log4cplus::threadCleanup();
 }
 
 void ISyncWorker::start() {
@@ -50,7 +49,8 @@ void ISyncWorker::start() {
 
     init();
     _isRunning = true;
-    _thread = (std::make_unique<std::thread>(executeFunc, this));
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
 }
 
 
@@ -120,12 +120,6 @@ void ISyncWorker::setDone(const ExitCode exitCode) {
     _isRunning = false;
     _stopAsked = false;
     _exitCode = exitCode;
-    log4cplus::threadCleanup();
-}
-
-void ISyncWorker::executeFunc(void *thisWorker) {
-    ((ISyncWorker *) thisWorker)->execute();
-    log4cplus::threadCleanup();
 }
 
 } // namespace KDC
