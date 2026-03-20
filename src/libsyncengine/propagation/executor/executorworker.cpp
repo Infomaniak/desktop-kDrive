@@ -931,6 +931,33 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
     return ExitCode::Ok;
 }
 
+ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPath &path) {
+    bool found = false;
+    if (!_syncPal->syncDb()->path(node->side(), node->id().value(), path, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb:: path");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOGW_SYNCPAL_WARN(_logger, L"Path not in DB for item ID " << CommonUtility::s2ws(node->id().value()) << L" on side "
+                                                                  << node->side());
+        return {ExitCode::DataError, ExitCause::NotFound};
+    }
+    return ExitCode::Ok;
+}
+
+bool checkIfAnyParentHasMoveOperation(const std::shared_ptr<Node> affectedNode) {
+    bool res = false;
+    auto parentNode = affectedNode->parentNode();
+    while (parentNode) {
+        if (parentNode->hasChangeEvent(OperationType::Move)) {
+            res = true;
+            break;
+        }
+        parentNode = parentNode->parentNode();
+    }
+    return res;
+}
+
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     bypassProgressComplete = false;
 
@@ -961,10 +988,20 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return ExitCode::DataError;
         }
 
-        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
-        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+
+        if (checkIfAnyParentHasMoveOperation(syncOp->affectedNode())) {
+            // Get the parent corresponding node
+            SyncPath relativeParentPath;
+            if (const auto exitInfo = getPathFromDb(syncOp->affectedNode()->parentNode(), relativeParentPath); !exitInfo) {
+                return exitInfo;
+            }
+            relativeDestLocalFilePath = relativeParentPath / syncOp->newName();
+        } else {
+            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        }
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
 
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
@@ -985,12 +1022,24 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return ExitCode::DataError;
         }
 
-        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
-        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
-        if (syncOp->isBreakingCycleOp() || relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+        bool bypassCheck = false;
+        if (checkIfAnyParentHasMoveOperation(syncOp->affectedNode())) {
+            // Get the parent corresponding node
+            SyncPath relativeParentPath;
+            if (const auto exitInfo = getPathFromDb(syncOp->affectedNode()->parentNode(), relativeParentPath); !exitInfo) {
+                return exitInfo;
+            }
+            relativeDestLocalFilePath = relativeParentPath / syncOp->newName();
+            bypassCheck = true;
+        } else {
+            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        }
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
+
+        if (syncOp->isBreakingCycleOp() || absoluteOriginLocalFilePath.parent_path() == absoluteDestLocalFilePath.parent_path()) {
             // This is just a rename
             try {
                 job = std::make_shared<RenameJob>(_syncPal->vfs(), _syncPal->driveDbId(), correspondingNode->id().value_or(""),
