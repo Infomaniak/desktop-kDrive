@@ -35,8 +35,11 @@ IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
     _socket(new QTcpSocket(this)) {
     connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
-    connect(_socket, &QTcpSocket::disconnected, this, &IpcClient::onDisconnected);
     connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
+    connect(_socket, &QTcpSocket::disconnected, this, [this] {
+        emit disconnected();
+        exit(EXIT_FAILURE);
+    });
 }
 
 
@@ -123,12 +126,6 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
 /** Forwards the socket connected() signal and notifies upper layers. */
 void IpcClient::onConnected() {
     emit connected();
-}
-
-/** Clears the read buffer to avoid processing stale data on the next connection, then notifies upper layers. */
-void IpcClient::onDisconnected() {
-    _readBuffer.clear();
-    emit disconnected();
 }
 
 /** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
