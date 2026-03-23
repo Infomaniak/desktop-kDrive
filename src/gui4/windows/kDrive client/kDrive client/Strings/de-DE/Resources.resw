@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Mar 2026 12:39:17 +0100 
+  Exported at: Mon, 23 Mar 2026 16:17:12 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -77,13 +77,13 @@
   </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
-© 2019-%@ Infomaniak Network SA - </value> 
+© 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Über kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>KDrive wird ausschließlich in der Schweiz entwickelt und gehostet und gewährleistet den vollständigen Schutz Ihrer Daten, ohne Weiterverkauf oder Spionage, in ISO-zertifizierten Zentren, mit Verschlüsselung und Sicherung auf mehreren Datenträgern.</value> 
+    <value>KDrive wird ausschliesslich in der Schweiz entwickelt und gehostet und gewährleistet den vollständigen Schutz Ihrer Daten, ohne Weiterverkauf oder Spionage, in ISO-zertifizierten Zentren, mit Verschlüsselung und Sicherung auf mehreren Datenträgern.</value> 
   </data> 
   <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
     <value>Sichtbare Aktivitäten</value> 
@@ -113,13 +113,13 @@
     <value>Einen Ordner mit kDrive synchronisieren</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
-    <value>Wählen Sie den Ordner auf Ihrem Computer, der mit kDrive synchronisiert werden soll :</value> 
+    <value>Wählen Sie den Ordner auf Ihrem Computer, der mit kDrive synchronisiert werden soll:</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
     <value>Synchronisierter Ordner</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
-    <value>Passen Sie den Speicherort des Ordners Ihres Computers auf kDrive an :</value> 
+    <value>Passen Sie den Speicherort des Ordners Ihres Computers auf kDrive an:</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
     <value>Wählen Sie den Ort des Ordners auf kDrive aus</value> 
@@ -165,7 +165,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
     <value>Sie haben keine Berechtigung, auf diesen kDrive zuzugreifen. Bitte überprüfen Sie Ihre Rechte oder wenden Sie sich an Ihren Administrator.</value> 
-    <comment>Error description when user doesn't have permission to access a kDrive</comment> 
+    <comment>Error description when user doesn’t have permission to access a kDrive</comment> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>Sie können es über die Weboberfläche aufwecken.</value> 
@@ -447,16 +447,14 @@ Der Quellcode dieser Anwendung kann eingesehen werden, die gesammelten Informati
     <value>Debug-Protokolle</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>Die nachstehenden technischen Details können helfen, das Problem zu identifizieren.
-Ihre Synchronisierung wird in wenigen Augenblicken automatisch neu gestartet.
-
-Wenn das Problem weiterhin besteht, wenden Sie sich bitte an unser Support-Team.</value> 
+    <value>Die Synchronisierung wird automatisch neu gestartet.
+Wenn das Problem weiterhin besteht, wenden Sie sich an unseren Support und fügen Sie die folgenden technischen Details bei.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
     <value>Technische Details</value> 
   </data> 
   <data name="defaultErrorTitle" xml:space="preserve"> 
-    <value>Es ist ein unerwarteter Fehler aufgetreten</value> 
+    <value>Ein unerwarteter Fehler ist aufgetreten</value> 
   </data> 
   <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
     <value>Diese Dateien werden standardmässig ignoriert und können nicht geändert werden.</value> 
@@ -465,7 +463,7 @@ Wenn das Problem weiterhin besteht, wenden Sie sich bitte an unser Support-Team.
     <value>Automatisch ausgeschlossen</value> 
   </data> 
   <data name="deleteCancelErrorTitle" xml:space="preserve"> 
-    <value>Löschung aufgehoben</value> 
+    <value>Löschung abgebrochen</value> 
   </data> 
   <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
     <value>In diesen Situationen ist eine erneute Synchronisierung erforderlich, um kDrive weiterhin korrekt zu nutzen.</value> 
@@ -529,7 +527,7 @@ Schliessen Sie die Anwendung während des Vorgangs nicht.</value>
     <value>Ändern Sie den Synchronisationsmodus?</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
-    <value>So stellen Sie die Synchronisation wieder her :</value> 
+    <value>So stellen Sie die Synchronisation wieder her:</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
     <value>Das Laufwerk mit Ihrem Synchronisationsordner ist nicht mehr angeschlossen</value> 
@@ -584,10 +582,10 @@ Bitte melden Sie sich erneut mit der richtigen E-Mail-Adresse an %@</value>
     <value>Aufwecken des kDrive läuft</value> 
   </data> 
   <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
-    <value>Doppelte Namen</value> 
+    <value>Verdopplung von Namen</value> 
   </data> 
   <data name="editCancelErrorTitle" xml:space="preserve"> 
-    <value>Bearbeiten abgebrochen</value> 
+    <value>Abgebrochene Ausgabe</value> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
     <value>Speichern Sie Diagnoseinformationen auf meinem Computer.</value> 
@@ -599,159 +597,161 @@ Bitte melden Sie sich erneut mit der richtigen E-Mail-Adresse an %@</value>
     <value>Geben Sie Ihr Passwort ein</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
-    <value>Sie verfügen nicht über die Rechte, eine Datei oder einen Ordner an diesem Ort zu erstellen.
-Bitten Sie den Eigentümer oder Ihren Administrator um Zugriff.</value> 
+    <value>Sie haben nicht die erforderlichen Rechte, um einen %@ an diesem Ort hinzuzufügen.
+Bitten Sie den Besitzer oder Administrator um Zugriff.</value> 
   </data> 
   <data name="errDeleteCancelDescription" xml:space="preserve"> 
-    <value>Sie haben nicht die Berechtigung, diese Datei oder diesen Ordner zu löschen. Sie wird an ihrem ursprünglichen Speicherort wiederhergestellt.
-Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
-</value> 
+    <value>Sie haben nicht die Berechtigung, diesen %@ zu löschen. Er wurde an seinem ursprünglichen Speicherort wiederhergestellt. Bitten Sie den Besitzer oder den Administrator um Zugriff.</value> 
   </data> 
   <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
-    <value>In Ihrer Konfiguration wurde eine Änderung festgestellt.</value> 
+    <value>In Ihrer Konfiguration wurde eine Änderung festgestellt</value> 
   </data> 
   <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
-    <value /> 
+    <value>In diesen Situationen kann eine erneute Synchronisierung erforderlich sein, um kDrive weiterhin korrekt zu nutzen.</value> 
   </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
+    <value>Die Zugriffsrechte von %@ wurden geändert, sodass er nicht synchronisiert werden kann.</value> 
   </data> 
   <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
+    <value>Konsultieren Sie %@, um den Zugang wiederherzustellen</value> 
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Letzter Dateispeicherort:</value> 
+    <value>Letzter Standort des %@:</value> 
   </data> 
   <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
     <value>Externes Laufwerk getrennt</value> 
   </data> 
   <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
-    <value /> 
+    <value>Dieser Vorgang kann je nach Datenmenge einige Zeit in Anspruch nehmen.
+
+Schliessen Sie die Anwendung während des Vorgangs nicht.
+
+Sollte der Vorgang fehlschlagen, können Sie ganz einfach eine neue, vollständige Synchronisierung des Drives starten oder sich an unseren Support wenden.</value> 
   </data> 
   <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Offline-Synchronisation aktivieren</value> 
   </data> 
   <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
-    <value>Dieses kDrive ist wegen Wartungsarbeiten vorübergehend nicht verfügbar.
-Bitte versuchen Sie es in ein paar Minuten erneut.</value> 
+    <value>Dieses kDrive ist aufgrund von Wartungsarbeiten vorübergehend nicht verfügbar.
+Bitte versuchen Sie es in einigen Minuten erneut.</value> 
   </data> 
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
-    <value>Instandhaltung in Arbeit</value> 
+    <value>Laufende Wartung</value> 
   </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Eine Datei oder ein Ordner mit diesem Namen existiert bereits.</value> 
   </data> 
   <data name="errEditCancelDescription" xml:space="preserve"> 
-    <value>Sie haben keine Berechtigung, diese Datei oder diesen Ordner zu bearbeiten.
-Sie wird in ihrer vorherigen Version wiederhergestellt.
-Ihre Änderungen sind in einer separaten Datei neben dem Original verfügbar, deren Name um den Zusatz "conflict" ergänzt wurde.
-Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
-</value> 
+    <value>Sie haben nicht die Rechte, diese Datei zu bearbeiten.
+Die Originalversion wurde beibehalten und Ihre Änderung wurde in einer separaten Datei mit "Konflikt" im Namen gespeichert. Bitten Sie den Eigentümer oder den Administrator um Zugriff.</value> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Der Name dieser Datei endet mit einem Leerzeichen, sodass sie nicht synchronisiert werden kann. Benennen Sie die Datei von kDrive online um.</value> 
+    <value>Der Name dieses %@ endet mit einem Leerzeichen, wodurch er nicht synchronisiert werden kann. Benennen Sie das %@ von kDrive online aus um.</value> 
   </data> 
-  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
-    <value>Leerzeichen am Ende des Dateinamens</value> 
+  <data name="errEndWithSpaceTitle" xml:space="preserve"> 
+    <value>Leerzeichen am Ende des %@-Namens</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>Dieses Element wurde durch eine benutzerdefinierte Vorlage von der Synchronisierung ausgeschlossen.
-Sie können diesen Benachrichtigungstyp in den Ausschlusseinstellungen deaktivieren.
-</value> 
+    <value>Eine Ausschlussregel verhindert die Synchronisierung dieses %@.</value> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
-    <value>Durch Regel ausgeschlossen</value> 
+    <value>Von der Synchronisation ausgeschlossen</value> 
   </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
     <value>Eine Datei mit diesem Namen existiert bereits.</value> 
   </data> 
   <data name="errFileLockedDescription" xml:space="preserve"> 
-    <value>Diese Datei wurde von einem anderen Nutzer gesperrt und kann derzeit nicht bearbeitet werden.
+    <value>Diese Datei wird derzeit von einem anderen Nutzer verwendet.
 Ihre Änderungen werden zu einem späteren Zeitpunkt synchronisiert.</value> 
   </data> 
   <data name="errFileLockedTitle" xml:space="preserve"> 
-    <value>Datei gesperrt</value> 
+    <value>Gesperrte Datei</value> 
   </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
-    <value>Die Datei wurde lokal geändert, obwohl sie auf dem entfernten kDrive gelöscht worden war.
-Die lokale Kopie wurde im Wiederherstellungsordner gesichert.</value> 
+    <value>Diese Datei wurde auf kDrive online gelöscht, während Sie sie bearbeitet haben. Eine Kopie wurde auf Ihrem Computer im Wiederherstellungsordner aufbewahrt.</value> 
   </data> 
   <data name="errFileRescuedTitle" xml:space="preserve"> 
-    <value>Datei wiederhergestellt</value> 
+    <value>Wiederhergestellte Datei</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
+    <value>Diese Datei überschreitet die maximal zulässige Grösse (50 GB).
 Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Diese Datei überschreitet die maximal zulässige Dateigröße (50 GB).
-Wenden Sie sich an Ihren Administrator, um das Limit für die Dateigröße zu erhöhen.</value> 
+    <value>Diese Datei überschreitet die maximal zulässige Dateigrösse (50 GB).
+Wenden Sie sich an Ihren Administrator, um das Limit für die Dateigrösse zu erhöhen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
-    <value>Ungenügende Datenmenge</value> 
+    <value>Datei zu gross</value> 
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
-    <value>Zugriff verboten</value> 
+    <value>Zugang verboten</value> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
-    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden.</value> 
+    <value>Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden. Benennen Sie das %@ von kDrive online aus um.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
-    <value>Der Datei- oder Ordnername darf nicht nur Leerzeichen enthalten.</value> 
+    <value>Dieser Name enthält nur Leerzeichen und kann nicht verwendet werden. Benennen Sie den %@ von kDrive online aus um.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
-    <value>Name enthält nur Leerzeichen</value> 
+    <value>Ungültiger Name</value> 
   </data> 
   <data name="errForbiddenCharTitle" xml:space="preserve"> 
     <value>Nicht unterstütztes Zeichen</value> 
   </data> 
+  <data name="errGenericForbiddenDescription" xml:space="preserve"> 
+    <value>Sie haben nicht die erforderlichen Rechte, um diese Aktion durchzuführen.
+Bitten Sie den Eigentümer oder den Administrator um Zugriff.</value> 
+  </data> 
+  <data name="errGenericForbiddenTitle" xml:space="preserve"> 
+    <value>Zugang verboten</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
-    <value>Harte Verbindungen werden für die Synchronisierung nicht unterstützt.</value> 
+    <value>Diese Datei ist ein Systemlink (hard link), der nicht synchronisiert werden kann.</value> 
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
-    <value>Hardlink nicht unterstützt</value> 
+    <value>Nicht unterstützter Dateityp</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
-    <value>Der Synchronisationsordner auf Ihrem kDrive ist nicht mehr verfügbar oder Sie haben keinen Zugriff mehr darauf.
-Bitte stellen Sie den Ordner wieder her, vergewissern Sie sich, dass Sie die notwendigen Zugriffsrechte haben, oder löschen Sie die Synchronisation und erstellen Sie sie neu.</value> 
+    <value>Auf diesen Ordner kann nicht mehr an seinem ursprünglichen Speicherort zugegriffen werden.</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
-    <value>Ordner für Remote-Synchronisierung nicht zugänglich</value> 
+    <value>Synchronisationsordner nicht gefunden</value> 
   </data> 
   <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
-    <value>Es sieht so aus, als befände sich einer Ihrer synchronisierten Ordner innerhalb eines anderen synchronisierten Ordners. Um dies zu beheben, behalten Sie nur eine Synchronisierung für diesen Ort bei und stellen Sie sicher, dass sich Ihre Synchronisierungsordner nicht überlappen oder gegenseitig enthalten.</value> 
+    <value>Eines Ihrer kDrives wird innerhalb des Synchronisationsordners eines anderen kDrives synchronisiert.
+Verschieben Sie einen der Ordner, sodass sie nicht mehr verschachtelt sind, oder löschen Sie Ihre Synchronisation, um sie neu zu erstellen.</value> 
   </data> 
   <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
-    <value>Verschachtelte Synchronisationen</value> 
+    <value>kDrive verschachtelt</value> 
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
+    <value>Es ist nicht möglich, auf diesen %@ auf Ihrem Computer zuzugreifen. Überprüfen Sie, ob er noch existiert und ob Sie die Rechte haben, auf ihn zuzugreifen.</value> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
-    <value>Datei unzugänglich</value> 
+    <value>%@ unzugänglich</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Sie haben nicht die Erlaubnis, diese Datei oder diesen Ordner hierher zu verschieben. Er wird an seinem ursprünglichen Ort wiederhergestellt.
-Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
-</value> 
+    <value>Sie haben nicht die Rechte, diesen %@ hierher zu verschieben, er wird an seinem ursprünglichen Ort wiederhergestellt. Bitten Sie den Besitzer oder Administrator um Zugriff.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
-    <value>Der Datei- oder Ordnername ist zu lang.</value> 
+    <value>Dieser Name überschreitet die zulässige Länge (250 Zeichen). Benennen Sie ihn in %@ um.</value> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>Name zu lang</value> 
+    <value>Name von %@ zu lang</value> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
-    <value>Wir haben Probleme mit der Verbindung zu kDrive. Wir werden es automatisch weiter versuchen.
-
-Bitte überprüfen Sie Ihre Internetverbindung und Ihre Firewall-Einstellungen.
-Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value> 
+    <value>Es kann keine Verbindung zu kDrive hergestellt werden.
+Die Synchronisierung wird automatisch wieder aufgenommen, sobald die Verbindung wiederhergestellt ist.</value> 
   </data> 
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
-    <value>Problem mit der Verbindung</value> 
+    <value>Verbindung vorübergehend nicht verfügbar</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
+    <value>Auf Ihrem Computer ist nicht mehr genug Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Unzureichender Speicherplatz</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
     <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung nicht unterstützt werden. Benennen Sie die Datei von kDrive online aus um.</value> 
@@ -760,36 +760,34 @@ Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value>
     <value>Nicht unterstütztes Zeichen</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
-    <value>Der Dateipfad ist zu lang für dein Gerät. Kürze ihn und versuche es erneut.</value> 
+    <value>Der Pfad zu diesem %@ ist zu lang, um synchronisiert zu werden. Benennen Sie einen oder mehrere Ordner um, in denen er sich befindet, um den Pfad zu verkürzen.</value> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Pfad zu lang</value> 
+    <value>Pfad zu %@ zu lang</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Ihr kDrive ist voll.
-Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu synchronisieren.</value> 
+    <value>Ihr kDrive ist voll. Machen Sie Platz frei oder aktualisieren Sie Ihr Abonnement, um dieses %@ zu synchronisieren.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
-    <value>Speicherkontingent überschritten</value> 
+    <value>Speicherlimit erreicht</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
-    <value>Dieser Name ist vom System reserviert. Benenne das Element um und versuche es erneut.</value> 
+    <value>Dieser Name wird vom System Ihres Computers reserviert. Benennen Sie ihn von kDrive online in %@ um.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>Reservierter Name</value> 
+    <value>Name von %@ reserviert</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Überprüfen Sie den Speicherort oder die Zugriffsrechte des Ordners.</value> 
   </data> 
-  <data name="errSystemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+  <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
     <value>Synchronisationsordner nicht erreichbar</value> 
   </data> 
   <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>Ihr Computer verfügt nicht über genügend Speicherplatz.
-Die Synchronisierung wurde pausiert. Bitte geben Sie etwas Speicherplatz frei und versuchen Sie es erneut.</value> 
+    <value>Der Speicherplatz auf Ihrem Gerät ist voll. Die Synchronisierung wurde unterbrochen. Geben Sie Speicherplatz frei, um die Synchronisierung fortzusetzen.</value> 
   </data> 
   <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
-    <value>Nicht genügend Festplattenplatz</value> 
+    <value>Unzureichender Speicherplatz</value> 
   </data> 
   <data name="errSystemSyncDirChanged" xml:space="preserve"> 
     <value>Auf diesen Ordner kann nicht mehr an seinem ursprünglichen Speicherort zugegriffen werden.</value> 
@@ -801,21 +799,19 @@ Die Synchronisierung wurde pausiert. Bitte geben Sie etwas Speicherplatz frei un
     <value>Synchronisationsordner nicht gefunden</value> 
   </data> 
   <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
-    <value>Die Lite Sync-Erweiterung ist möglicherweise nicht installiert, oder der Windows-Suchdienst ist deaktiviert.
-
-Wenn das Problem weiterhin besteht, können Sie die Synchronisierung in eine Standardsynchronisierung umwandeln oder unser Support-Team um Hilfe bitten.</value> 
+    <value>Lite Sync kann nicht gestartet werden. Sie können Ihre Dateien weiterhin synchronisieren, indem Sie in den Einstellungen die Offline-Synchronisierung aktivieren. Wenden Sie sich an den Support, wenn das Problem weiterhin besteht.</value> 
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
-    <value>Lite Sync-Plugin kann nicht starten</value> 
+    <value>Lite Sync kann nicht gestartet werden</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
-    <value>Dieses Element wurde nach wiederholten Fehlern vorübergehend auf die Sperrliste gesetzt. Es wird später erneut versucht.</value> 
+    <value>Die Synchronisierung dieses Elements war nicht erfolgreich. Sie wird später automatisch erneut gestartet.</value> 
   </data> 
   <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
-    <value>Vorübergehend auf der Sperrliste</value> 
+    <value>Synchronisation vorübergehend fehlgeschlagen</value> 
   </data> 
   <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
-    <value>Der Upload konnte nicht abgeschlossen werden. Bitte versuche es später erneut.</value> 
+    <value>Der Upload konnte nicht abgeschlossen werden. Bitte versuchen Sie es zu einem späteren Zeitpunkt erneut.</value> 
   </data> 
   <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
     <value>Zu überprüfende Dateien</value> 
@@ -1002,7 +998,7 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Lokal</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive. </value> 
+    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
@@ -1042,7 +1038,7 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value /> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
-    <value>Ursprünglicher Standort :</value> 
+    <value>Ursprünglicher Standort:</value> 
   </data> 
   <data name="labelRecommended" xml:space="preserve"> 
     <value>Recommandé</value> 
@@ -1198,9 +1194,6 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>Keine Ergebnisse gefunden</value> 
-  </data> 
-  <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve"> 
-    <value>Nicht genügend Speicherplatz</value> 
   </data> 
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Nicht synchronisiert</value> 
@@ -1524,7 +1517,7 @@ Die Synchronisierung wurde angehalten. Bitte überprüfen Sie Ihre Dateien und v
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
-    <value> Dieser Ordner kann nicht erstellt werden</value> 
+    <value>Dieser Ordner kann nicht erstellt werden</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Unbefugter Zugang</value> 

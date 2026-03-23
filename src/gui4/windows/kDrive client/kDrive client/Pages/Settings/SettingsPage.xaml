@@ -194,7 +194,7 @@
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemAccounts'), Mode=OneWay}"
                                    HorizontalAlignment="Left"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                        <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
+                        <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConnectAccount'), Mode=OneWay}"
                                          HorizontalAlignment="Right"
                                          Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                          Click="CreateAccountButton_Click" />
@@ -226,7 +226,7 @@
 
                             </StackPanel>
                         </toolKit:SettingsCard.Header>
-                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConnectAccount'), Mode=OneWay}"
                                 HorizontalAlignment="Right"
                                 Click="CreateAccountButton_Click" />
                     </toolKit:SettingsCard>

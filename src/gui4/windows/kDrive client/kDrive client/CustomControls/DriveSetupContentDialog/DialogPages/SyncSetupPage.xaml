@@ -124,15 +124,7 @@
                     <!-- Default location dropdown -->
                     <DropDownButton Grid.Row="0"
                                     Grid.Column="0"
-                                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonDefaultLocation')}"
-                                    Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
-                                    Click="ChangeFolder_Click" />
-
-                    <!-- Custom location dropdown -->
-                    <DropDownButton Grid.Row="0"
-                                    Grid.Column="0"
-                                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCustomLocation')}"
-                                    Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' , Mode=OneWay}"
+                                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonChangeFolder')}"
                                     Click="ChangeFolder_Click" />
 
                     <TextBlock Grid.Row="0"
@@ -219,7 +211,7 @@
                                           VerticalAlignment="Center" />
 
                         <TextBlock Grid.Column="1"
-                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummaryAtLeastOne')}"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    TextTrimming="WordEllipsis">

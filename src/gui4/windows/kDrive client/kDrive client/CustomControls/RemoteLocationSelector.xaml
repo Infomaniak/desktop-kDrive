@@ -231,7 +231,7 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            HorizontalAlignment="Right"
-                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelsize')}"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            Margin="0,0,56,0" />
 
