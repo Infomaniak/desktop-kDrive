@@ -283,7 +283,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
 
-    assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
+    assert(signal->type() == GuiJobType::Signal);
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send gui signal: id=" << signal->id() << " num=" << signal->signalNum());
 
