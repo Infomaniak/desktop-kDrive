@@ -17,7 +17,7 @@
  */
 
 #include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
-#include "jobs/network/apitranslator.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 
 #include "utility/jsonparserutility.h"
 

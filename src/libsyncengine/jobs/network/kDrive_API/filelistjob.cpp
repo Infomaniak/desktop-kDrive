@@ -18,7 +18,7 @@
 
 #include "jobs/network/kDrive_API/filelistjob.h"
 
-#include "jobs/network/apitranslator.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 
 namespace KDC {
 

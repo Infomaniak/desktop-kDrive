@@ -38,8 +38,8 @@
 #include "propagation/operation_sorter/testoperationsorterworker.h"
 #include "integration/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
-#include "jobs/network/testapitranslator.h"
 #include "jobs/network/testnetworkjobs.h"
+#include "jobs/network/kDrive_API/testapitranslator.h"
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
@@ -57,9 +57,44 @@
 #endif
 
 namespace KDC {
-
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiTranslator);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
+
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncJobManagerSingleton);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
+#if defined(KD_MACOS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
+#elif defined(KD_LINUX)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchUpdateTreeWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
 } // namespace KDC
 
 int main(int, char **) {

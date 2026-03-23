@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "jobs/network/apitranslator.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 
 namespace KDC {

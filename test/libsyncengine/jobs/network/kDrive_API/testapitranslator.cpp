@@ -18,28 +18,19 @@
 
 #include "testapitranslator.h"
 
-#include "jobs/network/apitranslator.h"
-#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/jsonparserutility.h"
 
 #include "libparms/db/parmsdb.h"
-
-#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
-#include "test_utility/localtemporarydirectory.h"
-#include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/iohelpertestutilities.h"
-#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 

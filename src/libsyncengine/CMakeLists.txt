@@ -22,7 +22,7 @@ set(syncengine_SRCS
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
     jobs/syncjobmanager.h jobs/syncjobmanager.cpp
-    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
@@ -39,6 +39,8 @@ set(syncengine_SRCS
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
     jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
+    ### API translator
+    jobs/network/kDrive_API/apitranslator.h jobs/network/kDrive_API/apitranslator.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
@@ -131,8 +133,6 @@ set(syncengine_SRCS
     ## Executor
     propagation/executor/executorworker.h propagation/executor/executorworker.cpp
     propagation/executor/filerescuer.h propagation/executor/filerescuer.cpp
-    ## API Translator
-    jobs/network/apitranslator.h jobs/network/apitranslator.cpp
     # SyncPal
     syncpal/isyncworker.h syncpal/isyncworker.cpp
     syncpal/operationprocessor.h syncpal/operationprocessor.cpp
