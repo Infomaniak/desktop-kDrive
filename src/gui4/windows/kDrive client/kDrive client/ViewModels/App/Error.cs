@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _DbId = -1;
         private DateTime _timestamp = DateTime.MinValue;
         private ErrorLevel _errorLevel = ErrorLevel.Unknown;
-        private required Sync? _sync;
+        private Sync _sync;
         private ExitCode _exitCode = ExitCode.Unknown;
         private ExitCause _exitCause = ExitCause.Unknown;
         NodeType _nodeType = NodeType.Unknown;

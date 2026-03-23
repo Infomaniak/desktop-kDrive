@@ -1229,11 +1229,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             foreach (var errorInfo in errorInfos)
             {
                 bool success = true;
-                Error error = new(errorInfo, ref success);
-                if (success)
-                    await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
-                else
-                    Logger.Log(Logger.Level.Error, $"Failed to create Error object from errorInfo with DbId {errorInfo.DbId}. Skipping this error.");
+                if (errorInfo.SyncDbId is not null)
+                {
+                    var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+
+                    if (sync is not null)
+                    {
+                        Error error = new(sync, errorInfo);
+                        await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+                    }
+                }
             }
             return true;
         }
@@ -1745,15 +1754,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            bool success = true;
-            Error error = new Error(errorInfo, ref success);
-            if (!success)
-            {
-                Logger.Log(Logger.Level.Error, $"Sync with dbId {errorInfo.SyncDbId} not found for error with dbId {errorInfo.DbId}.");
-                return;
-            }
+            var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
 
-            await _viewModel.AddErrorAsync(error);
+            if (sync is not null)
+            {
+                Error error = new(sync, errorInfo);
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+            }
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
