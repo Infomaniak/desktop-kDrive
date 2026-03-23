@@ -1614,8 +1614,8 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     const LocalTemporaryDirectory temporaryDirectory("testGetAllFilesInDirectory");
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testGetAllFilesInDirectory");
 
-    for (const auto &fileName: {"test_file_A.txt", "test_file_B.txt"}) {
-        const SyncPath localFilePath = temporaryDirectory.path() / Str(fileName);
+    for (const auto &fileName: {Str("test_file_A.txt"), Str("test_file_B.txt")}) {
+        const SyncPath localFilePath = temporaryDirectory.path() / fileName;
         testhelpers::generateOrEditTestFile(localFilePath);
 
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
