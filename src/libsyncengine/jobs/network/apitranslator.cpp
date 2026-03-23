@@ -21,6 +21,9 @@
 
 namespace KDC {
 const RemoteNodeId ApiTranslator::v2RootFolderRemoteId = RemoteNodeId{"1"};
+const char *ApiTranslator::v3CommonDocuments = "Common documents";
+const char *ApiTranslator::v3UserPrivate = "Private";
+const char *ApiTranslator::v3Shared = "Shared";
 
 std::mutex ApiTranslator::_mutex;
 
@@ -75,7 +78,7 @@ DriveDbId ApiTranslator::getDriveDbId(const DriveId driveId) {
 void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     constexpr auto maxNumberOfItems = 1000;
 
-    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"});
+    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, TranslationMode::None);
     fileListJob.setListingConf({.dirOnly = true, .limit = maxNumberOfItems});
     if (const auto exitInfo = fileListJob.runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::runSynchronously.");
@@ -87,19 +90,19 @@ void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     const std::scoped_lock lock(_mutex);
 
     auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                           [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Private"; });
+                           [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3UserPrivate; });
 
 
     if (it != nodeInfoList.cend()) _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
 
     it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Shared"; });
+                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3Shared; });
 
     if (it != nodeInfoList.cend()) _sharedNodeIdCache[driveDbId] = it->nodeId().toStdString();
 
 
     it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == "Common documents"; });
+                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3CommonDocuments; });
 
     if (it != nodeInfoList.cend()) _commonDocumentsNodeIdCache[driveDbId] = it->nodeId().toStdString();
 }
@@ -163,7 +166,6 @@ void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeInfoList &v3N
     });
 
     for (auto &nodeInfo: v3NodeInfoList) {
-        if (nodeInfo.nodeId().toStdString() == privateFolderId) continue;
         if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId));
     }

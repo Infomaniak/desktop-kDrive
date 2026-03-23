@@ -207,6 +207,8 @@ using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to
 using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
 using DriveDbIdMap = std::unordered_map<DriveId, DriveDbId>;
 
+using RemoteNodeIdSet = std::unordered_set<RemoteNodeId, StringHashFunction, std::equal_to<>>;
+
 //
 // Enums
 // /!\ Each enum class must have a corresponding toString function

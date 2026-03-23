@@ -1671,6 +1671,11 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
     CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo2.size()); // Not computed because it is expensive.
+
+    listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 1});
+    exitCode = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(exitCode));
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, listFilesInDirectoryJob.v3NodeInfoList().size());
 }
 
 } // namespace KDC
