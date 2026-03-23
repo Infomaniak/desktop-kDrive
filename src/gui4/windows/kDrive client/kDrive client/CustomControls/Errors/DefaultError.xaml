@@ -43,7 +43,8 @@
                                 <TextBlock Text=": " />
                                 <TextBlock Text="{x:Bind Value}"
                                            FontWeight="SemiBold"
-                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                           TextWrapping="Wrap" />
                             </StackPanel>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>

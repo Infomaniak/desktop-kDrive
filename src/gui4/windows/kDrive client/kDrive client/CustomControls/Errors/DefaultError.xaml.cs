@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                     try
                     {
                         var value = prop.GetValue(Error);
-                        AddIfNotEmpty($"{prop.Name}:", value);
+                        AddIfNotEmpty($"{prop.Name}", value);
                     }
                     catch (Exception ex)
                     {
