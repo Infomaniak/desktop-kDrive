@@ -71,7 +71,7 @@ void TestApiTranslator::setUp() {
     Parameters parameters;
     bool found = false;
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
+        (void) Proxy::instance(parameters.proxyConfig());
     }
 }
 
