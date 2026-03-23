@@ -38,7 +38,7 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, 
 CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &parentId, const SyncName &name) :
     CreateDirJob(vfs, driveDbId, "", parentId, name) {}
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, int32_t userDbId, int32_t driveId, const NodeId &parentId,
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, UserDbId userDbId, DriveId driveId, const NodeId &parentId,
                            const SyncName &name) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _parentDirId(parentId),

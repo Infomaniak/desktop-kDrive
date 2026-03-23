@@ -1339,7 +1339,7 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &pare
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(int32_t userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+ExitCode ServerRequests::createDir(UserDbId userDbId, DriveId driveId, const NodeId &parentNodeId, const SyncName &dirName,
                                    NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
@@ -1370,7 +1370,8 @@ ExitCode ServerRequests::createDir(int32_t userDbId, int32_t driveId, const Node
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const QString &parentNodeId, const QString &dirName,
+                                   QString &newNodeId) {
     newNodeId = {};
     NodeId newNodeIdStr;
 
