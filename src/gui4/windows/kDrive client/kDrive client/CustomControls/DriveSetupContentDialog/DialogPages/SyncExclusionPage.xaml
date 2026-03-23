@@ -21,9 +21,6 @@
             <!-- Title -->
             <RowDefinition Height="Auto" />
 
-            <!-- Message -->
-            <RowDefinition Height="Auto" />
-
             <!-- Remote folder exclusion -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -32,17 +29,11 @@
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
-
-        <!-- Message -->
-        <TextBlock Grid.Row="1"
-                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionDescription')}"
-                   TextWrapping="WrapWholeWords"
-                   Style="{StaticResource BodyTextBlockStyle}"
-                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+       
 
         <!-- Remote folder exclusion -->
         <controls:SyncExclusionSelector x:Name="ExclusionSelector"
-                                        Grid.Row="3"
+                                        Grid.Row="2"
                                         Sync="{x:Bind Sync}"
                                         CanShowSaveMenu="False" />
     </Grid>
