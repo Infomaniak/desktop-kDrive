@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Mar 2026 08:29:44 +0100
+ * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
  */
 
 
@@ -46,8 +46,10 @@
 
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Erweiterte Synchronisationen";
+
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "Die Anwendung ist auf dem neuesten Stand";
+
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Automatische Aktualisierungen";
 
@@ -56,6 +58,7 @@
 
 /* loco:69943068b17a2d5a500e16b2 */
 "availableOfflineDescription" = "Ihre Dateien werden auf Ihren Computer kopiert.\nSie können sie jederzeit öffnen, auch ohne Internetzugang.";
+
 /* loco:698af17b4dd554948901a8b2 */
 "betaProgramDescription" = "Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.";
 
@@ -64,6 +67,7 @@
 
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Beta-Programm";
+
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Speicher hinzufügen";
 
@@ -72,6 +76,9 @@
 
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Abbrechen";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Ändern Sie den Ordner";
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Schliessen Sie";
@@ -91,14 +98,13 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Ein Konto erstellen";
 
-/* loco:698c5b6872ce37700303dac2 */
-"buttonDefaultLocation" = "Standard-Speicherort";
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Trennen Sie dieses Konto";
 
 /* loco:698b0aefb16a3916fc004f32 */
 "buttonEnable" = "Aktivieren Sie";
+
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Eine Idee teilen";
 
@@ -149,11 +155,15 @@
 
 /* loco:698b07467beec481020cef52 */
 "buttonRemoveSync" = "Synchronisierung entfernen";
+
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Synchronisierung neu starten";
 
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Wiederholung";
+
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Zurück zum Standardordner";
 
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Suche";
@@ -161,8 +171,6 @@
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Siehe Aktivitäten";
 
-/* loco:69b422d7b7de08855d023d32 */
-"buttonSelectFolder" = "Einen Ordner auswählen";
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Ordner auswählen";
@@ -178,6 +186,7 @@
 
 /* loco:69a7ecff1619fbbe5a0c75b3 */
 "buttonStart" = "Start";
+
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Kostenlos anfangen";
 
@@ -189,8 +198,12 @@
 
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Bestätigen";
+
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Aufwachen";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"changeFolder" = "Ändern Sie den Ordner";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Kopieren von Link…";
@@ -251,6 +264,7 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Bei der Löschung Ihres Kontos ist ein Fehler aufgetreten.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Error while trying to start the installer";
 
@@ -262,11 +276,13 @@
 
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-9157fdb3d2d7";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Datei-Synchronisationsmodus";
 
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Legen Sie fest, wie Ihre Dateien gespeichert und abgerufen werden sollen.";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoriten";
 
@@ -409,6 +425,7 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Niemals";
+
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Synchronisation für dieses kDrive einrichten";
 
@@ -510,6 +527,7 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Intern";
+
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Konten";
 
@@ -554,6 +572,12 @@
 
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Sync-Fehler";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Benutzerdefinierter Ordner";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Standard-Speicherort";
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Synchronisierung";

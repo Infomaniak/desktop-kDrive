@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Mar 2026 08:29:44 +0100
+ * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
  */
 
 
@@ -46,8 +46,10 @@
 
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Sincronizzazioni avanzate";
+
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’applicazione è aggiornata";
+
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Aggiornamenti automatici";
 
@@ -56,6 +58,7 @@
 
 /* loco:69943068b17a2d5a500e16b2 */
 "availableOfflineDescription" = "I file vengono copiati sul computer.\nÈ possibile aprirli in qualsiasi momento, anche senza accesso a Internet.";
+
 /* loco:698af17b4dd554948901a8b2 */
 "betaProgramDescription" = "Ottenete l’accesso anticipato alle nuove versioni dell’applicazione prima che vengano rilasciate al pubblico e contribuite a migliorare l’applicazione condividendo con noi le vostre idee di miglioramento.";
 
@@ -64,6 +67,7 @@
 
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Programma beta";
+
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Aggiungere l’archiviazione";
 
@@ -72,6 +76,9 @@
 
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Annulla";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Cambiare la cartella";
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Chiudere";
@@ -91,14 +98,13 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
 
-/* loco:698c5b6872ce37700303dac2 */
-"buttonDefaultLocation" = "Posizione predefinita";
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Disconnettere questo account";
 
 /* loco:698b0aefb16a3916fc004f32 */
 "buttonEnable" = "Abilitazione";
+
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Condividere un’idea";
 
@@ -149,11 +155,15 @@
 
 /* loco:698b07467beec481020cef52 */
 "buttonRemoveSync" = "Rimuovere la sincronizzazione";
+
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Riavviare la sincronizzazione";
 
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Riprova";
+
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Ritorno alla cartella predefinita";
 
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Ricerca";
@@ -161,8 +171,6 @@
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Vedere le attività";
 
-/* loco:69b422d7b7de08855d023d32 */
-"buttonSelectFolder" = "Selezionare una cartella";
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Selezionare le cartelle";
@@ -178,6 +186,7 @@
 
 /* loco:69a7ecff1619fbbe5a0c75b3 */
 "buttonStart" = "Inizio";
+
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Iniziare gratuitamente";
 
@@ -189,8 +198,12 @@
 
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Confermare";
+
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Risveglio";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"changeFolder" = "Cambiare la cartella";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
@@ -262,11 +275,13 @@
 
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Modalità di sincronizzazione dei file";
 
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Definire le modalità di archiviazione e accesso ai file.";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Preferiti";
 
@@ -284,6 +299,7 @@
 
 /* loco:698b1185c1341f8509093624 */
 "forThreeDays" = "Per tre giorni";
+
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Ciao %@, %@";
 
@@ -408,6 +424,7 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Mai";
+
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Impostare la sincronizzazione per questo kDrive";
 
@@ -509,6 +526,7 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interno";
+
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Conti";
 
@@ -553,6 +571,12 @@
 
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Errore di sincronizzazione";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Cartella personalizzata";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Posizione predefinita";
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronizzazione";

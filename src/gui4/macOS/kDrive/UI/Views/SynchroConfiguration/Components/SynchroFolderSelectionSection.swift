@@ -49,7 +49,7 @@ struct SynchroFolderSelectionSection: View {
                 .foregroundStyle(ColorToken.Text.primary.asColor)
 
                 HStack {
-                    Button(KDriveLocalizable.buttonSelectFolder) {
+                    Button(KDriveLocalizable.buttonChangeFolder) {
                         isShowingFileImporter = true
                     }
                     .buttonStyle(.borderedProminent)

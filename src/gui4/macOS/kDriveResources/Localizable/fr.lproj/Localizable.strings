@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Mar 2026 08:29:44 +0100
+ * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
  */
 
 
@@ -48,7 +48,7 @@
 "addAdvancedSyncDialogTitle" = "Synchroniser un dossier avec kDrive";
 
 /* loco:69b422a8be3506a1a305ba12 */
-"addAdvancedSyncLocalFolderDescription" = "Choisissez le dossier de votre ordinateur à synchronisés sur kDrive :";
+"addAdvancedSyncLocalFolderDescription" = "Choisissez le dossier de votre ordinateur à synchroniser sur kDrive :";
 
 /* loco:69b42298791d2c19c40f4e92 */
 "addAdvancedSyncLocalFolderTitle" = "Dossier synchronisé";
@@ -108,6 +108,7 @@
 
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Programme bêta";
+
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
 
@@ -116,6 +117,9 @@
 
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Annuler";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Modifier le dossier";
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Fermer";
@@ -135,8 +139,6 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
 
-/* loco:698c5b6872ce37700303dac2 */
-"buttonDefaultLocation" = "Emplacement par défaut";
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Déconnecter ce compte";
@@ -199,14 +201,15 @@
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Réessayer";
 
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Revenir au dossier par défaut";
+
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Recherche";
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Voir les activités";
 
-/* loco:69b422d7b7de08855d023d32 */
-"buttonSelectFolder" = "Sélectionner un dossier";
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Sélectionner les dossiers";
@@ -236,6 +239,9 @@
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Réveil";
 
+/* loco:69c0f0398ae1831b640e5a62 */
+"changeFolder" = "Modifier le dossier";
+
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copie du lien…";
 
@@ -253,6 +259,7 @@
 
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Ne pas adhérer";
+
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Vous n'avez pas la permission d'accéder à ce kDrive.\nVeuillez vérifier vos autorisations ou contacter votre administrateur.";
 
@@ -305,11 +312,13 @@
 
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Mode de synchronisation des fichiers";
 
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Définissez comment vos fichiers sont stockés et accessibles.";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoris";
 
@@ -327,6 +336,7 @@
 
 /* loco:698b1185c1341f8509093624 */
 "forThreeDays" = "Pendant trois jours";
+
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Bonjour %@, %@";
 
@@ -451,6 +461,7 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Jamais";
+
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Configurer la synchronisation pour ce kDrive";
 
@@ -590,6 +601,12 @@
 
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Erreur de synchronisation";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Dossier personnalisé";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Emplacement par défaut";
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Synchronisation";

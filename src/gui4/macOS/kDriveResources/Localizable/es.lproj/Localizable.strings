@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 20 Mar 2026 08:29:44 +0100
+ * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
  */
 
 
@@ -73,11 +73,15 @@
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Cancelar";
 
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Cambiar la carpeta";
+
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Cerrar";
 
 /* loco:698c5e4ec95ac47af70ec115 */
-"buttonConfigure" = "Configure";
+"buttonConfigure" = "Configurar";
+
 
 /* loco:698b1376f55227e2c30a2fe4 */
 "buttonConnectAccount" = "Conectar una cuenta";
@@ -91,8 +95,6 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Crear una cuenta";
 
-/* loco:698c5b6872ce37700303dac2 */
-"buttonDefaultLocation" = "Ubicación por defecto";
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Desconectar esta cuenta";
@@ -155,14 +157,15 @@
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Reintentar";
 
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Volver a la carpeta por defecto";
+
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Buscar en";
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Ver actividades";
 
-/* loco:69b422d7b7de08855d023d32 */
-"buttonSelectFolder" = "Seleccione una carpeta";
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Seleccionar carpetas";
@@ -191,6 +194,9 @@
 "buttonValidate" = "Confirme";
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Despierta";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"changeFolder" = "Cambiar la carpeta";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copiando enlace…";
@@ -488,7 +494,7 @@
 "onboardingLoginProcessingDescription" = "Recuperar su información..";
 
 /* loco:698c68dd53b356ce140d32a2 */
-"onboardingLoginProcessingTitle" = "Un momento..";
+"onboardingLoginProcessingTitle" = "Un momento…";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "¡Bienvenido a kDrive!";
@@ -560,6 +566,12 @@
 
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Error de sincronización";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Carpeta personalizada";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Ubicación por defecto";
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronización";
