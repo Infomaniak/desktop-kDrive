@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class TemplateExclusionPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get => _viewModel; }
         private ExclusionTemplateListModel? _templateListModel;
         public Drive? ManagedDrive { get; set; }
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
                 PrimaryButtonText = Localizer.Instance.GetString("dialogNewExclusionRulePrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
                 DefaultButton = ContentDialogButton.Primary
             };
 
@@ -177,7 +177,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             exclusionTemplate.Warning = toggleSwitch.IsOn;
-            _ = _templateListModel.SaveUserTemplates();
+            _templateListModel.SaveUserTemplates();
         }
     }
 }

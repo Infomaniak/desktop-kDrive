@@ -52,7 +52,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 AddIfNotEmpty("Cancel Type:", Error.CancelType);
                 AddIfNotEmpty("Auto-resolved:", Error.AutoResolved);
 
-                DetailsTextBlock.Text = lines.Count > 0 
+                DetailsTextBlock.Text = lines.Count > 0
                     ? string.Join(Environment.NewLine, lines)
                     : "No additional error details available.";
             }
@@ -67,7 +67,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.HelpDeskUri);
+            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
             await Task.Delay(1000);
             if (control is not null)
                 control.IsEnabled = true;

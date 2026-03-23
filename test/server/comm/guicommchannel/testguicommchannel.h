@@ -81,7 +81,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeSubFolders2Job);
         CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+        CPPUNIT_TEST(testNodeConflictInfoJob);
         CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testErrorResolveConflictsJob);
+        CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
         CPPUNIT_TEST(testExclTemplSetUserListJob);
@@ -160,7 +163,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeSubFolders2Job();
         void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
+        void testNodeConflictInfoJob();
         void testErrorInfoListJob();
+        void testErrorResolveConflictsJob();
+        void testErrorResolveConflictsQuickJob();
         void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();
         void testExclTemplSetUserListJob();

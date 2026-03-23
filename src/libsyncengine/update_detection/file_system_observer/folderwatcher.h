@@ -54,9 +54,7 @@ class FolderWatcher {
         bool _ready{false};
 
     private:
-        static void executeFunc(void *thisWorker);
-
-        std::unique_ptr<std::thread> _thread = nullptr;
+        std::unique_ptr<StdLoggingThread> _thread{nullptr};
         ExitInfo _exitInfo = ExitCode::Ok;
 };
 

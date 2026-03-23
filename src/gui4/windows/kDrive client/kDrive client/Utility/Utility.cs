@@ -161,6 +161,21 @@ namespace Infomaniak.kDrive
             }
         }
 
+        public static void SetWindowCurrentSize(Window window, int width, int height)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            if (appWindow is not null)
+            {
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
+            }
+        }
+
         // Convert any enum value to a string
         public static string ToString(Enum value)
         {
@@ -181,14 +196,15 @@ namespace Infomaniak.kDrive
 
         public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
         {
-            ContentDialog dialog = new ContentDialog();
-
-            dialog.XamlRoot = xamlRoot;
-            dialog.Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title");
-            dialog.PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText");
-            dialog.DefaultButton = defaultButton;
-            dialog.Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content");
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = xamlRoot,
+                Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
+                PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText"),
+                SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText"),
+                DefaultButton = defaultButton,
+                Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content")
+            };
             return dialog;
         }
 
@@ -301,7 +317,7 @@ namespace Infomaniak.kDrive
             ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
         }
 
-        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null)
+        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null, TimeSpan? maxDuration = null /* default is 5s*/)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -344,7 +360,7 @@ namespace Infomaniak.kDrive
 
             // ---- Auto close after 5 seconds ----
             _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            _autoCloseTimer.Interval = TimeSpan.FromSeconds(5);
+            _autoCloseTimer.Interval = maxDuration ?? TimeSpan.FromSeconds(5);
             _autoCloseTimer.IsRepeating = false;
             _autoCloseTimer.Tick += (_, _) =>
             {

@@ -165,8 +165,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
-
+        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, SyncPal::PauseCaller caller = SyncPal::PauseCaller::Sync,
+                                           SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         void clearSyncCacheMap() { _syncCacheMap.clear(); }
         void triggerSyncProgressUpdate() { clearSyncCacheMap(); }
 
@@ -227,6 +227,17 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
         }
 
+    protected:
+        // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests
+        std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo =
+                static_cast<ExitInfo (*)(User &user, bool &updated)>(&ServerRequests::loadUserInfo);
+        std::function<ExitInfo(Account &account, bool &updated)> _loadAccountInfo =
+                static_cast<ExitInfo (*)(Account &account, bool &updated)>(&ServerRequests::loadAccountInfo);
+        std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                               bool &quotaUpdated)>
+                _loadDriveInfo = static_cast<ExitInfo (*)(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId,
+                                                          bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
+
     private:
         AuthorizationCodeEventFilter _eventFilter;
 
@@ -275,8 +286,16 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitInfo updateUserInfo(User &user);
         ExitInfo updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateUser(User &user);
+        ExitInfo createAccount(Account &newAccount);
+        ExitInfo updateAccount(Account &account);
+        ExitInfo updateDrive(const User &user, const Account &account, Drive &drive);
+        ExitInfo handleDriveAccessDenied(const Drive &drive);
+        ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
+                                                  Drive &drive, bool &driveUpdated);
+
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
@@ -289,28 +308,28 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                                 bool &syncUpdated);
 
-        void sendUserAdded(const UserInfo &userInfo) const;
-        void sendUserUpdated(const UserInfo &userInfo) const;
-        void sendUserStatusChanged(int userDbId, bool connected, QString connexionError) const;
-        void sendUserRemoved(int userDbId) const;
-        void sendAccountAdded(const AccountInfo &accountInfo) const;
-        void sendAccountUpdated(const AccountInfo &accountInfo) const;
-        void sendAccountRemoved(int accountDbId) const;
-        void sendDriveAdded(const DriveInfo &driveInfo) const;
-        void sendDriveUpdated(const DriveInfo &driveInfo) const;
-        void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) const;
-        void sendDriveRemoved(int driveDbId) const;
-        void sendDriveDeletionFailed(int driveDbId) const;
-        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const;
-        void sendSyncAdded(const SyncInfo &syncInfo) const;
-        void sendSyncUpdated(const SyncInfo &syncInfo) const;
-        void sendSyncRemoved(int syncDbId) const;
-        void sendSyncDeletionFailed(int syncDbId) const;
-        void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
-        void sendErrorsCleared(int syncDbId) const;
-        void sendQuit() const; // Ask client to quit
-        void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
-        void sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const;
+        virtual void sendUserAdded(const UserInfo &userInfo) const;
+        virtual void sendUserUpdated(const UserInfo &userInfo) const;
+        virtual void sendUserStatusChanged(int userDbId, bool connected, QString connexionError) const;
+        virtual void sendUserRemoved(int userDbId) const;
+        virtual void sendAccountAdded(const AccountInfo &accountInfo) const;
+        virtual void sendAccountUpdated(const AccountInfo &accountInfo) const;
+        virtual void sendAccountRemoved(int accountDbId) const;
+        virtual void sendDriveAdded(const DriveInfo &driveInfo) const;
+        virtual void sendDriveUpdated(const DriveInfo &driveInfo) const;
+        virtual void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) const;
+        virtual void sendDriveRemoved(int driveDbId) const;
+        virtual void sendDriveDeletionFailed(int driveDbId) const;
+        virtual void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const;
+        virtual void sendSyncAdded(const SyncInfo &syncInfo) const;
+        virtual void sendSyncUpdated(const SyncInfo &syncInfo) const;
+        virtual void sendSyncRemoved(int syncDbId) const;
+        virtual void sendSyncDeletionFailed(int syncDbId) const;
+        virtual void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
+        virtual void sendErrorsCleared(int syncDbId) const;
+        virtual void sendQuit() const; // Ask client to quit
+        virtual void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
+        virtual void sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const;
 
         void deleteAccount(int accountDbId);
         void sendErrorAdded(const ErrorInfo &errorInfo) const;

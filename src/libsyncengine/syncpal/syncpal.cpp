@@ -322,7 +322,10 @@ ExitCode SyncPal::clearNodes() {
 }
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
-    auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
+    handlePropagatorJobsCompletion(SyncJobManagerSingleton::instance()->getJob(jobId));
+}
+
+void SyncPal::handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr) {
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
@@ -334,7 +337,6 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
             LOG_SYNCPAL_INFO(_logger, "Job aborted, not restarting SyncPal");
             return;
         }
-
         std::shared_ptr<AbstractPropagatorJob> abstractJob = std::dynamic_pointer_cast<AbstractPropagatorJob>(jobPtr);
         if (abstractJob && abstractJob->restartSyncPal()) {
             LOG_SYNCPAL_INFO(_logger, "Restarting SyncPal");
@@ -782,15 +784,12 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
+ExitCode SyncPal::cancelAllDlDirectJobs() {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
     const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
-        if (quit) {
-            directDownloadJobsMapElt.second->setAdditionalCallback(nullptr);
-        }
         directDownloadJobsMapElt.second->abort();
     }
 
@@ -1065,7 +1064,31 @@ ExitCode SyncPal::excludeListUpdated() {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList) {
+ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
+                                           const std::vector<Error> &keepRemoteErrorList) {
+    setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
+    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+    SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
+    return ExitCode::Ok;
+}
+
+ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                      std::vector<int32_t> &removedErrorsDbIds) {
+    setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
+    ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
+
+    if (exitInfo) removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+
+    handlePropagatorJobsCompletion(_conflictingFilesCorrector);
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
+        return exitInfo.code();
+    }
+    return ExitCode::Ok;
+}
+
+void SyncPal::setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
+                                             const std::vector<Error> &keepRemoteErrorList) {
     bool restartSync = isRunning();
     if (restartSync) {
         stop();
@@ -1077,12 +1100,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
         restartSync = _conflictingFilesCorrector->restartSyncPal();
     }
 
-    _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
+    _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalErrorList, keepRemoteErrorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
-    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
-    SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
-
-    return ExitCode::Ok;
 }
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
@@ -1212,7 +1231,7 @@ int64_t SyncPal::pauseDuration() const {
     return defaultPauseDuration; // Default: 1 min
 }
 
-void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
+void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
             // Stop main worker
@@ -1222,12 +1241,12 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     }
 
     // Stop direct download jobs
-    cancelAllDlDirectJobs(quit);
+    (void) cancelAllDlDirectJobs();
 
-    if (pausedByUser) {
+    if (caller == PauseCaller::User) {
         // Set paused flag
-        ExitCode exitCode = setSyncPaused(true);
-        if (exitCode != ExitCode::Ok) {
+
+        if (const auto exitCode = setSyncPaused(true); exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
             addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         }
@@ -1239,7 +1258,7 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     // Free shared objects
     freeSharedObjects();
 
-    _syncDb->setAutoDelete(clear);
+    _syncDb->setAutoDelete(behavior == DbBehaviorAfterStop::Remove);
 }
 
 bool SyncPal::isPaused() const {
@@ -1417,7 +1436,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+            if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
                 LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed with: " << Utility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
             }

@@ -13,6 +13,8 @@ namespace Infomaniak.kDrive.Converters
                 valueAsBool = boolValue;
             else if (value is int intValue)
                 valueAsBool = intValue != 0;
+            else if (value is null)
+                valueAsBool = false;
             else
                 throw new InvalidOperationException("Value must be a boolean or an integer.");
 

@@ -35,13 +35,10 @@
 
     <toolKit:SettingsExpander.Items>
         <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
-                              Header="{x:Bind kDrive:Localizer.Instance.GetString1s('labelKDriveVersion', DisplayedVersion.Tag), Mode=OneWay}"
-                              Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                              Header="{x:Bind kDrive:Localizer.Instance.GetString1s('labelKDriveVersion', ViewModel.Settings.AppVersion.Tag), Mode=OneWay}">
             <toolKit:SettingsCard.Description>
-                <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
+                <local:LicensesHyperlink DisplayedVersion="{x:Bind ViewModel.Settings.AppVersion, Mode=OneWay}" />
             </toolKit:SettingsCard.Description>
-            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonReleaseNotes'), Mode=OneWay}"
-                             NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
         <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('automaticUpdatesSetting'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}"
@@ -57,7 +54,7 @@
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('joinBetaProgram'), Mode=OneWay}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaSettings'), Mode=OneWay}"
                               Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"

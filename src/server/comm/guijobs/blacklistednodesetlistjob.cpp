@@ -50,23 +50,19 @@ ExitInfo BlacklistedNodeSetListJob::deserializeInputParms() {
 }
 
 ExitInfo BlacklistedNodeSetListJob::process() {
-    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-    auto &syncPalMap = _commManager->appServer().syncPalMap;
-    auto it = syncPalMap.find(_syncDbId);
-    if (it == syncPalMap.end()) {
-        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        return exitInfo;
     }
-
     NodeSet nodeIdSet;
     nodeIdSet.insert(_nodeIdList.begin(), _nodeIdList.end());
-    if (ExitInfo exitInfo = it->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
+    if (ExitInfo exitInfo = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
         LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: setSyncIdSet failed for syncDbId=" << _syncDbId);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
 
-    if (ExitInfo exitInfo = it->second->syncListUpdated(it->second->isRunning()); !exitInfo) {
+    if (ExitInfo exitInfo = syncPal->syncListUpdated(syncPal->isRunning()); !exitInfo) {
         LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: syncListUpdated failed for syncDbId=" << _syncDbId);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;

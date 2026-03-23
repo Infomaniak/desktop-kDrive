@@ -146,7 +146,7 @@ ExitCode GuiRequests::resolveConflictErrors(const int driveDbId, const bool keep
     paramsStream << keepLocalVersion;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -163,7 +163,7 @@ ExitCode GuiRequests::resolveUnsupportedCharErrors(const int driveDbId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -836,7 +836,7 @@ ExitCode GuiRequests::createMissingFolders(int driveDbId, const QList<QPair<QStr
     paramsStream << serverFolderList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 

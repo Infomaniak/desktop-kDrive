@@ -7,14 +7,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using Windows.System;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -100,7 +96,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             try
             {
-                var result = await commService.SearchItem(ViewModel.SelectedSync.DbId, sender.Text, token);
+                var result = await commService.SearchItem(ViewModel.SelectedSync, sender.Text, token);
                 if (token.IsCancellationRequested)
                 {
                     return;
@@ -121,8 +117,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
                 }
 
-                List<ISearchBoxResultItem> items = new();
-
+                List<ISearchBoxResultItem> items = [];
                 if (result.Count == 0)
                 {
                     items.Add(new SearchBoxNotFoundItem());
@@ -161,10 +156,22 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            sender.Text = "";
 
-            if (args.ChosenSuggestion is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
+            ISearchBoxResultItem? resultItem = args.ChosenSuggestion as ISearchBoxResultItem;
+
+            // If the user has not selected a suggestion, attempt to find an exact match in the suggestion list.
+            // Otherwise, use the first suggestion if available. If no suggestions exist, there is no result to process.
+            IEnumerable<ISearchBoxResultItem>? currentSuggestions = sender.ItemsSource as IEnumerable<ISearchBoxResultItem>;
+            if (resultItem is null)
+                resultItem = currentSuggestions?.FirstOrDefault(i => i.SearchItem?.Name == sender.Text);
+
+            if (resultItem is null)
+                resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions.ElementAt(0) : null;
+
+            sender.Text = "";
+            if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
+                Logger.Log(Logger.Level.Info, "QuerySubmitted but no result match the query.");
                 return;
             }
 

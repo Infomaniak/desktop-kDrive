@@ -4,10 +4,12 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -65,7 +67,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, [], cancellationToken);
             if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
@@ -122,9 +124,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, [], cancellationToken).ConfigureAwait(false);
 
-            if (!CheckJobResultAndLogIfError(data, new JsonObject()))
+            if (!CheckJobResultAndLogIfError(data, []))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.UserInfoList))
@@ -191,7 +193,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshAccounts(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.ACCOUNT_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ACCOUNT_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -249,7 +251,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshDrives(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -398,7 +400,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> RefreshSyncs(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, [], cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -650,11 +652,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return result;
         }
-        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        public async Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path)
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.SyncConfiguration] = (int)syncConfiguration
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -674,11 +677,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
+        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
         {
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sync is null.");
+                return null;
+            }
+
             var parms = new JsonObject
             {
-                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.SyncDbId] = sync.DbId,
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
@@ -718,6 +727,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.Name!,
                     item.Type!.Value,
                     item.Path!,
+                    System.IO.Path.Combine(sync.Drive.Name, item.Path!),
                     item.ModifiedTime!.Value,
                     item.Size!.Value,
                     item.IsAvailableLocally!.Value
@@ -876,6 +886,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(parentNodeId))
+                parentNodeId = App.Constants.Drive.RootNodeId;
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = drive.UserDbId,
+                [JsonKeys.DriveId] = drive.DriveId,
+                [JsonKeys.ParentNodeId] = Utility.ToBase64String(parentNodeId),
+                [JsonKeys.RelativePath] = Utility.ToBase64String(path),
+
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CREATEMISSINGFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeId))
+                return null;
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new Base64StringJsonConverter());
+            NodeId? nodeId = data.Params[JsonKeys.NodeId].Deserialize<NodeId>(options);
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}");
+                return null;
+            }
+
+            return nodeId;
+        }
+
         public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -910,15 +952,48 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
+        public async Task<NodeConflictInfo?> GetNodeConflictInfo(DbId syncDbId, string relativePath, ReplicaSide replicaSide, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.RelativePath] = Utility.ToBase64String(relativePath),
+                [JsonKeys.ReplicaSide] = (int)replicaSide
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CONFLICT_INFO, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeConflictInfo))
+                return null;
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new IntToDateTimeConverter());
+
+            NodeConflictInfo? nodeVersionInfo = data.Params[JsonKeys.NodeConflictInfo].Deserialize<NodeConflictInfo>(options);
+            if (nodeVersionInfo is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeConflictInfo]}.");
+                return null;
+            }
+
+            return nodeVersionInfo;
+        }
+
         public async Task<bool> StartUpdate(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, [], cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data);
         }
+
         public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
             // First check the update state
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -932,6 +1007,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
+            // UpdateState.NoUpdate means that the current setup does not allow for updates at all, so we should disable update functionality in the UI and clear any available update info.
             if (updateState == UpdateState.NoUpdate)
             {
                 _viewModel.Settings.UpdateManager.UpdateEnabled = false;
@@ -940,15 +1016,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             _viewModel.Settings.UpdateManager.UpdateEnabled = true;
 
-            List<UpdateState> notReadyStates = new List<UpdateState>
-            {
+            List<UpdateState> notReadyStates =
+            [
                 UpdateState.UpToDate,
                 UpdateState.Available,
                 UpdateState.Downloading,
                 UpdateState.CheckError,
                 UpdateState.DownloadError,
                 UpdateState.UpdateError
-            };
+            ];
 
             if (notReadyStates.Contains(updateState.Value))
             {
@@ -958,12 +1034,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (updateState == UpdateState.Checking)
             {
-                // If we are currently checking for updates but we already have update info, we can keep showing the update info without refreshing it to avoid UI flickering.
-                // We will refresh the update info once the state changes to something other than checking.
                 return true;
             }
 
-            // If we are here, it means we are in a state where an update is available but not being checked for, which means we should have the update info available and can refresh it.
+            // If we are here, it means we are in a state where an update is available, we can fetch the version details.
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
             {
@@ -1010,13 +1084,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> CancelLogUpload(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT, [], cancellationToken);
             return CheckJobResultAndLogIfError(data);
         }
 
         public async Task<bool> RefreshSettings(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, [], cancellationToken);
             if (!CheckJobResultAndLogIfError(data))
                 return false;
 
@@ -1040,14 +1114,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<bool> ActivateLoadInfo(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, [], cancellationToken);
             return CheckJobResultAndLogIfError(data);
         }
 
         public async Task Exit()
         {
             // Try and forget, no need to wait for response on exit
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, new JsonObject { }, CancellationToken.None);
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, [], CancellationToken.None);
         }
 
         public async Task<bool> SaveSettings(CancellationToken cancellationToken)
@@ -1081,7 +1155,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken)
         {
-            List<ExclusionTemplate> result = new();
+            List<ExclusionTemplate> result = [];
 
             foreach (bool def in new bool[] { false, true })
             {
@@ -1162,6 +1236,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
+        public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.KeepLocalErrorDbIdList] = JsonSerializer.SerializeToNode(keepLocalErrorDbIds),
+                [JsonKeys.KeepRemoteErrorDbIdList] = JsonSerializer.SerializeToNode(keepRemoteErrorDbIds)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.ErrorDbIdList] = JsonSerializer.SerializeToNode(errorDbIds),
+                [JsonKeys.Strategy] = (int)strategy
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1212,6 +1308,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
                     await HandleLogUploadProgressAsync(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_NOTIFICATION:
+                    await HandleUtilityShowNotification(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -1525,19 +1624,40 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
 
+                Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
+                {
+                    // We never want to remove an item that as sucessfully completed
+                    if (item.Status == SyncFileStatus.Success)
+                        return false;
+
+
+                    if (Error.IsConflictUserResolvable(item.Conflict) && !sync.SyncErrors.Any(e => e.IsConflictUserResolvable() && e.Path == item.Path))
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.RemoteNodeId) && !string.IsNullOrEmpty(item.RemoteNodeId) && info.RemoteNodeId == item.RemoteNodeId && !Error.IsConflictUserResolvable(item.Conflict))
+                        return true;
+
+                    if (!string.IsNullOrEmpty(info.LocalNodeId) && !string.IsNullOrEmpty(item.LocalNodeId) && info.LocalNodeId == item.LocalNodeId)
+                        return true;
+
+                    if (!sync.SyncErrors.Any(e => e.Path == item.Path))
+                        return true;
+
+                    return false;
+                };
+
                 // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
-                var toBeRemoved = activities.Where(a => (a.Status == fileItemInfo.Status || a.Status != SyncFileStatus.Success && ((!string.IsNullOrEmpty(a.LocalNodeId) && a.LocalNodeId == fileItemInfo.LocalNodeId) || (!string.IsNullOrEmpty(a.RemoteNodeId) && a.RemoteNodeId == fileItemInfo.RemoteNodeId))));
+                var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 
                 // Create new item
-                var newItem = new SyncFileItem(sync);
-                CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, newItem);
+                var newItem = new SyncFileItem(sync, fileItemInfo);
 
                 const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
                 if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
-                    activities.Insert(Math.Clamp(destIndex + 1, 0, activities.Count), newItem);
+                    activities.Insert(Math.Clamp(destIndex, 0, activities.Count), newItem);
                 }
                 else
                 {
@@ -1644,6 +1764,43 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+        }
+
+        public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
+                return;
+            }
+            string? title = signalData[JsonKeys.Title]?.GetValue<string>();
+            string? message = signalData[JsonKeys.Message]?.GetValue<string>();
+
+            // Decode base64 encoded 
+            try
+            {
+                title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
+                message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            }
+            catch (FormatException ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+
+            if (title is null || message is null)
+            {
+                Logger.Log(Logger.Level.Error, "title or message is null.");
+                return;
+            }
+
+            App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
         }
 
         // Helpers
@@ -1758,7 +1915,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             await AutoRetry(async Task<bool> () =>
             {
-                List<Drive> allDrives = new();
+                List<Drive> allDrives = [];
                 foreach (var user in _viewModel.Users)
                 {
                     allDrives.AddRange(user.Drives);

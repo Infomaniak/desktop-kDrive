@@ -313,7 +313,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
@@ -347,7 +347,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
@@ -396,7 +396,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
@@ -505,7 +505,8 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError,
+                                                                              IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
@@ -588,7 +589,8 @@ void TestNetworkJobs::testDownload() {
         // Check that the file has been copied
         bool exists = false;
         IoError error = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error, IoHelper::PathCheckOption::Insensitive) &&
+                       exists);
 
         // Check that the tmp file has been deleted
         CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
@@ -597,7 +599,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
@@ -628,7 +630,8 @@ void TestNetworkJobs::testDownload() {
         // Check that the file has been copied
         bool exists = false;
         IoError error = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error) && exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(localDestFilePath, exists, error, IoHelper::PathCheckOption::Insensitive) &&
+                       exists);
 
         // Check that the tmp file has been deleted
         CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
@@ -637,7 +640,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 #if defined(KD_MACOS) or defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
@@ -675,7 +678,7 @@ void TestNetworkJobs::testDownload() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError);
+            IoHelper::getFileStat(localDestFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, creationTimeIn.count());
             CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, modificationTimeIn.count());
@@ -1125,7 +1128,7 @@ void TestNetworkJobs::testUpload(const SyncTime creationTimeIn, const SyncTime m
 
     bool exist = false;
     FileStat fileStat;
-    IoHelper::getFileStat(localFilePath, &fileStat, exist);
+    IoHelper::getFileStat(localFilePath, &fileStat, exist, IoHelper::PathCheckOption::Insensitive);
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
     UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), creationTimeIn,
@@ -1273,7 +1276,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 97);
     bool exist = false;
     FileStat fileStat;
-    IoHelper::getFileStat(localFilePath, &fileStat, exist);
+    IoHelper::getFileStat(localFilePath, &fileStat, exist, IoHelper::PathCheckOption::Insensitive);
 
     DriveUploadSession driveUploadSessionJobCreate(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
                                                    remoteTmpDir.id(), fileStat.creationTime, fileStat.modificationTime, false, 1);
@@ -1288,7 +1291,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Edit");
 
     testhelpers::generateOrEditTestFile(localFilePath);
-    IoHelper::getFileStat(localFilePath, &fileStat, exist);
+    IoHelper::getFileStat(localFilePath, &fileStat, exist, IoHelper::PathCheckOption::Insensitive);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
                                                  driveUploadSessionJobCreate.nodeId(), fileStat.modificationTime, false, 1);
@@ -1322,7 +1325,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
 
     bool exist = false;
     FileStat fileStat;
-    IoHelper::getFileStat(localFilePath, &fileStat, exist);
+    IoHelper::getFileStat(localFilePath, &fileStat, exist, IoHelper::PathCheckOption::Insensitive);
 
     DriveUploadSession driveUploadSessionJobEdit(nullptr, _driveDbId, nullptr, localFilePath,
                                                  driveUploadSessionJobCreate.nodeId(), testhelpers::defaultTime + 1, false, 3);
@@ -1533,7 +1536,7 @@ bool TestNetworkJobs::createTestFiles() {
     // Extract local file ID
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    IoHelper::getFileStat(_dummyLocalFilePath, &fileStat, ioError);
+    IoHelper::getFileStat(_dummyLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     _dummyLocalFileId = std::to_string(fileStat.inode);
 

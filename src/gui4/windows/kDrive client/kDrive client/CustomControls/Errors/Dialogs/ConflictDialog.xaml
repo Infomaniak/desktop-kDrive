@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.CustomControls.Errors.ConflictDialog"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
+
+    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                MinWidth="600">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictDialogTitle')}"
+                       Style="{StaticResource TitleTextBlockStyle}"
+                       TextWrapping="Wrap" />
+
+            <Border Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XL}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                    Visibility="{x:Bind ViewModel.HasMultipleConflicts, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1i2i('labelXoverY', ViewModel.CurrentErrorIndex, ViewModel.TotalErrors), Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
+            </Border>
+        </Grid>
+        <!-- File name badge -->
+        <controls:ItemNamePresenter ItemPath="{x:Bind ViewModel.CurrentError.Path, Mode=OneWay}"
+                                    NodeType="{x:Bind ViewModel.CurrentError.NodeType}" />
+
+        <!-- Question -->
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConflictDialogQuestion')}"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
+                   TextWrapping="Wrap" />
+
+        <!-- Version cards -->
+        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <controls:ConflictVersionPresenter x:Name="RemoteVersionPresenter"
+                                               Grid.Column="0"
+                                               IsRemote="True"
+                                               Selected="RemoteVersionPresenter_Selected"
+                                               Unselected="RemoteVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.RemoteVersionInfo, Mode=OneWay}"
+                                               NodeAbsolutePath="{x:Bind ViewModel.RemoteVersionAbsolutePath, Mode=OneWay}"
+                                               ShowMostRecentBadge="{x:Bind ViewModel.RemoteIsMostRecent, Mode=OneWay}" />
+
+            <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
+                                               Grid.Column="1"
+                                               IsRemote="False"
+                                               Selected="LocalVersionPresenter_Selected"
+                                               Unselected="LocalVersionPresenter_Unselected"
+                                               NodeInfo="{x:Bind ViewModel.LocalVersionInfo, Mode=OneWay}"
+                                               NodeAbsolutePath="{x:Bind ViewModel.LocalVersionAbsolutePath, Mode=OneWay}"
+                                               ShowMostRecentBadge="{x:Bind ViewModel.LocalIsMostRecent, Mode=OneWay}" />
+        </Grid>
+    </StackPanel>
+</Page>

@@ -46,6 +46,18 @@ class MCKXPCGuiProtocol: XPCGuiProtocol {
     }
 }
 
+class MCKXPCGuiProtocolWithData: XPCGuiProtocol {
+    init(responseData: Data) {
+        self.responseData = responseData
+    }
+
+    let responseData: Data
+
+    func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {
+        callback(responseData)
+    }
+}
+
 struct MCKXPCConnectionProvider: XPCConnectionProvider {
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
@@ -54,6 +66,18 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
     var guiConnection: XPCGuiProtocol {
         get async throws {
             MCKXPCGuiProtocol(payloadFileName: payloadFileName)
+        }
+    }
+}
+
+struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
+    var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
+    let responseData: Data
+
+    var guiConnection: XPCGuiProtocol {
+        get async throws {
+            MCKXPCGuiProtocolWithData(responseData: responseData)
         }
     }
 }
@@ -108,7 +132,16 @@ struct XPCQueryFetcherTests {
     @Test(arguments: allResponseTypes)
     func decodingSomeErrorResponse(queryType: any SendableCodable.Type) async throws {
         // GIVEN
-        let mockedConnectionProvider = MCKXPCConnectionProvider(payloadFileName: "QuotaExceededError")
+        let errorCallback = CallbackMessage<EmptyResponse>(
+            code: KDC.ExitCode.BackError,
+            cause: KDC.ExitCause.QuotaExceeded,
+            id: Int32.random(in: Int32.min ... Int32.max),
+            body: EmptyResponse()
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(errorCallback)
+        let mockedConnectionProvider = MCKXPCConnectionProviderWithData(responseData: data)
         let queryFetcher = XPCQueryFetcher(xpcConnectionProvider: mockedConnectionProvider)
         let query = EmptyQuery()
 

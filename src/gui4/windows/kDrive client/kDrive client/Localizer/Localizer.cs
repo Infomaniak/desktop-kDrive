@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Infomaniak.kDrive
@@ -9,7 +10,7 @@ namespace Infomaniak.kDrive
     internal class Localizer : UISafeObservableObject
     {
         public static Localizer Instance { get; } = new Localizer();
-        private static ResourceContext context = ResourceContext.GetForViewIndependentUse();
+        private static readonly ResourceContext context = ResourceContext.GetForViewIndependentUse();
 
         public void SetLanguage(Types.Language language)
         {
@@ -51,9 +52,22 @@ namespace Infomaniak.kDrive
             OnPropertyChanged(nameof(IsValidKey));
         }
 
+        // The below methods are helper methods to call GetString with a specific number of arguments of specific types,
+        // to make it easier to use in XAML bindings.
+        // They simply forward the call to GetString with the appropriate arguments.
         public string GetString1s(string key, string arg1)
         {
             return GetString(key, new object?[] { arg1 });
+        }
+
+        public string GetString1i(string key, int arg1)
+        {
+            return GetString(key, new object?[] { arg1 });
+        }
+
+        public string GetString1i2i(string key, int arg1, int arg2)
+        {
+            return GetString(key, new object?[] { arg1, arg2 });
         }
 
         public string GetStringWithPlural1i(string key, int count, int arg1)
@@ -79,6 +93,23 @@ namespace Infomaniak.kDrive
         public string GetString(string key)
         {
             return GetString(key, null);
+        }
+
+        public async Task<bool> TryLaunchUriAsync(string uriKey)
+        {
+            string uriString = GetString(uriKey);
+
+            if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uri))
+            {
+                Logger.Log(Logger.Level.Error, $"Invalid URI string for key {uriKey}: {uriString}");
+                return false;
+            }
+
+            bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
+            if (!success)
+                Logger.Log(Logger.Level.Error, $"Failed to launch URI: {uri}");
+
+            return success;
         }
 
         public string GetString(string key, params object?[]? args)

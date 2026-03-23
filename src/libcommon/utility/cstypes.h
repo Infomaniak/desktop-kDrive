@@ -73,6 +73,13 @@ enum class ErrorLevel {
     EnumEnd
 };
 
+enum class ReplicaSide {
+    Unknown,
+    Local,
+    Remote,
+    EnumEnd
+};
+
 enum class ExitCode {
     Ok,
     Unknown,
@@ -113,6 +120,7 @@ enum class ExitCause {
     ApiErr,
     InvalidSize,
     FileExists,
+    DirExists,
     FileAccessError,
     FileLocked,
     NotEnoughDiskSpace,
@@ -301,6 +309,20 @@ enum class LogUploadState {
     Failed,
     CancelRequested,
     Canceled,
+    EnumEnd
+};
+
+enum class ConflictResolutionStrategy {
+    Unknown,
+    KeepMostRecent,
+    KeepLocal,
+    KeepRemote,
+    EnumEnd
+};
+
+enum class SyncConfiguration {
+    Classic,
+    Advanced,
     EnumEnd
 };
 

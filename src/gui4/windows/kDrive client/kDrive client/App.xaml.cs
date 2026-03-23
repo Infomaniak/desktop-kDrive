@@ -32,13 +32,14 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
-
+using Microsoft.Windows.AppNotifications;
 
 namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
         private Window? _currentWindow;
+
         public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
         {
@@ -80,7 +81,9 @@ namespace Infomaniak.kDrive
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _services.AddSingleton<UserDefaults>();
             _services.AddSingleton<TrayIconManager>();
+            _services.AddSingleton<NotificationManager>();
             _serviceProvider = _services.BuildServiceProvider();
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             Logger.StartSentry();
             InitializeComponent();
@@ -118,12 +121,14 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
                 }
             }
-
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
             CurrentWindow = new MainWindow();
             var currentWindowContent = CurrentWindow.Content;
+
+            // Initialize notifications
+            ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
             // Display splash screen
             CurrentWindow.Content = new CustomControls.SplashScreen();
@@ -156,13 +161,17 @@ namespace Infomaniak.kDrive
                 return;
             }
             CurrentWindow.Content = currentWindowContent;
-            (CurrentWindow as MainWindow)?.AppNavView?.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
             {
                 StartOnboardingIfNeeded();
             });
+        }
+
+        async void OnProcessExit(object? sender, EventArgs e)
+        {
+            await ServiceProvider.GetRequiredService<NotificationManager>().UnregisterAsync();
         }
 
         private void RegisterOAuthProtocol()

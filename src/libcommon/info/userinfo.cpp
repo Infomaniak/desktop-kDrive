@@ -28,6 +28,7 @@ static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
 static const auto userInfoEmail = "email";
 static const auto userInfoAvatar = "avatar";
+static const auto userInfoAvatarUrl = "avatarUrl";
 static const auto userInfoConnected = "isConnected";
 static const auto userInfoIsStaff = "isStaff";
 
@@ -60,6 +61,7 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
+    CommonUtility::writeValueToStruct(dstruct, userInfoAvatarUrl, CommonUtility::qStr2CommString(_avatarUrl));
 }
 
 void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -82,17 +84,21 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::readValueFromStruct(dstruct, userInfoIsStaff, _isStaff);
+
+    CommString avatarUrl;
+    CommonUtility::readValueFromStruct(dstruct, userInfoAvatarUrl, avatarUrl);
+    _avatarUrl = CommonUtility::commString2QStr(avatarUrl);
 }
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
     in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
-            userInfo._isStaff;
+            userInfo._isStaff >> userInfo._avatarUrl;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
     out << userInfo._dbId << userInfo._userId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected
-        << userInfo._isStaff;
+        << userInfo._isStaff << userInfo._avatarUrl;
     return out;
 }
 

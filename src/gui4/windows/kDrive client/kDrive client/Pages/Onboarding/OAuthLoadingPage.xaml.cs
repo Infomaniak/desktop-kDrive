@@ -1,24 +1,22 @@
 using Infomaniak.kDrive.OnBoarding;
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.Types;
-using Microsoft.UI;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class OAuthLoadingPage : Page
     {
-        private static TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
 
@@ -65,6 +63,15 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 _onboardingViewModel.PropertyChanged -= OnOnboardingViewModelPropertyChanged;
             }
+            OnBoardingWindow? onBoardingWindow = (App.Current as App)?.CurrentWindow as OnBoardingWindow;
+            if (onBoardingWindow is null)
+            {
+                Logger.Log(Logger.Level.Error, "Current window is not OnBoardingWindow - cannot reset Lottie position");
+            }
+            else
+            {
+                onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.Right);
+            }
 
             _oauthCts.Cancel();
             _oauthCts.Dispose();
@@ -84,6 +91,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async Task HandleOAuth2StateChanged(OAuth2State state)
         {
+            OnBoardingWindow? onBoardingWindow = (App.Current as App)?.CurrentWindow as OnBoardingWindow;
+
+            if (onBoardingWindow is null)
+            {
+                Logger.Log(Logger.Level.Error, "Current window is not OnBoardingWindow - cannot update UI for OAuth2State change");
+                return;
+            }
+
             switch (state)
             {
                 case OAuth2State.None:
@@ -92,18 +107,21 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.WaitingForUserAction:
+                    onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.Right);
                     TitleTextBlock.Text = Localizer.Instance.GetString("signInBrowser");
                     SubtitleTextBlock.Text = Localizer.Instance.GetString("browserSignInInstruction");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
                 case OAuth2State.ProcessingResponse:
+                    onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.FullWindow);
                     TitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginProcessingTitle");
                     SubtitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginProcessingDescription");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
                 case OAuth2State.Success:
+                    // OnBoardingWindow.LottiePosition will be set back to right when navigating from this page to avoid flickering
                     if (_onboardingViewModel?.SelectedUser is not null && await _onboardingViewModel.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                     {
                         if (_onboardingViewModel.SelectedUser.AllDrives.Any())
@@ -123,6 +141,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
+                    onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.Right);
                     TitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorTitle");
                     SubtitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorDescription");
                     RestartOAuthButton.IsEnabled = true;

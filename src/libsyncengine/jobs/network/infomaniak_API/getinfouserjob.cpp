@@ -24,11 +24,6 @@
 
 namespace KDC {
 
-static const std::string displayNameKey = "display_name";
-static const std::string emailKey = "email";
-static const std::string avatarKey = "avatar";
-static const std::string isStaffKey = "is_staff";
-
 GetInfoUserJob::GetInfoUserJob(const int userDbId) :
     AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;

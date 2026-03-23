@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>3.8.2.4</AssemblyVersion>
+    <AssemblyVersion>3.8.3.2</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -116,10 +116,22 @@
     <Page Update="CustomControls\ErrorBar.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Dialogs\ConflictVersionPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirChangedErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirAccessErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirDiskMissingErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\ConflictDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\LocalAccessErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorPresenter.xaml">
@@ -129,6 +141,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\LocalAccessError.xaml">
@@ -245,10 +260,16 @@
     <Page Update="CustomControls\ItemPathPresenter.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\SyncIcon.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\StatusBadge.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SplashScreen.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\RemoteLocationSelector.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SyncExclusionSelector.xaml">
@@ -270,6 +291,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Pages\ErrorPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\Errors\ResolveManyConflictPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
@@ -346,7 +370,7 @@
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
+      <RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <RemoveDir Directories="@(RemovingFolders)" />
   </Target>

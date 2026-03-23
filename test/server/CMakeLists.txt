@@ -63,7 +63,11 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp
@@ -100,7 +104,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
-    ${server_srcs_path}/comm/guijobs/signalnodefixconflictedfilescompletedjob.h ${server_srcs_path}/comm/guijobs/signalnodefixconflictedfilescompletedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.h ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.cpp

@@ -23,6 +23,8 @@
 #include "utility/types.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libsyncengine/jobs/network/abstracttokennetworkjob.h"
+#include "libsyncengine/requests/exclusiontemplatecache.h"
 
 #include "libparms/db/parmsdb.h"
 
@@ -68,6 +70,7 @@ void TestServerRequests::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
+    ExclusionTemplateCache::reset();
     TestBase::stop();
 }
 
@@ -93,6 +96,185 @@ void TestServerRequests::testGetPublicLink() {
     url.clear();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());
+}
+
+void TestServerRequests::testFindGoodPathForNewSync() {
+    SyncPath localTempDirPath;
+    {
+        LocalTemporaryDirectory localTempDir("testFindGoodPathForNewSync");
+        localTempDirPath = localTempDir.path();
+        const SyncPath defaultPath = localTempDirPath / APPLICATION_NAME;
+
+        // Check with a valid path
+        SyncPath returnedPath;
+        std::string error;
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT_EQUAL(defaultPath, returnedPath);
+        CPPUNIT_ASSERT(error.empty());
+
+        // Check with an existing path
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // check an already synced & existing path
+        const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
+        (void) ParmsDb::instance()->insertSync(sync);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // Check an already synced but non-existing path
+        CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+
+        // check with an already synced parent path
+        const SyncPath childPath = defaultPath / "childFolder";
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
+                             ServerRequests::findGoodPathForNewSync(childPath, returnedPath, error));
+        CPPUNIT_ASSERT(returnedPath.empty());
+        CPPUNIT_ASSERT(!error.empty());
+
+        // Check with an existing path containing an already synced child
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
+        CPPUNIT_ASSERT(!returnedPath.empty());
+        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+        CPPUNIT_ASSERT(error.empty());
+    }
+
+    // Check with a non-existing path containing an already synced child
+    SyncPath returnedPath;
+    std::string error;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
+    CPPUNIT_ASSERT(!returnedPath.empty());
+    CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+    CPPUNIT_ASSERT(error.empty());
+}
+
+void TestServerRequests::testDeleteUser() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteUser(1));
+
+    // Check that user/account/drive have been removed from db
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(1, user, found));
+    CPPUNIT_ASSERT(!found);
+
+    Account account;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(!found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that user and drive have been removed from cache
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteAccount() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteAccount(1));
+
+    // Check that account/drive have been removed from db
+    Account account;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(!found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that drive has been removed from cache but not user
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteDrive() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteDrive(1));
+
+    // Check that drive has been removed from db
+    Drive drive;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Check that drive has been removed from cache
+    CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemInvalidPath() {
+    // A non-existent path cannot be opened by the directory iterator.
+    const SyncPath nonExistentPath = _localTempDir.path() / "non_existent_dir";
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError),
+                         ServerRequests::folderContainsNonExcludedItem(nonExistentPath, containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemEmptyDir() {
+    LocalTemporaryDirectory emptyDir("folderContainsEmpty");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(emptyDir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemOnlyExcludedFiles() {
+    // Files whose names end with "~" are matched by the "*~" default exclusion template.
+    LocalTemporaryDirectory dir("folderContainsExcluded");
+    testhelpers::generateTestFile(dir.path() / "excluded_file~");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemWithNonExcludedFile() {
+    LocalTemporaryDirectory dir("folderContainsNonExcluded");
+    testhelpers::generateTestFile(dir.path() / "regular_file.txt");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
+    // Directory containing both an excluded file and a regular one.
+    LocalTemporaryDirectory dir("folderContainsMixed");
+    testhelpers::generateTestFile(dir.path() / "excluded_file~"); // matched by "*~" exclusion template
+    testhelpers::generateTestFile(dir.path() / "regular_file.txt");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(containsNonExcludedFile);
 }
 
 } // namespace KDC

@@ -6,7 +6,6 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,9 +14,6 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -119,7 +115,7 @@ namespace Infomaniak.kDrive.CustomControls
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    await Utility.OpenFolderSecurely(activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
@@ -134,10 +130,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void UpToDateLink_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
-        }
         private void ItemErrorIcon_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             Frame? frame = Utility.GetFrame(this);
@@ -221,8 +213,10 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? publicLink = await commService.GetPublicLink(activity.Sync.Drive.DbId, activity.RemoteNodeId, CancellationToken.None);
             if (publicLink is not null)
             {
-                DataPackage dataPackage = new();
-                dataPackage.RequestedOperation = DataPackageOperation.Copy;
+                DataPackage dataPackage = new()
+                {
+                    RequestedOperation = DataPackageOperation.Copy
+                };
                 dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
                 DisplayTeachingTip(Localizer.Instance.GetString("linkCopiedToClipboardTitle"), false);
@@ -262,7 +256,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             NotificationTeachingTip.IsOpen = false;
         }
-        
+
         public static string GetSyncDirectionToolTip(SyncDirection direction)
         {
             return direction switch
@@ -272,6 +266,14 @@ namespace Infomaniak.kDrive.CustomControls
                 SyncDirection.Down => Localizer.Instance.GetString("syncedFromKDriveWeb"),
                 _ => ""
             };
+        }
+
+        private Visibility GetNoActivityGridVisibility(int activityCount, int errorCount)
+        {
+            if (activityCount == 0 && errorCount == 0)
+                return Visibility.Visible;
+
+            return Visibility.Collapsed;
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector

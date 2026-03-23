@@ -30,30 +30,23 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _driveDbId = 0;
-
-        struct FolderItem {
-                void fromDynamicStruct(const Poco::DynamicStruct &);
-
-                CommString name;
-                NodeId nodeId;
-        };
-        struct MissingFoldersInfo {
-                NodeId parentNodeId;
-                NodeId firstCreatedNodeId;
-        };
-
-        std::vector<FolderItem> _folderList;
+        int32_t _userDbId = 0;
+        int32_t _driveId = 0;
+        SyncPath _relativePath;
+        NodeId _parentNodeId;
 
         // Output parameters
-        NodeId _parentNodeId;
+        NodeId _nodeId;
 
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo getMissingFoldersInfo(const FolderItem &folderItem, MissingFoldersInfo &info);
+        ExitInfo pauseDriveSyncs(std::vector<int> &pausedSyncs);
+        ExitInfo createMissingFolders(NodeId &firstCreatedNodeId);
+        ExitInfo blacklistNodeOnAllDriveSyncs(const NodeId &nodeId);
+        void resumeSyncs(const std::vector<int> &pausedSyncs);
 
         friend class TestGuiCommChannel;
 };

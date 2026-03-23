@@ -1,3 +1,6 @@
+using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.Pages.DriveSetupContentDialog;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,16 +10,12 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.Pages.Settings;
 
 public sealed partial class DriveAdvancedSyncsPage : Page
 {
-    private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+    private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     private IDrive? _baseDrive;
     private Drive? ManagedDrive { get; set; }
 
@@ -50,7 +49,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
             ManagedDrive = drive;
         }
-        else if (_viewModel.AllDrives.FirstOrDefault(d => (d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId), null) is not null)
+        else if (_viewModel.AllDrives.FirstOrDefault(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId, null) is not null)
         {
             // Can happen if a user uses the back button after setting up a new drive.
             Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -62,7 +61,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
     private void SetupNavBar(string driveName)
     {
-        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
+        NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), driveName, Localizer.Instance.GetString("advancedSyncTitle") };
     }
 
     private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -72,7 +71,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
-        else if (args.Index >= 1 && args.Index <= 2)
+        else if (args.Index == 1)
         {
             Logger.Log(Logger.Level.Debug, "Navigating to DriveManagementPage");
             Frame.Navigate(typeof(DriveManagementPage), _baseDrive);
@@ -202,5 +201,96 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             control.Foreground = null;
             control.Foreground = curentForeground;
         }
+    }
+
+    private async void AddAdvancedSyncButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_baseDrive is null)
+        {
+            Logger.Log(Logger.Level.Error, "Cannot add sync: _baseDrive is null");
+            return;
+        }
+
+        Control? control = sender as Control;
+        if (control is not null)
+            control.IsEnabled = false;
+
+        CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, _baseDrive);
+        _ = await dialog.ShowAsync();
+
+        if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)
+        {
+            Logger.Log(Logger.Level.Info, "User canceled advanced sync creation in content dialog");
+            if (control is not null)
+                control.IsEnabled = true;
+            return;
+        }
+
+        var newSync = dialog.GetNewSync();
+        if (newSync is null || newSync.Drive is null)
+        {
+            Logger.Log(Logger.Level.Error, "User confirmed new advanced sync creation in content dialog but GetNewSync returned null or newSync.Drive is null");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            if (control is not null)
+                control.IsEnabled = true;
+            return;
+        }
+
+        Logger.Log(Logger.Level.Info, "User confirmed new advanced sync creation in content dialog, creating sync");
+
+        var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+        Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
+        if (!await commService.AddSync(newSync, CancellationToken.None))
+        {
+            Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive");
+            if (control is not null)
+                control.IsEnabled = true;
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        if (control is not null)
+            control.IsEnabled = true;
+    }
+
+    private async void SyncExclusionButton_Click(object sender, RoutedEventArgs e)
+    {
+        Control? control = sender as Control;
+        if (control is null)
+        {
+            Logger.Log(Logger.Level.Error, "Sync exclusion button is null when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ISync? sync = control.DataContext as ISync;
+        if (sync is null)
+        {
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
+            DefaultButton = ContentDialogButton.Primary
+        };
+        var exclusionPage = new SyncExclusionPage(sync);
+        dialog.Content = exclusionPage;
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
+            await exclusionPage.SaveChanges();
+        }
+        else
+        {
+            Logger.Log(Logger.Level.Info, "User canceled sync exclusion changes");
+        }
+
     }
 }

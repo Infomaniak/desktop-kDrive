@@ -45,7 +45,6 @@
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditemjob.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
-#include "server/comm/guijobs/signalnodefixconflictedfilescompletedjob.h"
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfojob.h"
@@ -223,7 +222,8 @@ void AppServer::init() {
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError));
         throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
@@ -231,7 +231,8 @@ void AppServer::init() {
     std::filesystem::path pre334ConfigFilePath =
             std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
     bool oldConfigExists;
-    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError));
         throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
     }
@@ -417,7 +418,9 @@ void AppServer::init() {
             const auto noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
             bool noUpdateFlagFileExists = false;
             ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                ioError != IoError::Success) {
                 std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
                 LOG_ERROR(_logger, errorMsg);
                 KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
@@ -596,7 +599,7 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, false, true, true); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -630,7 +633,8 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 void AppServer::stopAllSyncPals() {
     const std::scoped_lock lock(syncPalMapMutex);
     for (const auto &[syncDbId, _]: syncPalMap) {
-        if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+        if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep);
+            !exitInfo) {
             LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
         }
     }
@@ -1181,7 +1185,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case RequestNum::ERROR_RESOLVE_CONFLICTS: {
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY: {
             int driveDbId = 0;
             bool keepLocalVersion = false;
 
@@ -1212,13 +1216,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     break;
                 }
 
-                std::vector<Error> errorList;
-                ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, errorList);
+                std::vector<Error> keepLocalErrorList;
+                std::vector<Error> keepRemoteErrorList;
+                if (keepLocalVersion) {
+                    exitCode = ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepLocalErrorList);
+                } else {
+                    exitCode = ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, keepRemoteErrorList);
+                }
 
-                if (!errorList.empty()) {
-                    exitCode = syncPalMapIt->second->fixConflictingFiles(keepLocalVersion, errorList);
+                if (exitCode != ExitCode::Ok) {
+                    LOG_WARN(_logger,
+                             "Error in ServerRequests::getConflictList for syncDbId=" << sync.dbId() << " : code=" << exitCode);
+                    break;
+                }
+
+                if (!keepLocalErrorList.empty() || !keepRemoteErrorList.empty()) {
+                    exitCode = syncPalMapIt->second->fixConflictingFilesAsync(keepLocalErrorList, keepRemoteErrorList);
                     if (exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles for syncDbId=" << sync.dbId());
+                        LOG_WARN(_logger, "Error in SyncPal::setUpConflictingFilesCorrector for syncDbId=" << sync.dbId());
                         break;
                     }
                 }
@@ -1227,7 +1242,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitCode);
             break;
         }
-        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR: {
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY: {
             int driveId = 0;
 
             QDataStream paramsStream(params);
@@ -1429,7 +1444,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=, this]() {
                 // Stop SyncPal
-                if (const auto exitInfo = stopSyncPal(syncDbId, true); !exitInfo) {
+                if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::User); !exitInfo) {
                     LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
                 }
 
@@ -1848,14 +1863,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveId;
             paramsStream >> nodeId;
 
-            std::thread getFolderSize(ServerRequests::getFolderSizeWithCallback, userDbId, driveId, nodeId.toStdString(),
-                                      std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            auto getFolderSizeWithCallbackFunc = std::function<void()>([userDbId, driveId, nodeId, this]() {
+                (void) ServerRequests::getFolderSizeWithCallback(userDbId, driveId, nodeId.toStdString(),
+                                                                 std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            });
+            StdLoggingThread getFolderSize(getFolderSizeWithCallbackFunc);
             getFolderSize.detach();
 
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::NODE_CREATEMISSINGFOLDERS: {
+        case RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY: {
             int driveDbId;
             QList<QPair<QString, QString>> folderList;
             QDataStream paramsStream(params);
@@ -1878,7 +1896,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString firstCreatedNodeId;
             for (auto &folderElt: folderList) {
                 if (folderElt.second.isEmpty()) {
-                    ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, parentNodeId);
+                    QString newNodeId;
+                    const ExitCode exitCode = ServerRequests::createDir(driveDbId, parentNodeId, folderElt.first, newNodeId);
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << driveDbId << " parentNodeId="
                                                                                         << parentNodeId.toStdString());
@@ -1888,8 +1907,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         break;
                     }
                     if (firstCreatedNodeId.isEmpty()) {
-                        firstCreatedNodeId = parentNodeId;
+                        firstCreatedNodeId = newNodeId;
                     }
+                    parentNodeId = newNodeId;
                 } else {
                     parentNodeId = folderElt.second;
                 }
@@ -2125,10 +2145,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            int driveDbId;
             QString basePath;
             QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
             paramsStream >> basePath;
 
             QString path;
@@ -2445,7 +2463,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int progressPe
     }
 }
 
-void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbErrors) const {
+void AppServer::sendNodeFixConflictedFilesCompleted(const int syncDbId, const qint64 nbErrors) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2454,9 +2472,6 @@ void AppServer::sendNodeFixConflictedFilesCompleted(int syncDbId, qint64 nbError
         paramsStream << syncDbId;
         paramsStream << nbErrors;
         (void) OldCommServer::instance()->sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, params, id);
-    }
-    if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalNodeFixConflictedFilesCompletedJob>(syncDbId, nbErrors));
     }
 }
 
@@ -2797,8 +2812,35 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
+
+    if (const auto exitInfo = updateUser(user); !exitInfo) return exitInfo;
+
+    std::vector<Account> accounts;
+    if (!ParmsDb::instance()->selectAllAccounts(user.dbId(), accounts)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
+        return ExitCode::DbError;
+    }
+
+    for (auto &account: accounts) {
+        if (const auto exitInfo = updateAccount(account); !exitInfo) return exitInfo;
+
+        std::vector<Drive> drives;
+        if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+            return ExitCode::DbError;
+        }
+
+        for (auto &drive: drives) {
+            if (const auto exitInfo = updateDrive(user, account, drive); !exitInfo) return exitInfo;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::updateUser(User &user) {
     bool updated = false;
-    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
+    if (const auto exitInfo = _loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
@@ -2825,166 +2867,179 @@ ExitInfo AppServer::updateUserInfo(User &user) {
         ServerRequests::userToUserInfo(user, userInfo);
         sendUserUpdated(userInfo);
     }
+    return ExitCode::Ok;
+}
 
-    std::vector<Account> accounts;
-    if (!ParmsDb::instance()->selectAllAccounts(user.dbId(), accounts)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
+ExitInfo AppServer::createAccount(Account &newAccount) {
+    // Make sure all information are up to date
+    bool accountUpdated = false;
+    if (const auto exitInfo = _loadAccountInfo(newAccount, accountUpdated); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+        return exitInfo;
+    }
+
+    // Notify the UI
+    AccountInfo accountInfo;
+    ServerRequests::accountToAccountInfo(newAccount, accountInfo);
+    sendAccountAdded(accountInfo);
+
+    // Insert account in DB
+    if (!ParmsDb::instance()->insertAccount(newAccount)) {
+        LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
 
-    for (auto &account: accounts) {
-        bool accountUpdated = false;
-        if (const auto exitInfo = ServerRequests::loadAccountInfo(account, accountUpdated); !exitInfo) {
-            LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
-            return exitInfo;
-        }
-        if (accountUpdated) {
-            AccountInfo accountInfo;
-            ServerRequests::accountToAccountInfo(account, accountInfo);
-            sendAccountUpdated(accountInfo);
+    return ExitCode::Ok;
+}
 
-            bool found = false;
-            if (!ParmsDb::instance()->updateAccount(account, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
-                return ExitCode::DataError;
-            }
-        }
+ExitInfo AppServer::updateAccount(Account &account) {
+    bool accountUpdated = false;
+    if (const auto exitInfo = _loadAccountInfo(account, accountUpdated); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+        return exitInfo;
+    }
 
-        std::vector<Drive> drives;
-        if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+    if (accountUpdated) {
+        AccountInfo accountInfo;
+        ServerRequests::accountToAccountInfo(account, accountInfo);
+        sendAccountUpdated(accountInfo);
+
+        bool found = false;
+        if (!ParmsDb::instance()->updateAccount(account, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
             return ExitCode::DbError;
         }
+        if (!found) {
+            LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
+            return ExitCode::DataError;
+        }
+    }
+    return ExitCode::Ok;
+}
 
-        for (auto &drive: drives) {
-            bool quotaUpdated = false;
-            bool accountChanged = false;
-            Account modifiedAccount = account;
-            if (const auto exitInfo =
-                        ServerRequests::loadDriveInfo(drive, modifiedAccount, updated, quotaUpdated, accountChanged);
-                !exitInfo) {
-                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
-                return exitInfo;
-            }
+ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive &drive) {
+    bool driveUpdated = false;
+    bool quotaUpdated = false;
+    uint64_t newAccountId = 0;
+    if (const auto exitInfo =
+                _loadDriveInfo(drive, static_cast<uint64_t>(account.accountId()), newAccountId, driveUpdated, quotaUpdated);
+        !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+        return exitInfo;
+    }
 
-            if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
-                LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
+    if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
+        if (const auto exitInfo = handleDriveAccessDenied(drive); !exitInfo) return exitInfo;
+    }
 
-                std::vector<Sync> syncs;
-                if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncs)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
-                    return ExitCode::DbError;
-                }
-
-                for (auto &sync: syncs) {
-                    // Pause sync
-                    sync.setPaused(true);
-                    ExitCause exitCause = ExitCause::DriveAccessError;
-                    if (drive.maintenanceInfo()._maintenance) {
-                        if (drive.maintenanceInfo()._notRenew)
-                            exitCause = ExitCause::DriveNotRenew;
-                        else if (drive.maintenanceInfo()._asleep)
-                            exitCause = ExitCause::DriveAsleep;
-                        else if (drive.maintenanceInfo()._wakingUp)
-                            exitCause = ExitCause::DriveWakingUp;
-                        else
-                            exitCause = ExitCause::DriveMaintenance;
-                    }
-                    addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
-                }
-            }
-
-            if (updated) {
-                bool found = false;
-                if (!ParmsDb::instance()->updateDrive(drive, found)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
-                    return ExitCode::DbError;
-                }
-                if (!found) {
-                    LOG_WARN(_logger, "Drive not found for driveDbId=" << drive.dbId());
-                    return ExitCode::DataError;
-                }
-            }
-
-            if (quotaUpdated) {
-                sendDriveQuotaUpdated(drive.dbId(), drive.size(), drive.usedSize());
-            }
-
-            bool accountRemoved = false;
-            if (accountChanged) {
-                bool accountIdAlreadyExists = false;
-                Account dummyAccount;
-                bool found = false;
-                if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(user.dbId(), modifiedAccount.accountId(), dummyAccount,
-                                                                          found)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::accountDbId");
-                    return ExitCode::DbError;
-                }
-                accountIdAlreadyExists = found;
-
-                // Update account
-                if (!ParmsDb::instance()->updateAccount(modifiedAccount, found)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
-                    return ExitCode::DbError;
-                }
-                if (!found) {
-                    LOG_WARN(_logger, "Account not found for accountDbId=" << account.dbId());
-                    return ExitCode::DataError;
-                }
-
-                AccountInfo accountInfo;
-                ServerRequests::accountToAccountInfo(account, accountInfo);
-                sendAccountUpdated(accountInfo);
-
-                if (modifiedAccount.accountId() != account.accountId() && accountIdAlreadyExists) {
-                    // An account already exists with the new accountId, link the drive to it
-                    drive.setAccountDbId(modifiedAccount.dbId());
-                    if (!ParmsDb::instance()->updateDrive(drive, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
-                        return ExitCode::DbError;
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Drive not found for driveDbId=" << drive.dbId());
-                        return ExitCode::DataError;
-                    }
-
-                    updated = true;
-
-                    // Delete the old account if not used anymore
-                    std::vector<Drive> driveList;
-                    if (!ParmsDb::instance()->selectAllDrives(account.dbId(), driveList)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
-                        return ExitCode::DbError;
-                    }
-
-                    if (driveList.empty()) {
-                        if (const auto exitInfo = ServerRequests::deleteAccount(account.dbId()); !exitInfo) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitInfo);
-                            return exitInfo;
-                        }
-                        sendAccountRemoved(account.accountId());
-                        accountRemoved = true;
-                    }
-                }
-            }
-
-            if (updated || quotaUpdated) {
-                DriveInfo driveInfo;
-                ServerRequests::driveToDriveInfo(drive, driveInfo);
-                sendDriveUpdated(driveInfo);
-                if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
-            }
-
-            if (accountRemoved) {
-                sendAccountRemoved(account.dbId());
-            }
+    if (driveUpdated) {
+        bool found = false;
+        if (!ParmsDb::instance()->updateDrive(drive, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Drive not found for driveDbId=" << drive.dbId());
+            return ExitCode::DataError;
         }
     }
 
+    if (quotaUpdated) {
+        sendDriveQuotaUpdated(drive.dbId(), drive.size(), drive.usedSize());
+    }
+
+    if (const auto exitInfo = manageDriveMovedToAnotherAccount(user, account, newAccountId, drive, driveUpdated); !exitInfo)
+        return exitInfo;
+
+    if (driveUpdated || quotaUpdated) {
+        DriveInfo driveInfo;
+        ServerRequests::driveToDriveInfo(drive, driveInfo);
+        sendDriveUpdated(driveInfo);
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::handleDriveAccessDenied(const Drive &drive) {
+    LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
+
+    std::vector<Sync> syncs;
+    if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncs)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+        return ExitCode::DbError;
+    }
+
+    for (auto &sync: syncs) {
+        // Pause sync
+        sync.setPaused(true);
+        ExitCause exitCause = ExitCause::DriveAccessError;
+        if (drive.maintenanceInfo()._maintenance) {
+            if (drive.maintenanceInfo()._notRenew)
+                exitCause = ExitCause::DriveNotRenew;
+            else if (drive.maintenanceInfo()._asleep)
+                exitCause = ExitCause::DriveAsleep;
+            else if (drive.maintenanceInfo()._wakingUp)
+                exitCause = ExitCause::DriveWakingUp;
+            else
+                exitCause = ExitCause::DriveMaintenance;
+        }
+        addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
+                                                     Drive &drive, bool &driveUpdated) {
+    if (newAccountId <= 0) return ExitCode::Ok; // The account has not changed
+
+    // Check if new account already exist in DB for this user
+    Account newAccount;
+    bool accountIdAlreadyExists = false;
+    if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(user.dbId(), static_cast<int>(newAccountId), newAccount,
+                                                              accountIdAlreadyExists)) {
+        LOG_WARN(_logger, "Error in ParmsDb::accountDbId");
+        return ExitCode::DbError;
+    }
+
+    if (!accountIdAlreadyExists) {
+        // The account does not exist yet for this user, create it
+        int accountDbId = 0;
+        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
+            return ExitCode::DbError;
+        }
+        newAccount.setDbId(accountDbId);
+        newAccount.setAccountId(static_cast<int>(newAccountId));
+        newAccount.setUserDbId(user.dbId());
+        if (const auto exitInfo = createAccount(newAccount); !exitInfo) return exitInfo;
+    }
+
+    // Update the account DB ID in drive table
+    drive.setAccountDbId(newAccount.dbId());
+    bool found = false;
+    if (!ParmsDb::instance()->updateDrive(drive, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Drive not found for driveDbId=" << drive.dbId());
+        return ExitCode::DataError;
+    }
+    driveUpdated = true;
+
+    // Delete the old account if not used anymore
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(oldAccount.dbId(), driveList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+        return ExitCode::DbError;
+    }
+
+    if (driveList.empty()) {
+        if (const auto exitInfo = ServerRequests::deleteAccount(oldAccount.dbId()); !exitInfo) {
+            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitInfo);
+            return ExitCode::DataError;
+        }
+        sendAccountRemoved(oldAccount.dbId());
+    }
     return ExitCode::Ok;
 }
 
@@ -3738,8 +3793,9 @@ bool AppServer::startClient() {
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
-                ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }
@@ -3882,7 +3938,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool clear) {
+ExitInfo AppServer::stopSyncPal(int syncDbId, SyncPal::PauseCaller caller, SyncPal::DbBehaviorAfterStop behavior) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Stop SyncPal
@@ -3899,7 +3955,7 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     unregisterSync(syncPalMapIt->second);
-    syncPalMapIt->second->stop(pausedByUser, quit, clear);
+    syncPalMapIt->second->stop(caller, behavior);
 
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId << " done");
 
@@ -3910,7 +3966,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
         return ExitCode::SystemError;
     }
@@ -4360,7 +4416,7 @@ void AppServer::addError(const Error &error) const {
             sendErrorRemoved(errorId);
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
-    } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
+    } else if (_updateManager && errorCopy.exitCode() == ExitCode::UpdateRequired) {
         _updateManager->updater()->unskipVersion();
     }
 
@@ -4806,7 +4862,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(syncPalMapMutex);
-    for (const auto [_, syncPal]: syncPalMap) {
+    for (const auto &[_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::milliseconds(syncPal->pauseDuration()) < std::chrono::steady_clock::now()) {

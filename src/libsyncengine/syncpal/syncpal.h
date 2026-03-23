@@ -130,6 +130,18 @@ struct SyncProgress {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
+        enum class PauseCaller {
+            User = 0,
+            Sync,
+            EnumEnd
+        };
+
+        enum class DbBehaviorAfterStop {
+            Keep = 0,
+            Remove,
+            EnumEnd
+        };
+
         SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
@@ -186,7 +198,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
-        ExitCode fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList);
+        ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                     std::vector<int32_t> &removedErrorsDbIds);
+
+        // TODO: Remove this in favor of `fixConflictingFiles`.
+        // The asynchronous behavior is now handled by the new CommLayer design.
+        ExitCode fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
+                                          const std::vector<Error> &keepRemoteErrorList);
+
         ExitCode fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap);
         ExitCode fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const;
         ExitCode fileSyncing(ReplicaSide side, const SyncPath &path, bool &syncing) const;
@@ -195,20 +214,22 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode clearNodes();
 
         void syncPalStartCallback(UniqueId jobId);
+        void handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr);
 
         //! Start SyncPal.
         /*!
-         \param startDelay represents the time (expressed in seconds) the SyncPalWorker must wait before starting.
+         \param startDelay represents the time (expressed in seconds) the SyncPalWorker must
+         wait before starting.
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
-        void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+        void stop(PauseCaller caller = PauseCaller::Sync, DbBehaviorAfterStop behavior = DbBehaviorAfterStop::Keep);
 
 
         /* The synchronization will be paused once the ongoing sync reach the Idle state.
          * It will automatically restart after one minute (triggered by the appserver).
          *
-         * /!\ This pause mechanism is intended for internal use only, such as handling network disconnections.
-         * If the user pauses synchronization, use the stop() method instead.
+         * /!\ This pause mechanism is intended for internal use only, such as handling network
+         * disconnections. If the user pauses synchronization, use the stop() method instead.
          */
         void pause();
         void unpause();
@@ -238,7 +259,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
-        ExitCode cancelAllDlDirectJobs(bool quit);
+        ExitCode cancelAllDlDirectJobs();
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 
@@ -258,8 +279,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Handle an access denied error on an item on the local side.
         /*!
          \param relativeLocalPath is the local path of the item.
-         \param cause is an optional exit cause returned by the operation that has failed. Used only to generate an error message
-         tailored to the context.
+         \param cause is an optional exit cause returned by the operation that has failed. Used
+         only to generate an error message tailored to the context.
          \return The exit info of the function.
          */
         [[nodiscard]] ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
@@ -292,21 +313,25 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Returns nullptr if no sync is currently in progress.
         std::shared_ptr<ConstSnapshot> snapshot(ReplicaSide side) const;
 
-        /* Returns a reference to the live snapshot, which reflects the real-time state of the filesystem.
-         * Unlike the immutable snapshot(), this one is continuously updated as changes occur.
+        /* Returns a reference to the live snapshot, which reflects the real-time state of the
+         * filesystem. Unlike the immutable snapshot(), this one is continuously updated as
+         * changes occur.
          *
-         * /!\ Must not be called before SyncPal::createWorkers() or after SyncPal::freeWorkers(),
-         * as the underlying data may not be initialized or may have already been released.
+         * /!\ Must not be called before SyncPal::createWorkers() or after
+         * SyncPal::freeWorkers(), as the underlying data may not be initialized or may have
+         * already been released.
          *
          * The live snapshot is intended to be modified only by the FSO workers.
-         * Workers should always retrieve information from a ConstSnapshot (see SyncPal::snapshot(ReplicaSide side))
-         * There are a few exceptions where reading directly from the liveSnapshot is necessary:
+         * Workers should always retrieve information from a ConstSnapshot (see
+         * SyncPal::snapshot(ReplicaSide side)) There are a few exceptions where reading
+         * directly from the liveSnapshot is necessary:
          * - To check if the filesystem has changed (liveSnapshot().updated()).
          * - To create a ConstSnapshot (ConstSnapshot(liveSnapshot())).
-         * - When outside of a sync process (i.e., not in a worker), since no ConstSnapshot is available.
-         *      Ideally, we would query the filesystem directly in these situations. However, for optimization purposes,
-         *      it may be preferable to read from the live snapshot, accepting the trade-off that it might lag slightly
-         *      behind the actual state of the filesystem.
+         * - When outside of a sync process (i.e., not in a worker), since no ConstSnapshot is
+         * available. Ideally, we would query the filesystem directly in these situations.
+         * However, for optimization purposes, it may be preferable to read from the live
+         * snapshot, accepting the trade-off that it might lag slightly behind the actual state
+         * of the filesystem.
          */
         const LiveSnapshot &liveSnapshot(ReplicaSide side) const;
         void removeLocalOperation(const NodeId &localNodeId, const OperationType operationType) {
@@ -323,7 +348,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ConflictingFilesCorrector> _conflictingFilesCorrector = nullptr;
 
         std::unordered_map<UniqueId, std::shared_ptr<DownloadJob>> _directDownloadJobsMap;
-        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>, PathHashFunction>
+        std::unordered_map<SyncPath, std::unordered_set<SyncPath, PathHashFunction>,
+                           PathHashFunction>
                 _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
@@ -393,6 +419,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
+                                            const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).

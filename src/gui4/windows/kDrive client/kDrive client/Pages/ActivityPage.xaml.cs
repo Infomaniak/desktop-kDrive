@@ -12,7 +12,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {

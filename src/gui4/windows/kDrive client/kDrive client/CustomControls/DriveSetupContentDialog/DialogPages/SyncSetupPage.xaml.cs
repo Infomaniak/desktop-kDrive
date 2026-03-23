@@ -1,20 +1,21 @@
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.Storage.Pickers;
 using System;
-using System.Threading;
 using System.Linq;
+using System.Threading;
+using Windows.Storage.Pickers;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class SyncSetupPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
         private DriveSetupContentDialogVM? DriveSetupContentDialogVM { get; set; }
@@ -64,14 +65,14 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        private void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
+        private async void DriveSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
                 return;
             }
-            DriveSetupContentDialogVM.RevertCurrentSyncChanges();
+            await DriveSetupContentDialogVM.RevertCurrentSyncChanges();
 
             if (DriveSetupContentDialogVM.IsMultipleDrivesSetup())
             {
@@ -129,7 +130,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
 
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
+            bool? result = await commServices.IsPathValidForNewSync(folder.Path, SyncConfiguration.Classic, CancellationToken.None);
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();

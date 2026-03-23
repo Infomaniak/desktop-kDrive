@@ -278,6 +278,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
     Poco::JSON::Object userInfoObj1;
     (void) userInfoObj1.set("avatar", avatarBase64StdStr);
+    (void) userInfoObj1.set("avatarUrl", "");
     (void) userInfoObj1.set("dbId", 1);
     (void) userInfoObj1.set("email", toBase64(Str("aaaaa@xxx.com")));
     (void) userInfoObj1.set("isConnected", true);
@@ -287,6 +288,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
     Poco::JSON::Object userInfoObj2;
     (void) userInfoObj2.set("avatar", avatarBase64StdStr);
+    (void) userInfoObj2.set("avatarUrl", "");
     (void) userInfoObj2.set("dbId", 2);
     (void) userInfoObj2.set("email", toBase64(Str("bbbbb@xxx.com")));
     (void) userInfoObj2.set("isConnected", false);

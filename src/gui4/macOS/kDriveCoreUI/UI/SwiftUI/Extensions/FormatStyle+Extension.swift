@@ -23,7 +23,7 @@ public extension View {
         if #available(macOS 13.0, *) {
             return formStyle(.grouped)
         } else {
-            return self
+            return padding(AppPadding.page)
         }
     }
 }

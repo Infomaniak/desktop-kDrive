@@ -47,7 +47,9 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
-        std::thread _resetVfsFilesStatusThread;
+#if defined(KD_WINDOWS)
+        std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
+#endif
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -59,6 +61,12 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
+
+        /* Returns true if the local item is in sync with its state in the SyncDb.
+         * Returns false if the item is not in sync, or if an error occurred while trying to determine it
+         * (e.g., file not found, I/O error, etc.).
+         */
+        bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         void resetVfsFilesStatus();
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.

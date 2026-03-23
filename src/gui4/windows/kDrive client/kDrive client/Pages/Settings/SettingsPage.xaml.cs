@@ -33,7 +33,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class SettingsPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         public SettingsPage()
@@ -141,7 +141,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async Task RefreshAvailableDrivesForAllUsers()
         {
-            List<Task<bool>> loadAvailableDrivesTasks = new List<Task<bool>>();
+            List<Task<bool>> loadAvailableDrivesTasks = [];
             foreach (var user in ViewModel.Users)
             {
                 loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
@@ -162,13 +162,15 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = false;
 
-            ContentDialog dialog = new ContentDialog();
-            dialog.XamlRoot = this.XamlRoot;
-            dialog.Title = Localizer.Instance.GetString("dialogRemoveAccountTitle");
-            dialog.PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton");
-            dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name);
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
+                PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton"),
+                SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton"),
+                DefaultButton = ContentDialogButton.Primary,
+                Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name)
+            };
 
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
@@ -384,7 +386,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
 
-                if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleSwitch.IsOn || ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleSwitch.IsOn)
+                if ((ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleSwitch.IsOn) || (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleSwitch.IsOn))
                 {
                     toggleSwitch.IsEnabled = true;
                     LogSettingsExpander.IsEnabled = true;
@@ -483,13 +485,18 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
             control.IsEnabled = true;
         }
-        
+
         private async void HelpDeskButton_Click(object sender, RoutedEventArgs e)
         {
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.HelpDeskUri);
+            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+
             await Task.Delay(1000);
             if (control is not null)
                 control.IsEnabled = true;
@@ -500,10 +507,46 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.FeedbackUri);
+            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("feedbackURL"))
+            {
+                Logger.Log(Logger.Level.Error, "Failed to launch Feedback URI.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
             await Task.Delay(1000);
             if (control is not null)
                 control.IsEnabled = true;
+        }
+
+        private async void ActivateNotificationInSystem_Button(object sender, RoutedEventArgs e)
+        {
+
+            Control? control = sender as Control;
+
+            if (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings)
+            {
+                await NotificationManager.OpenNotificationSystemSettings();
+            }
+            else
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                return;
+            }
+
+            if (control is null)
+                return;
+
+            control.IsEnabled = false;
+            // As we cannot be notified of when the user change the settings, we refresh the availability every second
+            // until it is no longer deactivated in system settings or the page is unloaded.
+            while (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings && base.IsLoaded)
+            {
+                await Task.Delay(1000);
+            }
+            if (base.IsLoaded)
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                control.IsEnabled = true;
+            }
         }
     }
 

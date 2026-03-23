@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
@@ -113,11 +113,6 @@ namespace Infomaniak.kDrive.Pages
 
             if (ViewModel.SelectedSync is not null)
                 ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
-        }
-
-        private void HideButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
         }
 
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)

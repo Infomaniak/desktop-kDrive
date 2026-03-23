@@ -14,23 +14,23 @@
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </UserControl.Resources>
     <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
-            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
-        <Grid MinWidth="180">
+        <Grid>
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <Canvas HorizontalAlignment="Center"
                         Width="46"
                         Height="46">
 
                     <Border BorderBrush="{ThemeResource SystemAccentColor}"
-                            BorderThickness="2"
+                            BorderThickness="1.1"
                             CornerRadius="100"
                             Canvas.ZIndex="0"
                             Canvas.Left="0"
                             Canvas.Top="0">
-                        <PersonPicture ProfilePicture="{x:Bind ViewModel.SelectedSync.Drive.Account.User.AvatarImageSource, Mode=OneWay}"
-                                       Height="41"
-                                       Width="41">
+                        <PersonPicture ProfilePicture="{x:Bind ViewModel.SelectedSync.Drive.Account.User.GetAvatarImageSource(44), Mode=OneWay}"
+                                       Height="44"
+                                       Width="44">
                         </PersonPicture>
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}"
@@ -44,11 +44,9 @@
                             Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                             CornerRadius="100"
                             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}">
-                        <Viewbox>
-                            <controls:SvgIcon Height="16"
-                                              UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
-                                              Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
-                        </Viewbox>
+                        <controls:SyncIcon Sync="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                                           Height="12"
+                                           Width="12" />
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
                                      Placement="Right" />
@@ -60,20 +58,29 @@
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Click="FavoritesButton_Click">
-                        <Grid>
-                            <StackPanel Orientation="Horizontal"
+                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0"
+                                        Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <controls:SvgIcon Height="12"
+                                <controls:SvgIcon Height="13"
+                                                  Width="13"
                                                   VerticalAlignment="Center"
                                                   HorizontalAlignment="Right"
-                                                  UriString="{StaticResource Infomaniak.Custom.Icons.folder-star}"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.star}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderFavorites')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
-                            <controls:SvgIcon Height="12"
+                            <controls:SvgIcon Grid.Column="1"
+                                              Height="10"
+                                              Width="10"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Right"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                         </Grid>
                     </Button>
@@ -81,19 +88,28 @@
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Click="SharedButton_Click">
-                        <Grid>
-                            <StackPanel Orientation="Horizontal"
+                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0"
+                                        Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <controls:SvgIcon Height="16"
-                                                  UriString="{StaticResource Infomaniak.Custom.Icons.folder-share}"
+                                <controls:SvgIcon Height="13"
+                                                  Width="13"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-share}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderShares')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 
-                            <controls:SvgIcon Height="12"
+                            <controls:SvgIcon Grid.Column="1"
+                                              Height="10"
+                                              Width="10"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Right"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                         </Grid>
                     </Button>
@@ -101,19 +117,28 @@
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             Click="OpenDriveOnlineButton_Click">
-                        <Grid>
-                            <StackPanel Orientation="Horizontal"
+                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0"
+                                        Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <controls:SvgIcon Height="16"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
+                                <controls:SvgIcon Height="13"
+                                                  Width="13"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonKDriveOnline')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 
-                            <controls:SvgIcon Height="12"
+                            <controls:SvgIcon Grid.Column="1"
+                                              Height="10"
+                                              Width="10"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Right"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                         </Grid>
                     </Button>
@@ -127,16 +152,19 @@
                 <Grid>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <controls:SvgIcon Height="16"
+                        <controls:SvgIcon Height="13"
+                                          Width="13"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}"
                                           Foreground="{ThemeResource SystemAccentColor}" />
 
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderTrash')}"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     </StackPanel>
-                    <controls:SvgIcon Height="12"
+                    <controls:SvgIcon Height="10"
+                                      Width="10"
                                       VerticalAlignment="Center"
                                       HorizontalAlignment="Right"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                 </Grid>
             </Button>

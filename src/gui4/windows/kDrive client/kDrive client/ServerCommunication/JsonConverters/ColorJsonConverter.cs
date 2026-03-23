@@ -12,8 +12,7 @@ namespace Infomaniak.kDrive.ServerCommunication.JsonConverters
             // Decode base64 strings
             if (reader.TokenType != JsonTokenType.String)
                 throw new JsonException("Expected string token type for ColorJsonConverter.");
-            string colorString = "";
-
+            string colorString;
             try
             {
                 byte[] bytes = reader.GetBytesFromBase64();

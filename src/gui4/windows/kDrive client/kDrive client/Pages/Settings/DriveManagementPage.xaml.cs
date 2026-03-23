@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
     public sealed partial class DriveManagementPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public Drive? ManagedDrive { get; set; }
         public IDrive? BaseDrive { get; set; }
@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
                 ManagedDrive = drive;
             }
-            else if (ViewModel.AllDrives.FirstOrDefault(d => (d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId), null) is not null)
+            else if (ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null) is not null)
             {
                 // Can happen if a user uses the back button after setting up a new drive.
                 Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void SetupNavBar(string driveName)
         {
-            NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), Localizer.Instance.GetString("labelkDriveManagement"), driveName };
+            NavBar.ItemsSource = new string[] { Localizer.Instance.GetString("settingsTitle"), driveName };
         }
 
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
@@ -73,11 +73,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
                 Frame.Navigate(typeof(SettingsPage));
-            }
-            else if (args.Index == 1)
-            {
-                Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage focused on Account section");
-                Frame.Navigate(typeof(SettingsPage)); // TODO: Focus on account section
             }
         }
 
@@ -219,7 +214,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
-            List<NewSync> newSyncs = new() { newSync };
+            List<NewSync> newSyncs = [newSync];
 
             CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
             await dialog.ShowAsync();

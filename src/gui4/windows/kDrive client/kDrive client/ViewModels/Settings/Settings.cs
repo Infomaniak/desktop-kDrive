@@ -104,6 +104,11 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
+        public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;
+
+        public bool ShowNotificationsSettings => AppNotificationAvailability != AppNotificationAvailability.NotSupportedByOS;
+        public bool NotificationsAuthorizedInSystemSettings => AppNotificationAvailability == AppNotificationAvailability.Available;
+
         public async Task<bool> ChangeAutoStart(bool activated)
         {
             if (AutoStart == activated)
@@ -256,6 +261,12 @@ namespace Infomaniak.kDrive.ViewModels
             }
             RestartRequiredForLanguageChange = true;
             return true;
+        }
+    
+        public void RefreshAppNotificationAvailability()
+        {
+            OnPropertyChanged(nameof(ShowNotificationsSettings));
+            OnPropertyChanged(nameof(NotificationsAuthorizedInSystemSettings));
         }
     }
 }

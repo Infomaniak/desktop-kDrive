@@ -21,9 +21,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
@@ -39,8 +37,6 @@ namespace Infomaniak.kDrive.Pages
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
-            Control? control = sender as Control;
-
             try
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));

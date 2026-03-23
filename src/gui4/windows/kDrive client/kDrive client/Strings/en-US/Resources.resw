@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Feb 2026 17:23:23 +0100 
+  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,15 +72,18 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>English</value>
   </metadata> 
+  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Check that your Internet connection is active, that the name is not already in use and that it does not contain any invalid characters.</value> 
+  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@ (build %@)
-© 2019–%@ Infomaniak Network SA</value> 
+    <value>Version %@.%@
+© 2019–%@ Infomaniak Network SA - </value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>About kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>Developed and hosted exclusively in Switzerland, kDrive provides complete protection of your data, with no resale or tracking, in ISO-certified centers, with encryption and multi-backup storage.</value> 
+    <value>Developed and hosted exclusively in Switzerland, kDrive ensures total protection of your data, without resale or espionage, in ISO-certified centers, with encryption and backup on multiple media.</value> 
   </data> 
   <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
     <value>Visible activities</value> 
@@ -105,6 +108,24 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>My activity only</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Synchronize a folder with kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Choose the folder on your computer to synchronize with kDrive :</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Synchronized folder</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Customize the location of your computer's folder on kDrive :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Choose a folder location on kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>KDrive slot</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
     <value>Select a folder on your computer to synchronize with kDrive.
@@ -170,6 +191,9 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonAdvancedParameters" xml:space="preserve"> 
     <value>Advanced settings</value> 
   </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Apply to %@ files</value> 
+  </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Cancel</value> 
   </data> 
@@ -182,11 +206,11 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonConfigure" xml:space="preserve"> 
     <value>Configure</value> 
   </data> 
-  <data name="buttonConfigureMainSync" xml:space="preserve"> 
-    <value>Enable</value> 
-  </data> 
   <data name="buttonConfirm" xml:space="preserve"> 
     <value>Confirm</value> 
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Connect an account</value> 
   </data> 
   <data name="buttonCopyShareLink" xml:space="preserve"> 
     <value>Copy share link</value> 
@@ -197,8 +221,20 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonCreateNewSync" xml:space="preserve"> 
     <value>Create a new synchronization</value> 
   </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Customized location</value> 
+  </data> 
   <data name="buttonDefaultLocation" xml:space="preserve"> 
     <value>Default location</value> 
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Disconnect this account</value> 
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Enable</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Activate in Windows settings</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Understanding the problem</value> 
@@ -215,6 +251,12 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonKDriveOnline" xml:space="preserve"> 
     <value>kDrive Online</value> 
   </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Keep the account</value> 
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Sign out</value> 
+  </data> 
   <data name="buttonLogin" xml:space="preserve"> 
     <value>Login</value> 
   </data> 
@@ -223,6 +265,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonManageDiskSpace" xml:space="preserve"> 
     <value>Manage disk space</value> 
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Process files individually</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Open debug folder</value> 
@@ -252,11 +297,17 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Open synchronization settings</value> 
   </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Pause</value> 
+  </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
     <value>Refresh</value> 
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Release notes</value> 
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Remove synchronization</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Resume synchronization</value> 
@@ -274,11 +325,26 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
     <value>Save my choices</value> 
   </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Search</value> 
+  </data> 
   <data name="buttonSeeActivities" xml:space="preserve"> 
     <value>See activities</value> 
   </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>select</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Select a folder</value> 
+  </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Select folders</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Select a location</value> 
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>selected</value> 
   </data> 
   <data name="buttonSend" xml:space="preserve"> 
     <value>Send</value> 
@@ -286,11 +352,20 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonSendLog" xml:space="preserve"> 
     <value>Send debug folder</value> 
   </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Open Settings</value> 
+  </data> 
   <data name="buttonShowOffers" xml:space="preserve"> 
     <value>Show offers</value> 
   </data> 
   <data name="buttonSignOut" xml:space="preserve"> 
     <value>Sign out</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Start</value> 
+  </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Start selecting versions</value> 
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Get started for free</value> 
@@ -304,11 +379,26 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgrade</value> 
   </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Confirm</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Validate and move on</value> 
+  </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
     <value>Wake-up</value> 
   </data> 
-  <data name="connectAccount" xml:space="preserve"> 
-    <value>Connect an account</value> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Choose a version</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Two different versions of these files have been detected.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Conflicting versions</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Find a file</value> 
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
     <value>Creating share link…</value> 
@@ -378,16 +468,11 @@ This folder must not be included in any other synchronization folder and must no
     <value>Add an exclusion rule</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>You are about to sign out {0} from the app.
-Files synced from all kDrives on this account will be removed from your computer.
+    <value>You will disconnect %@ from the application.
+
+The synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.
 
 All your data will remain accessible online on kDrive.</value> 
-  </data> 
-  <data name="dialogRemoveAccountPrimaryButton" xml:space="preserve"> 
-    <value>Keep the account</value> 
-  </data> 
-  <data name="dialogRemoveAccountSecondaryButton" xml:space="preserve"> 
-    <value>Sign out</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
     <value>Sign out of this account?</value> 
@@ -398,9 +483,6 @@ This action is permanent.
 To sync your drive again, you will need to reconnect it later.
 
 Before continuing, make sure all your files are up to date and fully synchronized.</value> 
-  </data> 
-  <data name="dialogSyncDeletionWarningPrimaryButton" xml:space="preserve"> 
-    <value>Remove synchronization</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
     <value>Remove synchronization?</value> 
@@ -440,9 +522,6 @@ Do not close the application during the process.</value>
   </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
     <value>Disable notifications</value> 
-  </data> 
-  <data name="disconnectAccount" xml:space="preserve"> 
-    <value>Disconnect this account</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
     <value>Do not join</value> 
@@ -633,6 +712,9 @@ Free up space or upgrade your offer to synchronize this file.</value>
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Help us improve kDrive</value> 
   </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
+  </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>File already exists</value> 
   </data> 
@@ -690,6 +772,9 @@ Free up space or upgrade your offer to synchronize this file.</value>
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
   </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/help</value> 
+  </data> 
   <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
   </data> 
@@ -719,7 +804,8 @@ Please restore the folder, make sure you have the necessary access rights, or de
     <value>Nested synchronizations</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>This item is not available on this device. It will open in your browser.</value> 
+    <value>This item is not available on this device.
+It will open in your browser.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value /> 
@@ -727,12 +813,51 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ ago</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>All files</value> 
+  </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Author</value> 
+  </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
+  </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Choose the version of your files you wish to keep.</value> 
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>For each file, select the version to keep.</value> 
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Which version do you want to keep?</value> 
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Choose the version to keep</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>For each conflict, we automatically keep the most recently modified version (local or online). This is the safest choice in most cases.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>Keep the most recent versions</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Create a %@.</value> 
     <comment>use in pair with: labelNewSync</comment> 
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Date</value> 
   </data> 
   <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
     <value>External disk disconnected</value> 
@@ -773,8 +898,17 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>Kb</value> 
   </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Local</value> 
+  </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive. </value> 
+  </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Plus récente</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
@@ -785,15 +919,27 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>You're using kDrive on a new computer, after restoring from a backup.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>New folder</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>new synchronization</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
   </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>No conflicts matching your search</value> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
   </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>On line</value> 
+  </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Original location :</value> 
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Recommandé</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Return it to its original position.</value> 
@@ -840,11 +986,17 @@ Please restore the folder, make sure you have the necessary access rights, or de
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Location</value> 
   </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synchronized folders</value> 
+  </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronization</value> 
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ over %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>kDrive Management</value> 
@@ -926,6 +1078,12 @@ Please check and rename any files with unusual characters, then try again.</valu
   <data name="logsUploadErrorTooltip" xml:space="preserve"> 
     <value>The last transfer failed. Please check your Internet connection and make sure at least one kDrive user is logged in. Transfers are limited to 10 per day.</value> 
   </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Different versions of these files have been detected.</value> 
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%@ version conflicts detected</value> 
+  </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.</value> 
   </data> 
@@ -960,7 +1118,7 @@ If the problem continues, contact our support team.</value>
     <value>You are not logged in</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
-    <value>No results found”</value> 
+    <value>No results found</value> 
   </data> 
   <data name="notEnoughDiskSpaceErrorTitle" xml:space="preserve"> 
     <value>Not enough disk space</value> 
@@ -1035,11 +1193,11 @@ or choose a package tailored to your needs.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Welcome back!</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>You have excluded some folders</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>All kDrive folders</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Customized selection</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>The fast, secure private cloud, hosted in Switzerland.
@@ -1122,17 +1280,14 @@ Please wait a few moments.</value>
   <data name="quotaExceededErrorTitle" xml:space="preserve"> 
     <value>Storage quota exceeded</value> 
   </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Beta</value> 
+  </data> 
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Internal</value> 
   </data> 
-  <data name="releaseChannelbeta" xml:space="preserve"> 
-    <value>Beta</value> 
-  </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Location on kDrive</value> 
-  </data> 
-  <data name="removeSync" xml:space="preserve"> 
-    <value>Remove synchronization</value> 
   </data> 
   <data name="reservedNameErrorTitle" xml:space="preserve"> 
     <value>Reserved name</value> 
@@ -1300,13 +1455,16 @@ If the problem continues, you can convert the synchronization to a standard sync
     <value>Lite Sync plugin cannot start</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Activities</value> 
+    <value>Activity</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
     <value>Home</value> 
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Storage</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Individual treatment</value> 
   </data> 
   <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
     <value>Temporarily blacklisted</value> 
@@ -1321,6 +1479,9 @@ If the problem continues, you can convert the synchronization to a standard sync
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>Open kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value> Unable to create this folder</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Unauthorized access</value> 

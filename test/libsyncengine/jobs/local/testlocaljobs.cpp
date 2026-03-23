@@ -176,10 +176,13 @@ void KDC::TestLocalJobs::testLocalJobs() {
     LOGW_INFO(Log::instance()->getLogger(),
               L"copyDirPath in TestLocalJobs::testLocalJobs: " << Utility::formatSyncPath(copyDirPath));
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    // testhelpers::isInTrash is not reliable on Linux if previous tests have failed and have left a polluted trash.
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename()));
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
     CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
+#else
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath / testDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath / testDirName / "dehydrated_placeholder.jpg"));
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());

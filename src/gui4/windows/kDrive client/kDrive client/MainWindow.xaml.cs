@@ -19,9 +19,7 @@
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive
 {
@@ -34,8 +32,21 @@ namespace Infomaniak.kDrive
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 600, true);
+            Utility.SetWindowCurrentSize(this, 1025, 683); // Set to the minimum size keeping the nav bar panel open by default
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
+        }
+
+        private void AppTitleBar_BackRequested(TitleBar sender, object args)
+        {
+            if (AppNavView?.Frame?.CanGoBack is null)
+            {
+                Logger.Log(Logger.Level.Warning, "BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
+                return;
+            }
+
+            if (AppNavView.Frame.CanGoBack)
+                AppNavView.Frame.GoBack();
         }
     }
 }

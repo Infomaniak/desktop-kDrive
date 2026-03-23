@@ -160,6 +160,8 @@ std::string toString(const ExitCause e) {
             return "InvalidSize";
         case ExitCause::FileExists:
             return "FileExists";
+        case ExitCause::DirExists:
+            return "DirExists";
         case ExitCause::FileAccessError:
             return "FileAccessError";
         case ExitCause::FileLocked:
@@ -871,6 +873,32 @@ std::string toString(const SignalType e) {
         case SignalType::Bus:
             return "SIGBUS";
 #endif
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const ConflictResolutionStrategy e) {
+    switch (e) {
+        case ConflictResolutionStrategy::Unknown:
+            return "Unknown";
+        case ConflictResolutionStrategy::KeepMostRecent:
+            return "KeepMostRecent";
+        case ConflictResolutionStrategy::KeepLocal:
+            return "KeepLocal";
+        case ConflictResolutionStrategy::KeepRemote:
+            return "KeepRemote";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const SyncConfiguration e) {
+    switch (e) {
+        case SyncConfiguration::Classic:
+            return "Classic";
+        case SyncConfiguration::Advanced:
+            return "Advanced";
         default:
             return noConversionStr;
     }

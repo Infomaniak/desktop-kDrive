@@ -306,13 +306,6 @@ enum class Platform {
     EnumEnd
 };
 
-enum class ReplicaSide {
-    Unknown,
-    Local,
-    Remote,
-    EnumEnd
-};
-
 enum class SignalCategory {
     Kill,
     Crash,
@@ -446,6 +439,7 @@ std::string toString(AppType e);
 std::string toString(CancelType e);
 std::string toString(sentry::ConfidentialityLevel e);
 std::string toString(ConflictType e);
+std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
 std::string toString(ExitCode e);
@@ -476,6 +470,7 @@ std::string toString(UploadSessionType e);
 std::string toString(UpdateState e);
 std::string toString(VersionChannel e);
 std::string toString(VirtualFileMode e);
+std::string toString(SyncConfiguration e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;

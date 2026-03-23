@@ -40,8 +40,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1.63*" />
-            <ColumnDefinition Width="1*" />
+            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition x:Name="LottieColumn" />
         </Grid.ColumnDefinitions>
 
         <!-- Set the backgrounds -->

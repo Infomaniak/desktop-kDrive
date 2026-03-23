@@ -2,7 +2,6 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.IO;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
@@ -36,15 +35,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("dialogDataErrorSyncDirChangedTitle"),
                 DefaultButton = ContentDialogButton.Primary,
-                SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonCreateNewSync"),
+                Content = new SystemErrorSyncDirChangedErrorDialog(Error) { XamlRoot = xamlRoot }
             };
-            dialog.Content = new SystemErrorSyncDirChangedErrorDialog(Error) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
-                if(frame is null)
+                if (frame is null)
                 {
                     Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
                     return;

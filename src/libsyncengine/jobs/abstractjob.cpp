@@ -64,17 +64,17 @@ void AbstractJob::abort() {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Aborting job " << jobId());
     }
-    _abort = true;
+    _aborted = true;
 }
 
 bool AbstractJob::isAborted() const {
-    return _abort;
+    return _aborted;
 }
 
-void AbstractJob::callback(UniqueId id) {
+void AbstractJob::callback(const UniqueId id) {
     try {
-        std::scoped_lock lock(_additionalCallbackMutex);
-        if (_mainCallback && _additionalCallback) {
+        const std::scoped_lock lock(_additionalCallbackMutex);
+        if (_mainCallback && _additionalCallback && !_aborted) {
             _additionalCallback(id); // Call the "additional" callback first since the main callback might delete the last
                                      // reference on the job
         }

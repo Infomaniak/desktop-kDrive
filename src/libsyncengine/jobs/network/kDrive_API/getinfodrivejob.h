@@ -32,7 +32,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] bool isAdmin() const { return _isAdmin; }
-        [[nodiscard]] int accountId() const { return _accountId; }
+        [[nodiscard]] uint64_t accountId() const { return _accountId; }
         [[nodiscard]] const std::string &colorHex() const { return _colorHex; }
         [[nodiscard]] bool isInMaintenance() const { return _isInMaintenance; }
         [[nodiscard]] int64_t maintenanceFrom() const { return _maintenanceFrom; }
@@ -51,7 +51,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         std::string _name;
         int64_t _size{0};
         bool _isAdmin{false};
-        int _accountId{0};
+        uint64_t _accountId{0};
         std::string _colorHex;
         bool _isInMaintenance{false};
         int64_t _maintenanceFrom{0};

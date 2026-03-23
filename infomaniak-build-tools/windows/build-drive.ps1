@@ -443,7 +443,7 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
-        [switch] $newGui,
+        [bool] $newGui,
         [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
@@ -526,10 +526,11 @@ function Prepare-Archive {
 
     }
 
+    Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
+
     if ($newGui) {
         # Copy client files
         Write-Host "Copying new client files ($newGuiDir) to the archive ..."
-        Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
 
         # Sign all the .exe, .dll and .xbf that have no signature yet
@@ -824,7 +825,6 @@ if ($LASTEXITCODE -ne 0)
 #                                       ARCHIVE CREATION                                        #
 #                                                                                               #
 #################################################################################################
-
 
 Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
 if ($LASTEXITCODE -ne 0) {

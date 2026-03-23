@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class DriveSelectionPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
         private DriveSetupContentDialogVM? DriveSetupContentDialogVM { get; set; }

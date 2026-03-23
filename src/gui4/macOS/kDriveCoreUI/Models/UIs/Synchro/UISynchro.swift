@@ -28,12 +28,29 @@ public struct UISynchro: Sendable, Equatable, Hashable {
 
     public let dbId: Int
     public let driveDbId: Int
-    public let localPath: URL
 
-    public init(dbId: Int, driveDbId: Int, localPath: URL) {
+    public let localPath: URL
+    public let targetNodeId: String?
+
+    public let supportsVirtualFileSystem: Bool
+    public let useVirtualFileSystem: Bool
+
+    public init(
+        dbId: Int,
+        driveDbId: Int,
+        localPath: URL,
+        targetNodeId: String?,
+        supportsVirtualFileSystem: Bool,
+        useVirtualFileSystem: Bool
+    ) {
         self.dbId = dbId
         self.driveDbId = driveDbId
+
         self.localPath = localPath
+        self.targetNodeId = targetNodeId
+
+        self.supportsVirtualFileSystem = supportsVirtualFileSystem
+        self.useVirtualFileSystem = useVirtualFileSystem
     }
 }
 

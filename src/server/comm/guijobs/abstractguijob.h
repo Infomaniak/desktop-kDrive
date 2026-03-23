@@ -91,6 +91,8 @@ class AbstractGuiJob : public AbstractJob {
 
         void addError(const Error &error);
 
+        ExitInfo getSyncPal(int64_t syncDbId, std::shared_ptr<SyncPal> &syncPal);
+
         //! Read an input parameter from _inParams.
         /*!
           \param parms is a Poco::DynamicStruct.

@@ -18,9 +18,6 @@
             <ComponentGroupRef Id="PlatformsComponents" />
             <ComponentGroupRef Id="TLSComponents" />
             <ComponentGroupRef Id="TranslationsComponents" />
-            <ComponentGroupRef Id="WebEngineLocalesComponents" />
-            <ComponentGroupRef Id="PositionComponents" />
-            <ComponentGroupRef Id="RessourcesComponents" />
             <ComponentGroupRef Id="StyleComponents" />
             <ComponentGroupRef Id="ShellExtComponents" />
         </Feature>

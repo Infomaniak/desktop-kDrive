@@ -101,7 +101,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
-        void sendProgress();
+
         bool isValidDestination(SyncOpPtr syncOp);
         bool enoughLocalSpace(SyncOpPtr syncOp);
 

@@ -18,6 +18,7 @@
 
 #include "testappserver.h"
 
+#include "comm/guijobmanager.h"
 #include "utility/types.h"
 #include "requests/parameterscache.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -115,7 +116,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
     // Stop SyncPal (pause by user)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, SyncPal::PauseCaller::User);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
     // Resume SyncPal
@@ -125,7 +126,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop SyncPal (cleanup)
-    exitInfo = _appPtr->stopSyncPal(syncDbId, /*pausedByUser*/ false, /*quit*/ true, /*clear*/ true);
+    exitInfo = _appPtr->stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
 
@@ -193,6 +194,77 @@ void TestAppServer::testCleanup() {
     _appPtr->cleanup();
     delete _appPtr;
     CPPUNIT_ASSERT(true);
+}
+
+/**
+ * Test:
+ * - "driveA" has been moved from "accountA" to "accountB"
+ */
+
+ExitInfo mockLoadUserInfo([[maybe_unused]] User &user, bool &updated) {
+    updated = false;
+    return ExitCode::Ok;
+}
+
+const std::string accountNameA = "accountA";
+const std::string accountNameB = "accountB";
+const uint64_t accountIdA = 111;
+const uint64_t accountIdB = 222;
+ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
+    const auto accountName = account.dbId() == 11 ? accountNameA : accountNameB;
+    updated = account.name() == accountName;
+    account.setName(accountName);
+    return ExitCode::Ok;
+}
+
+ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                           bool &quotaUpdated) {
+    if (drive.dbId() == 11 && previousAccountId == accountIdA) {
+        newAccountId = accountIdB;
+        updated = true;
+    }
+    quotaUpdated = false;
+    return ExitCode::Ok;
+}
+
+void TestAppServer::testUpdateUserInfo() {
+    _appPtr->setLoadUserInfoFunction(mockLoadUserInfo);
+    _appPtr->setLoadAccountInfoFunction(mockLoadAccountInfo);
+    _appPtr->setLoadDriveInfoFunction(mockLoadDriveInfo);
+
+    // Insert user, account, drive & sync
+    User userA(11, 111, "dummy", "userA", "userA@mail.com");
+    (void) ParmsDb::instance()->insertUser(userA);
+
+    Account accountA(11, accountIdA, userA.dbId(), accountNameA);
+    (void) ParmsDb::instance()->insertAccount(accountA);
+
+    Drive driveA(11, 111, accountA.dbId(), "driveA", 123, "#FF0000");
+    (void) ParmsDb::instance()->insertDrive(driveA);
+
+    _appPtr->updateUserInfo(userA);
+
+    std::vector<Account> accounts;
+    (void) ParmsDb::instance()->selectAllAccounts(accounts);
+    bool foundAccountA = false;
+    bool foundAccountB = false;
+    uint64_t accountDbIdB = 0;
+    for (const auto &account: accounts) {
+        if (account.accountId() == accountIdA) foundAccountA = true;
+        if (account.accountId() == accountIdB) {
+            foundAccountB = true;
+            accountDbIdB = static_cast<uint64_t>(account.dbId());
+        }
+    }
+    CPPUNIT_ASSERT(!foundAccountA);
+    CPPUNIT_ASSERT(foundAccountB);
+
+    Drive drive;
+    bool found = false;
+    (void) ParmsDb::instance()->selectDrive(driveA.dbId(), drive, found);
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(drive.accountDbId() != 11);
+    CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

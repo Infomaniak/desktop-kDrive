@@ -1,4 +1,5 @@
 ﻿using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -64,8 +65,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
-        Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
-        Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken);
+        Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken);
+        Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
@@ -87,7 +88,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+        Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken);
         Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken);
+
+        Task<NodeConflictInfo?> GetNodeConflictInfo(DbId syncDbId, string relativePath, ReplicaSide replicaSide, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task<bool> RefreshSettings(CancellationToken cancellationToken);
@@ -114,6 +118,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
+        Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
@@ -145,5 +151,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Event handlers for error-related signals
         Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);
         Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for app-related signals
+        Task HandleUtilityShowNotification(object? sender, SignalEventArgs args);
     }
 }

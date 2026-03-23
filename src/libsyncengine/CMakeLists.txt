@@ -50,6 +50,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/longpolljob.h jobs/network/kDrive_API/listing/longpolljob.cpp
     jobs/network/kDrive_API/getfileinfojob.h jobs/network/kDrive_API/getfileinfojob.cpp
+    jobs/network/kDrive_API/getfileinfojobV3.h jobs/network/kDrive_API/getfileinfojobV3.cpp
     jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
     jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
     jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
@@ -69,6 +70,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
     jobs/network/kDrive_API/getinfodrivejob.h jobs/network/kDrive_API/getinfodrivejob.cpp
+    jobs/network/kDrive_API/getdriveuserinfojob.h jobs/network/kDrive_API/getdriveuserinfojob.cpp
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
@@ -143,6 +145,7 @@ set(syncengine_SRCS
     requests/parameterscache.h requests/parameterscache.cpp
     requests/syncnodecache.h requests/syncnodecache.cpp
     requests/exclusiontemplatecache.h requests/exclusiontemplatecache.cpp
+    requests/driveuserinfocache.h requests/driveuserinfocache.cpp
     # Performance watcher
     performance_watcher/performancewatcher.h performance_watcher/performancewatcher.cpp
 )

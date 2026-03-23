@@ -31,17 +31,34 @@
 
 namespace KDC {
 
-ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion,
-                                                     std::vector<Error> &errors) :
+ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal,
+                                                     const std::vector<Error> &keepLocalErrorList,
+                                                     const std::vector<Error> &keepRemoteErrorList) :
     _syncPal(syncPal),
-    _keepLocalVersion(keepLocalVersion),
-    _errors(std::move(errors)) {}
+    _keepLocalErrors(keepLocalErrorList),
+    _keepRemoteErrors(keepRemoteErrorList) {}
 
 ExitInfo ConflictingFilesCorrector::runJob() {
-    for (auto &error: _errors) {
+    if (ExitInfo exitInfo = resolveConflicts(_keepLocalErrors, ConflictResolutionStrategy::KeepLocal); !exitInfo) {
+        return exitInfo;
+    }
+    if (ExitInfo exitInfo = resolveConflicts(_keepRemoteErrors, ConflictResolutionStrategy::KeepRemote); !exitInfo) {
+        return exitInfo;
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &errorList, ConflictResolutionStrategy strategy) {
+    if (strategy != ConflictResolutionStrategy::KeepLocal && strategy != ConflictResolutionStrategy::KeepRemote) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid conflict resolution strategy: " << strategy);
+        return ExitCode::LogicError;
+    }
+
+    for (auto &error: errorList) {
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(_syncPal->localPath() / error.destinationPath(), exists, ioError,
+                                         IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(error.destinationPath(), ioError));
             _nbErrors++;
@@ -54,18 +71,22 @@ ExitInfo ConflictingFilesCorrector::runJob() {
             continue;
         }
 
-        if (_keepLocalVersion) {
+        if (strategy == ConflictResolutionStrategy::KeepLocal) {
             if (keepLocalVersion(error)) {
                 deleteError(error.dbId());
             } else {
                 _nbErrors++;
             }
-        } else {
+            continue;
+        }
+
+        if (strategy == ConflictResolutionStrategy::KeepRemote) {
             if (keepRemoteVersion(error)) {
                 deleteError(error.dbId());
             } else {
                 _nbErrors++;
             }
+            continue;
         }
     }
 
@@ -108,7 +129,11 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
 
 void ConflictingFilesCorrector::deleteError(int64_t errorDbId) {
     bool found = false;
-    ParmsDb::instance()->deleteError(errorDbId, found);
+    if (!ParmsDb::instance()->deleteError(errorDbId, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+        return;
+    }
+    _removedErrorsDbIds.push_back(errorDbId);
 }
 
 } // namespace KDC

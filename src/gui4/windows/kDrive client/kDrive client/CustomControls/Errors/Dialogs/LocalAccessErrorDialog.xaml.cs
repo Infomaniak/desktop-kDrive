@@ -1,7 +1,5 @@
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
 

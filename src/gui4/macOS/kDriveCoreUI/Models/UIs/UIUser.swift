@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -22,7 +21,7 @@ import Foundation
 import kDriveCore
 import SwiftUI
 
-public struct UIUser: Sendable, Equatable, Hashable {
+public struct UIUser: Sendable, Equatable, Hashable, Identifiable {
     public typealias ID = Int
 
     public var id: ID {

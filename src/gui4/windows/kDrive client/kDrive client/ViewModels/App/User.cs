@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
@@ -41,11 +42,10 @@ namespace Infomaniak.kDrive.ViewModels
         private string _name = "";
         private string _email = "";
         private byte[]? _avatar;
-        private ImageSource? _avatarImageSource = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
-        private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
+        private readonly ObservableCollection<Account> _accounts = [];
+        private readonly ObservableCollection<DriveAvailable> _drivesAvailable = [];
         private bool _driveRefreshInProgress = false;
         private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
@@ -96,19 +96,8 @@ namespace Infomaniak.kDrive.ViewModels
             set
             {
                 if (SetPropertyInUIThread(ref _avatar, value))
-                {
-                    AppModel.UIThreadDispatcher.TryEnqueue(async () =>
-                    {
-                        _avatarImageSource = await ByteArrayToImageSource(_avatar); // ByteArrayToImageSource need to be run in the UI thread
-                        OnPropertyChanged(nameof(AvatarImageSource));
-                    });
-                }
+                    OnPropertyChangedInUIThread(nameof(GetAvatarImageSource));
             }
-        }
-
-        public ImageSource? AvatarImageSource
-        {
-            get => _avatarImageSource;
         }
 
         public bool IsConnected
@@ -145,19 +134,30 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // Combined collection of all drives (configured in db and available)
-        public ObservableCollection<IDrive> AllDrives { get; } = new();
+        public ObservableCollection<IDrive> AllDrives { get; } = [];
 
-        public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
+        public ImageSource? GetAvatarImageSource(int size)
+        {
+            return ByteArrayToImageSource(_avatar, size);
+        }
+
+        public static ImageSource? ByteArrayToImageSource(byte[]? imageData, int decodePixelWidth)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
 
             using var stream = new InMemoryRandomAccessStream();
-            await stream.WriteAsync(imageData.AsBuffer());
+            stream.AsStreamForWrite().Write(imageData, 0, imageData.Length);
             stream.Seek(0);
 
             var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(stream);
+            if (decodePixelWidth > 0)
+            {
+                bitmap.DecodePixelType = DecodePixelType.Physical;
+                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot.RasterizationScale ?? 1.0;
+                bitmap.DecodePixelWidth = (int)(decodePixelWidth * rasterization);
+            }
+            bitmap.SetSource(stream);
             return bitmap;
         }
 
@@ -193,9 +193,7 @@ namespace Infomaniak.kDrive.ViewModels
          */
         private void MergeDrives()
         {
-            List<IDrive> drives = new();
-            foreach (var drive in Drives)
-                drives.Add(drive);
+            List<IDrive> drives = [.. Drives];
 
             foreach (var drive in DrivesAvailable)
                 if (drives.FirstOrDefault(d => d.DriveId == drive.DriveId) is null)

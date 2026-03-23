@@ -176,7 +176,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         #endregion
 
-
         #region Public methods
         public async Task SaveChanges()
         {
@@ -192,8 +191,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (Sync is ViewModels.Sync dbSync)
             {
                 IsLoading = true;
-                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                if (!await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None))
+                if (!await dbSync.SetExcludedNodeIds(GetExcludedNodeIds()))
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -222,7 +220,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Compute the list of node IDs that are currently excluded (unchecked) in the UI tree
         public List<NodeId> GetExcludedNodeIds()
         {
-            List<NodeId> excluded = new List<NodeId>();
+            List<NodeId> excluded = [];
             foreach (var item in _rootLevelItems)
             {
                 excluded.AddRange(GetExcludedDescendantNodeIds(item));
@@ -324,7 +322,7 @@ namespace Infomaniak.kDrive.CustomControls
             await RootTreeItem.LoadImmediateChildrenAsync();
 
             _rootLevelItems.AddRange(RootTreeItem.Children);
-            List<Task> tasks = new();
+            List<Task> tasks = [];
             foreach (var item in _rootLevelItems)
             {
                 tasks.Add(item.LoadImmediateChildrenAsync());
@@ -408,7 +406,7 @@ namespace Infomaniak.kDrive.CustomControls
         #region TreeView events
         private async void TreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
         {
-            List<Task> tasks = new();
+            List<Task> tasks = [];
             if (args.Item is TreeItem item)
             {
                 foreach (var child in item.Children)
@@ -579,7 +577,7 @@ namespace Infomaniak.kDrive.CustomControls
         private bool _childrenLoaded = false;
         private bool? _isSelected = true; // true=include, false=exclude, null=partial
         private readonly Dictionary<NodeId, string> _excludedNodes;
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = [];
         private bool _disposed = false;
         #endregion
 
@@ -606,7 +604,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        public ObservableCollection<TreeItem> Children { get; } = new ObservableCollection<TreeItem>();
+        public ObservableCollection<TreeItem> Children { get; } = [];
         public TreeItem? ParentItem { get; }
         #endregion
 
@@ -705,7 +703,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load direct child directories
         public async Task LoadImmediateChildrenAsync()
         {
-            if (_childrenLoaded)
+            if (_childrenLoaded || Node.AccessDenied)
                 return;
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

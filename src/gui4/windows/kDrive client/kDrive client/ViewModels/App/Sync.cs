@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
@@ -46,9 +47,11 @@ namespace Infomaniak.kDrive.ViewModels
         // Sync UI properties
         private bool _showIncomingActivity = true;
         private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
+        private bool? _hasExcludedFolder = null;
+        private Task? _hasExcludedFolderLoadingTask = null;
 
 
         public SyncStatus SyncStatus
@@ -62,7 +65,13 @@ namespace Infomaniak.kDrive.ViewModels
 
                 return _syncStatus;
             }
-            set => SetPropertyInUIThread(ref _syncStatus, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _syncStatus, value) && (value == SyncStatus.Paused || value == SyncStatus.Stopped))
+                {
+                    AppModel.UIThreadDispatcher.TryEnqueue(ClearOngoingActivities);
+                }
+            }
         }
 
         public Sync(DbId dbId, Drive drive)
@@ -95,6 +104,8 @@ namespace Infomaniak.kDrive.ViewModels
                     LastActivity = null;
                 }
             };
+
+            RefreshHasExcludedFolder();
         }
 
         public DbId DbId
@@ -166,7 +177,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // The list of sync and node errors
-        public ObservableCollection<Error> SyncErrors = new();
+        public ObservableCollection<Error> SyncErrors = [];
 
         public SyncErrorStates SyncErrorState
         {
@@ -190,6 +201,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _showIncomingActivity;
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
+        }
+
+        public bool? HasExcludedFolder
+        {
+            get => _hasExcludedFolder;
+            set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
         }
 
         public async Task<bool> Start()
@@ -300,11 +317,58 @@ namespace Infomaniak.kDrive.ViewModels
             });
         }
 
+        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
+        {
+            List<DbId> conflictsToResolve = SyncErrors.Where(e => e.IsConflictUserResolvable()).Select(e => e.DbId).ToList() ?? new List<DbId>();
+
+            if (conflictsToResolve.Count == 0)
+            {
+                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                return true;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
+        }
+
         public async Task<List<NodeId>?> GetExcludedNodeIds()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
         }
 
+        public async Task<bool> SetExcludedNodeIds(List<NodeId> excludedNodeIds)
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            if (!await commService.SetBlacklistedNodeIdList(DbId, excludedNodeIds, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                return false;
+            }
+            HasExcludedFolder = excludedNodeIds.Count > 0;
+            return true;
+        }
+
+        public void ClearOngoingActivities()
+        {
+            var toBeRemoved = SyncActivities.Where(a => a.Status == SyncFileStatus.Syncing);
+            SyncActivities.RemoveMany(toBeRemoved);
+        }
+
+        private void RefreshHasExcludedFolder()
+        {
+            if (_hasExcludedFolderLoadingTask is not null && !_hasExcludedFolderLoadingTask.IsCompleted)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Already loading excluded folders, skipping refresh.");
+                return;
+            }
+            _hasExcludedFolderLoadingTask = Task.Run(async () =>
+            {
+                var excludedNodeIds = await GetExcludedNodeIds();
+                HasExcludedFolder = excludedNodeIds is not null && excludedNodeIds.Count > 0;
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
+            });
+
+        }
     }
 }

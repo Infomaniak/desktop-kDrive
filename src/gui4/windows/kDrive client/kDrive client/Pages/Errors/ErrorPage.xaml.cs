@@ -1,4 +1,3 @@
-using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -10,7 +9,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ErrorPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
         public ErrorPage()
@@ -22,16 +21,13 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
-            if (ViewModel.SelectedSync is not null)
-            {
-                _errorPageVM = new ErrorPageVM { Sync = ViewModel.SelectedSync };
-            }
+            _errorPageVM = new ErrorPageVM();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+            if (_errorPageVM is not null)
+                _errorPageVM.Dispose();
         }
 
         private void BreadcrumbActivity_Click(object sender, object e)
@@ -49,6 +45,11 @@ namespace Infomaniak.kDrive.Pages.Errors
                 else
                     _errorPageVM = new ErrorPageVM { Sync = e.NewValue };
             }
+        }
+
+        private void ManyConflicts_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ConflictQuickResolvePage));
         }
     }
 }
