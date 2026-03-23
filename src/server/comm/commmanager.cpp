@@ -26,6 +26,7 @@
 #include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
