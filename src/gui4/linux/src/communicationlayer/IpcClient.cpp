@@ -199,7 +199,7 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
         } else if (buffer[i] == '}') {
             --balance;
             if (balance == 0) {
-                outMessage = buffer.substr(0, i + 1);
+                outMessage.assign(buffer, 0, i + 1);
                 buffer.erase(0, i + 1);
                 return true;
             }
