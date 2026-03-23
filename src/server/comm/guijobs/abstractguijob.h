@@ -31,12 +31,6 @@ namespace KDC {
 
 class AbstractGuiJob : public AbstractJob {
     public:
-        enum class GuiJobType {
-            Unknown,
-            Query,
-            Signal
-        };
-
         // Request
         AbstractGuiJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                        std::shared_ptr<AbstractCommChannel> channel);
