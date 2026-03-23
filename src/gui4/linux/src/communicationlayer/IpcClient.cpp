@@ -106,8 +106,13 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     const std::string json = Poco::Dynamic::structToString(msg);
     const auto jsonSize = static_cast<qint64>(json.size());
 
-    if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData < 0) {
-        qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
+    if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData != jsonSize) {
+        if (writtenData < 0) {
+            qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
+        } else {
+            // Very unlikely: the kernel buffer is filled by an internal write to the fd; if the server is not reading in time, another issue is probably occurring on its side.
+            qDebug() << "[IpcClient] Partial write detected, expected:" << jsonSize << "written:" << writtenData;
+        }
         return -1;
     }
 
