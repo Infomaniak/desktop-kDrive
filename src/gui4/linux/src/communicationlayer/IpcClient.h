@@ -61,7 +61,7 @@ class IpcClient : public QObject {
     private:
         QTcpSocket *_socket;
         std::string _readBuffer;
-        QAtomicInteger<int32_t> _nextId{0};
+        int32_t _nextId{0};
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
