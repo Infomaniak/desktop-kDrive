@@ -98,17 +98,15 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     msg[MSG_REQUEST_ID] = id;
     msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
 
-    const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second;
-    if (!insertResult) {
+    if (const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
         qWarning() << "[IpcClient] Failed to insert request parameters into message";
         return -1;
     }
 
     const std::string json = Poco::Dynamic::structToString(msg);
     const auto jsonSize = static_cast<qint64>(json.size());
-    const qint64 writtenData = _socket->write(json.data(), jsonSize);
 
-    if (writtenData < 0) {
+    if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData < 0) {
         qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
         return -1;
     }
