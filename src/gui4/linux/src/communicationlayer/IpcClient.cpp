@@ -150,7 +150,12 @@ void IpcClient::processBuffer() {
         try {
             parser.reset();
             const Poco::Dynamic::Var var = parser.parse(raw);
-            const Poco::DynamicStruct msg = *var.extract<Poco::JSON::Object::Ptr>();
+            const auto& objPtr = var.extract<Poco::JSON::Object::Ptr>();
+            if (!objPtr) {
+                qWarning() << "[IpcClient] Failed to parse the JSON message: \n'" << raw << "'\n";
+                continue;
+            }
+            const Poco::DynamicStruct msg = *objPtr;
 
             const uint8_t type = msg[MSG_TYPE];
             const int32_t id = msg[MSG_REQUEST_ID];
