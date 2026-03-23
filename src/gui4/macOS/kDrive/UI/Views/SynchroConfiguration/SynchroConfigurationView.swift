@@ -49,11 +49,7 @@ struct SynchroConfigurationView: View {
                     .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
-            SynchroFolderSelectionSection(
-                synchroLocation: $synchroLocation,
-                isShowingSynchroLocationError: isShowingSynchroLocationError,
-                handleSelectedDirectory: handleSelectedDirectory
-            )
+            SynchroFolderSelectionSection(configuration: configuration)
 
             FolderFoldersSelectionSection(configuration: configuration)
         }
@@ -70,47 +66,6 @@ struct SynchroConfigurationView: View {
                     viewModel.cancelConfiguration()
                 }
             }
-        }
-        .onAppear {
-            synchroLocation = configuration.localFolder.url
-        }
-        .task {
-            await fetchDefaultFolderIfNecessary()
-        }
-    }
-
-    private func fetchDefaultFolderIfNecessary() async {
-        guard synchroLocation == nil else {
-            return
-        }
-
-        guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
-            return
-        }
-
-        synchroLocation = localPath
-        viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
-    }
-
-    private func handleSelectedDirectory(_ result: Result<URL, Error>) {
-        isShowingSynchroLocationError = false
-
-        guard case .success(let selectedURL) = result else {
-            return
-        }
-
-        let oldValue = synchroLocation
-        synchroLocation = selectedURL
-
-        Task {
-            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
-            guard isPathValid == true else {
-                synchroLocation = oldValue
-                isShowingSynchroLocationError = true
-                return
-            }
-
-            viewModel.updateConfiguration(configuration.id, localFolder: .init(url: selectedURL, isDefault: false))
         }
     }
 }

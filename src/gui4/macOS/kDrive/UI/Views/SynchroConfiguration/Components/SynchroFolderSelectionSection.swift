@@ -20,14 +20,17 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 import UniformTypeIdentifiers
+import kDriveCore
 
 struct SynchroFolderSelectionSection: View {
+    @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
+
+    @State private var synchroLocation: URL?
+
     @State private var isShowingFileImporter = false
+    @State private var isShowingSynchroLocationError = false
 
-    @Binding var synchroLocation: URL?
-
-    let isShowingSynchroLocationError: Bool
-    let handleSelectedDirectory: (Result<URL, any Error>) -> Void
+    let configuration: SynchroConfiguration
 
     private var driveLocationTipColor: Color {
         if isShowingSynchroLocationError {
@@ -48,6 +51,12 @@ struct SynchroFolderSelectionSection: View {
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
 
+                Text(synchroLocation?.path ?? "")
+                    .font(.Tokens.subheadline)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    .lineLimit(1)
+                    .help(synchroLocation?.path ?? "")
+
                 HStack {
                     Button(KDriveLocalizable.buttonChangeFolder) {
                         isShowingFileImporter = true
@@ -59,10 +68,13 @@ struct SynchroFolderSelectionSection: View {
                         onCompletion: handleSelectedDirectory
                     )
 
-                    if let synchroLocation {
-                        Text(synchroLocation.path)
-                            .font(.Tokens.subheadline)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    if !configuration.localFolder.isDefault {
+                        Button(KDriveLocalizable.buttonReturnToDefaultFolder) {
+                            Task {
+                                await setDefaultFolder()
+                            }
+                        }
+                        .buttonStyle(.bordered)
                     }
                 }
 
@@ -71,9 +83,53 @@ struct SynchroFolderSelectionSection: View {
                     .foregroundStyle(driveLocationTipColor)
             }
         }
+        .onAppear {
+            synchroLocation = configuration.localFolder.url
+        }
+        .task {
+            await setDefaultFolderIfNecessary()
+        }
+    }
+
+    private func setDefaultFolderIfNecessary() async {
+        guard synchroLocation == nil else {
+            return
+        }
+        await setDefaultFolder()
+    }
+
+    private func setDefaultFolder() async {
+        guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
+            return
+        }
+
+        synchroLocation = localPath
+        viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
+    }
+
+    private func handleSelectedDirectory(_ result: Result<URL, Error>) {
+        isShowingSynchroLocationError = false
+
+        guard case .success(let selectedURL) = result else {
+            return
+        }
+
+        let oldValue = synchroLocation
+        synchroLocation = selectedURL
+
+        Task {
+            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
+            guard isPathValid == true else {
+                synchroLocation = oldValue
+                isShowingSynchroLocationError = true
+                return
+            }
+
+            viewModel.updateConfiguration(configuration.id, localFolder: .init(url: selectedURL, isDefault: false))
+        }
     }
 }
 
 #Preview {
-    SynchroFolderSelectionSection(synchroLocation: .constant(nil), isShowingSynchroLocationError: false) { _ in }
+    SynchroFolderSelectionSection(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
 }
