@@ -1741,7 +1741,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
             if (errorInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from ${signalData[JsonKeys.ErrorInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.");
                 return;
             }
 

@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Utility.ShowUnexpectedErrorTeachingTip();
             else if (string.IsNullOrEmpty(Error.RemoteNodeId) && string.IsNullOrEmpty(Error.Path))
             {
-                Logger.Log(Logger.Level.Warning, $"Error {Error.Id} has no RemoteNodeId or Path, cannot open in web or file explorer.");
+                Logger.Log(Logger.Level.Warning, $"Error {Error.DbId} has no RemoteNodeId or Path, cannot open in web or file explorer.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
