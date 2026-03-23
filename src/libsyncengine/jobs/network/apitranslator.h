@@ -24,8 +24,8 @@ namespace KDC {
 
 class ApiTranslator {
     public:
-        ApiTranslator();
-        ~ApiTranslator();
+        ApiTranslator() = default;
+        ~ApiTranslator() = default;
 
         static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);

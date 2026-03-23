@@ -367,7 +367,7 @@ enum class UnicodeNormalization {
     NFD
 };
 
-enum TranslationMode {
+enum class TranslationMode {
     None,
     V2ToV3,
     V3ToV2

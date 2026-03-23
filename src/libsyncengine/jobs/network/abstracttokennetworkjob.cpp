@@ -404,11 +404,15 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
 void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 
-    if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
-        _userDbId = it->second.userDbId;
-        _driveId = it->second.driveId;
+    {
+        const std::scoped_lock lock(_cacheMutex);
 
-        return;
+        if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
+            _userDbId = it->second.userDbId;
+            _driveId = it->second.driveId;
+
+            return;
+        }
     }
 
     // Get drive
@@ -421,6 +425,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
 
     loadUserInfoFromUserDbId();
 
+    const std::scoped_lock lock(_cacheMutex);
     _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
 }
 

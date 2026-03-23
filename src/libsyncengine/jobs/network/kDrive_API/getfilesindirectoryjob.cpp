@@ -128,7 +128,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
                           parentId.c_str(), modifiedTime, SyncName2QStr(path));
         nodeInfo.setAccessDenied(accessDenied);
 
-        _nodeInfoList.emplace_back(std::move(nodeInfo));
+        (void) _nodeInfoList.emplace_back(std::move(nodeInfo));
     }
 
     return ExitCode::Ok;
@@ -139,7 +139,12 @@ NodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
 }
 
 NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
-    if (_nodeInfoList.empty()) deserializeDataArray();
+    if (_nodeInfoList.empty()) {
+        if (const auto exitInfo = deserializeDataArray(); !exitInfo) {
+            LOG_WARN(_logger, "Failed to deserialize data: " << exitInfo);
+            return {};
+        }
+    }
 
     NodeInfoList v2NodeInfoList_ = _nodeInfoList;
     ApiTranslator::translateV3ToV2(driveDbId(), v2NodeInfoList_);

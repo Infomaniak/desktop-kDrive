@@ -28,10 +28,6 @@ ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_commonDocumentsNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_sharedNodeIdCache = {};
 
-ApiTranslator::ApiTranslator() {}
-
-ApiTranslator::~ApiTranslator() {}
-
 DriveId ApiTranslator::getDriveId(const DriveDbId driveDbId) {
     Drive drive;
     bool found = false;
@@ -162,8 +158,9 @@ void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNod
 
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeInfoList &v3NodeInfoList) {
     const RemoteNodeId privateFolderId = getUserPrivateFolderRemoteId(driveDbId);
-    std::erase_if(v3NodeInfoList,
-                  [&privateFolderId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId().toStdString() == privateFolderId; });
+    (void) std::erase_if(v3NodeInfoList, [&privateFolderId](const NodeInfo &nodeInfo) {
+        return nodeInfo.nodeId().toStdString() == privateFolderId;
+    });
 
     for (auto &nodeInfo: v3NodeInfoList) {
         if (nodeInfo.nodeId().toStdString() == privateFolderId) continue;
