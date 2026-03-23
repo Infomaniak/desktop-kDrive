@@ -40,6 +40,10 @@ IpcClient::IpcClient(QObject *parent) :
         emit disconnected();
         exit(EXIT_FAILURE);
     });
+    connect(_socket, &QTcpSocket::errorOccurred, this, [](const QAbstractSocket::SocketError socketError) {
+        qFatal() << "[IpcClient] Socket error:" << socketError;
+        exit(EXIT_FAILURE);
+    });
 }
 
 
