@@ -41,11 +41,11 @@ class AddDriveWizard : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent = nullptr);
+        explicit AddDriveWizard(std::shared_ptr<ClientGui> gui, UserDbId userDbId, QWidget *parent = nullptr);
 
         inline KDC::GuiUtility::WizardAction nextAction() { return _action; }
         inline QString localFolderPath() { return _localFolderPath; }
-        inline int syncDbId() { return _syncDbId; }
+        inline SyncDbId syncDbId() { return _syncDbId; }
 
     private:
         enum Step {

@@ -35,7 +35,7 @@ class AbstractPTrace {
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) :
             _pTraceInfo(info) {};
-        explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) :
+        explicit AbstractPTrace(const PTraceDescriptor &info, const SyncDbId dbId) :
             _pTraceInfo(info),
             _syncDbId(dbId) {};
 
@@ -68,7 +68,7 @@ class AbstractPTrace {
         AbstractPTrace &operator=(AbstractPTrace &&) = delete;
         pTraceId _pTraceId{0};
         PTraceDescriptor _pTraceInfo;
-        int _syncDbId = -1;
+        SyncDbId _syncDbId = -1;
         bool _running = false;
 };
 } // namespace KDC::sentry

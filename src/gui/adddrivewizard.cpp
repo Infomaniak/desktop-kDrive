@@ -38,7 +38,7 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 
-AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent) :
+AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, const UserDbId userDbId, QWidget *parent) :
     CustomDialog(false, parent),
     _gui(gui),
     _currentStep(userDbId ? Login : None),

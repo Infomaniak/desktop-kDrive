@@ -199,7 +199,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                     std::vector<int32_t> &removedErrorsDbIds);
+                                     std::vector<ErrorDbId> &removedErrorsDbIds);
 
         // TODO: Remove this in favor of `fixConflictingFiles`.
         // The asynchronous behavior is now handled by the new CommLayer design.
@@ -243,8 +243,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncStep step() const;
 
         void addError(const Error &error);
-        void addCompletedItem(int syncDbId, const SyncFileItem &item);
-        void fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors);
+        void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
+        void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -355,8 +355,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Callbacks
         std::function<void(const Error &error)> _addError;
-        std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
-        std::function<void(int syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
+        std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
+        std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
         std::shared_ptr<Vfs> _vfs;
 
         // DB

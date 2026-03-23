@@ -65,7 +65,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         void countListingRequests();
 
-        int _driveDbId = -1;
+        DriveDbId _driveDbId = -1;
         std::string _cursor;
         NodeSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;

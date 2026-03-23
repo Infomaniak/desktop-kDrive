@@ -77,7 +77,7 @@ class ParametersDialog : public CustomDialog {
         };
 
         std::shared_ptr<ClientGui> _gui;
-        int _currentDriveDbId{0};
+        DriveDbId _currentDriveDbId{0};
 
         // General errors
         int _errorTabWidgetStackPosition{0};

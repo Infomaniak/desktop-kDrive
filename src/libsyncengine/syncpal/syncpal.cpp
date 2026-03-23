@@ -360,13 +360,13 @@ void SyncPal::addError(const Error &error) {
     }
 }
 
-void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
+void SyncPal::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
     }
 }
 
-void SyncPal::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
+void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbErrors) {
     if (_fixConflictedFilesCompleted) {
         _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
@@ -1073,7 +1073,7 @@ ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalEr
 }
 
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                      std::vector<int32_t> &removedErrorsDbIds) {
+                                      std::vector<ErrorDbId> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
     ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
 

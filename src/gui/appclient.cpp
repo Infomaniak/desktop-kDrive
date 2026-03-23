@@ -715,7 +715,7 @@ void AppClient::updateSystrayIcon() {
     }
 }
 
-void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError) {
+void AppClient::askUserToLoginAgain(const UserDbId userDbId, QString userEmail, bool invalidTokenError) {
     CustomMessageBox msgBox(QMessageBox::Information, tr("The user %1 is not connected. Please log in again.").arg(userEmail),
                             QMessageBox::Ok);
     msgBox.exec();

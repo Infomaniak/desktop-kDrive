@@ -63,7 +63,7 @@ class SynthesisPopover : public QDialog {
         void refreshLockedStatus();
 
     signals:
-        void showParametersDialog(int syncDbId = 0, bool errorPage = false);
+        void showParametersDialog(SyncDbId syncDbId = 0, bool errorPage = false);
         void exit();
         void addDrive();
         void disableNotifications(NotificationsDisabled type, QDateTime dateTime);
@@ -74,16 +74,16 @@ class SynthesisPopover : public QDialog {
         void crashFatal();
         void cannotSelect(bool cannotSelect);
         void updateItemList();
-        void copyLinkItem(int syncDbId, const QString &filePath);
-        void openWebviewItem(int syncDbId, const QString &filePath);
+        void copyLinkItem(SyncDbId syncDbId, const QString &filePath);
+        void openWebviewItem(SyncDbId syncDbId, const QString &filePath);
         void executeSyncAction(ActionType type, ActionTarget target, int dbId);
 
     public slots:
         void onConfigRefreshed();
-        void onUpdateProgress(int syncDbId);
-        void onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
-        void onDriveQuotaUpdated(int driveDbId);
-        void onRefreshErrorList(int driveDbId);
+        void onUpdateProgress(SyncDbId syncDbId);
+        void onItemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
+        void onDriveQuotaUpdated(DriveDbId driveDbId);
+        void onRefreshErrorList(DriveDbId driveDbId);
         void onAppVersionLocked(bool currentVersionLocked);
         void onRefreshStatusNeeded();
         void onUpdateAvailabilityChange(UpdateState updateState);
@@ -126,10 +126,10 @@ class SynthesisPopover : public QDialog {
         void setBackgroundMainColor(const QColor &value) { _backgroundMainColor = value; }
 
         void initUI();
-        QUrl syncUrl(int syncDbId, const QString &filePath);
-        void openUrl(int syncDbId, const QString &filePath = QString());
-        void getFirstSyncWithStatus(SyncStatus status, int driveDbId, int &syncDbId, bool &found);
-        void getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found);
+        QUrl syncUrl(SyncDbId syncDbId, const QString &filePath);
+        void openUrl(SyncDbId syncDbId, const QString &filePath = QString());
+        void getFirstSyncWithStatus(SyncStatus status, const DriveDbId driveDbId, SyncDbId &syncDbId, bool &found);
+        void getFirstSyncByPriority(DriveDbId driveDbId, SyncDbId &syncDbId, bool &found);
         void refreshStatusBar(const DriveInfoClient &driveInfo);
         void refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoIt);
         void refreshStatusBar(DriveDbId driveDbId);
@@ -139,10 +139,10 @@ class SynthesisPopover : public QDialog {
         void handleRemovedDrives();
 
     private slots:
-        void onDriveSelected(int driveDbId);
+        void onDriveSelected(DriveDbId driveDbId);
         void onAddDrive();
-        void onPauseSync(ActionTarget target, int syncDbId = 0);
-        void onResumeSync(ActionTarget target, int syncDbId = 0);
+        void onPauseSync(ActionTarget target, SyncDbId syncDbId = 0);
+        void onResumeSync(ActionTarget target, SyncDbId syncDbId = 0);
         void onButtonBarToggled(int position);
         void onOpenFolderItem(const SynchronizedItem &item);
         void onOpenItem(const SynchronizedItem &item);

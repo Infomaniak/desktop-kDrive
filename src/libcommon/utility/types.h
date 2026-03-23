@@ -58,6 +58,7 @@ using UserId = int64_t;
 using AccountId = int64_t;
 using DriveId = int64_t;
 using NodeId = std::string;
+using ErrorDbId = int64_t;
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;

@@ -563,12 +563,12 @@ void SynthesisPopover::initUI() {
                    Qt::UniqueConnection);
 }
 
-QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
+QUrl SynthesisPopover::syncUrl(const SyncDbId syncDbId, const QString &filePath) {
     QString fullFilePath = _gui->folderPath(syncDbId, filePath);
     return KDC::GuiUtility::getUrlFromLocalPath(fullFilePath);
 }
 
-void SynthesisPopover::openUrl(int syncDbId, const QString &filePath) {
+void SynthesisPopover::openUrl(const SyncDbId syncDbId, const QString &filePath) {
     QUrl url = syncUrl(syncDbId, filePath);
     if (url.isValid()) {
         if (!QDesktopServices::openUrl(url)) {
@@ -579,7 +579,7 @@ void SynthesisPopover::openUrl(int syncDbId, const QString &filePath) {
     }
 }
 
-void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, int &syncDbId, bool &found) {
+void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, const DriveDbId driveDbId, SyncDbId &syncDbId, bool &found) {
     found = false;
     for (auto const &syncInfoMapElt: _gui->syncInfoMap()) {
         if (syncInfoMapElt.second.status() == status && syncInfoMapElt.second.driveDbId() == driveDbId) {
@@ -590,7 +590,7 @@ void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, 
     }
 }
 
-void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found) {
+void SynthesisPopover::getFirstSyncByPriority(const DriveDbId driveDbId, SyncDbId &syncDbId, bool &found) {
     static QVector<SyncStatus> statusPriority =
             QVector<SyncStatus>() << SyncStatus::Starting << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
                                   << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Error << SyncStatus::Idle;
@@ -806,7 +806,7 @@ void SynthesisPopover::onConfigRefreshed() {
     forceRedraw();
 }
 
-void SynthesisPopover::onUpdateProgress(int syncDbId) {
+void SynthesisPopover::onUpdateProgress(const SyncDbId syncDbId) {
     const auto &syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
     if (syncInfoMapIt != _gui->syncInfoMap().end()) {
         if (syncInfoMapIt->second.driveDbId() == _gui->currentDriveDbId()) {
@@ -815,7 +815,7 @@ void SynthesisPopover::onUpdateProgress(int syncDbId) {
     }
 }
 
-void SynthesisPopover::onDriveQuotaUpdated(int driveDbId) {
+void SynthesisPopover::onDriveQuotaUpdated(const DriveDbId driveDbId) {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString()
               << " - SynthesisPopover::onUpdateQuota account: " << driveDbId.toStdString() << std::endl;
@@ -831,7 +831,7 @@ void SynthesisPopover::onDriveQuotaUpdated(int driveDbId) {
 
 void SynthesisPopover::onRefreshStatusNeeded() {}
 
-void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo) {
+void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString() << " - SynthesisPopover::onItemCompleted" << std::endl;
 #endif
@@ -842,7 +842,7 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         return;
     }
 
-    int driveDbId = syncInfoMapIt->second.driveDbId();
+    auto driveDbId = syncInfoMapIt->second.driveDbId();
 
     auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -1003,11 +1003,11 @@ void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
     setPosition(_sysTrayIconRect);
 }
 
-void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
+void SynthesisPopover::onRefreshErrorList(const DriveDbId /*driveDbId*/) {
     _synthesisBar->refreshErrorsButton();
 }
 
-void SynthesisPopover::onDriveSelected(int driveDbId) {
+void SynthesisPopover::onDriveSelected(const DriveDbId driveDbId) {
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCWarning(lcSynthesisPopover()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -1037,7 +1037,7 @@ void SynthesisPopover::onAddDrive() {
     emit addDrive();
 }
 
-void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
+void SynthesisPopover::onPauseSync(ActionTarget target, const SyncDbId syncDbId) {
     const int driveToMatomo =
             (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "pauseSyncButton", driveToMatomo);
@@ -1048,7 +1048,7 @@ void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
                                                             : 0));
 }
 
-void SynthesisPopover::onResumeSync(ActionTarget target, int syncDbId) {
+void SynthesisPopover::onResumeSync(ActionTarget target, const SyncDbId syncDbId) {
     const int driveToMatomo =
             (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "resumeSyncButton", driveToMatomo);

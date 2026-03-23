@@ -74,14 +74,14 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void activateLoadInfo(bool value = true);
         void computeOverallSyncStatus();
         bool loadInfoMaps();
-        void openLoginDialog(int userDbId, bool invalidTokenError);
+        void openLoginDialog(UserDbId userDbId, bool invalidTokenError);
         void newDriveWizard(bool addDriveAccept = false);
-        void getWebviewDriveLink(int userDbId, QString &driveLink);
-        void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
-        void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
-        void resolveUnsupportedCharErrors(int driveDbId);
+        void getWebviewDriveLink(UserDbId userDbId, QString &driveLink);
+        void errorInfoList(DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList);
+        void resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
+        void resolveUnsupportedCharErrors(DriveDbId driveDbId);
         void closeAllExcept(const QWidget *exceptWidget);
-        bool isUserUsed(int userDbId) const;
+        bool isUserUsed(UserDbId userDbId) const;
 
         static void restoreGeometry(QWidget *w);
 
@@ -90,14 +90,14 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void accountListRefreshed();
         void driveListRefreshed();
         void syncListRefreshed();
-        void driveQuotaUpdated(int driveDbId);
-        void updateProgress(int syncDbId);
-        void syncFinished(int syncDbId);
-        void itemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
-        void vfsConversionCompleted(int syncDbId);
-        void errorAdded(int syncDbId);
+        void driveQuotaUpdated(DriveDbId driveDbId);
+        void updateProgress(SyncDbId syncDbId);
+        void syncFinished(SyncDbId syncDbId);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
+        void vfsConversionCompleted(SyncDbId syncDbId);
+        void errorAdded(SyncDbId syncDbId);
         void appVersionLocked(bool currentVersionLocked);
-        void errorsCleared(int syncDbId);
+        void errorsCleared(SyncDbId syncDbId);
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
         void driveBeingRemoved();
@@ -107,13 +107,13 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
 
     public slots:
         // void onManageRightAndSharingItem(int syncDbId, const QString &filePath);
-        void onCopyLinkItem(int syncDbId, const QString &nodeId);
-        void onOpenWebviewItem(int userDbId, const QString &nodeId);
+        void onCopyLinkItem(SyncDbId syncDbId, const QString &nodeId);
+        void onOpenWebviewItem(UserDbId userDbId, const QString &nodeId);
         void onShutdown();
-        void onShowParametersDialog(int syncDbId = 0, bool errorPage = false);
-        void onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
-        void onErrorsCleared(int syncDbId);
-        void onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
+        void onShowParametersDialog(SyncDbId syncDbId = 0, bool errorPage = false);
+        void onErrorAdded(bool serverLevel, ExitCode exitCode, SyncDbId syncDbId);
+        void onErrorsCleared(SyncDbId syncDbId);
+        void onFixConflictingFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void onNewDriveWizard();
         void onShowWindowsUpdateDialog(const KDC::VersionInfo &versionInfo) const;
         void onAppVersionLocked(bool currentVersionLocked);
@@ -139,9 +139,9 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         UserDbId _currentUserDbId{0};
         AccountDbId _currentAccountDbId{0};
         SyncDbId _currentDriveDbId{0};
-        QSet<int> _driveWithNewErrorSet;
+        QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
-        std::map<int, QList<ErrorInfo>> _errorInfoMap;
+        std::map<ErrorDbId, QList<ErrorInfo>> _errorInfoMap;
 
 #ifdef Q_OS_LINUX
         QAction *_actionSynthesis = nullptr;
@@ -160,10 +160,10 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         static QString shortGuiLocalPath(const QString &path);
         void computeTrayOverallStatus(SyncStatus &status, bool &unresolvedConflicts);
         QString trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused);
-        void executeSyncAction(ActionType type, int syncDbId);
-        void refreshErrorList(int driveDbId);
-        ExitCode loadError(int driveDbId, int syncDbId, ErrorLevel level);
-        ExitCode handleErrors(int driveDbId, int syncDbId, ErrorLevel level);
+        void executeSyncAction(ActionType type, SyncDbId syncDbId);
+        void refreshErrorList(DriveDbId driveDbId);
+        ExitCode loadError(DriveDbId driveDbId, SyncDbId syncDbId, ErrorLevel level);
+        ExitCode handleErrors(DriveDbId driveDbId, SyncDbId syncDbId, ErrorLevel level);
 
     private slots:
         void onShowTrayMessage(const QString &title, const QString &msg);
@@ -185,27 +185,27 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         // User slots
         void onUserAdded(const UserInfo &userInfo);
         void onUserUpdated(const UserInfo &userInfo);
-        void onUserStatusChanged(int userDbId, bool connected, QString connexionError);
-        void onRemoveUser(int userDbId);
-        void onUserRemoved(int userDbId);
+        void onUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
+        void onRemoveUser(UserDbId userDbId);
+        void onUserRemoved(UserDbId userDbId);
         // Account slots
         void onAccountAdded(const AccountInfo &accountInfo);
         void onAccountUpdated(const AccountInfo &accountInfo);
-        void onAccountRemoved(int userDbId);
+        void onAccountRemoved(UserDbId userDbId);
         // Drive slots
         void onDriveAdded(const DriveInfo &driveInfo);
         void onDriveUpdated(const DriveInfo &driveInfo);
-        void onDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
-        void onRemoveDrive(int driveDbId);
-        void onDriveRemoved(int driveDbId);
-        void onDriveDeletionFailed(int driveDbId);
+        void onDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used);
+        void onRemoveDrive(DriveDbId driveDbId);
+        void onDriveRemoved(DriveDbId driveDbId);
+        void onDriveDeletionFailed(DriveDbId driveDbId);
         // Sync slots
         void onSyncAdded(const SyncInfo &syncInfo);
         void onSyncUpdated(const SyncInfo &syncInfo);
-        void onRemoveSync(int syncDbId);
-        void onSyncRemoved(int syncDbId);
-        void onSyncDeletionFailed(int syncDbId);
-        void onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
+        void onRemoveSync(SyncDbId syncDbId);
+        void onSyncRemoved(SyncDbId syncDbId);
+        void onSyncDeletionFailed(SyncDbId syncDbId);
+        void onProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, int dbId);
         void onRefreshStatusNeeded();

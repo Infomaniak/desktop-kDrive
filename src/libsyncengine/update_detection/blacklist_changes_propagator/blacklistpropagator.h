@@ -31,7 +31,7 @@ class BlacklistPropagator : public AbstractPropagatorJob {
 
         ExitInfo runJob() override;
 
-        inline int syncDbId() const { return _syncPal->syncDbId(); }
+        inline SyncDbId syncDbId() const { return _syncPal->syncDbId(); }
 
     private:
         ExitInfo checkNodes();

@@ -52,7 +52,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showParametersDialog();
         void showSynthesisDialog();
         void updateSystrayIcon();
-        void askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError);
+        void askUserToLoginAgain(UserDbId userDbId, QString userEmail, bool invalidTokenError);
 
     signals:
         // User signals

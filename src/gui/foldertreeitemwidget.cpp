@@ -60,7 +60,7 @@ FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &FolderTreeItemWidget::onFolderSizeCompleted);
 }
 
-void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
+void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
     _syncDbId = syncDbId;
 
     if (const auto exitCode = updateBlacklistSet(); exitCode != ExitCode::Ok) {
@@ -86,7 +86,7 @@ void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
     setDriveDbId(syncInfoMapIt->second.driveDbId());
 }
 
-void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
+void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -105,14 +105,14 @@ void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
     _userDbId = accountInfoMapIt->second.userDbId();
 }
 
-void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvailableInfo &driveInfo) {
+void FolderTreeItemWidget::setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo) {
     _userDbId = userDbId;
     _driveId = driveInfo.driveId();
     _driveName = driveInfo.name();
     _driveColor = driveInfo.color();
 }
 
-void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
+void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;

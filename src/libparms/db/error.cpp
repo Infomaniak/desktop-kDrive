@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause) :
+Error::Error(const std::string &functionName, const ExitCode exitCode, const ExitCause exitCause) :
     _level(ErrorLevel::Server),
     _functionName(functionName),
     _exitCode(exitCode),
@@ -39,7 +39,7 @@ Error::Error(const std::string &functionName, const ExitInfo &exitInfo) :
     _exitCause(exitInfo.cause()),
     _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
-Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause) :
+Error::Error(const SyncDbId syncDbId, const std::string &workerName, const ExitCode exitCode, const ExitCause exitCause) :
     _level(ErrorLevel::SyncPal),
     _syncDbId(syncDbId),
     _workerName(workerName),
@@ -47,7 +47,7 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
     _exitCause(exitCause),
     _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
-Error::Error(int syncDbId, const std::string &workerName, const ExitInfo &exitInfo) :
+Error::Error(const SyncDbId syncDbId, const std::string &workerName, const ExitInfo &exitInfo) :
     _level(ErrorLevel::SyncPal),
     _syncDbId(syncDbId),
     _workerName(workerName),
@@ -55,10 +55,11 @@ Error::Error(int syncDbId, const std::string &workerName, const ExitInfo &exitIn
     _exitCause(exitInfo.cause()),
     _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
-Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-             ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
-             CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/,
-             ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/) :
+Error::Error(const SyncDbId syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, const NodeType nodeType,
+             const SyncPath &path, const ConflictType conflictType,
+             const InconsistencyType inconsistencyType /*= InconsistencyType::None */,
+             const CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/,
+             const ExitCode exitCode /*= ExitCode::Unknown*/, const ExitCause exitCause /*= ExitCause::Unknown*/) :
     _level(ErrorLevel::Node),
     _syncDbId(syncDbId),
     _exitCode(exitCode),
@@ -73,11 +74,11 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
     _destinationPath(destinationPath),
     _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
-Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
-             const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
-             const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
-             InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
-             const SyncPath &destinationPath /*= ""*/) :
+Error::Error(const ErrorDbId dbId, const int64_t time, const ErrorLevel level, const std::string &functionName,
+             const SyncDbId syncDbId, const std::string &workerName, const ExitCode exitCode, const ExitCause exitCause,
+             const NodeId &localNodeId, const NodeId &remoteNodeId, const NodeType nodeType, const SyncPath &path,
+             const ConflictType conflictType, const InconsistencyType inconsistencyType,
+             const CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/) :
     _dbId(dbId),
     _level(level),
     _functionName(functionName),

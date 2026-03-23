@@ -3138,7 +3138,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     return true;
 }
 
-bool ParmsDb::deleteError(int64_t dbId, bool &found) {
+bool ParmsDb::deleteError(const ErrorDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;

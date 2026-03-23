@@ -676,7 +676,7 @@ bool Handler::arePtracesEnabled() const {
     return _isSentryActivated && _appType != AppType::Test;
 }
 
-pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
+pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, const SyncDbId syncDbId) {
     if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
@@ -716,7 +716,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
     return newPTraceId;
 }
 
-void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
+void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, const SyncDbId syncDbId, PTraceStatus status) {
     if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);

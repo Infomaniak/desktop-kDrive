@@ -142,7 +142,7 @@ bool ClientGui::isConnected() {
     return GuiRequests::isConnnected();
 }
 
-void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
+void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId syncDbId) {
     if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
@@ -167,7 +167,7 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) 
     }
 }
 
-void ClientGui::onErrorsCleared(int syncDbId) {
+void ClientGui::onErrorsCleared(const SyncDbId syncDbId) {
     // Refresh errorlist
     if (syncDbId == 0) {
         refreshErrorList(0);
@@ -181,7 +181,7 @@ void ClientGui::onErrorsCleared(int syncDbId) {
     }
 }
 
-void ClientGui::onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors) {
+void ClientGui::onFixConflictingFilesCompleted(const SyncDbId syncDbId, uint64_t nbErrors) {
     if (nbErrors > 0) {
         const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
         if (syncInfoMapIt != _syncInfoMap.end()) {
@@ -707,7 +707,7 @@ QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedCon
     return statusString;
 }
 
-void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
+void ClientGui::executeSyncAction(ActionType type, const SyncDbId syncDbId) {
     auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt == _syncInfoMap.end()) {
         qCWarning(lcClientGui()) << "Sync not found in syncInfoMap for syncDbId=" << syncDbId;
@@ -754,7 +754,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     }
 }
 
-void ClientGui::refreshErrorList(int driveDbId) {
+void ClientGui::refreshErrorList(const DriveDbId driveDbId) {
     if (!_driveWithNewErrorSet.contains(driveDbId)) {
         _driveWithNewErrorSet.insert(driveDbId);
     }
@@ -869,7 +869,7 @@ void ClientGui::onAddDriveFinished() {
     static_cast<void>(_addDriveWizard.release());
 }
 
-void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
+void ClientGui::onCopyLinkItem(const DriveDbId driveDbId, const QString &nodeId) {
     QString linkUrl;
     if (const auto exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl); exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPublicLinkUrl";
@@ -879,7 +879,7 @@ void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
     QApplication::clipboard()->setText(linkUrl);
 }
 
-void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
+void ClientGui::onOpenWebviewItem(const DriveDbId driveDbId, const QString &nodeId) {
     QString linkUrl;
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, nodeId, linkUrl);
     if (exitCode != ExitCode::Ok) {
@@ -890,7 +890,7 @@ void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
     KDC::GuiUtility::openBrowser(linkUrl, nullptr);
 }
 
-void ClientGui::getWebviewDriveLink(int driveDbId, QString &driveLink) {
+void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLink) {
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, "", driveLink);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPrivateLinkUrl";
@@ -898,13 +898,13 @@ void ClientGui::getWebviewDriveLink(int driveDbId, QString &driveLink) {
     }
 }
 
-void ClientGui::errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList) {
+void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList) {
     if (_errorInfoMap.find(driveDbId) != _errorInfoMap.end()) {
         errorInfoList = _errorInfoMap[driveDbId];
     }
 }
 
-void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
+void ClientGui::resolveConflictErrors(const DriveDbId driveDbId, bool keepLocalVersion) {
     ExitCode exitCode = GuiRequests::resolveConflictErrors(driveDbId, keepLocalVersion);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveConflictErrors";
@@ -912,7 +912,7 @@ void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
     }
 }
 
-void ClientGui::resolveUnsupportedCharErrors(int driveDbId) {
+void ClientGui::resolveUnsupportedCharErrors(const DriveDbId driveDbId) {
     ExitCode exitCode = GuiRequests::resolveUnsupportedCharErrors(driveDbId);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveUnsupportedCharErrors";
@@ -927,7 +927,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
     emit refreshStatusNeeded();
 }
 
-ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
+ExitCode ClientGui::loadError(const DriveDbId driveDbId, const SyncDbId syncDbId, ErrorLevel level) {
     const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
@@ -1012,7 +1012,7 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
     }
 }
 
-bool ClientGui::isUserUsed(int userDbId) const {
+bool ClientGui::isUserUsed(const UserDbId userDbId) const {
     for (const auto &[accountDbId, accountInfoClient]: _accountInfoMap) {
         if (accountInfoClient.userDbId() == userDbId) {
             for (const auto &[driveDbId, driveInfoClient]: _driveInfoMap) {
@@ -1048,7 +1048,7 @@ void ClientGui::onUserAdded(const UserInfo &userInfo) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onRemoveUser(int userDbId) {
+void ClientGui::onRemoveUser(const UserDbId userDbId) {
     ExitCode exitCode = GuiRequests::deleteUser(userDbId);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteUser for userDbId=" << userDbId;
@@ -1071,7 +1071,7 @@ void ClientGui::onUserUpdated(const UserInfo &userInfo) {
     }
 }
 
-void ClientGui::onUserStatusChanged(int userDbId, bool connected, QString connexionError) {
+void ClientGui::onUserStatusChanged(const UserDbId userDbId, bool connected, QString connexionError) {
     const auto userInfoMapIt = _userInfoMap.find(userDbId);
     if (userInfoMapIt != _userInfoMap.end()) {
         userInfoMapIt->second.setConnected(connected);
@@ -1084,7 +1084,7 @@ void ClientGui::onUserStatusChanged(int userDbId, bool connected, QString connex
     }
 }
 
-void ClientGui::onUserRemoved(int userDbId) {
+void ClientGui::onUserRemoved(const UserDbId userDbId) {
     auto userInfoMapIt = _userInfoMap.find(userDbId);
     if (userInfoMapIt != _userInfoMap.end()) {
         auto accountInfoMapIt = _accountInfoMap.begin();
@@ -1169,7 +1169,7 @@ void ClientGui::onAccountUpdated(const AccountInfo &accountInfo) {
     }
 }
 
-void ClientGui::onAccountRemoved(int accountDbId) {
+void ClientGui::onAccountRemoved(const AccountDbId accountDbId) {
     auto accountInfoMapIt = _accountInfoMap.find(accountDbId);
     if (accountInfoMapIt != _accountInfoMap.end()) {
         // Erase accounts linked
@@ -1237,7 +1237,7 @@ void ClientGui::onDriveUpdated(const DriveInfo &driveInfo) {
     }
 }
 
-void ClientGui::onDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
+void ClientGui::onDriveQuotaUpdated(const DriveDbId driveDbId, qint64 total, qint64 used) {
     const auto &driveInfoMapIt = _driveInfoMap.find(driveDbId);
     if (driveInfoMapIt != _driveInfoMap.end()) {
         driveInfoMapIt->second.setTotalSize(total);
@@ -1247,7 +1247,7 @@ void ClientGui::onDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
     }
 }
 
-void ClientGui::onRemoveDrive(int driveDbId) {
+void ClientGui::onRemoveDrive(const DriveDbId driveDbId) {
     auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
     if (driveInfoMapIt == _driveInfoMap.end()) {
         return;
@@ -1276,7 +1276,7 @@ void ClientGui::onRemoveDrive(int driveDbId) {
     }
 }
 
-void ClientGui::onDriveDeletionFailed(int driveDbId) {
+void ClientGui::onDriveDeletionFailed(const DriveDbId driveDbId) {
     auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
     assert(driveInfoMapIt != _driveInfoMap.cend());
 
@@ -1287,7 +1287,7 @@ void ClientGui::onDriveDeletionFailed(int driveDbId) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onDriveRemoved(int driveDbId) {
+void ClientGui::onDriveRemoved(const DriveDbId driveDbId) {
     if (auto driveInfoMapIt = _driveInfoMap.find(driveDbId); driveInfoMapIt != _driveInfoMap.end()) {
         for (auto syncInfoMapIt = _syncInfoMap.begin(); syncInfoMapIt != _syncInfoMap.end();) {
             // Erase linked synchronizations
@@ -1339,7 +1339,7 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
     }
 }
 
-void ClientGui::onRemoveSync(int syncDbId) {
+void ClientGui::onRemoveSync(const SyncDbId syncDbId) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt != _syncInfoMap.end()) {
         CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
@@ -1350,7 +1350,7 @@ void ClientGui::onRemoveSync(int syncDbId) {
     }
 }
 
-void ClientGui::onSyncDeletionFailed(int syncDbId) {
+void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
     // Unlock sync GUI actions.
     auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
     assert(syncInfoMapIt != _syncInfoMap.cend());
@@ -1360,7 +1360,7 @@ void ClientGui::onSyncDeletionFailed(int syncDbId) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onSyncRemoved(int syncDbId) {
+void ClientGui::onSyncRemoved(const SyncDbId syncDbId) {
     // Erase sync
     _syncInfoMap.erase(syncDbId);
 
@@ -1368,7 +1368,7 @@ void ClientGui::onSyncRemoved(int syncDbId) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
+void ClientGui::onProgressInfo(const SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                                int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt != _syncInfoMap.end()) {
@@ -1433,7 +1433,7 @@ void ClientGui::activateLoadInfo(bool value) {
     }
 }
 
-void ClientGui::onShowParametersDialog(int syncDbId, bool errorPage) {
+void ClientGui::onShowParametersDialog(const SyncDbId syncDbId, bool errorPage) {
     if (_parametersDialog.isNull()) {
         setupParametersDialog();
     }
@@ -1556,7 +1556,7 @@ bool ClientGui::loadInfoMaps() {
     return true;
 }
 
-void ClientGui::openLoginDialog(int userDbId, bool invalidTokenError) {
+void ClientGui::openLoginDialog(const UserDbId userDbId, bool invalidTokenError) {
     bool accepted = false;
     _loginDialog.reset(new LoginDialog(userDbId, shared_from_this()));
     _loginDialog->setAttribute(Qt::WA_DeleteOnClose);
