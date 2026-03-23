@@ -91,7 +91,7 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
         qDebug() << "[IpcClient] Cannot send request, socket not connected";
         return -1;
     }
-    const int32_t id = _nextId.fetchAndAddOrdered(1);
+    const int32_t id = _nextId++;
 
     Poco::DynamicStruct msg;
     msg[MSG_TYPE] = 1; // cf. src/server/comm/guijobs/abstractguijob.h GuiJobType enum
@@ -116,7 +116,7 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     return id;
 }
 
-/**  Forwards the socket connected() signal and notifies upper layers. */
+/** Forwards the socket connected() signal and notifies upper layers. */
 void IpcClient::onConnected() {
     emit connected();
 }
@@ -150,6 +150,7 @@ void IpcClient::processBuffer() {
     std::string raw;
     while (extractNextMessage(_readBuffer, raw)) {
         try {
+            parser.reset();
             const Poco::Dynamic::Var var = parser.parse(raw);
             const Poco::DynamicStruct msg = *var.extract<Poco::JSON::Object::Ptr>();
 
