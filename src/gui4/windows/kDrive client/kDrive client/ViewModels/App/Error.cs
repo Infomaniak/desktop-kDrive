@@ -21,7 +21,6 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
@@ -33,7 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _DbId = -1;
         private DateTime _timestamp = DateTime.MinValue;
         private ErrorLevel _errorLevel = ErrorLevel.Unknown;
-        private Sync? _sync;
+        private required Sync? _sync;
         private ExitCode _exitCode = ExitCode.Unknown;
         private ExitCause _exitCause = ExitCause.Unknown;
         NodeType _nodeType = NodeType.Unknown;
@@ -60,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
             _sync = sync;
         }
 
-        public Error(ErrorInfo errorInfo, ref bool sucess)
+        public Error(Sync sync, ErrorInfo errorInfo)
         {
             _DbId = errorInfo.DbId ?? _DbId;
             _timestamp = errorInfo.Time ?? _timestamp;
@@ -76,17 +75,7 @@ namespace Infomaniak.kDrive.ViewModels
             _inconsistencyType = errorInfo.InconsistencyType ?? _inconsistencyType;
             _cancelType = errorInfo.CancelType ?? _cancelType;
             _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
-
-            if (errorInfo.SyncDbId is not null)
-            {
-                _sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-
-                if (_sync is null)
-                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
-
-            }
-
-            sucess = _sync is not null;
+            _sync = sync;
         }
 
         public DbId DbId
@@ -109,7 +98,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Sync Sync
         {
-            get => _sync ?? throw new InvalidOperationException("Sync property is not set for this Error instance.");
+            get => _sync;
             private set => SetPropertyInUIThread(ref _sync, value);
         }
 

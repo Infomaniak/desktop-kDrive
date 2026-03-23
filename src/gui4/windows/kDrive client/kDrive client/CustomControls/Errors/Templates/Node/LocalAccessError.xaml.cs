@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string absolutPath = Path.Combine(Error.Sync?.LocalPath ?? "", Error.Path);
+                string absolutPath = Path.Combine(Error.Sync.LocalPath, Error.Path);
                 if (string.IsNullOrEmpty(Path.GetDirectoryName(absolutPath)))
                 {
                     Utility.ShowUnexpectedErrorTeachingTip();

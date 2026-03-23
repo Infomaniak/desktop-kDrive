@@ -18,15 +18,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             Error = error;
         }
 
-        private async void OnRefreshClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (Error?.Sync is null)
-            {
-                Logger.Log(Logger.Level.Warning, "Refresh clicked but Sync is null");
-                Utility.ShowUnexpectedErrorTeachingTip();
-                return;
-            }
-
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
