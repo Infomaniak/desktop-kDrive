@@ -84,12 +84,13 @@ void IpcClient::connectToServer(quint16 port) {
 /**
  * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
  * @param params Request parameters
- * @return the request ID, which can be used to match the response with the request, or -1 if the request could not be sent (e.g. if the socket is not connected or if an error occurs while sending the data)
+ * @return the request ID, which can be used to match the response with the request.
+ * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client calls exit(EXIT_FAILURE).
  */
 int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
     if (_socket->state() != QTcpSocket::ConnectedState) {
-        qDebug() << "[IpcClient] Cannot send request, socket not connected";
-        return -1;
+        qFatal() << "[IpcClient] Cannot send request, socket not connected";
+        exit(EXIT_FAILURE);
     }
     const int32_t id = _nextId++;
 
@@ -99,8 +100,8 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
 
     if (const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
-        qWarning() << "[IpcClient] Failed to insert request parameters into message";
-        return -1;
+        qFatal() << "[IpcClient] Failed to insert request parameters into message";
+        exit(EXIT_FAILURE);
     }
 
     const std::string json = Poco::Dynamic::structToString(msg);
@@ -108,12 +109,12 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
 
     if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData != jsonSize) {
         if (writtenData < 0) {
-            qDebug() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
+            qFatal() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
         } else {
             // Very unlikely: the kernel buffer is filled by an internal write to the fd; if the server is not reading in time, another issue is probably occurring on its side.
-            qDebug() << "[IpcClient] Partial write detected, expected:" << jsonSize << "written:" << writtenData;
+            qFatal() << "[IpcClient] Partial write detected, expected:" << jsonSize << "written:" << writtenData;
         }
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     return id;
@@ -146,7 +147,7 @@ void IpcClient::onReadyRead() {
  *    "num": int, // request number for requests, signal number for signals
  *    "params": JSON object
  * }
- *
+ * @note Any parsing or deserialization error is considered fatal: the client calls exit(EXIT_FAILURE).
  */
 void IpcClient::processBuffer() {
     Poco::JSON::Parser parser;
@@ -157,10 +158,15 @@ void IpcClient::processBuffer() {
             const Poco::Dynamic::Var var = parser.parse(raw);
             const auto& objPtr = var.extract<Poco::JSON::Object::Ptr>();
             if (!objPtr) {
-                qWarning() << "[IpcClient] Failed to parse the JSON message: \n'" << raw << "'\n";
-                continue;
+                qFatal() << "[IpcClient] Failed to parse the JSON message: \n'" << raw << "'\n";
+                exit(EXIT_FAILURE);
             }
             const Poco::DynamicStruct msg = *objPtr;
+
+            if (!msg.contains(MSG_TYPE) || !msg.contains(MSG_REQUEST_ID) || !msg.contains(MSG_REQUEST_NUM) || !msg.contains(MSG_REQUEST_PARAMS)) {
+                qFatal() << "[IpcClient] Received malformed message, missing required fields";
+                exit(EXIT_FAILURE);
+            }
 
             const uint8_t type = msg[MSG_TYPE];
             const int32_t id = msg[MSG_REQUEST_ID];
@@ -168,8 +174,9 @@ void IpcClient::processBuffer() {
             const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
             emit messageReceived(type, id, num, params);
-        } catch (const Poco::Exception &) {
-            // TODO add logging when log4cplus is setup in the client
+        } catch (const Poco::Exception &e) {
+            qFatal() << "[IpcClient] Exception while processing message:" << e.what();
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -179,7 +186,8 @@ void IpcClient::processBuffer() {
  * Here, we can count the brackets because every string is base64 encoded so it cannot contain brackets, and there are no escape characters in the JSON messages.
  * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{' and ending with the matching '}'.
  * @param outMessage The extracted JSON message, if a complete message is found at the beginning of the buffer. The message is removed from the buffer.
- * @return true if a complete message was successfully extracted and removed from the buffer, false otherwise (if the buffer is empty, does not start with '{', or does not contain a complete JSON object).
+ * @return true if a complete message was successfully extracted and removed from the buffer, false if the buffer is empty or does not yet contain a complete JSON object.
+ * @note Malformed input (buffer not starting with '{', or too many nested objects) is considered fatal: the client calls exit(EXIT_FAILURE).
  */
 bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage) {
     if (buffer.empty()) {
@@ -187,14 +195,17 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
     }
     
     if (buffer[0] != '{') {
-        buffer.clear(); // Discard the buffer (same logic as Windows)
-        // TODO add logging when log4cplus is setup in the client
-        return false;
+        qFatal() << "[IpcClient] Invalid message format: buffer does not start with '{'";
+        exit(EXIT_FAILURE);
     }
 
     uint8_t balance = 1;
     for (size_t i = 1; i < buffer.size(); ++i) {
         if (buffer[i] == '{') {
+            if (balance == std::numeric_limits<decltype(balance)>::max()) { // Avoid overflow of balance variable, which would cause incorrect parsing and potential security issues
+                qFatal() << "[IpcClient] Invalid message format: too many nested objects";
+                exit(EXIT_FAILURE);
+            }
             ++balance;
         } else if (buffer[i] == '}') {
             --balance;
