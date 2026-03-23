@@ -3,15 +3,23 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls.Errors
 {
+    public struct DefaultErrorProperty
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
     public sealed partial class DefaultError : UserControl
     {
         private Error Error { get; init; }
 
         public bool ShowDetails => Error is not null;
+        public ObservableCollection<DefaultErrorProperty> Properties = new ObservableCollection<DefaultErrorProperty>();
 
         public DefaultError(Error error)
         {
@@ -23,42 +31,42 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
         private void UpdateCard()
         {
+            Properties.Clear();
             if (Error is not null)
             {
-                var lines = new List<string>();
 
                 void AddIfNotEmpty(string label, object? value)
                 {
                     if (value is null)
                         return;
 
-                    string text = value.ToString() ?? "";
+                    string text;
+                    if (value is DateTime dt)
+                        text = dt.ToString("O");
+                    else
+                        text = value.ToString() ?? "";
+
+                    if (text.EndsWith($".{label}")) // Remove Properties that doesn't provide a useful ToString (ie: "Infomaniak.kDrive.ViewModels.Sync")
+                        return; 
+
                     if (string.IsNullOrWhiteSpace(text) || text == "None" || text == "Unknown")
                         return;
 
-                    lines.Add($"{label,-25} {text}");
+                    Properties.Add(new DefaultErrorProperty { Name = label, Value = text });
                 }
 
-                AddIfNotEmpty("ID:", Error.DbId);
-                AddIfNotEmpty("Timestamp:", Error.Timestamp.ToString("O"));
-                AddIfNotEmpty("Level:", Error.ErrorLevel);
-                AddIfNotEmpty("Exit Code:", Error.ExitCode);
-                AddIfNotEmpty("Exit Cause:", Error.ExitCause);
-                AddIfNotEmpty("Node Type:", Error.NodeType);
-                AddIfNotEmpty("Path:", Error.Path);
-                AddIfNotEmpty("Destination:", Error.DestinationPath);
-                AddIfNotEmpty("Conflict:", Error.ConflictType);
-                AddIfNotEmpty("Inconsistency:", Error.InconsistencyType);
-                AddIfNotEmpty("Cancel Type:", Error.CancelType);
-                AddIfNotEmpty("Auto-resolved:", Error.AutoResolved);
-
-                DetailsTextBlock.Text = lines.Count > 0
-                    ? string.Join(Environment.NewLine, lines)
-                    : "No additional error details available.";
-            }
-            else
-            {
-                DetailsTextBlock.Text = "An unexpected error has occurred.";
+                foreach (var prop in Error.GetType().GetProperties())
+                {
+                    try
+                    {
+                        var value = prop.GetValue(Error);
+                        AddIfNotEmpty($"{prop.Name}:", value);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(Logger.Level.Warning, $"Failed to get property {prop.Name} from Error: {ex.Message}");
+                    }
+                }
             }
         }
 

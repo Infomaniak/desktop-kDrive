@@ -10,10 +10,10 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         ExitCodes = new[] { ExitCode.BackError },
         ExitCauses = new[] { ExitCause.HttpErrForbidden }
     )]
-    public sealed partial class HttpErrForbiddenError : UserControl
+    public sealed partial class GenericErrForbiddenError : UserControl
     {
         private Error Error { get; init; }
-        public HttpErrForbiddenError(Error error)
+        public GenericErrForbiddenError(Error error)
         {
             this.InitializeComponent();
             Error = error;

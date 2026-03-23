@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString("systemErrorSyncDirAccessErrorTitle"),
+                Title = Localizer.Instance.GetString("errSystemErrorSyncDirAccessErrorTitle"),
                 DefaultButton = ContentDialogButton.Primary,
                 CloseButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),

@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 20 Mar 2026 18:11:28 +0100 
+  Exported at: Mon, 23 Mar 2026 12:39:17 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -179,6 +179,9 @@
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Il browser dovrebbe aprirsi automaticamente per completare l’accesso. Una volta effettuato l’accesso, si tornerà automaticamente a kDrive.</value> 
   </data> 
+  <data name="buttonActivateOfflineSync" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="buttonAddAdvancedSync" xml:space="preserve"> 
     <value>Sincronizzare una cartella</value> 
   </data> 
@@ -199,6 +202,9 @@
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Annulla</value> 
+  </data> 
+  <data name="buttonChangeFolder" xml:space="preserve"> 
+    <value>Cambiare la cartella</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Chiudere</value> 
@@ -226,9 +232,6 @@
   </data> 
   <data name="buttonCustomLocation" xml:space="preserve"> 
     <value>Posizione personalizzata</value> 
-  </data> 
-  <data name="buttonDefaultLocation" xml:space="preserve"> 
-    <value>Posizione predefinita</value> 
   </data> 
   <data name="buttonDisconnectAccount" xml:space="preserve"> 
     <value>Disconnettere questo account</value> 
@@ -272,12 +275,18 @@
   <data name="buttonManageIndividually" xml:space="preserve"> 
     <value>Trattare i file singolarmente</value> 
   </data> 
+  <data name="buttonManageStorage" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Aprire la cartella di debug</value> 
   </data> 
   <data name="buttonOpenExplorer" xml:space="preserve"> 
     <value>Aprire l’explorer</value> 
     <comment>Ouvrir l’explorateur</comment> 
+  </data> 
+  <data name="buttonOpenFolder" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="buttonOpenInBrowser" xml:space="preserve"> 
     <value>Aprire nel browser</value> 
@@ -324,9 +333,11 @@
   <data name="buttonRetry" xml:space="preserve"> 
     <value>Riprova</value> 
   </data> 
+  <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
+    <value>Ritorno alla cartella predefinita</value> 
+  </data> 
   <data name="buttonSave" xml:space="preserve"> 
     <value>Salva</value> 
-    <comment>Save</comment> 
   </data> 
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
     <value>Salva le mie scelte</value> 
@@ -338,7 +349,7 @@
     <value>Vedere le attività</value> 
   </data> 
   <data name="buttonSelect" xml:space="preserve"> 
-    <value>selezionare</value> 
+    <value>Selezionare</value> 
   </data> 
   <data name="buttonSelectFolder" xml:space="preserve"> 
     <value>Selezionare una cartella</value> 
@@ -350,7 +361,7 @@
     <value>Selezionare una posizione</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
-    <value>selezionato</value> 
+    <value>Selezionato</value> 
   </data> 
   <data name="buttonSend" xml:space="preserve"> 
     <value>Inviare</value> 
@@ -375,6 +386,9 @@
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
     <value>Iniziare gratuitamente</value> 
+  </data> 
+  <data name="buttonSynchronizeOffline" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Aggiornamento</value> 
@@ -455,9 +469,6 @@ Se il problema persiste, contattare il nostro team di assistenza.</value>
   </data> 
   <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
     <value>In queste situazioni è necessaria una nuova sincronizzazione per continuare a utilizzare correttamente kDrive.</value> 
-  </data> 
-  <data name="dialogDataErrorSyncDirChangedTitle" xml:space="preserve"> 
-    <value>È stata rilevata una modifica nella configurazione.</value> 
   </data> 
   <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
     <value>Selezionare una cartella vuota che non si trovi nella radice dell’unità.
@@ -566,13 +577,6 @@ Effettuare nuovamente l’accesso con l’indirizzo e-mail corretto %@</value>
   <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
     <value>Questo conto non corrisponde</value> 
   </data> 
-  <data name="driveMaintenanceErrorDescription" xml:space="preserve"> 
-    <value>Questo kDrive non è temporaneamente disponibile per manutenzione.
-Riprovare tra qualche minuto.</value> 
-  </data> 
-  <data name="driveMaintenanceErrorTitle" xml:space="preserve"> 
-    <value>Manutenzione in corso</value> 
-  </data> 
   <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
     <value>Il kDrive si sta svegliando… potrebbe richiedere qualche istante.</value> 
   </data> 
@@ -602,6 +606,12 @@ Chiedere l’accesso al proprietario o all’amministratore.</value>
     <value>Non si ha il permesso di eliminare questo file o cartella. Verrà ripristinato nella sua posizione originale.
 Chiedere l’accesso al proprietario o all’amministratore.</value> 
   </data> 
+  <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
+    <value>È stata rilevata una modifica nella configurazione.</value> 
+  </data> 
+  <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
     <value>Le autorizzazioni di accesso del file sono state modificate, impedendo la sincronizzazione.</value> 
   </data> 
@@ -610,6 +620,22 @@ Chiedere l’accesso al proprietario o all’amministratore.</value>
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
     <value>Ultimo percorso noto del file:</value> 
+  </data> 
+  <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
+    <value>Disco esterno scollegato</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
+    <value>Questo kDrive non è temporaneamente disponibile per manutenzione.
+Riprovare tra qualche minuto.</value> 
+  </data> 
+  <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
+    <value>Manutenzione in corso</value> 
   </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Un file o una cartella con questo nome esiste già.</value> 
@@ -631,6 +657,9 @@ Chiedere l’accesso al proprietario o all’amministratore.</value>
 È possibile disattivare questo tipo di notifica nei parametri di esclusione.
 </value> 
   </data> 
+  <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
+    <value>Escluso da una regola</value> 
+  </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
     <value>Un file con questo nome esiste già.</value> 
   </data> 
@@ -638,9 +667,15 @@ Chiedere l’accesso al proprietario o all’amministratore.</value>
     <value>Questo file è bloccato da un altro utente e non può essere modificato al momento.
 Le modifiche saranno sincronizzate in seguito.</value> 
   </data> 
+  <data name="errFileLockedTitle" xml:space="preserve"> 
+    <value>File bloccato</value> 
+  </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
     <value>Il file è stato modificato localmente mentre era stato eliminato sul kDrive remoto.
 La copia locale è stata salvata nella cartella di recupero.</value> 
+  </data> 
+  <data name="errFileRescuedTitle" xml:space="preserve"> 
+    <value>File recuperato</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>Questo file supera la dimensione massima autorizzata (50 GB).
@@ -671,6 +706,22 @@ Contattare l'amministratore per aumentare il limite di dimensione del file.</val
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Gli hard link non sono supportati per la sincronizzazione.</value> 
   </data> 
+  <data name="errHardlinkTitle" xml:space="preserve"> 
+    <value>Collegamento fisico non supportato</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>La cartella di sincronizzazione sul kDrive non è più disponibile o non si ha più accesso ad essa.
+Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o eliminare e ricreare la sincronizzazione.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
+    <value>La cartella di sincronizzazione remota non è accessibile</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
+    <value>Sembra che una delle cartelle sincronizzate sia all'interno di un'altra cartella sincronizzata. Per risolvere il problema, mantenere una sola sincronizzazione per quella posizione e assicurarsi che le cartelle sincronizzate non si sovrappongano o si contengano a vicenda.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
+    <value>Sincronizzazioni annidate</value> 
+  </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
     <value>Impossibile accedere a questo file sul computer. Verificare che esista ancora e che si disponga dei diritti per accedervi.</value> 
   </data> 
@@ -687,6 +738,15 @@ Chiedere l'accesso al proprietario o all'amministratore.
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
     <value>Nome troppo lungo</value> 
+  </data> 
+  <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
+    <value>Abbiamo problemi di connessione a kDrive. Continueremo a provare automaticamente.
+
+Controllare la connessione a Internet e le impostazioni del firewall.
+Se il problema persiste, contattate il nostro team di assistenza.</value> 
+  </data> 
+  <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
+    <value>Problema di connessione</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Lo spazio sul computer non è sufficiente per sincronizzare questo file.</value> 
@@ -707,14 +767,50 @@ Chiedere l'accesso al proprietario o all'amministratore.
     <value>Il kDrive è pieno.
 Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.</value> 
   </data> 
+  <data name="errQuotaExceededTitle" xml:space="preserve"> 
+    <value>Quota di archiviazione superata</value> 
+  </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>Questo nome è riservato dal sistema. Rinomina l’elemento e riprova.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
     <value>Nome riservato</value> 
   </data> 
+  <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Controllare la posizione o i diritti di accesso della cartella.</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Cartella di sincronizzazione inaccessibile</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Il computer non dispone di spazio di archiviazione sufficiente.
+La sincronizzazione è stata messa in pausa. Liberare spazio e riprovare.</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Spazio su disco insufficiente</value> 
+  </data> 
+  <data name="errSystemSyncDirChanged" xml:space="preserve"> 
+    <value>Questa cartella non è più accessibile nella sua posizione originale.</value> 
+  </data> 
+  <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
+    <value>Questa cartella non è più accessibile. È necessario intervenire per riprendere la sincronizzazione.</value> 
+  </data> 
+  <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
+    <value>Cartella di sincronizzazione non trovata</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>È possibile che l'estensione Lite Sync non sia installata o che il servizio di ricerca di Windows sia disattivato.
+
+Se il problema persiste, è possibile convertire la sincronizzazione in una sincronizzazione standard o contattare il nostro team di assistenza per ottenere aiuto.</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Il plugin Lite Sync non può essere avviato</value> 
+  </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>Questo elemento è stato temporaneamente inserito in lista nera dopo ripetuti errori. Verrà ritentato più tardi.</value> 
+  </data> 
+  <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
+    <value>Inserito temporaneamente in lista nera</value> 
   </data> 
   <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
     <value>Il caricamento non è stato completato. Riprova più tardi.</value> 
@@ -732,9 +828,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>I file che corrispondono a questa regola non saranno sincronizzati.</value> 
-  </data> 
-  <data name="excludedByTemplateErrorTitle" xml:space="preserve"> 
-    <value>Escluso da una regola</value> 
   </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
     <value>Consente di raccogliere informazioni aggiuntive utili per l’assistenza.</value> 
@@ -756,12 +849,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Il file esiste già</value> 
-  </data> 
-  <data name="fileLockedErrorTitle" xml:space="preserve"> 
-    <value>File bloccato</value> 
-  </data> 
-  <data name="fileRescuedErrorTitle" xml:space="preserve"> 
-    <value>File recuperato</value> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Modalità di sincronizzazione dei file</value> 
@@ -793,9 +880,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Ciao %@, %@</value> 
   </data> 
-  <data name="hardlinkErrorTitle" xml:space="preserve"> 
-    <value>Collegamento fisico non supportato</value> 
-  </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
   </data> 
@@ -813,19 +897,6 @@ Liberate spazio o aggiornate il vostro pacchetto per sincronizzare questo file.<
   </data> 
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Non è stato possibile sincronizzare alcuni file.</value> 
-  </data> 
-  <data name="invalidSyncSyncDirAccessErrorDescription" xml:space="preserve"> 
-    <value>La cartella di sincronizzazione sul kDrive non è più disponibile o non si ha più accesso ad essa.
-Ripristinare la cartella, assicurarsi di avere i diritti di accesso necessari o eliminare e ricreare la sincronizzazione.</value> 
-  </data> 
-  <data name="invalidSyncSyncDirAccessErrorTitle" xml:space="preserve"> 
-    <value>La cartella di sincronizzazione remota non è accessibile</value> 
-  </data> 
-  <data name="invalidSyncSyncDirNestingErrorDescription" xml:space="preserve"> 
-    <value>Sembra che una delle cartelle sincronizzate sia all'interno di un'altra cartella sincronizzata. Per risolvere il problema, mantenere una sola sincronizzazione per quella posizione e assicurarsi che le cartelle sincronizzate non si sovrappongano o si contengano a vicenda.</value> 
-  </data> 
-  <data name="invalidSyncSyncDirNestingErrorTitle" xml:space="preserve"> 
-    <value>Sincronizzazioni annidate</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Questo articolo non è disponibile su questo dispositivo.
@@ -882,9 +953,6 @@ Si aprirà nel browser.</value>
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Data</value> 
-  </data> 
-  <data name="labelExternalDriveDisconnected" xml:space="preserve"> 
-    <value>Disco esterno scollegato</value> 
   </data> 
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
@@ -965,11 +1033,20 @@ Si aprirà nel browser.</value>
   <data name="labelOnline" xml:space="preserve"> 
     <value>In linea</value> 
   </data> 
+  <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Posizione originale :</value> 
   </data> 
   <data name="labelRecommended" xml:space="preserve"> 
     <value>Recommandé</value> 
+  </data> 
+  <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
+    <value /> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Riportarlo nella posizione originale.</value> 
@@ -1113,15 +1190,6 @@ Controllare e rinominare i file con caratteri insoliti, quindi riprovare.</value
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Avete bisogno di aiuto?</value> 
-  </data> 
-  <data name="networkErrorOtherDescription" xml:space="preserve"> 
-    <value>Abbiamo problemi di connessione a kDrive. Continueremo a provare automaticamente.
-
-Controllare la connessione a Internet e le impostazioni del firewall.
-Se il problema persiste, contattate il nostro team di assistenza.</value> 
-  </data> 
-  <data name="networkErrorOtherTitle" xml:space="preserve"> 
-    <value>Problema di connessione</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Non si dispone di un account</value> 
@@ -1280,9 +1348,6 @@ Attendere qualche istante.</value>
   <data name="proxyUser" xml:space="preserve"> 
     <value>Nome utente</value> 
   </data> 
-  <data name="quotaExceededErrorTitle" xml:space="preserve"> 
-    <value>Quota di archiviazione superata</value> 
-  </data> 
   <data name="releaseChannelBeta" xml:space="preserve"> 
     <value>Beta</value> 
   </data> 
@@ -1363,6 +1428,12 @@ Per l’accesso è necessaria una connessione a Internet.</value>
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Errore di sincronizzazione</value> 
   </data> 
+  <data name="syncFolderCustomLocation" xml:space="preserve"> 
+    <value>Cartella personalizzata</value> 
+  </data> 
+  <data name="syncFolderDefaultLocation" xml:space="preserve"> 
+    <value>Posizione predefinita</value> 
+  </data> 
   <data name="syncInProgressTooltip" xml:space="preserve"> 
     <value>Sincronizzazione</value> 
   </data> 
@@ -1427,33 +1498,6 @@ La sincronizzazione è stata sospesa. Controllare i file e riprovare.</value>
   <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
     <value>Rilevato un file corrotto</value> 
   </data> 
-  <data name="systemErrorNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>Il computer non dispone di spazio di archiviazione sufficiente.
-La sincronizzazione è stata messa in pausa. Liberare spazio e riprovare.</value> 
-  </data> 
-  <data name="systemErrorNotEnoughDiskSpaceTitle" xml:space="preserve"> 
-    <value>Spazio su disco insufficiente</value> 
-  </data> 
-  <data name="systemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
-    <value>Controllare la posizione o i diritti di accesso della cartella.</value> 
-  </data> 
-  <data name="systemErrorSyncDirAccessErrorTitle" xml:space="preserve"> 
-    <value>Cartella di sincronizzazione inaccessibile</value> 
-  </data> 
-  <data name="systemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
-    <value>Questa cartella non è più accessibile. È necessario intervenire per riprendere la sincronizzazione.</value> 
-  </data> 
-  <data name="systemErrorSyncDirMissingErrorTitle" xml:space="preserve"> 
-    <value>Cartella di sincronizzazione non trovata</value> 
-  </data> 
-  <data name="systemErrorUnableToStartVfsDescription" xml:space="preserve"> 
-    <value>È possibile che l'estensione Lite Sync non sia installata o che il servizio di ricerca di Windows sia disattivato.
-
-Se il problema persiste, è possibile convertire la sincronizzazione in una sincronizzazione standard o contattare il nostro team di assistenza per ottenere aiuto.</value> 
-  </data> 
-  <data name="systemErrorUnableToStartVfsTitle" xml:space="preserve"> 
-    <value>Il plugin Lite Sync non può essere avviato</value> 
-  </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
     <value>Attività</value> 
   </data> 
@@ -1465,9 +1509,6 @@ Se il problema persiste, è possibile convertire la sincronizzazione in una sinc
   </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
     <value>Trattamento individuale</value> 
-  </data> 
-  <data name="tmpBlacklistedErrorTitle" xml:space="preserve"> 
-    <value>Inserito temporaneamente in lista nera</value> 
   </data> 
   <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
     <value>Una notifica informerà l’utente quando un file viene escluso da questa regola</value> 

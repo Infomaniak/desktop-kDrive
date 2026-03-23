@@ -22,11 +22,11 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
     public void InitTextBlocks()
     {
         // Access Modified
-        string sentence = Localizer.Instance.GetString("localFileAccessErrorDialogFaqLink");
+        string sentence = Localizer.Instance.GetString("errDialogLocalFileAccessFaqLink");
         string faqText = Localizer.Instance.GetString("labelFAQ");
 
         // Split the sentence around the placeholder
-        var parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
+        var parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
 
         // Add first part
         AccessRightsModifiedTextBlock.Inlines.Add(new Run { Text = parts[0] });
@@ -49,7 +49,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         string newSyncText = Localizer.Instance.GetString("labelNewSync");
 
         // Split the sentence around the placeholder
-        parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
+        parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
 
         // Add first part
         FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[0] });

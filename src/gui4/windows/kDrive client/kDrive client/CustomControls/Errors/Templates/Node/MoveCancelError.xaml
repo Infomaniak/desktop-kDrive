@@ -18,7 +18,8 @@
                      Error="{x:Bind Error}">
         <local:ErrorCard.CustomContent>
             <controls:ItemPathPresenter RelativeItemPath="{x:Bind Error.DestinationPath}"
-                                        Sync="{x:Bind Error.Sync}" />
+                                        Sync="{x:Bind Error.Sync}"
+                                        Margin="{StaticResource Infomaniak.Style.Thickness.Top.S}"/>
         </local:ErrorCard.CustomContent>
     </local:ErrorCard>
 </UserControl>
