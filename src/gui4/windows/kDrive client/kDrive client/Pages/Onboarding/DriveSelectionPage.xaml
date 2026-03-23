@@ -37,7 +37,7 @@
 
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
-                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}"/>
+                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                     <TextBlock  Text="{x:Bind Name}"
                                 Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                 VerticalAlignment="Center" />
@@ -56,8 +56,8 @@
                     <CheckBox IsChecked="True"
                               HorizontalAlignment="Stretch"
                               MinWidth="0"
-                              MinHeight="0" 
-                              IsEnabled="False"/>
+                              MinHeight="0"
+                              IsEnabled="False" />
 
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                       Foreground="{ThemeResource TextFillColorDisabledBrush}"
@@ -133,12 +133,12 @@
                         <CheckBox IsChecked="True"
                                   HorizontalAlignment="Stretch"
                                   MinWidth="0"
-                                  MinHeight="0" 
-                                  IsEnabled="False"/>
+                                  MinHeight="0"
+                                  IsEnabled="False" />
 
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                           Foreground="{ThemeResource TextFillColorDisabledBrush}"
-                                          Style="{StaticResource Infomaniak.Style.Icon.Size.S}"/>
+                                          Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
@@ -183,17 +183,47 @@
                            Foreground="{ThemeResource TextFillColorPrimary}" />
 
                 <!-- User info -->
-                <StackPanel Orientation="Horizontal"
-                            Spacing="12"
-                            VerticalAlignment="Center">
-                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.GetAvatarImageSource(48), Mode=OneWay}"
-                                   Height="24"
-                                   Width="24" />
-                    <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
-                               VerticalAlignment="Center"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                               Foreground="{ThemeResource TextFillColorSecondary}" />
-                </StackPanel>
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                      VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}"
+                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                            HorizontalAlignment="Left">
+                        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
+                              VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <PersonPicture Grid.Column="0"
+                                           ProfilePicture="{x:Bind ObViewModel.SelectedUser.GetAvatarImageSource(48), Mode=OneWay}"
+                                           HorizontalAlignment="Left"
+                                           Height="24"
+                                           Width="24" />
+
+                            <TextBlock Grid.Column="1"
+                                       MaxWidth="200"
+                                       Text="{x:Bind ObViewModel.SelectedUser.Name}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{ThemeResource TextFillColorSecondary}" />
+                        </Grid>
+                    </Border>
+
+                    <HyperlinkButton Grid.Column="1"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonChangeUser')}"
+                                     HorizontalAlignment="Left"
+                                     Click="ChangeUserButton_Click"/>
+
+                </Grid>
             </StackPanel>
 
             <!-- Drive available -->
