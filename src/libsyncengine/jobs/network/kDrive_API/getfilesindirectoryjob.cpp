@@ -139,13 +139,7 @@ NodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
 }
 
 NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
-    if (_nodeInfoList.empty()) {
-        if (const auto exitInfo = deserializeDataArray(); !exitInfo) {
-            LOG_WARN(_logger, "Failed to deserialize data: " << exitInfo);
-            return {};
-        }
-    }
-
+    // Data is already deserialized by handleResponse()
     NodeInfoList v2NodeInfoList_ = _nodeInfoList;
     ApiTranslator::translateV3ToV2(driveDbId(), v2NodeInfoList_);
 
