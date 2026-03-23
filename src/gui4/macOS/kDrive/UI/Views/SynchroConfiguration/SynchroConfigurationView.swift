@@ -28,29 +28,7 @@ struct SynchroConfigurationView: View {
     @State private var synchroLocation: URL?
     @State private var isShowingSynchroLocationError = false
 
-    @State private var isShowingFileImporter = false
-
     let configuration: SynchroConfiguration
-
-    private var driveLocationTipColor: Color {
-        return isShowingSynchroLocationError ? ColorToken.Status.Medium.warning.asColor : ColorToken.Text.tertiary.asColor
-    }
-
-    private var exclusionFoldersIcon: Image {
-        if configuration.blackList.isEmpty {
-            return KDriveResources.checkmarkCircle.swiftUIImage
-        } else {
-            return KDriveResources.pencil.swiftUIImage
-        }
-    }
-
-    private var exclusionFoldersTip: String {
-        if configuration.blackList.isEmpty {
-            return KDriveLocalizable.onboardingExclusionSummaryNone
-        } else {
-            return KDriveLocalizable.onboardingExclusionSummarySome
-        }
-    }
 
     var body: some View {
         Form {
@@ -71,70 +49,13 @@ struct SynchroConfigurationView: View {
                     .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
-            Section {
-                VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                    VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                        Text(KDriveLocalizable.labelSyncLocation)
-                            .font(.Tokens.headline)
-                        Text(KDriveLocalizable.onboardingAdvancedSettingsDriveCustomizeLocation)
-                            .font(.Tokens.body)
-                    }
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
+            SynchroFolderSelectionSection(
+                synchroLocation: $synchroLocation,
+                isShowingSynchroLocationError: isShowingSynchroLocationError,
+                handleSelectedDirectory: handleSelectedDirectory
+            )
 
-                    HStack {
-                        Button(KDriveLocalizable.buttonSelectFolder) {
-                            isShowingFileImporter = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .fileImporter(
-                            isPresented: $isShowingFileImporter,
-                            allowedContentTypes: [.directory],
-                            onCompletion: handleSelectedDirectory
-                        )
-
-                        if let synchroLocation {
-                            Text(synchroLocation.path)
-                                .font(.Tokens.subheadline)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                        }
-                    }
-
-                    Text(KDriveLocalizable.onboardingAdvancedSettingsDriveCustomizeLocationTip)
-                        .font(.Tokens.subheadline)
-                        .foregroundStyle(driveLocationTipColor)
-                }
-            }
-
-            Section {
-                VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                    VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                        Text(KDriveLocalizable.labelSyncFolder)
-                            .font(.Tokens.headline)
-                        Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionDescription)
-                            .font(.Tokens.body)
-                    }
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
-
-                    HStack {
-                        Button(KDriveLocalizable.buttonSelectFolders) {
-                            viewModel.navigate(to: .selectFolders(configuration))
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Label {
-                            Text(exclusionFoldersTip)
-                                .font(.Tokens.subheadline)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                        } icon: {
-                            exclusionFoldersIcon
-                        }
-                    }
-
-                    Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionTip)
-                        .font(.Tokens.subheadline)
-                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                }
-            }
+            FolderFoldersSelectionSection(configuration: configuration)
         }
         .groupedFormatStyle()
         .toolbar {
@@ -154,15 +75,21 @@ struct SynchroConfigurationView: View {
             synchroLocation = configuration.localFolder.url
         }
         .task {
-            guard synchroLocation == nil else { return }
-
-            guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
-                return
-            }
-
-            synchroLocation = localPath
-            viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
+            await fetchDefaultFolderIfNecessary()
         }
+    }
+
+    private func fetchDefaultFolderIfNecessary() async {
+        guard synchroLocation == nil else {
+            return
+        }
+
+        guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
+            return
+        }
+
+        synchroLocation = localPath
+        viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
     }
 
     private func handleSelectedDirectory(_ result: Result<URL, Error>) {
