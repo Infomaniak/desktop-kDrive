@@ -188,6 +188,7 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
     
     if (buffer[0] != '{') {
         buffer.clear(); // Discard the buffer (same logic as Windows)
+        // TODO add logging when log4cplus is setup in the client
         return false;
     }
 
