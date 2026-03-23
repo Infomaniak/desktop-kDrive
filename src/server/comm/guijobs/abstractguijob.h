@@ -22,6 +22,7 @@
 #include "../abstractcommchannel.h"
 #include "../commmanager.h"
 #include "libcommon/comm.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/utility.h"
 
 #include <Poco/JSON/Parser.h>
