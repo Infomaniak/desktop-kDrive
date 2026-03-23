@@ -77,7 +77,7 @@ namespace Infomaniak.kDrive
         internal App()
         {
             _services.AddSingleton<AppModel>();
-            _services.AddSingleton<IServerCommProtocol, MockServerCommProtocolTestError>();
+            _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol);
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _services.AddSingleton<UserDefaults>();
             _services.AddSingleton<TrayIconManager>();

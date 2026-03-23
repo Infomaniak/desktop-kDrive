@@ -20,10 +20,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(Error.RemoteNodeId) && !await Error.OpenItemInWebViewAsync()) 
+            if (!string.IsNullOrEmpty(Error.RemoteNodeId) && !await Error.OpenItemInWebViewAsync())
                 Utility.ShowUnexpectedErrorTeachingTip();
             else if (!string.IsNullOrEmpty(Error.Path) && !await Utility.OpenFolderSecurely(System.IO.Path.Combine(Error.Sync.LocalPath, Error.Path)))
                 Utility.ShowUnexpectedErrorTeachingTip();
+            else if (string.IsNullOrEmpty(Error.RemoteNodeId) && string.IsNullOrEmpty(Error.Path))
+            {
+                Logger.Log(Logger.Level.Warning, $"Error {Error.Id} has no RemoteNodeId or Path, cannot open in web or file explorer.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
 
         }
     }

@@ -99,14 +99,14 @@ namespace Infomaniak.kDrive
 
             const int maxTitleLength = 63;
             const int maxMessageLength = 5096;
-            if (title.Count() > maxTitleLength)
+            if (title.Length > maxTitleLength)
             {
                 Logger.Log(Logger.Level.Warning, $"Notification title is too long and will be truncated to {maxTitleLength} characters.");
                 title = title.Substring(0, maxTitleLength);
                 title += "…";
             }
 
-            if (message.Count() > maxMessageLength)
+            if (message.Length > maxMessageLength)
             {
                 Logger.Log(Logger.Level.Warning, $"Notification message is too long and will be truncated to {maxMessageLength} characters.");
                 message = message.Substring(0, maxMessageLength);
