@@ -73,12 +73,10 @@ class ISyncWorker {
         inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
-        static void executeFunc(void *thisWorker);
-
         const std::string _name;
         const std::string _shortName;
         const std::chrono::seconds _startDelay{0};
-        std::unique_ptr<std::thread> _thread;
+        std::unique_ptr<StdLoggingThread> _thread{nullptr};
         bool _stopAsked{false};
         bool _isRunning{false};
         ExitCode _exitCode{ExitCode::Unknown};

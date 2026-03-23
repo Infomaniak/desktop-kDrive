@@ -38,7 +38,7 @@
                     <local:SvgIcon Grid.Column="1"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
-                                   Height="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind Node.Name}"
@@ -58,12 +58,13 @@
                                          HorizontalAlignment="Right"
                                          IsLoading="{x:Bind Node.IsLoadingSize, Mode=OneWay}"
                                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                                         MinWidth="60"
+                                         LoaderMinWidth="60"
+                                         LoaderMinHeight="16"
                                          Margin="{StaticResource Infomaniak.Style.Thickness.Right.M}"
                                          DataContextChanged="SizeContentLoader_DataContextChanged">
                         <local:ContentLoader.LoaderContent>
                             <TextBlock Text="{x:Bind Node.Size, Converter={StaticResource BytesToHumanReadableStringConverter}, Mode=OneWay}"
-                                       MinWidth="60" />
+                                       HorizontalAlignment="Right" />
                         </local:ContentLoader.LoaderContent>
                     </local:ContentLoader>
                 </Grid>
@@ -91,7 +92,7 @@
                     <local:SvgIcon Grid.Column="1"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-block}"
                                    Foreground="{ThemeResource TextFillColorTertiary}"
-                                   Height="16" />
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <TextBlock Grid.Column="2"
                                Foreground="{ThemeResource TextFillColorTertiary}"
@@ -101,7 +102,7 @@
                                    UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
                                    Foreground="{ThemeResource TextFillColorTertiary}"
                                    HorizontalAlignment="Center"
-                                   Height="16"
+                                   Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}" />
                 </Grid>
             </TreeViewItem>

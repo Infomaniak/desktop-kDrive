@@ -38,7 +38,7 @@ namespace KDC {
 void JobManager::startMainThreadIfNeeded() {
     if (!_mainThread) {
         const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
-        _mainThread = std::make_unique<std::thread>(runFunction);
+        _mainThread = std::make_unique<StdLoggingThread>(runFunction);
     }
 }
 

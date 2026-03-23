@@ -27,7 +27,9 @@ class CreateDirJob : public AbstractTokenNetworkJob {
     public:
         CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &filepath, const NodeId &parentId,
                      const SyncName &name, const std::string &color = "");
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &parentId, const SyncName &name);
+        CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &parentId, const SyncName &name);
+        CreateDirJob(const std::shared_ptr<Vfs> vfs, int32_t userDbId, int32_t driveId, const NodeId &parentId,
+                     const SyncName &name);
         ~CreateDirJob() override;
 
         [[nodiscard]] inline const NodeId &parentDirId() const { return _parentDirId; }

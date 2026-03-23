@@ -24,6 +24,7 @@
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libsyncengine/jobs/network/abstracttokennetworkjob.h"
+#include "libsyncengine/requests/exclusiontemplatecache.h"
 
 #include "libparms/db/parmsdb.h"
 
@@ -69,6 +70,7 @@ void TestServerRequests::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
+    ExclusionTemplateCache::reset();
     TestBase::stop();
 }
 
@@ -160,10 +162,11 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     // Check with a non-existing path containing an already synced child
     SyncPath returnedPath;
     std::string error;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
                          ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
-    CPPUNIT_ASSERT(returnedPath.empty());
-    CPPUNIT_ASSERT(!error.empty());
+    CPPUNIT_ASSERT(!returnedPath.empty());
+    CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+    CPPUNIT_ASSERT(error.empty());
 }
 
 void TestServerRequests::testDeleteUser() {
@@ -227,5 +230,51 @@ void TestServerRequests::testDeleteDrive() {
     CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
 }
 
+void TestServerRequests::testFolderContainsNonExcludedItemInvalidPath() {
+    // A non-existent path cannot be opened by the directory iterator.
+    const SyncPath nonExistentPath = _localTempDir.path() / "non_existent_dir";
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError),
+                         ServerRequests::folderContainsNonExcludedItem(nonExistentPath, containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemEmptyDir() {
+    LocalTemporaryDirectory emptyDir("folderContainsEmpty");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(emptyDir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemOnlyExcludedFiles() {
+    // Files whose names end with "~" are matched by the "*~" default exclusion template.
+    LocalTemporaryDirectory dir("folderContainsExcluded");
+    testhelpers::generateTestFile(dir.path() / "excluded_file~");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(!containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemWithNonExcludedFile() {
+    LocalTemporaryDirectory dir("folderContainsNonExcluded");
+    testhelpers::generateTestFile(dir.path() / "regular_file.txt");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(containsNonExcludedFile);
+}
+
+void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
+    // Directory containing both an excluded file and a regular one.
+    LocalTemporaryDirectory dir("folderContainsMixed");
+    testhelpers::generateTestFile(dir.path() / "excluded_file~"); // matched by "*~" exclusion template
+    testhelpers::generateTestFile(dir.path() / "regular_file.txt");
+    bool containsNonExcludedFile = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
+    CPPUNIT_ASSERT(containsNonExcludedFile);
+}
 
 } // namespace KDC

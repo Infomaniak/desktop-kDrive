@@ -197,6 +197,5 @@ namespace Infomaniak.kDrive.ViewModels
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             return await commService.RemoveSync(sync.DbId, cancellationToken);
         }
-
     }
 }

@@ -516,6 +516,38 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = true;
         }
+
+        private async void ActivateNotificationInSystem_Button(object sender, RoutedEventArgs e)
+        {
+
+            Control? control = sender as Control;
+
+            if (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings)
+            {
+                await NotificationManager.OpenNotificationSystemSettings();
+            }
+            else
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                return;
+            }
+
+            if (control is null)
+                return;
+
+            control.IsEnabled = false;
+            // As we cannot be notified of when the user change the settings, we refresh the availability every second
+            // until it is no longer deactivated in system settings or the page is unloaded.
+            while (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings && base.IsLoaded)
+            {
+                await Task.Delay(1000);
+            }
+            if (base.IsLoaded)
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                control.IsEnabled = true;
+            }
+        }
     }
 
     // templateSelector for the drives listview

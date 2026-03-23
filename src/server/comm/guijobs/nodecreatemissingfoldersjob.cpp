@@ -22,14 +22,17 @@
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
+#include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsFolderList = "folderList";
+static const auto inParamsUserDbId = "userDbId";
+static const auto inParamsDriveId = "driveId";
+static const auto inParamsParentNodeId = "parentNodeId";
+static const auto inParamsRelativePath = "relativePath";
 
 // Output parameters keys
-static const auto outParamsParentNodeId = "parentNodeId";
+static const auto outParamsNodeId = "nodeId";
 
 namespace KDC {
 
@@ -40,16 +43,17 @@ NodeCreateMissingFoldersJob::NodeCreateMissingFoldersJob(std::shared_ptr<CommMan
     _requestNum = RequestNum::NODE_CREATEMISSINGFOLDERS;
 }
 
-void NodeCreateMissingFoldersJob::FolderItem::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, "name", name);
-    CommonUtility::readValueFromStruct(dstruct, "nodeId", nodeId);
-}
 
 ExitInfo NodeCreateMissingFoldersJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in NodeCreateMissingFoldersJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValues(inParamsFolderList, _folderList, dynamicVar2Struct<FolderItem>);
+        readParamValue(inParamsUserDbId, _userDbId);
+        readParamValue(inParamsDriveId, _driveId);
+        CommString commStr;
+        readParamValue(inParamsRelativePath, commStr);
+        _relativePath = SyncPath(commStr);
+        readParamValue(inParamsParentNodeId, commStr);
+        _parentNodeId = CommonUtility::commString2Str(commStr);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -64,77 +68,100 @@ ExitInfo NodeCreateMissingFoldersJob::deserializeInputParms() {
 }
 
 ExitInfo NodeCreateMissingFoldersJob::serializeOutputParms() {
-    writeParamValue(outParamsParentNodeId, _parentNodeId);
+    writeParamValue(outParamsNodeId, _nodeId);
 
     return ExitCode::Ok;
 }
 
-ExitInfo NodeCreateMissingFoldersJob::getMissingFoldersInfo(const FolderItem &folderItem, MissingFoldersInfo &info) {
-    if (!folderItem.nodeId.empty()) {
-        info.parentNodeId = folderItem.nodeId;
-
-        return ExitCode::Ok;
-    }
-
-    if (const auto exitCode = ServerRequests::createDir(_driveDbId, info.parentNodeId, folderItem.name, info.parentNodeId);
-        exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << _driveDbId << " parentNodeId=" << info.parentNodeId);
-        addError(Error(ERR_ID, exitCode));
-
-        return exitCode;
-    }
-
-    if (info.firstCreatedNodeId.empty()) info.firstCreatedNodeId = info.parentNodeId;
-
-    return ExitCode::Ok;
-}
-
-ExitInfo NodeCreateMissingFoldersJob::process() {
-    // Pause all syncs of the drive
-    std::vector<int> pausedSyncs;
-
+ExitInfo NodeCreateMissingFoldersJob::pauseDriveSyncs(std::vector<int> &pausedSyncs) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
-        if (!syncPal || syncPal->driveDbId() != _driveDbId || syncPal->isPaused()) continue;
+        if (!syncPal || syncPal->driveId() != _driveId || syncPal->isPaused()) continue;
         syncPal->pause();
         pausedSyncs.push_back(syncPalId);
     }
+    return ExitCode::Ok;
+}
 
-    // Create missing folders
-    MissingFoldersInfo foldersInfo;
-    foldersInfo.parentNodeId = NodeId(SyncDb::driveRootNode().nodeIdRemote().value());
-    for (const auto &folderItem: _folderList) {
-        if (const auto exitInfo = getMissingFoldersInfo(folderItem, foldersInfo); !exitInfo) return exitInfo;
+ExitInfo NodeCreateMissingFoldersJob::createMissingFolders(NodeId &firstCreatedNodeId) {
+    if (_relativePath.empty() || _relativePath.string() == ".") {
+        LOG_WARN(_logger,
+                 "Relative path is empty, no folders to create for driveId=" << _driveId << " parentNodeId=" << _parentNodeId);
+        return {ExitCode::DataError, ExitCause::InvalidName};
     }
 
-    // Add the first created node to the blacklist of every sync
-    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
-        if (!syncPal || syncPal->driveDbId() != _driveDbId) continue;
+    if (ExclusionTemplateCache::instance()->isExcluded(_relativePath)) {
+        LOGW_WARN(_logger, Utility::formatSyncPath(_relativePath)
+                                   << L" is excluded by exclusion templates, cannot create missing folders for driveId="
+                                   << _driveId << L" parentNodeId=" << CommonUtility::s2ws(_parentNodeId));
+        return {ExitCode::DataError, ExitCause::InvalidName};
+    }
 
-        // Get blacklist
+    NodeId lastCreatedNodeId = _parentNodeId;
+    for (const auto &folderName: _relativePath) {
+        if (const auto exitCode =
+                    ServerRequests::createDir(_userDbId, _driveId, lastCreatedNodeId, folderName, lastCreatedNodeId);
+            exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in Requests::createDir for driveId=" << _driveId << " parentNodeId=" << lastCreatedNodeId);
+            addError(Error(ERR_ID, exitCode));
+            return exitCode;
+        }
+        if (firstCreatedNodeId.empty()) firstCreatedNodeId = lastCreatedNodeId;
+    }
+    _nodeId = lastCreatedNodeId;
+    return ExitCode::Ok;
+}
+
+ExitInfo NodeCreateMissingFoldersJob::blacklistNodeOnAllDriveSyncs(const NodeId &nodeId) {
+    if (nodeId.empty()) {
+        LOG_WARN(_logger, "Node ID is empty, cannot blacklist it on drive syncs for driveId=" << _driveId);
+        return ExitCode::LogicError;
+    }
+
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
+        if (!syncPal || syncPal->driveId() != _driveId) continue;
+
         NodeSet nodeIdSet;
         if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalId);
             addError(Error(ERR_ID, exitCode));
-
             return exitCode;
         }
 
-        // Insert the new folder node and set blacklist
-        (void) nodeIdSet.insert(foldersInfo.firstCreatedNodeId);
+        (void) nodeIdSet.insert(nodeId);
         if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
             addError(Error(ERR_ID, exitCode));
-
             return exitCode;
         }
     }
+    return ExitCode::Ok;
+}
 
-    // Resume all paused syncs
+void NodeCreateMissingFoldersJob::resumeSyncs(const std::vector<int> &pausedSyncs) {
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto syncDbId: pausedSyncs) {
         if (_commManager->appServer().syncPalMap.contains(syncDbId)) _commManager->appServer().syncPalMap[syncDbId]->unpause();
     }
+}
 
+ExitInfo NodeCreateMissingFoldersJob::process() {
+    std::vector<int> pausedSyncs;
+    if (const auto exitInfo = pauseDriveSyncs(pausedSyncs); !exitInfo) return exitInfo;
+
+    NodeId firstCreatedNodeId;
+    if (const auto exitInfo = createMissingFolders(firstCreatedNodeId); !exitInfo) {
+        resumeSyncs(pausedSyncs);
+        return exitInfo;
+    }
+
+    if (const auto exitInfo = blacklistNodeOnAllDriveSyncs(firstCreatedNodeId); !exitInfo) {
+        resumeSyncs(pausedSyncs);
+        return exitInfo;
+    }
+
+    resumeSyncs(pausedSyncs);
     return ExitCode::Ok;
 }
 

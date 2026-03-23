@@ -849,7 +849,7 @@ ExitCode GuiRequests::createMissingFolders(DriveDbId driveDbId, const QList<QPai
     paramsStream << serverFolderList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 

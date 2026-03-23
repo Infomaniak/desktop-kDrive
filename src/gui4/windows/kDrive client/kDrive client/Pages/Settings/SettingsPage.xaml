@@ -109,34 +109,41 @@
                                       Toggled="AutoStartToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
                     <!-- General - Notifications -->
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('disableNotificationsSetting'), Mode=OneWay}">
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('disableNotificationsSetting'), Mode=OneWay}"
+                                          Visibility="{x:Bind ViewModel.Settings.ShowNotificationsSettings, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.bell}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedValuePath="Tag"
-                                  SelectedValue="{x:Bind ViewModel.Settings.NotificationsDisabled, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
-                                  SelectionChanged="NotificationsCombobox_SelectionChanged"
-                                  x:Name="NotificationsComboBox">
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('notificationsDisabledNever'), Mode=OneWay}"
-                                          Tag="Never" />
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('notificationsDisabledAlways'), Mode=OneWay}"
-                                          Tag="Always" />
-                            <!-- These options are disabled until the notification snooze feature is fixed (see card 1172-Fix NotificationsDisabled ) -->
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneHour'), Mode=OneWay}"
-                                          Tag="OneHour"
-                                          IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('untilTomorrow'), Mode=OneWay}"
-                                          Tag="UntilTomorrow"
-                                          IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forThreeDays'), Mode=OneWay}"
-                                          Tag="ThreeDays"
-                                          IsEnabled="False" />
-                            <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneWeek'), Mode=OneWay}"
-                                          Tag="OneWeek"
-                                          IsEnabled="False" />
-                        </ComboBox>
+                        <Grid>
+                            <ComboBox SelectedValuePath="Tag"
+                                      SelectedValue="{x:Bind ViewModel.Settings.NotificationsDisabled, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
+                                      SelectionChanged="NotificationsCombobox_SelectionChanged"
+                                      Visibility="{x:Bind ViewModel.Settings.NotificationsAuthorizedInSystemSettings, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                      x:Name="NotificationsComboBox">
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('notificationsDisabledNever'), Mode=OneWay}"
+                                              Tag="Never" />
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('notificationsDisabledAlways'), Mode=OneWay}"
+                                              Tag="Always" />
+                                <!-- These options are disabled until the notification snooze feature is fixed (see card 1172-Fix NotificationsDisabled ) -->
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneHour'), Mode=OneWay}"
+                                              Tag="OneHour"
+                                              IsEnabled="False" />
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('untilTomorrow'), Mode=OneWay}"
+                                              Tag="UntilTomorrow"
+                                              IsEnabled="False" />
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forThreeDays'), Mode=OneWay}"
+                                              Tag="ThreeDays"
+                                              IsEnabled="False" />
+                                <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneWeek'), Mode=OneWay}"
+                                              Tag="OneWeek"
+                                              IsEnabled="False" />
+                            </ComboBox>
+                            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonEnableInSettings'), Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.Settings.NotificationsAuthorizedInSystemSettings, Converter={StaticResource BooleanToVisibilityConverter},ConverterParameter='Inverted=True', Mode=OneWay}"
+                                    Click="ActivateNotificationInSystem_Button" />
+                        </Grid>
                     </toolKit:SettingsCard>
                     <!-- General - MoveToTrash -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinSetting'), Mode=OneWay}">
@@ -207,7 +214,7 @@
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center">
                                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
-                                                      Height="16"
+                                                      Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                       VerticalAlignment="Center"
                                                       HorizontalAlignment="Center" />
@@ -492,8 +499,7 @@
                                                   IsActionIconVisible="False"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
-                                                  Height="14"
-                                                  Width="14"
+                                                  Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
                                                   Foreground="{ThemeResource TextFillColorPrimary}"
                                                   Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}" />
                             </toolKit:SettingsCard>

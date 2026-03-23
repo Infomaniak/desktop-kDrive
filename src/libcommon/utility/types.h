@@ -477,6 +477,7 @@ std::string toString(UploadSessionType e);
 std::string toString(UpdateState e);
 std::string toString(VersionChannel e);
 std::string toString(VirtualFileMode e);
+std::string toString(SyncConfiguration e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;

@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-using DynamicData;
+﻿using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
@@ -650,11 +652,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return result;
         }
-        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        public async Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path)
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.SyncConfiguration] = (int)syncConfiguration
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -674,11 +677,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
+        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
         {
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sync is null.");
+                return null;
+            }
+
             var parms = new JsonObject
             {
-                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.SyncDbId] = sync.DbId,
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
@@ -718,6 +727,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.Name!,
                     item.Type!.Value,
                     item.Path!,
+                    System.IO.Path.Combine(sync.Drive.Name, item.Path!),
                     item.ModifiedTime!.Value,
                     item.Size!.Value,
                     item.IsAvailableLocally!.Value
@@ -874,6 +884,38 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(parentNodeId))
+                parentNodeId = App.Constants.Drive.RootNodeId;
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = drive.UserDbId,
+                [JsonKeys.DriveId] = drive.DriveId,
+                [JsonKeys.ParentNodeId] = Utility.ToBase64String(parentNodeId),
+                [JsonKeys.RelativePath] = Utility.ToBase64String(path),
+
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CREATEMISSINGFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.NodeId))
+                return null;
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new Base64StringJsonConverter());
+            NodeId? nodeId = data.Params[JsonKeys.NodeId].Deserialize<NodeId>(options);
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}");
+                return null;
+            }
+
+            return nodeId;
         }
 
         public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
@@ -1266,6 +1308,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
                     await HandleLogUploadProgressAsync(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_NOTIFICATION:
+                    await HandleUtilityShowNotification(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -1719,6 +1764,43 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+        }
+
+        public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
+                return;
+            }
+            string? title = signalData[JsonKeys.Title]?.GetValue<string>();
+            string? message = signalData[JsonKeys.Message]?.GetValue<string>();
+
+            // Decode base64 encoded 
+            try
+            {
+                title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
+                message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            }
+            catch (FormatException ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return;
+            }
+
+            if (title is null || message is null)
+            {
+                Logger.Log(Logger.Level.Error, "title or message is null.");
+                return;
+            }
+
+            App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
         }
 
         // Helpers

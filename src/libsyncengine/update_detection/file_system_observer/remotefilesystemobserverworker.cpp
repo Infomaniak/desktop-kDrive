@@ -523,7 +523,8 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         // Items remaining in "movedItems" have been either blacklisted or whitelisted
         switch (actionCode) {
             case ActionCode::ActionCodeMoveIn: {
-                sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
+                if (_liveSnapshot.type(nodeId) != NodeType::Directory) break; // Do not explore if moved item is a file
+                const sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
                 if (const auto exitInfo = exploreDirectory(nodeId); !exitInfo) return exitInfo;
                 break;
             }
@@ -640,13 +641,10 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
         case ActionCode::ActionCodeRestore:
         case ActionCode::ActionCodeCreate:
         case ActionCode::ActionCodeRename: {
-            const auto alreadySynced =
-                    _liveSnapshot.exists(actionInfo.snapshotItem.id()) || movedItems.contains(actionInfo.snapshotItem.id());
-            const bool exploreDir = !alreadySynced && actionInfo.snapshotItem.type() == NodeType::Directory &&
-                                    actionInfo.actionCode != ActionCode::ActionCodeCreate;
-
-            _liveSnapshot.updateItem(actionInfo.snapshotItem);
-            if (exploreDir) {
+            const bool directoryExplorationRequired =
+                    isDirectoryExplorationRequired(actionInfo, movedItems); // Must be called before updateItem
+            (void) _liveSnapshot.updateItem(actionInfo.snapshotItem);
+            if (directoryExplorationRequired) {
                 // Retrieve all children
                 const auto exitInfo = exploreDirectory(actionInfo.snapshotItem.id());
                 switch (exitInfo.code()) {
@@ -678,7 +676,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
 
         // Item edited
         case ActionCode::ActionCodeEdit:
-            _liveSnapshot.updateItem(actionInfo.snapshotItem);
+            (void) _liveSnapshot.updateItem(actionInfo.snapshotItem);
             break;
 
         // Item removed
@@ -718,7 +716,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
     return ExitCode::Ok;
 }
 
-void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) {
+void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) const {
     if (!movedItems.contains(actionInfo.snapshotItem.id())) {
         // Keep track of moved items
         (void) movedItems.try_emplace(actionInfo.snapshotItem.id(), actionInfo.actionCode);
@@ -726,6 +724,27 @@ void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(const ActionInfo &acti
         // Move out event already received, no need to keep track anymore
         (void) movedItems.erase(actionInfo.snapshotItem.id());
     }
+}
+
+bool RemoteFileSystemObserverWorker::isDirectoryExplorationRequired(const ActionInfo &actionInfo,
+                                                                    const MoveItemMap &movedItems) const {
+    if (actionInfo.snapshotItem.type() != NodeType::Directory) return false;
+    if (_liveSnapshot.exists(actionInfo.snapshotItem.id()) || movedItems.contains(actionInfo.snapshotItem.id())) {
+        // The item is already synchronized, exploration is not required.
+        return false;
+    }
+
+    if (actionInfo.actionCode == ActionCode::ActionCodeCreate) {
+        // Create events are sent on each child, exploration is not required.
+        return false;
+    }
+
+    if (actionInfo.actionCode == ActionCode::ActionCodeMoveIn) {
+        // Explore directory for move_in actions is managed later.
+        return false;
+    }
+
+    return true;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::removeItemFromSnapshot(const NodeId &id) {

@@ -176,7 +176,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         #endregion
 
-
         #region Public methods
         public async Task SaveChanges()
         {
@@ -192,8 +191,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (Sync is ViewModels.Sync dbSync)
             {
                 IsLoading = true;
-                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                if (!await commService.SetBlacklistedNodeIdList(dbSync.DbId, GetExcludedNodeIds(), CancellationToken.None))
+                if (!await dbSync.SetExcludedNodeIds(GetExcludedNodeIds()))
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -705,7 +703,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load direct child directories
         public async Task LoadImmediateChildrenAsync()
         {
-            if (_childrenLoaded)
+            if (_childrenLoaded || Node.AccessDenied)
                 return;
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

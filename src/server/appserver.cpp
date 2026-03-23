@@ -1904,17 +1904,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmpDriveId;
             paramsStream >> nodeId;
 
-            const auto userDbId = static_cast<SyncDbId>(tmpUserDbId);
-            const auto driveId = static_cast<DriveId>(tmpDriveId);
-            std::thread getFolderSize(ServerRequests::getFolderSizeWithCallback, userDbId, driveId, nodeId.toStdString(),
-                                      std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            auto getFolderSizeWithCallbackFunc = std::function<void()>([userDbId, driveId, nodeId, this]() {
+                (void) ServerRequests::getFolderSizeWithCallback(userDbId, driveId, nodeId.toStdString(),
+                                                                 std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            });
+            StdLoggingThread getFolderSize(getFolderSizeWithCallbackFunc);
             getFolderSize.detach();
 
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::NODE_CREATEMISSINGFOLDERS: {
-            qint64 tmpDriveDbID = 0;
+        case RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY: {
+            qint64 driveDbId = 0;
             QList<QPair<QString, QString>> folderList;
             QDataStream paramsStream(params);
             paramsStream >> tmpDriveDbID;
@@ -4904,7 +4905,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(syncPalMapMutex);
-    for (const auto [_, syncPal]: syncPalMap) {
+    for (const auto &[_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
