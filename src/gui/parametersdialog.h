@@ -128,9 +128,9 @@ class ParametersDialog : public CustomDialog {
         void onOpenFolder(const QString &filePath);
         void onDebugReporterDone(bool retCode, const QString &debugId = QString());
         void retranslateUi();
-        void onPauseSync(DriveDbId syncDbId = 0);
-        void onResumeSync(DriveDbId syncDbId = 0);
-        void onClearErrors(DriveDbId syncDbId, bool autoResolved);
+        void onPauseSync(SyncDbId syncDbId = 0);
+        void onResumeSync(SyncDbId syncDbId = 0);
+        void onClearErrors(SyncDbId syncDbId, bool autoResolved);
 };
 
 } // namespace KDC

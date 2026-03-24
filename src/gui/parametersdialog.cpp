@@ -1118,11 +1118,11 @@ void ParametersDialog::retranslateUi() {
     _defaultTextLabel->setText(tr("No kDrive configured!"));
 }
 
-void ParametersDialog::onPauseSync(const DriveDbId syncDbId) {
+void ParametersDialog::onPauseSync(const SyncDbId syncDbId) {
     emit executeSyncAction(ActionType::Stop, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onResumeSync(const DriveDbId syncDbId) {
+void ParametersDialog::onResumeSync(const SyncDbId syncDbId) {
     emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
