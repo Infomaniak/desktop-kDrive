@@ -59,7 +59,7 @@ std::string FileListJob::getConstructorFailureLogMessage(const std::exception &e
 }
 
 std::string FileListJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
-    return createLogMessage(getConstructorFailureCoreMsg()) + " exitInfo:" + toString(exitInfo);
+    return createLogMessage(getRunSynchronouslyFailureCoreMsg()) + " exitInfo:" + toString(exitInfo);
 }
 
 NodeInfoList FileListJob::v2NodeInfoList() const {
