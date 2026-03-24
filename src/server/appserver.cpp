@@ -1109,7 +1109,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int limit{100};
             ArgsWriter(params).write(level, tmpSyncDbId, limit);
 
-            const auto syncDbId = static_cast<DriveDbId>(tmpSyncDbId);
+            const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
 
             QList<ErrorInfo> list;
             const auto exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
