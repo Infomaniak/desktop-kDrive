@@ -170,7 +170,7 @@ void IpcClient::processBuffer() {
                 exit(EXIT_FAILURE);
             }
 
-            const uint8_t type = msg[MSG_TYPE];
+            const auto type = static_cast<GuiJobType>(msg[MSG_TYPE].extract<int>());
             const int32_t id = msg[MSG_REQUEST_ID];
             const uint8_t num = msg[MSG_REQUEST_NUM];
             const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
