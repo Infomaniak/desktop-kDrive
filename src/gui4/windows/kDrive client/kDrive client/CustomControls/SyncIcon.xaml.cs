@@ -8,7 +8,7 @@ namespace Infomaniak.kDrive.CustomControls
     public sealed partial class SyncIcon : UserControl
     {
         private const string ClassicSyncIconResourceKey = "Infomaniak.DS.Icons.Products.kDrive";
-        private const string AdvancedSyncIconUriResourceKey = "Infomaniak.DS.Icons.Documents.folder";
+        private const string AdvancedSyncIconUriResourceKey = "Infomaniak.DS.Icons.Documents.folder-outline";
 
         // DependencyProperty
         public ISync? Sync

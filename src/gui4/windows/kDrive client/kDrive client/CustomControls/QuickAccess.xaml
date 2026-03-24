@@ -98,7 +98,7 @@
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                 <controls:SvgIcon Height="13"
                                                   Width="13"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-share}"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-share}"
                                                   Foreground="{ThemeResource SystemAccentColor}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderShares')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

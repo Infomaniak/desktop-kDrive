@@ -100,14 +100,15 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-video">ms-appx:///Assets/DS/Icons/Documents/file-video.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-zip">ms-appx:///Assets/DS/Icons/Documents/file-zip.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open-file">ms-appx:///Assets/DS/Icons/Documents/folder-open-file.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline">ms-appx:///Assets/DS/Icons/Documents/folder-outline.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-open-file">ms-appx:///Assets/DS/Icons/Documents/folder-open-file.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-circle-cross">ms-appx:///Assets/DS/Icons/Documents/file-circle-cross.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-circle-plus">ms-appx:///Assets/DS/Icons/Documents/file-circle-plus.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-share">ms-appx:///Assets/DS/Icons/Documents/folder-share.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline-share">ms-appx:///Assets/DS/Icons/Documents/folder-share.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.folder-circle-arrow-right">ms-appx:///Assets/DS/Icons/Documents/folder-circle-arrow-right.svg</x:String>
 
     <!-- Devices -->
