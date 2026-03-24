@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
+  Exported at: Fri, 20 Mar 2026 18:11:28 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -194,6 +194,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
     <value>Anwenden auf %@ Dateien</value> 
   </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value /> 
+  </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Abbrechen</value> 
   </data> 
@@ -308,6 +311,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Synchronisierung entfernen</value> 
+  </data> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
+    <value>Datei umbenennen</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Synchronisation fortsetzen</value> 
@@ -597,6 +603,15 @@ Bitten Sie den Eigentümer oder Ihren Administrator um Zugriff.</value>
 Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
 </value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Letzter Dateispeicherort:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Eine Datei oder ein Ordner mit diesem Namen existiert bereits.</value> 
   </data> 
@@ -606,6 +621,12 @@ Sie wird in ihrer vorherigen Version wiederhergestellt.
 Ihre Änderungen sind in einer separaten Datei neben dem Original verfügbar, deren Name um den Zusatz "conflict" ergänzt wurde.
 Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
 </value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Der Name dieser Datei endet mit einem Leerzeichen, sodass sie nicht synchronisiert werden kann. Benennen Sie die Datei von kDrive online um.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Leerzeichen am Ende des Dateinamens</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Dieses Element wurde durch eine benutzerdefinierte Vorlage von der Synchronisierung ausgeschlossen.
@@ -623,32 +644,40 @@ Ihre Änderungen werden zu einem späteren Zeitpunkt synchronisiert.</value>
     <value>Die Datei wurde lokal geändert, obwohl sie auf dem entfernten kDrive gelöscht worden war.
 Die lokale Kopie wurde im Wiederherstellungsordner gesichert.</value> 
   </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
+Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
+  </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Diese Datei überschreitet die maximal zulässige Dateigröße (50 GB).
 Wenden Sie sich an Ihren Administrator, um das Limit für die Dateigröße zu erhöhen.</value> 
   </data> 
-  <data name="errFileTooBigDescriptionAdmin" xml:space="preserve"> 
-    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
-Wenden Sie sich an den Support, um die Beschränkung aufzuheben.</value> 
-  </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
     <value>Ungenügende Datenmenge</value> 
   </data> 
-  <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von Ihrem Gerät nicht unterstützt werden</value> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Zugriff verboten</value> 
   </data> 
-  <data name="errForbiddenCharEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Der Datei- oder Ordnername darf nicht mit einem Leerzeichen enden.</value> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername darf nicht nur Leerzeichen enthalten.</value> 
   </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Name enthält nur Leerzeichen</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Harte Verbindungen werden für die Synchronisierung nicht unterstützt.</value> 
   </data> 
-  <data name="errHttpErrForbiddenDescription" xml:space="preserve"> 
-    <value>Die Operation, die an diesem Element ausgeführt wird, ist verboten.
-Bitte fragen Sie den Eigentümer oder Ihren Administrator nach dem Zugriff.</value> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>Datei unzugänglich</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
     <value>Sie haben nicht die Erlaubnis, diese Datei oder diesen Ordner hierher zu verschieben. Er wird an seinem ursprünglichen Ort wiederhergestellt.
@@ -658,14 +687,23 @@ Bitte fragen Sie den Eigentümer oder Ihren Administrator um Zugang.
   <data name="errNameLengthDescription" xml:space="preserve"> 
     <value>Der Datei- oder Ordnername ist zu lang.</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name zu lang</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
-    <value>Dieser Datei- oder Ordnername enthält nicht unterstützte Zeichen.</value> 
+    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung nicht unterstützt werden. Benennen Sie die Datei von kDrive online aus um.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>Der Dateipfad ist zu lang für dein Gerät. Kürze ihn und versuche es erneut.</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Pfad zu lang</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Ihr kDrive ist voll.
@@ -673,6 +711,9 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>Dieser Name ist vom System reserviert. Benenne das Element um und versuche es erneut.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Reservierter Name</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>Dieses Element wurde nach wiederholten Fehlern vorübergehend auf die Sperrliste gesetzt. Es wird später erneut versucht.</value> 
@@ -751,18 +792,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Drei Tage lang</value> 
   </data> 
-  <data name="forbiddenActionErrorTitle" xml:space="preserve"> 
-    <value>Zugriff verboten</value> 
-  </data> 
-  <data name="forbiddenCharEndWithSpaceErrorTitle" xml:space="preserve"> 
-    <value>Name endet mit einem Leerzeichen</value> 
-  </data> 
-  <data name="forbiddenCharErrorTitle" xml:space="preserve"> 
-    <value>Nicht unterstützte Zeichen</value> 
-  </data> 
-  <data name="forbiddenCharOnlySpacesErrorTitle" xml:space="preserve"> 
-    <value>Name enthält nur Leerzeichen</value> 
-  </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Hallo %@, %@</value> 
   </data> 
@@ -774,9 +803,6 @@ Machen Sie Platz frei oder aktualisieren Sie Ihr Angebot, um diese Datei zu sync
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/de/hilfe</value> 
-  </data> 
-  <data name="httpErrForbiddenErrorTitle" xml:space="preserve"> 
-    <value>Zugriff verweigert</value> 
   </data> 
   <data name="infomaniakSupport" xml:space="preserve"> 
     <value>Infomaniak-Unterstützung</value> 
@@ -865,6 +891,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
   </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>datei</value> 
+  </data> 
   <data name="labelFolder" xml:space="preserve"> 
     <value>Mappe</value> 
   </data> 
@@ -876,6 +905,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   </data> 
   <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
     <value>Der Ordner wurde vielleicht auf ein anderes Laufwerk verschoben und dann wieder an seinen ursprünglichen Ort zurückgebracht.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>ordner</value> 
   </data> 
   <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
     <value>Ordner verschoben oder umbenannt</value> 
@@ -1019,24 +1051,6 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link in die Zwischenablage kopiert</value> 
   </data> 
-  <data name="localFileAccessDescription" xml:space="preserve"> 
-    <value>Auf diese Datei kann auf Ihrem Computer nicht zugegriffen werden. Vergewissern Sie sich, dass sie noch vorhanden ist und Sie die Rechte haben, um auf sie zuzugreifen.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogCloseButton" xml:space="preserve"> 
-    <value>Schliessen</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogDescription" xml:space="preserve"> 
-    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogFaqLink" xml:space="preserve"> 
-    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
-  </data> 
-  <data name="localFileAccessErrorDialogLocationLabel" xml:space="preserve"> 
-    <value>Letzter Dateispeicherort:</value> 
-  </data> 
-  <data name="localFileAccessErrorTitle" xml:space="preserve"> 
-    <value>Datei unzugänglich</value> 
-  </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Standort auf meinem PC</value> 
   </data> 
@@ -1099,9 +1113,6 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Mehr Speicherplatz, mehr Funktionen mit meiner kSuite+</value> 
   </data> 
-  <data name="nameLengthErrorTitle" xml:space="preserve"> 
-    <value>Name zu lang</value> 
-  </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Brauchen Sie Hilfe?</value> 
   </data> 
@@ -1125,9 +1136,6 @@ Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value>
   </data> 
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Nicht synchronisiert</value> 
-  </data> 
-  <data name="notYetSupportedCharErrorTitle" xml:space="preserve"> 
-    <value>Nicht unterstütztes Zeichen</value> 
   </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Immer</value> 
@@ -1166,7 +1174,7 @@ Wenn das Problem weiterhin besteht, kontaktieren Sie unser Support-Team.</value>
     <value>Standort: %@</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Ihr kDrive einrichten</value> 
+    <value>Konfigurieren Sie Ihre kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
     <value>Nicht ausgewählte Ordner bleiben online verfügbar, ohne Speicherplatz zu belegen.</value> 
@@ -1244,9 +1252,6 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   <data name="pathCopiedToClipboard" xml:space="preserve"> 
     <value>In die Zwischenablage kopierter Pfad</value> 
   </data> 
-  <data name="pathLengthErrorTitle" xml:space="preserve"> 
-    <value>Pfad zu lang</value> 
-  </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
     <value>Definieren Sie, wie sich kDrive mit dem Internet verbindet.</value> 
   </data> 
@@ -1288,9 +1293,6 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Standort auf kDrive</value> 
-  </data> 
-  <data name="reservedNameErrorTitle" xml:space="preserve"> 
-    <value>Reservierter Name</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
     <value>Suche in %@</value> 

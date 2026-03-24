@@ -59,6 +59,7 @@
                 Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
+                MinWidth="120"
                 Margin="{StaticResource Infomaniak.Style.Thickness.Left.XL}"
                 Content="{x:Bind ActionText}"
                 Click="ActionButton_Click"

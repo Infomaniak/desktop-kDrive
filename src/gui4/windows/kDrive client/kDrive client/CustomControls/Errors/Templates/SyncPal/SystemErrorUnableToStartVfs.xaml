@@ -11,6 +11,6 @@
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('systemErrorUnableToStartVfsTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('systemErrorUnableToStartVfsDescription')}"
                      ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenSyncSettings')}"
-                     ActionClick="OnOpenSyncSettingsClick"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

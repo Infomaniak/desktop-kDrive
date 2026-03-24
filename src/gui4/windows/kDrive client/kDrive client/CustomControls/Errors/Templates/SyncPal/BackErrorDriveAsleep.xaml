@@ -11,6 +11,6 @@
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('driveAsleepErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('backErrorDriveAsleepDescription')}"
                      ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonWakeUp')}"
-                     ActionClick="OnWakeUpClick"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

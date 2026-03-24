@@ -257,7 +257,10 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     const std::scoped_lock lock(_mutex);
-    if (!_guiJobFactory) return;
+    if (!_guiJobFactory) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Job Factory not initialized");
+        return;
+    }
 
     // Deserialize generic parameters
     int requestId = 0;
