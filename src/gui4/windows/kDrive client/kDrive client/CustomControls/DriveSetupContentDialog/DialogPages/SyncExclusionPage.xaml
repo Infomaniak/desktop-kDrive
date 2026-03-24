@@ -35,7 +35,7 @@
 
         <!-- Message -->
         <TextBlock Grid.Row="1"
-                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionDescription')}"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
