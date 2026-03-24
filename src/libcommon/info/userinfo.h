@@ -33,9 +33,9 @@ class UserInfo {
                  bool connected);
         UserInfo() = default;
 
-        inline void setDbId(UserDbId dbId) { _dbId = dbId; }
+        inline void setDbId(const UserDbId dbId) { _dbId = dbId; }
         inline UserDbId dbId() const { return _dbId; }
-        inline void setUserId(UserId userId) { _userId = userId; }
+        inline void setUserId(const UserId userId) { _userId = userId; }
         inline UserId userId() const { return _userId; }
         inline void setName(const QString &name) { _name = name; }
         inline const QString &name() const { return _name; }
@@ -48,10 +48,10 @@ class UserInfo {
         inline const QImage &avatar() const { return _avatar; }
         inline void setAvatarUrl(const QString &avatarUrl) { _avatarUrl = avatarUrl; }
         inline const QString &avatarUrl() const { return _avatarUrl; }
-        inline void setConnected(bool connected) { _connected = connected; }
+        inline void setConnected(const bool connected) { _connected = connected; }
         inline bool connected() const { return _connected; }
         inline bool credentialsAsked() const { return _credentialsAsked; }
-        inline void setCredentialsAsked(bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
+        inline void setCredentialsAsked(const bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
         [[nodiscard]] bool isStaff() const { return _isStaff; }
         void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 

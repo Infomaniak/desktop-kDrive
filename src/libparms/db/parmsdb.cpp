@@ -1803,7 +1803,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
         std::string name;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_ACCOUNTS_REQUEST_ID, 3, name));
 
-        accountList.push_back(Account(accountDbId, accountId, userDbId, name));
+        (void) accountList.emplace_back(accountDbId, accountId, userDbId, name);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_REQUEST_ID));
 
@@ -1835,7 +1835,7 @@ bool ParmsDb::selectAllAccounts(const UserDbId userDbId, std::vector<Account> &a
         std::string name;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, 2, name));
 
-        accountList.push_back(Account(accountDbId, accountId, userDbId, name));
+        (void) accountList.emplace_back(accountDbId, accountId, userDbId, name);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
 

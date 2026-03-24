@@ -678,7 +678,7 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     _statusBarWidget->setStatus(statusInfo);
 }
 
-void SynthesisPopover::refreshStatusBar(std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoMapIt) {
+void SynthesisPopover::refreshStatusBar(const std::map<DriveDbId, DriveInfoClient>::const_iterator driveInfoMapIt) {
     _statusBarWidget->setCurrentDrive(driveInfoMapIt->first);
     _statusBarWidget->setSeveralSyncs(_gui->syncInfoMap().size() > 1);
 

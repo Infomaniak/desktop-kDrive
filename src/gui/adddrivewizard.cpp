@@ -206,9 +206,9 @@ void AddDriveWizard::startNextStep(bool backward) {
     }
 }
 
-bool AddDriveWizard::addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
-                             const QString &serverFolderPath, bool liteSync, const QSet<QString> &blackList,
-                             const QSet<QString> &whiteList) {
+bool AddDriveWizard::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
+                             const QString &localFolderPath, const QString &serverFolderPath, bool liteSync,
+                             const QSet<QString> &blackList, const QSet<QString> &whiteList) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
     const QDir localFolderDir(localFolderPathNormalized);
@@ -238,7 +238,7 @@ bool AddDriveWizard::addSync(UserDbId userDbId, AccountId accountId, DriveId dri
     return true;
 }
 
-void AddDriveWizard::onStepTerminated(bool next) {
+void AddDriveWizard::onStepTerminated(const bool next) {
     if (_currentStep == Login) {
         if (next) {
             _userDbId = _addDriveLoginWidget->userDbId();

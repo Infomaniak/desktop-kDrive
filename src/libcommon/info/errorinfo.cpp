@@ -39,10 +39,10 @@ static const auto outParamsAutoResolved = "autoResolved";
 
 namespace KDC {
 
-ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, const SyncDbId syncDbId,
-                     const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
-                     const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
-                     InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
+ErrorInfo::ErrorInfo(const qint64 time, const ErrorLevel level, const QString &functionName, const SyncDbId syncDbId,
+                     const QString &workerName, const ExitCode exitCode, const ExitCause exitCause, const QString &localNodeId,
+                     const QString &remoteNodeId, const NodeType nodeType, const QString &path, ConflictType conflictType,
+                     const InconsistencyType inconsistencyType, const CancelType cancelType /*= CancelType::None*/,
                      const QString &destinationPath /*= ""*/) :
     _time(time),
     _level(level),
@@ -60,11 +60,11 @@ ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName,
     _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
 
-ErrorInfo::ErrorInfo(const ErrorDbId dbId, qint64 time, ErrorLevel level, const QString &functionName, const SyncDbId syncDbId,
-                     const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
-                     const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
-                     InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
-                     const QString &destinationPath /*= ""*/) :
+ErrorInfo::ErrorInfo(const ErrorDbId dbId, const qint64 time, const ErrorLevel level, const QString &functionName,
+                     const SyncDbId syncDbId, const QString &workerName, const ExitCode exitCode, const ExitCause exitCause,
+                     const QString &localNodeId, const QString &remoteNodeId, const NodeType nodeType, const QString &path,
+                     ConflictType conflictType, const InconsistencyType inconsistencyType,
+                     const CancelType cancelType /*= CancelType::None*/, const QString &destinationPath /*= ""*/) :
     _dbId(dbId),
     _time(time),
     _level(level),
@@ -115,8 +115,8 @@ QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {
 }
 
 QDataStream &operator<<(QDataStream &out, const ErrorInfo &errorInfo) {
-    const qint64 dbId = static_cast<qint64>(errorInfo._dbId);
-    const qint64 syncDbId = static_cast<qint64>(errorInfo._syncDbId);
+    const auto dbId = static_cast<qint64>(errorInfo._dbId);
+    const auto syncDbId = static_cast<qint64>(errorInfo._syncDbId);
     out << dbId << errorInfo._time << errorInfo._level << errorInfo._functionName << syncDbId << errorInfo._workerName
         << errorInfo._exitCode << errorInfo._exitCause << errorInfo._localNodeId << errorInfo._remoteNodeId << errorInfo._nodeType
         << errorInfo._path << errorInfo._destinationPath << errorInfo._conflictType << errorInfo._inconsistencyType

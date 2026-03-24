@@ -25,12 +25,15 @@ namespace KDC::sentry::pTraces {
 
 struct None : public AbstractPTrace {
         None() :
-            AbstractPTrace({}) {};
+            AbstractPTrace({}){};
         explicit None(const SyncDbId syncDbId) :
             AbstractPTrace({}, syncDbId) {}
-        void start() final { /* Do nothing */ }
-        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */ }
-        void restart() final { /* Do nothing */ }
+        void start() final { /* Do nothing */
+        }
+        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */
+        }
+        void restart() final { /* Do nothing */
+        }
 };
 
 /*
@@ -52,7 +55,7 @@ struct AppStart : public AbstractPTrace {
 
 struct Sync : public AbstractPTrace {
         [[nodiscard]] explicit Sync(const SyncDbId syncDbId) :
-            AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, syncDbId) {};
+            AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, syncDbId){};
 };
 
 struct UpdateDetection1 : public AbstractPTrace {
@@ -70,7 +73,7 @@ struct UpdateDetection2 : public AbstractPTrace {
 struct Reconciliation1 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation1(const SyncDbId syncDbId) :
             AbstractPTrace({"Reconciliation1", "Platform inconsistency check", PTraceName::Reconciliation1, PTraceName::Sync},
-                           syncDbId) {};
+                           syncDbId){};
 };
 
 struct Reconciliation2 : public AbstractPTrace {
@@ -130,7 +133,7 @@ struct RFSOChangeDetected : public AbstractScopedPTrace {
 struct RFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
         explicit RFSOGenerateInitialSnapshot(const SyncDbId syncDbId) :
             AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSOGenerateInitialSnapshot},
-                                 PTraceStatus::Aborted, syncDbId) {};
+                                 PTraceStatus::Aborted, syncDbId){};
 };
 
 // This scoped performance trace expects to be manually stopped.
@@ -289,7 +292,7 @@ struct waitForAllJobsToFinish : public AbstractScopedPTrace {
  */
 namespace counterScoped {
 struct LFSOExploreItem : public AbstractCounterScopedPTrace {
-        explicit LFSOExploreItem(bool fromChangeDetected, const SyncDbId syncDbId) :
+        explicit LFSOExploreItem(const bool fromChangeDetected, const SyncDbId syncDbId) :
             AbstractCounterScopedPTrace(
                     {"LFSO_ExploreItem(x1000)", "Discover 1000 local files", PTraceName::LFSOExploreItem,
                      (fromChangeDetected ? PTraceName::LFSOChangeDetected : PTraceName::LFSOGenerateInitialSnapshot)},
@@ -297,7 +300,7 @@ struct LFSOExploreItem : public AbstractCounterScopedPTrace {
 };
 
 struct RFSOExploreItem : public AbstractCounterScopedPTrace {
-        explicit RFSOExploreItem(bool fromChangeDetected, const SyncDbId syncDbId) :
+        explicit RFSOExploreItem(const bool fromChangeDetected, const SyncDbId syncDbId) :
             AbstractCounterScopedPTrace(
                     {"RFSO_ExploreItem(x1000)", "Discover 1000 remote files", PTraceName::RFSOExploreItem,
                      (fromChangeDetected ? PTraceName::RFSOChangeDetected : PTraceName::RFSOGenerateInitialSnapshot)},

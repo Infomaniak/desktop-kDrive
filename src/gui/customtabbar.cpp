@@ -64,8 +64,8 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
         const QString notifText = notifCount > maxNbNotif ? "+99" : QString::number(notifCount);
         QRect notifTextBoundingBox = option.fontMetrics.boundingRect(notifText);
 
-        const int textEndPointX = textBounding.bottomRight().x() + textRect.bottomLeft().x();
-        const int notifBoxWidth = notifTextBoundingBox.width() + notifTextPadding;
+        const auto textEndPointX = textBounding.bottomRight().x() + textRect.bottomLeft().x();
+        const auto notifBoxWidth = notifTextBoundingBox.width() + notifTextPadding;
 
         // draw notif badge
         if (notifDisplay) {
@@ -87,7 +87,7 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
 
         // draw blue underline
         if (curr) {
-            const int margin = notifDisplay ? notifBoxWidth + notifBoxXMargin : 0;
+            const auto margin = notifDisplay ? notifBoxWidth + notifBoxXMargin : 0;
 
             p.setPen(QPen(selectLineColor, selectedLineStroke));
             p.drawLine(QLineF(QPoint(textRect.bottomLeft().x(), textRect.bottomLeft().y() + textLineHeightOffset),

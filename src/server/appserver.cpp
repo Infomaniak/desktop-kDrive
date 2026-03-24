@@ -2703,7 +2703,7 @@ void AppServer::sendErrorRemoved(int64_t dbId) const {
     }
 }
 
-void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item, bool notify) {
+void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item, const bool notify) {
     // Send completedItem signal to client
     SyncFileItemInfo itemInfo;
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);

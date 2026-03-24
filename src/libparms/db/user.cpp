@@ -30,7 +30,8 @@ User::User() :
     _logger(Log::instance()->getLogger()) {}
 
 User::User(const UserDbId dbId, const UserId userId, const std::string &keychainKey, const std::string &name,
-           const std::string &email, const std::string &avatarUrl, std::shared_ptr<std::vector<char>> avatar, bool toMigrate) :
+           const std::string &email, const std::string &avatarUrl, const std::shared_ptr<std::vector<char>> avatar,
+           const bool toMigrate) :
     _logger(Log::instance()->getLogger()),
     _dbId(dbId),
     _userId(userId),

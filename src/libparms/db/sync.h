@@ -38,7 +38,7 @@ class PARMS_EXPORT Sync {
 
         inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
         inline SyncDbId dbId() const { return _dbId; }
-        inline void setDriveDbId(DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        inline void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
         inline DriveDbId driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const SyncPath &localPath) { _localPath = localPath; }
         inline const SyncPath &localPath() const { return _localPath; }
@@ -52,11 +52,11 @@ class PARMS_EXPORT Sync {
         inline const SyncPath &dbPath() const { return _dbPath; }
         inline void setPaused(bool paused) { _paused = paused; }
         inline bool paused() const { return _paused; }
-        inline void setSupportVfs(bool supportVfs) { _supportVfs = supportVfs; }
+        inline void setSupportVfs(const bool supportVfs) { _supportVfs = supportVfs; }
         inline bool supportVfs() const { return _supportVfs; }
-        inline void setVirtualFileMode(VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
+        inline void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
         inline VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
-        inline void setNotificationsDisabled(bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
+        inline void setNotificationsDisabled(const bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
         inline bool notificationsDisabled() const { return _notificationsDisabled; }
         inline void setHasFullyCompleted(bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
         inline bool hasFullyCompleted() const { return _hasFullyCompleted; }

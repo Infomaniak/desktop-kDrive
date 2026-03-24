@@ -36,9 +36,9 @@ class SyncInfo {
                  const QString &targetNodeId, bool supportVfs, VirtualFileMode virtualFileMode,
                  const QString &navigationPaneClsid);
 
-        inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
+        inline void setDbId(const SyncDbId dbId) { _dbId = dbId; }
         inline SyncDbId dbId() const { return _dbId; }
-        inline void setDriveDbId(DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        inline void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
         inline DriveDbId driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const QString &path) { _localPath = path; }
         inline const QString &localPath() const { return _localPath; }
@@ -48,9 +48,9 @@ class SyncInfo {
         inline const QString &targetNodeId() const { return _targetNodeId; }
         inline void setSupportVfs(bool supportVfs) { _supportVfs = supportVfs; }
         inline bool supportVfs() const { return _supportVfs; }
-        inline void setVirtualFileMode(VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
+        inline void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
         inline VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
-        inline void setNavigationPaneClsid(QString navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
+        inline void setNavigationPaneClsid(const QString navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         inline QString navigationPaneClsid() const { return _navigationPaneClsid; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;

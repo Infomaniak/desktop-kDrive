@@ -108,7 +108,7 @@ Db::~Db() {
     close();
 }
 
-std::string Db::makeDbFileName(UserId userId, AccountId accountId, DriveId driveId, SyncDbId syncDbId) {
+std::string Db::makeDbFileName(const UserId userId, const AccountId accountId, const DriveId driveId, const SyncDbId syncDbId) {
     std::string fileName;
     if (!userId && !accountId && !driveId && !syncDbId) {
         // ParmsDb

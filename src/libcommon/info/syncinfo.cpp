@@ -30,8 +30,8 @@ static const auto syncInfoNavigationPaneClsid = "navigationPaneClsid";
 
 namespace KDC {
 
-SyncInfo::SyncInfo(SyncDbId dbId, DriveDbId driveDbId, const QString &localPath, const QString &targetPath,
-                   const QString &targetNodeId, bool supportVfs, VirtualFileMode virtualFileMode,
+SyncInfo::SyncInfo(const SyncDbId dbId, const DriveDbId driveDbId, const QString &localPath, const QString &targetPath,
+                   const QString &targetNodeId, const bool supportVfs, const VirtualFileMode virtualFileMode,
                    const QString &navigationPaneClsid) :
     _dbId(dbId),
     _driveDbId(driveDbId),

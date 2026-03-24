@@ -77,7 +77,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, const Count ge
     // Drive errors
     for (auto const &driveError: driveErrorList) {
         auto *driveWidget = new ClickableWidget(this);
-        driveWidget->setProperty(actionTypeProperty.c_str(), static_cast<qint64>(driveError.driveDbId));
+        (void) driveWidget->setProperty(actionTypeProperty.c_str(), static_cast<qint64>(driveError.driveDbId));
         mainVBox->addWidget(driveWidget);
 
         auto *driveErrorHBox = new QHBoxLayout();
