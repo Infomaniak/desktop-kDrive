@@ -48,7 +48,7 @@ namespace Infomaniak.kDrive.Converters
                 {
                     return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Localizer.Instance.GetString("labelShortHour")}");
                 }
-                if (timeSpan.TotalDays <= 3) // Only show "x days ago" for up to 3 days, after that show the date
+                if (timeSpan.TotalDays < 4) // Only show "x days ago" for up to 3 days, after that show the date
                 {
                     return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Localizer.Instance.GetString("labelShortDay")}");
                 }
