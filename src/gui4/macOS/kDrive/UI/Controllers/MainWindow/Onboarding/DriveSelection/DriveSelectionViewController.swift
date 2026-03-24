@@ -186,7 +186,10 @@ extension DriveSelectionViewController {
     }
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
-        primaryButton.isEnabled = !selectedDrives.isEmpty
+        let shouldEnableButtons = !selectedDrives.isEmpty
+
+        primaryButton.isEnabled = shouldEnableButtons
+        secondaryButton.isEnabled = shouldEnableButtons
     }
 
     private func handleLoadingState(_ isLoading: Bool) {
