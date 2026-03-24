@@ -36,9 +36,17 @@ final class DriveSelectionViewModel: ObservableObject {
     private var bindStore = Set<AnyCancellable>()
 
     @Published private(set) var isLoading = false
+    @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
-    @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
+    var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
+
+    var selectedSynchroConfigurations: [SynchroConfiguration] {
+        let selectedSynchro = synchroConfigurations.filter { indexedSynchroConfiguration in
+            selectedDrives.contains { $0.id == indexedSynchroConfiguration.key }
+        }
+        return Array(selectedSynchro.values)
+    }
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
@@ -48,8 +56,9 @@ final class DriveSelectionViewModel: ObservableObject {
     private func observeAvailableDrives() {
         coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
             .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
-            .receiveOnMain(store: &bindStore) { [weak self] availableDrive in
-                self?.availableDrives = availableDrive
+            .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
+                self?.availableDrives = availableDrives
+                self?.generateConfigurations(for: availableDrives)
             }
     }
 
@@ -87,14 +96,12 @@ final class DriveSelectionViewModel: ObservableObject {
                     let syncOrigin = SyncOrigin.availableDrive(availableDrive)
                     let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin.drive.name)
 
-                    let newSyncCandidate = NewSyncCandidate(
+                    return NewSyncCandidate(
                         origin: syncOrigin,
                         remoteFolder: .kDriveRoot,
                         localFolder: localFolder,
                         blackList: []
                     )
-
-                    return newSyncCandidate
                 }
 
                 flowCoordinator.synchronizations = syncCandidates
@@ -103,6 +110,15 @@ final class DriveSelectionViewModel: ObservableObject {
                 // TODO: Handle error
                 isLoading = false
             }
+        }
+    }
+
+    private func generateConfigurations(for drives: [UIAvailableDrive]) {
+        for drive in drives {
+            guard synchroConfigurations[drive.id] == nil else { continue }
+
+            let configuration = SynchroConfiguration(drive: drive, blackList: [])
+            synchroConfigurations[drive.id] = configuration
         }
     }
 }

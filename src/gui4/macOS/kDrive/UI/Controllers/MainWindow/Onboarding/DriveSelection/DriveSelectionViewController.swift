@@ -166,19 +166,9 @@ extension DriveSelectionViewController {
     @objc private func didTapAdvancedSettings() {
         guard let currentUser = flowCoordinator.currentUser else { return }
 
-        var configurations = [SynchroConfiguration]()
-        for selectedDrive in viewModel.selectedDrives {
-            let configuration = SynchroConfiguration(
-                drive: selectedDrive,
-                localFolder: .init(url: nil, isDefault: true),
-                blackList: []
-            )
-            configurations.append(configuration)
-        }
-
         let synchroConfigurationFlow = SynchroConfigurationFlowView(
             userDbId: Int(currentUser.dbId),
-            configurations: configurations,
+            configurations: viewModel.selectedSynchroConfigurations,
             onConfirm: handleUpdateConfigurations,
             onCancel: dismissPresentedViewController
         )
@@ -210,7 +200,9 @@ extension DriveSelectionViewController {
     }
 
     private func handleUpdateConfigurations(_ configurations: [SynchroConfiguration]) {
-        print("Did configure")
+        for configuration in configurations {
+            viewModel.synchroConfigurations[configuration.drive.id] = configuration
+        }
         dismissPresentedViewController()
     }
 
