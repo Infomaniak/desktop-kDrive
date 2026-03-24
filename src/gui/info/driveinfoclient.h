@@ -49,9 +49,9 @@ class DriveInfoClient : public DriveInfo {
         inline SyncStatus status() const { return _status; }
         inline bool unresolvedConflicts() const { return _unresolvedConflicts; }
         inline int unresolvedErrorsCount() const { return _unresolvedErrorsCount; }
-        inline void setUnresolvedErrorsCount(int count) { _unresolvedErrorsCount = count; }
+        inline void setUnresolvedErrorsCount(Count count) { _unresolvedErrorsCount = count; }
         inline int autoresolvedErrorsCount() const { return _autoresolvedErrorsCount; }
-        inline void setAutoresolvedErrorsCount(int count) { _autoresolvedErrorsCount = count; }
+        inline void setAutoresolvedErrorsCount(Count count) { _autoresolvedErrorsCount = count; }
 
         inline qint64 totalSize() const { return _totalSize; }
         inline void setTotalSize(qint64 totalSize) { _totalSize = totalSize; }

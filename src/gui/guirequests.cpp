@@ -798,7 +798,7 @@ ExitCode GuiRequests::crash() {
     return exitCode;
 }
 
-ExitInfo GuiRequests::getSubFolders(UserDbId userDbId, DriveId driveId, const QString &nodeId, QList<NodeInfo> &list,
+ExitInfo GuiRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -820,7 +820,7 @@ ExitInfo GuiRequests::getSubFolders(UserDbId userDbId, DriveId driveId, const QS
     return ExitInfo::fromInt(exitInfoInt);
 }
 
-ExitInfo GuiRequests::getSubFolders(DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list,
+ExitInfo GuiRequests::getSubFolders(const DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -841,7 +841,7 @@ ExitInfo GuiRequests::getSubFolders(DriveDbId driveDbId, const QString &nodeId, 
     return ExitInfo::fromInt(exitInfoInt);
 }
 
-ExitCode GuiRequests::createMissingFolders(DriveDbId driveDbId, const QList<QPair<QString, QString>> &serverFolderList,
+ExitCode GuiRequests::createMissingFolders(const DriveDbId driveDbId, const QList<QPair<QString, QString>> &serverFolderList,
                                            QString &nodeId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -861,7 +861,7 @@ ExitCode GuiRequests::createMissingFolders(DriveDbId driveDbId, const QList<QPai
     return exitCode;
 }
 
-ExitCode GuiRequests::getPublicLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl) {
+ExitCode GuiRequests::getPublicLinkUrl(const DriveDbId driveDbId, const QString &fileId, QString &linkUrl) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(driveDbId);
@@ -880,7 +880,7 @@ ExitCode GuiRequests::getPublicLinkUrl(DriveDbId driveDbId, const QString &fileI
     return exitCode;
 }
 
-ExitCode GuiRequests::getFolderSize(UserDbId userDbId, DriveId driveId, const QString &nodeId) {
+ExitCode GuiRequests::getFolderSize(const UserDbId userDbId, const DriveId driveId, const QString &nodeId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(userDbId);
@@ -899,7 +899,7 @@ ExitCode GuiRequests::getFolderSize(UserDbId userDbId, DriveId driveId, const QS
     return exitCode;
 }
 
-ExitCode GuiRequests::getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl) {
+ExitCode GuiRequests::getPrivateLinkUrl(const DriveDbId driveDbId, const QString &fileId, QString &linkUrl) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(driveDbId);

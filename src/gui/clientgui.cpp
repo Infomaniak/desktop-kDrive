@@ -977,8 +977,8 @@ void ClientGui::onRefreshErrorList() {
             }
         }
 
-        int unresolvedErrorsCount = 0;
-        int autoresolvedErrorsCount = 0;
+        Count unresolvedErrorsCount = 0;
+        Count autoresolvedErrorsCount = 0;
         for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
 

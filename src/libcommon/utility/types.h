@@ -66,6 +66,7 @@ using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
 using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
+using Count = int64_t;
 
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;

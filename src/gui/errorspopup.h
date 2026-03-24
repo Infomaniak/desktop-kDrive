@@ -40,10 +40,10 @@ class ErrorsPopup : public QDialog {
 
     public:
         struct DriveError {
-                DriveDbId driveDbId;
+                DriveDbId driveDbId{0};
                 QString driveName;
-                int unresolvedErrorsCount;
-                int autoresolvedErrorsCount;
+                Count unresolvedErrorsCount{0};
+                Count autoresolvedErrorsCount{0};
         };
 
         explicit ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position,
