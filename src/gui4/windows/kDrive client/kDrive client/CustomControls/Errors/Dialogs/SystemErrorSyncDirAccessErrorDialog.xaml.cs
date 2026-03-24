@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI;
 using DynamicData;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -79,6 +80,11 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
         var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
         frame.Navigate(destPage, Error.Sync?.Drive);
+
+        // Get the containg dialog and close it
+        var dialog = this.FindAscendant<ContentDialog>();
+        if (dialog is not null)
+            dialog.Hide();
     }
 
     private async void FaqHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
