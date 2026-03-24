@@ -268,9 +268,7 @@
         </Grid.RowDefinitions>
 
         <!-- Main content-->
-        <Grid Grid.Row="1"
-              RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}"
-              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -296,7 +294,6 @@
                 </StackPanel>
 
                 <errors:RemoteDiskFullBar Grid.Row="0"
-                                          Visibility="Visible"
                                           Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
                                           Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
             </StackPanel>
@@ -334,6 +331,7 @@
             <!-- Right Side Buttons -->
             <controls:QuickAccess Grid.Row="1"
                                   Grid.Column="1"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Left.M}"
                                   Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
         </Grid>
         <!-- Make conditionally visible once we fetch the offer type -->
