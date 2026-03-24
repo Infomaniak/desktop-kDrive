@@ -36,7 +36,7 @@ void GetAllFilesInDirectoryJob::abort() {
 }
 
 ExitInfo GetAllFilesInDirectoryJob::runJob() {
-    _nodeInfoList.clear();
+    _remoteNodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;
     do {
@@ -60,9 +60,9 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         }
 
         // Concatenate partial listings
-        const auto &nodeInfoList = fileListJob->v3NodeInfoList();
-        _nodeInfoList.reserve(_nodeInfoList.size() + nodeInfoList.size());
-        (void) _nodeInfoList.insert(_nodeInfoList.end(), nodeInfoList.begin(), nodeInfoList.end());
+        const auto &nodeInfoList = fileListJob->v3RemoteNodeInfoList();
+        _remoteNodeInfoList.reserve(_remoteNodeInfoList.size() + nodeInfoList.size());
+        (void) _remoteNodeInfoList.insert(_remoteNodeInfoList.end(), nodeInfoList.begin(), nodeInfoList.end());
 
         hasMore = fileListJob->hasMore();
         cursor = fileListJob->cursor();

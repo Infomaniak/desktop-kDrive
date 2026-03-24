@@ -34,7 +34,7 @@ class TestApiTranslator : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTranslateV2ToV3);
         CPPUNIT_TEST(testTranslateV3ToV2);
         CPPUNIT_TEST(testGetSpecialFolders);
-        CPPUNIT_TEST(translateNodeInfoListFromV3ToV2);
+        CPPUNIT_TEST(translateRemoteNodeInfoListFromV3ToV2);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -45,7 +45,7 @@ class TestApiTranslator : public CppUnit::TestFixture, public TestBase {
         void testGetDriveDbId();
         void testTranslateV2ToV3();
         void testTranslateV3ToV2();
-        void translateNodeInfoListFromV3ToV2();
+        void translateRemoteNodeInfoListFromV3ToV2();
         void testGetSpecialFolders();
 
         DriveId _driveId = 0;

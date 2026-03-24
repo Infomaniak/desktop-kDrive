@@ -1640,44 +1640,44 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
 
     auto exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-    CPPUNIT_ASSERT_EQUAL(size_t{1}, listFilesInDirectoryJob.v3NodeInfoList().size());
-    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(0).path().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).path().isEmpty());
     const auto subDirName = SyncName2QStr(remoteSubDir.name());
-    CPPUNIT_ASSERT(subDirName == listFilesInDirectoryJob.v3NodeInfoList().at(0).name());
+    CPPUNIT_ASSERT(subDirName == listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).name());
 
     listFilesInDirectoryJob.setListingConf({.dirOnly = false});
     exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3NodeInfoList().size());
-    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(0).path().isEmpty());
-    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(1).path().isEmpty());
-    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(2).path().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).path().isEmpty());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(1).path().isEmpty());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2).path().isEmpty());
 
     std::set<QString> expectedNames{"test_file_A.txt", "test_file_B.txt", subDirName};
     std::set<QString> names;
-    for (const auto &nodeInfo: listFilesInDirectoryJob.v3NodeInfoList()) names.emplace(nodeInfo.name());
+    for (const auto &nodeInfo: listFilesInDirectoryJob.v3RemoteNodeInfoList()) names.emplace(nodeInfo.name());
 
     CPPUNIT_ASSERT(expectedNames == names);
 
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false});
     exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3NodeInfoList().size());
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
 
-    const NodeInfo &nodeInfo1 = listFilesInDirectoryJob.v3NodeInfoList().at(0);
+    const NodeInfo &nodeInfo1 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0);
     CPPUNIT_ASSERT(nodeInfo1.path().endsWith(nodeInfo1.name()));
     CPPUNIT_ASSERT(!nodeInfo1.nodeId().isEmpty());
     const auto parentNodeId = QString::fromStdString(remoteTmpDir.id());
     CPPUNIT_ASSERT(nodeInfo1.parentNodeId() == parentNodeId);
     CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo1.size()); // Not computed because it is expensive.
 
-    const NodeInfo &nodeInfo2 = listFilesInDirectoryJob.v3NodeInfoList().at(1);
+    const NodeInfo &nodeInfo2 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(1);
     CPPUNIT_ASSERT(nodeInfo2.path().endsWith(nodeInfo2.name()));
     CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
     CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo2.size()); // Not computed because it is expensive.
 
-    const NodeInfo &nodeInfo3 = listFilesInDirectoryJob.v3NodeInfoList().at(2);
+    const NodeInfo &nodeInfo3 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2);
     CPPUNIT_ASSERT(nodeInfo3.path().endsWith(nodeInfo3.name()));
     CPPUNIT_ASSERT(!nodeInfo3.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo3.parentNodeId() == parentNodeId);
@@ -1687,12 +1687,12 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 1});
     exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::BackError, ExitCause::HttpErr), exitInfo);
-    CPPUNIT_ASSERT_EQUAL(size_t{0}, listFilesInDirectoryJob.v3NodeInfoList().size());
+    CPPUNIT_ASSERT_EQUAL(size_t{0}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
 
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 5});
     exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3NodeInfoList().size());
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
 }
 
 } // namespace KDC

@@ -129,7 +129,7 @@ void TestApiTranslator::testTranslateV3ToV2() {
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId != remoteNodeId);
 }
 
-void TestApiTranslator::translateNodeInfoListFromV3ToV2() {
+void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
     const auto privateFolderId = QString::fromStdString(ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId));
     NodeInfo nodeInfo1;
     nodeInfo1.setParentNodeId(QString::fromStdString(ApiTranslator::v2RootFolderRemoteId));
@@ -144,10 +144,10 @@ void TestApiTranslator::translateNodeInfoListFromV3ToV2() {
     nodeInfo3.setParentNodeId(QString::fromStdString(parentId));
     nodeInfo3.setNodeId("sub_common_documents_folder");
 
-    NodeInfoList v3NodeInfoList{nodeInfo1, nodeInfo2, nodeInfo3};
+    RemoteNodeInfoList v3RemoteNodeInfoList{nodeInfo1, nodeInfo2, nodeInfo3};
 
-    ApiTranslator::translateV3ToV2(_driveDbId, v3NodeInfoList);
-    for (const auto &v2NodeInfo: v3NodeInfoList) {
+    ApiTranslator::translateV3ToV2(_driveDbId, v3RemoteNodeInfoList);
+    for (const auto &v2NodeInfo: v3RemoteNodeInfoList) {
         CPPUNIT_ASSERT(privateFolderId != v2NodeInfo.parentNodeId());
         CPPUNIT_ASSERT(privateFolderId != v2NodeInfo.nodeId());
     }

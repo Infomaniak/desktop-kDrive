@@ -35,12 +35,12 @@ class FileListJob : public SyncJob {
 
         // The return value of this accessor is only meaningful when all the responses of the
         // underlying file list requests have been handled.
-        [[nodiscard]] NodeInfoList nodeInfoList() const { return v2NodeInfoList(); };
+        [[nodiscard]] RemoteNodeInfoList nodeInfoList() const { return v2RemoteNodeInfoList(); };
 
         // The node info list as returned by the backend API v3
         // The return value is only meaningful when all the responses of the
         // underlying file list requests have been handled.
-        [[nodiscard]] const NodeInfoList &v3NodeInfoList() const { return _nodeInfoList; };
+        [[nodiscard]] const RemoteNodeInfoList &v3RemoteNodeInfoList() const { return _remoteNodeInfoList; };
 
     protected:
         [[nodiscard]] std::string getConstructorFailureLogMessage(const std::exception &e) const;
@@ -60,7 +60,7 @@ class FileListJob : public SyncJob {
         ListingConf _listingConf;
 
         // The deserialization of the request JSON result.
-        NodeInfoList _nodeInfoList;
+        RemoteNodeInfoList _remoteNodeInfoList;
 
         // If `_translationMode` is `TranslationMode::V2ToV3`, the identifier of the directory, that is `_fileId`, will
         // be translated in every underlying file listing requests.
@@ -68,7 +68,7 @@ class FileListJob : public SyncJob {
 
     private:
         // The node info list as returned by the backend API v2
-        [[nodiscard]] NodeInfoList v2NodeInfoList() const;
+        [[nodiscard]] RemoteNodeInfoList v2RemoteNodeInfoList() const;
 
         [[nodiscard]] std::string createLogMessage(const std::string &coreMsg) const;
 

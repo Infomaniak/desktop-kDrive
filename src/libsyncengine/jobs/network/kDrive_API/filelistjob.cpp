@@ -62,11 +62,11 @@ std::string FileListJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &ex
     return createLogMessage(getRunSynchronouslyFailureCoreMsg()) + " exitInfo:" + toString(exitInfo);
 }
 
-NodeInfoList FileListJob::v2NodeInfoList() const {
-    NodeInfoList v2NodeInfoList_ = _nodeInfoList;
-    ApiTranslator::translateV3ToV2(_driveDbId, v2NodeInfoList_);
+RemoteNodeInfoList FileListJob::v2RemoteNodeInfoList() const {
+    RemoteNodeInfoList v2RemoteNodeInfoList_ = _remoteNodeInfoList;
+    ApiTranslator::translateV3ToV2(_driveDbId, v2RemoteNodeInfoList_);
 
-    return v2NodeInfoList_;
+    return v2RemoteNodeInfoList_;
 }
 
 } // namespace KDC

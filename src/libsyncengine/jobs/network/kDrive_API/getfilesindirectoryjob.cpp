@@ -128,26 +128,26 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
                           parentId.c_str(), modifiedTime, SyncName2QStr(path));
         nodeInfo.setAccessDenied(accessDenied);
 
-        (void) _nodeInfoList.emplace_back(std::move(nodeInfo));
+        (void) _remoteNodeInfoList.emplace_back(std::move(nodeInfo));
     }
 
     return ExitCode::Ok;
 }
 
-NodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
-    return v2NodeInfoList();
+RemoteNodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
+    return v2RemoteNodeInfoList();
 }
 
-NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
+RemoteNodeInfoList GetFilesInDirectoryJob::v2RemoteNodeInfoList() {
     // Data is already deserialized by handleResponse().
-    NodeInfoList v2NodeInfoList_ = _nodeInfoList;
-    ApiTranslator::translateV3ToV2(driveDbId(), v2NodeInfoList_);
+    RemoteNodeInfoList v2RemoteNodeInfoList_ = _remoteNodeInfoList;
+    ApiTranslator::translateV3ToV2(driveDbId(), v2RemoteNodeInfoList_);
 
-    return v2NodeInfoList_;
+    return v2RemoteNodeInfoList_;
 }
 
 ExitInfo GetFilesInDirectoryJob::handleResponse(std::istream &is) {
-    _nodeInfoList.clear();
+    _remoteNodeInfoList.clear();
 
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 

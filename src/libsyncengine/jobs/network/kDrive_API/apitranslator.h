@@ -30,7 +30,7 @@ class ApiTranslator {
         static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
         static void translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
-        static void translateV3ToV2(DriveDbId driveDbId, NodeInfoList &v3NodeInfoList);
+        static void translateV3ToV2(DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList);
         static RemoteNodeId getUserPrivateFolderRemoteId(DriveDbId driveDbId);
         static RemoteNodeId getCommonDocumentsRemoteId(DriveDbId driveDbId);
         static RemoteNodeId getSharedRemoteId(DriveDbId driveDbId);

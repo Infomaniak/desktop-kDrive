@@ -65,6 +65,6 @@ class NodeInfo {
         bool _accessDenied = false;
 };
 
-using NodeInfoList = std::vector<NodeInfo>;
+using RemoteNodeInfoList = std::vector<NodeInfo>;
 
 } // namespace KDC

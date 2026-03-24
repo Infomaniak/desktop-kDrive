@@ -85,7 +85,7 @@ void ApiTranslator::updateCache(const DriveDbId driveDbId) {
         return;
     }
 
-    const auto &nodeInfoList = fileListJob.v3NodeInfoList();
+    const auto &nodeInfoList = fileListJob.v3RemoteNodeInfoList();
 
     const std::scoped_lock lock(_mutex);
 
@@ -160,13 +160,13 @@ void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNod
     remoteNodeId = v2RootFolderRemoteId;
 }
 
-void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeInfoList &v3NodeInfoList) {
+void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList) {
     const RemoteNodeId privateFolderId = getUserPrivateFolderRemoteId(driveDbId);
-    (void) std::erase_if(v3NodeInfoList, [&privateFolderId](const NodeInfo &nodeInfo) {
+    (void) std::erase_if(v3RemoteNodeInfoList, [&privateFolderId](const NodeInfo &nodeInfo) {
         return nodeInfo.nodeId().toStdString() == privateFolderId;
     });
 
-    for (auto &nodeInfo: v3NodeInfoList) {
+    for (auto &nodeInfo: v3RemoteNodeInfoList) {
         if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId));
     }
