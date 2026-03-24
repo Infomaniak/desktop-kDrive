@@ -51,5 +51,17 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             Frame.Navigate(typeof(ConflictQuickResolvePage));
         }
+
+        private void NoErrorHyperlinkButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+            if (frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Failled to fetch current frame.");
+                return;
+            }
+
+            frame.Navigate(typeof(Pages.ActivityPage));
+        }
     }
 }
