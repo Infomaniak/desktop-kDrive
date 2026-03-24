@@ -19,7 +19,6 @@
 #include "communicationlayer/IpcClient.h"
 #include "libcommongui/logger.h"
 
-#include <QDebug>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 
@@ -43,13 +42,13 @@ int main(int argc, char *argv[]) {
     KDC::IpcClient client;
 
     QObject::connect(&client, &KDC::IpcClient::connected, [&client]() {
-        qDebug() << "[IpcClient] Connected to server";
+        qCDebug(lcMain) << "Connected to server";
         const int id = client.sendRequest(RequestNum::USER_INFOLIST);
-        qDebug() << "[IpcClient] Sent USER_INFOLIST request with id:" << id;
+        qCDebug(lcMain) << "Sent USER_INFOLIST request with id:" << id;
     });
 
     QObject::connect(&client, &KDC::IpcClient::disconnected, []() {
-        qDebug() << "[IpcClient] Disconnected from server";
+        qCDebug(lcMain) << "Disconnected from server";
     });
 
     QObject::connect(&client, &KDC::IpcClient::messageReceived,
@@ -57,11 +56,11 @@ int main(int argc, char *argv[]) {
                          std::string numstr = type == 1 ? toString(static_cast<RequestNum>(num)):
                                                         toString(static_cast<SignalNum>(num));
 
-                         qDebug() << "[IpcClient] Message received — type:" << type << "id:" << id << "num:" << numstr
-                                  << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
+                         qCDebug(lcMain) << "Message received — type:" << type << "id:" << id << "num:" << numstr
+                                         << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
                      });
 
-    qDebug() << "[IpcClient] Connecting to server...";
+    qCDebug(lcMain) << "Connecting to server...";
     client.connectToServer();
 #endif
     return QGuiApplication::exec();
