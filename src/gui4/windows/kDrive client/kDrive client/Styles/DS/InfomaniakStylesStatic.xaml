@@ -45,6 +45,7 @@
 
     <!-- Edition -->
     <x:String x:Key="Infomaniak.DS.Icons.Edition.list-bullets">ms-appx:///Assets/DS/Icons/Edition/list-bullets.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Edition.pencil">ms-appx:///Assets/DS/Icons/Edition/pencil.svg</x:String>
 
     <!-- Essentials -->
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.house">ms-appx:///Assets/DS/Icons/Essentials/house.svg</x:String>

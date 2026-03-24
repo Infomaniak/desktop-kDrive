@@ -207,7 +207,7 @@
                                 HorizontalAlignment="Left"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                 Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.pencil}"
                                           Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                           VerticalAlignment="Center" />
