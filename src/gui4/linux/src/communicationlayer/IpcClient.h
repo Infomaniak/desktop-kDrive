@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/comm.h"
+#include "utility/cstypes.h"
 
 #include <QTcpSocket>
 #include <cstdint>
@@ -46,12 +47,12 @@ class IpcClient : public QObject {
         void disconnected();
         /**
          * Emitted when a complete JSON message has been received and parsed from the server.
-         * @param type   Message type (1 = request, 2 = signal — see GuiJobType in abstractguijob.h)
+         * @param type   Message type (1 = request, 2 = signal — see GuiJobType in cstypes.h)
          * @param id     Request ID matching the one returned by sendRequest(), or the signal ID for server-initiated signals
          * @param num    Request number (RequestNum) or signal number (SignalNum) identifying the operation
          * @param params Deserialized JSON parameters associated with the message
          */
-        void messageReceived(uint8_t type, int32_t id, uint8_t num, Poco::DynamicStruct params);
+        void messageReceived(GuiJobType type, int32_t id, uint8_t num, Poco::DynamicStruct params);
 
     private slots:
         void onConnected();
