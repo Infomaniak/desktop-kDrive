@@ -31,7 +31,7 @@
 #include <fstream>
 #include <utility>
 
-Q_LOGGING_CATEGORY(lcIpcClient, "guiv4.ipc", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
 namespace KDC {
 
@@ -173,7 +173,7 @@ void IpcClient::processBuffer() {
                 exit(EXIT_FAILURE);
             }
 
-            const auto type = static_cast<GuiJobType>(msg[MSG_TYPE].extract<int>());
+            const auto type = static_cast<GuiJobType>(msg[MSG_TYPE].convert<int>());
             const int32_t id = msg[MSG_REQUEST_ID];
             const uint8_t num = msg[MSG_REQUEST_NUM];
             const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
