@@ -19,6 +19,7 @@
 #include "IpcClient.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/cstypes.h"
 
 #include <QHostAddress>
 
@@ -102,7 +103,7 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     const int32_t id = _nextId++;
 
     Poco::DynamicStruct msg;
-    msg[MSG_TYPE] = 1; // cf. src/server/comm/guijobs/abstractguijob.h GuiJobType enum
+    msg[MSG_TYPE] = static_cast<std::underlying_type_t<GuiJobType>>(GuiJobType::Query);
     msg[MSG_REQUEST_ID] = id;
     msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
 
