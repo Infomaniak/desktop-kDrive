@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.Content = frame;
             frame.Navigate(typeof(SyncSetupPage), _advancedSyncSetupContentDialogVM);
             base.PrimaryButtonClick += AdvancedSyncSetupContentDialog_PrimaryButtonClick;
-            base.CloseButtonClick += AdvancedSyncSetupContentDialog_CloseButtonText;
+            base.CloseButtonClick += AdvancedSyncSetupContentDialog_CloseButtonClick;
             _advancedSyncSetupContentDialogVM.SetupFinished += AdvancedSyncSetupContentDialogVM_SetupFinished;
             _advancedSyncSetupContentDialogVM.PropertyChanged += AdvancedSyncSetupContentDialogVM_PropertyChanged;
         }
@@ -63,7 +63,7 @@ namespace Infomaniak.kDrive.CustomControls
             args.Cancel = true;
         }
 
-        private void AdvancedSyncSetupContentDialog_CloseButtonText(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void AdvancedSyncSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             _advancedSyncSetupContentDialogVM.CancelCurrentStep();
             args.Cancel = true;
