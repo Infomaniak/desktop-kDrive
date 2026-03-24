@@ -55,12 +55,14 @@ struct SynchroConfigurationView: View {
                 LoadingButton(action: viewModel.saveConfiguration) {
                     Text(KDriveLocalizable.buttonValidate)
                 }
+                .keyboardShortcut(.defaultAction)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.cancelConfiguration()
                 }
+                .keyboardShortcut(.cancelAction)
             }
         }
     }

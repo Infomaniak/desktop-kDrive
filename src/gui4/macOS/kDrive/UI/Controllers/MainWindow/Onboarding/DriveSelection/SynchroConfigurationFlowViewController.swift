@@ -17,7 +17,40 @@
  */
 
 import AppKit
+import kDriveResources
+import SwiftUI
 
-final class SynchroConfigurationFlowViewController: NSViewController {
-    
+final class SynchroConfigurationFlowViewController: NSHostingController<SynchroConfigurationFlowView> {
+    init(
+        userDbId: Int,
+        configurations: [SynchroConfiguration],
+        onConfirm: (([SynchroConfiguration]) async -> Void)? = nil,
+        onCancel: (() -> Void)? = nil
+    ) {
+        super.init(rootView: SynchroConfigurationFlowView(
+            userDbId: userDbId,
+            configurations: configurations,
+            onConfirm: onConfirm,
+            onCancel: onCancel
+        ))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidAppear() {
+        super.viewDidAppear()
+
+        guard let window = view.window else {
+            return
+        }
+
+        window.isMovable = false
+        window.toolbarStyle = .unifiedCompact
+        window.title = KDriveLocalizable.buttonAdvancedParameters
+
+        window.setFrame(NSRect(origin: .zero, size: CGSize(width: 500, height: 350)), display: true)
+    }
 }

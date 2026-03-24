@@ -50,12 +50,14 @@ struct SynchroConfigurationPickerView: View {
                 } label: {
                     Text(KDriveLocalizable.buttonValidate)
                 }
+                .keyboardShortcut(.defaultAction)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.onCancel?()
                 }
+                .keyboardShortcut(.cancelAction)
             }
         }
     }

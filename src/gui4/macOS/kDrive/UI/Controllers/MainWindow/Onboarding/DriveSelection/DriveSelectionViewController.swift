@@ -166,14 +166,12 @@ extension DriveSelectionViewController {
     @objc private func didTapAdvancedSettings() {
         guard let currentUser = flowCoordinator.currentUser else { return }
 
-        let synchroConfigurationFlow = SynchroConfigurationFlowView(
+        let viewController = SynchroConfigurationFlowViewController(
             userDbId: Int(currentUser.dbId),
             configurations: viewModel.selectedSynchroConfigurations,
             onConfirm: handleUpdateConfigurations,
             onCancel: dismissPresentedViewController
         )
-
-        let viewController = NSHostingController(rootView: synchroConfigurationFlow)
         presentAsSheet(viewController)
     }
 
