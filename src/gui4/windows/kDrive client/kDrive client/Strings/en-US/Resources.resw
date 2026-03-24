@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Mar 2026 16:17:12 +0100 
+  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -180,7 +180,7 @@ You can open them at any time, even without Internet access.</value>
     <value>Your browser should open automatically to complete the sign-in. Once signed in, you will be returned automatically to kDrive.</value> 
   </data> 
   <data name="buttonActivateOfflineSync" xml:space="preserve"> 
-    <value /> 
+    <value>Enable offline synchronization</value> 
   </data> 
   <data name="buttonAddAdvancedSync" xml:space="preserve"> 
     <value>Synchronize a folder</value> 
@@ -198,13 +198,16 @@ You can open them at any time, even without Internet access.</value>
     <value>Apply to %@ files</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
-    <value /> 
+    <value>Request access</value> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Cancel</value> 
   </data> 
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Change the folder</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Change user</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Close</value> 
@@ -276,7 +279,7 @@ You can open them at any time, even without Internet access.</value>
     <value>Process files individually</value> 
   </data> 
   <data name="buttonManageStorage" xml:space="preserve"> 
-    <value /> 
+    <value>Manage storage</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Open debug folder</value> 
@@ -286,7 +289,7 @@ You can open them at any time, even without Internet access.</value>
     <comment>Ouvrir l’explorateur</comment> 
   </data> 
   <data name="buttonOpenFolder" xml:space="preserve"> 
-    <value /> 
+    <value>Open folder</value> 
   </data> 
   <data name="buttonOpenInBrowser" xml:space="preserve"> 
     <value>Open in browser</value> 
@@ -388,7 +391,7 @@ You can open them at any time, even without Internet access.</value>
     <value>Get started for free</value> 
   </data> 
   <data name="buttonSynchronizeOffline" xml:space="preserve"> 
-    <value /> 
+    <value>Synchronize offline</value> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Update</value> 
@@ -484,7 +487,6 @@ This folder must not be included in any other synchronization folder and must no
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
     <value>You will disconnect %@ from the application.
-
 The synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.
 
 All your data will remain accessible online on kDrive.</value> 
@@ -901,7 +903,7 @@ Synchronization will resume automatically as soon as the connection is re-establ
 It will open in your browser.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
-    <value /> 
+    <value>Modified access rights</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ ago</value> 
@@ -928,10 +930,11 @@ It will open in your browser.</value>
     <value>Choose the version to keep</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value /> 
+    <value>The online versions of these %@ files will be replaced by your local versions.
+Beware, this may overwrite the work of your collaborators.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Keep only local versions</value> 
   </data> 
   <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
     <value>For each conflict, we automatically keep the most recently modified version (local or online). This is the safest choice in most cases.</value> 
@@ -940,10 +943,11 @@ It will open in your browser.</value>
     <value>Keep the most recent versions</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value /> 
+    <value>All local modifications to these %@ files will be cancelled.
+Useful if you know that important work is online on kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Keep only online versions</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Create a %@.</value> 
@@ -1032,10 +1036,10 @@ It will open in your browser.</value>
     <value>On line</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
-    <value /> 
+    <value>File deleted online</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
-    <value /> 
+    <value>The synchronized folder has been deleted from kDrive online or is no longer accessible.</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Original location:</value> 
@@ -1044,7 +1048,7 @@ It will open in your browser.</value>
     <value>Recommandé</value> 
   </data> 
   <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
-    <value /> 
+    <value>The folder may have been moved to another disk and then returned to its original location.</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Return it to its original position.</value> 
@@ -1190,7 +1194,7 @@ Please check and rename any files with unusual characters, then try again.</valu
     <value>Need help?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
-    <value>You are not logged in</value> 
+    <value>Add an account to get started</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>No results found</value> 
@@ -1219,9 +1223,6 @@ Please check and rename any files with unusual characters, then try again.</valu
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
     <value>Choose the folders to synchronize on this computer:</value> 
   </data> 
-  <data name="onboardingAdvancedSettingsDriveExclusionTip" xml:space="preserve"> 
-    <value>Unselected folders will remain accessible online.</value> 
-  </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Folders to synchronize</value> 
   </data> 
@@ -1236,9 +1237,6 @@ Please check and rename any files with unusual characters, then try again.</valu
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
     <value>Configure your kDrive</value> 
-  </data> 
-  <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
-    <value>Unselected folders will remain available online without using any disk space.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Choose the folders to sync on this computer</value> 
@@ -1359,7 +1357,7 @@ Please wait a few moments.</value>
     <value>Select the folders to synchronize on this computer.</value> 
   </data> 
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
-    <value>Unselected folders will remain available online without using disk space.</value> 
+    <value>Unselected folders will not be downloaded to your device. They will remain available online and will not be deleted.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Send only the last session</value> 

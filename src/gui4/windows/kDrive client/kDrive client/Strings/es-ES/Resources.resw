@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Mar 2026 16:17:12 +0100 
+  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -180,7 +180,7 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
     <value>Su navegador debería abrirse automáticamente para completar el inicio de sesión. Una vez iniciada la sesión, volverá automáticamente a kDrive.</value> 
   </data> 
   <data name="buttonActivateOfflineSync" xml:space="preserve"> 
-    <value /> 
+    <value>Activar la sincronización sin conexión</value> 
   </data> 
   <data name="buttonAddAdvancedSync" xml:space="preserve"> 
     <value>Sincronizar una carpeta</value> 
@@ -198,13 +198,16 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
     <value>Aplicar a archivos %@</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
-    <value /> 
+    <value>Solicitar acceso</value> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Cancelar</value> 
   </data> 
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Cambiar la carpeta</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Cambiar de usuario</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Cerrar</value> 
@@ -276,7 +279,7 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
     <value>Tratar los archivos individualmente</value> 
   </data> 
   <data name="buttonManageStorage" xml:space="preserve"> 
-    <value /> 
+    <value>Gestión del almacenamiento</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Abrir carpeta de depuración</value> 
@@ -286,7 +289,7 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
     <comment>Ouvrir l’explorateur</comment> 
   </data> 
   <data name="buttonOpenFolder" xml:space="preserve"> 
-    <value /> 
+    <value>Abrir carpeta</value> 
   </data> 
   <data name="buttonOpenInBrowser" xml:space="preserve"> 
     <value>Abrir en el navegador</value> 
@@ -388,7 +391,7 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
     <value>Empiece gratis</value> 
   </data> 
   <data name="buttonSynchronizeOffline" xml:space="preserve"> 
-    <value /> 
+    <value>Sincronizar sin conexión</value> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Actualización</value> 
@@ -483,8 +486,7 @@ Esta carpeta no debe estar incluida en ninguna otra carpeta de sincronización y
     <value>Añadir una regla de exclusión</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Desconectarás %@ de la aplicación.
-
+    <value>Desconectará %@ de la aplicación.
 La carpeta de sincronización permanecerá en su ordenador, pero ya no se sincronizará con kDrive.
 
 Todos sus datos seguirán siendo accesibles en línea en kDrive.</value> 
@@ -901,7 +903,7 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
 Se abrirá en su navegador.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
-    <value /> 
+    <value>Derechos de acceso modificados</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>hace %@</value> 
@@ -928,10 +930,11 @@ Se abrirá en su navegador.</value>
     <value>Elija la versión que desea conservar</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value /> 
+    <value>Las versiones en línea de estos archivos %@ serán sustituidas por sus versiones locales.
+Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Conservar sólo las versiones locales</value> 
   </data> 
   <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
     <value>Para cada conflicto, guardaremos automáticamente la versión modificada más recientemente (local u online). Esta es la opción más segura en la mayoría de los casos.</value> 
@@ -940,10 +943,11 @@ Se abrirá en su navegador.</value>
     <value>Conserve las versiones más recientes</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value /> 
+    <value>Se cancelarán todas las modificaciones locales de estos archivos %@.
+Útil si sabes que un trabajo importante está en línea en kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Conservar sólo las versiones en línea</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Crear un %@.</value> 
@@ -1032,10 +1036,10 @@ Se abrirá en su navegador.</value>
     <value>En línea</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
-    <value /> 
+    <value>Archivo eliminado en línea</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
-    <value /> 
+    <value>La carpeta sincronizada ha sido eliminada de kDrive online o ya no es accesible.</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Ubicación original:</value> 
@@ -1044,7 +1048,7 @@ Se abrirá en su navegador.</value>
     <value>Recommandé</value> 
   </data> 
   <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
-    <value /> 
+    <value>La carpeta puede haber sido movida a otro disco y luego devuelta a su ubicación original.</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Vuelva a colocarlo en su posición original.</value> 
@@ -1190,7 +1194,7 @@ Compruebe y cambie el nombre de los archivos que contengan caracteres inusuales 
     <value>¿Necesita ayuda?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
-    <value>No tiene cuenta</value> 
+    <value>Añadir una cuenta para empezar</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>No se han encontrado resultados</value> 
@@ -1219,9 +1223,6 @@ Compruebe y cambie el nombre de los archivos que contengan caracteres inusuales 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
     <value>Elija las carpetas que desea sincronizar en este ordenador:</value> 
   </data> 
-  <data name="onboardingAdvancedSettingsDriveExclusionTip" xml:space="preserve"> 
-    <value>Las carpetas no seleccionadas seguirán siendo accesibles en línea.</value> 
-  </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Carpetas a sincronizar</value> 
   </data> 
@@ -1236,9 +1237,6 @@ Compruebe y cambie el nombre de los archivos que contengan caracteres inusuales 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
     <value>Configure sus kDrive</value> 
-  </data> 
-  <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
-    <value>Las carpetas no seleccionadas permanecerán disponibles en línea sin utilizar espacio en disco.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Elija las carpetas que desea sincronizar en este ordenador</value> 
@@ -1359,7 +1357,7 @@ Espere unos instantes.</value>
     <value>Seleccione las carpetas que desea sincronizar en este ordenador.</value> 
   </data> 
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
-    <value>Las carpetas no seleccionadas permanecerán disponibles en línea sin utilizar espacio en disco.</value> 
+    <value>Las carpetas no seleccionadas no se descargarán en su dispositivo. Seguirán disponibles en línea y no se eliminarán.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Enviar sólo la última sesión</value> 

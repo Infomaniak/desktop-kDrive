@@ -241,7 +241,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private bool IsInOtherErrorList(Error error)
         {
-            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable() && !error.IsConflictUserResolvable();
+            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable() && !IsInStorageErrorList(error);
         }
 
         public void Dispose()

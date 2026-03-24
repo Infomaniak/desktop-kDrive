@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Mar 2026 16:17:12 +0100 
+  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -180,7 +180,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
     <value>Ihr Browser sollte sich automatisch öffnen, um die Anmeldung abzuschliessen. Nach der Anmeldung werden Sie automatisch zu kDrive zurückgeleitet.</value> 
   </data> 
   <data name="buttonActivateOfflineSync" xml:space="preserve"> 
-    <value /> 
+    <value>Offline-Synchronisation aktivieren</value> 
   </data> 
   <data name="buttonAddAdvancedSync" xml:space="preserve"> 
     <value>Einen Ordner synchronisieren</value> 
@@ -198,13 +198,16 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
     <value>Anwenden auf %@ Dateien</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
-    <value /> 
+    <value>Zugang beantragen</value> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
     <value>Abbrechen</value> 
   </data> 
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Ändern Sie den Ordner</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Nutzer wechseln</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Schliessen Sie</value> 
@@ -276,7 +279,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
     <value>Dateien einzeln behandeln</value> 
   </data> 
   <data name="buttonManageStorage" xml:space="preserve"> 
-    <value /> 
+    <value>Verwalten Sie den Speicher</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
     <value>Debug-Ordner öffnen</value> 
@@ -286,7 +289,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
     <comment>Ouvrir l’explorateur</comment> 
   </data> 
   <data name="buttonOpenFolder" xml:space="preserve"> 
-    <value /> 
+    <value>Ordner öffnen</value> 
   </data> 
   <data name="buttonOpenInBrowser" xml:space="preserve"> 
     <value>Im Browser öffnen</value> 
@@ -388,7 +391,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
     <value>Kostenlos anfangen</value> 
   </data> 
   <data name="buttonSynchronizeOffline" xml:space="preserve"> 
-    <value /> 
+    <value>Offline synchronisieren</value> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Update</value> 
@@ -484,10 +487,9 @@ Dieser Ordner darf nicht in einem anderen Synchronisationsordner enthalten sein 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
     <value>Sie werden %@ von der Anwendung abmelden.
-
 Der Synchronisationsordner bleibt auf Ihrem Computer, wird aber nicht mehr mit kDrive synchronisiert.
 
-Alle Ihre Daten bleiben online auf kDrive zugänglich.</value> 
+Alle Ihre Daten werden weiterhin online auf kDrive zugänglich sein.</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
     <value>Von diesem Konto abmelden?</value> 
@@ -901,7 +903,7 @@ Die Synchronisierung wird automatisch wieder aufgenommen, sobald die Verbindung 
 Es wird in Ihrem Browser geöffnet.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
-    <value /> 
+    <value>Geänderte Zugriffsrechte</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>vor %@</value> 
@@ -928,10 +930,11 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Wählen Sie die Version, die Sie behalten möchten</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value /> 
+    <value>Die Online-Versionen dieser %@ Dateien werden durch Ihre lokalen Versionen ersetzt.
+Vorsicht, das kann die Arbeit Ihrer Mitarbeiter überschreiben.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Nur lokale Versionen aufbewahren</value> 
   </data> 
   <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
     <value>Bei jedem Konflikt behalten wir automatisch die Version (lokal oder online) bei, die zuletzt geändert wurde. Dies ist in den meisten Fällen die sicherste Wahl.</value> 
@@ -940,10 +943,11 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Behalten Sie die neuesten Versionen</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value /> 
+    <value>Alle lokalen Änderungen für diese %@ Dateien werden rückgängig gemacht.
+Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
-    <value /> 
+    <value>Nur Online-Versionen aufbewahren</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Erstellen Sie eine %@.</value> 
@@ -1032,10 +1036,10 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Online</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
-    <value /> 
+    <value>Dossier online gelöscht</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
-    <value /> 
+    <value>Der synchronisierte Ordner wurde auf kDrive online gelöscht oder ist nicht mehr zugänglich.</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
     <value>Ursprünglicher Standort:</value> 
@@ -1044,7 +1048,7 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Recommandé</value> 
   </data> 
   <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
-    <value /> 
+    <value>Der Ordner wurde vielleicht auf ein anderes Laufwerk verschoben und dann wieder an seinen ursprünglichen Ort zurückgebracht.</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
     <value>Legen Sie es wieder an seinen ursprünglichen Platz zurück.</value> 
@@ -1190,7 +1194,7 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
     <value>Brauchen Sie Hilfe?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
-    <value>Sie haben kein angemeldetes Konto</value> 
+    <value>Fügen Sie ein Konto hinzu, um zu beginnen</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>Keine Ergebnisse gefunden</value> 
@@ -1219,9 +1223,6 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
     <value>Wählen Sie die zu synchronisierenden Ordner auf diesem Computer aus:</value> 
   </data> 
-  <data name="onboardingAdvancedSettingsDriveExclusionTip" xml:space="preserve"> 
-    <value>Nicht ausgewählte Ordner bleiben online zugänglich.</value> 
-  </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Zu synchronisierende Ordner</value> 
   </data> 
@@ -1236,9 +1237,6 @@ Bitte überprüfen Sie alle Dateien mit ungewöhnlichen Zeichen, benennen Sie si
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
     <value>Konfigurieren Sie Ihre kDrive</value> 
-  </data> 
-  <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
-    <value>Nicht ausgewählte Ordner bleiben online verfügbar, ohne Speicherplatz zu belegen.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Wählen Sie die zu synchronisierenden Ordner auf diesem Computer</value> 
@@ -1359,7 +1357,7 @@ Wir bitten Sie, sich einen Moment zu gedulden.</value>
     <value>Wählen Sie die zu synchronisierenden Ordner auf diesem Computer aus.</value> 
   </data> 
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
-    <value>Nicht ausgewählte Ordner bleiben online verfügbar, ohne Speicherplatz zu belegen.</value> 
+    <value>Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar und werden nicht gelöscht.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Nur die letzte Sitzung senden</value> 

@@ -53,7 +53,6 @@ namespace Infomaniak.kDrive.ViewModels
             _ => "labelFileLowerCase"
         };
 
-
         public Error(Sync sync)
         {
             _sync = sync;

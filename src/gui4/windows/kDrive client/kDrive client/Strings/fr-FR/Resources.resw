@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 23 Mar 2026 16:17:12 +0100 
+  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -205,6 +205,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Modifier le dossier</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Changer d'utilisateur</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
     <value>Fermer</value> 
@@ -484,7 +487,6 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
     <value>Vous allez déconnecter %@ de l’application.
-
 Le dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.
 
 Toutes vos données resteront accessibles en ligne sur kDrive.</value> 
@@ -1192,7 +1194,7 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
     <value>Besoin d’aide ?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
-    <value>Vous n’avez aucun compte connecté</value> 
+    <value>Ajoutez un compte pour commencer</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>Aucun résultat trouvé</value> 
@@ -1221,9 +1223,6 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur :</value> 
   </data> 
-  <data name="onboardingAdvancedSettingsDriveExclusionTip" xml:space="preserve"> 
-    <value>Les dossiers non sélectionnés resteront accessibles en ligne.</value> 
-  </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Dossiers à synchroniser</value> 
   </data> 
@@ -1238,9 +1237,6 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
     <value>Configurez vos kDrive</value> 
-  </data> 
-  <data name="onboardingAdvancedSettingsExclusionDescription" xml:space="preserve"> 
-    <value>Les dossiers non sélectionnés resteront disponibles en ligne sans utiliser d’espace disque.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value> 
@@ -1362,7 +1358,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value> 
   </data> 
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
-    <value>Les dossiers non sélectionnés resteront disponibles en ligne sans utiliser d’espace disque.</value> 
+    <value>Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne et ne seront pas supprimés.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Envoyer uniquement la dernière session</value> 

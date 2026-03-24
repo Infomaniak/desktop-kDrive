@@ -17,8 +17,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         {
             this.InitializeComponent();
             Error = error;
-
-            error.Path = Error.Sync?.RemotePath ?? "";
+            error.Path = Error.Sync.RemotePath;
             error.NodeType = Types.NodeType.Directory;
         }
 
