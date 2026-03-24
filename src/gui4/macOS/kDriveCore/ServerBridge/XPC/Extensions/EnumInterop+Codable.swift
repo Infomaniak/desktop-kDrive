@@ -38,5 +38,6 @@ extension KDC.NotificationsDisabled: Codable {}
 extension KDC.ProxyType: Codable {}
 extension KDC.VersionChannel: Codable {}
 extension KDC.UpdateState: Codable {}
+extension KDC.SyncConfiguration: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}
