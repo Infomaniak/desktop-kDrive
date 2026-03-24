@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Mar 2026 11:16:54 +0100 
+  Exported at: Tue, 24 Mar 2026 12:02:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1002,7 +1002,7 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
     <value>Local</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive.</value> 
+    <value>los archivos %@ han sido modificados tanto en tu ordenador como en kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 
@@ -1091,6 +1091,12 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Sincronizado desde el ordenador</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Este kDrive sólo contiene archivos. Todos los archivos se sincronizarán en este dispositivo.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>No hay archivos para seleccionar</value> 
   </data> 
   <data name="labelSyncFolder" xml:space="preserve"> 
     <value>Carpetas de sincronización</value> 

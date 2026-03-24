@@ -137,9 +137,9 @@
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                             Visibility="{x:Bind HasSubDirectory, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
-                    <TextBlock Text="Aucun dossier à sélectionner"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncExclusionEmptyTitle')}"
                                Foreground="{ThemeResource TextFillColorPrimary}" />
-                    <TextBlock Text="Ce kDrive contient uniquement des fichiers. Tous les fichiers seront synchronisés sur cet appareil."
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncExclusionEmptyDescription')}"
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>

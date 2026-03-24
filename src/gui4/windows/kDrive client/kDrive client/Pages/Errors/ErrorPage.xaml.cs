@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "Failled to fetch current frame.");
+                Logger.Log(Logger.Level.Warning, "Failed to fetch current frame.");
                 return;
             }
 

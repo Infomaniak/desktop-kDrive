@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Mar 2026 11:16:54 +0100 
+  Exported at: Tue, 24 Mar 2026 12:02:37 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,7 +768,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
     <value>Chemin d’accès au %@ trop long</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre abonenment pour synchroniser ce %@.</value> 
+    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre abonnement pour synchroniser ce %@.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Limite de stockage atteinte</value> 
@@ -1091,6 +1091,12 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   </data> 
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Synchronisé à partir de votre ordinateur</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Ce kDrive contient uniquement des fichiers. Tous les fichiers seront synchronisés sur cet appareil.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Aucun dossier à sélectionner</value> 
   </data> 
   <data name="labelSyncFolder" xml:space="preserve"> 
     <value>Dossiers de synchronisation</value> 
