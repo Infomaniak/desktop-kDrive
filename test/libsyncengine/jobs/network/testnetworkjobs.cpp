@@ -1633,7 +1633,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     }
 
-    const RemoteTemporaryDirectory remoteSubDir(_driveDbId, remoteTmpDir.id(), Str("testGetAllFilesInDirectory"));
+    const RemoteTemporaryDirectory remoteSubDir(_driveDbId, remoteTmpDir.id(), "testGetAllFilesInDirectory");
 
     GetAllFilesInDirectoryJob listFilesInDirectoryJob(DriveDbId{_driveDbId}, RemoteNodeId{remoteTmpDir.id()});
     listFilesInDirectoryJob.setListingConf({.dirOnly = true});
@@ -1655,9 +1655,8 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
 
     std::set<QString> expectedNames{"test_file_A.txt", "test_file_B.txt", subDirName};
     std::set<QString> names;
-    for (const auto &nodeInfo: listFilesInDirectoryJob.v3NodeInfoList()) {
-        names.emplace(nodeInfo.name());
-    }
+    for (const auto &nodeInfo: listFilesInDirectoryJob.v3NodeInfoList()) names.emplace(nodeInfo.name());
+
     CPPUNIT_ASSERT(expectedNames == names);
 
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false});

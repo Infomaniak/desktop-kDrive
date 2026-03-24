@@ -42,9 +42,23 @@ std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
 AbstractTokenNetworkJob::UserCache AbstractTokenNetworkJob::_userToApiKeyMap;
 AbstractTokenNetworkJob::DriveCache AbstractTokenNetworkJob::_driveToApiKeyMap;
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
-                                                 const DriveDbId driveDbId, const DriveId driveId,
-                                                 const bool returnJson /*= true*/) :
+
+void AbstractTokenNetworkJob::checkParametersValidity() {
+    bool areParametersInvalid = (_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
+                                (_userDbId == 0 || _driveId == 0);
+    areParametersInvalid =
+            areParametersInvalid || ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0);
+
+    if (areParametersInvalid) {
+        assert(false);
+        constexpr auto errorMsg = "Invalid parameters in AbstractTokenNetworkJob constructor.";
+        LOG_WARN(_logger, errorMsg);
+        throw job_exceptions::InvalidArgumentError(errorMsg);
+    }
+}
+
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UsrId userId, const DriveDbId driveDbId,
+                                                 const DriveId driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
     _userId(userId),
@@ -54,17 +68,10 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
     if (!ParmsDb::instance()) {
         assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
-        throw DbError("ParmsDb must be initialized!");
+        throw job_exceptions::DbError("ParmsDb must be initialized!");
     }
 
-    if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
-         (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
-        assert(false);
-        LOG_WARN(_logger, "Invalid parameters!");
-        throw std::runtime_error("Invalid parameters!");
-    }
-
+    checkParametersValidity();
     _apiToken = loadApiToken();
 
     addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());

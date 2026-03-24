@@ -48,6 +48,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 using std::runtime_error::runtime_error;
         };
 
+        struct InvalidArgumentError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
         enum class ApiType {
             Drive,
             DriveByUser,
@@ -60,8 +64,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw DbError
         /// @throw DataError
         /// @throw TokenError
-        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
-                                bool returnJson = true);
+        /// @throw InvalidArgumentError
+        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
@@ -88,7 +92,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         [[nodiscard]] UserId userId() const { return _userId; }
         [[nodiscard]] DriveId driveId() const { return _driveId; }
-        ApiType getApiType() const { return _apiType; }
+        [[nodiscard]] ApiType getApiType() const { return _apiType; }
 
     private:
 
@@ -132,6 +136,9 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         Account getAccount(const Drive &drive) const;
         Drive getDrive(int driveDbId) const;
         void setDriveDbIdFromDriveId();
+
+        /// @throw InvalidArgumentError
+        void checkParametersValidity();
 
         friend class TestServerRequests;
 };
