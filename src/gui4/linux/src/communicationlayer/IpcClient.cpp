@@ -22,6 +22,7 @@
 #include "libcommon/utility/cstypes.h"
 
 #include <QHostAddress>
+#include <QLoggingCategory>
 
 #include <Poco/Dynamic/Struct.h>
 #include <Poco/JSON/Parser.h>
@@ -29,6 +30,8 @@
 #include <filesystem>
 #include <fstream>
 #include <utility>
+
+Q_LOGGING_CATEGORY(lcIpcClient, "guiv4.ipc", QtInfoMsg)
 
 namespace KDC {
 
