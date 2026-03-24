@@ -420,7 +420,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> exitCode;
             paramsStream >> syncDbId;
 
-            emit errorAdded(serverLevel, exitCode, syncDbId);
+            emit errorAdded(serverLevel, exitCode, static_cast<SyncDbId>(syncDbId));
             break;
         }
         case SignalNum::UTILITY_ERRORS_CLEARED: {

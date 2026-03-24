@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,16 +71,18 @@ QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info) {
     qint64 driveId = 0;
     qint64 userId = 0;
     qint64 accountId = 0;
-    in >> driveId >> userId >> accountId >> info._accountName >> info._name >> info._color >> info._userDbId;
+    qint64 userDbId = 0;
+    in >> driveId >> userId >> accountId >> info._accountName >> info._name >> info._color >> userDbId;
     info.setDriveId(static_cast<DriveId>(driveId));
     info.setUserId(static_cast<UserId>(userId));
     info.setAccountId(static_cast<AccountId>(accountId));
+    info.setUserDbId(static_cast<UserDbId>(userDbId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info) {
     out << static_cast<qint64>(info._driveId) << static_cast<qint64>(info._userId) << static_cast<qint64>(info._accountId)
-        << info._accountName << info._name << info._color << info._userDbId;
+        << info._accountName << info._name << info._color << static_cast<qint64>(info._userDbId);
     return out;
 }
 

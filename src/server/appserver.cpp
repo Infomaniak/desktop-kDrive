@@ -2692,7 +2692,7 @@ void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) const {
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
         paramsStream << (errorInfo.level() == ErrorLevel::Server);
         paramsStream << toInt(errorInfo.exitCode());
-        paramsStream << errorInfo.syncDbId();
+        paramsStream << static_cast<qint64>(errorInfo.syncDbId());
         (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
     }
     if (useCommManager()) {
