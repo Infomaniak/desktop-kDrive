@@ -23,7 +23,7 @@
 namespace KDC {
 
 FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
-                         const TranslationMode translationMode /* TranslationMode::V2ToV3 */) :
+                         const TranslationMode translationMode /* TranslationMode::None */) :
     _userDbId{userDbId},
     _driveId{driveId},
     _fileId(std::move(fileId)),
@@ -35,7 +35,7 @@ FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId 
 }
 
 FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId,
-                         const TranslationMode translationMode /* TranslationMode::V2ToV3 */) :
+                         const TranslationMode translationMode /* TranslationMode::None */) :
     _driveDbId{driveDbId},
     _fileId(std::move(fileId)),
     _translationMode(translationMode) {

@@ -139,7 +139,7 @@ NodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
 }
 
 NodeInfoList GetFilesInDirectoryJob::v2NodeInfoList() {
-    // Data is already deserialized by handleResponse()
+    // Data is already deserialized by handleResponse().
     NodeInfoList v2NodeInfoList_ = _nodeInfoList;
     ApiTranslator::translateV3ToV2(driveDbId(), v2NodeInfoList_);
 

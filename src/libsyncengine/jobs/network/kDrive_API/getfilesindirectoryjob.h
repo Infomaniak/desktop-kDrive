@@ -28,9 +28,9 @@ namespace KDC {
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
         GetFilesInDirectoryJob(UserDbId userDbId, DriveId driveId, NodeId fileId, std::string cursorInput = {},
-                               TranslationMode translationMode = TranslationMode::V2ToV3);
+                               TranslationMode translationMode = TranslationMode::None);
         explicit GetFilesInDirectoryJob(DriveDbId driveDbId, NodeId fileId, std::string cursorInput = {},
-                                        TranslationMode translationMode = TranslationMode::V2ToV3);
+                                        TranslationMode translationMode = TranslationMode::None);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 

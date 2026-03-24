@@ -28,8 +28,8 @@ namespace KDC {
 class FileListJob : public SyncJob {
     public:
         FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {},
-                    TranslationMode translationMode = TranslationMode::V2ToV3);
-        explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, TranslationMode translationMode = TranslationMode::V2ToV3);
+                    TranslationMode translationMode = TranslationMode::None);
+        explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, TranslationMode translationMode = TranslationMode::None);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 
@@ -64,7 +64,7 @@ class FileListJob : public SyncJob {
 
         // If `_translationMode` is `TranslationMode::V2ToV3`, the identifier of the directory, that is `_fileId`, will
         // be translated in every underlying file listing requests.
-        TranslationMode _translationMode{TranslationMode::V2ToV3};
+        TranslationMode _translationMode{TranslationMode::None};
 
     private:
         // The node info list as returned by the backend API v2
