@@ -89,18 +89,23 @@ final class DriveSelectionViewModel: ObservableObject {
                 let syncCandidates: [NewSyncCandidate] = try await selectedDrives.concurrentCompactMap { selectedDrive in
                     guard let uiAvailableDrive = await self.availableDrives.first(where: { $0.id == selectedDrive.id }),
                           let availableDrive = await self.coherentCache.getAvailableDrive(driveDb: Int32(uiAvailableDrive.id))
-                    else {
-                        return nil
-                    }
+                    else { return nil }
 
                     let syncOrigin = SyncOrigin.availableDrive(availableDrive)
-                    let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin.drive.name)
+                    let synchroConfiguration = await self.synchroConfigurations[selectedDrive.id]
+
+                    let localFolder: URL
+                    if let setupSynchroConfigurationURL = synchroConfiguration?.localFolder.url {
+                        localFolder = setupSynchroConfigurationURL
+                    } else {
+                        localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin.drive.name)
+                    }
 
                     return NewSyncCandidate(
                         origin: syncOrigin,
                         remoteFolder: .kDriveRoot,
                         localFolder: localFolder,
-                        blackList: []
+                        blackList: synchroConfiguration?.blackList ?? []
                     )
                 }
 
