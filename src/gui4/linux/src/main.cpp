@@ -17,14 +17,27 @@
  */
 
 #include "communicationlayer/IpcClient.h"
+#include "libcommongui/logger.h"
 
 #include <QDebug>
 #include <QGuiApplication>
+#include <QLoggingCategory>
 
 #include <Poco/Dynamic/Struct.h>
 
+Q_LOGGING_CATEGORY(lcMain, "guiv4.main", QtInfoMsg)
+
+static void setupLogging() {
+    auto *logger = KDC::Logger::instance(); // installs Qt message handler
+    logger->setIsCLientLog(true);
+    logger->setLogDebug(true);
+    logger->setupTemporaryFolderLogDir();
+    logger->enterNextLogFile();
+}
+
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
+    setupLogging();
 
 #ifdef QT_DEBUG
     KDC::IpcClient client;
