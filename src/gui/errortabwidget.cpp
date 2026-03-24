@@ -43,7 +43,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
     _tabBar = new CustomTabBar(this);
     _tabBar->setObjectName("tabBarErrorWidget");
     setTabBar(_tabBar);
-    QWidget *toResolve = new QWidget(this);
+    auto toResolve = new QWidget(this);
     addTab(toResolve, QString());
 
     // To resolve
@@ -51,7 +51,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
     vLayoutToRes->setContentsMargins(0, 0, 0, 0);
 
     // line separator
-    QFrame *line = new QFrame(this);
+    auto *line = new QFrame(this);
     line->setObjectName("line");
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Plain);
@@ -60,7 +60,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
     _resolveButton = new QPushButton(this);
     _resolveButton->setObjectName("resolveButton");
     _resolveButton->setVisible(false);
-    MenuWidgetLite *menu = new MenuWidgetLite(_resolveButton, this);
+    auto *menu = new MenuWidgetLite(_resolveButton, this);
 
     _resolveConflictsAction = new QAction(this);
     _resolveConflictsAction->setVisible(false);
@@ -75,7 +75,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
 
     _resolveButton->setMenu(menu);
 
-    QHBoxLayout *hLayoutToRes = new QHBoxLayout();
+    auto *hLayoutToRes = new QHBoxLayout();
     hLayoutToRes->setContentsMargins(0, 0, 0, 0);
     hLayoutToRes->setSpacing(2);
     _toResolveErrorsNb = new QLabel(this);
@@ -106,13 +106,13 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
     _autoResolvedErrorsListWidget = new QListWidget(this);
 
     if (!generic) {
-        QWidget *autoResolved = new QWidget(this);
+        auto *autoResolved = new QWidget(this);
         // Auto resolved
         addTab(autoResolved, QString());
-        QVBoxLayout *vLayoutAutoRes = new QVBoxLayout();
+        auto *vLayoutAutoRes = new QVBoxLayout();
         vLayoutAutoRes->setContentsMargins(0, 0, 0, 0);
         // line separator
-        QFrame *line2 = new QFrame(this);
+        auto *line2 = new QFrame(this);
         line2->setObjectName("line");
         line2->setFrameShape(QFrame::HLine);
         line2->setFrameShadow(QFrame::Plain);
@@ -120,7 +120,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
 
         vLayoutAutoRes->addStretch();
 
-        QHBoxLayout *hLayoutAutoRes = new QHBoxLayout();
+        auto *hLayoutAutoRes = new QHBoxLayout();
         hLayoutAutoRes->setContentsMargins(0, 0, 0, 0);
         hLayoutAutoRes->setSpacing(2);
         _autoResolvedErrorsNb = new QLabel(this);
@@ -149,7 +149,7 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
     setUnresolvedErrorsCount(0);
     setAutoResolvedErrorsCount(0);
 
-    LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
+    auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
 
     connect(_clearToResButton, &CustomPushButton::clicked, this, &ErrorTabWidget::onClearToResErrorsClicked);
@@ -159,12 +159,12 @@ ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId d
             &ErrorTabWidget::onScrollBarValueChanged);
 }
 
-void ErrorTabWidget::setUnresolvedErrorsCount(int count) {
+void ErrorTabWidget::setUnresolvedErrorsCount(const Count count) {
     _tabBar->setUnResolvedNotifCount(count);
     _toResolveErrorsNb->setText(QString::number(count));
 }
 
-void ErrorTabWidget::setAutoResolvedErrorsCount(int count) {
+void ErrorTabWidget::setAutoResolvedErrorsCount(const Count count) {
     if (!_generic) {
         _autoResolvedErrorsNb->setText(QString::number(count));
     }

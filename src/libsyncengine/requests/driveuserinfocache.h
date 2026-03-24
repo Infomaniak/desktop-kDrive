@@ -51,8 +51,8 @@ class DriveUserInfoCache {
         static constexpr std::chrono::minutes _ttl{60};
 
         struct CacheKey {
-                DriveId driveId;
-                UserId userId;
+                DriveId driveId{0};
+                UserId userId{0};
                 bool operator==(const CacheKey &) const = default;
         };
 

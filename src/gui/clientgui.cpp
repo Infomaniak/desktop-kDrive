@@ -330,7 +330,7 @@ void ClientGui::showSynthesisDialog() {
     }
 }
 
-int ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) const {
+Count ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) const {
     const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
     if (driveInfoMapIt == _driveInfoMap.end()) {
         qCDebug(lcClientGui()) << "Drive not found in drive map!";

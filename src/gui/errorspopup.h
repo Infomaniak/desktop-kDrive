@@ -46,7 +46,7 @@ class ErrorsPopup : public QDialog {
                 Count autoresolvedErrorsCount{0};
         };
 
-        explicit ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position,
+        explicit ErrorsPopup(const QList<DriveError> &driveErrorList, const Count genericErrorsCount, const QPoint position,
                              QWidget *parent = nullptr);
         inline int selectedAccountId() { return _selectedAccountId; }
 
@@ -54,8 +54,8 @@ class ErrorsPopup : public QDialog {
         void accountSelected(int accountId);
 
     private:
-        bool _moved;
-        int _selectedAccountId;
+        bool _moved{false};
+        AccountId _selectedAccountId{0};
         QPoint _position;
         QColor _backgroundColor;
         QSize _warningIconSize;

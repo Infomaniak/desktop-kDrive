@@ -108,10 +108,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         };
 
         struct Notification {
-                SyncDbId _syncDbId;
+                SyncDbId _syncDbId{0};
                 QString _filename;
                 QString _renameTarget;
-                SyncFileInstruction _status;
+                SyncFileInstruction _status{SyncFileInstruction::None};
         };
 
         explicit AppServer(int &argc, char **argv);
@@ -311,7 +311,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         virtual void sendUserAdded(const UserInfo &userInfo) const;
         virtual void sendUserUpdated(const UserInfo &userInfo) const;
-        virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError) const;
+        virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
         virtual void sendUserRemoved(UserDbId userDbId) const;
         virtual void sendAccountAdded(const AccountInfo &accountInfo) const;
         virtual void sendAccountUpdated(const AccountInfo &accountInfo) const;

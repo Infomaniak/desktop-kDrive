@@ -230,7 +230,7 @@ ExitCode ServerRequests::getDriveInfoList(std::vector<DriveInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getDriveInfo(DriveDbId driveDbId, DriveInfo &driveInfo) {
+ExitCode ServerRequests::getDriveInfo(const DriveDbId driveDbId, DriveInfo &driveInfo) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -532,11 +532,11 @@ ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVe
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
 }
 
-ExitInfo ServerRequests::getNodeInfo(UserDbId userDbId, DriveId driveId, const std::string &nodeId, NodeInfo &nodeInfo,
-                                     bool withPath) {
+ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
+                                     NodeInfo &nodeInfo, bool withPath) {
     return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
 }
-ExitInfo ServerRequests::getNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
+ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
@@ -603,7 +603,7 @@ ExitInfo ServerRequests::getNodeInfo(UserDbId userDbId, DriveId driveId, const Q
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailableInfo> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
@@ -638,7 +638,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(UserDbId userDbId, QList<DriveAv
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::vector<DriveAvailableInfo> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
@@ -673,9 +673,10 @@ ExitInfo ServerRequests::getUserAvailableDrives(UserDbId userDbId, std::vector<D
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
-                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
+                                 const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                 const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
+                                 SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                     << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
@@ -739,14 +740,15 @@ ExitInfo ServerRequests::addSync(UserDbId userDbId, AccountId accountId, DriveId
     return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, syncInfo);
 }
 
-ExitInfo ServerRequests::addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
+                                 const QString &localFolderPath, const QString &serverFolderPath,
+                                 const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
+                                 SyncInfo &syncInfo) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
                    serverFolderNodeId.toStdString(), liteSync, accountInfo, driveInfo, syncInfo);
 }
 
-ExitInfo ServerRequests::addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                  const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
@@ -822,8 +824,8 @@ ExitInfo ServerRequests::addSync(DriveDbId driveDbId, const SyncPath &localFolde
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                 const QString &serverFolderNodeId, const bool liteSync, SyncInfo &syncInfo) {
     return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
                    syncInfo);
 }
@@ -956,7 +958,8 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(DriveDbId driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath) {
+ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                       const bool withPath) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -983,7 +986,7 @@ ExitInfo ServerRequests::getSubFolders(DriveDbId driveDbId, const NodeId &nodeId
 
 
 ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list,
-                                       bool withPath /*= false*/) {
+                                       const bool withPath /*= false*/) {
     list.clear();
     std::vector<NodeInfo> stdVector;
 
@@ -997,7 +1000,7 @@ ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const QString 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getNodeIdByPath(UserDbId userDbId, DriveId driveId, const SyncPath &path, QString &nodeId) {
+ExitCode ServerRequests::getNodeIdByPath(const UserDbId userDbId, const DriveId driveId, const SyncPath &path, QString &nodeId) {
     // TODO: test
     QList<NodeInfo> list;
     ExitCode exitCode = getSubFolders(userDbId, driveId, "", list);
@@ -1049,7 +1052,7 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
     return exitInfo;
 }
 
-ExitInfo ServerRequests::getPathByNodeId(UserDbId userDbId, DriveId driveId, const QString &nodeId, QString &path) {
+ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
     if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
@@ -1339,8 +1342,8 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &pare
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(UserDbId userDbId, DriveId driveId, const NodeId &parentNodeId, const SyncName &dirName,
-                                   NodeId &newNodeId) {
+ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveId, const NodeId &parentNodeId,
+                                   const SyncName &dirName, NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
@@ -1438,7 +1441,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getFolderSizeWithCallback(UserDbId userDbId, DriveId driveId, const NodeId &nodeId,
+ExitInfo ServerRequests::getFolderSizeWithCallback(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                                    std::function<void(const QString &, qint64)> callback) {
     int64_t result = 0;
     if (ExitInfo exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
@@ -1449,7 +1452,7 @@ ExitInfo ServerRequests::getFolderSizeWithCallback(UserDbId userDbId, DriveId dr
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, int64_t &result) {
+ExitInfo ServerRequests::getFolderSize(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId, int64_t &result) {
     if (nodeId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Node ID is empty");
         return ExitCode::DataError;
@@ -1649,7 +1652,7 @@ ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorInfoList(int limit, std::vector<ErrorInfo> &list) {
+ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<ErrorInfo> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1926,7 +1929,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+ExitInfo ServerRequests::getThumbnail(const DriveDbId driveDbId, const NodeId &nodeId, const int width, std::string &thumbnail) {
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
@@ -2338,7 +2341,7 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setDarkTheme(parametersInfo.darkTheme());
     parameters.setMoveToTrash(parametersInfo.moveToTrash());
 
-    if (parametersInfo.dialogGeometry().size()) {
+    if (!parametersInfo.dialogGeometry().isEmpty()) {
         QByteArray dialogGeometryArr;
         for (const QString &objectName: parametersInfo.dialogGeometry().keys()) {
             dialogGeometryArr += objectName.toUtf8();

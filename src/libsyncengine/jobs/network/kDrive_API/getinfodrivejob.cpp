@@ -30,12 +30,12 @@ static const std::string packKey = "pack";
 static const std::string packDisplayNameKey = "display_name";
 static const std::string packIsFreeKey = "is_free";
 
-GetInfoDriveJob::GetInfoDriveJob(UserDbId userDbId, DriveId driveId) :
+GetInfoDriveJob::GetInfoDriveJob(const UserDbId userDbId, const DriveId driveId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetInfoDriveJob::GetInfoDriveJob(DriveDbId driveDbId) :
+GetInfoDriveJob::GetInfoDriveJob(const DriveDbId driveDbId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }

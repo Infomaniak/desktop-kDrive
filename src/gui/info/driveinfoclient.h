@@ -48,9 +48,9 @@ class DriveInfoClient : public DriveInfo {
 
         inline SyncStatus status() const { return _status; }
         inline bool unresolvedConflicts() const { return _unresolvedConflicts; }
-        inline int unresolvedErrorsCount() const { return _unresolvedErrorsCount; }
+        inline Count unresolvedErrorsCount() const { return _unresolvedErrorsCount; }
         inline void setUnresolvedErrorsCount(Count count) { _unresolvedErrorsCount = count; }
-        inline int autoresolvedErrorsCount() const { return _autoresolvedErrorsCount; }
+        inline Count autoresolvedErrorsCount() const { return _autoresolvedErrorsCount; }
         inline void setAutoresolvedErrorsCount(Count count) { _autoresolvedErrorsCount = count; }
 
         inline qint64 totalSize() const { return _totalSize; }
@@ -100,8 +100,8 @@ class DriveInfoClient : public DriveInfo {
 
         qint64 _totalSize{0};
         qint64 _used{0};
-        int _unresolvedErrorsCount{0};
-        int _autoresolvedErrorsCount{0};
+        Count _unresolvedErrorsCount{0};
+        Count _autoresolvedErrorsCount{0};
         bool _isBeingDeleted{false};
 
         // Synthesispopover attributes

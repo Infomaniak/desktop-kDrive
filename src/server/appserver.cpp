@@ -657,7 +657,7 @@ void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList) {
     }
 }
 
-void AppServer::deleteAccount(AccountDbId accountDbId) {
+void AppServer::deleteAccount(const AccountDbId accountDbId) {
     // Delete the account
     const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
     if (exitCode == ExitCode::Ok) {
@@ -669,7 +669,7 @@ void AppServer::deleteAccount(AccountDbId accountDbId) {
     }
 }
 
-void AppServer::deleteDrive(DriveDbId driveDbId) {
+void AppServer::deleteDrive(const DriveDbId driveDbId) {
     // Get the drive in DB
     bool found = false;
     Drive drive;
@@ -704,7 +704,7 @@ void AppServer::deleteDrive(DriveDbId driveDbId) {
     }
 }
 
-void AppServer::deleteSync(SyncDbId syncDbId) {
+void AppServer::deleteSync(const SyncDbId syncDbId) {
     // Get the sync in DB
     bool found = false;
     Sync sync;
@@ -740,7 +740,7 @@ void AppServer::deleteSync(SyncDbId syncDbId) {
     }
 }
 
-void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept {
+void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled) noexcept {
     const std::string activationStatus = isExtendedLogEnabled ? "enabled" : "disabled";
     const std::string msg = "Extended logging is " + activationStatus + ".";
 
@@ -1393,8 +1393,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::SYNC_INFOLIST: {
             QList<SyncInfo> list;
-            auto exitCode = ExitCode::Unknown;
-            exitCode = ServerRequests::getSyncInfoList(list);
+            const auto exitCode = ServerRequests::getSyncInfoList(list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getSyncInfoList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -2343,11 +2342,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
-            qint64 tmp = 0;
+            qint64 tmpSyncDbId = 0;
             bool value = false;
-            ArgsWriter(params).write(tmp, value);
+            ArgsWriter(params).write(tmpSyncDbId, value);
 
-            const auto syncDbId = static_cast<SyncDbId>(tmp);
+            const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
             const auto exitInfo = setSupportsVirtualFilesAsync(syncDbId, value);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
@@ -2451,7 +2450,7 @@ ExitCode AppServer::clearErrors(const SyncDbId syncDbId, const bool autoResolved
     return exitCode;
 }
 
-void AppServer::sendErrorsCleared(SyncDbId syncDbId) const {
+void AppServer::sendErrorsCleared(const SyncDbId syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2704,7 +2703,7 @@ void AppServer::sendErrorRemoved(int64_t dbId) const {
     }
 }
 
-void AppServer::addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item, bool notify) {
+void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item, bool notify) {
     // Send completedItem signal to client
     SyncFileItemInfo itemInfo;
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
@@ -2727,7 +2726,7 @@ void AppServer::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const {
     }
 }
 
-ExitInfo AppServer::getVfs(SyncDbId syncDbId, std::shared_ptr<Vfs> &vfs) {
+ExitInfo AppServer::getVfs(const SyncDbId syncDbId, std::shared_ptr<Vfs> &vfs) {
     auto vfsMapIt = vfsMap.find(syncDbId);
     if (vfsMapIt == vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -2741,7 +2740,7 @@ ExitInfo AppServer::getVfs(SyncDbId syncDbId, std::shared_ptr<Vfs> &vfs) {
     return ExitCode::Ok;
 }
 
-void AppServer::syncFileStatus(SyncDbId syncDbId, const SyncPath &path, SyncFileStatus &status) {
+void AppServer::syncFileStatus(const SyncDbId syncDbId, const SyncPath &path, SyncFileStatus &status) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -2762,7 +2761,7 @@ void AppServer::syncFileStatus(SyncDbId syncDbId, const SyncPath &path, SyncFile
     }
 }
 
-void AppServer::syncFileSyncing(SyncDbId syncDbId, const SyncPath &path, bool &syncing) {
+void AppServer::syncFileSyncing(const SyncDbId syncDbId, const SyncPath &path, bool &syncing) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -2783,7 +2782,7 @@ void AppServer::syncFileSyncing(SyncDbId syncDbId, const SyncPath &path, bool &s
     }
 }
 
-void AppServer::setSyncFileSyncing(SyncDbId syncDbId, const SyncPath &path, bool syncing) {
+void AppServer::setSyncFileSyncing(const SyncDbId syncDbId, const SyncPath &path, const bool syncing) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -3722,8 +3721,8 @@ void AppServer::clearKeychainKeys() {
     }
 }
 
-ExitCode AppServer::sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
-                                             SyncFileInstruction status, int count) const {
+ExitCode AppServer::sendShowFileNotification(const SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
+                                             const SyncFileInstruction status, const int count) const {
     // Check if notifications are disabled globally
     if (ParametersCache::instance()->parameters().notificationsDisabled() == NotificationsDisabled::Always) {
         return ExitCode::Ok;
@@ -3965,8 +3964,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start,
-                                const std::chrono::seconds &startDelay, bool resumedByUser, bool firstInit) {
+ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const bool start,
+                                const std::chrono::seconds &startDelay, const bool resumedByUser, const bool firstInit) {
     NodeSet blackList2;
     for (const QString &nodeId: blackList) {
         blackList2.insert(nodeId.toStdString());
@@ -3980,7 +3979,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, SyncPal::PauseCaller caller, SyncPal::DbBehaviorAfterStop behavior) {
+ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCaller caller,
+                                const SyncPal::DbBehaviorAfterStop behavior) {
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId);
 
     // Stop SyncPal
@@ -4499,7 +4499,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) const {
     }
 }
 
-void AppServer::sendUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError) const {
+void AppServer::sendUserStatusChanged(const UserDbId userDbId, const bool connected, const QString &connexionError) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4516,7 +4516,7 @@ void AppServer::sendUserStatusChanged(UserDbId userDbId, bool connected, QString
     }
 }
 
-void AppServer::sendUserRemoved(UserDbId userDbId) const {
+void AppServer::sendUserRemoved(const UserDbId userDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4561,7 +4561,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) const {
     }
 }
 
-void AppServer::sendAccountRemoved(AccountDbId accountDbId) const {
+void AppServer::sendAccountRemoved(const AccountDbId accountDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4606,7 +4606,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) const {
     }
 }
 
-void AppServer::sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used) const {
+void AppServer::sendDriveQuotaUpdated(const DriveDbId driveDbId, const qint64 total, const qint64 used) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4623,7 +4623,7 @@ void AppServer::sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 
     }
 }
 
-void AppServer::sendDriveRemoved(DriveDbId driveDbId) const {
+void AppServer::sendDriveRemoved(const DriveDbId driveDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4653,7 +4653,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) const {
     }
 }
 
-void AppServer::sendSyncRemoved(SyncDbId syncDbId) const {
+void AppServer::sendSyncRemoved(const SyncDbId syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4668,7 +4668,7 @@ void AppServer::sendSyncRemoved(SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendSyncDeletionFailed(SyncDbId syncDbId) const {
+void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId)));
@@ -4681,7 +4681,7 @@ void AppServer::sendSyncDeletionFailed(SyncDbId syncDbId) const {
 }
 
 
-void AppServer::sendDriveDeletionFailed(DriveDbId driveDbId) const {
+void AppServer::sendDriveDeletionFailed(const DriveDbId driveDbId) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params = QByteArray(ArgsReader(static_cast<qint64>(driveDbId)));
@@ -4694,7 +4694,7 @@ void AppServer::sendDriveDeletionFailed(DriveDbId driveDbId) const {
 }
 
 
-void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const {
+void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, const qint64 size) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4710,7 +4710,8 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) c
     }
 }
 
-void AppServer::sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const {
+void AppServer::sendSyncProgressInfo(const SyncDbId syncDbId, const SyncStatus status, const SyncStep step,
+                                     const SyncProgress &progress) const {
     if (useOldCommServer()) {
         int id = 0;
         QByteArray params;

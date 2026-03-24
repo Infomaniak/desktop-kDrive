@@ -48,8 +48,8 @@ class ErrorTabWidget : public QTabWidget {
         void setLastErrorTimestamp(qint64 newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
         void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
 
-        void setUnresolvedErrorsCount(int count);
-        void setAutoResolvedErrorsCount(int count);
+        void setUnresolvedErrorsCount(const Count count);
+        void setAutoResolvedErrorsCount(const Count count);
         void retranslateUi();
 
         void showResolveConflicts(bool val);
@@ -65,24 +65,24 @@ class ErrorTabWidget : public QTabWidget {
     private:
         std::shared_ptr<ClientGui> _gui;
 
-        CustomTabBar *_tabBar;
-        QLabel *_toResolveErrorsLabel;
-        QLabel *_toResolveErrorsNb;
-        QLabel *_autoResolvedErrorsLabel;
-        QLabel *_autoResolvedErrorsNb;
-        ParametersDialog *_paramsDialog;
+        CustomTabBar *_tabBar{nullptr};
+        QLabel *_toResolveErrorsLabel{nullptr};
+        QLabel *_toResolveErrorsNb{nullptr};
+        QLabel *_autoResolvedErrorsLabel{nullptr};
+        QLabel *_autoResolvedErrorsNb{nullptr};
+        ParametersDialog *_paramsDialog{nullptr};
 
-        CustomPushButton *_clearToResButton;
-        CustomPushButton *_clearAutoResButton;
+        CustomPushButton *_clearToResButton{nullptr};
+        CustomPushButton *_clearAutoResButton{nullptr};
         QPushButton *_resolveButton = nullptr;
         QAction *_resolveConflictsAction = nullptr;
         QAction *_resolveUnsupportedCharactersAction = nullptr;
 
-        QListWidget *_autoResolvedErrorsListWidget;
-        QListWidget *_unresolvedErrorsListWidget;
+        QListWidget *_autoResolvedErrorsListWidget{nullptr};
+        QListWidget *_unresolvedErrorsListWidget{nullptr};
         qint64 _lastErrorTimestamp = 0;
         DriveDbId _driveDbId{0};
-        bool _generic;
+        bool _generic{false};
 
         void showEvent(QShowEvent *) override;
 };

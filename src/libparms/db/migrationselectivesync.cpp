@@ -21,11 +21,10 @@
 namespace KDC {
 
 MigrationSelectiveSync::MigrationSelectiveSync() :
-    _syncDbId(0),
     _path(std::filesystem::path()),
     _type(SyncNodeType::Undefined) {}
 
-MigrationSelectiveSync::MigrationSelectiveSync(int syncDbId, const std::filesystem::path &path, SyncNodeType type) :
+MigrationSelectiveSync::MigrationSelectiveSync(const SyncDbId syncDbId, const std::filesystem::path &path, SyncNodeType type) :
     _syncDbId(syncDbId),
     _path(path),
     _type(type) {}

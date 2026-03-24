@@ -54,8 +54,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         bool isConnected();
         void hideAndShowTray();
         void showSynthesisDialog();
-        int driveErrorsCount(DriveDbId driveDbId, bool unresolved) const;
-        inline int generalErrorsCount() const { return _generalErrorsCounter; }
+        Count driveErrorsCount(DriveDbId driveDbId, bool unresolved) const;
+        inline Count generalErrorsCount() const { return _generalErrorsCounter; }
         inline int hasGeneralErrors() const { return _generalErrorsCounter > 0; }
         const QString folderPath(SyncDbId syncDbId, const QString &filePath) const;
         inline const std::map<UserDbId, UserInfoClient> &userInfoMap() const noexcept { return _userInfoMap; }
@@ -135,7 +135,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         std::map<AccountDbId, AccountInfo> _accountInfoMap;
         std::map<DriveDbId, DriveInfoClient> _driveInfoMap;
         std::map<SyncDbId, SyncInfoClient> _syncInfoMap;
-        int _generalErrorsCounter{0};
+        Count _generalErrorsCounter{0};
         UserDbId _currentUserDbId{0};
         AccountDbId _currentAccountDbId{0};
         DriveDbId _currentDriveDbId{0};

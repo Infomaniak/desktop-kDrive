@@ -61,7 +61,7 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDb
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId,
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
                          const SyncPath &localpath, int64_t expectedSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),

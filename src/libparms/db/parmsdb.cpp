@@ -1588,7 +1588,7 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
     user.setDbId(userDbIdResult);
 
     UserId userIdResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, userIdResult));
+    LOG_IF_FAIL(queryInt64Value(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, userIdResult));
     user.setUserId(userIdResult);
 
     std::string strResult;

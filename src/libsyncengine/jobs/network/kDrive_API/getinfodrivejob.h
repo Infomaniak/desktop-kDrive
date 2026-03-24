@@ -51,7 +51,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         std::string _name;
         int64_t _size{0};
         bool _isAdmin{false};
-        AccountDbId _accountId{0};
+        AccountId _accountId{0};
         std::string _colorHex;
         bool _isInMaintenance{false};
         int64_t _maintenanceFrom{0};

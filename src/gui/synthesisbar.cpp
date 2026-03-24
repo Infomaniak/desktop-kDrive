@@ -125,8 +125,8 @@ QUrl SynthesisBar::syncUrl(const SyncDbId syncDbId, const QString &filePath) {
 void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     list.clear();
     for (auto const &driveInfoElt: _gui->driveInfoMap()) {
-        const int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
-        const int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
+        const auto driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
+        const auto driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
         if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
             ErrorsPopup::DriveError driveError;
             driveError.driveDbId = driveInfoElt.first;

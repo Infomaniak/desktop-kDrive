@@ -29,7 +29,7 @@ namespace KDC {
 static constexpr auto privateFolder = "Private/";
 static constexpr auto sharedFolder = "Shared/";
 
-SearchJob::SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &searchString,
+SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
                      const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
@@ -58,7 +58,7 @@ SearchJob::SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &
     _syncRootPath = sync.localPath();
 }
 
-SearchJob::SearchJob(DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
+SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
     _cursorInput(cursorInput) {
