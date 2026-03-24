@@ -35,17 +35,24 @@
                 <ItemsRepeater ItemsSource="{x:Bind Properties, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local:DefaultErrorProperty">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        HorizontalAlignment="Left">
-                                <TextBlock Text="{x:Bind Name}"
+                            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                  HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="{x:Bind Name}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text=": " />
-                                <TextBlock Text="{x:Bind Value}"
+                                <TextBlock Grid.Column="1"
+                                           Text=": " />
+                                <TextBlock Grid.Column="2"
+                                           Text="{x:Bind Value}"
                                            FontWeight="SemiBold"
                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                            TextWrapping="Wrap" />
-                            </StackPanel>
+                            </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
