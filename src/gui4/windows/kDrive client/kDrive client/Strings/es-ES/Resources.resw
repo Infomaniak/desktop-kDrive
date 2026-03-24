@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Mar 2026 12:02:37 +0100 
+  Exported at: Tue, 24 Mar 2026 16:57:53 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -220,6 +220,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonConfirm" xml:space="preserve"> 
     <value>Confirme</value> 
+  </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Iniciar sesión</value> 
   </data> 
   <data name="buttonConnectAccount" xml:space="preserve"> 
     <value>Conectar una cuenta</value> 
@@ -640,15 +643,6 @@ Por favor, inténtelo de nuevo en unos minutos.</value>
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
     <value>Mantenimiento en curso</value> 
   </data> 
-  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Los permisos de acceso del archivo han sido modificados, lo que impide la sincronización.</value> 
-  </data> 
-  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Consulte las preguntas frecuentes para restaurar el acceso</value> 
-  </data> 
-  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Última ubicación conocida del archivo:</value> 
-  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Ya existe un archivo o carpeta con este nombre.</value> 
   </data> 
@@ -661,12 +655,6 @@ Se ha conservado la versión original y su modificación se ha guardado en un ar
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Espacio al final del nombre %@</value> 
-  </data> 
-  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>El nombre de este archivo termina con un espacio, lo que impide su sincronización. Cambie el nombre del archivo desde kDrive online.</value> 
-  </data> 
-  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
-    <value>Espacio al final del nombre del archivo</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Una regla de exclusión impide que este %@ se sincronice.</value> 
@@ -692,7 +680,7 @@ Sus cambios se sincronizarán más tarde.</value>
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>Este archivo supera el tamaño máximo autorizado (50 GB).
-Ponte en contacto con tu administrador para aumentar el límite de tamaño del archivo.</value> 
+Ponte en contacto con el servicio de asistencia para desbloquear el límite.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Este archivo supera el tamaño máximo autorizado (50 GB).
@@ -722,12 +710,6 @@ Solicite acceso al propietario o al administrador.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Sin acceso</value> 
-  </data> 
-  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
-    <value>El nombre solo contiene espacios</value> 
-  </data> 
-  <data name="errForbiddenCharTitle" xml:space="preserve"> 
-    <value>Carácter no admitido</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Este archivo es un enlace duro que no se puede sincronizar.</value> 
@@ -770,9 +752,6 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
     <value>Conexión temporalmente no disponible</value> 
   </data> 
-  <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>Nombre demasiado largo</value> 
-  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Ya no hay espacio suficiente en tu ordenador para sincronizar este archivo.</value> 
   </data> 
@@ -790,9 +769,6 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Ruta de acceso a %@ demasiado larga</value> 
-  </data> 
-  <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Ruta demasiado larga</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Tu kDrive está lleno. Libera espacio o actualiza tu suscripción para sincronizar este %@.</value> 
@@ -832,9 +808,6 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
     <value>No se puede iniciar Lite Sync</value> 
-  </data> 
-  <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>Nombre reservado</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>La sincronización de este elemento no se ha realizado correctamente. Se reiniciará automáticamente más tarde.</value> 
@@ -978,6 +951,9 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
     <value>Conservar sólo las versiones en línea</value> 
+  </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Inicia sesión para empezar.</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Crear un %@.</value> 
@@ -1134,6 +1110,9 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Ubicación</value> 
   </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Sincroniza tu kDrive en este dispositivo</value> 
+  </data> 
   <data name="labelSyncedFolders" xml:space="preserve"> 
     <value>Carpetas sincronizadas</value> 
   </data> 
@@ -1142,6 +1121,9 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Bienvenido a kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
     <value>%@ sobre %@</value> 
@@ -1332,8 +1314,8 @@ Conéctate y mantén tus documentos sincronizados en todos tus dispositivos.</va
     <value>¡Todo listo!</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Tus archivos de kDrive se están sincronizando.
-Espere unos instantes.</value> 
+    <value>Estamos finalizando la configuración de su kDrive
+Por favor, espere unos instantes.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sincronización en curso..</value> 
