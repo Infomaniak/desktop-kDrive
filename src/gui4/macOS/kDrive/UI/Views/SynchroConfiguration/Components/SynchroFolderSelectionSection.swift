@@ -27,7 +27,7 @@ struct SynchroFolderSelectionSection: View {
 
     @State private var synchroLocation: URL?
     @State private var isDefaultLocation = false
-    @State private var isLoading = false
+    @State private var isLoading = true
 
     @State private var isShowingFileImporter = false
     @State private var isShowingSynchroLocationError = false
@@ -112,6 +112,10 @@ struct SynchroFolderSelectionSection: View {
         .onAppear {
             synchroLocation = configuration.localFolder.url
             isDefaultLocation = configuration.localFolder.isDefault
+
+            if synchroLocation != nil {
+                isLoading = false
+            }
         }
         .task {
             await setDefaultFolderIfNecessary()

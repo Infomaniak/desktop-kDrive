@@ -58,11 +58,13 @@ struct FolderFoldersSelectionSection: View {
                     }
                     .buttonStyle(.borderedProminent)
 
-                    Label {
+                    HStack(spacing: AppPadding.padding4) {
+                        exclusionFoldersIcon
+                            .resizable(at: AppIconSize.iconSize12)
+                            .accessibilityHidden(true)
+
                         Text(exclusionFoldersTip)
                             .font(.Tokens.subheadline)
-                    } icon: {
-                        exclusionFoldersIcon
                     }
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
                 }
