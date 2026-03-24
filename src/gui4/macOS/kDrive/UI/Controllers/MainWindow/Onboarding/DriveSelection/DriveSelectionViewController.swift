@@ -178,7 +178,9 @@ extension DriveSelectionViewController {
 
         let synchroConfigurationFlow = SynchroConfigurationFlowView(
             userDbId: Int(currentUser.dbId),
-            configurations: configurations
+            configurations: configurations,
+            onConfirm: handleUpdateConfigurations,
+            onCancel: dismissPresentedViewController
         )
 
         let viewController = NSHostingController(rootView: synchroConfigurationFlow)
@@ -205,6 +207,18 @@ extension DriveSelectionViewController {
         for cell in drivesListView.cells.values {
             cell.isEnabled = isEnabled
         }
+    }
+
+    private func handleUpdateConfigurations(_ configurations: [SynchroConfiguration]) {
+        print("Did configure")
+        dismissPresentedViewController()
+    }
+
+    private func dismissPresentedViewController() {
+        guard let presentedViewController = presentedViewControllers?.first else {
+            return
+        }
+        dismiss(presentedViewController)
     }
 }
 
