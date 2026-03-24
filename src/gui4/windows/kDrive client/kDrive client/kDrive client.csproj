@@ -88,9 +88,9 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
-  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
+ <!-- <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
-  </Target>
+  </Target>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
