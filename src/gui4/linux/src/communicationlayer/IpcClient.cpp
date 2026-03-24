@@ -45,7 +45,7 @@ IpcClient::IpcClient(QObject *parent) :
         exit(EXIT_FAILURE);
     });
     connect(_socket, &QTcpSocket::errorOccurred, this, [](const QAbstractSocket::SocketError socketError) {
-        qFatal() << "[IpcClient] Socket error:" << socketError;
+        qCCritical(lcIpcClient) << "Socket error:" << socketError;
         exit(EXIT_FAILURE);
     });
 }
@@ -100,7 +100,7 @@ void IpcClient::connectToServer(quint16 port) {
  */
 int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
     if (_socket->state() != QTcpSocket::ConnectedState) {
-        qFatal() << "[IpcClient] Cannot send request, socket not connected";
+        qCCritical(lcIpcClient) << "Cannot send request, socket not connected";
         exit(EXIT_FAILURE);
     }
     const int32_t id = _nextId++;
@@ -111,7 +111,7 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
 
     if (const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
-        qFatal() << "[IpcClient] Failed to insert request parameters into message";
+        qCCritical(lcIpcClient) << "Failed to insert request parameters into message";
         exit(EXIT_FAILURE);
     }
 
@@ -120,10 +120,10 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
 
     if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData != jsonSize) {
         if (writtenData < 0) {
-            qFatal() << "[IpcClient] Failed to send request, error:" << _socket->errorString();
+            qCCritical(lcIpcClient) << "Failed to send request, error:" << _socket->errorString();
         } else {
             // Very unlikely: the kernel buffer is filled by an internal write to the fd; if the server is not reading in time, another issue is probably occurring on its side.
-            qFatal() << "[IpcClient] Partial write detected, expected:" << jsonSize << "written:" << writtenData;
+            qCCritical(lcIpcClient) << "Partial write detected, expected:" << jsonSize << "written:" << writtenData;
         }
         exit(EXIT_FAILURE);
     }
@@ -163,13 +163,13 @@ void IpcClient::processBuffer() {
             const Poco::Dynamic::Var var = parser.parse(raw);
             const auto& objPtr = var.extract<Poco::JSON::Object::Ptr>();
             if (!objPtr) {
-                qFatal() << "[IpcClient] Failed to parse the JSON message: \n'" << raw << "'\n";
+                qCCritical(lcIpcClient) << "Failed to parse the JSON message: \n'" << raw << "'\n";
                 exit(EXIT_FAILURE);
             }
             const Poco::DynamicStruct msg = *objPtr;
 
             if (!msg.contains(MSG_TYPE) || !msg.contains(MSG_REQUEST_ID) || !msg.contains(MSG_REQUEST_NUM) || !msg.contains(MSG_REQUEST_PARAMS)) {
-                qFatal() << "[IpcClient] Received malformed message, missing required fields";
+                qCCritical(lcIpcClient) << "Received malformed message, missing required fields";
                 exit(EXIT_FAILURE);
             }
 
@@ -180,7 +180,7 @@ void IpcClient::processBuffer() {
 
             emit messageReceived(type, id, num, params);
         } catch (const Poco::Exception &e) {
-            qFatal() << "[IpcClient] Exception while processing message:" << e.what();
+            qCCritical(lcIpcClient) << "Exception while processing message:" << e.what();
             exit(EXIT_FAILURE);
         }
     }
@@ -200,7 +200,7 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
     }
     
     if (buffer[0] != '{') {
-        qFatal() << "[IpcClient] Invalid message format: buffer does not start with '{'";
+        qCCritical(lcIpcClient) << "Invalid message format: buffer does not start with '{'";
         exit(EXIT_FAILURE);
     }
 
@@ -208,7 +208,7 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
     for (size_t i = 1; i < buffer.size(); ++i) {
         if (buffer[i] == '{') {
             if (balance == std::numeric_limits<decltype(balance)>::max()) { // Avoid overflow of balance variable, which would cause incorrect parsing and potential security issues
-                qFatal() << "[IpcClient] Invalid message format: too many nested objects";
+                qCCritical(lcIpcClient) << "Invalid message format: too many nested objects";
                 exit(EXIT_FAILURE);
             }
             ++balance;
