@@ -629,19 +629,19 @@ bool AppClient::connectToServer() {
     // Check if a commPort is provided
     if (_commPort == 0) {
         // Should not happen (checked before)
-        qCCritical(lcAppClient()) << "Comm port is not set";
+        qCCritical(lcAppClient) << "Comm port is not set";
         return false;
     }
 
     // Connect to server
     int count = 0;
     while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
-        qCCritical(lcAppClient()) << "Connection to server failed!";
+        qCCritical(lcAppClient) << "Connection to server failed!";
         count++;
     }
 
     if (count == CONNECTION_TRIALS) {
-        qCCritical(lcAppClient()) << "Unable to connect to application server on port" << _commPort;
+        qCCritical(lcAppClient) << "Unable to connect to application server on port" << _commPort;
         return false;
     }
 
