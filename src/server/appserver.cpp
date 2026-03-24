@@ -1275,16 +1275,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> tmpUserDbId;
 
-            const auto userDbId = static_cast<SyncDbId>(tmpUserDbId);
+            const auto userDbId = static_cast<UserDbId>(tmpUserDbId);
 
             QList<DriveAvailableInfo> list;
-            ExitCode exitCode = ServerRequests::getUserAvailableDrives(userDbId, list);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getUserAvailableDrives(userDbId, list);
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << list;
             break;
         }
