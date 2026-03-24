@@ -23,11 +23,12 @@
 namespace KDC {
 
 struct ListingConf {
-        // If `_withPath` is `true`, the paths of the items will be returned.
+        // If `withPath` is `true`, the paths of the items will be returned.
         bool withPath{false};
-        // If `_dirOnly` is `true`, directories only will be listed in the result.
+        // If `dirOnly` is `true`, directories only will be listed in the result.
         bool dirOnly{false};
         // The maximal number of items returned by the request.
+        // Note: `limit` should be at least 5 since otherwise the backend returns an HTTP 422 error.
         int64_t limit{10};
 };
 
