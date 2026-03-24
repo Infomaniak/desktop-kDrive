@@ -640,6 +640,15 @@ Riprovare tra qualche minuto.</value>
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
     <value>Manutenzione in corso</value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Le autorizzazioni di accesso del file sono state modificate, impedendo la sincronizzazione.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Consulta le domande frequenti per ripristinare l’accesso</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Ultimo percorso noto del file:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Un file o una cartella con questo nome esiste già.</value> 
   </data> 
@@ -652,6 +661,12 @@ La versione originale è stata conservata e la modifica è stata salvata in un f
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Spazio alla fine del nome %@</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Il nome di questo file termina con uno spazio, il che impedisce la sincronizzazione. Rinominare il file da kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Spazio alla fine del nome del file</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Una regola di esclusione impedisce la sincronizzazione di questo %@.</value> 
@@ -708,6 +723,12 @@ Richiedere l’accesso al proprietario o all’amministratore.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Nessun accesso</value> 
   </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Il nome contiene solo spazi</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Carattere non supportato</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Questo file è un hard link che non può essere sincronizzato.</value> 
   </data> 
@@ -749,6 +770,9 @@ La sincronizzazione riprenderà automaticamente non appena verrà ristabilita la
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
     <value>Connessione temporaneamente non disponibile</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Nome troppo lungo</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Sul computer non c’è più spazio sufficiente per sincronizzare questo file.</value> 
   </data> 
@@ -766,6 +790,9 @@ La sincronizzazione riprenderà automaticamente non appena verrà ristabilita la
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Il percorso di accesso a %@ è troppo lungo</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Percorso troppo lungo</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Il kDrive è pieno. Liberare spazio o aggiornare l’abbonamento per sincronizzare questo %@.</value> 
@@ -805,6 +832,9 @@ La sincronizzazione riprenderà automaticamente non appena verrà ristabilita la
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
     <value>Lite Sync non può essere avviato</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Nome riservato</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>La sincronizzazione di questo elemento non è riuscita. Verrà riavviata automaticamente in seguito.</value> 

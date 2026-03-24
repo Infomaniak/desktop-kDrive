@@ -677,7 +677,7 @@ Vos modifications seront synchronisées ultérieurement.</value>
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
-Contactez le support pour débloquer la limite.</value> 
+Contactez votre administrateur pour augmenter la limite de taille des fichiers.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Ce fichier dépasse la taille maximale autorisée (50 Go).

@@ -1228,10 +1228,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
-                Error error = new();
-                CommStruct.ConversionHelper.CopyToError(errorInfo, error);
-                error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                bool success = true;
+                if (errorInfo.SyncDbId is not null)
+                {
+                    var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+
+                    if (sync is not null)
+                    {
+                        Error error = new(sync, errorInfo);
+                        await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+                    }
+                }
             }
             return true;
         }
@@ -1737,16 +1748,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
-            Error error = new Error();
-            if (errorInfo == null)
+            if (errorInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from ${signalData[JsonKeys.ErrorInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.");
                 return;
             }
 
-            ConversionHelper.CopyToError(errorInfo, error);
-            error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-            await _viewModel.AddErrorAsync(error);
+            var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+
+            if (sync is not null)
+            {
+                Error error = new(sync, errorInfo);
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+            }
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {

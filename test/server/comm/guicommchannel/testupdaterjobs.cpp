@@ -60,7 +60,7 @@ void TestGuiCommChannel::testUpdaterVersionInfoJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -110,7 +110,7 @@ void TestGuiCommChannel::testUpdaterStateJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_STATE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -152,7 +152,7 @@ void TestGuiCommChannel::testUpdaterStartInstallerJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -193,7 +193,7 @@ void TestGuiCommChannel::testUpdaterSkipVersionJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

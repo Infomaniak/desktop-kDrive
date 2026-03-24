@@ -15,7 +15,7 @@
     </UserControl.Resources>
     <Border Grid.Row="1"
             Grid.Column="0"
-            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
             Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}"
             Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"

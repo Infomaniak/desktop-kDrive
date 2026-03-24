@@ -23,11 +23,24 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
-            bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
-            if (!result)
+            if (Error.Sync.LocalPath.StartsWith("C:"))
             {
-                Logger.Log(Logger.Level.Warning, "Failed to launch settings for NotEnoughDiskSpaceError");
-                Utility.ShowUnexpectedErrorTeachingTip();
+                bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
+                if (!result)
+                {
+                    Logger.Log(Logger.Level.Warning, "Failed to launch settings for NotEnoughDiskSpaceError");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+            }
+            else
+            {
+                // Windows only provide a storage manager for the main disk, else we just open the disk at root so the user can manually clean it.
+                var path = System.IO.Path.GetPathRoot(Error.Sync.LocalPath);
+                if (path is null || !await Utility.OpenFolderSecurely(path))
+                {
+                    Logger.Log(Logger.Level.Warning, $"Failed to open sync root path {Error.Sync.LocalPath}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
             }
         }
     }
