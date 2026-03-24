@@ -45,7 +45,7 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
             fileListJob =
                     _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
                                : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
-        } catch (const std::exception &e) {
+        } catch (const std::bad_alloc &e) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
 
             return AbstractTokenNetworkJob::exception2ExitCode(e);
