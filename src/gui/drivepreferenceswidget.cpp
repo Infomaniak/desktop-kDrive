@@ -495,7 +495,7 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
 
             QBoxLayout *folderBox = folderBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-            auto *folderItemWidget = new FolderItemWidget(key, _gui, this);
+            auto *folderItemWidget = new FolderItemWidget(static_cast<int>(key), _gui, this);
             folderItemWidget->setSupportVfs(info.supportVfs());
             folderItemWidget->setLiteSyncActivated(info.virtualFileMode() != VirtualFileMode::Off);
             folderBox->addWidget(folderItemWidget);
