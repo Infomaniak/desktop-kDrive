@@ -842,7 +842,7 @@ void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileIt
         return;
     }
 
-    auto driveDbId = syncInfoMapIt->second.driveDbId();
+    const auto driveDbId = syncInfoMapIt->second.driveDbId();
 
     auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {

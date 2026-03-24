@@ -59,8 +59,8 @@ class UserSelectionWidget : public QPushButton {
         QSize _menuRightIconSize;
         std::map<UserDbId, UserInfo> _userMap;
         UserDbId _currentUserDbId{0};
-        QLabel *_userIconLabel;
-        QLabel *_downIconLabel;
+        QLabel *_userIconLabel{nullptr};
+        QLabel *_downIconLabel{nullptr};
 
         void addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool current);
 
