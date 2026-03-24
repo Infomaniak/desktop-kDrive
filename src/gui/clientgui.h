@@ -70,7 +70,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         inline AccountDbId currentAccountDbId() const { return _currentAccountDbId; }
         bool setCurrentDriveDbId(DriveDbId driveDbId);
         inline DriveDbId currentDriveDbId() const { return _currentDriveDbId; }
-        void loadSyncInfoMap(SyncDbId syncDbId, std::map<SyncDbId, SyncInfoClient> &syncInfoMap);
+        void loadSyncInfoMap(DriveDbId driveDbId, std::map<SyncDbId, SyncInfoClient> &syncInfoMap);
         void activateLoadInfo(bool value = true);
         void computeOverallSyncStatus();
         bool loadInfoMaps();
@@ -138,7 +138,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         int _generalErrorsCounter{0};
         UserDbId _currentUserDbId{0};
         AccountDbId _currentAccountDbId{0};
-        SyncDbId _currentDriveDbId{0};
+        DriveDbId _currentDriveDbId{0};
         QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<ErrorDbId, QList<ErrorInfo>> _errorInfoMap;
