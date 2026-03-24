@@ -63,6 +63,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     Qt6::QuickControls2
     Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
     ${libcommon_NAME}
+    ${libcommongui_NAME}
 )
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
