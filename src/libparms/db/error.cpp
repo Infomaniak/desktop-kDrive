@@ -126,7 +126,7 @@ bool Error::isSimilarTo(const Error &other) const {
                    (_functionName == other.functionName());
         }
         case ErrorLevel::SyncPal: {
-            return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
+            return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause());
         }
         case ErrorLevel::Node: {
             return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
