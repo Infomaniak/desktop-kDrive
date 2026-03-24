@@ -33,7 +33,7 @@ class LoginRequestTokenJob : public AbstractGuiJob {
         CommString _codeVerifier;
 
         // Output parameters
-        int _userDbId = 0;
+        UserDbId _userDbId = 0;
         std::string _error;
         std::string _errorDescr;
 

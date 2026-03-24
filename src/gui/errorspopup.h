@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "utility/types.h"
+
+
 #include <QDialog>
 #include <QPaintEvent>
 #include <QPoint>
@@ -37,7 +40,7 @@ class ErrorsPopup : public QDialog {
 
     public:
         struct DriveError {
-                int driveDbId;
+                DriveDbId driveDbId;
                 QString driveName;
                 int unresolvedErrorsCount;
                 int autoresolvedErrorsCount;

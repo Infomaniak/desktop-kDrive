@@ -68,7 +68,7 @@ ExitInfo NodeConflictInfoJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int32_t userDbId, int32_t driveId, const NodeId &nodeId) {
+ExitInfo NodeConflictInfoJob::fetchRemoteInfo(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) {
     std::shared_ptr<GetFileInfoJobV3> networkJob;
     try {
         networkJob = std::make_shared<GetFileInfoJobV3>(userDbId, driveId, nodeId);
@@ -113,7 +113,7 @@ ExitInfo NodeConflictInfoJob::fetchRemoteInfo(int32_t userDbId, int32_t driveId,
     return ExitCode::Ok;
 }
 
-ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, int32_t userDbId) {
+ExitInfo NodeConflictInfoJob::fetchLocalInfo(const SyncPath &localPath, const UserDbId userDbId) {
     // Get file size and modification date from filesystem
     FileStat fileStat;
     IoError ioError = IoError::Success;
@@ -149,8 +149,8 @@ ExitInfo NodeConflictInfoJob::process() {
         return exitInfo;
     }
 
-    const int32_t userDbId = syncPal->userDbId();
-    const int32_t driveId = syncPal->driveId();
+    const UserDbId userDbId = syncPal->userDbId();
+    const DriveId driveId = syncPal->driveId();
     const SyncPath &localRootPath = syncPal->localPath();
 
     // Resolve the remote nodeId from the relative path using the sync database

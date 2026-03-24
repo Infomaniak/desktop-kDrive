@@ -108,7 +108,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         };
 
         struct Notification {
-                int _syncDbId;
+                SyncDbId _syncDbId;
                 QString _filename;
                 QString _renameTarget;
                 SyncFileInstruction _status;
@@ -198,10 +198,10 @@ class AppServer : public SharedTools::QtSingleApplication {
 
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+        ExitCode getThumbnail(const DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
         }
-        ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
+        ExitCode getPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl) {
             return ServerRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
         }
 #endif
@@ -294,7 +294,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitInfo updateAccount(Account &account);
         ExitInfo updateDrive(const User &user, const Account &account, Drive &drive);
         ExitInfo handleDriveAccessDenied(const Drive &drive);
-        ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
+        ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const AccountId newAccountId,
                                                   Drive &drive, bool &driveUpdated);
 
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
@@ -306,8 +306,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
-        [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                                bool &syncUpdated);
+        [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
+                                                                QSet<QString> &blackList, bool &syncUpdated);
 
         virtual void sendUserAdded(const UserInfo &userInfo) const;
         virtual void sendUserUpdated(const UserInfo &userInfo) const;

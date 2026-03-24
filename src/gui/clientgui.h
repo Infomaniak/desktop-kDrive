@@ -207,7 +207,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onSyncDeletionFailed(SyncDbId syncDbId);
         void onProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
-        void onExecuteSyncAction(ActionType type, ActionTarget target, int dbId);
+        void onExecuteSyncAction(ActionType type, ActionTarget target, GenericId dbId);
         void onRefreshStatusNeeded();
 
         void retranslateUi();

@@ -39,14 +39,14 @@ class ErrorTabWidget : public QTabWidget {
             ToResolveIndex = 0,
             AutoResolveIndex
         };
-        explicit ErrorTabWidget(std::shared_ptr<ClientGui> gui, int driveDbId = 0, bool generic = false,
+        explicit ErrorTabWidget(std::shared_ptr<ClientGui> gui, DriveDbId driveDbId = 0, bool generic = false,
                                 QWidget *parent = nullptr);
 
         QListWidget *autoResolvedErrorsListWidget() const { return _autoResolvedErrorsListWidget; }
         QListWidget *unresolvedErrorsListWidget() const { return _unresolvedErrorsListWidget; }
         qint64 getLastErrorTimestamp() const { return _lastErrorTimestamp; }
         void setLastErrorTimestamp(qint64 newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
-        void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
+        void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
 
         void setUnresolvedErrorsCount(int count);
         void setAutoResolvedErrorsCount(int count);
@@ -81,7 +81,7 @@ class ErrorTabWidget : public QTabWidget {
         QListWidget *_autoResolvedErrorsListWidget;
         QListWidget *_unresolvedErrorsListWidget;
         qint64 _lastErrorTimestamp = 0;
-        int _driveDbId;
+        DriveDbId _driveDbId{0};
         bool _generic;
 
         void showEvent(QShowEvent *) override;

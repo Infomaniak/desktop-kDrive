@@ -961,7 +961,7 @@ void ClientGui::onRefreshErrorList() {
 
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
-        const int driveDbId = *it;
+        const auto driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
 
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
@@ -1396,7 +1396,7 @@ void ClientGui::onProgressInfo(const SyncDbId syncDbId, SyncStatus status, SyncS
     }
 }
 
-void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, int dbId) {
+void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, const GenericId dbId) {
     if (target == ActionTarget::Sync) {
         executeSyncAction(type, dbId);
     } else if (target == ActionTarget::Drive) {

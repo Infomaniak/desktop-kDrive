@@ -737,7 +737,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
             } else {
                 // select a sync corresponding to the selected drive
                 // TODO: this view can't represented sync how to open the right sync if we have only the current drive
-                int syncDbId = _gui->syncInfoMap().begin()->first;
+                auto syncDbId = _gui->syncInfoMap().begin()->first;
                 for (const auto &sync: _gui->syncInfoMap()) {
                     if (sync.second.driveDbId() == _gui->currentDriveDbId()) {
                         syncDbId = sync.first;
@@ -1038,7 +1038,7 @@ void SynthesisPopover::onAddDrive() {
 }
 
 void SynthesisPopover::onPauseSync(ActionTarget target, const SyncDbId syncDbId) {
-    const int driveToMatomo =
+    const auto driveToMatomo =
             (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "pauseSyncButton", driveToMatomo);
 
@@ -1049,7 +1049,7 @@ void SynthesisPopover::onPauseSync(ActionTarget target, const SyncDbId syncDbId)
 }
 
 void SynthesisPopover::onResumeSync(ActionTarget target, const SyncDbId syncDbId) {
-    const int driveToMatomo =
+    const auto driveToMatomo =
             (target == ActionTarget::AllDrives ? -1 : (target == ActionTarget::Drive ? _gui->currentDriveDbId() : syncDbId));
     MatomoClient::sendEvent("synthesisPopover", MatomoEventAction::Click, "resumeSyncButton", driveToMatomo);
 

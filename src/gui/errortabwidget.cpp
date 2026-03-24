@@ -30,7 +30,7 @@
 
 namespace KDC {
 
-ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const int driveDbId, const bool generic, QWidget *parent) :
+ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const DriveDbId driveDbId, const bool generic, QWidget *parent) :
     QTabWidget(parent),
     _gui(gui),
     _tabBar(nullptr),

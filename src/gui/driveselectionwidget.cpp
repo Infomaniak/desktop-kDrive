@@ -87,7 +87,7 @@ void DriveSelectionWidget::clear() {
     retranslateUi();
 }
 
-void DriveSelectionWidget::selectDrive(int driveDbId) {
+void DriveSelectionWidget::selectDrive(const DriveDbId driveDbId) {
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDriveSelectionWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;

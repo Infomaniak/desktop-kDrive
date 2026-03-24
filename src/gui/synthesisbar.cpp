@@ -117,7 +117,7 @@ void SynthesisBar::reset() {
     _infosButton->setVisible(false);
 }
 
-QUrl SynthesisBar::syncUrl(int syncDbId, const QString &filePath) {
+QUrl SynthesisBar::syncUrl(const SyncDbId syncDbId, const QString &filePath) {
     const QString fullFilePath = _gui->folderPath(syncDbId, filePath);
     return KDC::GuiUtility::getUrlFromLocalPath(fullFilePath);
 }
@@ -138,11 +138,11 @@ void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     }
 }
 
-void SynthesisBar::displayErrors(int driveDbId) {
+void SynthesisBar::displayErrors(const DriveDbId driveDbId) {
     emit showParametersDialog(driveDbId, true);
 }
 
-void SynthesisBar::openUrl(int syncDbId, const QString &filePath) {
+void SynthesisBar::openUrl(const SyncDbId syncDbId, const QString &filePath) {
     const QUrl url = syncUrl(syncDbId, filePath);
     if (url.isValid()) {
         if (!QDesktopServices::openUrl(url)) {
@@ -187,7 +187,7 @@ bool SynthesisBar::eventFilter(QObject *obj, QEvent *event) {
     return false;
 }
 
-void SynthesisBar::onDisplayErrors(int driveDbId) {
+void SynthesisBar::onDisplayErrors(const DriveDbId driveDbId) {
     MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "displayErrors", driveDbId);
     displayErrors(driveDbId);
 }

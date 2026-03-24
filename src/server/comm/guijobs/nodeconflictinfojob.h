@@ -42,8 +42,8 @@ class NodeConflictInfoJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo fetchRemoteInfo(int32_t userDbId, int32_t driveId, const NodeId &nodeId);
-        ExitInfo fetchLocalInfo(const SyncPath &localPath, int32_t userDbId);
+        ExitInfo fetchRemoteInfo(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
+        ExitInfo fetchLocalInfo(const SyncPath &localPath, UserDbId userDbId);
 
         friend class TestGuiCommChannel;
 };

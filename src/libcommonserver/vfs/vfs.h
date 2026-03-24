@@ -98,13 +98,13 @@ class Vfs : public QObject {
 
         ~Vfs() override;
 
-        void setSyncFileStatusCallback(const std::function<void(int, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
+        void setSyncFileStatusCallback(const std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
             _syncFileStatus = syncFileStatus;
         }
-        void setSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool &)> &syncFileSyncing) {
+        void setSyncFileSyncingCallback(const std::function<void(SyncDbId, const SyncPath &, bool &)> &syncFileSyncing) {
             _syncFileSyncing = syncFileSyncing;
         }
-        void setSetSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool)> &setSyncFileSyncing) {
+        void setSetSyncFileSyncingCallback(const std::function<void(SyncDbId, const SyncPath &, bool)> &setSyncFileSyncing) {
             _setSyncFileSyncing = setSyncFileSyncing;
         }
         void setExclusionAppListCallback(const std::function<void(QString &)> &exclusionAppList) {
@@ -333,9 +333,9 @@ class Vfs : public QObject {
         const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
-        std::function<void(int, const SyncPath &, SyncFileStatus &)> _syncFileStatus;
-        std::function<void(int, const SyncPath &, bool &)> _syncFileSyncing;
-        std::function<void(int, const SyncPath &, bool)> _setSyncFileSyncing;
+        std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> _syncFileStatus;
+        std::function<void(SyncDbId, const SyncPath &, bool &)> _syncFileSyncing;
+        std::function<void(SyncDbId, const SyncPath &, bool)> _setSyncFileSyncing;
         std::function<void(QString &)> _exclusionAppList;
 
         bool extendedLog() { return _extendedLog; }

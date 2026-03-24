@@ -868,7 +868,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     return true;
 }
 
-SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
+SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const SyncDbId syncDbId) const {
     const auto result = _commManager->appServer().syncPalMap.find(syncDbId);
     if (result == _commManager->appServer().syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
@@ -878,7 +878,7 @@ SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId
     return result;
 }
 
-VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
+VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const SyncDbId syncDbId) const {
     const auto result = _commManager->appServer().vfsMap.find(syncDbId);
     if (result == _commManager->appServer().vfsMap.cend()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
@@ -926,7 +926,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
 }
 
 #if defined(KD_MACOS)
-bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
+bool ExtensionJob::cancelDownloadJobs(const SyncDbId syncDbId, const std::vector<CommString> &fileList) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);

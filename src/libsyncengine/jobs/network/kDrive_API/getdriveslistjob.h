@@ -25,7 +25,7 @@ namespace KDC {
 
 class GetDrivesListJob : public AbstractTokenNetworkJob {
     public:
-        GetDrivesListJob(int userDbId);
+        GetDrivesListJob(UserDbId userDbId);
 
         [[nodiscard]] std::list<DriveAvailableInfo> &availableDrives() { return _availableDrives; }
 

@@ -33,7 +33,7 @@ class FixConflictingFilesDialog final : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit FixConflictingFilesDialog(int driveDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
+        explicit FixConflictingFilesDialog(DriveDbId driveDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
         bool keepLocalVersion() const { return _keepLocalVersion; }
 
@@ -51,7 +51,7 @@ class FixConflictingFilesDialog final : public CustomDialog {
         void insertFileItems(const int nbItems);
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId = 0;
+        DriveDbId _driveDbId = 0;
         QList<ErrorInfo> _conflictList;
 
         bool _keepLocalVersion = false;

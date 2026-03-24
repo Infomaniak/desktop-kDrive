@@ -447,7 +447,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
     QString parentFolder = QFileInfo(folder).dir().canonicalPath();
-    int syncDbId = 0;
+    SyncDbId syncDbId = 0;
     ExitCode exitCode = syncForPath(syncList, parentFolder, syncDbId);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
@@ -1263,9 +1263,9 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
     return autoResolved;
 }
 
-ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
+ExitCode ServerRequests::getUserFromSyncDbId(const SyncDbId syncDbId, User &user) {
     // Get User
-    bool found;
+    bool found = false;
     Sync sync;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
@@ -1381,7 +1381,7 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const QString &par
     return exitCode;
 }
 
-ExitCode ServerRequests::getPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl) {
+ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl) {
     auto logWarning = [&](const std::string &context_, const DriveDbId driveDbId_, const std::string &nodeId_,
                           const std::string &error_) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -2172,7 +2172,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId) {
+ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
 
     for (const Sync &sync: syncList) {

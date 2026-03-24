@@ -652,7 +652,7 @@ void AppServer::stopAllVfs() {
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList) {
-    for (int syncDbId: syncDbIdList) {
+    for (const auto syncDbId: syncDbIdList) {
         stopSyncTask(syncDbId);
     }
 }
@@ -2967,9 +2967,7 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
     bool driveUpdated = false;
     bool quotaUpdated = false;
     AccountId newAccountId = 0;
-    if (const auto exitInfo =
-                _loadDriveInfo(drive, static_cast<uint64_t>(account.accountId()), newAccountId, driveUpdated, quotaUpdated);
-        !exitInfo) {
+    if (const auto exitInfo = _loadDriveInfo(drive, account.accountId(), newAccountId, driveUpdated, quotaUpdated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
         return exitInfo;
     }
@@ -3033,7 +3031,7 @@ ExitInfo AppServer::handleDriveAccessDenied(const Drive &drive) {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const uint64_t newAccountId,
+ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const AccountId newAccountId,
                                                      Drive &drive, bool &driveUpdated) {
     if (newAccountId <= 0) return ExitCode::Ok; // The account has not changed
 
@@ -3110,7 +3108,7 @@ ExitInfo AppServer::startSyncs() {
     return mainExitInfo;
 }
 
-std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
+std::string liteSyncActivationLogMessage(const bool enabled, const SyncDbId syncDbId) {
     const std::string activationStatus = enabled ? "enabled" : "disabled";
     std::stringstream ss;
 
@@ -3258,8 +3256,8 @@ ExitInfo AppServer::startSyncs(User &user) {
     return mainExitInfo;
 }
 
-ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                     bool &syncUpdated) {
+ExitInfo AppServer::processMigratedSyncOnceConnected(const UserDbId userDbId, const DriveId driveId, Sync &sync,
+                                                     QSet<QString> &blackList, bool &syncUpdated) {
     LOG_DEBUG(_logger, "Update migrated SyncPal for syncDbId=" << sync.dbId());
 
     // Set sync target nodeId for advanced sync
@@ -4734,7 +4732,7 @@ void AppServer::sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncS
     }
 }
 
-void AppServer::sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) const {
+void AppServer::sendSyncCompletedItem(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) const {
     if (useOldCommServer()) {
         if (itemInfo.progress() == 100) { // 100%
             int id = 0;
@@ -4761,7 +4759,7 @@ void AppServer::sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItemInfo 
     }
 }
 
-void AppServer::sendVfsConversionCompleted(SyncDbId syncDbId) const {
+void AppServer::sendVfsConversionCompleted(const SyncDbId syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 

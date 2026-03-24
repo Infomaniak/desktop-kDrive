@@ -45,8 +45,8 @@ class DriveAvailableInfo {
         void setName(const QString &name) { _name = name; }
         [[nodiscard]] const QColor &color() const { return _color; }
         void setColor(const QColor &color) { _color = color; }
-        [[nodiscard]] int userDbId() const { return _userDbId; }
-        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
+        [[nodiscard]] UserDbId userDbId() const { return _userDbId; }
+        void setUserDbId(const UserDbId userDbId) { _userDbId = userDbId; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -65,7 +65,7 @@ class DriveAvailableInfo {
         QString _name;
         QColor _color;
 
-        int _userDbId{0};
+        UserDbId _userDbId{0};
 };
 
 } // namespace KDC

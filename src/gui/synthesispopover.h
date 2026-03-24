@@ -76,7 +76,7 @@ class SynthesisPopover : public QDialog {
         void updateItemList();
         void copyLinkItem(SyncDbId syncDbId, const QString &filePath);
         void openWebviewItem(SyncDbId syncDbId, const QString &filePath);
-        void executeSyncAction(ActionType type, ActionTarget target, int dbId);
+        void executeSyncAction(ActionType type, ActionTarget target, GenericId dbId);
 
     public slots:
         void onConfigRefreshed();

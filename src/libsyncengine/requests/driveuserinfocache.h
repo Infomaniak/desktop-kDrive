@@ -41,8 +41,8 @@ class DriveUserInfoCache {
         DriveUserInfoCache(const DriveUserInfoCache &) = delete;
         void operator=(const DriveUserInfoCache &) = delete;
 
-        [[nodiscard]] std::optional<DriveUserBasicInfo> get(int32_t driveId, int32_t userId) const;
-        void put(int32_t driveId, int32_t userId, const DriveUserBasicInfo &info);
+        [[nodiscard]] std::optional<DriveUserBasicInfo> get(DriveId driveId, UserId userId) const;
+        void put(DriveId driveId, UserId userId, const DriveUserBasicInfo &info);
         void clear();
 
     private:
@@ -51,14 +51,14 @@ class DriveUserInfoCache {
         static constexpr std::chrono::minutes _ttl{60};
 
         struct CacheKey {
-                int32_t driveId;
-                int32_t userId;
+                DriveId driveId;
+                UserId userId;
                 bool operator==(const CacheKey &) const = default;
         };
 
         struct CacheKeyHash {
                 size_t operator()(const CacheKey &k) const noexcept {
-                    return std::hash<int32_t>()(k.driveId) ^ (std::hash<int32_t>()(k.userId) << 16);
+                    return std::hash<DriveId>()(k.driveId) ^ (std::hash<UserId>()(k.userId) << 16);
                 }
         };
 

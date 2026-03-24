@@ -31,7 +31,7 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcLoginDialog, "gui.logindialog", QtInfoMsg)
 
-LoginDialog::LoginDialog(int userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
+LoginDialog::LoginDialog(const UserDbId userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
     CustomDialog(false, parent),
     _userDbId(userDbId),
     _gui(gui),

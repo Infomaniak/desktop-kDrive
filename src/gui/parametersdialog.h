@@ -47,26 +47,26 @@ class ParametersDialog : public CustomDialog {
 
         void openPreferencesPage();
         void openGeneralErrorsPage();
-        void openDriveParametersPage(int driveDbId);
-        void openDriveErrorsPage(int driveDbId);
+        void openDriveParametersPage(const DriveDbId driveDbId);
+        void openDriveErrorsPage(const DriveDbId driveDbId);
 
-        void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
-        void resolveUnsupportedCharErrors(int driveDbId);
+        void resolveConflictErrors(const DriveDbId driveDbId, bool keepLocalVersion);
+        void resolveUnsupportedCharErrors(const DriveDbId driveDbId);
 
     signals:
         void addDrive();
         void setStyle(bool darkTheme);
-        void removeDrive(int driveDbId);
-        void removeSync(int syncDbId);
-        void executeSyncAction(ActionType type, ActionTarget target, int dbId);
-        void clearErrors(int syncDbId, bool autoResolved);
+        void removeDrive(const DriveDbId driveDbId);
+        void removeSync(SyncDbId syncDbId);
+        void executeSyncAction(ActionType type, ActionTarget target, GenericId dbId);
+        void clearErrors(const SyncDbId syncDbId, bool autoResolved);
 
     public slots:
         void onConfigRefreshed();
-        void onUpdateProgress(int syncDbId);
-        void onItemCompleted(int syncDbId, const SyncFileItemInfo &item);
-        void onDriveQuotaUpdated(int driveDbId);
-        void onRefreshErrorList(int driveDbId);
+        void onUpdateProgress(SyncDbId syncDbId);
+        void onItemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &item);
+        void onDriveQuotaUpdated(DriveDbId driveDbId);
+        void onRefreshErrorList(DriveDbId driveDbId);
         void onRefreshStatusNeeded();
 
     private:
@@ -116,10 +116,10 @@ class ParametersDialog : public CustomDialog {
         void onExit();
         void onPreferencesButtonClicked();
         void onOpenHelp();
-        void onDriveSelected(int id);
+        void onDriveSelected(DriveDbId driveDbId);
         void onAddDrive();
-        void onRemoveDrive(int driveDbId);
-        void onDisplayDriveErrors(int driveDbId);
+        void onRemoveDrive(DriveDbId driveDbId);
+        void onDisplayDriveErrors(DriveDbId driveDbId);
         void onDisplayGeneralErrors();
         void onDisplayDriveParameters();
         void onDisplayPreferences();

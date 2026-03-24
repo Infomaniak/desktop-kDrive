@@ -172,7 +172,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
-        static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
+        static ExitCode getUserFromSyncDbId(SyncDbId syncDbId, User &user);
         static ExitCode fixProxyConfig();
 
     private:
@@ -180,7 +180,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
         static ExitInfo checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error);
-        static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId);
+        static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);
         static ExitCode updateUser(const User &user, UserInfo &userInfo);
