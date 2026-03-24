@@ -5,13 +5,15 @@ endif()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick Widgets QuickControls2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
 
 set(GUI_SOURCE_FILES # C++ files for the GUI application
-    src/main.cpp
+        src/main.cpp
+        src/communicationlayer/IpcClient.cpp
+        src/communicationlayer/IpcClient.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
@@ -54,11 +56,16 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
 
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     Qt6::Core
+    Qt6::Gui
+    Qt6::Network
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
+    ${libcommon_NAME}
 )
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src # libcommon header files
 )

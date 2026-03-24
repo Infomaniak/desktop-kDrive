@@ -16,18 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QQmlApplicationEngine>
-#include <QQuickWindow>
+#include "communicationlayer/IpcClient.h"
+
+#include <QDebug>
+#include <QGuiApplication>
+
+#include <Poco/Dynamic/Struct.h>
 
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
-    QQmlApplicationEngine engine;
-    engine.loadFromModule("kDrive.UI", "Main");
+#ifdef QT_DEBUG
+    KDC::IpcClient client;
 
-    if (engine.rootObjects().isEmpty()) {
-        return EXIT_FAILURE;
-    }
+    QObject::connect(&client, &KDC::IpcClient::connected, [&client]() {
+        qDebug() << "[IpcClient] Connected to server";
+        const int id = client.sendRequest(RequestNum::USER_INFOLIST);
+        qDebug() << "[IpcClient] Sent USER_INFOLIST request with id:" << id;
+    });
 
+    QObject::connect(&client, &KDC::IpcClient::disconnected, []() {
+        qDebug() << "[IpcClient] Disconnected from server";
+    });
+
+    QObject::connect(&client, &KDC::IpcClient::messageReceived,
+                     [](uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct params) {
+                         std::string numstr = type == 1 ? toString(static_cast<RequestNum>(num)):
+                                                        toString(static_cast<SignalNum>(num));
+
+                         qDebug() << "[IpcClient] Message received — type:" << type << "id:" << id << "num:" << numstr
+                                  << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
+                     });
+
+    qDebug() << "[IpcClient] Connecting to server...";
+    client.connectToServer();
+#endif
     return QGuiApplication::exec();
 }
