@@ -24,7 +24,7 @@
 
 #include <Poco/Dynamic/Struct.h>
 
-Q_LOGGING_CATEGORY(lcMain, "guiv4.main", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcMain, "gui.v4.main", QtInfoMsg)
 
 static void setupLogging() {
     auto *logger = KDC::Logger::instance(); // installs Qt message handler
@@ -32,6 +32,17 @@ static void setupLogging() {
     logger->setLogDebug(true);
     logger->setupTemporaryFolderLogDir();
     logger->enterNextLogFile();
+}
+
+std::string toString(const KDC::GuiJobType type) {
+    switch (type) {
+        case KDC::GuiJobType::Query:
+            return "Query";
+        case KDC::GuiJobType::Signal:
+            return "Signal";
+        default:
+            return "Unknown";
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -52,11 +63,11 @@ int main(int argc, char *argv[]) {
     });
 
     QObject::connect(&client, &KDC::IpcClient::messageReceived,
-                     [](uint8_t type, int32_t id, uint8_t num, const Poco::DynamicStruct params) {
-                         std::string numstr = type == 1 ? toString(static_cast<RequestNum>(num)):
+                     [](KDC::GuiJobType type, int32_t id, uint8_t num, const Poco::DynamicStruct &params) {
+                         const std::string numstr = type == KDC::GuiJobType::Query ? toString(static_cast<RequestNum>(num)):
                                                         toString(static_cast<SignalNum>(num));
 
-                         qCDebug(lcMain) << "Message received — type:" << type << "id:" << id << "num:" << numstr
+                         qCDebug(lcMain) << "Message received — type:" << toString(type) << "id:" << id << "num:" << numstr
                                          << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
                      });
 
