@@ -63,6 +63,7 @@ public struct ColorToken {
         public static let primary = ColorToken(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue800)
         public static let secondary = ColorToken(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
         public static let tertiary = ColorToken(light: KDriveColors.neutralBlue200, dark: KDriveColors.neutralBlue600)
+        public static let quaternary = ColorToken(light: KDriveColors.neutralBlue300, dark: KDriveColors.neutralBlue500)
     }
 
     public enum Status {

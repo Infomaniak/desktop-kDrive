@@ -16,27 +16,47 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 import UniformTypeIdentifiers
-import kDriveCore
 
 struct SynchroFolderSelectionSection: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
     @State private var synchroLocation: URL?
+    @State private var isDefaultLocation = false
+    @State private var isLoading = false
 
     @State private var isShowingFileImporter = false
     @State private var isShowingSynchroLocationError = false
 
+    @State private var isShowingGenericError = false
+
     let configuration: SynchroConfiguration
+
+    private var folderTypeLabel: String {
+        if isDefaultLocation {
+            return KDriveLocalizable.syncFolderDefaultLocation
+        } else {
+            return KDriveLocalizable.syncFolderCustomLocation
+        }
+    }
 
     private var driveLocationTipColor: Color {
         if isShowingSynchroLocationError {
             return ColorToken.Status.Medium.warning.asColor
         } else {
             return ColorToken.Text.tertiary.asColor
+        }
+    }
+
+    private var synchroLocationPath: String {
+        if isLoading {
+            return "is/Loading/Path"
+        } else {
+            return synchroLocation?.path ?? ""
         }
     }
 
@@ -51,11 +71,17 @@ struct SynchroFolderSelectionSection: View {
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
 
-                Text(synchroLocation?.path ?? "")
-                    .font(.Tokens.subheadline)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                    .lineLimit(1)
-                    .help(synchroLocation?.path ?? "")
+                HStack {
+                    SynchroFolderTypeLabel(text: folderTypeLabel)
+
+                    Text(synchroLocationPath)
+                        .truncationMode(.middle)
+                        .font(.Tokens.subheadline)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        .lineLimit(1)
+                        .help(synchroLocation?.path ?? "")
+                }
+                .redacted(reason: isLoading ? [.placeholder] : [])
 
                 HStack {
                     Button(KDriveLocalizable.buttonChangeFolder) {
@@ -85,17 +111,22 @@ struct SynchroFolderSelectionSection: View {
         }
         .onAppear {
             synchroLocation = configuration.localFolder.url
+            isDefaultLocation = configuration.localFolder.isDefault
         }
         .task {
             await setDefaultFolderIfNecessary()
         }
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func setDefaultFolderIfNecessary() async {
         guard synchroLocation == nil else {
             return
         }
+
+        isLoading = true
         await setDefaultFolder()
+        isLoading = false
     }
 
     private func setDefaultFolder() async {
@@ -104,26 +135,30 @@ struct SynchroFolderSelectionSection: View {
         }
 
         synchroLocation = localPath
+        isDefaultLocation = true
+
         viewModel.updateConfiguration(configuration.id, localFolder: .init(url: localPath, isDefault: true))
     }
 
     private func handleSelectedDirectory(_ result: Result<URL, Error>) {
-        isShowingSynchroLocationError = false
-
-        guard case .success(let selectedURL) = result else {
-            return
-        }
-
-        let oldValue = synchroLocation
-        synchroLocation = selectedURL
-
         Task {
+            isLoading = true
+            defer { isLoading = false }
+
+            guard case .success(let selectedURL) = result else {
+                isShowingGenericError = true
+                return
+            }
+
             let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
             guard isPathValid == true else {
-                synchroLocation = oldValue
                 isShowingSynchroLocationError = true
                 return
             }
+
+            synchroLocation = selectedURL
+            isDefaultLocation = false
+            isShowingSynchroLocationError = false
 
             viewModel.updateConfiguration(configuration.id, localFolder: .init(url: selectedURL, isDefault: false))
         }
