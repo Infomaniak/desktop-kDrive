@@ -148,9 +148,10 @@ void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &rem
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
-    if (remotePath.empty() || *remotePath.begin() != "Private") return;
+    if (remotePath.empty() || *remotePath.begin() != v3UserPrivate) return;
 
-    remotePath = std::filesystem::relative(remotePath, "Private");
+    remotePath = std::filesystem::relative(remotePath, v3UserPrivate);
+    if (remotePath == ".") remotePath = SyncPath{};
 }
 
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNodeId) {

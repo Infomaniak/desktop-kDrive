@@ -116,6 +116,10 @@ void TestApiTranslator::testTranslateV3ToV2() {
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
 
+    remotePath = SyncPath{ApiTranslator::v3UserPrivate};
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
+
     RemoteNodeId remoteNodeId = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId);
     ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId);
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId, remoteNodeId);
