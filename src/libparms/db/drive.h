@@ -47,7 +47,7 @@ class PARMS_EXPORT Drive {
 
         Drive();
         Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(),
-              int64_t size = int64_t(), const std::string &color = std::string(), bool notifications = true, bool admin = true);
+              int64_t size = {}, const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
         void setDbId(DriveDbId dbId) { _dbId = dbId; }
         [[nodiscard]] DriveDbId dbId() const { return _dbId; }
@@ -60,7 +60,7 @@ class PARMS_EXPORT Drive {
         void setSize(int64_t newSize) { _size = newSize; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] const std::string &color() const { return _color; }
-        void setColor(const std::string &color) { _color = std::move(color); }
+        void setColor(const std::string &color) { _color = color; }
         [[nodiscard]] bool notifications() const { return _notifications; }
         void setNotifications(bool newNotifications) { _notifications = newNotifications; }
         [[nodiscard]] bool admin() const { return _admin; }
