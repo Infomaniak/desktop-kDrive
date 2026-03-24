@@ -52,6 +52,9 @@
                   IsBackButtonEnabled="{x:Bind AppNavView.Frame.CanGoBack, Mode=OneWay}"
                   IsPaneToggleButtonVisible="False"
                   BackRequested="AppTitleBar_BackRequested">
+            <TitleBar.Resources>
+                <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+            </TitleBar.Resources>
             <TitleBar.IconSource>
                 <ImageIconSource>
                     <ImageIconSource.ImageSource>

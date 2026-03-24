@@ -34,6 +34,7 @@
     <Page.Resources>
         <!-- Converters -->
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter  x:Key="IsNullToBoolOrVisibilityConverter" />
 
         <!-- SyncStatus main template-->
         <DataTemplate x:Key="SyncUpToDateMainTemplate"
@@ -55,13 +56,12 @@
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
@@ -85,13 +85,12 @@
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
 
@@ -121,13 +120,12 @@
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusPausedTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroPaused')}"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroPaused')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
@@ -157,7 +155,7 @@
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineTitle')}"
                                HorizontalAlignment="Center" />
 
@@ -216,6 +214,42 @@
             </Grid>
         </DataTemplate>
 
+        <DataTemplate x:Key="NoSyncSelectionTemplate"
+                      x:DataType="viewmodel:AppModel">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
+                                       PlayCount="1"
+                                       MaxWidth="180" />
+
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncYourKDrive'), Mode=OneWay}"
+                               HorizontalAlignment="Center" />
+
+                    <!-- Description -->
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelConnectToStart'), Mode=OneWay}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               TextWrapping="WrapWholeWords" />
+
+                    <!-- Link -->
+                    <HyperlinkButton HorizontalAlignment="Center"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConnect'), Mode=OneWay}"
+                                     Click="StartOnboardingButton_Click" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
         <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMainTemplateSelector"
                                                       SyncUpToDateTemplate="{StaticResource SyncUpToDateMainTemplate}"
                                                       SyncInProgressTemplate="{StaticResource SyncInProgressMainTemplate}"
@@ -254,7 +288,11 @@
                         Grid.Row="0">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}"
-                               Text="{x:Bind GetGreetingLabel(ViewModel.SelectedSync.Drive.Account.User.Name, ViewModel.SelectedSync.SyncStatus), Mode=OneWay}" />
+                               Text="{x:Bind GetGreetingLabel(ViewModel.SelectedSync.Drive.Account.User.Name, ViewModel.SelectedSync.SyncStatus), Mode=OneWay}"
+                               Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('labelWelcomeToKDrive')}"
+                               Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
 
                 <errors:RemoteDiskFullBar Grid.Row="0"
@@ -277,17 +315,26 @@
                                       Offset="0.6" />
                     </LinearGradientBrush>
                 </Border.Background>
+                <Grid>
+                    <!-- Main content layout -->
+                    <ContentControl HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                    ContentTemplateSelector="{StaticResource SyncStatusMainTemplateSelector}"
+                                    Content="{x:Bind ViewModel.SelectedSync.SyncStatus, Mode=OneWay}" />
 
-                <!-- Main content layout -->
-                <ContentControl HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                ContentTemplateSelector="{StaticResource SyncStatusMainTemplateSelector}"
-                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                    <ContentControl HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                    ContentTemplate="{StaticResource NoSyncSelectionTemplate }"
+                                    Content="{x:Bind ViewModel, Mode=OneWay}" />
+                </Grid>
             </Border>
 
             <!-- Right Side Buttons -->
             <controls:QuickAccess Grid.Row="1"
-                                  Grid.Column="1" />
+                                  Grid.Column="1"
+                                  Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
         </Grid>
         <!-- Make conditionally visible once we fetch the offer type -->
         <controls:KSuiteUpgradeBar Grid.Row="2"
