@@ -1176,7 +1176,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> tmpSyncDbId;
             paramsStream >> autoResolved;
-            const auto syncDbId = static_cast<DriveDbId>(tmpSyncDbId);
+            const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
 
             ExitCode exitCode = clearErrors(syncDbId, autoResolved);
             if (exitCode != ExitCode::Ok) {
@@ -1331,10 +1331,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
 
-            qint64 tmpSyncDbId = 0;
-            ArgsWriter(params).write(tmpSyncDbId);
+            qint64 tmpDriveDbId = 0;
+            ArgsWriter(params).write(tmpDriveDbId);
 
-            const auto driveDbId = static_cast<SyncDbId>(tmpSyncDbId);
+            const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
 
             // Get syncs to delete
             std::vector<SyncDbId> syncDbIdList;
@@ -1357,11 +1357,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::DRIVE_SEARCH: {
-            qint64 tmpSyncDbId = 0;
+            qint64 tmpDriveDbId = 0;
             QString searchString;
-            ArgsWriter(params).write(tmpSyncDbId, searchString);
+            ArgsWriter(params).write(tmpDriveDbId, searchString);
 
-            const auto driveDbId = static_cast<SyncDbId>(tmpSyncDbId);
+            const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
 
             // Find drive ID
             Drive drive;
@@ -1670,7 +1670,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmpDriveDbId;
             paramsStream >> nodeId;
 
-            const auto driveDbId = static_cast<SyncDbId>(tmpDriveDbId);
+            const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
             std::string linkUrl;
             const auto exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
             if (exitCode != ExitCode::Ok) {
