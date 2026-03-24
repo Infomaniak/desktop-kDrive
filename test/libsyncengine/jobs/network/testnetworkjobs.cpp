@@ -1642,7 +1642,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     CPPUNIT_ASSERT_EQUAL(size_t{1}, listFilesInDirectoryJob.v3NodeInfoList().size());
     CPPUNIT_ASSERT(listFilesInDirectoryJob.v3NodeInfoList().at(0).path().isEmpty());
-    const auto subDirName = QString::fromStdString(remoteSubDir.name());
+    const auto subDirName = SyncName2QStr(remoteSubDir.name());
     CPPUNIT_ASSERT(subDirName == listFilesInDirectoryJob.v3NodeInfoList().at(0).name());
 
     listFilesInDirectoryJob.setListingConf({.dirOnly = false});
