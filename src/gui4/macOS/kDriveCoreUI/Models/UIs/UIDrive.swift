@@ -100,7 +100,7 @@ public struct UIDrive: UIDriveRepresentation {
     public typealias ID = Int
 
     public var id: ID {
-        return dbId
+        return driveId
     }
 
     public let dbId: Int
