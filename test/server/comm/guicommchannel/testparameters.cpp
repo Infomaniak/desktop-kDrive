@@ -108,7 +108,7 @@ void TestGuiCommChannel::testParametersInfoJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_INFO));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -150,7 +150,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

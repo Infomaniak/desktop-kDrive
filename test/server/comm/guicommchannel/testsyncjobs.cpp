@@ -74,7 +74,7 @@ void TestGuiCommChannel::testSyncInfoListJob() {
             R"( { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "", "supportVfs": true, "targetNodeId": "", "targetPath": "", "virtualFileMode": 1 },)"
             R"( { "dbId": 2, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMg==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": false, "targetNodeId": "OTk5", "targetPath": "Zm9sZGVyMQ==", "virtualFileMode": 0 } ] },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+            std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
@@ -119,7 +119,7 @@ void TestGuiCommChannel::testStartSyncJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -158,7 +158,7 @@ void TestGuiCommChannel::testStopSyncJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -197,7 +197,7 @@ void TestGuiCommChannel::testSyncStatusJob() {
                          R"(,)"
                          R"( "params": { "syncStatus": 3 },)" // SyncStatus::Idle
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncStatusJob = std::dynamic_pointer_cast<SyncStatusJob>(job);
@@ -266,7 +266,7 @@ void TestGuiCommChannel::testSyncAddJob() {
             R"(,)"
             R"( "params": { "syncInfo": { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": true, "targetNodeId": "OTk5", "targetPath": "dGVzdA==", "virtualFileMode": 1 } },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+            std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
@@ -332,7 +332,7 @@ void TestGuiCommChannel::testSyncAdd2Job() {
             R"(,)"
             R"( "params": { "syncInfo": { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": true, "targetNodeId": "OTk5", "targetPath": "dGVzdA==", "virtualFileMode": 1 } },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+            std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
@@ -374,7 +374,7 @@ void TestGuiCommChannel::testSyncStartAfterLoginJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -413,7 +413,7 @@ void TestGuiCommChannel::testSyncDeleteJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -459,7 +459,7 @@ void TestGuiCommChannel::testSyncGetPublicLinkUrlJob() {
             R"(,)"
             R"( "params": { "linkUrl": "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL3NoYXJlLzAxMjM0NS9hYmNkZWY=" },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+            std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncGetPublicLinkUrlJob = std::dynamic_pointer_cast<SyncGetPublicLinkUrlJob>(job);
@@ -507,7 +507,7 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
             R"(,)"
             R"( "params": { "linkUrl": "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ==" },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+            std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
@@ -573,7 +573,7 @@ void TestGuiCommChannel::testSyncSetSupportsVirtualFilesJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncSetSupportsVirtualFilesJob = std::dynamic_pointer_cast<SyncSetSupportsVirtualFilesJob>(job);
@@ -614,7 +614,7 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::SYNC_OFFLINE_FILES_SIZE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
