@@ -1904,8 +1904,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmpDriveId;
             paramsStream >> nodeId;
 
-            UserDbId userDbId = static_cast<UserDbId>(tmpUserDbId);
-            DriveId driveId = static_cast<UserDbId>(tmpUserDbId);
+            const auto userDbId = static_cast<UserDbId>(tmpUserDbId);
+            const auto driveId = static_cast<UserDbId>(tmpDriveId);
 
             auto getFolderSizeWithCallbackFunc = std::function<void()>([userDbId, driveId, nodeId, this]() {
                 (void) ServerRequests::getFolderSizeWithCallback(userDbId, driveId, nodeId.toStdString(),
