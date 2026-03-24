@@ -88,10 +88,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
     private:
         // User cache: <userDbId, <Login, userId>>
-        static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, int>> _userToApiKeyMap;
+        static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> _userToApiKeyMap;
 
         // Drive cache: <driveDbId, <userDbId, driveId>>
-        static std::unordered_map<DriveDbId, std::pair<int, int>> _driveToApiKeyMap;
+        static std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> _driveToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
 
         ApiType _apiType{ApiType::Drive};

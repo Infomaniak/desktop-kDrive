@@ -37,8 +37,8 @@ constexpr char API_PREFIX_DESKTOP[] = "/desktop";
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
-std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
-std::unordered_map<DriveDbId, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
+std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> AbstractTokenNetworkJob::_userToApiKeyMap;
+std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> AbstractTokenNetworkJob::_driveToApiKeyMap;
 std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
                                                  const DriveDbId driveDbId, const DriveId driveId,
