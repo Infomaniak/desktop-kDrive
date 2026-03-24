@@ -81,7 +81,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ERROR_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);

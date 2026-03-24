@@ -640,6 +640,15 @@ Por favor, inténtelo de nuevo en unos minutos.</value>
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
     <value>Mantenimiento en curso</value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Los permisos de acceso del archivo han sido modificados, lo que impide la sincronización.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Consulte las preguntas frecuentes para restaurar el acceso</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Última ubicación conocida del archivo:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Ya existe un archivo o carpeta con este nombre.</value> 
   </data> 
@@ -652,6 +661,12 @@ Se ha conservado la versión original y su modificación se ha guardado en un ar
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Espacio al final del nombre %@</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>El nombre de este archivo termina con un espacio, lo que impide su sincronización. Cambie el nombre del archivo desde kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Espacio al final del nombre del archivo</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Una regla de exclusión impide que este %@ se sincronice.</value> 
@@ -677,7 +692,7 @@ Sus cambios se sincronizarán más tarde.</value>
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>Este archivo supera el tamaño máximo autorizado (50 GB).
-Ponte en contacto con el servicio de asistencia para desbloquear el límite.</value> 
+Ponte en contacto con tu administrador para aumentar el límite de tamaño del archivo.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>Este archivo supera el tamaño máximo autorizado (50 GB).
@@ -707,6 +722,12 @@ Solicite acceso al propietario o al administrador.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Sin acceso</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>El nombre solo contiene espacios</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Carácter no admitido</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Este archivo es un enlace duro que no se puede sincronizar.</value> 
@@ -749,6 +770,9 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
     <value>Conexión temporalmente no disponible</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Nombre demasiado largo</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Ya no hay espacio suficiente en tu ordenador para sincronizar este archivo.</value> 
   </data> 
@@ -766,6 +790,9 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Ruta de acceso a %@ demasiado larga</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Ruta demasiado larga</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Tu kDrive está lleno. Libera espacio o actualiza tu suscripción para sincronizar este %@.</value> 
@@ -805,6 +832,9 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
     <value>No se puede iniciar Lite Sync</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Nombre reservado</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>La sincronización de este elemento no se ha realizado correctamente. Se reiniciará automáticamente más tarde.</value> 

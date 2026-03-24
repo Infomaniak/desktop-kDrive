@@ -196,7 +196,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
                          R"( "params": {)"
                          R"( "userDbId": 1 },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
@@ -241,7 +241,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
                          R"( "params": {)"
                          R"( "userDbIdList": [ 1, 2, 3 ] },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
@@ -306,7 +306,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::USER_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -362,7 +362,7 @@ void TestGuiCommChannel::testUserDeleteJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -425,7 +425,7 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::USER_AVAILABLEDRIVES));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -487,7 +487,7 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ACCOUNT_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -614,7 +614,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -662,7 +662,7 @@ void TestGuiCommChannel::testDriveUpdateJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_UPDATE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -707,7 +707,7 @@ void TestGuiCommChannel::testDriveDeleteJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -775,7 +775,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

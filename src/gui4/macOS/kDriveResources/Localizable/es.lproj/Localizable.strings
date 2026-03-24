@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 12 Mar 2026 09:15:02 +0100
+ * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
  */
 
 
@@ -73,8 +73,15 @@
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Cancelar";
 
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Cambiar la carpeta";
+
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Cerrar";
+
+/* loco:698c5e4ec95ac47af70ec115 */
+"buttonConfigure" = "Configurar";
+
 
 /* loco:698b1376f55227e2c30a2fe4 */
 "buttonConnectAccount" = "Conectar una cuenta";
@@ -87,6 +94,7 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Crear una cuenta";
+
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Desconectar esta cuenta";
@@ -149,11 +157,18 @@
 /* loco:697b6560c18f7ca128034f16 */
 "buttonRetry" = "Reintentar";
 
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Volver a la carpeta por defecto";
+
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Buscar en";
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Ver actividades";
+
+
+/* loco:698c5cb5f86b52c6fc001fc4 */
+"buttonSelectFolders" = "Seleccionar carpetas";
 
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Abrir la configuración";
@@ -179,6 +194,9 @@
 "buttonValidate" = "Confirme";
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Despierta";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"changeFolder" = "Cambiar la carpeta";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copiando enlace…";
@@ -358,6 +376,9 @@
 /* loco:698a070557f1356c46048003 */
 "labelStatus" = "Estado";
 
+/* loco:69a07364c232b528bf01b672 */
+"labelSyncFolder" = "Carpetas de sincronización";
+
 /* loco:698c49120217e0fe6308b0c2 */
 "labelSyncLocation" = "Ubicación";
 
@@ -394,6 +415,33 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Nunca";
+/* loco:698c5ab9945b7c6d260d4c22 */
+"onBoardingAdvancedSettingsDriveTitle" = "Configurar la sincronización para este kDrive";
+
+/* loco:698c5b3fa3cb0fe14205ddb5 */
+"onboardingAdvancedSettingsDriveCustomizeLocation" = "Personaliza la ubicación de tu carpeta kDrive en tu ordenador:";
+
+/* loco:698c5bda2351f47094030442 */
+"onboardingAdvancedSettingsDriveCustomizeLocationTip" = "La carpeta seleccionada debe estar vacía para que la sincronización funcione correctamente.";
+
+/* loco:698c5c378bdea123d60afff7 */
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Elija las carpetas que desea sincronizar en este ordenador:";
+
+/* loco:698c5d476258b6cb2e047e2a */
+"onboardingAdvancedSettingsDriveExclusionTip" = "Las carpetas no seleccionadas seguirán siendo accesibles en línea.";
+
+/* loco:698c62f8bde3b880ce05ea53 */
+"onboardingAdvancedSettingsDriveSelectionDescription" = "Para cada kDrive, puedes elegir dónde se sincroniza en tu ordenador y qué carpetas sincronizar.";
+
+/* loco:698c5f7af0e0abf8b4088952 */
+"onboardingAdvancedSettingsDriveSelectionExclusion" = "Contenido sincronizado: %@";
+
+/* loco:698c60dcbfa94065d40ff072 */
+"onboardingAdvancedSettingsDriveSelectionLocation" = "Localización: %@";
+
+/* loco:698c62a71f3f2e07fe07ca17 */
+"onboardingAdvancedSettingsDriveSelectionTitle" = "Configure sus kDrive";
+
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Autorizar kDrive en los ajustes de macOS:";
 
@@ -421,6 +469,12 @@
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Bienvenido de nuevo";
 
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Todas las carpetas de kDrive";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Selección personalizada";
+
 /* loco:68e6739c8af12c42e80027c5 */
 "onboardingLoginDescription" = "La nube privada, rápida y segura, alojada en Suiza.\n\nConéctate y mantén tus documentos sincronizados en todos tus dispositivos.";
 
@@ -435,6 +489,12 @@
 
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Conectarse desde el navegador…";
+
+/* loco:698c68fe244b143eb00f5072 */
+"onboardingLoginProcessingDescription" = "Recuperar su información..";
+
+/* loco:698c68dd53b356ce140d32a2 */
+"onboardingLoginProcessingTitle" = "Un momento…";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "¡Bienvenido a kDrive!";
@@ -507,6 +567,12 @@
 /* loco:698a07efc9e9b6dcce04dc86 */
 "syncErrorTooltip" = "Error de sincronización";
 
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Carpeta personalizada";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Ubicación por defecto";
+
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronización";
 
@@ -569,6 +635,12 @@
 
 /* loco:6981e8f0f994e5f7bc040692 */
 "unavailableContentNoActivityTitle" = "Sin actividad reciente";
+
+/* loco:698c7819acb0e0a2a0061c62 */
+"unexpectedErrorTeachingTipContent" = "Vuelva a intentarlo dentro de unos instantes.\nSi el problema persiste, póngase en contacto con el servicio de asistencia.";
+
+/* loco:698c7802bc26955c81077d42 */
+"unexpectedErrorTeachingTipTitle" = "Se ha producido un error inesperado";
 
 /* loco:698b112a6dcfa5bb030c2f32 */
 "untilTomorrow" = "Hasta mañana";

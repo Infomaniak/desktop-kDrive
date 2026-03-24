@@ -394,6 +394,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public NodeType? NodeType { get; set; }
         public string? Path { get; set; }
         public string? DestinationPath { get; set; }
+        public NodeId? LocalNodeId { get; set; }
+        public NodeId? RemoteNodeId { get; set; }
         public ConflictType? ConflictType { get; set; }
         public InconsistencyType? InconsistencyType { get; set; }
         public CancelType? CancelType { get; set; }

@@ -640,6 +640,15 @@ Bitte versuchen Sie es in einigen Minuten erneut.</value>
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
     <value>Laufende Wartung</value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Die Zugriffsrechte der Datei wurden geändert und verhindern die Synchronisierung.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Weitere Informationen in den häufig gestellten Fragen</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Letzter Dateispeicherort:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Eine Datei oder ein Ordner mit diesem Namen existiert bereits.</value> 
   </data> 
@@ -652,6 +661,12 @@ Die Originalversion wurde beibehalten und Ihre Änderung wurde in einer separate
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Leerzeichen am Ende des %@-Namens</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Der Name dieser Datei endet mit einem Leerzeichen, sodass sie nicht synchronisiert werden kann. Benennen Sie die Datei von kDrive online um.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Leerzeichen am Ende des Dateinamens</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Eine Ausschlussregel verhindert die Synchronisierung dieses %@.</value> 
@@ -708,6 +723,12 @@ Bitten Sie den Eigentümer oder den Administrator um Zugriff.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Zugang verboten</value> 
   </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Name enthält nur Leerzeichen</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Diese Datei ist ein Systemlink (hard link), der nicht synchronisiert werden kann.</value> 
   </data> 
@@ -749,6 +770,9 @@ Die Synchronisierung wird automatisch wieder aufgenommen, sobald die Verbindung 
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
     <value>Verbindung vorübergehend nicht verfügbar</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name zu lang</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>Auf Ihrem Computer ist nicht mehr genug Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
   </data> 
@@ -766,6 +790,9 @@ Die Synchronisierung wird automatisch wieder aufgenommen, sobald die Verbindung 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Pfad zu %@ zu lang</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Pfad zu lang</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Ihr kDrive ist voll. Machen Sie Platz frei oder aktualisieren Sie Ihr Abonnement, um dieses %@ zu synchronisieren.</value> 
@@ -805,6 +832,9 @@ Die Synchronisierung wird automatisch wieder aufgenommen, sobald die Verbindung 
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
     <value>Lite Sync kann nicht gestartet werden</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Reservierter Name</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>Die Synchronisierung dieses Elements war nicht erfolgreich. Sie wird später automatisch erneut gestartet.</value> 

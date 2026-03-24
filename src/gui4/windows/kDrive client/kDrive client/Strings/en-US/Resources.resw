@@ -640,6 +640,15 @@ Please try again in a few minutes.</value>
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
     <value>Maintenance in progress</value> 
   </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>File access permissions have been modified, preventing synchronization.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Check FAQ to restore access</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Last known file location:</value> 
+  </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>A file or folder with this name already exists.</value> 
   </data> 
@@ -652,6 +661,12 @@ The original version has been preserved and your modification has been saved in 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Space at the end of the %@ name</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>The file's name ends with a space, preventing it from being synchronized. Rename the file from kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceErrorTitle" xml:space="preserve"> 
+    <value>Space at the end of the file name</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>An exclusion rule prevents this %@ from being synchronized.</value> 
@@ -677,7 +692,7 @@ Your changes will be synchronized later.</value>
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>This file exceeds the maximum authorized size (50 GB).
-Contact support to unlock the limit.</value> 
+Contact your administrator to increase the file size limit.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
     <value>This file exceeds the maximum authorized size (50 GB).
@@ -707,6 +722,12 @@ Request access from the owner or administrator.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Name contains only spaces</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Character not supported</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>This file is a hard link that cannot be synchronized.</value> 
@@ -749,6 +770,9 @@ Synchronization will resume automatically as soon as the connection is re-establ
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
     <value>Connection temporarily unavailable</value> 
   </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name too long</value> 
+  </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
     <value>There isn’t enough space on your computer to synchronize this file.</value> 
   </data> 
@@ -766,6 +790,9 @@ Synchronization will resume automatically as soon as the connection is re-establ
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Access path to %@ too long</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Path too long</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Your kDrive is full. Free up space or upgrade your subscription to synchronize this %@.</value> 
@@ -805,6 +832,9 @@ Synchronization will resume automatically as soon as the connection is re-establ
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
     <value>Lite Sync cannot be started</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Reserved name</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>Synchronization of this element was unsuccessful. It will be automatically restarted later.</value> 

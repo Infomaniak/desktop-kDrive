@@ -20,6 +20,12 @@
 
 namespace KDC {
 
+enum class GuiJobType {
+    Unknown,
+    Query,
+    Signal
+};
+
 enum class UpdateState {
     UpToDate,
     Checking,
