@@ -124,7 +124,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
         const auto moveNodeParent = moveNode->parentNode();
         LOG_IF_FAIL(moveNodeParent)
         if (!moveNodeParent->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNodeParent->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << Utility::formatSyncName(moveNodeParent->name()));
             continue;
         }
 
@@ -157,7 +157,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
         const auto createParentNode = createNode->parentNode();
         LOG_IF_FAIL(createParentNode)
         if (!createParentNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->normalizedName()));
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << Utility::formatSyncName(createParentNode->normalizedName()));
             continue;
         }
 
@@ -477,9 +477,9 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
     renameResolutionOp->setNewName(correspondingNode->name() + Str("-") +
                                    Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
     // and we only execute Opr follow by restart sync
-    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item " << SyncName2WStr(correspondingNode->name())
-                                                                               << L" to "
-                                                                               << SyncName2WStr(renameResolutionOp->newName()));
+    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item "
+                                       << Utility::formatSyncName(correspondingNode->name()) << L" to "
+                                       << Utility::formatSyncName(renameResolutionOp->newName()));
     // After breaking a cycle, the update tree is not up to date anymore and needs to be rebuilt.
     _syncPal->setUpdateTreesNeedToBeCleared(true);
     return true;

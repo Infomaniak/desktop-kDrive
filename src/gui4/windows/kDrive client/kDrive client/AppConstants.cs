@@ -53,6 +53,7 @@ namespace Infomaniak.kDrive
         Uri ChangeOfferUri(DriveId? driveId);
         public Uri StartFreeUri { get; }
         public Uri FAQUri { get; }
+        public NodeId RootNodeId { get; }
     }
     internal interface IkSuiteConstants
     {
@@ -114,6 +115,7 @@ namespace Infomaniak.kDrive
         public Uri ChangeOfferUri(DriveId? driveId) => new($"https://shop.infomaniak.com/order/drive/{driveId}");
         public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
         public Uri FAQUri { get; } = new Uri("https://www.infomaniak.com/fr/support/faq/admin2"); // TODO: Replace with static link.
+        public NodeId RootNodeId { get; } = "1";
 
     }
 

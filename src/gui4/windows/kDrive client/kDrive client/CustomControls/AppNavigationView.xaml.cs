@@ -99,7 +99,6 @@ namespace Infomaniak.kDrive.CustomControls
         private void OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             GoToNavigationViewItemPage(args.InvokedItemContainer as NavigationViewItem);
-
         }
 
         private void GoToNavigationViewItemPage(NavigationViewItemBase? item)
@@ -144,14 +143,6 @@ namespace Infomaniak.kDrive.CustomControls
             if (newSelectedItem is null)
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;
-        }
-
-        private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
-        {
-            if (ContentFrame.CanGoBack)
-            {
-                ContentFrame.GoBack();
-            }
         }
 
         private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)

@@ -43,7 +43,7 @@
         <!-- Remote folder exclusion -->
         <controls:SyncExclusionSelector x:Name="ExclusionSelector"
                                         Grid.Row="3"
-                                        Sync="{x:Bind DriveSetupContentDialogVM.CurrentSync}"
+                                        Sync="{x:Bind Sync}"
                                         CanShowSaveMenu="False" />
     </Grid>
 </Page>

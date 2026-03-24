@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.CustomControls
         // ContentDialogButtonClickEventHandler
         public event EventHandler? CurrentStepConfirmed;
         public event EventHandler? CurrentStepCancelled;
-        public event EventHandler<DriveSetupResult> SetupFinished;
+        public event EventHandler<DriveSetupResult> SetupFinished = delegate { };
 
         public bool IsMultipleDrivesSetup()
         {

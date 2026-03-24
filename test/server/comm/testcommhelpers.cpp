@@ -19,6 +19,7 @@
 #include "testcommhelpers.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/cstypes.h"
 
 #include <Poco/JSON/Parser.h>
 
@@ -81,7 +82,7 @@ SimpleAnswers createSimpleAnswers(const RequestNum requestEnum) {
 
     simpleAnswers.answerWithNumAndType = simpleAnswers.answer;
     (void) simpleAnswers.answerWithNumAndType.set("num", toInt(requestEnum));
-    (void) simpleAnswers.answerWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) simpleAnswers.answerWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     return simpleAnswers;
 }

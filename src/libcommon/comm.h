@@ -38,6 +38,10 @@
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
+/**
+ * This enum is used in the old communication layer.
+ * Its equivalent in the new communication layer is defined in: src/libcommon/utility/cstypes.h - GuiJobType
+ */
 enum class MsgType {
     REQUEST = 0,
     REPLY,

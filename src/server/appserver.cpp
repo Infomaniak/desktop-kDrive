@@ -1863,8 +1863,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveId;
             paramsStream >> nodeId;
 
-            std::thread getFolderSize(ServerRequests::getFolderSizeWithCallback, userDbId, driveId, nodeId.toStdString(),
-                                      std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            auto getFolderSizeWithCallbackFunc = std::function<void()>([userDbId, driveId, nodeId, this]() {
+                (void) ServerRequests::getFolderSizeWithCallback(userDbId, driveId, nodeId.toStdString(),
+                                                                 std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
+            });
+            StdLoggingThread getFolderSize(getFolderSizeWithCallbackFunc);
             getFolderSize.detach();
 
             resultStream << ExitCode::Ok;
@@ -4859,7 +4862,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(syncPalMapMutex);
-    for (const auto [_, syncPal]: syncPalMap) {
+    for (const auto &[_, syncPal]: syncPalMap) {
         if (!syncPal) continue;
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {

@@ -62,6 +62,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Strategy = "strategy";
 
         static public string NodeId = "nodeId";
+        static public string ParentNodeId = "parentNodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
         static public string LocalFolderPath = "localFolderPath";
@@ -84,6 +85,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Limit = "limit";
         static public string IsValid = "isValid";
         static public string Path = "path";
+        static public string SyncConfiguration = "syncConfiguration";
         static public string BasePath = "basePath";
         static public string GoodPath = "goodPath";
         static public string BestMode = "bestMode";
@@ -105,5 +107,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string RelativePath = "relativePath";
         static public string ReplicaSide = "replicaSide";
         static public string NodeConflictInfo = "nodeConflictInfo";
+
+        static public string Title = "title";
+        static public string Message = "message";
     }
 }

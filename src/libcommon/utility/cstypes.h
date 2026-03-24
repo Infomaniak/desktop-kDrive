@@ -20,6 +20,12 @@
 
 namespace KDC {
 
+enum class GuiJobType {
+    Unknown,
+    Query,
+    Signal
+};
+
 enum class UpdateState {
     UpToDate,
     Checking,
@@ -317,6 +323,12 @@ enum class ConflictResolutionStrategy {
     KeepMostRecent,
     KeepLocal,
     KeepRemote,
+    EnumEnd
+};
+
+enum class SyncConfiguration {
+    Classic,
+    Advanced,
     EnumEnd
 };
 

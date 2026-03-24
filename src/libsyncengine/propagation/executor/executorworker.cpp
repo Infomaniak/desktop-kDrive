@@ -262,8 +262,8 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
-    if (syncOp->hasConflict() && status == SyncFileStatus::Success && (syncOp->conflict().type() == ConflictType::CreateCreate) ||
-        syncOp->conflict().type() == ConflictType::EditEdit) {
+    if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
+        (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
         status = SyncFileStatus::Conflict;
     }
 
@@ -349,8 +349,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                              << L" " << exitInfo);
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: "
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -574,7 +574,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 _syncPal->setRestart(true);
 
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                        << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                        << exitInfo);
                 }
@@ -779,8 +779,8 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
     }
 
     if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
-                                                                        << exitInfo);
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
+                                                                        << L" " << exitInfo);
         return exitInfo;
     }
     return ExitCode::Ok;
@@ -1901,16 +1901,9 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!correspondingNode->setParentNode(parentNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << Utility::formatSyncName(parentNode->name()) << L" parent node name="
-                                               << Utility::formatSyncName(correspondingNode->name()));
-            return ExitCode::DataError;
-        }
-
         if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node name="
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
                                                << Utility::formatSyncName(correspondingNode->parentNode()->name()));
             return ExitCode::DataError;
         }

@@ -20,6 +20,7 @@
 
 #include "abstractcommserver.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <Poco/Net/Socket.h>
 #include <Poco/Net/ServerSocket.h>
@@ -44,7 +45,7 @@ class SocketCommChannel : public AbstractCommChannel {
     private:
         bool _isClosing = false;
         bool _pendingRead = false;
-        std::thread _callbackThread;
+        std::unique_ptr<StdLoggingThread> _callbackThread{nullptr};
         Poco::Net::StreamSocket _socket;
 
         void callbackHandler();
@@ -69,7 +70,7 @@ class SocketCommServer : public AbstractCommServer {
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
         bool _isListening = false;
         bool _stopAsked = false;
-        std::unique_ptr<std::thread> _serverSocketThread;
+        std::unique_ptr<StdLoggingThread> _serverSocketThread{nullptr};
         void execute();
 };
 

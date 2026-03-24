@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 12 Mar 2026 09:43:02 +0100 
+  Exported at: Thu, 19 Mar 2026 16:46:04 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,6 +72,9 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>German</value>
   </metadata> 
+  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Vergewissern Sie sich, dass Ihre Internetverbindung aktiv ist, dass dieser Name nicht bereits verwendet wird und dass er keine ungültigen Zeichen enthält.</value> 
+  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
@@ -105,6 +108,24 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Nur meine Aktivität</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Einen Ordner mit kDrive synchronisieren</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Wählen Sie den Ordner auf Ihrem Computer, der mit kDrive synchronisiert werden soll :</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Synchronisierter Ordner</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Passen Sie den Speicherort des Ordners Ihres Computers auf kDrive an :</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Wählen Sie den Ort des Ordners auf kDrive aus</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>KDrive-Steckplatz</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
     <value>Wählen Sie einen Ordner auf Ihrem Computer, den Sie mit kDrive synchronisieren möchten.
@@ -212,6 +233,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Aktivieren Sie</value> 
   </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>In den Windows-Einstellungen aktivieren</value> 
+  </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
     <value>Das Problem verstehen</value> 
   </data> 
@@ -310,8 +334,14 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonSelect" xml:space="preserve"> 
     <value>wählen Sie</value> 
   </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Einen Ordner auswählen</value> 
+  </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
     <value>Ordner auswählen</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Einen Ort auswählen</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
     <value>ausgewählt</value> 
@@ -783,6 +813,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelAgo" xml:space="preserve"> 
     <value>vor %@</value> 
   </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Alle Ordner</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Autor</value> 
   </data> 
@@ -886,6 +919,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
     <value>Sie verwenden kDrive auf einem neuen Computer, nachdem Sie von einem Backup wiederhergestellt haben.</value> 
   </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Neuer Ordner</value> 
+  </data> 
   <data name="labelNewSync" xml:space="preserve"> 
     <value>neue Synchronisation</value> 
     <comment>use in pair with:  labelCreateNewSync</comment> 
@@ -949,6 +985,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Standort</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synchronisierte Ordner</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
     <value>Synchronisierung</value> 
@@ -1154,11 +1193,11 @@ das auf Ihre Bedürfnisse zugeschnitten ist.</value>
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
     <value>Schön, dass Sie wieder da sind!</value> 
   </data> 
-  <data name="onboardingExclusionSummaryAtLeastOne" xml:space="preserve"> 
-    <value>Sie haben einige Ordner ausgeschlossen</value> 
-  </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
     <value>Alle kDrive-Ordner</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Benutzerdefinierte Auswahl</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>Die schnelle und sichere private Cloud, die in der Schweiz gehostet wird.
@@ -1440,6 +1479,9 @@ Wenn das Problem weiterhin besteht, können Sie die Synchronisierung in eine Sta
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>KDrive öffnen</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value> Dieser Ordner kann nicht erstellt werden</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
     <value>Unbefugter Zugang</value> 

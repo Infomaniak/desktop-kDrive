@@ -233,6 +233,7 @@ void TestTypes::testToString() {
     testToStringIntValues<Platform>();
     testToStringIntValues<ConflictResolutionStrategy>();
     testToStringIntValues<sentry::ConfidentialityLevel>();
+    testToStringIntValues<SyncConfiguration>();
 }
 
 } // namespace KDC

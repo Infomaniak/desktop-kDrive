@@ -15,21 +15,21 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         private readonly DriveSetupContentDialogVM _driveSetupContentDialogVM;
-        public DriveSetupResult Result { get; private set; }
+        public DriveSetupResult Result { get; private set; } = DriveSetupResult.Cancelled;
 
         public DriveSetupContentDialog(XamlRoot xamlRoot, IList<NewSync> newSyncs)
         {
             _driveSetupContentDialogVM = new DriveSetupContentDialogVM(newSyncs);
             base.DataContext = _driveSetupContentDialogVM;
             base.XamlRoot = xamlRoot;
-            base.SecondaryButtonText = Localizer.Instance.GetString("buttonConfirm");
-            base.PrimaryButtonText = Localizer.Instance.GetString("buttonCancel");
-            base.DefaultButton = ContentDialogButton.Secondary;
+            base.PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm");
+            base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
+            base.DefaultButton = ContentDialogButton.Primary;
             var frame = new Frame();
             base.Content = frame;
             frame.Navigate(typeof(DriveSelectionPage), _driveSetupContentDialogVM);
             base.PrimaryButtonClick += DriveSetupContentDialog_PrimaryButtonClick;
-            base.SecondaryButtonClick += DriveSetupContentDialog_SecondaryButtonClick;
+            base.CloseButtonClick += DriveSetupContentDialog_SecondaryButtonClick;
             _driveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
         }
 

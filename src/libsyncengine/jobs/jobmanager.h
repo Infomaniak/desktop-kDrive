@@ -81,7 +81,7 @@ class JobManager {
         Poco::ThreadPool _threadPool;
 
         log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _mainThread;
+        std::unique_ptr<StdLoggingThread> _mainThread{nullptr};
 
         friend class TestSyncJobManagerSingleton;
 };

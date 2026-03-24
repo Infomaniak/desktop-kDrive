@@ -34,15 +34,13 @@
             </ToolTipService.ToolTip>
             <controls:SvgIcon Grid.Column="0"
                               UriString="{x:Bind ItemPath, Converter={StaticResource FilePathToIconConverter}}"
-                              Width="12"
-                              Height="12"
+                              Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                               Visibility="{x:Bind IsFileIconVisible}" />
             
             <controls:SvgIcon Grid.Column="0"
                               UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                              Width="12"
-                              Height="12"
+                              Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                               Visibility="{x:Bind IsDirectoryIconVisible}" />
 
             <TextBlock Grid.Column="1"
