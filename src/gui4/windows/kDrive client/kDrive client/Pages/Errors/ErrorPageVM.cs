@@ -20,6 +20,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         private Sync? _sync;
         private const int _maxConflictsForIndividualDisplay = 5;
         private bool _hasManyConflicts;
+        private bool _hasError;
         private int _conflictsCount;
         private readonly List<IDisposable?> _errorsSubscription = new();
 
@@ -47,6 +48,12 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             get => _hasManyConflicts;
             private set => SetPropertyInUIThread(ref _hasManyConflicts, value);
+        }
+
+        public bool HasError
+        {
+            get => _hasError;
+            private set => SetPropertyInUIThread(ref _hasError, value);
         }
 
         public int ConflictsCount
@@ -105,7 +112,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
             ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
             HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
-
+            HasError = Sync.SyncErrors.Count > 0;
             // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
@@ -115,6 +122,15 @@ namespace Infomaniak.kDrive.Pages.Errors
                 {
                     ConflictsCount = count;
                     HasManyConflicts = count > _maxConflictsForIndividualDisplay;
+                }));
+
+            // Re-evaluate HasError each time SyncErrors changes.
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .QueryWhenChanged(q => q.Any())
+                .Subscribe(any =>
+                {
+                    HasError = any;
                 }));
 
             // Subscribe to SyncErrors changes for each error category, applying the appropriate filter for each list.

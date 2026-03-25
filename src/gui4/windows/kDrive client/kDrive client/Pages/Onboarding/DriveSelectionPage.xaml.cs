@@ -122,6 +122,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
         }
+
+        private void ChangeUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            _onBoardingViewModel?.Reset();
+            Frame.Navigate(typeof(Onboarding.WelcomePage), _onBoardingViewModel);
+
+        }
     }
 
     public partial class DriveTemplateSelector : DataTemplateSelector

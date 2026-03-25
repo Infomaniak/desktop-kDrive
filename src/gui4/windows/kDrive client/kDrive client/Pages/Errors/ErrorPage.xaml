@@ -54,9 +54,40 @@
                        VerticalAlignment="Bottom" />
         </Grid>
 
+        <!-- No Error view -->
+        <Grid Grid.Row="1"
+              Visibility="{x:Bind _errorPageVM.HasError, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <controls:SvgIcon Grid.Row="0"
+                              Height="120"
+                              Width="183"
+                              HorizontalAlignment="Center"
+                              
+                              UriString="{ThemeResource Infomaniak.Custom.Images.servin}" />
+            <StackPanel Grid.Row="1"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <TextBlock HorizontalAlignment="Center"
+                           Style="{StaticResource BodyStrongTextBlockStyle}"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelNoErrorsToFix')}" />
+
+                <HyperlinkButton HorizontalAlignment="Center"
+                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
+                                 Click="NoErrorHyperlinkButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Error view -->
         <ScrollView Grid.Row="1"
                     Padding="0"
-                    Margin="0">
+                    Margin="0"
+                    Visibility="{x:Bind _errorPageVM.HasError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
                     <!-- SyncDir -->

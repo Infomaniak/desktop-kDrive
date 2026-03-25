@@ -189,6 +189,7 @@
 
                     <StackPanel Grid.Column="1"
                                 Orientation="Horizontal"
+                                HorizontalAlignment="Left"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                 Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' ,Mode=OneWay}">
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
@@ -203,6 +204,7 @@
 
                     <StackPanel Grid.Column="1"
                                 Orientation="Horizontal"
+                                HorizontalAlignment="Left"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                 Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
@@ -220,11 +222,12 @@
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="1"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveExclusionTip')}"
+                               MaxWidth="450"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Style="{StaticResource BodyTextBlockStyle}"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"/>
                 </Grid>
             </Grid>
         </Border>

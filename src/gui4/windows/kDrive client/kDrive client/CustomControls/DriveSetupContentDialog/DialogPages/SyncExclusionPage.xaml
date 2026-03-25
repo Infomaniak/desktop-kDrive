@@ -21,9 +21,6 @@
             <!-- Title -->
             <RowDefinition Height="Auto" />
 
-            <!-- Message -->
-            <RowDefinition Height="Auto" />
-
             <!-- Remote folder exclusion -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -42,7 +39,7 @@
 
         <!-- Remote folder exclusion -->
         <controls:SyncExclusionSelector x:Name="ExclusionSelector"
-                                        Grid.Row="3"
+                                        Grid.Row="2"
                                         Sync="{x:Bind Sync}"
                                         CanShowSaveMenu="False" />
     </Grid>

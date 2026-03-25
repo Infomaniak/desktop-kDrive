@@ -221,6 +221,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonConfirm" xml:space="preserve"> 
     <value>Confirmer</value> 
   </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Se connecter</value> 
+  </data> 
   <data name="buttonConnectAccount" xml:space="preserve"> 
     <value>Connecter un compte</value> 
   </data> 
@@ -949,6 +952,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
     <value>Conserver uniquement les versions en ligne</value> 
   </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Connectez-vous pour commencer.</value> 
+  </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Créez une %@.</value> 
     <comment>use in pair with: labelNewSync</comment> 
@@ -1029,6 +1035,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   <data name="labelNoConflictsFound" xml:space="preserve"> 
     <value>Aucun conflits ne correspond à votre recherche</value> 
   </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Aucune erreur à corriger.</value> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
   </data> 
@@ -1089,11 +1098,20 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Synchronisé à partir de votre ordinateur</value> 
   </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Ce kDrive contient uniquement des fichiers. Tous les fichiers seront synchronisés sur cet appareil.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Aucun dossier à sélectionner</value> 
+  </data> 
   <data name="labelSyncFolder" xml:space="preserve"> 
     <value>Dossiers de synchronisation</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Emplacement</value> 
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Synchronisez vos kDrive sur cet appareil</value> 
   </data> 
   <data name="labelSyncedFolders" xml:space="preserve"> 
     <value>Dossiers synchronisés</value> 
@@ -1103,6 +1121,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Bienvenue sur kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
     <value>%@ sur %@</value> 
@@ -1218,7 +1239,7 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
     <value>Personnalisez l’emplacement de votre dossier kDrive sur votre ordinateur :</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
-    <value>Le dossier sélectionné doit être vide pour que la synchronisation fonctionne correctement.</value> 
+    <value>Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur :</value> 
@@ -1294,7 +1315,7 @@ en toute sécurité sur votre ordinateur.</value>
     <value>Tout est prêt !</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Vos fichiers kDrive sont en cours de synchronisation.
+    <value>Nous finalisons la configuration de vos kDrive. 
 Nous vous invitons à patienter quelques instants.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 

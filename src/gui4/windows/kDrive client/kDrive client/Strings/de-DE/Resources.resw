@@ -221,6 +221,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonConfirm" xml:space="preserve"> 
     <value>Bestätigen Sie</value> 
   </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Sich anmelden</value> 
+  </data> 
   <data name="buttonConnectAccount" xml:space="preserve"> 
     <value>Ein Konto verbinden</value> 
   </data> 
@@ -1029,6 +1032,9 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   <data name="labelNoConflictsFound" xml:space="preserve"> 
     <value>Es wurden keine Konflikte gefunden, die Ihrer Suche entsprechen</value> 
   </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Keine Fehler, die korrigiert werden müssen.</value> 
+  </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Benachrichtigung</value> 
   </data> 
@@ -1089,11 +1095,20 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
     <value>Von Ihrem Computer synchronisiert</value> 
   </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Dieses kDrive enthält nur Dateien. Alle Dateien werden auf diesem Gerät synchronisiert.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Keine Ordner zum Auswählen</value> 
+  </data> 
   <data name="labelSyncFolder" xml:space="preserve"> 
     <value>Synchronisationsordner</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
     <value>Standort</value> 
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Synchronisieren Sie Ihr kDrive auf diesem Gerät</value> 
   </data> 
   <data name="labelSyncedFolders" xml:space="preserve"> 
     <value>Synchronisierte Ordner</value> 
@@ -1103,6 +1118,9 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
     <value>Tb</value> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Willkommen bei kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
     <value>%@ über %@</value> 
@@ -1293,8 +1311,8 @@ Melden Sie sich an und halten Sie Ihre Dokumente auf all Ihren Geräten synchron
     <value>Alles ist bereit!</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Ihre kDrive-Dateien werden gerade synchronisiert.
-Wir bitten Sie, sich einen Moment zu gedulden.</value> 
+    <value>Wir schließen gerade die Konfiguration Ihres kDrive ab
+Wir bitten Sie, einen Moment zu warten.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synchronisation läuft..</value> 

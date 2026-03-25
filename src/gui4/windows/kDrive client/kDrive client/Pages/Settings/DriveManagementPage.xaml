@@ -78,22 +78,15 @@
                                                   HorizontalContentAlignment="Stretch"
                                                   ContentAlignment="Vertical">
                                 <!-- Presentation -->
-                                <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                                <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
-                                    <StackPanel Grid.Row="0"
-                                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
-                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                                   TextWrapping="Wrap" />
-
-                                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
-                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                   TextWrapping="Wrap" />
-                                    </StackPanel>
+                                    <TextBlock Grid.Row="0"
+                                               Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
+                                               TextWrapping="Wrap" />
+                                    
                                     <controls:SyncExclusionSelector Grid.Row="1"
                                                                     Sync="{x:Bind ManagedDrive.MainSync, Mode=OneWay}"
                                                                     CanShowSaveMenu="True"

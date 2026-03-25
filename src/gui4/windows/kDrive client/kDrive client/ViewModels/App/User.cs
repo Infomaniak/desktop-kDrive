@@ -147,7 +147,10 @@ namespace Infomaniak.kDrive.ViewModels
                 return null;
 
             using var stream = new InMemoryRandomAccessStream();
-            stream.AsStreamForWrite().Write(imageData, 0, imageData.Length);
+            var writeStream = stream.AsStreamForWrite();
+            writeStream.Write(imageData, 0, imageData.Length);
+            writeStream.Flush();
+
             stream.Seek(0);
 
             var bitmap = new BitmapImage();
