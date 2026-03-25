@@ -561,7 +561,7 @@ void AppClient::onWizardDone(int res) {
 void AppClient::setupLogging() {
     // might be called from second instance
     auto logger = KDC::Logger::instance();
-    logger->setIsCLientLog(true);
+    logger->setIsClientLog(true);
     logger->setLogFile(_logFile);
     logger->setLogDir(_logDir);
     logger->setLogExpire(_logExpire);
