@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "communicationlayer/IpcClient.h"
+#include "communicationlayer/ipcclient.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
