@@ -19,13 +19,15 @@
 #pragma once
 
 #include "libcommon/comm.h"
+#include "libcommon/utility/types.h"
 #include "utility/cstypes.h"
 
+#include <QHash>
 #include <QTcpSocket>
-#include <cstdint>
 
 #include <Poco/Dynamic/Struct.h>
 
+#include <functional>
 #include <string>
 
 namespace KDC {
@@ -34,25 +36,25 @@ class IpcClient : public QObject {
         Q_OBJECT
 
     public:
+        using ResponseCallback = std::function<void(ExitInfo, Poco::DynamicStruct)>;
+
         explicit IpcClient(QObject *parent = nullptr);
 #ifdef QT_DEBUG
         void connectToServer();
 #else
         void connectToServer(quint16 port);
 #endif
-        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {});
+        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
 
     signals:
         void connected();
         void disconnected();
         /**
-         * Emitted when a complete JSON message has been received and parsed from the server.
-         * @param type   Message type (1 = request, 2 = signal — see GuiJobType in cstypes.h)
-         * @param id     Request ID matching the one returned by sendRequest(), or the signal ID for server-initiated signals
-         * @param num    Request number (RequestNum) or signal number (SignalNum) identifying the operation
-         * @param params Deserialized JSON parameters associated with the message
+         * Emitted when a server-initiated signal (type:2) has been received and parsed.
+         * @param num    Signal number identifying the event (see SignalNum in comm.h)
+         * @param params Deserialized JSON parameters associated with the signal
          */
-        void messageReceived(GuiJobType type, int32_t id, uint8_t num, Poco::DynamicStruct params);
+        void serverSignalReceived(SignalNum num, Poco::DynamicStruct params);
 
     private slots:
         void onConnected();
@@ -62,6 +64,7 @@ class IpcClient : public QObject {
         QTcpSocket *_socket;
         std::string _readBuffer;
         int32_t _nextId{0};
+        QHash<int32_t, ResponseCallback> _pendingCallbacks;
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
