@@ -252,7 +252,7 @@
     <Page Update="CustomControls\ItemPathPresenter.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\ServerErrorInfoBar.xaml">
+    <Page Update="CustomControls\HomeErrorInfoBar.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SyncIcon.xaml">

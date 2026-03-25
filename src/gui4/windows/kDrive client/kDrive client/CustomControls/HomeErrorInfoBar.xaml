@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.HomeErrorInfoBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <InfoBar x:Name="kDriveFullInfoBar"
+                 IsOpen="True"
+                 Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullTitle')}"
+                 Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullSubtitle')}"
+                 Visibility="{x:Bind ViewModel.ShowDriveFullError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                 IsClosable="True"
+                 Closed="kDriveFullInfoBar_Closed">
+            <InfoBar.ActionButton>
+                <Button Content="Action"
+                        Click="InfoBarButton_Click" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+
+        <InfoBar x:Name="TmpDirAccessError"
+                 IsOpen="True"
+                 Title="Votre kDrive est plein"
+                 Message="A long essential app message..."
+                 Visibility="{x:Bind ViewModel.ShowTmpDirAccessError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button Content="Action"
+                        Click="InfoBarButton_Click" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+
+        <InfoBar x:Name="NetworkTimeOutError"
+                 IsOpen="True"
+                 Title="Votre kDrive est plein"
+                 Message="A long essential app message..."
+                 Visibility="{x:Bind ViewModel.ShowNetworkTimeOutError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button Content="Action"
+                        Click="InfoBarButton_Click" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+    </Grid>
+</UserControl>
