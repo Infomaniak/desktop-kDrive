@@ -42,10 +42,14 @@ final class DriveSelectionViewModel: ObservableObject {
     var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
 
     var selectedSynchroConfigurations: [SynchroConfiguration] {
-        let selectedSynchro = synchroConfigurations.filter { indexedSynchroConfiguration in
-            selectedDrives.contains { $0.id == indexedSynchroConfiguration.key }
-        }
-        return Array(selectedSynchro.values)
+        return synchroConfigurations
+            .filter { indexedSynchroConfiguration in
+                selectedDrives.contains { $0.id == indexedSynchroConfiguration.key }
+            }
+            .map { $0.value }
+            .sorted {
+                $0.drive.name.localizedCaseInsensitiveCompare($1.drive.name) == .orderedAscending
+            }
     }
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
@@ -57,7 +61,9 @@ final class DriveSelectionViewModel: ObservableObject {
         coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
             .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
             .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
-                self?.availableDrives = availableDrives
+                self?.availableDrives = availableDrives.sorted {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
                 self?.generateConfigurations(for: availableDrives)
             }
     }
