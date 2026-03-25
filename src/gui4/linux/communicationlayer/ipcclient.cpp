@@ -28,6 +28,7 @@
 #include <Poco/JSON/Parser.h>
 
 #include <filesystem>
+#include <exception>
 #include <fstream>
 #include <utility>
 
@@ -201,9 +202,18 @@ void IpcClient::processBuffer() {
                     const auto exitCause = static_cast<ExitCause>(msg[MSG_RESPONSE_CAUSE].convert<int>());
                     const auto num = static_cast<RequestNum>(msg[MSG_REQUEST_NUM].convert<int>());
                     qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
-                    if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
-                        it.value()(ExitInfo(exitCode, exitCause), params);
+                    auto it = _pendingCallbacks.find(id);
+                    if (it != _pendingCallbacks.end()) {
+                        auto callback = std::move(it.value());
                         _pendingCallbacks.erase(it);
+
+                        try {
+                            callback(ExitInfo(exitCode, exitCause), params);
+                        } catch (const std::exception &e) {
+                            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << num << ") -" << e.what();
+                        } catch (...) {
+                            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << num << ")";
+                        }
                     } else {
                         qCWarning(lcIpcClient) << "Received response for unknown request id:" << id;
                     }
