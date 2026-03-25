@@ -79,34 +79,15 @@ codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_
 echo "Signing kDrive Uninstaller.app..."
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDriveUninstaller.entitlements" "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
-echo "Signing kDrive_client4.app ALL frameworks, symlinks and binaries..."
-# Use find to sign ALL binaries but EXCLUDE paths like frameworkName.framework/binaryName
-# which codesign interprets as bundle signing attempts
-cd "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks"
-for binary in $(find . -type f \( -name "kDriveCore" -o -name "kDriveResources" -o -name "kDriveCoreUI" \) 2>/dev/null | grep -v '\.framework/[^/]*$' | sed 's|^\./||' | sort -u); do
-    fullpath="$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/$binary"
-    dir=$(dirname "$fullpath")
-    # Skip if parent dir ends with .framework (would trigger bundle mode)
-    if echo "$dir" | grep -q '\.framework$'; then
-        echo "Skipping ambiguous path: $fullpath"
-        continue
-    fi
-    echo "Signing: $fullpath"
-    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$fullpath"
+echo "Signing kDrive_client4.app ALL frameworks and binaries..."
+# Find and sign all binaries EXCEPT paths like X.framework/X which confuse codesign
+for binary_path in $(find "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks" -type f \( -name "kDriveCore" -o -name "kDriveResources" -o -name "kDriveCoreUI" -o -name "Lottie" -o -name "InfomaniakDI*" \) 2>/dev/null | grep -vE '\.framework/[^/]+$' | sort -u); do
+    # Log which binary we're signing
+    rel_path=$(echo "$binary_path" | sed "s|$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/||")
+    echo "Signing: $rel_path"
+    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$binary_path"
 done
 
-# Sign Lottie and InfomaniakDI frameworks (also exclude ambiguous paths)
-for binary in $(find . -type f \( -name "Lottie" -o -name "InfomaniakDI*" \) 2>/dev/null | grep -v '\.framework/[^/]*$' | sed 's|^\./||' | sort -u); do
-    fullpath="$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/$binary"
-    dir=$(dirname "$fullpath")
-    if echo "$dir" | grep -q '\.framework$'; then
-        echo "Skipping ambiguous path: $fullpath"
-        continue
-    fi
-    echo "Signing: $fullpath"
-    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$fullpath"
-done
-cd "$OLDPWD"
 # Sign the main binary
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
 
