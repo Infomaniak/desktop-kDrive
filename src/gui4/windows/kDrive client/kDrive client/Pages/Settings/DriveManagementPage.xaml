@@ -57,7 +57,7 @@
                     <!-- Location -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSyncLocation')}">
                         <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-open}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open}"
                                               Height="20"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
@@ -214,7 +214,7 @@
                                       IsClickEnabled="True"
                                       Click="AdvancedSyncsSettingsCard_Click">
                     <toolKit:SettingsCard.HeaderIcon>
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-connect}"
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-connect}"
                                           Height="32"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </toolKit:SettingsCard.HeaderIcon>

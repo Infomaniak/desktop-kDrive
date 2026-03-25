@@ -90,7 +90,7 @@
                               MinWidth="0"
                               MinHeight="0" />
                     <local:SvgIcon Grid.Column="1"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-block}"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-block}"
                                    Foreground="{ThemeResource TextFillColorTertiary}"
                                    Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 

@@ -104,7 +104,7 @@
                             Click="CreateFolderButton_Click">
                         <local:SvgIcon Height="16"
                                        Width="16"
-                                       UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-circle-plus}"
+                                       UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-circle-plus}"
                                        Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
                                        IsIconEnabled="{x:Bind CanCreateSubFolder, Mode=OneWay}" />
                     </Button>
@@ -166,7 +166,7 @@
                     </Grid.ColumnDefinitions>
 
                     <local:SvgIcon Grid.Column="0"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline-block}"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-block}"
                                    Foreground="{ThemeResource TextFillColorTertiary}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
