@@ -45,8 +45,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
 
     connect(this, &AppClientLinux::ipcConnected, this, [this] {
-        qCDebug(lcAppClientLinux) << "IPC connected - sending USER_INFOLIST request";
-        _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {}, [](const ExitInfo &exitInfo, const Poco::DynamicStruct &params) {
+        qCDebug(lcAppClientLinux) << "IPC connected - sending " << RequestNum::USER_INFOLIST<< " request";
+        _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {}, [](const ExitInfo &exitInfo, const Poco::DynamicStruct &) {
             qCDebug(lcAppClientLinux) << "USER_INFOLIST response | exitCode:" << exitInfo.code()
                                       << "exitCause:" << exitInfo.cause(); // callbacks test
         });
