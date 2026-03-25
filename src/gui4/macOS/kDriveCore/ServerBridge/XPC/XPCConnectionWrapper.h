@@ -1,3 +1,4 @@
+//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,12 +17,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Required flag to correctly compile shared types
-#define KD_MACOS 1
+#import <Foundation/Foundation.h>
 
-// Bridging-Header.h
-#import "ServerBridge/XPC/xpcGuiProtocol.h"
-#import "ServerBridge/XPC/xpcLoginItemProtocol.h"
-#import "ServerBridge/XPC/cstypes.h"
-#import "ServerBridge/XPC/comm.h"
-#import "ServerBridge/XPC/XPCConnectionWrapper.h"
+NS_ASSUME_NONNULL_BEGIN
+
+@interface XPCConnectionWrapper : NSObject
+
++ (NSXPCInterface *)loginItemRemoteInterface;
+
+@end
+
+NS_ASSUME_NONNULL_END

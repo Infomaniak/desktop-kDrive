@@ -90,8 +90,11 @@ import InfomaniakDI
 
         loginItemAgentConnection = connection
 
+        let connectionWrapper = XPCConnectionWrapper()
+        print("connectionWrapper: \(connectionWrapper)")
+        
         IKLogger.xpc.log("[KD] Set exported interface for connection with login agent")
-        connection.exportedInterface = NSXPCInterface(with: XPCLoginItemRemoteProtocol.self)
+        connection.exportedInterface = XPCConnectionWrapper.loginItemRemoteInterface()
         connection.exportedObject = self
 
         IKLogger.xpc.log("[KD] Set remote object interface for connection with login agent")
