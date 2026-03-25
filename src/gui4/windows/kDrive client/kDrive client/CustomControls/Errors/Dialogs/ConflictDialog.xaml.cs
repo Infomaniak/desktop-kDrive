@@ -44,11 +44,11 @@ public partial class ConflictDialog : Page
     private void Init()
     {
         _dialog.IsPrimaryButtonEnabled = false;
-        _dialog.PrimaryButtonClick += Dialog_PrimarryButtonClick;
+        _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
         RefreshPrimaryButtonText();
     }
 
-    private async void Dialog_PrimarryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         if (RemoteVersionPresenter.IsSelected || LocalVersionPresenter.IsSelected)
             ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected ? ConflictResolutionStrategy.KeepLocal : ConflictResolutionStrategy.KeepRemote);

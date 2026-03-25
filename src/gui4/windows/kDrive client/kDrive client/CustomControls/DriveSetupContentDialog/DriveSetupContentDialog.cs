@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.Content = frame;
             frame.Navigate(typeof(DriveSelectionPage), _driveSetupContentDialogVM);
             base.PrimaryButtonClick += DriveSetupContentDialog_PrimaryButtonClick;
-            base.CloseButtonClick += DriveSetupContentDialog_SecondaryButtonClick;
+            base.CloseButtonClick += DriveSetupContentDialog_CloseButtonClick;
             _driveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
         }
 
@@ -40,15 +40,15 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         // Intercept button clicks to manage steps
-        private void DriveSetupContentDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void DriveSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            _driveSetupContentDialogVM.ConfirmCurrentStep();
+            _driveSetupContentDialogVM.CancelCurrentStep();
             args.Cancel = true;
         }
 
         private void DriveSetupContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            _driveSetupContentDialogVM.CancelCurrentStep();
+            _driveSetupContentDialogVM.ConfirmCurrentStep();
             args.Cancel = true;
         }
     }

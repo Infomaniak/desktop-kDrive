@@ -1315,7 +1315,8 @@ en toute sécurité sur votre ordinateur.</value>
     <value>Tout est prêt !</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Nous finalisons la configuration de vos kDrive. 
+    <value>Nous finalisons la configuration de vos kDrive.
+
 Nous vous invitons à patienter quelques instants.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
