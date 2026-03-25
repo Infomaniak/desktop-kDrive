@@ -79,27 +79,39 @@ codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_
 echo "Signing kDrive Uninstaller.app..."
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDriveUninstaller.entitlements" "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
-echo "Signing kDrive_client4.app nested frameworks (binaries and symlinks)..."
-# Sign all framework binaries including Versions/Current symlinks
-# Inner framework (kDriveCore inside kDriveCoreUI)
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/Versions/Current/kDriveCore"
-# Top level frameworks
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/Current/kDriveCore"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/Current/kDriveResources"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct.framework/Versions/A/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct.framework/Versions/Current/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/kDriveCoreUI"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/Current/kDriveCoreUI"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/A/Lottie"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/Current/Lottie"
+echo "Signing kDrive_client4.app ALL frameworks, symlinks and binaries..."
+# Use find to sign ALL binaries but EXCLUDE paths like frameworkName.framework/binaryName
+# which codesign interprets as bundle signing attempts
+cd "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks"
+for binary in $(find . -type f \( -name "kDriveCore" -o -name "kDriveResources" -o -name "kDriveCoreUI" \) 2>/dev/null | grep -v '\.framework/[^/]*$' | sed 's|^\./||' | sort -u); do
+    fullpath="$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/$binary"
+    dir=$(dirname "$fullpath")
+    # Skip if parent dir ends with .framework (would trigger bundle mode)
+    if echo "$dir" | grep -q '\.framework$'; then
+        echo "Skipping ambiguous path: $fullpath"
+        continue
+    fi
+    echo "Signing: $fullpath"
+    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$fullpath"
+done
+
+# Sign Lottie and InfomaniakDI frameworks (also exclude ambiguous paths)
+for binary in $(find . -type f \( -name "Lottie" -o -name "InfomaniakDI*" \) 2>/dev/null | grep -v '\.framework/[^/]*$' | sed 's|^\./||' | sort -u); do
+    fullpath="$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/$binary"
+    dir=$(dirname "$fullpath")
+    if echo "$dir" | grep -q '\.framework$'; then
+        echo "Skipping ambiguous path: $fullpath"
+        continue
+    fi
+    echo "Signing: $fullpath"
+    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$fullpath"
+done
+cd "$OLDPWD"
 # Sign the main binary
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
 
 echo "Sign GUI4 (kDrive_client4.app)..."
-# Sign without --deep since frameworks have incomplete bundle metadata
+# Sign the bundle
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDrive4.entitlements" "$src_app/Contents/MacOS/kDrive_client4.app"
 
 echo "Signing MacOS binaries..."
