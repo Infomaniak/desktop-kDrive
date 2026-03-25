@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-GetThumbnailJob::GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width) :
+GetThumbnailJob::GetThumbnailJob(DriveDbId driveDbId, NodeId nodeId, unsigned width) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _nodeId(nodeId),
     _width(width) {

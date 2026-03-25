@@ -44,7 +44,7 @@ static const std::string minVersionKey = "min_version";
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) :
     GetAppVersionJob(platform, appID, {}) {}
 
-GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::vector<int> &userIdList) :
+GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::vector<UserId> &userIdList) :
     _platform(platform),
     _appId(appID),
     _userIdList(userIdList) {

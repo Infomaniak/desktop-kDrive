@@ -47,7 +47,7 @@ class TmpBlacklistManager {
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;
         void eraseSingleItemFromBlacklist(const NodeId &nodeId, ReplicaSide side);
-        int syncDbId() const noexcept {
+        SyncDbId syncDbId() const noexcept {
             assert(_syncPal);
             return _syncPal->syncDbId();
         };

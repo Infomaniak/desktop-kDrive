@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,13 +29,14 @@ namespace KDC {
 
 class UserInfo {
     public:
-        UserInfo(int userDbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected);
-        UserInfo();
+        UserInfo(UserDbId userDbId, UserId userId, const QString &name, const QString &email, const QImage &avatar,
+                 bool connected);
+        UserInfo() = default;
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserId(int userId) { _userId = userId; }
-        inline int userId() const { return _userId; }
+        inline void setDbId(const UserDbId dbId) { _dbId = dbId; }
+        inline UserDbId dbId() const { return _dbId; }
+        inline void setUserId(const UserId userId) { _userId = userId; }
+        inline UserId userId() const { return _userId; }
         inline void setName(const QString &name) { _name = name; }
         inline const QString &name() const { return _name; }
         inline void setEmail(const QString &email) { _email = email; }
@@ -47,10 +48,10 @@ class UserInfo {
         inline const QImage &avatar() const { return _avatar; }
         inline void setAvatarUrl(const QString &avatarUrl) { _avatarUrl = avatarUrl; }
         inline const QString &avatarUrl() const { return _avatarUrl; }
-        inline void setConnected(bool connected) { _connected = connected; }
+        inline void setConnected(const bool connected) { _connected = connected; }
         inline bool connected() const { return _connected; }
         inline bool credentialsAsked() const { return _credentialsAsked; }
-        inline void setCredentialsAsked(bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
+        inline void setCredentialsAsked(const bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
         [[nodiscard]] bool isStaff() const { return _isStaff; }
         void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 
@@ -71,8 +72,8 @@ class UserInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list);
 
     private:
-        int _dbId{-1};
-        int _userId{-1};
+        UserDbId _dbId{-1};
+        UserId _userId{-1};
         QString _name;
         QString _email;
         QImage _avatar;

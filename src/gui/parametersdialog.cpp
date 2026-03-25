@@ -85,21 +85,21 @@ void ParametersDialog::openGeneralErrorsPage() {
     forceRedraw();
 }
 
-void ParametersDialog::openDriveErrorsPage(int driveDbId) {
+void ParametersDialog::openDriveErrorsPage(const DriveDbId driveDbId) {
     openDriveParametersPage(driveDbId);
     onDisplayDriveErrors(driveDbId);
     forceRedraw();
 }
 
-void ParametersDialog::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
+void ParametersDialog::resolveConflictErrors(const DriveDbId driveDbId, bool keepLocalVersion) {
     _gui->resolveConflictErrors(driveDbId, keepLocalVersion);
 }
 
-void ParametersDialog::resolveUnsupportedCharErrors(int driveDbId) {
+void ParametersDialog::resolveUnsupportedCharErrors(const DriveDbId driveDbId) {
     _gui->resolveUnsupportedCharErrors(driveDbId);
 }
 
-void ParametersDialog::openDriveParametersPage(int driveDbId) {
+void ParametersDialog::openDriveParametersPage(const DriveDbId driveDbId) {
     onDisplayDriveParameters();
     _driveMenuBarWidget->driveSelectionWidget()->selectDrive(driveDbId);
     forceRedraw();
@@ -940,11 +940,11 @@ void ParametersDialog::onConfigRefreshed() {
     _driveMenuBarWidget->driveSelectionWidget()->selectDrive(_currentDriveDbId);
 }
 
-void ParametersDialog::onUpdateProgress(int syncDbId) {
+void ParametersDialog::onUpdateProgress(const SyncDbId syncDbId) {
     Q_UNUSED(syncDbId)
 }
 
-void ParametersDialog::onDriveQuotaUpdated(int driveDbId) {
+void ParametersDialog::onDriveQuotaUpdated(const DriveDbId driveDbId) {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString()
               << " - ParametersDialog::onQuotaUpdated account: " << driveDbId.toStdString() << std::endl;
@@ -959,7 +959,7 @@ void ParametersDialog::onDriveQuotaUpdated(int driveDbId) {
     }
 }
 
-void ParametersDialog::onRefreshErrorList(int driveDbId) {
+void ParametersDialog::onRefreshErrorList(const DriveDbId driveDbId) {
     refreshErrorList(driveDbId);
 }
 
@@ -967,7 +967,7 @@ void ParametersDialog::onRefreshStatusNeeded() {
     _drivePreferencesWidget->refreshStatus();
 }
 
-void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo) {
+void ParametersDialog::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
     if (itemInfo.status() != SyncFileStatus::Error && itemInfo.status() != SyncFileStatus::Conflict &&
         itemInfo.status() != SyncFileStatus::Inconsistency) {
         return;
@@ -992,7 +992,7 @@ void ParametersDialog::onOpenHelp() {
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
-void ParametersDialog::onDriveSelected(int driveDbId) {
+void ParametersDialog::onDriveSelected(const DriveDbId driveDbId) {
     _currentDriveDbId = driveDbId;
 
     const auto driveInfoElt = _gui->driveInfoMap().find(driveDbId);
@@ -1012,13 +1012,13 @@ void ParametersDialog::onAddDrive() {
     emit addDrive();
 }
 
-void ParametersDialog::onRemoveDrive(int driveDbId) {
+void ParametersDialog::onRemoveDrive(const DriveDbId driveDbId) {
     MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "removeDriveButton", driveDbId);
     EnableStateHolder stateHolder(this);
     emit removeDrive(driveDbId);
 }
 
-void ParametersDialog::onDisplayDriveErrors(int driveDbId) {
+void ParametersDialog::onDisplayDriveErrors(const DriveDbId driveDbId) {
     MatomoClient::sendEvent("parameters", MatomoEventAction::Click, "displayErrors", driveDbId);
     const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -1118,15 +1118,15 @@ void ParametersDialog::retranslateUi() {
     _defaultTextLabel->setText(tr("No kDrive configured!"));
 }
 
-void ParametersDialog::onPauseSync(int syncDbId) {
+void ParametersDialog::onPauseSync(const SyncDbId syncDbId) {
     emit executeSyncAction(ActionType::Stop, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onResumeSync(int syncDbId) {
+void ParametersDialog::onResumeSync(const SyncDbId syncDbId) {
     emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolved) {
+void ParametersDialog::onClearErrors(const DriveDbId driveDbId, const bool autoResolved) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *listWidgetToClear = nullptr;
 
@@ -1180,7 +1180,7 @@ void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolve
     }
 }
 
-void ParametersDialog::refreshErrorList(int driveDbId) {
+void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *autoresolvedErrorsListWidget = nullptr;
     QListWidget *unresolvedErrorsListWidget = nullptr;
@@ -1277,8 +1277,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     errorTabWidget->setCurrentIndex(autoresolvedErrorCount ? ErrorTabWidget::AutoResolveIndex : ErrorTabWidget::ToResolveIndex);
 }
 
-bool ParametersDialog::driveHasSyncs(int driveDbId) const {
-    std::map<int, SyncInfoClient> syncInfoMap;
+bool ParametersDialog::driveHasSyncs(const DriveDbId driveDbId) const {
+    std::map<SyncDbId, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(driveDbId, syncInfoMap);
     return !syncInfoMap.empty();
 }

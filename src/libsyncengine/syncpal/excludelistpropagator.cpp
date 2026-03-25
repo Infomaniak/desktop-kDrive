@@ -48,7 +48,7 @@ ExitInfo ExcludeListPropagator::runJob() {
     return ExitCode::Ok;
 }
 
-int ExcludeListPropagator::syncDbId() const {
+SyncDbId ExcludeListPropagator::syncDbId() const {
     return _syncPal->syncDbId();
 }
 

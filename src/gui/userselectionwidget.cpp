@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,11 +75,11 @@ void UserSelectionWidget::clear() {
     _downIconLabel->setVisible(false);
 }
 
-void UserSelectionWidget::addOrUpdateUser(int userDbId, const UserInfo &userInfo) {
+void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const UserInfo &userInfo) {
     _userMap[userDbId] = userInfo;
 }
 
-void UserSelectionWidget::selectUser(int userDbId) {
+void UserSelectionWidget::selectUser(const UserDbId userDbId) {
     if (_userMap.find(userDbId) != _userMap.end()) {
         _downIconLabel->setVisible(true);
         setUserAvatar(_userMap[userDbId].avatar());
@@ -140,7 +140,7 @@ void UserSelectionWidget::onClick(bool checked) {
 
 void UserSelectionWidget::addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool current) {
     QWidgetAction *selectUserAction = new QWidgetAction(this);
-    selectUserAction->setProperty(userDbIdProperty, userInfo.dbId());
+    selectUserAction->setProperty(userDbIdProperty, toInt(userInfo.dbId()));
     MenuItemUserWidget *userMenuItemWidget = new MenuItemUserWidget(userInfo.name(), userInfo.email(), current);
     userMenuItemWidget->setLeftImage(userInfo.avatar());
 

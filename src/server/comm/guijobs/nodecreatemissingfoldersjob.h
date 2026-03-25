@@ -43,10 +43,10 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo pauseDriveSyncs(std::vector<int> &pausedSyncs);
+        ExitInfo pauseDriveSyncs(std::vector<SyncDbId> &pausedSyncs);
         ExitInfo createMissingFolders(NodeId &firstCreatedNodeId);
         ExitInfo blacklistNodeOnAllDriveSyncs(const NodeId &nodeId);
-        void resumeSyncs(const std::vector<int> &pausedSyncs);
+        void resumeSyncs(const std::vector<SyncDbId> &pausedSyncs);
 
         friend class TestGuiCommChannel;
 };

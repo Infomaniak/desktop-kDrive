@@ -27,11 +27,11 @@ namespace KDC {
 class DriveUploadSession : public AbstractUploadSession {
     public:
         // Using file name and parent ID, for file creation only.
-        DriveUploadSession(const std::shared_ptr<Vfs> vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+        DriveUploadSession(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, std::shared_ptr<SyncDb> syncDb,
                            const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                            SyncTime creationTime, SyncTime modificationTime, bool liteSyncActivated, uint64_t nbParallelThread);
         // Using file ID, for file edition only.
-        DriveUploadSession(const std::shared_ptr<Vfs> vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+        DriveUploadSession(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, std::shared_ptr<SyncDb> syncDb,
                            const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime, bool liteSyncActivated,
                            uint64_t nbParallelThread);
         ~DriveUploadSession() override;
@@ -55,7 +55,7 @@ class DriveUploadSession : public AbstractUploadSession {
         std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
 
     private:
-        int _driveDbId = 0;
+        DriveDbId _driveDbId = 0;
         std::shared_ptr<SyncDb> _syncDb;
 
         NodeId _fileId;

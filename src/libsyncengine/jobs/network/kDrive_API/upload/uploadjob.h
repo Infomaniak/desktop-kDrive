@@ -31,10 +31,10 @@ namespace KDC {
 class UploadJob : public AbstractTokenNetworkJob {
     public:
         // Using file name and parent ID, for file creation only.
-        UploadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
+        UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
                   const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
-        UploadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
+        UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
                   SyncTime modificationTime);
         ~UploadJob() override;
 

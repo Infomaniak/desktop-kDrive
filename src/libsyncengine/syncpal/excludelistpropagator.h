@@ -34,7 +34,7 @@ class ExcludeListPropagator : public AbstractPropagatorJob {
 
         std::shared_ptr<SyncPal> _syncPal;
 
-        int syncDbId() const;
+        SyncDbId syncDbId() const;
         ExitInfo checkItems();
         ExitInfo checkItem(const DirectoryEntry &entry);
 };

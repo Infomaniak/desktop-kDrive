@@ -38,8 +38,8 @@ static const int folderTreeBoxVMargin = 20;
 
 Q_LOGGING_CATEGORY(lcServerBaseFolderDialog, "gui.serverbasefolderdialog", QtInfoMsg)
 
-ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &localFolderName,
-                                               const QString &localFolderPath, QWidget *parent) :
+ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, const DriveDbId driveDbId,
+                                               const QString &localFolderName, const QString &localFolderPath, QWidget *parent) :
     CustomDialog(true, parent),
     _gui(gui),
     _driveDbId(driveDbId),

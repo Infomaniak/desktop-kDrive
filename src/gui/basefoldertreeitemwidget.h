@@ -42,7 +42,7 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
         Q_PROPERTY(QSize add_icon_size READ addIconSize WRITE setAddIconSize)
 
     public:
-        explicit BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
+        explicit BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, DriveDbId driveDbId, bool displayRoot,
                                           QWidget *parent = nullptr);
 
         void loadSubFolders();
@@ -70,7 +70,7 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
         };
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
+        DriveDbId _driveDbId{0};
         bool _displayRoot;
         QColor _folderIconColor;
         QSize _folderIconSize;

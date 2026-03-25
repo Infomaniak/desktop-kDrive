@@ -108,7 +108,7 @@ Db::~Db() {
     close();
 }
 
-std::string Db::makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
+std::string Db::makeDbFileName(const UserId userId, const AccountId accountId, const DriveId driveId, const SyncDbId syncDbId) {
     std::string fileName;
     if (!userId && !accountId && !driveId && !syncDbId) {
         // ParmsDb
@@ -138,8 +138,8 @@ std::filesystem::path Db::makeDbName(bool &alreadyExist) {
     return makeDbName(0, 0, 0, 0, alreadyExist);
 }
 
-std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                     std::function<std::string(int, int, int, int)> dbFileName) {
+std::filesystem::path Db::makeDbName(UserId userId, AccountId accountId, DriveDbId driveId, SyncDbId syncDbId, bool &alreadyExist,
+                                     std::function<std::string(UserId, AccountId, DriveDbId, SyncDbId)> dbFileName) {
     // App support dir
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 

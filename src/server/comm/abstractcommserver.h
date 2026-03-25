@@ -30,9 +30,7 @@ class AbstractCommServer {
             LOG_DEBUG(Log::instance()->getLogger(), _name << " created");
         }
 
-        virtual ~AbstractCommServer() {
-            LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed");
-        }
+        virtual ~AbstractCommServer() { LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed"); }
 
         std::string name() { return _name; }
 

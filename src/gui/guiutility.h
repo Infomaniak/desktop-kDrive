@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ bool openFolder(const QString &path);
 QWidget *getTopLevelWidget(QWidget *widget);
 void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);
-bool warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap, QWidget *parent);
+bool warnOnInvalidSyncFolder(const QString &dirPath, const std::map<SyncDbId, SyncInfoClient> &syncInfoMap, QWidget *parent);
 
 void makePrintablePath(QString &path, const uint64_t maxSize = 50);
 

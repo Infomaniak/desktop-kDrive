@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-SynchronizedItem::SynchronizedItem(int syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
+SynchronizedItem::SynchronizedItem(const SyncDbId syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
                                    SyncDirection direction, NodeType type, const QString &fullFilePath, const QDateTime &dateTime,
                                    const QString &error) :
     _syncDbId(syncDbId),

@@ -33,7 +33,7 @@ class ConfirmSynchronizationDialog : public CustomDialog {
         Q_PROPERTY(QColor arrow_icon_color READ arrowIconColor WRITE setArrowIconColor)
 
     public:
-        explicit ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, int userDbId, int driveId,
+        explicit ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, UserDbId userDbId, DriveId driveId,
                                               const QString &serverFolderNodeId, const QString &localFolderName,
                                               qint64 localFolderSize, const QString &serverFolderName, qint64 serverFolderSize,
                                               QWidget *parent = nullptr);

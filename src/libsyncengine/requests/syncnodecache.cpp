@@ -40,7 +40,7 @@ std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() {
 
 SyncNodeCache::SyncNodeCache() {}
 
-ExitCode SyncNodeCache::checkIfSyncExists(const int syncDbId) const noexcept {
+ExitCode SyncNodeCache::checkIfSyncExists(const SyncDbId syncDbId) const noexcept {
     if (!_syncDbMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
         return ExitCode::DataError;
@@ -55,7 +55,7 @@ ExitCode SyncNodeCache::checkIfSyncExists(const int syncDbId) const noexcept {
 }
 
 
-ExitCode SyncNodeCache::checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const {
+ExitCode SyncNodeCache::checkIfSyncNodeListExists(const SyncDbId syncDbId, const SyncNodeType type) const {
     assert(_syncNodesMap.contains(syncDbId) && "Sync not found in SyncNodeCache::checkIfSyncNodeListExists.");
 
     if (!_syncNodesMap.at(syncDbId).contains(type)) {
@@ -67,7 +67,7 @@ ExitCode SyncNodeCache::checkIfSyncNodeListExists(const int syncDbId, const Sync
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes) {
+ExitCode SyncNodeCache::syncNodes(const SyncDbId syncDbId, const SyncNodeType type, NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
@@ -78,13 +78,13 @@ ExitCode SyncNodeCache::syncNodes(const int syncDbId, const SyncNodeType type, N
     return ExitCode::Ok;
 }
 
-bool SyncNodeCache::contains(const int syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept {
+bool SyncNodeCache::contains(const SyncDbId syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept {
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
     if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return false;
 
     return _syncNodesMap.at(syncDbId).at(type).contains(nodeId);
 }
-bool SyncNodeCache::contains(const int syncDbId, const NodeId &nodeId) const noexcept {
+bool SyncNodeCache::contains(const SyncDbId syncDbId, const NodeId &nodeId) const noexcept {
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
 
     for (auto typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); ++typeInt) {
@@ -95,7 +95,7 @@ bool SyncNodeCache::contains(const int syncDbId, const NodeId &nodeId) const noe
     return false;
 }
 
-ExitInfo SyncNodeCache::deleteSyncNode(const int syncDbId, const NodeId &nodeId) {
+ExitInfo SyncNodeCache::deleteSyncNode(const SyncDbId syncDbId, const NodeId &nodeId) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
@@ -121,7 +121,7 @@ ExitInfo SyncNodeCache::deleteSyncNode(const int syncDbId, const NodeId &nodeId)
     return {ExitCode::Ok, exitCause};
 }
 
-ExitCode SyncNodeCache::update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes) {
+ExitCode SyncNodeCache::update(const SyncDbId syncDbId, const SyncNodeType type, const NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;
@@ -138,7 +138,7 @@ ExitCode SyncNodeCache::update(const int syncDbId, const SyncNodeType type, cons
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::initCache(const int syncDbId, std::shared_ptr<SyncDb> syncDb) {
+ExitCode SyncNodeCache::initCache(const SyncDbId syncDbId, std::shared_ptr<SyncDb> syncDb) {
     const std::scoped_lock lock(_mutex);
 
     _syncDbMap[syncDbId] = syncDb;
@@ -157,7 +157,7 @@ ExitCode SyncNodeCache::initCache(const int syncDbId, std::shared_ptr<SyncDb> sy
     return ExitCode::Ok;
 }
 
-ExitCode SyncNodeCache::clear(const int syncDbId) {
+ExitCode SyncNodeCache::clear(const SyncDbId syncDbId) {
     const std::scoped_lock lock(_mutex);
 
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return exitCode;

@@ -24,7 +24,7 @@ namespace KDC {
 
 class UploadSessionCancelJob : public AbstractUploadSessionJob {
     public:
-        UploadSessionCancelJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+        UploadSessionCancelJob(UploadSessionType uploadType, DriveDbId driveDbId, const SyncPath &filepath,
                                const std::string &sessionToken);
         UploadSessionCancelJob(UploadSessionType uploadType, const std::string &sessionToken);
 

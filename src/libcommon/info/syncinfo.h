@@ -32,13 +32,14 @@ namespace KDC {
 class SyncInfo {
     public:
         SyncInfo() = default;
-        SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
-                 bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid);
+        SyncInfo(SyncDbId dbId, DriveDbId driveDbId, const QString &localPath, const QString &targetPath,
+                 const QString &targetNodeId, bool supportVfs, VirtualFileMode virtualFileMode,
+                 const QString &navigationPaneClsid);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
-        inline int driveDbId() const { return _driveDbId; }
+        inline void setDbId(const SyncDbId dbId) { _dbId = dbId; }
+        inline SyncDbId dbId() const { return _dbId; }
+        inline void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        inline DriveDbId driveDbId() const { return _driveDbId; }
         inline void setLocalPath(const QString &path) { _localPath = path; }
         inline const QString &localPath() const { return _localPath; }
         inline void setTargetPath(const QString &path) { _targetPath = path; }
@@ -47,9 +48,9 @@ class SyncInfo {
         inline const QString &targetNodeId() const { return _targetNodeId; }
         inline void setSupportVfs(bool supportVfs) { _supportVfs = supportVfs; }
         inline bool supportVfs() const { return _supportVfs; }
-        inline void setVirtualFileMode(VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
+        inline void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
         inline VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
-        inline void setNavigationPaneClsid(QString navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
+        inline void setNavigationPaneClsid(const QString navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         inline QString navigationPaneClsid() const { return _navigationPaneClsid; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
@@ -62,8 +63,8 @@ class SyncInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list);
 
     protected:
-        int _dbId = 0;
-        int _driveDbId = 0;
+        SyncDbId _dbId = 0;
+        DriveDbId _driveDbId = 0;
         QString _localPath;
         QString _targetPath;
         QString _targetNodeId;

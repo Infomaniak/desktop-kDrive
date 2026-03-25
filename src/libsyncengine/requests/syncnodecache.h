@@ -37,25 +37,25 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache(SyncNodeCache const &) = delete;
         void operator=(SyncNodeCache const &) = delete;
 
-        ExitCode syncNodes(const int syncDbId, const SyncNodeType type, NodeSet &syncNodes);
-        ExitInfo deleteSyncNode(const int syncDbId, const NodeId &nodeId);
-        ExitCode update(const int syncDbId, const SyncNodeType type, const NodeSet &syncNodes);
-        ExitCode initCache(const int syncDbId, std::shared_ptr<SyncDb> syncDb);
-        ExitCode clear(const int syncDbId);
+        ExitCode syncNodes(const SyncDbId syncDbId, const SyncNodeType type, NodeSet &syncNodes);
+        ExitInfo deleteSyncNode(const SyncDbId syncDbId, const NodeId &nodeId);
+        ExitCode update(const SyncDbId syncDbId, const SyncNodeType type, const NodeSet &syncNodes);
+        ExitCode initCache(const SyncDbId syncDbId, std::shared_ptr<SyncDb> syncDb);
+        ExitCode clear(const SyncDbId syncDbId);
 
-        bool contains(const int syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept;
-        bool contains(const int syncDbId, const NodeId &nodeId) const noexcept;
+        bool contains(const SyncDbId syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept;
+        bool contains(const SyncDbId syncDbId, const NodeId &nodeId) const noexcept;
 
     private:
         static std::shared_ptr<SyncNodeCache> _instance;
-        std::unordered_map<int, std::shared_ptr<SyncDb>> _syncDbMap;
-        std::unordered_map<int, std::unordered_map<SyncNodeType, NodeSet>> _syncNodesMap;
+        std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _syncDbMap;
+        std::unordered_map<SyncDbId, std::unordered_map<SyncNodeType, NodeSet>> _syncNodesMap;
 
         std::mutex _mutex;
 
         SyncNodeCache();
-        ExitCode checkIfSyncExists(const int syncDbId) const noexcept;
-        ExitCode checkIfSyncNodeListExists(const int syncDbId, const SyncNodeType type) const;
+        ExitCode checkIfSyncExists(const SyncDbId syncDbId) const noexcept;
+        ExitCode checkIfSyncNodeListExists(const SyncDbId syncDbId, const SyncNodeType type) const;
 };
 
 } // namespace KDC

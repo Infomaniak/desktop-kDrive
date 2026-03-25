@@ -155,4 +155,6 @@ void setupLogging();
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
+
 } // namespace KDC::testhelpers

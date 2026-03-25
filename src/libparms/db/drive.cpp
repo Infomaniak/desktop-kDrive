@@ -28,8 +28,8 @@ namespace KDC {
 Drive::Drive() :
     _logger(Log::instance()->getLogger()) {}
 
-Drive::Drive(int dbId, int driveId, int accountDbId, const std::string &name, int64_t size, const std::string &color,
-             bool notifications, bool admin) :
+Drive::Drive(const DriveDbId dbId, const DriveId driveId, const AccountDbId accountDbId, const std::string &name,
+             const int64_t size, const std::string &color, const bool notifications, const bool admin) :
     _logger(Log::instance()->getLogger()),
     _dbId(dbId),
     _driveId(driveId),
@@ -38,9 +38,6 @@ Drive::Drive(int dbId, int driveId, int accountDbId, const std::string &name, in
     _size(size),
     _color(color),
     _notifications(notifications),
-    _admin(admin),
-    _locked(false),
-    _usedSize(0),
-    _accessDenied(false) {}
+    _admin(admin) {}
 
 } // namespace KDC

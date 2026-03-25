@@ -26,7 +26,7 @@ DriveInfoClient::DriveInfoClient() :
 DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) :
     DriveInfo(driveInfo) {}
 
-void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
+void DriveInfoClient::updateStatus(std::map<SyncDbId, SyncInfoClient> &syncInfoMap) {
     _status = SyncStatus::Undefined;
     _unresolvedConflicts = false;
 

@@ -69,7 +69,7 @@ ErrorsMenuBarWidget::ErrorsMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget
     connect(_backButton, &CustomToolButton::clicked, this, &ErrorsMenuBarWidget::onBackButtonClicked);
 }
 
-void ErrorsMenuBarWidget::setDrive(int driveDbId) {
+void ErrorsMenuBarWidget::setDrive(const DriveDbId driveDbId) {
     if (driveDbId) {
         const auto driveInfoIt = _gui->driveInfoMap().find(driveDbId);
         if (driveInfoIt == _gui->driveInfoMap().end()) {

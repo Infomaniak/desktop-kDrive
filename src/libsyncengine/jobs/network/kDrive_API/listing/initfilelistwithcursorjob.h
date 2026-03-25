@@ -24,7 +24,7 @@ namespace KDC {
 
 class InitFileListWithCursorJob : public AbstractListingJob {
     public:
-        InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
+        InitFileListWithCursorJob(DriveDbId driveDbId, const NodeId &dirId);
 
     private:
         std::string getSpecificUrl() override;

@@ -218,7 +218,7 @@ void TestServerRequests::testDeleteDrive() {
     AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
     AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteDrive(1));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::deleteDrive(1));
 
     // Check that drive has been removed from db
     Drive drive;
@@ -269,7 +269,7 @@ void TestServerRequests::testFolderContainsNonExcludedItemWithNonExcludedFile() 
 void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
     // Directory containing both an excluded file and a regular one.
     LocalTemporaryDirectory dir("folderContainsMixed");
-    testhelpers::generateTestFile(dir.path() / "excluded_file~");  // matched by "*~" exclusion template
+    testhelpers::generateTestFile(dir.path() / "excluded_file~"); // matched by "*~" exclusion template
     testhelpers::generateTestFile(dir.path() / "regular_file.txt");
     bool containsNonExcludedFile = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),

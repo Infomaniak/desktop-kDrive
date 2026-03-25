@@ -57,13 +57,14 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw DbError
         /// @throw DataError
         /// @throw TokenError
-        AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
+        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
+                                bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
 
-        static void updateLoginByUserDbId(const Login &login, int userDbId);
+        static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
         static void clearCache();
 
@@ -81,27 +82,27 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo handleJsonResponse(
                 const std::string &replyBody) override; // TODO : this method should be private and called for every job.
 
-        [[nodiscard]] int userId() const { return _userId; }
-        [[nodiscard]] int driveId() const { return _driveId; }
+        [[nodiscard]] UserId userId() const { return _userId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
         ApiType getApiType() const { return _apiType; }
 
     private:
         // User cache: <userDbId, <Login, userId>>
-        static std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> _userToApiKeyMap;
+        static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> _userToApiKeyMap;
 
         // Drive cache: <driveDbId, <userDbId, driveId>>
-        static std::unordered_map<int, std::pair<int, int>> _driveToApiKeyMap;
+        static std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> _driveToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
 
-        ApiType _apiType;
-        int _userDbId;
-        int _userId;
-        int _driveDbId;
-        int _driveId;
-        bool _returnJson;
+        ApiType _apiType{ApiType::Drive};
+        UserDbId _userDbId{0};
+        UserId _userId{0};
+        DriveDbId _driveDbId{0};
+        DriveId _driveId{0};
+        bool _returnJson{true};
         ApiToken _apiToken;
 
-        bool _accessTokenAlreadyRefreshed = false;
+        bool _accessTokenAlreadyRefreshed{false};
 
         virtual ApiToken loadApiToken();
 

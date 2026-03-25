@@ -23,9 +23,10 @@
 
 namespace KDC {
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                                       const SyncTime creationTime, const SyncTime modificationTime, const bool liteSyncActivated,
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
+                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
+                                       const NodeId &remoteParentDirId, const SyncTime creationTime,
+                                       const SyncTime modificationTime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
@@ -38,9 +39,10 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int
     _uploadSessionType = UploadSessionType::Drive;
 }
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
-                                       const SyncPath &filepath, const NodeId &fileId, const SyncTime modificationTime,
-                                       const bool liteSyncActivated, const uint64_t nbParallelThread) :
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
+                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
+                                       const SyncTime modificationTime, const bool liteSyncActivated,
+                                       const uint64_t nbParallelThread) :
     DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
                        nbParallelThread) {
     _fileId = fileId;

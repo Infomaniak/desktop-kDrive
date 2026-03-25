@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,13 +48,11 @@ static const std::string actionTypeProperty = "actionType";
 
 Q_LOGGING_CATEGORY(lcErrorsPopup, "gui.errorspopup", QtInfoMsg)
 
-ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position, QWidget *parent) :
+ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, const Count genericErrorsCount, const QPoint position,
+                         QWidget *parent) :
     QDialog(parent),
     _moved(false),
-    _position(position),
-    _backgroundColor(QColor()),
-    _warningIconSize(QSize()),
-    _warningIconColor(QColor()) {
+    _position(position) {
     setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -64,13 +62,13 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
 
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
-    QVBoxLayout *mainVBox = new QVBoxLayout();
+    auto *mainVBox = new QVBoxLayout();
     mainVBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
     mainVBox->setSpacing(vSpacing);
     setLayout(mainVBox);
 
     // Title
-    QLabel *titleLabel = new QLabel(this);
+    auto *titleLabel = new QLabel(this);
     titleLabel->setMinimumHeight(minHeight);
     titleLabel->setText(tr("Some files couldn't be synchronized on the following kDrive(s) :"));
     titleLabel->setWordWrap(true);
@@ -78,31 +76,31 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
 
     // Drive errors
     for (auto const &driveError: driveErrorList) {
-        ClickableWidget *driveWidget = new ClickableWidget(this);
-        driveWidget->setProperty(actionTypeProperty.c_str(), driveError.driveDbId);
+        auto *driveWidget = new ClickableWidget(this);
+        (void) driveWidget->setProperty(actionTypeProperty.c_str(), static_cast<qint64>(driveError.driveDbId));
         mainVBox->addWidget(driveWidget);
 
-        QHBoxLayout *driveErrorHBox = new QHBoxLayout();
+        auto *driveErrorHBox = new QHBoxLayout();
         driveErrorHBox->setContentsMargins(0, 0, 0, 0);
         driveErrorHBox->addSpacing(hSpacing);
         driveWidget->setLayout(driveErrorHBox);
 
-        QLabel *driveNameLabel = new QLabel(this);
+        auto *driveNameLabel = new QLabel(this);
         QString text;
         if (driveError.unresolvedErrorsCount > 0 && driveError.autoresolvedErrorsCount == 0) {
-            QLabel *warningIconLabel = new QLabel(this);
+            auto *warningIconLabel = new QLabel(this);
             warningIconLabel->setObjectName("warningIconLabel");
             warningIconLabel->setWordWrap(true);
             driveErrorHBox->addWidget(warningIconLabel);
             text = driveError.driveName + QString(tr(" (%1 error(s))").arg(driveError.unresolvedErrorsCount));
         } else if (driveError.autoresolvedErrorsCount > 0 && driveError.unresolvedErrorsCount == 0) {
-            QLabel *infoIconLabel = new QLabel(this);
+            auto *infoIconLabel = new QLabel(this);
             infoIconLabel->setObjectName("infoIconLabel");
             infoIconLabel->setWordWrap(true);
             driveErrorHBox->addWidget(infoIconLabel);
             text = driveError.driveName + QString(tr(" (%1 information(s))").arg(driveError.autoresolvedErrorsCount));
         } else {
-            QLabel *warningIconLabel = new QLabel(this);
+            auto *warningIconLabel = new QLabel(this);
             warningIconLabel->setObjectName("warningIconLabel");
             warningIconLabel->setWordWrap(true);
             driveErrorHBox->addWidget(warningIconLabel);
@@ -116,7 +114,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
         driveErrorHBox->addWidget(driveNameLabel);
         driveErrorHBox->addStretch();
 
-        QLabel *arrowIconLabel = new QLabel(this);
+        auto *arrowIconLabel = new QLabel(this);
         arrowIconLabel->setObjectName("arrowIconLabel");
         driveErrorHBox->addWidget(arrowIconLabel);
 
@@ -126,34 +124,34 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
     // Generic errors
     if (driveErrorList.count() > 0 && genericErrorsCount > 0) {
         // Add separator
-        QFrame *line = new QFrame();
+        auto *line = new QFrame();
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         mainVBox->addWidget(line);
     }
 
     if (genericErrorsCount > 0) {
-        ClickableWidget *genericErrorsWidget = new ClickableWidget(this);
+        auto *genericErrorsWidget = new ClickableWidget(this);
         mainVBox->addWidget(genericErrorsWidget);
 
-        QHBoxLayout *errorHBox = new QHBoxLayout();
+        auto *errorHBox = new QHBoxLayout();
         errorHBox->setContentsMargins(0, 0, 0, 0);
         errorHBox->addSpacing(hSpacing);
         genericErrorsWidget->setLayout(errorHBox);
 
-        QLabel *warningIconLabel = new QLabel(this);
+        auto *warningIconLabel = new QLabel(this);
         warningIconLabel->setObjectName("warningIconLabel");
         errorHBox->addWidget(warningIconLabel);
 
-        QLabel *driveNameLabel = new QLabel(this);
-        QString text =
-                QString(tr("Generic errors (%n warning(s) or error(s))", "Number of warnings or errors", genericErrorsCount));
+        auto *driveNameLabel = new QLabel(this);
+        const auto text = QString(tr("Generic errors (%n warning(s) or error(s))", "Number of warnings or errors",
+                                     static_cast<int>(genericErrorsCount)));
         driveNameLabel->setText(text);
         driveNameLabel->setWordWrap(true);
         errorHBox->addWidget(driveNameLabel);
         errorHBox->addStretch();
 
-        QLabel *arrowIconLabel = new QLabel(this);
+        auto *arrowIconLabel = new QLabel(this);
         arrowIconLabel->setObjectName("arrowIconLabel");
         errorHBox->addWidget(arrowIconLabel);
 
@@ -161,7 +159,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
     }
 
     // Shadow
-    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
+    auto *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
     effect->setOffset(0);
     setGraphicsEffect(effect);

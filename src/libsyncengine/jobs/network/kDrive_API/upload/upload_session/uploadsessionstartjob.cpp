@@ -23,8 +23,9 @@
 
 namespace KDC {
 
-UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const SyncName &filename,
-                                             const uint64_t size, const NodeId &remoteParentDirId, const uint64_t totalChunks) :
+UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const DriveDbId driveDbId,
+                                             const SyncName &filename, const uint64_t size, const NodeId &remoteParentDirId,
+                                             const uint64_t totalChunks) :
     AbstractUploadSessionJob(uploadType, driveDbId),
     _filename(filename),
     _totalSize(size),
@@ -34,7 +35,7 @@ UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType,
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const NodeId &fileId,
+UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const DriveDbId driveDbId, const NodeId &fileId,
                                              const uint64_t size, const uint64_t totalChunks) :
     UploadSessionStartJob(uploadType, driveDbId, SyncName(), size, "", totalChunks) {
     _fileId = fileId;

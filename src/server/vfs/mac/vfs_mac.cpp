@@ -690,7 +690,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus 
                 _workerInfo[workerDehydration]._mutex.unlock();
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
-                bool syncing;
+                bool syncing = false;
                 _syncFileSyncing(_vfsSetupParams.syncDbId, relativeFilePath, syncing);
                 if (!syncing) {
                     // Set hydrating indicator (avoid double hydration)

@@ -29,19 +29,19 @@ namespace KDC {
 class MigrationSelectiveSync {
     public:
         MigrationSelectiveSync();
-        MigrationSelectiveSync(int syncDbId, const std::filesystem::path &path, SyncNodeType type);
+        MigrationSelectiveSync(const SyncDbId syncDbId, const std::filesystem::path &path, SyncNodeType type);
 
         void setSyncDbId(int syncDbId) { _syncDbId = syncDbId; }
-        const int &syncDbId() const { return _syncDbId; }
+        const SyncDbId &syncDbId() const { return _syncDbId; }
         void setPath(const std::filesystem::path &path) { _path = path; }
         const std::filesystem::path &path() const { return _path; }
         inline void setType(SyncNodeType type) { _type = type; }
         inline SyncNodeType type() const { return _type; }
 
     private:
-        int _syncDbId;
+        SyncDbId _syncDbId{0};
         std::filesystem::path _path;
-        SyncNodeType _type;
+        SyncNodeType _type{SyncNodeType::Undefined};
 };
 
 } // namespace KDC

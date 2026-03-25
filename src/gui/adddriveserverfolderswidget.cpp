@@ -63,7 +63,7 @@ AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientG
     updateUI();
 }
 
-void AddDriveServerFoldersWidget::init(int userDbId, const DriveAvailableInfo &driveInfo) {
+void AddDriveServerFoldersWidget::init(const UserDbId userDbId, const DriveAvailableInfo &driveInfo) {
     _driveInfo = driveInfo;
     _folderTreeItemWidget->setUserDbIdAndDriveInfo(userDbId, driveInfo);
     _folderTreeItemWidget->loadSubFolders();
