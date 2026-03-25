@@ -44,8 +44,9 @@ IpcClient::IpcClient(QObject *parent) :
         emit disconnected();
         exit(EXIT_FAILURE);
     });
-    connect(_socket, &QTcpSocket::errorOccurred, this, [](const QAbstractSocket::SocketError socketError) {
-        qCCritical(lcIpcClient) << "Socket error:" << socketError;
+    connect(_socket, &QTcpSocket::errorOccurred, this, [this](const QAbstractSocket::SocketError socketError) {
+        qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
+        qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
         exit(EXIT_FAILURE);
     });
 }
@@ -72,10 +73,12 @@ quint16 IpcClient::readPortFromCommFile() {
     const std::filesystem::path commPath = CommonUtility::getAppSupportDir() / ".comm";
     std::ifstream commFile(commPath);
     if (!commFile.is_open()) {
+        qCWarning(lcIpcClient) << "Failed to open .comm file at" << QString::fromStdString(commPath.string());
         return 0;
     }
     quint16 port = 0;
     commFile >> port;
+    qCDebug(lcIpcClient) << "Port read from .comm file:" << port;
     return port;
 }
 
@@ -88,6 +91,7 @@ void IpcClient::connectToServer(quint16 port) {
         emit disconnected();
         return;
     }
+    qCDebug(lcIpcClient) << "Connecting socket to server on port" << port;
     _socket->connectToHost(QHostAddress::LocalHost, port);
 }
 #endif
@@ -100,7 +104,7 @@ void IpcClient::connectToServer(quint16 port) {
  */
 int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
     if (_socket->state() != QTcpSocket::ConnectedState) {
-        qCCritical(lcIpcClient) << "Cannot send request, socket not connected";
+        qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state() << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
     }
     const int32_t id = _nextId++;
