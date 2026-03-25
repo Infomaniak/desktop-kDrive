@@ -53,6 +53,7 @@
 #include "errorinfolistjob.h"
 #include "errorresolveconflictsjob.h"
 #include "errorresolveconflictsquickjob.h"
+#include "errordeletejob.h"
 #if defined(KD_MACOS)
 #include "exclappgetlistjob.h"
 #include "exclappsetlistjob.h"
@@ -122,6 +123,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS, makeShared<ErrorResolveConflictsJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, makeShared<ErrorResolveConflictsQuickJob>},
+                {RequestNum::ERROR_DELETE, makeShared<ErrorDeleteJob>},
 #if defined(KD_MACOS)
                 {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
                 {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
