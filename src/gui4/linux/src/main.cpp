@@ -54,8 +54,7 @@ int main(int argc, char *argv[]) {
 
     QObject::connect(&client, &KDC::IpcClient::connected, [&client]() {
         qCDebug(lcMain) << "Connected to server";
-        const int id = client.sendRequest(RequestNum::USER_INFOLIST);
-        qCDebug(lcMain) << "Sent USER_INFOLIST request with id:" << id;
+        (void) client.sendRequest(RequestNum::USER_INFOLIST);
     });
 
     QObject::connect(&client, &KDC::IpcClient::disconnected, []() {
@@ -71,7 +70,6 @@ int main(int argc, char *argv[]) {
                                          << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
                      });
 
-    qCDebug(lcMain) << "Connecting to server...";
     client.connectToServer();
 #endif
     return QGuiApplication::exec();
