@@ -1,6 +1,7 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
@@ -17,27 +18,28 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             this.InitializeComponent();
             Error = error;
         }
-
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            Control? control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
-
-            var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
-            if (frame is null)
+            var xamlRoot = this.XamlRoot;
+            if (xamlRoot is null)
             {
-                Logger.Log(Logger.Level.Error, "Unable to navigate to SyncSettingsPage because Frame is null");
-                Utility.ShowUnexpectedErrorTeachingTip();
-                if (control is not null)
-                    control.IsEnabled = true;
                 return;
             }
-            var destPage = Error.Sync.IsAdvanced ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
-            frame?.Navigate(destPage, Error.Sync.Drive);
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = xamlRoot,
+                Title = Localizer.Instance.GetString("errDialogSystemUnableToStartVfsTitle"),
+                Content = Localizer.Instance.GetString("errDialogSystemUnableToStartVfsDescription"),
+                DefaultButton = ContentDialogButton.Close,
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonSynchronizeOffline")
+            };
 
-            if (control is not null)
-                control.IsEnabled = true;
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                if (!await Error.Sync.ChangeSyncType(Types.SyncType.Offline))
+                    await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
+            }
         }
     }
 }

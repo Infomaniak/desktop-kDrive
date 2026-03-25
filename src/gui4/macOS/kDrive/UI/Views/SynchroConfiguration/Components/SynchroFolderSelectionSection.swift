@@ -154,7 +154,8 @@ struct SynchroFolderSelectionSection: View {
                 return
             }
 
-            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path)
+            // TODO: Set correct syncConfiguration setting in next PR
+            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path, syncConfiguration: .Classic)
             guard isPathValid == true else {
                 isShowingSynchroLocationError = true
                 return

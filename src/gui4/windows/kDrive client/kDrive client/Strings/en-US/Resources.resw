@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Mar 2026 16:57:53 +0100 
+  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -952,9 +952,6 @@ Useful if you know that important work is online on kDrive.</value>
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
     <value>Keep only online versions</value> 
   </data> 
-  <data name="labelConnectToStart" xml:space="preserve"> 
-    <value>Log in to get started.</value> 
-  </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
     <value>Create a %@.</value> 
     <comment>use in pair with: labelNewSync</comment> 
@@ -1008,7 +1005,7 @@ Useful if you know that important work is online on kDrive.</value>
     <value>Local</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>%@ files have been modified both on your computer and on kDrive.</value> 
+    <value>256 fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>Mb</value> 

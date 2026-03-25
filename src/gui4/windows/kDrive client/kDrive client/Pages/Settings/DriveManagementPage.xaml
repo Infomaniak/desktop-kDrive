@@ -180,7 +180,7 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Remove sync -->
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonRemoveSync')}"
                                           IsClickEnabled="True"
                                           Foreground="{ThemeResource SystemErrorTextColor}"
                                           PointerExited="FixForegroundOnPointerExited"
@@ -199,7 +199,7 @@
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorSecondary}" />
 
-                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConfigureMainSync')}"
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonEnable')}"
                                 Click="SetupMainSyncButton_Click" />
                     </StackPanel>
                     <toolKit:SettingsCard.HeaderIcon>

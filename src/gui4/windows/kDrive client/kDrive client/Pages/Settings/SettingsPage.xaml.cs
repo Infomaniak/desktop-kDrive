@@ -166,8 +166,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 XamlRoot = this.XamlRoot,
                 Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
-                PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonKeepAccount"),
+                SecondaryButtonText = Localizer.Instance.GetString("buttonLogOut"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name)
             };
