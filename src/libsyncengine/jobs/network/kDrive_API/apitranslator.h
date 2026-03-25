@@ -37,7 +37,7 @@ class ApiTranslator {
 
         static DriveDbId getDriveDbId(DriveId driveId);
 
-        static const RemoteNodeId v2RootFolderRemoteId;
+        static RemoteNodeId v2RootFolderRemoteId();
 
         static const char *v3CommonDocuments;
         static const char *v3UserPrivate;

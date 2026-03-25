@@ -20,7 +20,6 @@
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 
 namespace KDC {
-const RemoteNodeId ApiTranslator::v2RootFolderRemoteId = RemoteNodeId{"1"};
 const char *ApiTranslator::v3CommonDocuments = "Common documents";
 const char *ApiTranslator::v3UserPrivate = "Private";
 const char *ApiTranslator::v3Shared = "Shared";
@@ -30,6 +29,14 @@ std::mutex ApiTranslator::_mutex;
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_commonDocumentsNodeIdCache = {};
 ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_sharedNodeIdCache = {};
+
+RemoteNodeId ApiTranslator::v2RootFolderRemoteId() {
+    const auto v2RootFolderRemoteId_ = SyncDb::driveRootNode().nodeIdRemote();
+
+    LOG_IF_FAIL(Log::instance()->getLogger(), v2RootFolderRemoteId_);
+
+    return v2RootFolderRemoteId_.value_or(RemoteNodeId{});
+};
 
 DriveId ApiTranslator::getDriveId(const DriveDbId driveDbId) {
     Drive drive;
@@ -78,7 +85,8 @@ DriveDbId ApiTranslator::getDriveDbId(const DriveId driveId) {
 void ApiTranslator::updateCache(const DriveDbId driveDbId) {
     constexpr auto maxNumberOfItems = 1000;
 
-    GetAllFilesInDirectoryJob fileListJob(driveDbId, NodeId{"1"}, TranslationMode::None);
+    RemoteNodeId remoteFolderId = v2RootFolderRemoteId();
+    GetAllFilesInDirectoryJob fileListJob(driveDbId, remoteFolderId, TranslationMode::None);
     fileListJob.setListingConf({.dirOnly = true, .limit = maxNumberOfItems});
     if (const auto exitInfo = fileListJob.runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetAllFilesInDirectoryJob::runSynchronously.");
@@ -142,7 +150,7 @@ RemoteNodeId ApiTranslator::getSharedRemoteId(DriveDbId driveDbId) {
 }
 
 void ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId) {
-    if (remoteDirectoryId != v2RootFolderRemoteId) return;
+    if (remoteDirectoryId != v2RootFolderRemoteId()) return;
 
     remoteDirectoryId = getUserPrivateFolderRemoteId(driveDbId);
 }
@@ -157,7 +165,7 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, NodeId &remoteNodeId) {
     if (remoteNodeId != getUserPrivateFolderRemoteId(driveDbId)) return;
 
-    remoteNodeId = v2RootFolderRemoteId;
+    remoteNodeId = v2RootFolderRemoteId();
 }
 
 void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList) {
@@ -168,7 +176,7 @@ void ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeInfoLis
 
     for (auto &nodeInfo: v3RemoteNodeInfoList) {
         if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
-            nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId));
+            nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId()));
     }
 }
 
