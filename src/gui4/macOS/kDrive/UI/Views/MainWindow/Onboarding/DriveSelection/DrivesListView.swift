@@ -90,6 +90,11 @@ class DrivesListView: NSView {
             drivesStackView.addArrangedSubview(cell)
 
             cells[drive.id] = cell
+            if selectedDrives.contains(drive) {
+                cell.state = .on
+            } else {
+                cell.state = .off
+            }
         }
     }
 

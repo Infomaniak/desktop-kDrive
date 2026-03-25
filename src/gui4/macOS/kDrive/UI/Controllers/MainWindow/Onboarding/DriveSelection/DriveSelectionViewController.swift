@@ -22,7 +22,6 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
-import SwiftUI
 
 enum OnboardingLinks {
     static let shopDriveSelection = URL(string: "https://shop.infomaniak.com/order/select/drive")!

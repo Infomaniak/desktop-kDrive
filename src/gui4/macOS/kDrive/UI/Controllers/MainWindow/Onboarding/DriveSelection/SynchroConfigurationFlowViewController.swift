@@ -50,7 +50,6 @@ final class SynchroConfigurationFlowViewController: NSHostingController<SynchroC
         window.isMovable = false
         window.toolbarStyle = .unified
         window.title = KDriveLocalizable.buttonAdvancedParameters
-
-        window.setFrame(NSRect(origin: .zero, size: CGSize(width: 500, height: 350)), display: true)
+        window.setContentSize(CGSize(width: 500, height: 350))
     }
 }
