@@ -16,9 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AppClientLinux.h"
+#pragma once
 
-int main(int argc, char *argv[]) {
-    KDC::AppClientLinux app(argc, argv);
-    return KDC::AppClientLinux::exec();
-}
+#include "communicationlayer/IpcClient.h"
+
+#include <QGuiApplication>
+#include <QLoggingCategory>
+
+namespace KDC {
+
+Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
+
+class AppClientLinux : public QGuiApplication {
+        Q_OBJECT
+
+    public:
+        explicit AppClientLinux(int &argc, char **argv);
+
+    signals:
+        void ipcConnected();
+        void ipcDisconnected();
+        void ipcMessageReceived(GuiJobType type, int32_t id, uint8_t num, Poco::DynamicStruct params);
+
+    private:
+        static void setupLogging();
+
+        IpcClient _ipcClient{this};
+};
+
+} // namespace KDC
