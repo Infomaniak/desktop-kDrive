@@ -1511,7 +1511,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 ArgsWriter(params).write(tmpUserDbId, tmpAccountId, tmpDriveId, localFolderPath, serverFolderPath,
                                          serverFolderNodeId, liteSync, blackList);
             } else {
-                ArgsWriter(params).write(tmpDriveId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList);
+                ArgsWriter(params).write(tmpDriveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync,
+                                         blackList);
             }
 
             const auto userDbId = static_cast<UserDbId>(tmpUserDbId);
