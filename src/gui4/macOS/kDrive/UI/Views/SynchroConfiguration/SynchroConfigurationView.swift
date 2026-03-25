@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -24,9 +23,6 @@ import UniformTypeIdentifiers
 
 struct SynchroConfigurationView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
-
-    @State private var synchroLocation: URL?
-    @State private var isShowingSynchroLocationError = false
 
     let configuration: SynchroConfiguration
 
@@ -59,12 +55,14 @@ struct SynchroConfigurationView: View {
                 LoadingButton(action: viewModel.saveConfiguration) {
                     Text(KDriveLocalizable.buttonValidate)
                 }
+                .keyboardShortcut(.defaultAction)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.cancelConfiguration()
                 }
+                .keyboardShortcut(.cancelAction)
             }
         }
     }

@@ -79,12 +79,14 @@ struct SelectSynchroFoldersView: View {
                 Button(KDriveLocalizable.buttonValidate) {
                     viewModel.navigate(to: .configureSynchro(configuration))
                 }
+                .keyboardShortcut(.defaultAction)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.navigate(to: .configureSynchro(configuration))
                 }
+                .keyboardShortcut(.cancelAction)
             }
         }
         .task {

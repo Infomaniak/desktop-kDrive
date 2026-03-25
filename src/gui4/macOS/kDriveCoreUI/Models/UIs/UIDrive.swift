@@ -47,7 +47,9 @@ public protocol UIDriveRepresentation: Sendable, Equatable, Hashable, Identifiab
 // MARK: - UIAvailableDrive
 
 public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         return driveId
     }
 
