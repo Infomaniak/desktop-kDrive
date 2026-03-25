@@ -8,7 +8,7 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('invalidSyncSyncDirNestingErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('invalidSyncSyncDirNestingErrorDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errInvalidSyncSyncDirNestingTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errInvalidSyncSyncDirNestingDescription')}"
                      Error="{x:Bind Error}" />
 </UserControl>

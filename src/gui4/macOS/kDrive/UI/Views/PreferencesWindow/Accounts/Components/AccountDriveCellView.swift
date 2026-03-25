@@ -17,13 +17,22 @@
  */
 
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct AccountDriveCellView: View {
+    @State private var isShowingSynchronizeDriveView = false
+    @State private var isShowingGenericError = false
+
+    let userDbId: Int
     let drive: any UIDriveRepresentation
     let isSynchronized: Bool
+
+    private var synchroConfiguration: SynchroConfiguration {
+        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [])
+    }
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
@@ -49,11 +58,20 @@ struct AccountDriveCellView: View {
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-                Button(KDriveLocalizable.buttonEnable, action: synchronizeDrive)
+                Button(KDriveLocalizable.buttonEnable, action: showSynchronizeDriveSheet)
                     .buttonStyle(.bordered)
+                    .sheet(isPresented: $isShowingSynchronizeDriveView) {
+                        SynchroConfigurationFlowView(
+                            userDbId: userDbId,
+                            configurations: [synchroConfiguration],
+                            onConfirm: handleUpdatedConfigurations,
+                            onCancel: hideSynchronizeDriveSheet
+                        )
+                    }
             }
         }
         .padding(.leading, AppPadding.padding24)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func manageSynchronizedDrive() {
@@ -63,11 +81,44 @@ struct AccountDriveCellView: View {
         router.append(.syncedKDrive(drive))
     }
 
-    private func synchronizeDrive() {
-        // TODO: Show synchronization flow
+    private func showSynchronizeDriveSheet() {
+        isShowingSynchronizeDriveView = true
+    }
+
+    private func hideSynchronizeDriveSheet() {
+        isShowingSynchronizeDriveView = false
+    }
+
+    private func handleUpdatedConfigurations(_ configurations: [SynchroConfiguration]) async {
+        do {
+            if let configuration = configurations.first {
+                try await synchronizeDrive(from: configuration)
+            }
+            hideSynchronizeDriveSheet()
+        } catch {
+            hideSynchronizeDriveSheet()
+            isShowingGenericError = true
+        }
+    }
+
+    private func synchronizeDrive(from configuration: SynchroConfiguration) async throws {
+        @InjectService var cache: CoherentCache
+        guard let drive = await cache.getAvailableDrive(driveDb: Int32(configuration.drive.id), userDbId: Int32(userDbId)) else {
+            return
+        }
+
+        let syncCandidate = NewSyncCandidate(
+            origin: .availableDrive(drive),
+            remoteFolder: .kDriveRoot,
+            localFolder: configuration.localFolder.url,
+            blackList: configuration.blackList
+        )
+
+        let syncInfo = try await SyncCreationService().create(from: syncCandidate)
+        try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
     }
 }
 
 #Preview {
-    AccountDriveCellView(drive: PreviewHelper.drive1, isSynchronized: true)
+    AccountDriveCellView(userDbId: PreviewHelper.user.id, drive: PreviewHelper.drive1, isSynchronized: true)
 }

@@ -7,12 +7,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        InconsistencyTypes = new[] { InconsistencyType.NotYetSupportedChar }
+        ExitCodes = new[] { ExitCode.BackError },
+        ExitCauses = new[] { ExitCause.HttpErrForbidden }
     )]
-    public sealed partial class NotYetSupportedCharError : UserControl
+    public sealed partial class GenericErrForbiddenError : UserControl
     {
         private Error Error { get; init; }
-        public NotYetSupportedCharError(Error error)
+        public GenericErrForbiddenError(Error error)
         {
             this.InitializeComponent();
             Error = error;

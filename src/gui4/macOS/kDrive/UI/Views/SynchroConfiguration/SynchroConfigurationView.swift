@@ -1,0 +1,80 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import kDriveCore
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
+import UniformTypeIdentifiers
+
+struct SynchroConfigurationView: View {
+    @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
+
+    @State private var synchroLocation: URL?
+    @State private var isShowingSynchroLocationError = false
+
+    let configuration: SynchroConfiguration
+
+    var body: some View {
+        Form {
+            Section {
+                HStack {
+                    BadgeView(
+                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
+                    )
+
+                    Text(configuration.drive.name)
+                        .font(.Tokens.bodyEmphasized)
+                        .foregroundStyle(ColorToken.Text.secondary.asColor)
+                }
+            } header: {
+                Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
+                    .font(.Tokens.headline)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+            }
+
+            SynchroFolderSelectionSection(configuration: configuration)
+
+            FolderFoldersSelectionSection(configuration: configuration)
+        }
+        .groupedFormatStyle()
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                LoadingButton(action: viewModel.saveConfiguration) {
+                    Text(KDriveLocalizable.buttonValidate)
+                }
+            }
+
+            ToolbarItem(placement: .cancellationAction) {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    viewModel.cancelConfiguration()
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    SynchroConfigurationView(configuration: SynchroConfiguration(
+        drive: PreviewHelper.drive1,
+        localFolder: .init(),
+        blackList: []
+    ))
+    .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
+}

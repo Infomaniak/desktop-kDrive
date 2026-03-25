@@ -11,6 +11,6 @@
                    Title="{x:Bind kDrive:Localizer.Instance.GetString('driveLockedErrorTitle')}"
                    Description="{x:Bind kDrive:Localizer.Instance.GetString(DescriptionKey)}"
                    ActionText="{x:Bind kDrive:Localizer.Instance.GetString(ActionTextKey)}"
-                   ActionClick="OnClick"
+                   ActionClick="ErrorCard_ActionClick"  
                    Error="{x:Bind Error}" />
 </UserControl>

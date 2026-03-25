@@ -60,6 +60,13 @@ namespace Infomaniak.kDrive
             return GetString(key, new object?[] { arg1 });
         }
 
+        // This method is similar to GetString1s but the argument is expected to be a key for another localized string, so it calls GetString on the argument before passing it to GetString.
+        public string GetStringCombine1s(string key, string arg1Key)
+        {
+            string arg1 = GetString(arg1Key);
+            return GetString(key, new object?[] { arg1 });
+        }
+
         public string GetString1i(string key, int arg1)
         {
             return GetString(key, new object?[] { arg1 });
@@ -141,21 +148,22 @@ namespace Infomaniak.kDrive
             // Replace literal \r\n with real newlines
             localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
 
-            // Replace each %@ with {0}, {1}, etc. for string formatting
-            const string macOSPlaceholder = "%@";
-            int argIndex = 0;
-            while (localizedString.Contains(macOSPlaceholder))
-            {
-                int pos = localizedString.IndexOf(macOSPlaceholder);
-                if (pos == -1)
-                    break;
-
-                localizedString = localizedString.Substring(0, pos) + "{" + argIndex + "}" + localizedString.Substring(pos + macOSPlaceholder.Length);
-                ++argIndex;
-            }
-
             if (args is not null && args.Length > 0)
             {
+                // Replace each %@ with {0}, {1}, etc. for string formatting
+                const string macOSPlaceholder = "%@";
+                int argIndex = 0;
+                while (localizedString.Contains(macOSPlaceholder))
+                {
+                    int pos = localizedString.IndexOf(macOSPlaceholder);
+                    if (pos == -1)
+                        break;
+
+                    localizedString = localizedString.Substring(0, pos) + "{" + Math.Min(argIndex, args.Length - 1) + "}" + localizedString.Substring(pos + macOSPlaceholder.Length);
+                    ++argIndex;
+                }
+
+
                 try
                 {
                     localizedString = string.Format(localizedString, args);

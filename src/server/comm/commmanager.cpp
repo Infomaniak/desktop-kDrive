@@ -26,6 +26,7 @@
 #include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
@@ -256,7 +257,10 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     const std::scoped_lock lock(_mutex);
-    if (!_guiJobFactory) return;
+    if (!_guiJobFactory) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Job Factory not initialized");
+        return;
+    }
 
     // Deserialize generic parameters
     int requestId = 0;
@@ -283,7 +287,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
 
-    assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
+    assert(signal->type() == GuiJobType::Signal);
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send gui signal: id=" << signal->id() << " num=" << signal->signalNum());
 

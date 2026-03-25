@@ -48,11 +48,11 @@ struct UserSection: View {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
             ForEach(synchronizedDrives) { drive in
-                AccountDriveCellView(drive: drive, isSynchronized: true)
+                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: true)
             }
 
             ForEach(availableDrives) { drive in
-                AccountDriveCellView(drive: drive, isSynchronized: false)
+                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: false)
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
