@@ -20,6 +20,7 @@
 
 #include "libcommon/log/customlogstreams.h"
 
+#include <exception>
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(lcSignalDispatcher, "gui.v4.signals", QtInfoMsg)
@@ -44,7 +45,13 @@ void SignalDispatcher::dispatch(SignalNum num, Poco::DynamicStruct params) {
         return;
     }
     for (const auto &handler : *it) {
-        handler(params);
+        try {
+            handler(params);
+        } catch (const std::exception &e) {
+            qCCritical(lcSignalDispatcher) << "Exception in signal handler for signal:" << num << "-" << e.what();
+        } catch (...) {
+            qCCritical(lcSignalDispatcher) << "Unknown exception in signal handler for signal:" << num;
+        }
     }
 }
 
