@@ -180,6 +180,8 @@ extension DriveSelectionViewController {
 
         primaryButton.isEnabled = shouldEnableButtons
         secondaryButton.isEnabled = shouldEnableButtons
+
+        drivesListView.selectedDrives = selectedDrives
     }
 
     private func handleLoadingState(_ isLoading: Bool) {
