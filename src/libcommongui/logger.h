@@ -83,7 +83,7 @@ class Logger : public QObject {
 
         bool compressSingleLog(const QString &sourceName, const QString &targetName);
 
-        void setIsCLientLog(bool newIsCLientLog);
+        void setIsClientLog(bool newIsClientLog);
 
     signals:
         void logWindowLog(const QString &);
@@ -111,7 +111,7 @@ class Logger : public QObject {
         bool _temporaryFolderLogDir = false;
         int _minLogLevel;
         QTimer _watchLogSizeTimer;
-        bool _isCLientLog = false;
+        bool _isClientLog = false;
 };
 
 } // namespace KDC
