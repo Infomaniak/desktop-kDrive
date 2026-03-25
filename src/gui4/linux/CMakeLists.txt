@@ -12,6 +12,8 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 set(GUI_SOURCE_FILES # C++ files for the GUI application
         src/main.cpp
+        src/AppClientLinux.cpp
+        src/AppClientLinux.h
         src/communicationlayer/IpcClient.cpp
         src/communicationlayer/IpcClient.h
 )
