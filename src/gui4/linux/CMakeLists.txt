@@ -11,31 +11,31 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 
 set(GUI_SOURCE_FILES # C++ files for the GUI application
-        src/main.cpp
-        src/AppClientLinux.cpp
-        src/AppClientLinux.h
-        src/communicationlayer/IpcClient.cpp
-        src/communicationlayer/IpcClient.h
+        main.cpp
+        AppClientLinux.cpp
+        AppClientLinux.h
+        communicationlayer/IpcClient.cpp
+        communicationlayer/IpcClient.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
-    qml/ThemeMode.qml
-    qml/tokens/IKColors.qml
-    qml/tokens/IKSpacing.qml
-    qml/tokens/IKRadius.qml
-    qml/tokens/IKFonts.qml
-    qml/tokens/IKIconSizes.qml
+    ui/ThemeMode.qml
+    ui/tokens/IKColors.qml
+    ui/tokens/IKSpacing.qml
+    ui/tokens/IKRadius.qml
+    ui/tokens/IKFonts.qml
+    ui/tokens/IKIconSizes.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(GUI_QML_FILES # .qml files for the app
-    qml/Main.qml
+    ui/Main.qml
     ${GUI_QML_SINGLETON_FILES}
 )
 
 set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files, etc.)
-    # TODO qml/Theme.js / qml/qmldir
+    # TODO ui/Theme.js / ui/qmldir
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
