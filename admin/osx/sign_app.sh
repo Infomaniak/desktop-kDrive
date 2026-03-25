@@ -27,86 +27,51 @@ app_domain="$4"
 
 echo "Signing src_app:$src_app identity:$identity team_identifier:$team_identifier app_domain:$app_domain"
 
-echo "Signing Qt Frameworks..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtDBus.framework/Versions/A/QtDBus"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtGui.framework/Versions/A/QtGui"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtNetwork.framework/Versions/A/QtNetwork"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtSql.framework/Versions/A/QtSql"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtSvg.framework/Versions/A/QtSvg"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtSvgWidgets.framework/Versions/A/QtSvgWidgets"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/QtWidgets.framework/Versions/A/QtWidgets"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework"
 
-echo "Signing third-party libraries..."
-for lib in "$src_app/Contents/Frameworks"/*.dylib; do
-    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$lib"
-done
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncLoginItemAgent.entitlements "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/Extension.appex"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/LiteSyncExtension.entitlements "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
 
-echo "Signing plugins..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/iconengines/libqsvgicon.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/imageformats/libqgif.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/imageformats/libqico.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/imageformats/libqjpeg.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/imageformats/libqsvg.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/platforms/libqcocoa.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/sqldrivers/libqsqlite.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/sqldrivers/libqsqlodbc.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/styles/libqmacstyle.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/tls/libqcertonlybackend.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/tls/libqsecuretransportbackend.dylib"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/PlugIns/kDrive_vfs_mac.dylib"
+# kdrive4 GUI
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
 
-echo "Signing Extension.appex binary..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/FinderSyncExtension.entitlements" "$src_app/Contents/PlugIns/Extension.appex/Contents/MacOS/Extension"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/FinderSyncExtension.entitlements" "$src_app/Contents/PlugIns/Extension.appex"
+# kdrive4 lib
+# /Users/adrien/dev2/desktop-kDrive/build-macos/client/install/kDrive.app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/kDriveCore
+ 
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework"
 
-echo "Signing LoginItemAgent..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/FinderSyncLoginItemAgent.entitlements" "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app/Contents/MacOS/$team_identifier.$app_domain.LoginItemAgent"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/FinderSyncLoginItemAgent.entitlements" "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app"
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/kDriveResources"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework"
 
-echo "Signing LiteSyncExt system extension..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/LiteSyncExtension.entitlements" "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension/Contents/MacOS/$app_domain.LiteSyncExt"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/LiteSyncExtension.entitlements" "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/kDriveCoreUI"
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/Current/kDriveCoreUI"
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/Current/Frameworks/kDriveCore.framework/kDriveCore"
+#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Frameworks/kDriveCore.framework/kDriveCore"
 
-echo "Signing Sparkle components..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/Frameworks/Sparkle.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework"
 
-echo "Signing kDrive Uninstaller.app..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDriveUninstaller.entitlements" "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
+# kDrive_client4.app
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app/Contents/MacOS/kDrive_client4.app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive4.entitlements "$src_app/Contents/MacOS/kDrive_client4.app"
 
-echo "Signing kDrive_client4.app ALL frameworks and binaries..."
-# Find and sign all binaries EXCEPT paths like X.framework/X which confuse codesign
-for binary_path in $(find "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks" -type f \( -name "kDriveCore" -o -name "kDriveResources" -o -name "kDriveCoreUI" -o -name "Lottie" -o -name "InfomaniakDI*" \) 2>/dev/null | grep -vE '\.framework/[^/]+$' | sort -u); do
-    # Log which binary we're signing
-    rel_path=$(echo "$binary_path" | sed "s|$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/||")
-    echo "Signing: $rel_path"
-    codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$binary_path"
-done
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
-# Sign the main binary
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
+# Verify the signature
+codesign -dv $src_app
+codesign --verify -v --strict $src_app
+# spctl -a -t exec -vv $src_app
 
-echo "Sign GUI4 (kDrive_client4.app)..."
-# Sign the bundle
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDrive4.entitlements" "$src_app/Contents/MacOS/kDrive_client4.app"
-
-echo "Signing MacOS binaries..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/crashpad_handler"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client"
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive"
-
-echo "Signing main app bundle..."
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDrive.entitlements" "$src_app"
-
-echo "Verify the signature"
-codesign -dv "$src_app"
-codesign --verify -v --strict "$src_app"
-
-echo "Validate the key used"
-codesign -dv "$src_app" 2>&1 | grep "TeamIdentifier=$team_identifier"
+# Validate that the key used for signing the binary matches the expected TeamIdentifier
+codesign -dv $src_app 2>&1 | grep "TeamIdentifier=$team_identifier"
 exit $?
