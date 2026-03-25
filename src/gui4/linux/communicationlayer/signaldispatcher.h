@@ -39,7 +39,7 @@ class SignalDispatcher : public QObject {
         Q_OBJECT
 
     public:
-        using Handler = std::function<void(Poco::DynamicStruct)>;
+        using Handler = std::function<void(const Poco::DynamicStruct &)>;
 
         explicit SignalDispatcher(QObject *parent = nullptr);
 
@@ -53,7 +53,7 @@ class SignalDispatcher : public QObject {
         /**
          * Called when a server signal is received. Invokes all handlers registered for @p num.
          */
-        void dispatch(SignalNum num, Poco::DynamicStruct params);
+        void dispatch(SignalNum num, const Poco::DynamicStruct &params) const;
 
     private:
         QHash<SignalNum, QList<Handler>> _handlers;
