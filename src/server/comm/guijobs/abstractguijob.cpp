@@ -62,19 +62,20 @@ ExitInfo AbstractGuiJob::runJob() {
 
     auto exitInfo = ExitInfo(ExitCode::Ok);
     if (_type == GuiJobType::Query) {
-        if (exitInfo = deserializeInputParms(); !exitInfo) {
+        exitInfo = deserializeInputParms();
+        if (!exitInfo) {
             LOG_WARN(_logger, "Error in deserializeInputParms for job=" << jobId() << " : " << exitInfo);
-        }
-
-        if (exitInfo) {
-            if (exitInfo = process(); !exitInfo) {
+        } else {
+            exitInfo = process();
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in process for job=" << jobId() << " : " << exitInfo);
             }
         }
     }
 
     if (exitInfo) {
-        if (exitInfo = serializeOutputParms(); !exitInfo) {
+        exitInfo = serializeOutputParms();
+        if (!exitInfo) {
             LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << exitInfo);
         }
     }
