@@ -80,8 +80,8 @@ echo "Signing kDrive Uninstaller.app..."
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDriveUninstaller.entitlements" "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
 echo "Signing kDrive_client4.app nested frameworks (deep)..."
-# Sign inner framework binary first (kDriveCore inside kDriveCoreUI) - sign binary directly as framework bundle metadata is incomplete
-codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/kDriveCore"
+# Sign inner framework binary first (kDriveCore inside kDriveCoreUI) - sign Versions/A binary to avoid "bundle format ambiguous" error
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
 # Sign frameworks at top level - sign the binaries directly for reliability
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
