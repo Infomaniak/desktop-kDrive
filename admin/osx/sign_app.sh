@@ -79,17 +79,27 @@ codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_
 echo "Signing kDrive Uninstaller.app..."
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDriveUninstaller.entitlements" "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
-echo "Signing kDrive_client4.app nested frameworks (deep)..."
-# Sign inner framework binary first (kDriveCore inside kDriveCoreUI) - sign Versions/A binary to avoid "bundle format ambiguous" error
+echo "Signing kDrive_client4.app nested frameworks (binaries and symlinks)..."
+# Sign all framework binaries including Versions/Current symlinks
+# Inner framework (kDriveCore inside kDriveCoreUI)
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
-# Sign frameworks at top level - sign the binaries directly for reliability
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/Frameworks/kDriveCore.framework/Versions/Current/kDriveCore"
+# Top level frameworks
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/Current/kDriveCore"
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/Current/kDriveResources"
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct.framework/Versions/A/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct"
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct.framework/Versions/Current/InfomaniakDI_-4775B9D5F9C3466A_PackageProduct"
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/kDriveCoreUI"
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/Current/kDriveCoreUI"
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/A/Lottie"
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/Current/Lottie"
+# Sign the main binary
+codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
 
 echo "Sign GUI4 (kDrive_client4.app)..."
+# Sign without --deep since frameworks have incomplete bundle metadata
 codesign -s "$identity" --force --verbose=4 --options=runtime --timestamp --entitlements "$(dirname "$0")/kDrive4.entitlements" "$src_app/Contents/MacOS/kDrive_client4.app"
 
 echo "Signing MacOS binaries..."
