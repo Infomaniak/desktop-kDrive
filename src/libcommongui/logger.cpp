@@ -122,8 +122,8 @@ Logger::~Logger() {
 #endif
 }
 
-void Logger::setIsCLientLog(bool newIsCLientLog) {
-    _isCLientLog = newIsCLientLog;
+void Logger::setIsClientLog(bool newIsClientLog) {
+    _isClientLog = newIsClientLog;
 }
 
 int Logger::minLogLevel() const {
@@ -275,7 +275,7 @@ void Logger::enterNextLogFile() {
         // Tentative new log name, will be adjusted if one like this already exists
         QDateTime now = QDateTime::currentDateTime();
         QString appName(APPLICATION_NAME);
-        if (_isCLientLog) {
+        if (_isClientLog) {
             appName += QString("_client");
         }
         QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
@@ -330,7 +330,7 @@ void Logger::enterNextLogFile() {
 }
 
 void Logger::slotWatchLogSize() {
-    if (_isCLientLog) {
+    if (_isClientLog) {
         // Do not check log size from client
         _watchLogSizeTimer.stop();
     } else {
