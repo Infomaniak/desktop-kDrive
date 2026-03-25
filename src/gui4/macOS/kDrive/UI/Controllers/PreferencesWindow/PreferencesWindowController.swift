@@ -21,6 +21,7 @@ import Cocoa
 final class PreferencesWindowController: NSWindowController {
     private var preferencesViewController: PreferencesSplitViewController!
 
+    private static let frameName = "kDrivePreferencesWindow"
     private static let contentRect = NSRect(x: 0, y: 0, width: 700, height: 400)
 
     init() {
@@ -30,14 +31,15 @@ final class PreferencesWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-
-        window.isReleasedWhenClosed = true
-        window.toolbarStyle = .unified
-        window.center()
-
         super.init(window: window)
 
-        window.setFrameAutosaveName("kDrivePreferencesWindow")
+        window.center()
+        window.setFrameAutosaveName(PreferencesWindowController.frameName)
+        window.minSize = NSSize(width: 600, height: 300)
+        window.maxSize = NSSize(width: 1000, height: 1000)
+        window.isReleasedWhenClosed = true
+
+        window.collectionBehavior.insert(.fullScreenNone)
 
         preferencesViewController = PreferencesSplitViewController()
         window.contentView = preferencesViewController.view
