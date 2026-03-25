@@ -19,8 +19,16 @@
 #include "appclientlinux.h"
 
 #include "libcommongui/logger.h"
+#include "libcommon/theme/theme.h"
+#include "libcommon/utility/utility.h"
+
+#include <QGuiApplication>
+#include <QLocale>
+#include <QScreen>
+#include <QSysInfo>
 
 #include <cstdlib>
+#include <thread>
 
 namespace KDC {
 
@@ -48,6 +56,41 @@ void AppClientLinux::setupLogging() {
     logger->setLogDebug(true);
     logger->setupTemporaryFolderLogDir();
     logger->enterNextLogFile();
+
+    qInfo(lcAppClientLinux) << "***** Application & System Informations *****";
+    qInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
+    qInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion().c_str();
+    qInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
+    qInfo(lcAppClientLinux) << "kernel type:" << QSysInfo::kernelType();
+    qInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
+    qInfo(lcAppClientLinux) << "# of logical CPU cores:" << std::thread::hardware_concurrency();
+    qInfo(lcAppClientLinux) << "locale:" << QLocale::system().name();
+
+    qInfo(lcAppClientLinux) << "display server:" << qEnvironmentVariable("XDG_SESSION_TYPE");
+    qInfo(lcAppClientLinux) << "display (X11):" << qEnvironmentVariable("DISPLAY");
+    qInfo(lcAppClientLinux) << "display (Wayland):" << qEnvironmentVariable("WAYLAND_DISPLAY");
+    qInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
+
+    qInfo(lcAppClientLinux) << "Qt version:" << qVersion();
+    qInfo(lcAppClientLinux) << "Qt platform:" << qEnvironmentVariable("QT_QPA_PLATFORM");
+    if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
+        qInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
+    if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR"))
+        qInfo(lcAppClientLinux) << "Qt auto screen scale:" << qEnvironmentVariable("QT_AUTO_SCREEN_SCALE_FACTOR");
+    if (qEnvironmentVariableIsSet("QT_FONT_DPI"))
+        qInfo(lcAppClientLinux) << "Qt font DPI:" << qEnvironmentVariable("QT_FONT_DPI");
+
+    const auto screens = QGuiApplication::screens();
+    qInfo(lcAppClientLinux) << "# of screens:" << screens.size();
+    for (const auto *screen: screens) {
+        qInfo(lcAppClientLinux) << "  screen:" << screen->name();
+        qInfo(lcAppClientLinux) << "  - resolution:" << screen->size();
+        qInfo(lcAppClientLinux) << "  - physical DPI:" << screen->physicalDotsPerInch();
+        qInfo(lcAppClientLinux) << "  - logical DPI:" << screen->logicalDotsPerInch();
+        qInfo(lcAppClientLinux) << "  - scale factor:" << screen->devicePixelRatio();
+    }
+    qInfo(lcAppClientLinux) << "********************";
+
 }
 
 } // namespace KDC
