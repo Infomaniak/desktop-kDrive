@@ -36,7 +36,10 @@ final class PreferencesWindowController: NSWindowController {
         window.center()
         window.setFrameAutosaveName(PreferencesWindowController.frameName)
         window.minSize = NSSize(width: 600, height: 300)
+        window.maxSize = NSSize(width: 1000, height: 1000)
         window.isReleasedWhenClosed = true
+
+        window.collectionBehavior.insert(.fullScreenNone)
 
         preferencesViewController = PreferencesSplitViewController()
         window.contentView = preferencesViewController.view
