@@ -17,6 +17,7 @@
  */
 
 #include "ipcclient.h"
+#include "debughelpers.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/cstypes.h"
