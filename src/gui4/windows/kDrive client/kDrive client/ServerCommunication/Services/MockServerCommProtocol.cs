@@ -78,6 +78,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await ParametersInfo(parameters);
                 case RequestNum.PARAMETERS_UPDATE:
                     return await ParametersUpdate(parameters);
+                case RequestNum.ERROR_DELETE:
+                    return await ErrorDelete(parameters);
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -387,6 +389,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum = RequestNum.PARAMETERS_UPDATE,
                 Params = []
             };
+        }
+
+        private Task<CommData> ErrorDelete(JsonObject parameters)
+        {
+            DbId errorDbId = parameters[JsonKeys.ErrorDbId]?.GetValue<DbId>() ?? -1;
+            EnqueueSignal(SignalNum.UTILITY_ERROR_REMOVED, new JsonObject { [JsonKeys.ErrorDbId] = errorDbId });
+            return Task.FromResult(new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.ERROR_DELETE,
+                Params = []
+            });
         }
 
         protected void EnqueueSignal(SignalNum signalNum, JsonObject parameters)

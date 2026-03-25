@@ -1247,6 +1247,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
+        public async Task<bool> DeleteError(DbId errorDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.ErrorDbId] = errorDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_DELETE, parms, cancellationToken).ConfigureAwait(false);
+            if (data?.Code == ExitCode.InvalidOperation)
+            {
+                Logger.Log(Logger.Level.Info, $"Error with DbId {errorDbId} cannot be deleted as it is kept by the server.");
+                return false;
+            }
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
