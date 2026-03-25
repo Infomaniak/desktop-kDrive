@@ -16,61 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "communicationlayer/IpcClient.h"
-#include "libcommongui/logger.h"
-
-#include <QGuiApplication>
-#include <QLoggingCategory>
-
-#include <Poco/Dynamic/Struct.h>
-
-Q_LOGGING_CATEGORY(lcMain, "gui.v4.main", QtInfoMsg)
-
-static void setupLogging() {
-    auto *logger = KDC::Logger::instance(); // installs Qt message handler
-    logger->setIsCLientLog(true);
-    logger->setLogDebug(true);
-    logger->setupTemporaryFolderLogDir();
-    logger->enterNextLogFile();
-}
-
-std::string toString(const KDC::GuiJobType type) {
-    switch (type) {
-        case KDC::GuiJobType::Query:
-            return "Query";
-        case KDC::GuiJobType::Signal:
-            return "Signal";
-        default:
-            return "Unknown";
-    }
-}
+#include "AppClientLinux.h"
 
 int main(int argc, char *argv[]) {
-    QGuiApplication app(argc, argv);
-    setupLogging();
-
-#ifdef QT_DEBUG
-    KDC::IpcClient client;
-
-    QObject::connect(&client, &KDC::IpcClient::connected, [&client]() {
-        qCDebug(lcMain) << "Connected to server";
-        (void) client.sendRequest(RequestNum::USER_INFOLIST);
-    });
-
-    QObject::connect(&client, &KDC::IpcClient::disconnected, []() {
-        qCDebug(lcMain) << "Disconnected from server";
-    });
-
-    QObject::connect(&client, &KDC::IpcClient::messageReceived,
-                     [](KDC::GuiJobType type, int32_t id, uint8_t num, const Poco::DynamicStruct &params) {
-                         const std::string numstr = type == KDC::GuiJobType::Query ? toString(static_cast<RequestNum>(num)):
-                                                        toString(static_cast<SignalNum>(num));
-
-                         qCDebug(lcMain) << "Message received — type:" << toString(type) << "id:" << id << "num:" << numstr
-                                         << "params:" << QString::fromStdString(Poco::Dynamic::structToString(params));
-                     });
-
-    client.connectToServer();
-#endif
-    return QGuiApplication::exec();
+    KDC::AppClientLinux app(argc, argv);
+    return KDC::AppClientLinux::exec();
 }
