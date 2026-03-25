@@ -1258,14 +1258,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY: {
-            qint64 tmpDriveDbId = 0;
-
-            QDataStream paramsStream(params);
-            paramsStream >> tmpDriveDbId;
-
             // TODO : not implemented yet
-
-            resultStream << ExitCode::Ok;
+            resultStream << ExitCode::LogicError;
             break;
         }
         case RequestNum::USER_AVAILABLEDRIVES: {
@@ -2828,11 +2822,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
