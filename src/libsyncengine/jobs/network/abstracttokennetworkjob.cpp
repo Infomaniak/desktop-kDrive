@@ -58,8 +58,9 @@ void AbstractTokenNetworkJob::checkParametersValidity() {
     }
 }
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UsrId userId, const DriveDbId driveDbId,
-                                                 const DriveId driveId, const bool returnJson /*= true*/) :
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
+                                                 const DriveDbId driveDbId, const DriveId driveId,
+                                                 const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
     _userId(userId),
