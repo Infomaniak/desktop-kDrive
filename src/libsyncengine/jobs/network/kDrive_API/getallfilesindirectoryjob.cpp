@@ -19,6 +19,8 @@
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 
+#include "jobs/network/jobexceptions.h"
+
 namespace KDC {
 
 GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
@@ -45,10 +47,12 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
             fileListJob =
                     _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
                                : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
-        } catch (const std::bad_alloc &e) {
-            LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
+        } catch (const std::bad_alloc &badAllocationException) {
+            return job_exceptions::exception2ExitCode(badAllocationException);
+        } catch (const job_exceptions::DbError &dbException) {
+            LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(dbException));
 
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
+            return job_exceptions::exception2ExitCode(dbException);
         }
 
         fileListJob->setListingConf(_listingConf);

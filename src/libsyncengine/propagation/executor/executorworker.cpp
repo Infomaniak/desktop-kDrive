@@ -22,25 +22,32 @@
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
+
+#include "jobs/network/jobexceptions.h"
+
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/movejob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
+
+#include "jobs/syncjobmanager.h"
+
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
-#include "jobs/syncjobmanager.h"
-#include "jobs/network/kDrive_API/upload/uploadjob.h"
-#include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
+
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
-#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -384,8 +391,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -425,7 +432,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
                                                                << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
                                                                << " error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return job_exceptions::exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {

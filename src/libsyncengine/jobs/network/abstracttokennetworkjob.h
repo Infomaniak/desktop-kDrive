@@ -36,22 +36,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
     public:
-        struct DbError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
-        struct DataError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
-        struct TokenError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
-        struct InvalidArgumentError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
         enum class ApiType {
             Drive,
             DriveByUser,
@@ -61,10 +45,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
         /// @throw std::runtime_error
-        /// @throw DbError
-        /// @throw DataError
-        /// @throw TokenError
-        /// @throw InvalidArgumentError
+        /// @throw job_exceptions::DbError
+        /// @throw job_exceptions::DataError
+        /// @throw job_exceptions::TokenError
+        /// @throw job_exceptions::InvalidArgumentError
         AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
@@ -78,8 +62,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
-
-        static ExitCode exception2ExitCode(const std::exception &e);
 
     protected:
         std::string getSpecificUrl() override;
@@ -137,7 +119,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         Drive getDrive(int driveDbId) const;
         void setDriveDbIdFromDriveId();
 
-        /// @throw InvalidArgumentError
+        /// @throw job_exceptions::InvalidArgumentError
         void checkParametersValidity();
 
         friend class TestServerRequests;

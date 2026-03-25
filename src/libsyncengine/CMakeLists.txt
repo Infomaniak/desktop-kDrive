@@ -27,6 +27,7 @@ set(syncengine_SRCS
     jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
+    jobs/network/jobexceptions.h jobs/network/jobexceptions.cpp
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp

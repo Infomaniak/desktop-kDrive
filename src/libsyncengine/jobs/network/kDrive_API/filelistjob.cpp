@@ -19,6 +19,7 @@
 #include "jobs/network/kDrive_API/filelistjob.h"
 
 #include "jobs/network/kDrive_API/apitranslator.h"
+#include "jobs/network/jobexceptions.h"
 
 namespace KDC {
 
@@ -30,7 +31,11 @@ FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId 
     _translationMode(translationMode) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
-    _driveDbId = ApiTranslator::getDriveDbId(_driveId);
+    if (const auto exitInfo = ApiTranslator::getDriveDbId(_driveId, _driveDbId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in FileListJob::FileListJob: " << exitInfo);
+        const auto errorMsg = "Error in ApiTranslator::getDriveDbId: drivedId=" + std::to_string(_driveId);
+        throw job_exceptions::DbError(errorMsg);
+    }
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 

@@ -17,6 +17,7 @@
  */
 
 #include "abstracttokennetworkjob.h"
+#include "jobexceptions.h"
 
 #include "config.h"
 #include "utility/urlhelper.h"
@@ -338,19 +339,19 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         assert(false);
         const std::string err{"Error in ParmsDb::selectUser"};
         LOG_WARN(_logger, err);
-        throw DbError(err);
+        throw job_exceptions::DbError(err);
     }
     if (!found) {
         assert(false);
         const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
         LOG_WARN(_logger, err);
-        throw DataError(err);
+        throw job_exceptions::DataError(err);
     }
 
     if (user.keychainKey().empty()) {
         const std::string err{"Access token is empty"};
         LOG_DEBUG(_logger, err);
-        throw TokenError(err);
+        throw job_exceptions::TokenError(err);
     }
 
     // Read token form keystore
@@ -358,7 +359,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     if (!login->hasToken()) {
         const std::string err{"Failed to retrieve access token"};
         LOG_WARN(_logger, err);
-        throw TokenError(err);
+        throw job_exceptions::TokenError(err);
     }
 
     _userToApiKeyMap[_userDbId] = {login, user.userId()};
@@ -373,14 +374,14 @@ Drive AbstractTokenNetworkJob::getDrive(const int driveDbId) const {
         assert(false);
         constexpr auto err{"Error in ParmsDb::selectDrive"};
         LOG_WARN(_logger, err);
-        throw DbError(err);
+        throw job_exceptions::DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err{"Drive not found for driveDbId=" + std::to_string(driveDbId)};
         LOG_WARN(_logger, err);
-        throw DataError(err);
+        throw job_exceptions::DataError(err);
     }
 
     return drive;
@@ -395,14 +396,14 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
         assert(false);
         const std::string err{"Error in ParmsDb::selectAccount"};
         LOG_WARN(_logger, err);
-        throw DbError(err);
+        throw job_exceptions::DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
         LOG_WARN(_logger, err);
-        throw DataError(err);
+        throw job_exceptions::DataError(err);
     }
 
     return account;
@@ -460,14 +461,14 @@ void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
         assert(false);
         constexpr auto err{"Error in ParmsDb::selectDriveById"};
         LOG_WARN(_logger, err);
-        throw DbError(err);
+        throw job_exceptions::DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
         LOG_WARN(_logger, err);
-        throw DataError(err);
+        throw job_exceptions::DataError(err);
     }
 
     _driveDbId = drive.dbId();
@@ -486,14 +487,14 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
             assert(false);
             const std::string err{"Error in ParmsDb::selectAllSyncs"};
             LOG_WARN(_logger, err);
-            throw DbError(err);
+            throw job_exceptions::DbError(err);
         }
 
         if (syncList.empty()) {
             assert(false);
             const std::string err{"No sync found"};
             LOG_WARN(_logger, err);
-            throw DataError(err);
+            throw job_exceptions::DataError(err);
         }
 
         _driveDbId = syncList[0].driveDbId();
@@ -582,20 +583,6 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
     // userDbId found in User cache
     const std::shared_ptr<Login> login = it->second.login;
     return login->tokenUpdateDurationFromNow();
-}
-
-ExitCode AbstractTokenNetworkJob::exception2ExitCode(const std::exception &exc) {
-    if (dynamic_cast<const AbstractTokenNetworkJob::DbError *>(&exc)) {
-        return ExitCode::DbError;
-    }
-    if (dynamic_cast<const AbstractTokenNetworkJob::DataError *>(&exc)) {
-        return ExitCode::DataError;
-    }
-    if (dynamic_cast<const AbstractTokenNetworkJob::TokenError *>(&exc)) {
-        return ExitCode::InvalidToken;
-    }
-
-    return ExitCode::Unknown;
 }
 
 } // namespace KDC

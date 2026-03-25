@@ -21,6 +21,7 @@
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
 #include "jobs/syncjobmanager.h"
+#include "jobs/network/jobexceptions.h"
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
@@ -727,7 +728,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), ERR_ID, ExitCode::Unknown, ExitCause::Unknown));
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return job_exceptions::exception2ExitCode(e);
     }
 
     job->setAffectedFilePath(relativePath);
@@ -1307,7 +1308,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
             }
         } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
+            return job_exceptions::exception2ExitCode(e);
         }
     }
 

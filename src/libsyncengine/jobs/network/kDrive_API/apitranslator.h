@@ -27,15 +27,15 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        static void translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
+        static ExitInfo translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
-        static void translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
-        static void translateV3ToV2(DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList);
-        static RemoteNodeId getUserPrivateFolderRemoteId(DriveDbId driveDbId);
-        static RemoteNodeId getCommonDocumentsRemoteId(DriveDbId driveDbId);
-        static RemoteNodeId getSharedRemoteId(DriveDbId driveDbId);
+        static ExitInfo translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
+        static ExitInfo translateV3ToV2(DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList);
+        static ExitInfo getUserPrivateFolderRemoteId(DriveDbId driveDbId, RemoteNodeId &userPrivateFolderRemoteId);
+        static ExitInfo getCommonDocumentsRemoteId(DriveDbId driveDbId, RemoteNodeId &commonDocumentsRemoteNodeId);
+        static ExitInfo getSharedRemoteId(DriveDbId driveDbId, RemoteNodeId &SharedNodeId);
 
-        static DriveDbId getDriveDbId(DriveId driveId);
+        static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
 
         static RemoteNodeId v2RootFolderRemoteId();
 
@@ -44,16 +44,15 @@ class ApiTranslator {
         static const char *v3Shared;
 
     private:
-        static DriveId getDriveId(DriveDbId driveDbId);
         static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static void updateCache(DriveDbId driveDbId);
+        static ExitInfo updateCache(DriveDbId driveDbId);
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
         static RemoteNodeIdCacheMap _rootNodeIdCache;
         static RemoteNodeIdCacheMap _commonDocumentsNodeIdCache;
         static RemoteNodeIdCacheMap _sharedNodeIdCache;
 
-        static RemoteNodeId getValue(const DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache);
+        static RemoteNodeId getValue(DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };
