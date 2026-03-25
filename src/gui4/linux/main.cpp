@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AppClientLinux.h"
+#include "appclientlinux.h"
 
 int main(int argc, char *argv[]) {
     KDC::AppClientLinux app(argc, argv);
