@@ -19,6 +19,7 @@
 #pragma once
 
 #include "communicationlayer/ipcclient.h"
+#include "communicationlayer/signaldispatcher.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -33,6 +34,8 @@ class AppClientLinux : public QGuiApplication {
     public:
         explicit AppClientLinux(int &argc, char **argv);
 
+        SignalDispatcher &signalDispatcher() { return _signalDispatcher; }
+
     signals:
         void ipcConnected();
         void ipcDisconnected();
@@ -42,6 +45,7 @@ class AppClientLinux : public QGuiApplication {
         static void setupLogging();
 
         IpcClient _ipcClient{this};
+        SignalDispatcher _signalDispatcher{this};
 };
 
 } // namespace KDC

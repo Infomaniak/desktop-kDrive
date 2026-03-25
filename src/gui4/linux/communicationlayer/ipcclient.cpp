@@ -33,6 +33,10 @@
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
+// Response-only fields (type=QUERY) - defined server-side in abstractguijob.cpp, not in comm.h
+static constexpr auto MSG_RESPONSE_CODE = "code";
+static constexpr auto MSG_RESPONSE_CAUSE = "cause";
+
 namespace KDC {
 
 IpcClient::IpcClient(QObject *parent) :
@@ -99,11 +103,12 @@ void IpcClient::connectToServer(quint16 port) {
 /**
  * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
  * @param params Request parameters
+ * @param callback Optional callback invoked with the server response. If null, the response is silently discarded.
  * @return the request ID, which can be used to match the response with the request.
  * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client calls exit(EXIT_FAILURE).
  */
-int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params) {
-    if (_socket->state() != QTcpSocket::ConnectedState) {
+int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
+    if (_socket->state() != QAbstractSocket::ConnectedState) {
         qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state() << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
     }
@@ -132,6 +137,10 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
         exit(EXIT_FAILURE);
     }
 
+    if (callback) {
+        _pendingCallbacks[id] = std::move(callback);
+    }
+
     return id;
 }
 
@@ -148,41 +157,68 @@ void IpcClient::onReadyRead() {
 }
 
 /**
- * Process the buffer to extract complete JSON messages and emit a signal for each message received.
- * Each message is expected to be a JSON object with the following structure:
- * {
- *    "type": int, // 1 for requests, 2 for signals
- *    "id": int, // request ID for requests, signal ID for signals
- *    "num": int, // request number for requests, signal number for signals
- *    "params": JSON object
- * }
+ * Process the buffer to extract complete JSON messages and route each one.
+ * - type: GuiJobType::Query (1)  -> response to a pending request: invoke its stored callback and remove it.
+ * - type: GuiJobType::Signal (2) -> server-initiated signal: emit serverSignalReceived().
+ *
+ * Each message is expected to be a JSON object:
+ * { "type": int, "id": int, "num": int, "params": object }
+ *
  * @note Any parsing or deserialization error is considered fatal: the client calls exit(EXIT_FAILURE).
  */
 void IpcClient::processBuffer() {
     Poco::JSON::Parser parser;
     std::string raw;
     while (extractNextMessage(_readBuffer, raw)) {
+        qCDebug(lcIpcClient) << "Received message:" << QString::fromStdString(raw);
         try {
             parser.reset();
             const Poco::Dynamic::Var var = parser.parse(raw);
-            const auto& objPtr = var.extract<Poco::JSON::Object::Ptr>();
+            const auto &objPtr = var.extract<Poco::JSON::Object::Ptr>();
             if (!objPtr) {
                 qCCritical(lcIpcClient) << "Failed to parse the JSON message: \n'" << raw << "'\n";
                 exit(EXIT_FAILURE);
             }
             const Poco::DynamicStruct msg = *objPtr;
 
-            if (!msg.contains(MSG_TYPE) || !msg.contains(MSG_REQUEST_ID) || !msg.contains(MSG_REQUEST_NUM) || !msg.contains(MSG_REQUEST_PARAMS)) {
+            if (!msg.contains(MSG_TYPE) || !msg.contains(MSG_REQUEST_ID) || !msg.contains(MSG_REQUEST_NUM) ||
+                !msg.contains(MSG_REQUEST_PARAMS)) {
                 qCCritical(lcIpcClient) << "Received malformed message, missing required fields";
                 exit(EXIT_FAILURE);
             }
 
             const auto type = static_cast<GuiJobType>(msg[MSG_TYPE].convert<int>());
             const int32_t id = msg[MSG_REQUEST_ID];
-            const uint8_t num = msg[MSG_REQUEST_NUM];
             const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
-            emit messageReceived(type, id, num, params);
+            switch (type) {
+                case GuiJobType::Query: {
+                    if (!msg.contains(MSG_RESPONSE_CODE) || !msg.contains(MSG_RESPONSE_CAUSE)) {
+                        qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
+                        exit(EXIT_FAILURE);
+                    }
+                    const auto exitCode = static_cast<ExitCode>(msg[MSG_RESPONSE_CODE].convert<int>());
+                    const auto exitCause = static_cast<ExitCause>(msg[MSG_RESPONSE_CAUSE].convert<int>());
+                    const auto num = static_cast<RequestNum>(msg[MSG_REQUEST_NUM].convert<int>());
+                    qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
+                    if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
+                        it.value()(ExitInfo(exitCode, exitCause), params);
+                        _pendingCallbacks.erase(it);
+                    } else {
+                        qCWarning(lcIpcClient) << "Received response for unknown request id:" << id;
+                    }
+                    break;
+                }
+                case GuiJobType::Signal: {
+                    const auto num = static_cast<SignalNum>(msg[MSG_REQUEST_NUM].convert<int>());
+                    qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
+                    emit serverSignalReceived(num, params);
+                    break;
+                }
+                default:
+                    qCCritical(lcIpcClient) << "Received message with unknown type:" << type;
+                    exit(EXIT_FAILURE);
+            }
         } catch (const Poco::Exception &e) {
             qCCritical(lcIpcClient) << "Exception while processing message:" << e.what();
             exit(EXIT_FAILURE);
