@@ -336,7 +336,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     // Get user
     User user;
     bool found = false;
-    if (!ParmsDb::instance()->selectUser(static_cast<int>(_userDbId), user, found)) {
+    if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
         assert(false);
         const std::string err{"Error in ParmsDb::selectUser"};
         LOG_WARN(_logger, err);
@@ -425,7 +425,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
     }
 
     // Get drive
-    const Drive &drive = getDrive(static_cast<int>(_driveDbId));
+    const Drive &drive = getDrive(_driveDbId);
     _driveId = drive.driveId();
 
     // Get account
@@ -458,7 +458,7 @@ void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
 
     Drive drive;
     bool found = false;
-    if (!ParmsDb::instance()->selectDriveByDriveId(static_cast<int>(_driveId), drive, found)) {
+    if (!ParmsDb::instance()->selectDriveByDriveId(_driveId, drive, found)) {
         assert(false);
         constexpr auto err{"Error in ParmsDb::selectDriveById"};
         LOG_WARN(_logger, err);
@@ -548,7 +548,7 @@ ExitInfo AbstractTokenNetworkJob::refreshToken() {
         // Clear the keychain key
         User user;
         bool found = false;
-        if (!ParmsDb::instance()->selectUser(static_cast<int>(_userDbId), user, found)) {
+        if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectUser");
             return ExitCode::DbError;
         }
