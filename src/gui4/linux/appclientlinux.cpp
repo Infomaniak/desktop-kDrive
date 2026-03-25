@@ -22,6 +22,8 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 
+#include <Poco/Dynamic/Struct.h>
+
 #include <QGuiApplication>
 #include <QLocale>
 #include <QScreen>
@@ -40,7 +42,15 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 
     connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
-    connect(&_ipcClient, &IpcClient::messageReceived, this, &AppClientLinux::ipcMessageReceived);
+    connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+
+    connect(this, &AppClientLinux::ipcConnected, this, [this] {
+        qCDebug(lcAppClientLinux) << "IPC connected - sending USER_INFOLIST request";
+        _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {}, [](const ExitInfo &exitInfo, const Poco::DynamicStruct &params) {
+            qCDebug(lcAppClientLinux) << "USER_INFOLIST response | exitCode:" << exitInfo.code()
+                                      << "exitCause:" << exitInfo.cause(); // callbacks test
+        });
+    });
 
 #ifdef QT_DEBUG
     _ipcClient.connectToServer();

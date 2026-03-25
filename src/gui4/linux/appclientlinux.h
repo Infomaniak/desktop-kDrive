@@ -39,7 +39,6 @@ class AppClientLinux : public QGuiApplication {
     signals:
         void ipcConnected();
         void ipcDisconnected();
-        void ipcMessageReceived(GuiJobType type, int32_t id, uint8_t num, Poco::DynamicStruct params);
 
     private:
         static void setupLogging();
