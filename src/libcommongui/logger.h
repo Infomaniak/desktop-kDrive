@@ -77,7 +77,7 @@ class Logger : public QObject {
 
         bool compressSingleLog(const QString &sourceName, const QString &targetName);
 
-        void setIsCLientLog(bool newIsCLientLog);
+        void setIsClientLog(bool newIsClientLog);
 
     signals:
         void logWindowLog(const QString &);
