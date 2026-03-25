@@ -43,7 +43,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 }
 
 void AppClientLinux::setupLogging() {
-    auto *logger = Logger::instance();
+    auto *const logger = Logger::instance();
     logger->setIsCLientLog(true);
     logger->setLogDebug(true);
     logger->setupTemporaryFolderLogDir();
