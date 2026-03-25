@@ -38,7 +38,7 @@ void SignalDispatcher::registerHandler(SignalNum num, Handler handler) {
  * Invokes all handlers registered for the given signal number.
  * Unregistered signals are silently ignored (logged at debug level).
  */
-void SignalDispatcher::dispatch(SignalNum num, Poco::DynamicStruct params) {
+void SignalDispatcher::dispatch(SignalNum num, const Poco::DynamicStruct &params) const {
     const auto it = _handlers.constFind(num);
     if (it == _handlers.constEnd()) {
         qCDebug(lcSignalDispatcher) << "No handler registered for signal num:" << num ;
