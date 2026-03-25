@@ -8,7 +8,9 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('invalidSyncSyncDirAccessErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('invalidSyncSyncDirAccessErrorDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errInvalidSyncSyncDirAccessTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errInvalidSyncSyncDirAccessDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonErrorResolutionTip')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

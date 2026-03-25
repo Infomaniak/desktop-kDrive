@@ -12,7 +12,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('notEnoughDiskSpaceErrorTitle')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errNotEnoughDiskSpaceTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errNotEnoughDiskSpaceDescription')}"
                      ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageDiskSpace')}"
                      ActionClick="ErrorCard_ActionClick"

@@ -8,7 +8,7 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('networkErrorOtherTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('networkErrorOtherDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errNetworkErrorOtherTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errNetworkErrorOtherDescription')}"
                      Error="{x:Bind Error}" />
 </UserControl>

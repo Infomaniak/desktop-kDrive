@@ -157,7 +157,7 @@
                         </Grid>
                     </toolKit:SettingsCard>
 
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonRemoveSync')}"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
                                           IsClickEnabled="True"

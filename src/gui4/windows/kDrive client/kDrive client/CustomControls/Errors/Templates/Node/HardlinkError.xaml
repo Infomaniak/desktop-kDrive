@@ -12,7 +12,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('hardlinkErrorTitle')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errHardlinkTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errHardlinkDescription')}"
                      Error="{x:Bind Error}" />
 </UserControl>

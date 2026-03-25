@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Logical root node
-            Node rootNode = new Node(App.Constants.Drive.RootNodeId, Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
+            Node rootNode = new Node(App.Constants.Sync.RootNodeId, Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
             _rootLevelItems.Add(new RemoteLocationSelectorTreeItem(rootNode, Drive, null));
             await _rootLevelItems[0].LoadImmediateChildrenAsync();
             await rootNode.LoadSize();
@@ -312,7 +312,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (string.IsNullOrEmpty(parentNodeId))
             {
-                parentNodeId = App.Constants.Drive.RootNodeId;
+                parentNodeId = App.Constants.Sync.RootNodeId;
             }
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
