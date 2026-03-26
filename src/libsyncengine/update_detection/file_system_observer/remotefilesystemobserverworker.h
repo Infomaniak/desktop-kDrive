@@ -55,14 +55,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 bool eof{false};
                 uint64_t itemCount{0};
         };
-        ExitInfo handleSnapshotItem(const SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
-                                    sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
-        ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
-        //! Insert a valid item into the snapshot. Items that are excluded, contain unsupported characters, are duplicated or
-        //! whose parent is a file are skipped.
-        ExitInfo insertItemInSnapshot(const SnapshotItem &item, SyncNameSet &existingFiles);
-        //! Check the integrity of the snapshot items and remove the inconsistent ones (orphan items).
-        ExitInfo removeOrphans();
+
+        [[nodiscard]] ExitInfo handleSnapshotItem(const SnapshotItem &item, SyncNameSet &existingFiles,
+                                                  ParsingIterationState &iterationState,
+                                                  sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
+        [[nodiscard]] ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
