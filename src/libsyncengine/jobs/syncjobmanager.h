@@ -31,7 +31,7 @@ class SyncJobManager : public JobManager {
         void operator=(SyncJobManager const &) = delete;
 
     protected:
-        bool canRunJob(std::shared_ptr<AbstractJob> job) const override;
+        bool canRunJob(const std::shared_ptr<AbstractJob> job) const override;
 
 
         friend class TestSyncJobManagerSingleton;

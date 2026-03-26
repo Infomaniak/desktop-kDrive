@@ -64,7 +64,7 @@ class JobManager {
 
     protected:
         int availableThreadsInPool() const;
-        virtual bool canRunJob(std::shared_ptr<AbstractJob> job) const;
+        virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
 
     private:
         void startMainThreadIfNeeded();

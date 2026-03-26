@@ -45,7 +45,7 @@ bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
 
 } // namespace
 
-bool SyncJobManager::canRunJob(std::shared_ptr<AbstractJob> job) const {
+bool SyncJobManager::canRunJob(const std::shared_ptr<AbstractJob> job) const {
     const bool currentJobIsUploadSession = isBigFileUploadJob(job);
     const bool currentJobIsBigFileDownloadJob = isBigFileDownloadJob(job);
     if (!currentJobIsUploadSession && !currentJobIsBigFileDownloadJob) return true;
