@@ -123,7 +123,7 @@ void IpcClient::attemptInitialConnection() {
  * @return the request ID, which can be used to match the response with the request.
  * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client calls exit(EXIT_FAILURE).
  */
-int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
+int32_t IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
     if (_socket->state() != QAbstractSocket::ConnectedState) {
         qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state() << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
@@ -246,9 +246,8 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
 
     qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
-    auto it = _pendingCallbacks.find(id);
-    if (it != _pendingCallbacks.end()) {
-        auto callback = std::move(it.value());
+    if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
+        const auto callback = std::move(it.value());
         _pendingCallbacks.erase(it);
 
         try {
