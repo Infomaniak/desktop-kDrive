@@ -66,6 +66,7 @@ void AppClientLinux::setupLogging() {
     logger->setLogDebug(true);
     logger->setupTemporaryFolderLogDir();
     logger->enterNextLogFile();
+    // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
     qInfo(lcAppClientLinux) << "***** Application & System Informations *****";
     qInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
