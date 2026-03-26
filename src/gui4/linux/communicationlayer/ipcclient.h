@@ -21,6 +21,7 @@
 #include "libcommon/comm.h"
 #include "libcommon/utility/types.h"
 
+#include <cstdint>
 #include <QHash>
 #include <QString>
 #include <QTcpSocket>
@@ -74,7 +75,7 @@ class IpcClient : public QObject {
         int32_t _nextId{0};
         QHash<int32_t, ResponseCallback> _pendingCallbacks;
         bool _hasConnectedOnce{false};
-        int _initialConnectionAttemptCount{0};
+        uint32_t _initialConnectionAttemptCount{0};
         quint16 _configuredPort{0};
 
 #ifdef QT_DEBUG
