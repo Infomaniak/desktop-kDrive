@@ -890,9 +890,10 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
-    Sync sync;
-    bool found;
+ExitInfo SyncPal::selectSync(Sync &sync) {
+    sync = {};
+    bool found = false;
+
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -902,7 +903,12 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    sync.setListingCursor(value, timestamp);
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::updateSync(const Sync &sync) {
+    bool found = false;
+
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -915,19 +921,57 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
     Sync sync;
-    bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return {ExitCode::DbError, ExitCause::DbAccessError};
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-    }
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.listingCursor(value, timestamp);
+    sync.setUserPrivateFolderCursor(listingCursor, timestamp);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::setCommonDocumentsFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.setCommonDocumentsFolderCursor(listingCursor, timestamp);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::setSharedFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.setSharedFolderCursor(listingCursor, timestamp);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::userPrivateFolderCursor(Cursor &value, Timestamp &timestamp) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.userPrivateFolderCursor(value, timestamp);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::commonDocumentsFolderCursor(Cursor &value, Timestamp &timestamp) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.commonDocumentsFolderCursor(value, timestamp);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::sharedFolderCursor(Cursor &value, Timestamp &timestamp) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.sharedFolderCursor(value, timestamp);
+
     return ExitCode::Ok;
 }
 
