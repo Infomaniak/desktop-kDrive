@@ -53,7 +53,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp
     jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.cpp
-    jobs/network/kDrive_API/listing/snapshotitemhandler.h jobs/network/kDrive_API/listing/snapshotitemhandler.cpp
+        jobs/network/kDrive_API/listing/remotesnapshotitemhandler.h jobs/network/kDrive_API/listing/remotesnapshotitemhandler.cpp
     jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/longpolljob.h jobs/network/kDrive_API/listing/longpolljob.cpp
     jobs/network/kDrive_API/getfileinfojob.h jobs/network/kDrive_API/getfileinfojob.cpp
