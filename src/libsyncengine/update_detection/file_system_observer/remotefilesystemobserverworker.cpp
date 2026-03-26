@@ -1001,8 +1001,7 @@ void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &re
     _path = remotePath_.string();
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(
-        std::vector<RemoteFileSystemObserverWorker::RemoteNodeId> &mainDirectoriesRemoteIds) const {
+ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector<RemoteNodeId> &mainDirectoriesRemoteIds) const {
     mainDirectoriesRemoteIds.clear();
 
     RemoteNodeId userPrivateFolderRemoteId;
