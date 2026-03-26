@@ -27,10 +27,7 @@ namespace Infomaniak.kDrive
     public sealed partial class MainWindow : Window
     {
         public AppNavigationView AppNavView { get { return NavView; } }
-        public AppModel ViewModel
-        {
-            get => App.ServiceProvider.GetRequiredService<AppModel>();
-        }
+        public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public MainWindow()
         {

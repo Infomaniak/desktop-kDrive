@@ -1,7 +1,6 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
-using System;
 
 namespace Infomaniak.kDrive.CustomControls
 {

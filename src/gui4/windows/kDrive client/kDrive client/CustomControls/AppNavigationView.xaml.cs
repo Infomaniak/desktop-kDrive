@@ -151,9 +151,9 @@ namespace Infomaniak.kDrive.CustomControls
             await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
         }
 
-        private Visibility GetSyncSelectorVisibility(bool IsPaneOpen, IList<Sync> syncs)
+        private Visibility GetSyncSelectorVisibility(bool isPaneOpen, IList<Sync> syncs)
         {
-            if(IsPaneOpen && syncs.Count > 0)
+            if(isPaneOpen && syncs.Count > 0)
                 return Visibility.Visible;
             else
                 return Visibility.Collapsed;
