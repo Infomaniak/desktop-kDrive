@@ -42,11 +42,17 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
 bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
-            item.setId(_driveDbId, str);
+            if (const auto exitInfo = item.setId(_driveDbId, str); !exitInfo) {
+                LOG_WARN(_logger, "Error in SnapshotItem::setId");
+                return false;
+            }
             break;
         }
         case CsvIndexParentId: {
-            item.setParentId(_driveDbId, str);
+            if (const auto exitInfo = item.setParentId(_driveDbId, str); !exitInfo) {
+                LOG_WARN(_logger, "Error in SnapshotItem::setParentId");
+                return false;
+            };
             break;
         }
         case CsvIndexName: {
