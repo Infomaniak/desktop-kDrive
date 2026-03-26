@@ -23,7 +23,8 @@ namespace KDC {
 enum class GuiJobType {
     Unknown,
     Query,
-    Signal
+    Signal,
+    EnumEnd
 };
 
 enum class UpdateState {
