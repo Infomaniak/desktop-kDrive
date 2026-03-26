@@ -507,7 +507,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     };
 
     bool canceledByUser = false;

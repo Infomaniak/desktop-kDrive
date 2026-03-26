@@ -432,7 +432,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
                                                                << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
                                                                << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {

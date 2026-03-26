@@ -45,11 +45,12 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
         /// @throw std::runtime_error
-        /// @throw job_exceptions::DbError
-        /// @throw job_exceptions::DataError
-        /// @throw job_exceptions::TokenError
-        /// @throw job_exceptions::InvalidArgumentError
-        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId, bool returnJson = true);
+        /// @throw DbError
+        /// @throw DataError
+        /// @throw TokenError
+        /// @throw InvalidArgumentError
+        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
+                                bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
@@ -77,7 +78,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         [[nodiscard]] ApiType getApiType() const { return _apiType; }
 
     private:
-
         struct LoginEntry {
                 std::shared_ptr<Login> login;
                 UserId userId{0};
@@ -116,10 +116,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ApiToken retrieveApiTokenFromUserCache();
         Account getAccount(const Drive &drive) const;
-        Drive getDrive(int driveDbId) const;
+        Drive getDrive(DriveDbId driveDbId) const;
         void setDriveDbIdFromDriveId();
 
-        /// @throw job_exceptions::InvalidArgumentError
+        /// @throw InvalidArgumentError
         void checkParametersValidity();
 
         friend class TestServerRequests;

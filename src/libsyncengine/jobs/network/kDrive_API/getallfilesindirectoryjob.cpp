@@ -41,8 +41,8 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;
-    constexpr int maxPages = 1000;
-    int pageCount = 0;
+    constexpr Count maxPages = 1000;
+    Count pageCount = 0;
     do {
         if (++pageCount > maxPages) {
             LOG_WARN(Log::instance()->getLogger(), "Exceeded maximum page count in GetAllFilesInDirectoryJob");
@@ -54,10 +54,10 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
                     _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
                                : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
         } catch (const std::bad_alloc &badAllocationException) {
-            return job_exceptions::exception2ExitCode(badAllocationException);
-        } catch (const job_exceptions::DbError &dbException) {
-            LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(dbException));
-            return job_exceptions::exception2ExitCode(dbException);
+            return exception2ExitCode(badAllocationException);
+        } catch (const JobException &jobException) {
+            LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(jobException));
+            return exception2ExitCode(jobException);
         }
 
         fileListJob->setListingConf(_listingConf);

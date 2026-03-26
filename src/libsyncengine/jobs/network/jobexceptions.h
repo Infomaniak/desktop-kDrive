@@ -22,24 +22,28 @@
 
 #include <stdexcept>
 
-namespace KDC::job_exceptions {
+namespace KDC {
 
-struct DbError : std::runtime_error {
+struct JobException : std::runtime_error {
         using std::runtime_error::runtime_error;
 };
 
-struct DataError : std::runtime_error {
-        using std::runtime_error::runtime_error;
+struct DbError : JobException {
+        using JobException::JobException;
 };
 
-struct TokenError : std::runtime_error {
-        using std::runtime_error::runtime_error;
+struct DataError : JobException {
+        using JobException::JobException;
 };
 
-struct InvalidArgumentError : std::runtime_error {
-        using std::runtime_error::runtime_error;
+struct TokenError : JobException {
+        using JobException::JobException;
+};
+
+struct InvalidArgumentError : JobException {
+        using JobException::JobException;
 };
 
 ExitCode exception2ExitCode(const std::exception &exc);
 
-} // namespace KDC::job_exceptions
+} // namespace KDC

@@ -41,7 +41,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
     if (!ParmsDb::instance()) {
         assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
-        throw job_exceptions::DbError("ParmsDb must be initialized!");
+        throw DbError("ParmsDb must be initialized!");
     }
 
     bool found = false;

@@ -20,11 +20,20 @@
 #include "jobs/network/kDrive_API/apitranslator.h"
 
 #include "utility/jsonparserutility.h"
+#include "jobs/network/jobexceptions.h"
 
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
+
+void GetFilesInDirectoryJob::translateDriveDbIdFromV2ToV3(const TranslationMode translationMode) {
+    if (translationMode != TranslationMode::V2ToV3) return;
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId(), _fileId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in GetFilesInDirectoryJob::GetFilesInDirectoryJob.");
+    }
+}
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
                                                std::string cursorInput,
@@ -34,7 +43,7 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const Dr
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    if (translationMode == TranslationMode::V2ToV3) ApiTranslator::translateV2ToV3(driveDbId(), _fileId);
+    translateDriveDbIdFromV2ToV3(translationMode);
 }
 
 GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId, std::string cursorInput,
@@ -44,7 +53,7 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, Remote
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    if (translationMode == TranslationMode::V2ToV3) ApiTranslator::translateV2ToV3(driveDbId, _fileId);
+    translateDriveDbIdFromV2ToV3(translationMode);
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {

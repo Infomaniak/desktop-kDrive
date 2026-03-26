@@ -210,7 +210,7 @@ ExitInfo AbstractUploadSession::startSession() {
         startJob = createStartJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionStartJob::UploadSessionStartJob: error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
@@ -416,7 +416,7 @@ ExitInfo AbstractUploadSession::closeSession() {
         finishJob = createFinishJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob::UploadSessionFinishJob: error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
@@ -465,7 +465,7 @@ ExitInfo AbstractUploadSession::cancelSession() {
         cancelJob = createCancelJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = cancelJob->runSynchronously(); !exitInfo) {

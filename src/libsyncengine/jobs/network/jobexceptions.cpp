@@ -19,7 +19,7 @@
 
 #include "jobexceptions.h"
 
-namespace KDC::job_exceptions {
+namespace KDC {
 
 ExitCode exception2ExitCode(const std::exception &exc) {
     if (dynamic_cast<const DbError *>(&exc)) {
@@ -41,4 +41,4 @@ ExitCode exception2ExitCode(const std::exception &exc) {
     return ExitCode::Unknown;
 }
 
-} // namespace KDC::job_exceptions
+} // namespace KDC

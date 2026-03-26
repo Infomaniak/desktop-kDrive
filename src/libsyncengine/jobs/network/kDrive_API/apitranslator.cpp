@@ -75,10 +75,10 @@ ExitInfo ApiTranslator::updateCache(const DriveDbId driveDbId) {
     try {
         fileListJob = std::make_shared<GetAllFilesInDirectoryJob>(driveDbId, remoteFolderId, TranslationMode::None);
     } catch (const std::bad_alloc &badAllocException) {
-        return job_exceptions::exception2ExitCode(badAllocException);
-    } catch (const job_exceptions::DbError &dbException) {
+        return exception2ExitCode(badAllocException);
+    } catch (const JobException &jobException) {
         LOG_WARN(Log::instance()->getLogger(), "Exception thrown by GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob.")
-        return job_exceptions::exception2ExitCode(dbException);
+        return exception2ExitCode(jobException);
     }
 
     fileListJob->setListingConf({.dirOnly = true, .limit = maxNumberOfItems});

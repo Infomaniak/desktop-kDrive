@@ -546,7 +546,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.toStdString()
                                                        << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     job->setWithPath(withPath);
@@ -611,7 +611,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<D
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
@@ -646,7 +646,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
@@ -859,7 +859,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " error=" << e.what());
-                return job_exceptions::exception2ExitCode(e);
+                return exception2ExitCode(e);
             }
         } else {
             try {
@@ -868,7 +868,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
                                                                << " error=" << e.what());
-                return job_exceptions::exception2ExitCode(e);
+                return exception2ExitCode(e);
             }
         }
 
@@ -1321,7 +1321,7 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &pare
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
@@ -1352,7 +1352,7 @@ ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveI
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
@@ -1398,7 +1398,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (const std::exception &e) {
         logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (!job->runSynchronously()) {
@@ -1409,7 +1409,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
                 job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (const std::exception &e) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
-                return job_exceptions::exception2ExitCode(e);
+                return exception2ExitCode(e);
             }
 
             if (!job->runSynchronously()) {
@@ -1467,7 +1467,7 @@ ExitInfo ServerRequests::getFolderSize(const UserDbId userDbId, const DriveId dr
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
                                                                  << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1835,7 +1835,7 @@ ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated) {
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetAccountInfoJob::GetAccountInfoJob for account DB ID=" << account.dbId() << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) return exitInfo;
@@ -1859,7 +1859,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     const auto exitInfo = job->runSynchronously();
@@ -1938,7 +1938,7 @@ ExitInfo ServerRequests::getThumbnail(const DriveDbId driveDbId, const NodeId &n
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
                                                        << driveDbId << " and nodeId=" << nodeId << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
@@ -1970,7 +1970,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << e.what());
-        return job_exceptions::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     auto exitInfo = job->runSynchronously();

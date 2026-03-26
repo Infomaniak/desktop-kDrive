@@ -34,7 +34,7 @@ FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId 
     if (const auto exitInfo = ApiTranslator::getDriveDbId(_driveId, _driveDbId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in FileListJob::FileListJob: " << exitInfo);
         const auto errorMsg = "Error in ApiTranslator::getDriveDbId: drivedId=" + std::to_string(_driveId);
-        throw job_exceptions::DbError(errorMsg);
+        throw DbError(errorMsg);
     }
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }

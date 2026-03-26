@@ -27,8 +27,10 @@ namespace KDC {
 
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
+        /// @throw JobException
         GetFilesInDirectoryJob(UserDbId userDbId, DriveId driveId, NodeId fileId, std::string cursorInput = {},
                                TranslationMode translationMode = TranslationMode::None);
+        /// @throw JobException
         explicit GetFilesInDirectoryJob(DriveDbId driveDbId, NodeId fileId, std::string cursorInput = {},
                                         TranslationMode translationMode = TranslationMode::None);
 
@@ -59,6 +61,8 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // Fill the `_remoteNodeInfoList` data structure with the deserialization
         // of the JSON result's `data` field.
         ExitInfo deserializeDataArray();
+        /// @throw JobException
+        void translateDriveDbIdFromV2ToV3(const TranslationMode translationMode);
 
         // The remote identifier of the folder whose file list is queried.
         RemoteNodeId _fileId;

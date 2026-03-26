@@ -27,8 +27,10 @@ namespace KDC {
 
 class FileListJob : public SyncJob {
     public:
+        /// @throw DbError
         FileListJob(UserDbId userDbId, DriveDbId driveId, NodeId fileId = {},
                     TranslationMode translationMode = TranslationMode::None);
+        /// @throw DbError
         explicit FileListJob(DriveDbId driveDbId, NodeId fileId = {}, TranslationMode translationMode = TranslationMode::None);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };

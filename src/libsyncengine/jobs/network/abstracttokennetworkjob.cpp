@@ -54,7 +54,7 @@ void AbstractTokenNetworkJob::checkParametersValidity() {
         assert(false);
         constexpr auto errorMsg = "Invalid parameters in AbstractTokenNetworkJob constructor.";
         LOG_WARN(_logger, errorMsg);
-        throw job_exceptions::InvalidArgumentError(errorMsg);
+        throw InvalidArgumentError(errorMsg);
     }
 }
 
@@ -70,7 +70,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
     if (!ParmsDb::instance()) {
         assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
-        throw job_exceptions::DbError("ParmsDb must be initialized!");
+        throw DbError("ParmsDb must be initialized!");
     }
 
     checkParametersValidity();
@@ -340,19 +340,19 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         assert(false);
         const std::string err{"Error in ParmsDb::selectUser"};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DbError(err);
+        throw DbError(err);
     }
     if (!found) {
         assert(false);
         const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DataError(err);
+        throw DataError(err);
     }
 
     if (user.keychainKey().empty()) {
         const std::string err{"Access token is empty"};
         LOG_DEBUG(_logger, err);
-        throw job_exceptions::TokenError(err);
+        throw TokenError(err);
     }
 
     // Read token form keystore
@@ -360,13 +360,13 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     if (!login->hasToken()) {
         const std::string err{"Failed to retrieve access token"};
         LOG_WARN(_logger, err);
-        throw job_exceptions::TokenError(err);
+        throw TokenError(err);
     }
 
     _userToApiKeyMap[_userDbId] = {login, user.userId()};
 }
 
-Drive AbstractTokenNetworkJob::getDrive(const int driveDbId) const {
+Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
     assert(driveDbId > 0 && "Invalid drive DB ID.");
 
     Drive drive;
@@ -375,14 +375,14 @@ Drive AbstractTokenNetworkJob::getDrive(const int driveDbId) const {
         assert(false);
         constexpr auto err{"Error in ParmsDb::selectDrive"};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DbError(err);
+        throw DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err{"Drive not found for driveDbId=" + std::to_string(driveDbId)};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DataError(err);
+        throw DataError(err);
     }
 
     return drive;
@@ -397,14 +397,14 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
         assert(false);
         const std::string err{"Error in ParmsDb::selectAccount"};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DbError(err);
+        throw DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DataError(err);
+        throw DataError(err);
     }
 
     return account;
@@ -462,14 +462,14 @@ void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
         assert(false);
         constexpr auto err{"Error in ParmsDb::selectDriveById"};
         LOG_WARN(_logger, err);
-        throw job_exceptions::DbError(err);
+        throw DbError(err);
     }
 
     if (!found) {
         assert(false);
         const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
         LOG_WARN(_logger, err);
-        throw job_exceptions::DataError(err);
+        throw DataError(err);
     }
 
     _driveDbId = drive.dbId();
@@ -488,14 +488,14 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
             assert(false);
             const std::string err{"Error in ParmsDb::selectAllSyncs"};
             LOG_WARN(_logger, err);
-            throw job_exceptions::DbError(err);
+            throw DbError(err);
         }
 
         if (syncList.empty()) {
             assert(false);
             const std::string err{"No sync found"};
             LOG_WARN(_logger, err);
-            throw job_exceptions::DataError(err);
+            throw DataError(err);
         }
 
         _driveDbId = syncList[0].driveDbId();
