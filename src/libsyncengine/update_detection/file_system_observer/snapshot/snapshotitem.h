@@ -38,9 +38,10 @@ class SnapshotItem {
         SnapshotItem(const SnapshotItem &other);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
-        void setId(const NodeId &id);
+
+        void setId(DriveDbId driveDbId, const NodeId &id);
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
-        void setParentId(const NodeId &newParentId);
+        void setParentId(DriveDbId driveDbId, const NodeId &newParentId);
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &children() const { return _children; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
@@ -103,7 +104,6 @@ class SnapshotItem {
         void setPath(const SyncPath &path) const { _path = path; }
 
         friend class Snapshot;
-        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC
