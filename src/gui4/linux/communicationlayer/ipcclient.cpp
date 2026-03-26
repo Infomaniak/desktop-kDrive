@@ -153,6 +153,18 @@ void IpcClient::onReadyRead() {
     processBuffer();
 }
 
+/**
+ * Handles a query response (`type:1`) after generic message parsing.
+ *
+ * Validates the response-specific fields (`code`, `cause`), rebuilds the
+ * corresponding `ExitInfo`, then resolves the pending callback identified by
+ * @p id. The callback is removed from `_pendingCallbacks` before invocation so
+ * it is always cleaned up, even if the user code throws.
+ *
+ * @param ipcMessage Fully parsed IPC message envelope.
+ * @param id         Request identifier used to correlate the response.
+ * @param params     Deserialized response payload stored in `params`.
+ */
 void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
     if (!ipcMessage.contains(MSG_RESPONSE_CODE) || !ipcMessage.contains(MSG_RESPONSE_CAUSE)) {
         qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
@@ -182,6 +194,16 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
     }
 }
 
+/**
+ * Handles a server-initiated signal (`type:2`) after generic message parsing.
+ *
+ * Extracts the `SignalNum` from the shared message envelope and forwards the
+ * payload to upper layers through `serverSignalReceived`.
+ *
+ * @param ipcMessage Fully parsed IPC message envelope.
+ * @param id         Signal identifier assigned by the server.
+ * @param params     Deserialized signal payload stored in `params`.
+ */
 void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
     const auto num = static_cast<SignalNum>(ipcMessage[MSG_REQUEST_NUM].convert<int>());
     qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
