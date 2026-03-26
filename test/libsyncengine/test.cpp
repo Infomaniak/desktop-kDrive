@@ -43,7 +43,7 @@
 #include "jobs/network/kDrive_API/testapitranslator.h"
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/kDrive_API/testsearchjob.h"
-#include "jobs/network/testsnapshotitemhandler.h"
+#include "jobs/network/testremotesnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testabstractjob.h"
 #include "jobs/testsyncjobmanagersingleton.h"
@@ -82,7 +82,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 #elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
 #endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
