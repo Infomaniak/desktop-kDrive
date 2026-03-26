@@ -34,6 +34,15 @@ std::wstring stringToWideString(const std::string &str) {
 }
 } // namespace typesUtility
 
+std::string toString(const GuiJobType e) {
+    switch (e) {
+        case GuiJobType::Unknown: return "Unknown";
+        case GuiJobType::Query:   return "Query";
+        case GuiJobType::Signal:  return "Signal";
+        default:                  return noConversionStr;
+    }
+}
+
 std::string toString(const ReplicaSide e) {
     switch (e) {
         case ReplicaSide::Local:
