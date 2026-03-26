@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsnapshotitemhandler.h"
+#include "testremotesnapshotitemhandler.h"
 
-#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
+#include "jobs/network/kDrive_API/listing/remotesnapshotitemhandler.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include "log/log.h"
@@ -58,92 +58,94 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
 }
 } // namespace snapshotitem_checker
 
-void TestSnapshotItemHandler::testUpdateItem() {
-    SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+void TestRemoteSnapshotItemHandler::testUpdateItem() {
+    RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
     // Regular cases.
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("0", SnapshotItemHandler::CsvIndexId, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("0", RemoteSnapshotItemHandler::CsvIndexId, item));
         CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("1", SnapshotItemHandler::CsvIndexParentId, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("1", RemoteSnapshotItemHandler::CsvIndexParentId, item));
         CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("kDrive2", SnapshotItemHandler::CsvIndexName, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("kDrive2", RemoteSnapshotItemHandler::CsvIndexName, item));
         CPPUNIT_ASSERT_EQUAL(std::string("kDrive2"), SyncName2Str(item.name()));
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("file", SnapshotItemHandler::CsvIndexType, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("file", RemoteSnapshotItemHandler::CsvIndexType, item));
         CPPUNIT_ASSERT_EQUAL(NodeType::File, item.type());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("dir", SnapshotItemHandler::CsvIndexType, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("dir", RemoteSnapshotItemHandler::CsvIndexType, item));
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, item.type());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("1000", SnapshotItemHandler::CsvIndexSize, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("1000", RemoteSnapshotItemHandler::CsvIndexSize, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(1000), item.size());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("123", SnapshotItemHandler::CsvIndexCreatedAt, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("123", RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(123), item.createdAt());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("-2082841200", SnapshotItemHandler::CsvIndexCreatedAt, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("-2082841200", RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(-2082841200), item.createdAt());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("124", RemoteSnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime,
-                                                  item)); // We can have negative values! (for dates before 1970)
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("-1", RemoteSnapshotItemHandler::CsvIndexModtime,
+                                                        item)); // We can have negative values! (for dates before 1970)
         CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.lastModified());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("1", SnapshotItemHandler::CsvIndexCanWrite, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("1", RemoteSnapshotItemHandler::CsvIndexCanWrite, item));
         CPPUNIT_ASSERT_EQUAL(true, item.canWrite());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("0", SnapshotItemHandler::CsvIndexCanWrite, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("0", RemoteSnapshotItemHandler::CsvIndexCanWrite, item));
         CPPUNIT_ASSERT_EQUAL(false, item.canWrite());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("X", SnapshotItemHandler::CsvIndexCanWrite, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("X", RemoteSnapshotItemHandler::CsvIndexCanWrite, item));
         CPPUNIT_ASSERT_EQUAL(false, item.canWrite());
 
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("0", SnapshotItemHandler::CsvIndexIsLink, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("0", RemoteSnapshotItemHandler::CsvIndexIsLink, item));
         CPPUNIT_ASSERT_EQUAL(false, item.isLink());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("X", SnapshotItemHandler::CsvIndexIsLink, item));
+        CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("X", RemoteSnapshotItemHandler::CsvIndexIsLink, item));
         CPPUNIT_ASSERT_EQUAL(false, item.isLink());
     }
 
     // Invalid sizes.
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("Invalid Size! Integer representation expected",
-                                                   SnapshotItemHandler::CsvIndexSize, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid Size! Integer representation expected",
+                                                         RemoteSnapshotItemHandler::CsvIndexSize, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.size());
     }
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexSize, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("-1", RemoteSnapshotItemHandler::CsvIndexSize, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.size());
     }
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem(std::string(100, '9'), SnapshotItemHandler::CsvIndexSize, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexSize, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.size());
     }
 
     // Invalid dates.
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("Invalid date! Integer representation expected",
-                                                   SnapshotItemHandler::CsvIndexCreatedAt, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid date! Integer representation expected",
+                                                         RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
     }
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem(std::string(100, '9'), SnapshotItemHandler::CsvIndexCreatedAt, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(
+                !handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
     }
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem("Invalid date! Integer representation expected",
-                                                   SnapshotItemHandler::CsvIndexModtime, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid date! Integer representation expected",
+                                                         RemoteSnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.lastModified());
     }
     {
-        SnapshotItem item;
-        CPPUNIT_ASSERT(!handler.updateSnapshotItem(std::string(100, '9'), SnapshotItemHandler::CsvIndexModtime, item));
+        RemoteSnapshotItem item;
+        CPPUNIT_ASSERT(
+                !handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(0), item.lastModified());
     }
 }
@@ -178,7 +180,7 @@ std::string toCsvString(const std::string &name) {
     return output;
 }
 
-void TestSnapshotItemHandler::testToCsvString() {
+void TestRemoteSnapshotItemHandler::testToCsvString() {
     // Nothing to change
     std::string actual = toCsvString(R"(test)");
     std::string expected = R"(test)";
@@ -210,16 +212,16 @@ test")";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
-void TestSnapshotItemHandler::testGetItem() {
+void TestRemoteSnapshotItemHandler::testGetItem() {
     // A single line to define an item: failure
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = true;
         bool error = true;
         bool eof = true;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(!handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -227,14 +229,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // No quotes within the snapshot item name: success, the item won't be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString("kDrive2") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -248,14 +250,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // A pair of double quotes within the snapshot item name: success, the item won't be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1,";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -269,14 +271,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Two pairs of double quotes within the snapshot item name: success
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(""kDrive2"")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -284,7 +286,7 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Harmless line return with the item name: success, the item won't be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -292,7 +294,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive
 2)") << ",dir,1000,123,124,1,0,";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -306,7 +308,7 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Harmful line return within the item name: error
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -314,7 +316,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive
     )");
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(error);
@@ -322,14 +324,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Missing required field: no error, but the item will be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive2)") << ",dir,1000,123,124,";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
@@ -337,14 +339,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Double quotes within the snapshot item name: success
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("test"test")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -352,14 +354,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // A pair of double quotes within the snapshot item name: success
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -367,14 +369,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
@@ -382,7 +384,7 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -391,7 +393,7 @@ void TestSnapshotItemHandler::testGetItem() {
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1\n"
            << "0,1," << toCsvString(R"("coucou")") << ",dir,1000,123,124,0,1\n"
            << "0,1,coucou2,dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
 
         // First line should be ignored because of parsing issue
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
@@ -409,7 +411,7 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // End of line test : normal case
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -417,7 +419,7 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str();
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         while (handler.getItem(item, ss, error, ignore, eof)) {
             // Nothing to do, just read the whole file
         }
@@ -434,14 +436,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // End of line test : missing EOF delimiter
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         while (handler.getItem(item, ss, error, ignore, eof)) {
             // Nothing to do, just read the whole file
         }
@@ -458,7 +460,7 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // End of line test : EOF delimiter not at the end
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -467,7 +469,7 @@ void TestSnapshotItemHandler::testGetItem() {
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str() << "\n"
            << "2,0,test2,dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
@@ -497,14 +499,14 @@ void TestSnapshotItemHandler::testGetItem() {
 
     // The creation_at value is missing: should be interpreted as 0.
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString("kDrive2") << ",dir,1000,,124,0,1";
-        SnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(DriveDbId{1}, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
