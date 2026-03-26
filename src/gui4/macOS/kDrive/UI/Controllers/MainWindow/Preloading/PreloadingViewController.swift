@@ -61,8 +61,10 @@ final class PreloadingViewController: NSViewController {
 
     private func configureWindowAppearance() {
         guard let window = view.window else { return }
+
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
+        window.toolbar = NSToolbar()
     }
 
     private func setupView() {
