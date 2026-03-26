@@ -69,6 +69,7 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
+- Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 
 ## JIT Index
 
