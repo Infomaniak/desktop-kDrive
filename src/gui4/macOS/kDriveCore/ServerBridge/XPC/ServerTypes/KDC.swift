@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// periphery:ignore:all
 /// Replacement for CPP types from "swift <-> cpp" inter-op not production ready
 /// This layer is source compatible with the ccp generated structures, hence why no specific swift formatting
 public enum KDC {
