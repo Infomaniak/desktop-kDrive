@@ -40,11 +40,11 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QGuiApplication(argc, argv) {
     setupLogging();
 
-    connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
-    connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
-    connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+    (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
+    (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
+    (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
 
-    connect(this, &AppClientLinux::ipcConnected, this, [this] {
+    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] {
         qCDebug(lcAppClientLinux) << "IPC connected - sending " << RequestNum::USER_INFOLIST<< " request";
         _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {}, [](const ExitInfo &exitInfo, const Poco::DynamicStruct &) {
             qCDebug(lcAppClientLinux) << "USER_INFOLIST response | exitCode:" << exitInfo.code()
