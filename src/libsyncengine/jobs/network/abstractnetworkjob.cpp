@@ -109,7 +109,8 @@ void AbstractNetworkJob::logRequestInfo() {
     }
 
     LOG_DEBUG(_logger, "*** Request headers: ***");
-    LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
+    // /!\ The user-agent could contain special characters
+    LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
     LOG_DEBUG(_logger, "Content-Type: " << contentType());
     LOG_DEBUG(_logger, "Accept: " << acceptHeader());
     LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
@@ -124,7 +125,7 @@ void AbstractNetworkJob::logRequestInfo() {
     if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
 
     LOG_DEBUG(_logger, "*** Body: ***");
-    LOG_DEBUG(_logger, _data);
+    LOGW_DEBUG(_logger, KDC::CommonUtility::s2ws(_data));
 }
 
 void AbstractNetworkJob::logReplyInfo() {
