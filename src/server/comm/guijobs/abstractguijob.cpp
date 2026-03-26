@@ -17,10 +17,9 @@
  */
 
 #include "abstractguijob.h"
-#include "utility/jsonparserutility.h"
 #include "appserver.h"
+#include "libcommon/commjson.h"
 
-#include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>
 
 // Input parameters keys
@@ -97,10 +96,7 @@ ExitInfo AbstractGuiJob::runJob() {
 bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsStr, int &requestId, RequestNum &requestNum,
                                                   Poco::DynamicStruct &inParams) {
     try {
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var inputParamsVar = parser.parse(CommonUtility::commString2Str(inputParamsStr));
-
-        Poco::DynamicStruct paramsStruct = *inputParamsVar.extract<Poco::JSON::Object::Ptr>();
+        const Poco::DynamicStruct paramsStruct = CommJson::parseCommObject(inputParamsStr);
 
         CommonUtility::readValueFromStruct(paramsStruct, inRequestId, requestId);
         CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, requestNum);
