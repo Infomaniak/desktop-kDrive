@@ -25,9 +25,9 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
+class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
     public:
-        CPPUNIT_TEST_SUITE(TestSnapshotItemHandler);
+        CPPUNIT_TEST_SUITE(TestRemoteSnapshotItemHandler);
         CPPUNIT_TEST(testUpdateItem);
         CPPUNIT_TEST(testToCsvString);
         CPPUNIT_TEST(testGetItem);
