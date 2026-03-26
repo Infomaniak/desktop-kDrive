@@ -13,8 +13,6 @@ namespace Infomaniak.kDrive.CustomControls
         public AppTitleBar()
         {
             InitializeComponent();
-        }
-
-       
+        }       
     }
 }

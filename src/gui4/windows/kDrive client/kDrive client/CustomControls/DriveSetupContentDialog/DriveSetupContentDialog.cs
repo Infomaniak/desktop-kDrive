@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls
             args.Cancel = true;
         }
 
-        private void DriveSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void DriveSetupContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             _driveSetupContentDialogVM.ConfirmCurrentStep();
             args.Cancel = true;
