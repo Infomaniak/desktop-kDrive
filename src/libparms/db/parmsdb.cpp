@@ -490,7 +490,7 @@
 #define SELECT_ERROR_REQUEST                                                                                                   \
     "SELECT time, "                                                                                                      \
     "functionName, workerName, exitCode, exitCause, "                                                                          \
-    "localNodeId, remoteNodeId, nodeType, path, status, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "localNodeId, remoteNodeId, nodeType, path, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
     "syncDbId FROM "                                                                                                           \
     "error "                                                                                                                   \
     "WHERE dbId=?1;"
@@ -3054,23 +3054,20 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 7, nodeType));
     SyncName path;
     LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 8, path));
-    int32_t status{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, status));
     int32_t conflictType{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, conflictType));
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, conflictType));
     int32_t inconsistencyType{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, inconsistencyType));
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, inconsistencyType));
     int32_t cancelType{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 12, cancelType));
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, cancelType));
     SyncName destinationPath;
-    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 13, destinationPath));
+    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 12, destinationPath));
     int32_t intLevel{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 14, intLevel));
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 13, intLevel));
     const auto level = fromInt<ErrorLevel>(intLevel);
 
     SyncDbId syncDbId{0};
-    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 15, syncDbId));
-
+    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 14, syncDbId));
     error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
                   fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId,
                   fromInt<NodeType>(nodeType), path, fromInt<ConflictType>(conflictType),
