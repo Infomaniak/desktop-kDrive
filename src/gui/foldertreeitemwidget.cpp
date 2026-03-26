@@ -60,7 +60,7 @@ FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &FolderTreeItemWidget::onFolderSizeCompleted);
 }
 
-void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
+void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
     _syncDbId = syncDbId;
 
     if (const auto exitCode = updateBlacklistSet(); exitCode != ExitCode::Ok) {
@@ -86,7 +86,7 @@ void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
     setDriveDbId(syncInfoMapIt->second.driveDbId());
 }
 
-void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
+void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -105,14 +105,14 @@ void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
     _userDbId = accountInfoMapIt->second.userDbId();
 }
 
-void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvailableInfo &driveInfo) {
+void FolderTreeItemWidget::setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo) {
     _userDbId = userDbId;
     _driveId = driveInfo.driveId();
     _driveName = driveInfo.name();
     _driveColor = driveInfo.color();
 }
 
-void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
+void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -260,7 +260,7 @@ QString FolderTreeItemWidget::getPath(const QString &nodeId) {
     return path;
 }
 
-void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset) {
+void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackSet) {
     if (!parentItem) parentItem = topLevelItem(0);
     if (!parentItem) return;
 
@@ -268,33 +268,33 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
     if (!parentNodeId.isEmpty()) {
         if (const auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
             checkState == Qt::Unchecked && !parentItem->isDisabled()) {
-            (void) blackset.insert(parentNodeId);
+            (void) blackSet.insert(parentNodeId);
             const QString path = getPath(parentNodeId);
             if (!path.isEmpty()) {
                 (void) _blacklistCache.emplace(parentNodeId, path);
             }
-            removeChildNodeFromSet(path, blackset);
+            removeChildNodeFromSet(path, blackSet);
             return;
         } else if (checkState == Qt::Checked) {
             const QString path = getPath(parentNodeId);
-            removeChildNodeFromSet(path, blackset);
+            removeChildNodeFromSet(path, blackSet);
         } else { // PartiallyChecked
             // Do nothing
         }
-
-        (void) blackset.remove(parentNodeId);
-        (void) _blacklistCache.remove(parentNodeId);
     }
 
-    for (auto i = 0; i < parentItem->childCount(); ++i) createBlackSet(parentItem->child(i), blackset);
+    (void) blackSet.remove(parentNodeId);
+    (void) _blacklistCache.remove(parentNodeId);
+
+    for (auto i = 0; i < parentItem->childCount(); ++i) createBlackSet(parentItem->child(i), blackSet);
 }
 
-void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentPath, QSet<QString> &blackset) {
+void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentPath, QSet<QString> &blackSet) {
     if (parentPath.isEmpty()) return;
 
     for (auto it = _blacklistCache.begin(); it != _blacklistCache.end();) {
         if (const auto &path = it.value(); path.startsWith(parentPath + "/")) {
-            (void) blackset.remove(it.key());
+            (void) blackSet.remove(it.key());
             it = _blacklistCache.erase(it);
             continue;
         }
