@@ -1172,6 +1172,14 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
         }
 #endif
+        const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
+        if (CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.0")) {
+            if (!enableSentryAndMatomo()) {
+                LOG_WARN(_logger, "Failed to enable Sentry and Matomo.");
+                // Not a critical error, at worst it will just result in missing some telemetry data, so we don't return false
+                // here to avoid blocking the upgrade.
+            }
+        }
     }
     LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
@@ -3258,4 +3266,42 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 }
 #endif
 
+bool ParmsDb::enableSentryAndMatomo() {
+    LOG_INFO(_logger, "Enabling sentry and matomo by default")
+
+    if (!createAndPrepareRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) {
+        LOG_WARN(_logger, "Error creating and preparing query: " << SELECT_PARAMETERS_REQUEST_ID);
+        return false;
+    }
+    Parameters parameters;
+    bool found = false;
+    if (!selectParameters(parameters, found)) {
+        LOG_WARN(_logger, "Error selecting parameters");
+        return false;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Parameters not found");
+        return false;
+    }
+    queryFree(SELECT_PARAMETERS_REQUEST_ID);
+    parameters.setSentryEnabled(true);
+    parameters.setMatomoEnabled(true);
+
+    if (!createAndPrepareRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) {
+        LOG_WARN(_logger, "Error creating and preparing query: " << UPDATE_PARAMETERS_REQUEST_ID);
+        return false;
+    }
+    if (!updateParameters(parameters, found)) {
+        LOG_WARN(_logger, "Error updating parameters");
+        return false;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Parameters not found for update");
+        return false;
+    }
+
+    queryFree(UPDATE_PARAMETERS_REQUEST_ID);
+
+    return true;
+}
 } // namespace KDC

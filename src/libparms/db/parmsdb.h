@@ -169,6 +169,8 @@ class PARMS_EXPORT ParmsDb : public Db {
 #if defined(KD_WINDOWS)
         bool replaceShortDbPathsWithLongPaths();
 #endif
+        bool enableSentryAndMatomo();
+
 #
 #
 };
