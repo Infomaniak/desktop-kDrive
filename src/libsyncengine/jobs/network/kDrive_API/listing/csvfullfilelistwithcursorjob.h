@@ -19,7 +19,7 @@
 #pragma once
 
 #include "abstractlistingjob.h"
-#include "snapshotitemhandler.h"
+#include "remotesnapshotitemhandler.h"
 
 namespace KDC {
 
@@ -36,7 +36,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
          * @param eof : whether the end of file has been reached or not
          * @return if return == true, continue parsing
          */
-        bool getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof);
+        bool getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof);
         std::string getCursor();
 
     private:
@@ -51,7 +51,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
         bool _zip = true;
 
         std::stringstream _ss;
-        SnapshotItemHandler _snapshotItemHandler;
+        RemoteSnapshotItemHandler _snapshotItemHandler;
 };
 
 } // namespace KDC
