@@ -39,7 +39,7 @@ class SignalDispatcher : public QObject {
         Q_OBJECT
 
     public:
-        using Handler = std::function<void(const Poco::DynamicStruct &)>;
+        using SignalHandler = std::function<void(const Poco::DynamicStruct &)>;
 
         explicit SignalDispatcher(QObject *parent = nullptr);
 
@@ -47,7 +47,7 @@ class SignalDispatcher : public QObject {
          * Register a handler for a given server signal.
          * Multiple handlers for the same SignalNum are all called in registration order.
          */
-        void registerHandler(SignalNum num, Handler handler);
+        void registerHandler(SignalNum num, SignalHandler handler);
 
     public slots:
         /**
@@ -56,7 +56,7 @@ class SignalDispatcher : public QObject {
         void dispatch(SignalNum num, const Poco::DynamicStruct &params) const;
 
     private:
-        QHash<SignalNum, QList<Handler>> _handlers;
+        QHash<SignalNum, QList<SignalHandler>> _handlers;
 };
 
 } // namespace KDC
