@@ -142,7 +142,7 @@
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}" />
                             </DataTemplate>
 
                             <local:ItemTypeDataTemplateSelector x:Key="ItemTypeSizeDataTemplateSelector"
