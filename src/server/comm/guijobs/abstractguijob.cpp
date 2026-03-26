@@ -32,8 +32,8 @@ static const auto inRequestParams = "params";
 static const auto outRequestType = "type";
 static const auto outRequestId = "id";
 static const auto outRequestNum = "num";
-static const auto outRequestCode = "code";
-static const auto outRequestCause = "cause";
+static const auto outRequestCode = MSG_RESPONSE_CODE;   // "code"
+static const auto outRequestCause = MSG_RESPONSE_CAUSE; // "cause"
 static const auto outRequestParams = "params";
 
 namespace KDC {
