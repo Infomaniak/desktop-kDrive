@@ -244,11 +244,10 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
     auto exitCause = ExitCause::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
 
+    auto requestNum = RequestNum::Unknown;
+    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, requestNum);
 
-    auto num = RequestNum::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
-
-    qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
+    qCDebug(lcIpcClient) << "Reply received | RequestNum:" << requestNum << "/ id:" << id;
     if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
         const auto callback = std::move(it.value());
         _pendingCallbacks.erase(it);
@@ -256,10 +255,10 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
         try {
             callback(ExitInfo(exitCode, exitCause), params);
         } catch (const std::exception &e) {
-            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << num << ") -"
+            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << requestNum << ") -"
                                     << e.what();
         } catch (...) {
-            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << num
+            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << requestNum
                                     << ")";
         }
     } else {
