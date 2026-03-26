@@ -20,10 +20,11 @@
 
 #include "libcommon/comm.h"
 #include "libcommon/utility/types.h"
-#include "utility/cstypes.h"
 
 #include <QHash>
+#include <QString>
 #include <QTcpSocket>
+#include <QTimer>
 
 #include <Poco/Dynamic/Struct.h>
 
@@ -57,7 +58,10 @@ class IpcClient : public QObject {
         void serverSignalReceived(SignalNum num, Poco::DynamicStruct params);
 
     private slots:
+        void attemptInitialConnection();
         void onConnected();
+        void onDisconnected();
+        void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
 
         void handle_response_message(const Poco::DynamicStruct &ipcMessage, int32_t id, const Poco::DynamicStruct &params);
@@ -65,13 +69,18 @@ class IpcClient : public QObject {
 
     private:
         QTcpSocket *_socket;
+        QTimer _initialConnectionRetryTimer;
         std::string _readBuffer;
         int32_t _nextId{0};
         QHash<int32_t, ResponseCallback> _pendingCallbacks;
+        bool _hasConnectedOnce{false};
+        int _initialConnectionAttemptCount{0};
+        quint16 _configuredPort{0};
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
 #endif
+        void scheduleInitialConnectionRetry(const QString &reason);
         void processBuffer();
         static bool extractNextMessage(std::string &buffer, std::string &outMessage);
 };
