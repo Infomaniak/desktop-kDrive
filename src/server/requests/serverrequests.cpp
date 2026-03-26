@@ -1759,9 +1759,7 @@ ExitInfo ServerRequests::keepError(const Error &error, bool &keepErrorFlag) {
         }
 
         // If the conflicted file still exists, keep the error.
-        if (found) {
-            keepErrorFlag = true;
-        }
+        keepErrorFlag = found;
     }
     return ExitCode::Ok;
 }

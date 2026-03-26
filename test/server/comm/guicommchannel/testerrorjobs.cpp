@@ -219,9 +219,9 @@ void TestGuiCommChannel::testErrorDeleteJob() {
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
+        const auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
         CPPUNIT_ASSERT(deleteJob);
-        CPPUNIT_ASSERT_EQUAL(int64_t(42), deleteJob->_errorDbId);
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, deleteJob->_errorDbId);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

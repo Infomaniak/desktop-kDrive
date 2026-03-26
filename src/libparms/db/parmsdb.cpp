@@ -1479,9 +1479,9 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
 
     user.setDbId(dbId);
 
-    int intResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 0, intResult));
-    user.setUserId(intResult);
+    UserId userIdResult{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_USER_REQUEST_ID, 0, userIdResult));
+    user.setUserId(userIdResult);
 
     std::string strResult;
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 1, strResult));
@@ -1500,8 +1500,9 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
     LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
     user.setAvatar(blobResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, intResult));
-    user.setToMigrate(static_cast<bool>(intResult));
+    int32_t int32Result{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, int32Result));
+    user.setToMigrate(static_cast<bool>(int32Result));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
@@ -3020,7 +3021,8 @@ bool ParmsDb::selectAllErrors(const int limit, std::vector<Error> &errs) {
 
     return true;
 }
-bool ParmsDb::selectError(int64_t dbId, Error &error, bool &found) {
+
+bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
@@ -3040,39 +3042,39 @@ bool ParmsDb::selectError(int64_t dbId, Error &error, bool &found) {
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 1, functionName));
     std::string workerName;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 2, workerName));
-    int exitCode = 0;
+    int32_t exitCode = 0;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 3, exitCode));
-    int exitCause = 0;
+    int32_t exitCause = 0;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 4, exitCause));
     std::string localNodeId;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 5, localNodeId));
     std::string remoteNodeId;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 6, remoteNodeId));
-    int nodeType;
+    int32_t nodeType;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 7, nodeType));
     SyncName path;
     LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 8, path));
-    int status;
+    int32_t status;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, status));
-    int conflictType;
+    int32_t conflictType;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, conflictType));
-    int inconsistencyType;
+    int32_t inconsistencyType;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, inconsistencyType));
-    int cancelType;
+    int32_t cancelType;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 12, cancelType));
     SyncName destinationPath;
     LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 13, destinationPath));
-    int intLevel = 0;
+    int32_t intLevel = 0;
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 14, intLevel));
-    ErrorLevel level = fromInt<ErrorLevel>(intLevel);
+    const auto level = fromInt<ErrorLevel>(intLevel);
 
     SyncDbId syncDbId = 0;
     LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 15, syncDbId));
 
-    error = Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
-                  static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId), static_cast<NodeId>(remoteNodeId),
-                  static_cast<NodeType>(nodeType), static_cast<SyncPath>(path), static_cast<ConflictType>(conflictType),
-                  static_cast<InconsistencyType>(inconsistencyType), static_cast<CancelType>(cancelType),
+    error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
+                  fromInt<ExitCause>(exitCause), static_cast<NodeId>(localNodeId), static_cast<NodeId>(remoteNodeId),
+                  fromInt<NodeType>(nodeType), static_cast<SyncPath>(path), fromInt<ConflictType>(conflictType),
+                  fromInt<InconsistencyType>(inconsistencyType), fromInt<CancelType>(cancelType),
                   static_cast<SyncPath>(destinationPath));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
