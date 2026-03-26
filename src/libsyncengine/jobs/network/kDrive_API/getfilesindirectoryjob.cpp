@@ -134,17 +134,12 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
     return ExitCode::Ok;
 }
 
-RemoteNodeInfoList GetFilesInDirectoryJob::nodeInfoList() {
-    return v2RemoteNodeInfoList();
-}
-
-RemoteNodeInfoList GetFilesInDirectoryJob::v2RemoteNodeInfoList() {
+ExitInfo GetFilesInDirectoryJob::v2RemoteNodeInfoList(RemoteNodeInfoList &remoteNodeInfoList) const {
     // Data is already deserialized by handleResponse().
-    RemoteNodeInfoList v2RemoteNodeInfoList_ = _remoteNodeInfoList;
-    ApiTranslator::translateV3ToV2(driveDbId(), v2RemoteNodeInfoList_);
-
-    return v2RemoteNodeInfoList_;
+    remoteNodeInfoList = _remoteNodeInfoList;
+    return ApiTranslator::translateV3ToV2(driveDbId(), remoteNodeInfoList);
 }
+
 
 ExitInfo GetFilesInDirectoryJob::handleResponse(std::istream &is) {
     _remoteNodeInfoList.clear();

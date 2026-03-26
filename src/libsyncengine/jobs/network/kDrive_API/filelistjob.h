@@ -35,7 +35,9 @@ class FileListJob : public SyncJob {
 
         // The return value of this accessor is only meaningful when all the responses of the
         // underlying file list requests have been handled.
-        [[nodiscard]] RemoteNodeInfoList nodeInfoList() const { return v2RemoteNodeInfoList(); };
+        [[nodiscard]] ExitInfo nodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
+            return v2RemoteNodeInfoList(nodeInfoList);
+        };
 
         // The node info list as returned by the backend API v3
         // The return value is only meaningful when all the responses of the
@@ -68,7 +70,7 @@ class FileListJob : public SyncJob {
 
     private:
         // The node info list as returned by the backend API v2
-        [[nodiscard]] RemoteNodeInfoList v2RemoteNodeInfoList() const;
+        [[nodiscard]] ExitInfo v2RemoteNodeInfoList(RemoteNodeInfoList &nodeInfoList) const;
 
         [[nodiscard]] std::string createLogMessage(const std::string &coreMsg) const;
 

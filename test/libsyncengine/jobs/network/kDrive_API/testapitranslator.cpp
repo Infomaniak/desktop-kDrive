@@ -96,11 +96,11 @@ void TestApiTranslator::testGetDriveDbId() {
 
 void TestApiTranslator::testTranslateV2ToV3() {
     RemoteNodeId remoteNodeId = ApiTranslator::v2RootFolderRemoteId();
-    ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 
     remoteNodeId = ApiTranslator::v2RootFolderRemoteId() + "666";
-    ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId() + "666", remoteNodeId);
 }
 
@@ -125,11 +125,11 @@ void TestApiTranslator::testTranslateV3ToV2() {
 
     RemoteNodeId remoteNodeId;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, remoteNodeId));
-    ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId(), remoteNodeId);
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId, remoteNodeId));
-    ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 }
 
@@ -154,7 +154,7 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
 
     RemoteNodeInfoList v3RemoteNodeInfoList{nodeInfo1, nodeInfo2, nodeInfo3};
 
-    ApiTranslator::translateV3ToV2(_driveDbId, v3RemoteNodeInfoList);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_driveDbId, v3RemoteNodeInfoList));
     for (const auto &v2NodeInfo: v3RemoteNodeInfoList) {
         CPPUNIT_ASSERT(privateFolderIdQStr != v2NodeInfo.parentNodeId());
         CPPUNIT_ASSERT(privateFolderIdQStr != v2NodeInfo.nodeId());

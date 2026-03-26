@@ -37,7 +37,9 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
-        [[nodiscard]] RemoteNodeInfoList nodeInfoList();
+        [[nodiscard]] ExitInfo nodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
+            return v2RemoteNodeInfoList(nodeInfoList);
+        };
 
         // The node info list as returned by the backend API v3
         [[nodiscard]] const RemoteNodeInfoList &v3RemoteNodeInfoList() const { return _remoteNodeInfoList; };
@@ -52,7 +54,7 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         ExitInfo setData() override { return ExitCode::Ok; }
 
         // The node info list as returned by the backend API v2
-        [[nodiscard]] RemoteNodeInfoList v2RemoteNodeInfoList();
+        [[nodiscard]] ExitInfo v2RemoteNodeInfoList(RemoteNodeInfoList &nodeInfoList) const;
 
         // Fill the `_remoteNodeInfoList` data structure with the deserialization
         // of the JSON result's `data` field.
