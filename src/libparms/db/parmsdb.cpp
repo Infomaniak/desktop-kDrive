@@ -3036,39 +3036,39 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
         return true;
     }
 
-    int64_t time = 0;
+    int64_t time{0};
     LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 0, time));
     std::string functionName;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 1, functionName));
     std::string workerName;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 2, workerName));
-    int32_t exitCode = 0;
+    int32_t exitCode{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 3, exitCode));
-    int32_t exitCause = 0;
+    int32_t exitCause{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 4, exitCause));
     std::string localNodeId;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 5, localNodeId));
     std::string remoteNodeId;
     LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 6, remoteNodeId));
-    int32_t nodeType;
+    int32_t nodeType{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 7, nodeType));
     SyncName path;
     LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 8, path));
-    int32_t status;
+    int32_t status{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, status));
-    int32_t conflictType;
+    int32_t conflictType{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, conflictType));
-    int32_t inconsistencyType;
+    int32_t inconsistencyType{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, inconsistencyType));
-    int32_t cancelType;
+    int32_t cancelType{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 12, cancelType));
     SyncName destinationPath;
     LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 13, destinationPath));
-    int32_t intLevel = 0;
+    int32_t intLevel{0};
     LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 14, intLevel));
     const auto level = fromInt<ErrorLevel>(intLevel);
 
-    SyncDbId syncDbId = 0;
+    SyncDbId syncDbId{0};
     LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 15, syncDbId));
 
     error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
