@@ -214,7 +214,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode clearNodes();
 
         void syncPalStartCallback(UniqueId jobId);
-        void handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr);
+        void handlePropagatorJobsCompletion(std::shared_ptr<AbstractJob> jobPtr);
 
         //! Start SyncPal.
         /*!
