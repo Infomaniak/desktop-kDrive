@@ -28,6 +28,8 @@
 #define MSG_REQUEST_ID "id"
 #define MSG_REQUEST_NUM "num"
 #define MSG_REQUEST_PARAMS "params"
+#define MSG_RESPONSE_CODE "code"
+#define MSG_RESPONSE_CAUSE "cause"
 
 #define MSG_REPLY_ID "id"
 #define MSG_REPLY_RESULT "result"
