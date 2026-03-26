@@ -243,7 +243,7 @@
                                               VerticalAlignment="Center" />
 
                             <TextBlock Grid.Column="1"
-                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummaryAtLeastOne')}"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"
                                        VerticalAlignment="Center"
                                        Style="{StaticResource BodyTextBlockStyle}"
                                        TextTrimming="WordEllipsis">
@@ -252,7 +252,7 @@
 
                         <TextBlock Grid.ColumnSpan="2"
                                    Grid.Row="1"
-                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveExclusionTip')}"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
                                    TextWrapping="WrapWholeWords"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Style="{StaticResource BodyTextBlockStyle}"

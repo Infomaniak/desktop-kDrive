@@ -194,26 +194,6 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
-        {
-            ContentDialog dialog = new ContentDialog
-            {
-                XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
-                PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText"),
-                SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText"),
-                DefaultButton = defaultButton,
-                Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content")
-            };
-            return dialog;
-        }
-
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
-        {
-            var result = await GetContentDialog(xamlRoot, translationKeyPreffix, defaultButton).ShowAsync();
-            return result;
-        }
-
         public static string? ToBase64String(string? data)
         {
             if (data is null)
@@ -297,27 +277,13 @@ namespace Infomaniak.kDrive
         public static void ShowUnexpectedErrorTeachingTip()
         {
             Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
-            ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+            ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
 
         private static TeachingTip? _currentTeachingTip;
         private static DispatcherQueueTimer? _autoCloseTimer;
 
-        /*
-         *  This method shows a TeachingTip with localized content based on the provided translation key prefix.
-         *  The Following keys are expected to be defined in the resource files:
-         *     {translationKeyPreffix}Title
-         *     
-         *  The following keys are optional, but if provided, they will be used to populate the corresponding fields in the TeachingTip:
-         *     {translationKeyPreffix}Subtitle
-         *     {translationKeyPreffix}Content
-         */
-        public static void ShowTeachingTipFromxUid(string translationKeyPreffix)
-        {
-            ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
-        }
-
-        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null, TimeSpan? maxDuration = null /* default is 5s*/)
+        public static void ShowTeachingTip(string title, string? subtitle = null, string? content = null, TimeSpan? maxDuration = null /* default is 5s*/)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -333,14 +299,12 @@ namespace Infomaniak.kDrive
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString(titleKey),
-                Subtitle = Localizer.Instance.IsValidKey(subtitleKey)
-                    ? Localizer.Instance.GetString(subtitleKey!)
-                    : string.Empty,
-                Content = Localizer.Instance.IsValidKey(contentKey)
+                Title = title,
+                Subtitle = subtitle ?? string.Empty,
+                Content = content is not null
                     ? new TextBlock
                     {
-                        Text = Localizer.Instance.GetString(contentKey!),
+                        Text = content,
                         TextWrapping = TextWrapping.Wrap
                     }
                     : null,

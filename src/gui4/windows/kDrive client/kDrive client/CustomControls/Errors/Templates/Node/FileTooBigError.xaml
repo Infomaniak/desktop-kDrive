@@ -13,6 +13,6 @@
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('errFileTooBigTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString(DescriptionKey)}"
+                     Description="{x:Bind DescriptionLabel}"
                      Error="{x:Bind Error}" />
 </UserControl>

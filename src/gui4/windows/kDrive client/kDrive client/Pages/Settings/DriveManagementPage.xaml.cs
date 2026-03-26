@@ -106,33 +106,61 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeWarning") == ContentDialogResult.Primary;
+            bool targetOnline = radioButton.Name == "OnlineRadioButton";
+            bool targetOffline = radioButton.Name == "OfflineRadioButton";
+
+            if (!targetOffline && !targetOnline)
+            {
+                Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+                return;
+            }
+
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
+                PrimaryButtonText = targetOnline ? Localizer.Instance.GetString("buttonChangeToOnline") : Localizer.Instance.GetString("buttonChangeToOffline"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                DefaultButton = ContentDialogButton.Close,
+                Content = Localizer.Instance.GetString("dialogSyncModeChangeWarningContent")
+            };
+
+            bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
             if (canceledByUser)
             {
                 Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
                 // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
-                if (radioButton.Name == "OnlineRadioButton")
+                if (targetOnline)
                 {
                     sync.SyncType = Types.SyncType.Online;
-                    sync.SyncType = Types.SyncType.Offline;
+                    sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
                 else
                 {
                     sync.SyncType = Types.SyncType.Offline;
-                    sync.SyncType = Types.SyncType.Online;
+                    sync.SyncType = Types.SyncType.Online; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
                 return;
             }
 
 
             bool success = false;
-            if (radioButton.Name == "OnlineRadioButton")
+            if (targetOnline)
                 success = await sync.ChangeSyncType(Types.SyncType.Online);
-            else if (radioButton.Name == "OfflineRadioButton")
+            else
                 success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
             if (!success)
-                await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
+            {
+                ContentDialog errorDialog = new ContentDialog
+                {
+                    XamlRoot = XamlRoot,
+                    Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
+                    CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                    Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
+                };
+                await errorDialog.ShowAsync();
+            }
         }
 
         private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -163,7 +191,17 @@ namespace Infomaniak.kDrive.Pages.Settings
             control.IsEnabled = false;
             bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
 
-            var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncDeletionWarning");
+            ContentDialog dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonRemove"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                DefaultButton = ContentDialogButton.Close,
+                Content = Localizer.Instance.GetString("dialogSyncDeletionWarningContent")
+            };
+
+            var dialogResult = await dialog.ShowAsync();
             if (dialogResult != ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -208,7 +246,9 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (result is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}'");
-                Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                if (control is not null)
+                    control.IsEnabled = true;
                 return;
             }
 

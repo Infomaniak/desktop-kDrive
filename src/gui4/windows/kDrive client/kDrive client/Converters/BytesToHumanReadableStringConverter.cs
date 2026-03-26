@@ -30,24 +30,24 @@ namespace Infomaniak.kDrive.Converters
                 return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
             }
 
-            var units = new (long Threshold, string ResourceKey)[]
+            var units = new (long Threshold, string Label)[]
             {
-                (0L,                      "labelBytes"),
-                (1024L,                   "labelKiloBytes"),
-                (1024L * 1024L,           "labelMegaBytes"),
-                (1024L * 1024L * 1024L,   "labelGigaBytes"),
-                (1024L * 1024L * 1024L * 1024L, "labelTeraBytes")
+                (0L,                      Localizer.Instance.GetString("labelBytes")),
+                (1024L,                   Localizer.Instance.GetString("labelKiloBytes")),
+                (1024L * 1024L,           Localizer.Instance.GetString("labelMegaBytes")),
+                (1024L * 1024L * 1024L,   Localizer.Instance.GetString("labelGigaBytes")),
+                (1024L * 1024L * 1024L * 1024L, Localizer.Instance.GetString("labelTeraBytes"))
             };
 
             double displayValue = byteCount;
-            string unitKey = units[0].ResourceKey;
+            string unit = units[0].Label;
 
             for (int i = units.Length - 1; i >= 0; --i)
             {
                 if (byteCount >= units[i].Threshold)
                 {
                     displayValue = (double)byteCount / (units[i].Threshold > 0 ? units[i].Threshold : 1);
-                    unitKey = units[i].ResourceKey;
+                    unit = units[i].Label;
                     break;
                 }
             }
@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.Converters
                 template = template.TrimEnd('.');
             }
 
-            return $"{displayValue.ToString(template)} {Localizer.Instance.GetString(unitKey)}";
+            return $"{displayValue.ToString(template)} {unit}";
 
         }
 

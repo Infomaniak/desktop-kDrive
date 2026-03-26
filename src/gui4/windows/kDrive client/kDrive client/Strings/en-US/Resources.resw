@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 25 Mar 2026 10:09:22 +0100 
+  Exported at: Thu, 26 Mar 2026 17:54:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>English</value>
   </metadata> 
-  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Check that your Internet connection is active, that the name is not already in use and that it does not contain any invalid characters.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
 © 2019–%@ Infomaniak Network SA -</value> 
@@ -206,6 +203,12 @@ You can open them at any time, even without Internet access.</value>
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Change the folder</value> 
   </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Store offline</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Store online</value> 
+  </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
     <value>Change user</value> 
   </data> 
@@ -323,6 +326,9 @@ You can open them at any time, even without Internet access.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Release notes</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Remove</value> 
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Remove synchronization</value> 
@@ -512,9 +518,6 @@ Before continuing, make sure all your files are up to date and fully synchronize
 
 The current synchronization remains unchanged. However, if any abnormal behavior occurs, you may need to remove and recreate the synchronization to restore proper operation.</value> 
   </data> 
-  <data name="dialogSyncModeChangeErrorSecondaryButton" xml:space="preserve"> 
-    <value>Close</value> 
-  </data> 
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
     <value>An error occurred</value> 
   </data> 
@@ -524,9 +527,6 @@ The current synchronization remains unchanged. However, if any abnormal behavior
 Before continuing, make sure all your files are up to date and fully synchronized.
 
 Do not close the application during the process.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
-    <value>Continue</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Change the synchronization mode?</value> 
@@ -900,6 +900,12 @@ Synchronization will resume automatically as soon as the connection is re-establ
   </data> 
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>Some files could not be synchronized.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>We can't access your files. Restart the application to restart synchronization. If the problem continues, %@.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>KDrive connection interrupted</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>This item is not available on this device.
@@ -1521,6 +1527,15 @@ Synchronization has been paused. Please check your files and try again.</value>
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Storage</value> 
   </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>The folder must not be the root of a drive and must not contain or be in a folder that is already synchronized.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>The folder must be empty, not be the root of a drive, and not contain or be in a folder that has already been synchronized.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>This folder cannot be used</value> 
+  </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
     <value>Individual treatment</value> 
   </data> 
@@ -1534,6 +1549,9 @@ Synchronization has been paused. Please check your files and try again.</value>
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>Open kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Check that your Internet connection is active, that the name is not already in use and that it does not contain any invalid characters.</value> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
     <value>Unable to create this folder</value> 
