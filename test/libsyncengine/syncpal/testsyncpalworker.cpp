@@ -391,7 +391,8 @@ void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &, bool &changes) {
+
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {
