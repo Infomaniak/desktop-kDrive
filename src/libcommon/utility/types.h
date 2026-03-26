@@ -442,6 +442,7 @@ inline QDebug &operator<<(QDebug &os, C e) {
 //
 // Functions
 //
+std::string toString(GuiJobType e);
 std::string toString(ActionTarget e);
 std::string toString(ActionType e);
 std::string toString(AppStateKey e);
