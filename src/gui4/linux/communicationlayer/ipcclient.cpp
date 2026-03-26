@@ -17,6 +17,7 @@
  */
 
 #include "ipcclient.h"
+#include "libcommon/commjson.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
 
@@ -24,7 +25,6 @@
 #include <QLoggingCategory>
 
 #include <Poco/Dynamic/Struct.h>
-#include <Poco/JSON/Parser.h>
 
 #include <filesystem>
 #include <exception>
@@ -335,18 +335,10 @@ void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const 
  * @note Any parsing or deserialization error is considered fatal: the client calls exit(EXIT_FAILURE).
  */
 void IpcClient::processBuffer() {
-    Poco::JSON::Parser parser;
     std::string raw;
     while (extractNextMessage(_readBuffer, raw)) {
         try {
-            parser.reset();
-            const Poco::Dynamic::Var var = parser.parse(raw);
-            const auto &objPtr = var.extract<Poco::JSON::Object::Ptr>();
-            if (!objPtr) {
-                qCCritical(lcIpcClient) << "Failed to parse the JSON message: \n'" << raw << "'\n";
-                exit(EXIT_FAILURE);
-            }
-            const Poco::DynamicStruct ipcMessage = *objPtr;
+            const Poco::DynamicStruct ipcMessage = CommJson::parseObject(raw);
 
             if (!ipcMessage.contains(MSG_TYPE) || !ipcMessage.contains(MSG_REQUEST_ID) || !ipcMessage.contains(MSG_REQUEST_NUM) ||
                 !ipcMessage.contains(MSG_REQUEST_PARAMS)) {
