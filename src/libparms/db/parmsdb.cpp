@@ -3072,10 +3072,10 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
     LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 15, syncDbId));
 
     error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
-                  fromInt<ExitCause>(exitCause), static_cast<NodeId>(localNodeId), static_cast<NodeId>(remoteNodeId),
-                  fromInt<NodeType>(nodeType), static_cast<SyncPath>(path), fromInt<ConflictType>(conflictType),
+                  fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId,
+                  fromInt<NodeType>(nodeType), path, fromInt<ConflictType>(conflictType),
                   fromInt<InconsistencyType>(inconsistencyType), fromInt<CancelType>(cancelType),
-                  static_cast<SyncPath>(destinationPath));
+                  destinationPath);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
 
