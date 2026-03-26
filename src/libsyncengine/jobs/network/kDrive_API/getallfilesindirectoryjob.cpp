@@ -41,7 +41,13 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;
+    constexpr int maxPages = 1000;
+    int pageCount = 0;
     do {
+        if (++pageCount > maxPages) {
+            LOG_WARN(Log::instance()->getLogger(), "Exceeded maximum page count in GetAllFilesInDirectoryJob");
+            return {ExitCode::BackError, ExitCause::Unknown};
+        }
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
             fileListJob =
@@ -51,7 +57,6 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
             return job_exceptions::exception2ExitCode(badAllocationException);
         } catch (const job_exceptions::DbError &dbException) {
             LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(dbException));
-
             return job_exceptions::exception2ExitCode(dbException);
         }
 
@@ -59,11 +64,9 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
 
         if (const auto exitInfo = fileListJob->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
-
             return exitInfo;
         }
 
-        // Concatenate partial listings
         const auto &nodeInfoList = fileListJob->v3RemoteNodeInfoList();
         _remoteNodeInfoList.reserve(_remoteNodeInfoList.size() + nodeInfoList.size());
         (void) _remoteNodeInfoList.insert(_remoteNodeInfoList.end(), nodeInfoList.begin(), nodeInfoList.end());
