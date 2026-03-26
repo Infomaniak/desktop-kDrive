@@ -39,7 +39,7 @@ ExitInfo ErrorDeleteJob::deserializeInputParms() {
     try {
         readParamValue(inParamsErrorDbId, _errorDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in DriveDeleteJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in ErrorDeleteJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -57,6 +57,15 @@ ExitInfo ErrorDeleteJob::process() {
     if (!ParmsDb::instance()->selectError(_errorDbId, error, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectError");
         return ExitCode::DbError;
+    }
+
+    if (!found) {
+        // Not really an issue as we want to make sure the error is removed, but log it just in case as it can indicate a problem
+        LOG_WARN(Log::instance()->getLogger(), "Error with errorDbId=" << _errorDbId << ": not found in database");
+
+        // The GUI still needs to be notified to remove the error from its list wich is out of sync if we are here
+        _commManager->appServer().commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
+        return ExitCode::Ok;
     }
 
     bool keepErrorFlag = false;
