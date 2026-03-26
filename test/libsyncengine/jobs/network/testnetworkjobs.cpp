@@ -938,7 +938,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
         int counter = 0;
         std::string cursor = job.getCursor();
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
@@ -965,7 +965,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
         CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         int counter = 0;
         std::string cursor = job.getCursor();
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
@@ -1003,7 +1003,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 
     auto counter = 0;
     const std::string cursor = job.getCursor();
-    SnapshotItem item;
+    RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;
@@ -1029,7 +1029,7 @@ void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
 
     int counter = 0;
     const std::string cursor = job.getCursor();
-    SnapshotItem item;
+    RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;

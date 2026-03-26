@@ -40,7 +40,7 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
     }
 }
 
-bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof) {
+bool CsvFullFileListWithCursorJob::getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
 
