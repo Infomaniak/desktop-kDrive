@@ -2,7 +2,7 @@
 [![Extended tests - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml)
 
 ## The Desktop application for [kDrive by Infomaniak](https://www.infomaniak.com/kdrive).
-### Synchronise, share, collaborate.  The Swiss cloud that’s 100% secure.
+### Synchronise, share, collaborate. The Swiss cloud that’s 100% secure.
 
 #### :cloud: All the space you need
 Always have access to all your photos, videos and documents. kDrive can store up to 106 TB of data.
