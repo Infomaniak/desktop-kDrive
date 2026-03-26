@@ -111,17 +111,17 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     }
     const int32_t id = _nextId++;
 
-    Poco::DynamicStruct msg;
-    msg[MSG_TYPE] = static_cast<std::underlying_type_t<GuiJobType>>(GuiJobType::Query);
-    msg[MSG_REQUEST_ID] = id;
-    msg[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
+    Poco::DynamicStruct ipcMessage;
+    ipcMessage[MSG_TYPE] = static_cast<std::underlying_type_t<GuiJobType>>(GuiJobType::Query);
+    ipcMessage[MSG_REQUEST_ID] = id;
+    ipcMessage[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
 
-    if (const bool insertResult = msg.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
+    if (const bool insertResult = ipcMessage.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
         qCCritical(lcIpcClient) << "Failed to insert request parameters into message";
         exit(EXIT_FAILURE);
     }
 
-    const std::string json = Poco::Dynamic::structToString(msg);
+    const std::string json = Poco::Dynamic::structToString(ipcMessage);
     const auto jsonSize = static_cast<qint64>(json.size());
 
     if (const qint64 writtenData = _socket->write(json.data(), jsonSize); writtenData != jsonSize) {
