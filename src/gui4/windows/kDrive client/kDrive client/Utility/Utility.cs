@@ -283,7 +283,7 @@ namespace Infomaniak.kDrive
         private static TeachingTip? _currentTeachingTip;
         private static DispatcherQueueTimer? _autoCloseTimer;
 
-        public static void ShowTeachingTip(string title, string? subtitle = null, string? content = null, TimeSpan? maxDuration = null /* default is 5s*/)
+        public static void ShowTeachingTip(string title, string? content = null, TimeSpan? maxDuration = null /* default is 5s*/)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -300,14 +300,7 @@ namespace Infomaniak.kDrive
             {
                 XamlRoot = xamlRoot,
                 Title = title,
-                Subtitle = subtitle ?? string.Empty,
-                Content = content is not null
-                    ? new TextBlock
-                    {
-                        Text = content,
-                        TextWrapping = TextWrapping.Wrap
-                    }
-                    : null,
+                Subtitle = content,
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };

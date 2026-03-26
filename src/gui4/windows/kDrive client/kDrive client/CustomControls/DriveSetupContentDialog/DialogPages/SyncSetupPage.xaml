@@ -133,7 +133,11 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextTrimming="CharacterEllipsis"
                                    TextWrapping="NoWrap"
-                                   VerticalAlignment="Center" />
+                                   VerticalAlignment="Center">
+                             <ToolTipService.ToolTip>
+                                 <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}" />
+                             </ToolTipService.ToolTip>
+                        </TextBlock>
                     </Grid>
                     <Grid Grid.Row="2"
                           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
@@ -147,10 +151,6 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}" />
-                        </ToolTipService.ToolTip>
-
                         <Button Grid.Row="0"
                                 Grid.Column="0"
                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonChangeFolder')}"
@@ -160,11 +160,13 @@
                                          Grid.Column="1"
                                          Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonReturnToDefaultFolder')}"
                                          Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}"
-                                         Click="ReturnToDefaultFolderButton_Click" />
+                                         Click="ReturnToDefaultFolderButton_Click">
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.DefaultPath, Mode=OneWay}" />
+                            </ToolTipService.ToolTip>
+                        </HyperlinkButton>
 
-                        <TextBlock Grid.Row="1"
-                                   Grid.ColumnSpan="2"
-                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
                                    Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>
@@ -207,7 +209,7 @@
                           ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />

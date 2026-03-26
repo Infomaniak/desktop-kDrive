@@ -148,7 +148,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             }
             if (!result.Value)
             {
-                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), "", Localizer.Instance.GetString("teachingTipInvalidFolderAdvancedContent"), TimeSpan.FromSeconds(20));
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderAdvancedContent"), TimeSpan.FromSeconds(20));
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;

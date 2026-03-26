@@ -281,7 +281,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (newItem is null)
                 {
-                    Utility.ShowTeachingTip(Localizer.Instance.GetString("unableToCreateRemoteFolderTeachingTipTitle"), "", Localizer.Instance.GetString("unableToCreateRemoteFolderTeachingTipContent"), TimeSpan.FromSeconds(20));
+                    Utility.ShowTeachingTip(Localizer.Instance.GetString("unableToCreateRemoteFolderTeachingTipTitle"), Localizer.Instance.GetString("unableToCreateRemoteFolderTeachingTipContent"), TimeSpan.FromSeconds(20));
                     if (contentLoader is not null)
                         contentLoader.IsLoading = false;
                     return;
