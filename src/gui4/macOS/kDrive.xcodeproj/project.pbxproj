@@ -245,8 +245,6 @@
 		37A1C45B2E546CB700596DBB /* kDriveCore */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
-				ServerBridge/XPC/comm.h = sourcecode.cpp.h;
-				ServerBridge/XPC/cstypes.h = sourcecode.cpp.h;
 				ServerBridge/XPC/xpcGuiProtocol.h = sourcecode.c.h;
 				ServerBridge/XPC/xpcLoginItemProtocol.h = sourcecode.c.h;
 			};
