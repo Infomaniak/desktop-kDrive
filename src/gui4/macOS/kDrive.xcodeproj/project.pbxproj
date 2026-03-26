@@ -11,6 +11,7 @@
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7A43F1862F7590CA00A44D08 /* InfomaniakDI in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 7A9074A42F59D1350089E4F1 /* InfomaniakDI */; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
@@ -24,7 +25,6 @@
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
 		F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
-		F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
 /* End PBXBuildFile section */
 
@@ -89,18 +89,8 @@
 			files = (
 				37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */,
 				F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */,
+				7A43F1862F7590CA00A44D08 /* InfomaniakDI in Embed Frameworks */,
 				37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -428,7 +418,6 @@
 				37A1C43B2E546A9600596DBB /* Sources */,
 				37A1C43C2E546A9600596DBB /* Frameworks */,
 				37A1C43D2E546A9600596DBB /* Resources */,
-				F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1319,8 +1308,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/ios-dependency-injection.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.4;
+				branch = "feat/dynamic-library";
+				kind = branch;
 			};
 		};
 		F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */ = {
