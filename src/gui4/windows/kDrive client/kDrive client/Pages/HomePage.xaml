@@ -224,10 +224,9 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       PlayCount="1"
-                                       MaxWidth="180" />
+                <controls:SvgIcon Grid.Row="0"
+                                  UriString="{ThemeResource Infomaniak.Custom.Images.kDrive-folder}"
+                                  Width="130" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">

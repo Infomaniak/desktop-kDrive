@@ -22,6 +22,7 @@
     
     <!-- Images -->
     <x:String x:Key="Infomaniak.Custom.Images.servin">ms-appx:///Assets/Custom/Images/servin-dark.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder">ms-appx:///Assets/Custom/Images/kDrive-folder-dark.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus-dark.svg</x:String>
 
     <!-- Icons -->
