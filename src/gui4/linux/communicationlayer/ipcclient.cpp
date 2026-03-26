@@ -33,36 +33,34 @@
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
+namespace {
+constexpr int initialConnectionRetryDelayMs = 2000;
+constexpr int initialConnectionLogEveryAttempts = 10;
+}
+
 namespace KDC {
 
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
-    _socket(new QTcpSocket(this)) {
+    _socket(new QTcpSocket(this)),
+    _initialConnectionRetryTimer(this) {
+    _initialConnectionRetryTimer.setSingleShot(true);
+    (void) connect(&_initialConnectionRetryTimer, &QTimer::timeout, this, &IpcClient::attemptInitialConnection);
     (void) connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
+    (void) connect(_socket, &QTcpSocket::disconnected, this, &IpcClient::onDisconnected);
+    (void) connect(_socket, &QTcpSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
     (void) connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
-    (void) connect(_socket, &QTcpSocket::disconnected, this, [this] {
-        emit disconnected();
-        exit(EXIT_FAILURE);
-    });
-    (void) connect(_socket, &QTcpSocket::errorOccurred, this, [this](const QAbstractSocket::SocketError socketError) {
-        qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
-        qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
-        exit(EXIT_FAILURE);
-    });
 }
 
 
 #ifdef QT_DEBUG
 /**
- * In debug mode, the port is read from the .comm file created by the server
+ * In debug mode, the port is read from the .comm file created by the server.
+ * The first connection is retried until it succeeds once.
  */
 void IpcClient::connectToServer() {
-    const quint16 port = readPortFromCommFile();
-    if (port == 0) {
-        emit disconnected();
-        return;
-    }
-    _socket->connectToHost(QHostAddress::LocalHost, port);
+    _initialConnectionAttemptCount = 0;
+    attemptInitialConnection();
 }
 
 /**
@@ -73,28 +71,50 @@ quint16 IpcClient::readPortFromCommFile() {
     const std::filesystem::path commPath = CommonUtility::getAppSupportDir() / ".comm";
     std::ifstream commFile(commPath);
     if (!commFile.is_open()) {
-        qCWarning(lcIpcClient) << "Failed to open .comm file at" << QString::fromStdString(commPath.string());
         return 0;
     }
     quint16 port = 0;
     commFile >> port;
-    qCDebug(lcIpcClient) << "Port read from .comm file:" << port;
     return port;
 }
 
 #else
 /**
  * In release mode, the port is passed as a command-line argument by the server when launching the client.
+ * The first connection is retried until it succeeds once.
  */
 void IpcClient::connectToServer(quint16 port) {
-    if (port == 0) {
-        emit disconnected();
-        return;
-    }
-    qCDebug(lcIpcClient) << "Connecting socket to server on port" << port;
-    _socket->connectToHost(QHostAddress::LocalHost, port);
+    _configuredPort = port;
+    _initialConnectionAttemptCount = 0;
+    attemptInitialConnection();
 }
 #endif
+
+void IpcClient::attemptInitialConnection() {
+    if (_hasConnectedOnce) {
+        return;
+    }
+
+    ++_initialConnectionAttemptCount;
+
+#ifdef QT_DEBUG
+    const quint16 port = readPortFromCommFile();
+#else
+    const quint16 port = _configuredPort;
+#endif
+
+    if (port == 0) {
+        scheduleInitialConnectionRetry("Server port is not available yet");
+        return;
+    }
+
+    if (_initialConnectionAttemptCount == 1 || _initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
+        qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt" << _initialConnectionAttemptCount << "";
+    }
+
+    _socket->abort();
+    _socket->connectToHost(QHostAddress::LocalHost, port);
+}
 
 /**
  * @param num Request number (see RequestNum enum in src/libcommon/comm.h)
@@ -142,7 +162,36 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
 
 /** Forwards the socket connected() signal and notifies upper layers. */
 void IpcClient::onConnected() {
+    if (!_hasConnectedOnce) {
+        qCInfo(lcIpcClient) << "Initial IPC connection established after" << _initialConnectionAttemptCount << "attempt(s)";
+    }
+
+    _hasConnectedOnce = true;
+    _initialConnectionRetryTimer.stop();
     emit connected();
+}
+
+void IpcClient::onDisconnected() {
+    qCWarning(lcIpcClient) << "Socket disconnected";
+    emit disconnected();
+
+    if (!_hasConnectedOnce) {
+        scheduleInitialConnectionRetry("Socket disconnected before the first successful connection");
+        return;
+    }
+
+    exit(EXIT_FAILURE);
+}
+
+void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) {
+    if (!_hasConnectedOnce) {
+        scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(static_cast<int>(socketError)).arg(_socket->errorString()));
+        return;
+    }
+
+    qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
+    qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
+    exit(EXIT_FAILURE);
 }
 
 /** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
@@ -150,6 +199,23 @@ void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
     (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
     processBuffer();
+}
+
+void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
+    if (_hasConnectedOnce || _initialConnectionRetryTimer.isActive()) {
+        return;
+    }
+
+    if (_initialConnectionAttemptCount == 1) {
+        qCInfo(lcIpcClient) << "Initial IPC connection not ready yet:" << reason << "- retrying in" << initialConnectionRetryDelayMs << "ms";
+    }
+
+    if (_initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
+        qCWarning(lcIpcClient) << "Initial connection still unavailable after" << _initialConnectionAttemptCount
+                               << "attempts:" << reason << "- retrying in" << initialConnectionRetryDelayMs << "ms";
+    }
+
+    _initialConnectionRetryTimer.start(initialConnectionRetryDelayMs);
 }
 
 /**
@@ -230,7 +296,6 @@ void IpcClient::processBuffer() {
     Poco::JSON::Parser parser;
     std::string raw;
     while (extractNextMessage(_readBuffer, raw)) {
-        qCDebug(lcIpcClient) << "Received message:" << QString::fromStdString(raw);
         try {
             parser.reset();
             const Poco::Dynamic::Var var = parser.parse(raw);
