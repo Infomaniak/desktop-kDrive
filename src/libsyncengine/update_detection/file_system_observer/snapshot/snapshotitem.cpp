@@ -45,17 +45,6 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
-ExitInfo SnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
-    _id = id;
-    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _id); !exitInfo) return exitInfo;
-    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
-}
-
-ExitInfo SnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
-    _parentId = newParentId;
-    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _parentId); !exitInfo) return exitInfo;
-    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
-}
 
 void SnapshotItem::setName(const SyncName &newName) {
     _name = newName;
@@ -173,6 +162,35 @@ void SnapshotItem::removeChild(const std::shared_ptr<SnapshotItem> child) {
 
 void SnapshotItem::removeAllChildren() {
     _children.clear();
+}
+
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id) :
+    SnapshotItem(id) {}
+
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name,
+                                       const SyncTime createdAt, const SyncTime lastModified, const NodeType type,
+                                       const int64_t size, const bool isLink, const bool canWrite, const bool canShare) :
+    SnapshotItem(id, parentId, name, createdAt, lastModified, type, size, isLink, canWrite, canShare) {}
+
+
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteSnapshotItem &other) {
+    *this = other;
+}
+
+ExitInfo RemoteSnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
+    _id = id;
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _id); !exitInfo) return exitInfo;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteSnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
+    _parentId = newParentId;
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _parentId); !exitInfo) return exitInfo;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

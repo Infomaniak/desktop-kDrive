@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-class SnapshotItemHandler {
+class RemoteSnapshotItemHandler {
     public:
-        explicit SnapshotItemHandler(DriveDbId driveDbId, const log4cplus::Logger &logger);
+        explicit RemoteSnapshotItemHandler(DriveDbId driveDbId, const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,
@@ -50,7 +50,7 @@ class SnapshotItemHandler {
                 int doubleQuoteCount{0};
         };
 
-        bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
+        bool updateRemoteSnapshotItem(const std::string &str, CsvIndex index, RemoteSnapshotItem &item);
         /**
          * @brief Extract one snapshot item from the full listing CSV file. An item can spread on several lines.
          * @param item output value
@@ -60,7 +60,7 @@ class SnapshotItemHandler {
          * @param eof `true` if the end of file (i.e. a line contains the end of file delimiter) has been reached
          * @return `true` if there are more lines to be read
          */
-        bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);
+        bool getItem(RemoteSnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);
 
     private:
         bool _ignoreFirstLine = true;
@@ -68,7 +68,7 @@ class SnapshotItemHandler {
         log4cplus::Logger _logger;
         void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                       const std::exception &exc);
-        void readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
+        void readRemoteSnapshotItemFields(RemoteSnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
 };
 
 } // namespace KDC
