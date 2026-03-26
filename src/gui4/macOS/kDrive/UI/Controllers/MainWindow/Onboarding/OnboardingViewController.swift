@@ -75,6 +75,8 @@ final class OnboardingViewController: NSViewController {
         window.title = KDriveLocalizable.onboardingWindowTitle
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
+
+        window.toolbar = NSToolbar()
     }
 
     private func setupUI() {
