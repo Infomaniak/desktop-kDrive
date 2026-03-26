@@ -156,5 +156,19 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             Frame.Navigate(typeof(SyncExclusionPage), DriveSetupContentDialogVM);
         }
+
+        private async void ReturnToDefaultFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DriveSetupContentDialogVM?.CurrentSync is null)
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            var newSync = DriveSetupContentDialogVM.CurrentSync;
+
+            newSync.LocalPath = newSync.DefaultPath;
+            await newSync.SelectBestVfsMode();
+        }
     }
 }

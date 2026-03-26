@@ -38,7 +38,7 @@
                               Visibility="{x:Bind IsFileIconVisible}" />
             
             <controls:SvgIcon Grid.Column="0"
-                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                               Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                               Visibility="{x:Bind IsDirectoryIconVisible}" />

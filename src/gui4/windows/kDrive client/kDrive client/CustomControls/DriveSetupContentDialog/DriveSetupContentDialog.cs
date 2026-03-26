@@ -40,15 +40,15 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
         // Intercept button clicks to manage steps
-        private void DriveSetupContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void DriveSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            _driveSetupContentDialogVM.ConfirmCurrentStep();
+            _driveSetupContentDialogVM.CancelCurrentStep();
             args.Cancel = true;
         }
 
         private void DriveSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            _driveSetupContentDialogVM.CancelCurrentStep();
+            _driveSetupContentDialogVM.ConfirmCurrentStep();
             args.Cancel = true;
         }
     }

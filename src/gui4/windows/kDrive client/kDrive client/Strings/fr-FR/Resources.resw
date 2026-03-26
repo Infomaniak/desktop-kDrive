@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 24 Mar 2026 10:39:22 +0100 
+  Exported at: Wed, 25 Mar 2026 10:09:22 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -771,7 +771,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
     <value>Chemin d’accès au %@ trop long</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre abonenment pour synchroniser ce %@.</value> 
+    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre abonnement pour synchroniser ce %@.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Limite de stockage atteinte</value> 
@@ -1315,7 +1315,8 @@ en toute sécurité sur votre ordinateur.</value>
     <value>Tout est prêt !</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Nous finalisons la configuration de vos kDrive. 
+    <value>Nous finalisons la configuration de vos kDrive.
+
 Nous vous invitons à patienter quelques instants.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
@@ -1447,7 +1448,7 @@ Une connexion internet est nécessaire pour y accéder.</value>
     <value>Dossier personnalisé</value> 
   </data> 
   <data name="syncFolderDefaultLocation" xml:space="preserve"> 
-    <value>Emplacement par défaut</value> 
+    <value>Dossier par défaut</value> 
   </data> 
   <data name="syncInProgressTooltip" xml:space="preserve"> 
     <value>Synchronisation</value> 

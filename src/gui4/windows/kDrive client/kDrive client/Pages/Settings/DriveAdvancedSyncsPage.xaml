@@ -23,7 +23,7 @@
                       x:DataType="viewmodel:Sync">
             <toolKit:SettingsExpander Header="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}">
                 <toolKit:SettingsExpander.HeaderIcon>
-                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
@@ -73,7 +73,7 @@
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                                     VerticalAlignment="Center">
 
-                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
+                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.pencil}"
                                                               Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"

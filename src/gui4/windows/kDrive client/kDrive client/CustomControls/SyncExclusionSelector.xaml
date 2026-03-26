@@ -36,7 +36,7 @@
                               Tag="{x:Bind}"
                               Click="CheckBox_Click" />
                     <local:SvgIcon Grid.Column="1"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
                                    Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 

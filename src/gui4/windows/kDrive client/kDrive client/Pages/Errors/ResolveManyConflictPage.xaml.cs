@@ -84,8 +84,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                DefaultButton = ContentDialogButton.Secondary,
-                PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                DefaultButton = ContentDialogButton.Primary,
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
 
             // Reset conflict filter to populate the conflict with list with all the filter.
@@ -111,8 +111,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                DefaultButton = ContentDialogButton.Secondary,
-                PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                DefaultButton = ContentDialogButton.Primary,
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
 
             Control? control = sender as Control;

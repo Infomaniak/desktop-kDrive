@@ -23,6 +23,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
+import UserNotifications
 
 extension NSToolbarItem.Identifier {
     static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
@@ -51,6 +52,10 @@ final class MainViewController: IKSplitViewController {
 
         configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
+
+        Task {
+            try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+        }
     }
 
     private func bindViewModel() {
