@@ -79,6 +79,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - When importing GUI translations from Loco, only keep keys actually referenced by the GUI code; never add a translation just because the key exists in Loco. Unused Loco keys are removed from the imported files and reappear on every import until the code starts using them.
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
+- Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 
 ## JIT Index
 
