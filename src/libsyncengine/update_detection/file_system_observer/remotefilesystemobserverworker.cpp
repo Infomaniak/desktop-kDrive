@@ -288,7 +288,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
         return ExitCode::DbError;
     }
 
-    SnapshotItem remoteSnapshotItem(remoteNodeId);
+    RemoteSnapshotItem remoteSnapshotItem(remoteNodeId);
     const SyncTime now = std::chrono::steady_clock::now().time_since_epoch().count();
     remoteSnapshotItem.setType(NodeType::Directory);
     remoteSnapshotItem.setName(folderName);
@@ -463,7 +463,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     // Parse reply
     LOG_SYNCPAL_DEBUG(_logger, "Start parsing of the CSV reply.");
     const TimerUtility timer;
-    SnapshotItem item;
+    RemoteSnapshotItem item;
     SyncNameSet existingFiles;
     ParsingIterationState iterationState;
 
