@@ -16,8 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Replacement for CPP types from "swift <-> cpp" inter-op not production ready
-// This layer is source compatible with the ccp generated structures, hence why no specific swift formatting
+/// Replacement for CPP types from "swift <-> cpp" inter-op not production ready
+/// This layer is source compatible with the ccp generated structures, hence why no specific swift formatting
 public enum KDC {
     public enum GuiJobType: Int, Sendable {
         case Unknown
@@ -54,8 +54,8 @@ public enum KDC {
         case EnumEnd
     }
 
-    // Conflict types ordered by priority
-    public enum ConflictType: Int, Sendable  {
+    /// Conflict types ordered by priority
+    public enum ConflictType: Int, Sendable {
         case None
         case EditDelete
         case MoveDelete
@@ -78,7 +78,7 @@ public enum KDC {
         case EnumEnd
     }
 
-    public enum ReplicaSide : Int, Sendable {
+    public enum ReplicaSide: Int, Sendable {
         case Unknown
         case Local
         case Remote
@@ -96,7 +96,7 @@ public enum KDC {
         case SystemError // IO error etc.
         case FatalError // SyncPal fatal error
         case LogicError // Consequence of faulty logic within the program such as violating logical preconditions or class
-                        // invariants and may be preventable
+        // invariants and may be preventable
         case TokenRefreshed
         case RateLimited
         case InvalidSync // The sync configuration is not valid
@@ -170,7 +170,7 @@ public enum KDC {
         public init(rawValue: Int) {
             self.rawValue = rawValue
         }
-        
+
         public let rawValue: Int
 
         static let None = InconsistencyType(rawValue: 0x000)
@@ -179,11 +179,13 @@ public enum KDC {
         static let ReservedName = InconsistencyType(rawValue: 0x004)
         static let NameLength = InconsistencyType(rawValue: 0x008)
         static let PathLength = InconsistencyType(rawValue: 0x010)
-        static let NotYetSupportedChar = InconsistencyType(rawValue: 0x020) // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-        static let ForbiddenCharOnlySpaces = InconsistencyType(rawValue: 0x080) // The name contains only spaces (not supported by back end)
+        static let NotYetSupportedChar =
+            InconsistencyType(rawValue: 0x020) // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+        static let ForbiddenCharOnlySpaces =
+            InconsistencyType(rawValue: 0x080) // The name contains only spaces (not supported by back end)
         static let ForbiddenCharEndWithSpace = InconsistencyType(rawValue: 0x100) // The name ends with a space
     }
-    
+
     public enum Language: Int, Sendable {
         case Default
         case English
