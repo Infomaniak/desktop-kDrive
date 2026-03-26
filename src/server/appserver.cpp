@@ -3830,7 +3830,23 @@ bool AppServer::startClient() {
         // Start the client
         QString pathToExecutable;
 
-#if defined(KD_WINDOWS)
+#if defined(__APPLE__)
+        if (ParametersCache::instance()->parameters().distributionChannel() ==
+            VersionChannel::Internal) { // The SwiftUI GUI is currently only for internal builds
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.app").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
+            
+            IoError ioError = IoError::Success;
+            bool exists = false;
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
+                pathToExecutable.clear();
+            }
+        }
+        if (pathToExecutable.isEmpty()) {
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        }
+#elif defined(KD_WINDOWS)
         if (ParametersCache::instance()->parameters().distributionChannel() ==
             VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
