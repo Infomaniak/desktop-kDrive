@@ -91,7 +91,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         void countListingRequests();
         void deleteOrphans();
-        using RemoteNodeId = NodeId;
+
         ExitInfo getMainDirectoriesRemoteIds(std::vector<RemoteNodeId> &mainDirectoriesRemoteIds) const;
 
         DriveDbId _driveDbId = -1;
