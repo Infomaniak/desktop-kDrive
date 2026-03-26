@@ -122,6 +122,8 @@ void IpcClient::attemptInitialConnection() {
  * @param callback Optional callback invoked with the server response. If null, the response is silently discarded.
  * @return the request ID, which can be used to match the response with the request.
  * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client calls exit(EXIT_FAILURE).
+ * @note Callbacks are invoked on the Qt event loop. If the callback captures a raw `this`, the caller must ensure the object outlives the response.
+ *       Use `QPointer<T>` to guard against dangling pointers when lifetime is uncertain.
  */
 int32_t IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
     if (_socket->state() != QAbstractSocket::ConnectedState) {
@@ -241,6 +243,7 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
 
     auto exitCause = ExitCause::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
+
 
     auto num = RequestNum::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
