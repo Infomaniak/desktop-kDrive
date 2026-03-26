@@ -2,7 +2,13 @@ set( APPLICATION_NAME       "kDrive" )
 set( APPLICATION_SHORTNAME  "kDrive" )
 set( APPLICATION_EXECUTABLE "kDrive" )
 set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
-set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+
+if( APPLE )
+    set( APPLICATION_CLIENTV4_APP_EXECUTABLE "kDrive_client4" )
+elseif( WIN32 )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+endif()
+
 set( APPLICATION_DOMAIN     "infomaniak.com" )
 set( APPLICATION_VENDOR     "Infomaniak Network SA" )
 
