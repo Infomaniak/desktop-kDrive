@@ -117,7 +117,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
             private:
                 bool _networkAvailable{true};
                 std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
-                ExitInfo sendLongPoll(bool &changes) override;
+                ExitInfo sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) override;
                 ExitInfo generateInitialSnapshot() override;
         };
 
