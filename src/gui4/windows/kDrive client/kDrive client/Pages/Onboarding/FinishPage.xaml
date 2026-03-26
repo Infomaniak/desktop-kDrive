@@ -28,7 +28,7 @@
         </StackPanel>
         <!-- Boutons -->
         <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenKDrive')}"
-                Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                Style="{StaticResource AccentButtonStyle}"
                 Click="FinishButton_Click" />
     </StackPanel>
 </Page>
