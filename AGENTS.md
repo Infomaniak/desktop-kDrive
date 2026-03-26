@@ -57,6 +57,7 @@ clang-format -i <file>
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 <!-- Add project-specific user corrections here -->
+- Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 
 ## JIT Index
 
