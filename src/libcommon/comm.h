@@ -19,26 +19,26 @@
 #pragma once
 #include <string>
 
-#define COMM_SHORT_TIMEOUT 1000
-#define COMM_AVERAGE_TIMEOUT 10000
-#define COMM_LONG_TIMEOUT 60000
+inline constexpr int COMM_SHORT_TIMEOUT = 1000;
+inline constexpr int COMM_AVERAGE_TIMEOUT = 10000;
+inline constexpr int COMM_LONG_TIMEOUT = 60000;
 
-#define MSG_TYPE "type"
+inline constexpr char MSG_TYPE[] = "type";
 
-#define MSG_REQUEST_ID "id"
-#define MSG_REQUEST_NUM "num"
-#define MSG_REQUEST_PARAMS "params"
-#define MSG_RESPONSE_CODE "code"
-#define MSG_RESPONSE_CAUSE "cause"
+inline constexpr char MSG_REQUEST_ID[] = "id";
+inline constexpr char MSG_REQUEST_NUM[] = "num";
+inline constexpr char MSG_REQUEST_PARAMS[] = "params";
+inline constexpr char MSG_RESPONSE_CODE[] = "code";
+inline constexpr char MSG_RESPONSE_CAUSE[] = "cause";
 
-#define MSG_REPLY_ID "id"
-#define MSG_REPLY_RESULT "result"
+inline constexpr char MSG_REPLY_ID[] = "id";
+inline constexpr char MSG_REPLY_RESULT[] = "result";
 
-#define MSG_SIGNAL_ID "id"
-#define MSG_SIGNAL_NUM "num"
-#define MSG_SIGNAL_PARAMS "params"
+inline constexpr char MSG_SIGNAL_ID[] = "id";
+inline constexpr char MSG_SIGNAL_NUM[] = "num";
+inline constexpr char MSG_SIGNAL_PARAMS[] = "params";
 
-#define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
+inline constexpr char EXECUTE_ERROR_MSG[] = "C/S function call timeout or error!";
 
 /**
  * This enum is used in the old communication layer.
