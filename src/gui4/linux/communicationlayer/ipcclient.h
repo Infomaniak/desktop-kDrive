@@ -60,6 +60,9 @@ class IpcClient : public QObject {
         void onConnected();
         void onReadyRead();
 
+        void handle_response_message(const Poco::DynamicStruct &ipcMessage, int32_t id, const Poco::DynamicStruct &params);
+        void handle_server_signal(const Poco::DynamicStruct &ipcMessage, int32_t id, const Poco::DynamicStruct &params);
+
     private:
         QTcpSocket *_socket;
         std::string _readBuffer;
