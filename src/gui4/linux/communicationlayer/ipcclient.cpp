@@ -43,13 +43,13 @@ namespace KDC {
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
     _socket(new QTcpSocket(this)) {
-    connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
-    connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
-    connect(_socket, &QTcpSocket::disconnected, this, [this] {
+    (void) connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
+    (void) connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(_socket, &QTcpSocket::disconnected, this, [this] {
         emit disconnected();
         exit(EXIT_FAILURE);
     });
-    connect(_socket, &QTcpSocket::errorOccurred, this, [this](const QAbstractSocket::SocketError socketError) {
+    (void) connect(_socket, &QTcpSocket::errorOccurred, this, [this](const QAbstractSocket::SocketError socketError) {
         qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
         qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
         exit(EXIT_FAILURE);
