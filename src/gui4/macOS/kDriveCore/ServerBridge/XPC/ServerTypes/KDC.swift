@@ -267,7 +267,7 @@ public enum KDC {
         case EnumEnd = 6
     }
 
-    public enum SyncStatus: Int {
+    public enum SyncStatus: Int, Sendable {
         case Undefined
         case Starting
         case Running
