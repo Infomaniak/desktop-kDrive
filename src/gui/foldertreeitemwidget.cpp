@@ -60,7 +60,7 @@ FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &FolderTreeItemWidget::onFolderSizeCompleted);
 }
 
-void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
+void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
     _syncDbId = syncDbId;
 
     if (const auto exitCode = updateBlacklistSet(); exitCode != ExitCode::Ok) {
@@ -86,7 +86,7 @@ void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
     setDriveDbId(syncInfoMapIt->second.driveDbId());
 }
 
-void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
+void FolderTreeItemWidget::setDriveDbId(int driveDbId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -105,14 +105,14 @@ void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
     _userDbId = accountInfoMapIt->second.userDbId();
 }
 
-void FolderTreeItemWidget::setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo) {
+void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvailableInfo &driveInfo) {
     _userDbId = userDbId;
     _driveId = driveInfo.driveId();
     _driveName = driveInfo.name();
     _driveColor = driveInfo.color();
 }
 
-void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId) {
+void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
     const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
     if (driveInfoMapIt == _gui->driveInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
@@ -265,25 +265,26 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
     if (!parentItem) return;
 
     const auto parentNodeId = parentItem->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
-
-    if (const auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
-        checkState == Qt::Unchecked && !parentItem->isDisabled()) {
-        (void) blackset.insert(parentNodeId);
-        const QString path = getPath(parentNodeId);
-        if (!path.isEmpty()) {
-            (void) _blacklistCache.emplace(parentNodeId, path);
+    if (!parentNodeId.isEmpty()) {
+        if (const auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
+            checkState == Qt::Unchecked && !parentItem->isDisabled()) {
+            (void) blackset.insert(parentNodeId);
+            const QString path = getPath(parentNodeId);
+            if (!path.isEmpty()) {
+                (void) _blacklistCache.emplace(parentNodeId, path);
+            }
+            removeChildNodeFromSet(path, blackset);
+            return;
+        } else if (checkState == Qt::Checked) {
+            const QString path = getPath(parentNodeId);
+            removeChildNodeFromSet(path, blackset);
+        } else { // PartiallyChecked
+            // Do nothing
         }
-        removeChildNodeFromSet(path, blackset);
-        return;
-    } else if (checkState == Qt::Checked) {
-        const QString path = getPath(parentNodeId);
-        removeChildNodeFromSet(path, blackset);
-    } else { // PartiallyChecked
-        // Do nothing
-    }
 
-    (void) blackset.remove(parentNodeId);
-    (void) _blacklistCache.remove(parentNodeId);
+        (void) blackset.remove(parentNodeId);
+        (void) _blacklistCache.remove(parentNodeId);
+    }
 
     for (auto i = 0; i < parentItem->childCount(); ++i) createBlackSet(parentItem->child(i), blackset);
 }
