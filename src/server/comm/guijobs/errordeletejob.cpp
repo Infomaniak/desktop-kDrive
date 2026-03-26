@@ -63,7 +63,7 @@ ExitInfo ErrorDeleteJob::process() {
         // Not really an issue as we want to make sure the error is removed, but log it just in case as it can indicate a problem
         LOG_WARN(Log::instance()->getLogger(), "Error with errorDbId=" << _errorDbId << ": not found in database");
 
-        // The GUI still needs to be notified to remove the error from its list wich is out of sync if we are here
+        // The GUI still needs to be notified to remove the error from its list which is out of sync if we are here
         _commManager->appServer().commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
         return ExitCode::Ok;
     }

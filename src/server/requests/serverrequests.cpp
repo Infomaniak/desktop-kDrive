@@ -1727,8 +1727,8 @@ ExitCode ServerRequests::deleteErrorsServer() {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::keepError(const Error &error, bool &keepError) {
-    keepError = false;
+ExitInfo ServerRequests::keepError(const Error &error, bool &keepErrorFlag) {
+    keepErrorFlag = false;
 
     if (error.level() == ErrorLevel::Server) {
         // Server errors can always be deleted by user.
@@ -1760,7 +1760,7 @@ ExitInfo ServerRequests::keepError(const Error &error, bool &keepError) {
 
         // If the conflicted file still exists, keep the error.
         if (found) {
-            keepError = true;
+            keepErrorFlag = true;
         }
     }
     return ExitCode::Ok;

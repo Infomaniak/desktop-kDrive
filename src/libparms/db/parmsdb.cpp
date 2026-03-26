@@ -486,7 +486,7 @@
     "ORDER BY time "                                                                                                           \
     "LIMIT ?1;"
 
-#define SELECT_ERROR_ID "select_errors"
+#define SELECT_ERROR_ID "select_error"
 #define SELECT_ERROR_REQUEST                                                                                                   \
     "SELECT time, "                                                                                                      \
     "functionName, workerName, exitCode, exitCause, "                                                                          \

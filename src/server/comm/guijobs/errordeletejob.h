@@ -29,7 +29,7 @@ class ErrorDeleteJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _errorDbId = 0;
+        int64_t _errorDbId = 0;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
