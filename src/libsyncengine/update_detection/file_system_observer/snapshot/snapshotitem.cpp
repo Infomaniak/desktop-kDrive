@@ -45,15 +45,15 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
-void SnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
+ExitInfo SnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
     _id = id;
-    ApiTranslator::translateV3ToV2(driveDbId, _id);
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _id); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 
-void SnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
+ExitInfo SnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
     _parentId = newParentId;
-    ApiTranslator::translateV3ToV2(driveDbId, _parentId);
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _parentId); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }
 

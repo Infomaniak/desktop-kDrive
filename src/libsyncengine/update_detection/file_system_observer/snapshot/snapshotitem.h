@@ -39,9 +39,9 @@ class SnapshotItem {
 
         [[nodiscard]] const NodeId &id() const { return _id; }
 
-        void setId(DriveDbId driveDbId, const NodeId &id);
+        [[nodiscard]] ExitInfo setId(DriveDbId driveDbId, const NodeId &id);
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
-        void setParentId(DriveDbId driveDbId, const NodeId &newParentId);
+        [[nodiscard]] ExitInfo setParentId(DriveDbId driveDbId, const NodeId &newParentId);
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &children() const { return _children; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
