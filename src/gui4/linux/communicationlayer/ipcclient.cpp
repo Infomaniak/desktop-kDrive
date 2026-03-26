@@ -157,6 +157,40 @@ void IpcClient::onReadyRead() {
     processBuffer();
 }
 
+void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
+    if (!ipcMessage.contains(MSG_RESPONSE_CODE) || !ipcMessage.contains(MSG_RESPONSE_CAUSE)) {
+        qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
+        exit(EXIT_FAILURE);
+    }
+
+    const auto exitCode = static_cast<ExitCode>(ipcMessage[MSG_RESPONSE_CODE].convert<int>());
+    const auto exitCause = static_cast<ExitCause>(ipcMessage[MSG_RESPONSE_CAUSE].convert<int>());
+    const auto num = static_cast<RequestNum>(ipcMessage[MSG_REQUEST_NUM].convert<int>());
+    qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
+    auto it = _pendingCallbacks.find(id);
+    if (it != _pendingCallbacks.end()) {
+        auto callback = std::move(it.value());
+        _pendingCallbacks.erase(it);
+
+        try {
+            callback(ExitInfo(exitCode, exitCause), params);
+        } catch (const std::exception &e) {
+            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << num << ") -"
+                                    << e.what();
+        } catch (...) {
+            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << num
+                                    << ")";
+        }
+    } else {
+        qCWarning(lcIpcClient) << "Received response for unknown request id:" << id;
+    }
+}
+
+void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
+    const auto num = static_cast<SignalNum>(ipcMessage[MSG_REQUEST_NUM].convert<int>());
+    qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
+    emit serverSignalReceived(num, params);
+}
 /**
  * Process the buffer to extract complete JSON messages and route each one.
  * - type: GuiJobType::Query (1)  -> response to a pending request: invoke its stored callback and remove it.
@@ -180,49 +214,25 @@ void IpcClient::processBuffer() {
                 qCCritical(lcIpcClient) << "Failed to parse the JSON message: \n'" << raw << "'\n";
                 exit(EXIT_FAILURE);
             }
-            const Poco::DynamicStruct msg = *objPtr;
+            const Poco::DynamicStruct ipcMessage = *objPtr;
 
-            if (!msg.contains(MSG_TYPE) || !msg.contains(MSG_REQUEST_ID) || !msg.contains(MSG_REQUEST_NUM) ||
-                !msg.contains(MSG_REQUEST_PARAMS)) {
+            if (!ipcMessage.contains(MSG_TYPE) || !ipcMessage.contains(MSG_REQUEST_ID) || !ipcMessage.contains(MSG_REQUEST_NUM) ||
+                !ipcMessage.contains(MSG_REQUEST_PARAMS)) {
                 qCCritical(lcIpcClient) << "Received malformed message, missing required fields";
                 exit(EXIT_FAILURE);
             }
 
-            const auto type = static_cast<GuiJobType>(msg[MSG_TYPE].convert<int>());
-            const int32_t id = msg[MSG_REQUEST_ID];
-            const Poco::DynamicStruct params = msg[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
+            const auto type = static_cast<GuiJobType>(ipcMessage[MSG_TYPE].convert<int>());
+            const int32_t id = ipcMessage[MSG_REQUEST_ID];
+            const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
             switch (type) {
                 case GuiJobType::Query: {
-                    if (!msg.contains(MSG_RESPONSE_CODE) || !msg.contains(MSG_RESPONSE_CAUSE)) {
-                        qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
-                        exit(EXIT_FAILURE);
-                    }
-                    const auto exitCode = static_cast<ExitCode>(msg[MSG_RESPONSE_CODE].convert<int>());
-                    const auto exitCause = static_cast<ExitCause>(msg[MSG_RESPONSE_CAUSE].convert<int>());
-                    const auto num = static_cast<RequestNum>(msg[MSG_REQUEST_NUM].convert<int>());
-                    qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
-                    auto it = _pendingCallbacks.find(id);
-                    if (it != _pendingCallbacks.end()) {
-                        auto callback = std::move(it.value());
-                        _pendingCallbacks.erase(it);
-
-                        try {
-                            callback(ExitInfo(exitCode, exitCause), params);
-                        } catch (const std::exception &e) {
-                            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << num << ") -" << e.what();
-                        } catch (...) {
-                            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << num << ")";
-                        }
-                    } else {
-                        qCWarning(lcIpcClient) << "Received response for unknown request id:" << id;
-                    }
+                    handle_response_message(ipcMessage, id, params);
                     break;
                 }
                 case GuiJobType::Signal: {
-                    const auto num = static_cast<SignalNum>(msg[MSG_REQUEST_NUM].convert<int>());
-                    qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
-                    emit serverSignalReceived(num, params);
+                    handle_server_signal(ipcMessage, id, params);
                     break;
                 }
                 default:
