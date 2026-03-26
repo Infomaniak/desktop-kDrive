@@ -18,10 +18,25 @@
 
 import Foundation
 import InfomaniakDI
+import UserNotifications
 
 struct UtilitySignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
+
+    func handleShowNotification(_ signal: Data) async throws {
+        guard let notificationSignal = try? decoder.decode(SignalMessage<NotificationSignal>.self, from: signal) else {
+            throw SignalError.unableToGetNotificationFromSignal
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = notificationSignal.body.title
+        content.body = notificationSignal.body.message
+
+        let requestId = "kdrive_notification_\(notificationSignal.num)_\(notificationSignal.id)"
+        let request = UNNotificationRequest(identifier: requestId, content: content, trigger: nil)
+        try? await UNUserNotificationCenter.current().add(request)
+    }
 
     func handleError(_ signal: Data) async throws {
         guard let errorInfoSignal = try? decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signal) else {
