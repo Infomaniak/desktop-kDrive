@@ -29,7 +29,6 @@
 #include <filesystem>
 #include <exception>
 #include <fstream>
-#include <type_traits>
 #include <utility>
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
@@ -132,9 +131,9 @@ int32_t IpcClient::sendRequest(RequestNum num, const Poco::DynamicStruct &params
     const int32_t id = _nextId++;
 
     Poco::DynamicStruct ipcMessage;
-    ipcMessage[MSG_TYPE] = static_cast<std::underlying_type_t<GuiJobType>>(GuiJobType::Query);
+    ipcMessage[MSG_TYPE] = toInt(GuiJobType::Query);
     ipcMessage[MSG_REQUEST_ID] = id;
-    ipcMessage[MSG_REQUEST_NUM] = static_cast<std::underlying_type_t<RequestNum>>(num); // Sonar cpp:S7035 - approximatively equivclent to static_cast<uint16_t>(num);
+    ipcMessage[MSG_REQUEST_NUM] = toInt(num);
 
     if (const bool insertResult = ipcMessage.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
         qCCritical(lcIpcClient) << "Failed to insert request parameters into message";
@@ -186,8 +185,7 @@ void IpcClient::onDisconnected() {
 
 void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) {
     if (!_hasConnectedOnce) {
-        const auto socketErrorValue = static_cast<std::underlying_type_t<QAbstractSocket::SocketError>>(socketError);
-        scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(socketErrorValue).arg(_socket->errorString()));
+        scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(toInt(socketError)).arg(_socket->errorString()));
         return;
     }
 
