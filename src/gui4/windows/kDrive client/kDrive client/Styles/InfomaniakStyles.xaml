@@ -283,4 +283,14 @@
         <Setter Property="BorderBrush"
                 Value="{ThemeResource SystemControlBackgroundBaseLowRevealBorderBrush}" />
     </Style>
+    <Style x:Key="Infomaniak.Style.Border.TextBorder"
+           TargetType="Border">
+        <Setter Property="Padding"
+                Value="5,3,7,3" />
+        <Setter Property="CornerRadius"
+                Value="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}" />
+
+        <Setter Property="Background"
+                Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+    </Style>
 </ResourceDictionary>

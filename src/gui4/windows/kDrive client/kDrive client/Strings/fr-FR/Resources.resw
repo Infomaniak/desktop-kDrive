@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 17:54:26 +0100 
+  Exported at: Thu, 26 Mar 2026 20:08:29 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -174,7 +174,10 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
     <value>Programme bêta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
-    <value>Votre navigateur devrait s’ouvrir automatiquement pour terminer la connexion. Une fois connecté, vous reviendrez automatiquement à kDrive.</value> 
+    <value>Votre navigateur devrait s’ouvrir automatiquement pour finaliser la connexion. Une fois connecté, vous reviendrez automatiquement dans kDrive.</value> 
+  </data> 
+  <data name="butonRestartSignIn" xml:space="preserve"> 
+    <value>Relancer la connexion</value> 
   </data> 
   <data name="buttonActivateOfflineSync" xml:space="preserve"> 
     <value>Activer la synchronisation hors ligne</value> 
@@ -920,8 +923,14 @@ Il s’ouvrira dans votre navigateur.</value>
   <data name="labelAllFolders" xml:space="preserve"> 
     <value>Tous les dossiers</value> 
   </data> 
+  <data name="labelAllkDrive" xml:space="preserve"> 
+    <value>Tout le kDrive</value> 
+  </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Auteur</value> 
+  </data> 
+  <data name="labelBydefault" xml:space="preserve"> 
+    <value>Par défaut</value> 
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
     <value>b</value> 
@@ -1251,25 +1260,26 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur :</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
-    <value>Dossiers à synchroniser</value> 
+    <value>Dossiers synchronisés</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
-    <value>Pour chaque kDrive, vous pouvez choisir l’endroit où il est synchronisé sur votre ordinateur et les dossiers à synchroniser.</value> 
+    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
-    <value>Contenu synchronisé : %@</value> 
+    <value>Contenu synchronisé :</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
-    <value>Lieu : %@</value> 
+    <value>Emplacement :</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Configurez vos kDrive</value> 
+    <value>Configurer vos kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value> 
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
-    <value>Ce kDrive est déjà configuré. Allez dans vos paramètres pour le modifier.</value> 
+    <value>Ce kDrive est déjà configuré. 
+Allez dans vos paramètres pour le modifier.</value> 
   </data> 
   <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
     <value>Commencez gratuitement avec my kSuite,
@@ -1294,9 +1304,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Sélection personnalisée</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
-    <value>Le cloud privé rapide et sécurisé, hébergé en Suisse.
+    <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
 
-Connectez-vous et gardez vos documents synchronisés sur tous vos appareils.</value> 
+Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.</value> 
   </data> 
   <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
     <value>Une erreur est survenue, veuillez réessayer.</value> 
@@ -1311,7 +1321,7 @@ Connectez-vous et gardez vos documents synchronisés sur tous vos appareils.</va
     <value>Un instant..</value> 
   </data> 
   <data name="onboardingLoginTitle" xml:space="preserve"> 
-    <value>Bienvenue dans kDrive !</value> 
+    <value>Bienvenue dans kDrive</value> 
   </data> 
   <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
     <value>Vos fichiers sont prêts à être synchronisés
@@ -1326,9 +1336,6 @@ Nous vous invitons à patienter quelques instants.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synchronisation en cours…</value> 
-  </data> 
-  <data name="onboardingWindowTitle" xml:space="preserve"> 
-    <value>Bienvenue dans kDrive</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Ouvrir kDrive au démarrage de l’ordinateur</value> 
@@ -1387,6 +1394,9 @@ Nous vous invitons à patienter quelques instants.</value>
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
     <value>Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne et ne seront pas supprimés.</value> 
   </data> 
+  <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
+    <value>Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne.</value> 
+  </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Envoyer uniquement la dernière session</value> 
   </data> 
@@ -1409,7 +1419,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Dossier kDrive</value> 
   </data> 
   <data name="signInBrowser" xml:space="preserve"> 
-    <value>Connectez-vous à l’aide de votre navigateur</value> 
+    <value>Connectez-vous  dans votre navigateur</value> 
   </data> 
   <data name="storageComputerFreeSpace" xml:space="preserve"> 
     <value>Espace libre sur l’ordinateur</value> 

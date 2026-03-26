@@ -172,13 +172,15 @@
                                               Click="CheckBox_Click"
                                               DataContext="{x:Bind RootTreeItem, Mode=OneWay}" />
                                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelName')}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                             <Grid Grid.Column="1"
                                   HorizontalAlignment="Right"
                                   Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}">
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}" />
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </Grid>
 
                             <TreeView x:Name="FolderTree"

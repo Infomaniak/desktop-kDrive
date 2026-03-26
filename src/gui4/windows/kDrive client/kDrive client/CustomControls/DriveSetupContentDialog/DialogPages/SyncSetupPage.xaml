@@ -113,22 +113,19 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0"
-                                Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
-                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                                Style="{StaticResource Infomaniak.Style.Border.TextBorder}">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                 <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
-                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                                   Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('syncFolderCustomLocation')}"
-                                           Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' , Mode=OneWay}" />
+                                           Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' , Mode=OneWay}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('syncFolderDefaultLocation')}"
-                                           Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                           Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                             </StackPanel>
                         </Border>
                         <TextBlock Grid.Column="1"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
                                    Text="{x:Bind DriveSetupContentDialogVM.CurrentSync.LocalPath, Mode=OneWay}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextTrimming="CharacterEllipsis"
@@ -159,14 +156,16 @@
                         <HyperlinkButton Grid.Row="0"
                                          Grid.Column="1"
                                          Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonReturnToDefaultFolder')}"
-                                         Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath,Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}"
+                                         Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.IsDefaultLocalPath, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=true', Mode=OneWay}"
                                          Click="ReturnToDefaultFolderButton_Click">
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="{x:Bind DriveSetupContentDialogVM.CurrentSync.DefaultPath, Mode=OneWay}" />
                             </ToolTipService.ToolTip>
                         </HyperlinkButton>
 
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
+                        <TextBlock Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
                                    Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>
@@ -227,11 +226,12 @@
                                     Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' ,Mode=OneWay}">
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}"
                                               Height="12"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               VerticalAlignment="Center" />
 
                             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummaryNone')}"
                                        Style="{StaticResource BodyTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
 
@@ -241,20 +241,21 @@
                                     Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.ExcludedNodeIds.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.pencil}"
                                               Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               VerticalAlignment="Center" />
 
                             <TextBlock Grid.Column="1"
                                        Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"
                                        VerticalAlignment="Center"
                                        Style="{StaticResource BodyTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextTrimming="WordEllipsis">
                             </TextBlock>
                         </StackPanel>
 
                         <TextBlock Grid.ColumnSpan="2"
                                    Grid.Row="1"
-                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescriptionShort')}"
                                    TextWrapping="WrapWholeWords"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Style="{StaticResource BodyTextBlockStyle}"

@@ -127,7 +127,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             _onBoardingViewModel?.Reset();
             Frame.Navigate(typeof(Onboarding.WelcomePage), _onBoardingViewModel);
-
         }
     }
 

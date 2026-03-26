@@ -99,17 +99,12 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         public static string GetExclusionsSummary(int exclusionCount)
         {
-            string exclusionText = exclusionCount == 0 ? Localizer.Instance.GetString("onboardingExclusionSummaryNone") : Localizer.Instance.GetString("onboardingExclusionSummarySome");
-
-            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionExclusion", exclusionText);
+            return exclusionCount == 0 ? Localizer.Instance.GetString("labelAllkDrive") : Localizer.Instance.GetString("onboardingExclusionSummarySome");
         }
 
         public static string GetLocationSummary(bool isDefaultLocation, string location)
         {
-            string locationText = isDefaultLocation ? Localizer.Instance.GetString("syncFolderDefaultLocation") : location;
-
-            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionLocation", locationText);
+            return isDefaultLocation ? Localizer.Instance.GetString("labelBydefault") : location;
         }
-
     }
 }
