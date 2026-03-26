@@ -94,7 +94,7 @@ struct SynchroFolderSelectionSection: View {
                         onCompletion: handleSelectedDirectory
                     )
 
-                    if !configuration.localFolder.isDefault {
+                    if !isDefaultLocation {
                         Button(KDriveLocalizable.buttonReturnToDefaultFolder) {
                             Task {
                                 await setDefaultFolder()
