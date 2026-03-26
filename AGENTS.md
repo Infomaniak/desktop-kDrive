@@ -58,6 +58,7 @@ clang-format -i <file>
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 <!-- Add project-specific user corrections here -->
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
+- Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 
 ## JIT Index
 
