@@ -292,9 +292,8 @@
                                Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
 
-                <errors:RemoteDiskFullBar Grid.Row="0"
-                                          Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
-                                          Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
+                <controls:HomeErrorInfoBar Grid.Row="0"
+                                           Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.M}" />
             </StackPanel>
             <!-- State widget -->
             <Border Grid.Column="0"

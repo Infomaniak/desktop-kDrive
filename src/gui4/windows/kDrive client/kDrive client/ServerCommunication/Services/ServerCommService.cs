@@ -1228,8 +1228,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
-                bool success = true;
-                if (errorInfo.SyncDbId is not null)
+                if (errorInfo.Level == ErrorLevel.Server)
+                {
+                    Error error = new(errorInfo);
+                    await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                }
+                else if (errorInfo.SyncDbId is not null)
                 {
                     var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
 
@@ -1242,6 +1246,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
                     }
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}.");
                 }
             }
             return true;

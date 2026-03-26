@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 25 Mar 2026 10:09:22 +0100 
+  Exported at: Thu, 26 Mar 2026 15:55:07 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -900,6 +900,12 @@ La sincronización se reanudará automáticamente en cuanto se restablezca la co
   </data> 
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
     <value>No se han podido sincronizar algunos archivos.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>No podemos acceder a tus archivos. Reinicie la aplicación para reiniciar la sincronización. Si el problema persiste, %@.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Conexión a kDrive interrumpida</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Este artículo no está disponible en este dispositivo.

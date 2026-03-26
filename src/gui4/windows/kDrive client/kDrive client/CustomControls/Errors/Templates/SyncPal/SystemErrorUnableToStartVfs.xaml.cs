@@ -37,6 +37,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
+                if (Error.Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
                 if (!await Error.Sync.ChangeSyncType(Types.SyncType.Offline))
                     await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
             }

@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         {
             this.InitializeComponent();
             Error = error;
-            error.Path = Error.Sync.RemotePath;
+            error.Path = Error.Sync?.RemotePath ?? string.Empty;
             error.NodeType = Types.NodeType.Directory;
         }
 
@@ -47,8 +47,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                     return;
                 }
 
-                var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
-                frame.Navigate(destPage, Error.Sync?.Drive);
+                if (Error.Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                var destPage = Error.Sync.IsAdvanced ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
+
+                frame.Navigate(destPage, Error.Sync.Drive);
             }
         }
     }

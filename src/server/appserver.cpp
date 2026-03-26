@@ -481,7 +481,7 @@ void AppServer::init() {
         // Start syncs
         LOG_DEBUG(_logger, "Start syncs");
         QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
-    } else {
+ ///   } else {
         addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
     }
 

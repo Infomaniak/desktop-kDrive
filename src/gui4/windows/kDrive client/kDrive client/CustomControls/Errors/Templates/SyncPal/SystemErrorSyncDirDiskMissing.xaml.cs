@@ -20,7 +20,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             this.InitializeComponent();
             Error = error;
 
-            error.Path = Error.Sync?.LocalPath ?? "";
+            error.Path = Error.Sync?.LocalPath ?? string.Empty;
             error.NodeType = Types.NodeType.Directory;
         }
 
@@ -43,7 +43,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string? absolutPath = Path.GetDirectoryName(Error.Sync?.LocalPath ?? "") ?? Error.Sync?.LocalPath;
+                if (Error.Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                string? absolutPath = Path.GetDirectoryName(Error.Sync.LocalPath) ?? Error.Sync.LocalPath;
                 if (string.IsNullOrEmpty(absolutPath))
                 {
                     Utility.ShowUnexpectedErrorTeachingTip();

@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _DbId = -1;
         private DateTime _timestamp = DateTime.MinValue;
         private ErrorLevel _errorLevel = ErrorLevel.Unknown;
-        private Sync _sync;
+        private Sync? _sync;
         private ExitCode _exitCode = ExitCode.Unknown;
         private ExitCause _exitCause = ExitCause.Unknown;
         NodeType _nodeType = NodeType.Unknown;
@@ -76,6 +76,23 @@ namespace Infomaniak.kDrive.ViewModels
             _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
             _sync = sync;
         }
+        public Error(ErrorInfo errorInfo)
+        {
+            _DbId = errorInfo.DbId ?? _DbId;
+            _timestamp = errorInfo.Time ?? _timestamp;
+            _errorLevel = errorInfo.Level ?? _errorLevel;
+            _exitCode = errorInfo.ExitCode ?? _exitCode;
+            _exitCause = errorInfo.ExitCause ?? _exitCause;
+            _nodeType = errorInfo.NodeType ?? _nodeType;
+            _path = errorInfo.Path ?? _path;
+            _destinationPath = errorInfo.DestinationPath ?? _destinationPath;
+            _localNodeId = errorInfo.LocalNodeId ?? _localNodeId;
+            _remoteNodeId = errorInfo.RemoteNodeId ?? _remoteNodeId;
+            _conflictType = errorInfo.ConflictType ?? _conflictType;
+            _inconsistencyType = errorInfo.InconsistencyType ?? _inconsistencyType;
+            _cancelType = errorInfo.CancelType ?? _cancelType;
+            _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
+        }
 
         public DbId DbId
         {
@@ -95,7 +112,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _errorLevel, value);
         }
 
-        public Sync Sync
+        public Sync? Sync
         {
             get => _sync;
             private set => SetPropertyInUIThread(ref _sync, value);
@@ -195,6 +212,12 @@ namespace Infomaniak.kDrive.ViewModels
 
             try
             {
+                if (Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Sync is null");
+                    return false;
+                }
+
                 if (!await Launcher.LaunchUriAsync(App.Constants.Drive.itemUri(Sync.Drive.DriveId, RemoteNodeId)))
                 {
                     Logger.Log(Logger.Level.Error, $"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}");

@@ -20,6 +20,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+
+            if (Error.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             if (!string.IsNullOrEmpty(Error.RemoteNodeId) && !await Error.OpenItemInWebViewAsync())
                 Utility.ShowUnexpectedErrorTeachingTip();
             else if (!string.IsNullOrEmpty(Error.Path) && !await Utility.OpenFolderSecurely(System.IO.Path.Combine(Error.Sync.LocalPath, Error.Path)))
