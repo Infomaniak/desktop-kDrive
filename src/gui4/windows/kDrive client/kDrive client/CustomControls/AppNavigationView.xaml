@@ -60,7 +60,7 @@
             <NavigationViewItem.InfoBadge>
                 <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
                            VerticalAlignment="Center"
-                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed}" />
             </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"
