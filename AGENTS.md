@@ -79,6 +79,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
+- Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 
 ## JIT Index
 
