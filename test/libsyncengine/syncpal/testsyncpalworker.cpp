@@ -382,7 +382,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &, bool &changes) {
     using namespace std::chrono;
     changes = false;
     if (!_networkAvailable) {
