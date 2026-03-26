@@ -34,10 +34,6 @@
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
-// Response-only fields (type=QUERY) - defined server-side in abstractguijob.cpp, not in comm.h
-static constexpr auto MSG_RESPONSE_CODE = "code";
-static constexpr auto MSG_RESPONSE_CAUSE = "cause";
-
 namespace KDC {
 
 IpcClient::IpcClient(QObject *parent) :
