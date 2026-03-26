@@ -1901,7 +1901,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
+        if (!parentNode->insertChildren(correspondingNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
                                                << Utility::formatSyncName(correspondingNode->parentNode()->name()));
