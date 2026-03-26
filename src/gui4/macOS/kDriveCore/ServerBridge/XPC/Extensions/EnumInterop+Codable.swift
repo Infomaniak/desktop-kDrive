@@ -41,3 +41,27 @@ extension KDC.UpdateState: Codable {}
 extension KDC.SyncConfiguration: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}
+
+extension MsgType: Hashable {}
+extension KDC.ExitCause: Hashable {}
+extension KDC.ExitCode: Hashable {}
+extension KDC.NodeType: Hashable {}
+extension KDC.VirtualFileMode: Hashable {}
+extension KDC.SyncFileStatus: Hashable {}
+extension KDC.SyncDirection: Hashable {}
+extension KDC.SyncFileInstruction: Hashable {}
+extension KDC.ConflictType: Hashable {}
+extension KDC.InconsistencyType: Hashable {}
+extension KDC.CancelType: Hashable {}
+extension KDC.SyncStatus: Hashable {}
+extension KDC.SyncStep: Hashable {}
+extension KDC.ErrorLevel: Hashable {}
+extension KDC.Language: Hashable {}
+extension KDC.LogLevel: Hashable {}
+extension KDC.NotificationsDisabled: Hashable {}
+extension KDC.ProxyType: Hashable {}
+extension KDC.VersionChannel: Hashable {}
+extension KDC.UpdateState: Hashable {}
+extension KDC.SyncConfiguration: Hashable {}
+extension SignalNum: Hashable {}
+extension RequestNum: Hashable {}
