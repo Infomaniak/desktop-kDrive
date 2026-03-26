@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "snapshotitemhandler.h"
+#include "remotesnapshotitemhandler.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 
@@ -24,12 +24,12 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-SnapshotItemHandler::SnapshotItemHandler(const DriveDbId driveDbId, const log4cplus::Logger &logger) :
+RemoteSnapshotItemHandler::RemoteSnapshotItemHandler(const DriveDbId driveDbId, const log4cplus::Logger &logger) :
     _driveDbId(driveDbId),
     _logger(logger) {}
 
-void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
-                                   const std::exception &exc) {
+void RemoteSnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
+                                         const std::exception &exc) {
     const std::wstring header = L"Error in SnapshotItem::" + methodName;
     const std::wstring strStr = L"str='" + CommonUtility::s2ws(str) + L"', ";
     const std::wstring excStr = L"exc='" + stdErrorType + L"', " + L"err=" + CommonUtility::s2ws(exc.what()) + L"'.";
@@ -39,7 +39,7 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
     LOGW_WARN(_logger, msg);
 }
 
-bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
+bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str, const CsvIndex index, RemoteSnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
             if (const auto exitInfo = item.setId(_driveDbId, str); !exitInfo) {
@@ -132,7 +132,8 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
     return true;
 }
 
-void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
+void RemoteSnapshotItemHandler::readRemoteSnapshotItemFields(RemoteSnapshotItem &item, const std::string &line, bool &error,
+                                                             ParsingState &state) {
     for (const char c: line) {
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
@@ -150,7 +151,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
-            if (!updateSnapshotItem(state.tmp, state.index, item)) {
+            if (!updateRemoteSnapshotItem(state.tmp, state.index, item)) {
                 LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << CommonUtility::s2ws(line) << L"'.");
                 error = true;
                 return;
@@ -182,7 +183,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
     }
 }
 
-bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
+bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
 
@@ -220,7 +221,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
             return true;
         }
 
-        readSnapshotItemFields(item, line, error, state);
+        readRemoteSnapshotItemFields(item, line, error, state);
         if (error) return true;
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
@@ -244,8 +245,8 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     }
 
     // Update last value
-    if (!updateSnapshotItem(state.tmp, state.index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << CommonUtility::s2ws(line));
+    if (!updateRemoteSnapshotItem(state.tmp, state.index, item)) {
+        LOGW_WARN(_logger, L"Error in updateRemoteSnapshotItem - line=" << CommonUtility::s2ws(line));
         error = true;
         return true;
     }
