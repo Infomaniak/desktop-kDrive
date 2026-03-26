@@ -151,6 +151,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
 
         bool upgradeTables();
+        bool upgradeParametersTables();
         bool insertDefaultParameters();
         bool insertDefaultAppState();
         bool insertAppState(AppStateKey key, const std::string &value, bool updateOnlyIfEmpty = false);
@@ -159,13 +160,21 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool createAppState();
         bool prepareAppState();
 
-        void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+        void fillSyncWithQueryResult(Sync &sync, const char *requestId, const std::optional<DriveDbId> &driveDbId = {});
 
         bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
 
         bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
+
+        enum class FieldFilter {
+            AllFields = 0,
+            WhereSyncDbId = 1
+        };
+
+        bool bindQueryToSyncValues(const Sync &sync, const char *requestId, FieldFilter filter = FieldFilter::AllFields);
+        bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
 
 #if defined(KD_MACOS)
         bool updateExclusionApps();
