@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -49,9 +50,14 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void kDriveFullInfoBar_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void kDriveFullInfoBar_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-
+            if (AppViewModel.SelectedSync is null)
+            {
+                return;
+            }
+            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(AppViewModel.SelectedSync.Drive.DriveId);
+            await Launcher.LaunchUriAsync(changeOfferUri);
         }
 
         private void TmpDirAccessError_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -64,7 +70,6 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private bool _showDriveFullError = false;
         private bool _showTmpDirAccessError = false;
-        private bool _showNetworkTimeOutError = false;
         private IDisposable? _appErrorsSubscriptions;
         private IDisposable? _selectedSyncErrorsSubscriptions;
         private bool _isDisposed = false;
@@ -75,6 +80,8 @@ namespace Infomaniak.kDrive.CustomControls
             // Subscribe to changes in the app errors and selected sync to update the error display
             _appErrorsSubscriptions = ViewModel.AppErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
             ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
+            if (ViewModel.SelectedSync is not null)
+                ViewModel.SelectedSync.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
             Refresh();
         }
 
@@ -85,6 +92,8 @@ namespace Infomaniak.kDrive.CustomControls
                 _appErrorsSubscriptions?.Dispose();
                 _selectedSyncErrorsSubscriptions?.Dispose();
                 ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
+                if (ViewModel.SelectedSync is not null)
+                    ViewModel.SelectedSync.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
                 _isDisposed = true;
             }
         }
@@ -94,21 +103,21 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _selectedSyncErrorsSubscriptions?.Dispose();
 
-            if(e.OldValue is not null)
-                e.OldValue.PropertyChanged -= SelectedSync_PropertyChanged;
+            if (e.OldValue is not null)
+                e.OldValue.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
 
             if (e.NewValue is not null)
             {
                 _selectedSyncErrorsSubscriptions = e.NewValue.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
-                e.NewValue.PropertyChanged += SelectedSync_PropertyChanged;
+                e.NewValue.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
             }
 
             Refresh();
         }
 
-        private void SelectedSync_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SelectedSyncDrive_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Sync.Drive.DisplayRemoteSpaceWarning))
+            if (e.PropertyName == nameof(Drive.DisplayRemoteSpaceWarning))
                 Refresh();
         }
 
@@ -121,11 +130,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             get => _showTmpDirAccessError;
             set => SetPropertyInUIThread(ref _showTmpDirAccessError, value);
-        }
-        public bool ShowNetworkTimeOutError
-        {
-            get => _showNetworkTimeOutError;
-            set => SetPropertyInUIThread(ref _showNetworkTimeOutError, value);
         }
 
         public async Task<bool> ResolveDriveFullError()
@@ -163,42 +167,34 @@ namespace Infomaniak.kDrive.CustomControls
             return result;
         }
 
+        private void HideAll()
+        {
+
+            ShowDriveFullError = false;
+            ShowTmpDirAccessError = false;
+        }
         public void Refresh()
         {
-            Action resetErrors = () =>
-            {
-                ShowDriveFullError = false;
-                ShowTmpDirAccessError = false;
-                ShowNetworkTimeOutError = false;
-            };
 
             if (HasTmpDirAccessError())
             {
                 if (!ShowTmpDirAccessError)
                 {
-                    resetErrors();
+                    HideAll();
                     ShowTmpDirAccessError = true;
-                }
-            }
-            else if (HasNetworkTimeOutError())
-            {
-                if (!ShowNetworkTimeOutError)
-                {
-                    resetErrors();
-                    ShowNetworkTimeOutError = true;
                 }
             }
             else if (HasDriveFullError())
             {
                 if (!ShowDriveFullError)
                 {
-                    resetErrors();
+                    HideAll();
                     ShowDriveFullError = true;
                 }
             }
             else
             {
-                resetErrors();
+                HideAll();
             }
         }
 
@@ -207,9 +203,5 @@ namespace Infomaniak.kDrive.CustomControls
 
         private bool HasDriveFullError() =>
             ViewModel.SelectedSync?.Drive.DisplayRemoteSpaceWarning ?? false;
-
-        private bool HasNetworkTimeOutError() =>
-            ViewModel.AppErrors.Any(e => e.ExitCause == Types.ExitCause.NetworkTimeout) ||
-            ViewModel.SelectedSync?.SyncErrors.Any(e => e.ExitCause == Types.ExitCause.NetworkTimeout) == true;
     }
 }

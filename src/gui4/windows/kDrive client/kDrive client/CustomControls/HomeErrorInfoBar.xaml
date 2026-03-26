@@ -15,10 +15,9 @@
 
     <Grid>
         <InfoBar x:Name="kDriveFullInfoBar"
-                 IsOpen="True"
+                 IsOpen="{x:Bind ControlViewModel.ShowDriveFullError, Mode=OneWay}"
                  Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullTitle')}"
                  Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockKDriveFullSubtitle')}"
-                 Visibility="{x:Bind ControlViewModel.ShowDriveFullError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                  IsClosable="True"
                  Closed="kDriveFullInfoBar_Closed">
             <InfoBar.IconSource>
@@ -26,6 +25,7 @@
                                         Foreground="{ThemeResource SystemAccentColor}" />
             </InfoBar.IconSource>
             <InfoBar.ActionButton>
+
                 <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonAddStorage')}"
                         Click="kDriveFullInfoBar_Click"
                         Visibility="{x:Bind AppViewModel.SelectedSync.Drive.IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
@@ -33,13 +33,11 @@
         </InfoBar>
 
         <InfoBar x:Name="TmpDirAccessError"
-                 IsOpen="True"
+                 IsOpen="{x:Bind ControlViewModel.ShowTmpDirAccessError, Mode=OneWay}"
                  Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockTmpDirAccessErrorTitle')}"
                  Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockTmpDirAccessErrorSubtitle')}"
-                 Visibility="{x:Bind ControlViewModel.ShowTmpDirAccessError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                  IsClosable="True"
                  Closed="TmpDirAccessError_Closed">
-
             <InfoBar.IconSource>
                 <controls:SvgIconSource UriString="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
                                         Foreground="{ThemeResource SystemAccentColor}" />
@@ -48,22 +46,6 @@
                 <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCloseKDrive')}"
                         Click="TmpDirAccessError_Click" />
             </InfoBar.ActionButton>
-        </InfoBar>
-
-        <InfoBar x:Name="NetworkTimeOutError"
-                 IsOpen="True"
-                 Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockNetworkTimeOutErrorTitle')}"
-                 Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockNetworkTimeOutErrorSubtitle')}"
-                 Visibility="{x:Bind ControlViewModel.ShowNetworkTimeOutError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
-                 IsClosable="True"
-                 Closed="NetworkTimeOutError_Closed">
-            <InfoBar.IconSource>
-                <ImageIconSource>
-                    <ImageIconSource.ImageSource>
-                        <SvgImageSource UriSource="{StaticResource Infomaniak.DS.Icons.Time.hourglass}" />
-                    </ImageIconSource.ImageSource>
-                </ImageIconSource>
-            </InfoBar.IconSource>
         </InfoBar>
     </Grid>
 </UserControl>
