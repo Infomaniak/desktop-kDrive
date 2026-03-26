@@ -119,7 +119,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
     repaint();
 }
 
-void StatusBarWidget::setCurrentDrive(int driveDbId) {
+void StatusBarWidget::setCurrentDrive(const DriveDbId driveDbId) {
     _driveDbId = driveDbId;
 }
 

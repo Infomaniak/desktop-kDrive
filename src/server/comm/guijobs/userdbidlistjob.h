@@ -29,7 +29,7 @@ class UserDbIdListJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        std::vector<int> _userDbIdList;
+        std::vector<UserDbId> _userDbIdList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

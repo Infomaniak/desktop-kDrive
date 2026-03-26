@@ -31,15 +31,15 @@ class CustomTabBar : public QTabBar {
     public:
         CustomTabBar(QWidget *parent = nullptr);
 
-        inline void setUnResolvedNotifCount(int nbNotif) { _unResolvedNotifCount = nbNotif; }
-        inline void setAutoResolvedNotifCount(int nbNotif) { _autoResolvedNotifCount = nbNotif; }
+        inline void setUnResolvedNotifCount(const Count nbNotif) { _unResolvedNotifCount = nbNotif; }
+        inline void setAutoResolvedNotifCount(const Count nbNotif) { _autoResolvedNotifCount = nbNotif; }
 
     protected:
         void paintEvent(QPaintEvent *) override;
 
     private:
-        int _unResolvedNotifCount;
-        int _autoResolvedNotifCount;
+        Count _unResolvedNotifCount{0};
+        Count _autoResolvedNotifCount{0};
 
         QColor _tabTextColor;
         QColor _tabSelectedTextColor;

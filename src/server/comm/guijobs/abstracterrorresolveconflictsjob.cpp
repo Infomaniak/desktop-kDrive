@@ -38,14 +38,14 @@ ExitInfo AbstractErrorResolveConflictsJob::fetchAllErrors(std::vector<Error> &er
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, int32_t &syncDbId) {
+ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, SyncDbId &syncDbId) {
     const std::vector<Error> empty;
     return getSyncDbIdFromErrors(list1, empty, syncDbId);
 }
 
 ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vector<Error> &list1, const std::vector<Error> &list2,
-                                                                 int32_t &syncDbId) {
-    std::set<int32_t> syncDbIdSet;
+                                                                 SyncDbId &syncDbId) {
+    std::set<SyncDbId> syncDbIdSet;
     for (const auto &error: list1) {
         (void) syncDbIdSet.insert(error.syncDbId());
     }
@@ -67,7 +67,7 @@ ExitInfo AbstractErrorResolveConflictsJob::getSyncDbIdFromErrors(const std::vect
 ExitInfo AbstractErrorResolveConflictsJob::fixConflictsAndNotify(const std::shared_ptr<SyncPal> &syncPal,
                                                                  const std::vector<Error> &keepLocalErrors,
                                                                  const std::vector<Error> &keepRemoteErrors) {
-    std::vector<int32_t> removedErrorsDbIds;
+    std::vector<ErrorDbId> removedErrorsDbIds;
     if (ExitInfo exitInfo = syncPal->fixConflictingFiles(keepLocalErrors, keepRemoteErrors, removedErrorsDbIds); !exitInfo) {
         LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles: " << exitInfo);
         return exitInfo;

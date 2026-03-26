@@ -38,7 +38,7 @@ class SynthesisBar : public QWidget {
         explicit SynthesisBar(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent = nullptr);
 
         void refreshErrorsButton();
-        void displayErrors(int driveDbId);
+        void displayErrors(DriveDbId driveDbId);
         bool systemMove() const { return _systemMove; }
         void reset();
 
@@ -64,8 +64,8 @@ class SynthesisBar : public QWidget {
         static const std::map<NotificationsDisabled, QString> &notificationsDisabledForPeriodMap();
 
         void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);
-        QUrl syncUrl(int syncDbId, const QString &filePath);
-        void openUrl(int syncDbId, const QString &filePath = "");
+        QUrl syncUrl(SyncDbId syncDbId, const QString &filePath);
+        void openUrl(SyncDbId syncDbId, const QString &filePath = "");
 
         /**
          * This method determines if the user is allowed to move the top level dialog.
@@ -84,7 +84,7 @@ class SynthesisBar : public QWidget {
         bool eventFilter(QObject *obj, QEvent *event) override;
 
     signals:
-        void showParametersDialog(int driveDbId = 0, bool errorPage = false);
+        void showParametersDialog(DriveDbId driveDbId = 0, bool errorPage = false);
         void disableNotifications(NotificationsDisabled type, QDateTime dateTime);
         void exit();
         void crash();
@@ -93,7 +93,7 @@ class SynthesisBar : public QWidget {
         void crashFatal();
 
     private slots:
-        void onDisplayErrors(int driveDbId);
+        void onDisplayErrors(DriveDbId driveDbId);
         void onOpenErrorsMenu();
         void onOpenMiscellaneousMenu();
         void onOpenFolder();

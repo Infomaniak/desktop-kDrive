@@ -20,6 +20,7 @@
 #include "abstractcommserver_mac.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/kDriveModel/xpcGuiProtocol.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/comm.h"
 #include "comm/guijobs/abstractguijob.h"
 
@@ -273,8 +274,8 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
     // Remove request type
     [jsonDict removeObjectForKey:@"type"];
 
-    KDC::AbstractGuiJob::GuiJobType requestType = static_cast<KDC::AbstractGuiJob::GuiJobType>([type integerValue]);
-    if (requestType == KDC::AbstractGuiJob::GuiJobType::Query) {
+    KDC::GuiJobType requestType = static_cast<KDC::GuiJobType>([type integerValue]);
+    if (requestType == KDC::GuiJobType::Query) {
         // Retrieve answer callback
         auto cbk = [(GuiLocalEnd *) _privatePtr->localEnd callback:id];
         assert(cbk);
@@ -305,7 +306,7 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
             lostConnectionCbk();
             return -1;
         }
-    } else if (requestType == KDC::AbstractGuiJob::GuiJobType::Signal) {
+    } else if (requestType == KDC::GuiJobType::Signal) {
         // Serialize message
         NSData *newMsg = [NSJSONSerialization dataWithJSONObject:jsonDict
                                                          options:NSJSONWritingSortedKeys | NSJSONWritingWithoutEscapingSlashes

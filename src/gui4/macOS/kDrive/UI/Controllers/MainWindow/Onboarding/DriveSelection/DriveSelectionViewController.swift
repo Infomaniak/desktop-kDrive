@@ -162,10 +162,25 @@ extension DriveSelectionViewController {
         viewModel.startSynchronization()
     }
 
-    @objc private func didTapAdvancedSettings() {}
+    @objc private func didTapAdvancedSettings() {
+        guard let currentUser = flowCoordinator.currentUser else { return }
+
+        let viewController = SynchroConfigurationFlowViewController(
+            userDbId: Int(currentUser.dbId),
+            configurations: viewModel.selectedSynchroConfigurations,
+            onConfirm: handleUpdateConfigurations,
+            onCancel: dismissPresentedViewController
+        )
+        presentAsSheet(viewController)
+    }
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
-        primaryButton.isEnabled = !selectedDrives.isEmpty
+        let shouldEnableButtons = !selectedDrives.isEmpty
+
+        primaryButton.isEnabled = shouldEnableButtons
+        secondaryButton.isEnabled = shouldEnableButtons
+
+        drivesListView.selectedDrives = selectedDrives
     }
 
     private func handleLoadingState(_ isLoading: Bool) {
@@ -181,6 +196,20 @@ extension DriveSelectionViewController {
         for cell in drivesListView.cells.values {
             cell.isEnabled = isEnabled
         }
+    }
+
+    private func handleUpdateConfigurations(_ configurations: [SynchroConfiguration]) {
+        for configuration in configurations {
+            viewModel.synchroConfigurations[configuration.drive.id] = configuration
+        }
+        dismissPresentedViewController()
+    }
+
+    private func dismissPresentedViewController() {
+        guard let presentedViewController = presentedViewControllers?.first else {
+            return
+        }
+        dismiss(presentedViewController)
     }
 }
 

@@ -52,42 +52,42 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showParametersDialog();
         void showSynthesisDialog();
         void updateSystrayIcon();
-        void askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError);
+        void askUserToLoginAgain(UserDbId userDbId, QString userEmail, bool invalidTokenError);
 
     signals:
         // User signals
         void userAdded(const UserInfo &userInfo);
         void userUpdated(const UserInfo &userInfo);
-        void userStatusChanged(int userDbId, bool connected, QString connexionError);
-        void userRemoved(int userDbId);
+        void userStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
+        void userRemoved(UserDbId userDbId);
         // Account signals
         void accountAdded(const AccountInfo &accountInfo);
         void accountUpdated(const AccountInfo &accountInfo);
-        void accountRemoved(int accountDbId);
+        void accountRemoved(AccountDbId accountDbId);
         // Drive signals
         void driveAdded(const DriveInfo &driveInfo);
         void driveUpdated(const DriveInfo &driveInfo);
-        void driveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
-        void driveRemoved(int driveDbId);
-        void driveDeletionFailed(int driveDbId);
+        void driveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used);
+        void driveRemoved(DriveDbId driveDbId);
+        void driveDeletionFailed(DriveDbId driveDbId);
         // Sync signals
         void syncAdded(const SyncInfo &syncInfo);
         void syncUpdated(const SyncInfo &syncInfo);
-        void syncRemoved(int syncDbId);
-        void syncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
+        void syncRemoved(SyncDbId syncDbId);
+        void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
-        void itemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
-        void vfsConversionCompleted(int syncDbId);
-        void syncDeletionFailed(int syncDbId);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
+        void vfsConversionCompleted(SyncDbId syncDbId);
+        void syncDeletionFailed(SyncDbId syncDbId);
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
-        void fixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
+        void fixConflictingFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         // Login
         void authorizationCodeReceived(const QString &code, const QString &state);
         // Utility
         void showNotification(const QString &title, const QString &message);
-        void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
-        void errorsCleared(int syncDbId);
+        void errorAdded(bool serverLevel, ExitCode exitCode, SyncDbId syncDbId);
+        void errorsCleared(SyncDbId syncDbId);
         void logUploadStatusUpdated(LogUploadState status, int percent);
         // Updater
         void updateStateChanged(UpdateState state);

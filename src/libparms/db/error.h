@@ -34,31 +34,31 @@ class PARMS_EXPORT Error {
         Error(const std::string &functionName, const ExitInfo &exitInfo);
 
         // Error level SyncPal constructor
-        Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause);
-        Error(int syncDbId, const std::string &workerName, const ExitInfo &exitInfo);
+        Error(SyncDbId syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause);
+        Error(SyncDbId syncDbId, const std::string &workerName, const ExitInfo &exitInfo);
 
         // Error level Node constructor
-        Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
+        Error(SyncDbId syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
               ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyType::None,
               CancelType cancelType = CancelType::None, const SyncPath &destinationPath = "",
               ExitCode exitCode = ExitCode::Unknown, ExitCause exitCause = ExitCause::Unknown);
 
-        Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
+        Error(ErrorDbId dbId, int64_t time, ErrorLevel level, const std::string &functionName, SyncDbId syncDbId,
               const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
               const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
               InconsistencyType inconsistencyType = InconsistencyType::None, CancelType cancelType = CancelType::None,
               const SyncPath &destinationPath = "");
 
-        inline int64_t dbId() const { return _dbId; }
-        inline void setDbId(int64_t val) { _dbId = val; }
+        inline ErrorDbId dbId() const { return _dbId; }
+        inline void setDbId(ErrorDbId val) { _dbId = val; }
         inline int64_t time() const { return _time; }
         inline void setTime(int64_t val) { _time = val; }
         inline ErrorLevel level() const { return _level; }
         inline void setLevel(ErrorLevel val) { _level = val; }
         inline const std::string &functionName() const { return _functionName; }
         inline void setFunctionName(const std::string &val) { _functionName = val; }
-        inline int syncDbId() const { return _syncDbId; }
-        inline void setSyncDbId(int val) { _syncDbId = val; }
+        inline SyncDbId syncDbId() const { return _syncDbId; }
+        inline void setSyncDbId(const SyncDbId val) { _syncDbId = val; }
         inline const std::string &workerName() const { return _workerName; }
         inline void setWorkerName(const std::string &val) { _workerName = val; }
         inline ExitCode exitCode() const { return _exitCode; }
@@ -86,10 +86,10 @@ class PARMS_EXPORT Error {
         bool isSimilarTo(const Error &other) const;
 
     private:
-        int64_t _dbId{0};
+        ErrorDbId _dbId{0};
         ErrorLevel _level{ErrorLevel::Unknown};
         std::string _functionName;
-        int _syncDbId{0};
+        SyncDbId _syncDbId{0};
         std::string _workerName;
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};

@@ -75,7 +75,7 @@ ExitInfo ErrorResolveConflictsJob::process() {
         return ExitCode::Ok;
     }
 
-    int32_t syncDbId = 0;
+    SyncDbId syncDbId = 0;
     if (ExitInfo exitInfo = getSyncDbIdFromErrors(keepLocalErrors, keepRemoteErrors, syncDbId); !exitInfo) {
         return exitInfo;
     }

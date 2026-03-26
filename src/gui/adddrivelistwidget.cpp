@@ -295,7 +295,7 @@ void AddDriveListWidget::onAddUser() {
     emit terminated(false);
 }
 
-void AddDriveListWidget::onUserSelected(int userDbId) {
+void AddDriveListWidget::onUserSelected(const UserDbId userDbId) {
     _userDbId = userDbId;
     setDrivesData();
 }

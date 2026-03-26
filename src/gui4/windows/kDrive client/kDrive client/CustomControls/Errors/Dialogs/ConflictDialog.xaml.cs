@@ -43,12 +43,12 @@ public partial class ConflictDialog : Page
 
     private void Init()
     {
-        _dialog.IsSecondaryButtonEnabled = false;
-        _dialog.SecondaryButtonClick += Dialog_SecondaryButtonClick;
+        _dialog.IsPrimaryButtonEnabled = false;
+        _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
         RefreshPrimaryButtonText();
     }
 
-    private async void Dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         if (RemoteVersionPresenter.IsSelected || LocalVersionPresenter.IsSelected)
             ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected ? ConflictResolutionStrategy.KeepLocal : ConflictResolutionStrategy.KeepRemote);
@@ -77,32 +77,32 @@ public partial class ConflictDialog : Page
     private void RefreshPrimaryButtonText()
     {
         if (ViewModel.CurrentErrorIndex == _errors.Count)
-            _dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonValidate");
+            _dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonValidate");
         else
-            _dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonValidateAndGoNext");
+            _dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonValidateAndGoNext");
     }
 
     private void RemoteVersionPresenter_Selected(object sender, System.EventArgs e)
     {
         LocalVersionPresenter.IsSelected = false;
-        _dialog.IsSecondaryButtonEnabled = true;
+        _dialog.IsPrimaryButtonEnabled = true;
     }
 
     private void LocalVersionPresenter_Selected(object sender, System.EventArgs e)
     {
         RemoteVersionPresenter.IsSelected = false;
-        _dialog.IsSecondaryButtonEnabled = true;
+        _dialog.IsPrimaryButtonEnabled = true;
     }
 
     private void RemoteVersionPresenter_Unselected(object sender, System.EventArgs e)
     {
         if (!LocalVersionPresenter.IsSelected)
-            _dialog.IsSecondaryButtonEnabled = false;
+            _dialog.IsPrimaryButtonEnabled = false;
     }
 
     private void LocalVersionPresenter_Unselected(object sender, System.EventArgs e)
     {
         if (!RemoteVersionPresenter.IsSelected)
-            _dialog.IsSecondaryButtonEnabled = false;
+            _dialog.IsPrimaryButtonEnabled = false;
     }
 }

@@ -33,7 +33,7 @@ class AbstractScopedPTrace : public AbstractPTrace {
             _autoStopStatus(autoStopStatus) {
             AbstractScopedPTrace::start();
         }
-        explicit AbstractScopedPTrace(const PTraceDescriptor &info, PTraceStatus autoStopStatus, int syncDbId) :
+        explicit AbstractScopedPTrace(const PTraceDescriptor &info, PTraceStatus autoStopStatus, const SyncDbId syncDbId) :
             AbstractPTrace(info, syncDbId),
             _autoStopStatus(autoStopStatus) {
             AbstractScopedPTrace::start();

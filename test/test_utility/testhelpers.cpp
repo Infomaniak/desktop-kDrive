@@ -173,4 +173,15 @@ void setupLogging() {
     }
 }
 
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) {
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
+    }
+    return {};
+}
+
 } // namespace KDC::testhelpers

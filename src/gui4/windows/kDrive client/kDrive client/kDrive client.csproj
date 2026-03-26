@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>3.8.3.2</AssemblyVersion>
+    <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -88,7 +88,7 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
-  <!--  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
+ <!-- <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
   </Target>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -117,6 +117,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Dialogs\ConflictVersionPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\InvalidSyncSyncDirAccessErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirChangedErrorDialog.xaml">
@@ -164,9 +167,6 @@
     <Page Update="CustomControls\Errors\Templates\Node\PathLengthError.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\NotYetSupportedCharError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharOnlySpacesError.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -194,7 +194,7 @@
     <Page Update="CustomControls\Errors\Templates\Node\FileRescuedError.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\HttpErrForbiddenError.xaml">
+    <Page Update="CustomControls\Errors\Templates\Node\GenericErrForbiddenError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\FileTooBigError.xaml">
@@ -213,9 +213,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorSyncDirDiskMissing.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CustomControls\Errors\Templates\SyncPal\UnknownError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\NetworkErrorOther.xaml">
@@ -242,16 +239,10 @@
     <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorUnableToStartVfs.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorFileOrDirectoryCorrupted.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidSyncSyncDirNestingError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidSyncSyncDirAccessError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CustomControls\Errors\Templates\SyncPal\LogicErrorFullListParsingError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\DriveStatusIndicator.xaml">

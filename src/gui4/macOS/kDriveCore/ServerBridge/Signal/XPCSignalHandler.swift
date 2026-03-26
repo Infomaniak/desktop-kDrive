@@ -38,6 +38,7 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
+    case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
     case unableToGetVersionInfoFromSignal
@@ -118,6 +119,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .SYNC_COMPLETEDITEM:
             try await synchroHandler.handleSyncCompleted(signal)
+
+        case .UTILITY_SHOW_NOTIFICATION:
+            try await utilitySignalHandler.handleShowNotification(signal)
 
         case .UTILITY_ERROR_ADDED:
             try await utilitySignalHandler.handleError(signal)

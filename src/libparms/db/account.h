@@ -24,21 +24,21 @@ namespace KDC {
 class Account {
     public:
         Account() = default;
-        Account(int dbId, int accountId, int userDbId, const std::string &name);
+        Account(AccountDbId dbId, AccountId accountId, UserDbId userDbId, const std::string &name);
 
-        [[nodiscard]] int dbId() const { return _dbId; }
-        void setDbId(const int dbId) { _dbId = dbId; }
-        [[nodiscard]] int accountId() const { return _accountId; }
-        void setAccountId(const int accountId) { _accountId = accountId; }
-        [[nodiscard]] int userDbId() const { return _userDbId; }
-        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
+        [[nodiscard]] AccountDbId dbId() const { return _dbId; }
+        void setDbId(const AccountDbId dbId) { _dbId = dbId; }
+        [[nodiscard]] AccountId accountId() const { return _accountId; }
+        void setAccountId(const AccountId accountId) { _accountId = accountId; }
+        [[nodiscard]] UserDbId userDbId() const { return _userDbId; }
+        void setUserDbId(const UserDbId userDbId) { _userDbId = userDbId; }
         [[nodiscard]] std::string name() const { return _name; }
         void setName(const std::string &name) { _name = name; }
 
     private:
-        int _dbId{0};
-        int _accountId{0};
-        int _userDbId{0};
+        AccountDbId _dbId{0};
+        AccountId _accountId{0};
+        UserDbId _userDbId{0};
         std::string _name;
 };
 

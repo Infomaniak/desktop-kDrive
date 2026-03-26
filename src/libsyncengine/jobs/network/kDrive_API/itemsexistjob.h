@@ -24,7 +24,7 @@ namespace KDC {
 
 class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
-        explicit ItemsExistJob(int driveDbId, const NodeSet &ids = {});
+        explicit ItemsExistJob(DriveDbId driveDbId, const NodeSet &ids = {});
 
         bool exists(const NodeId &id, IoError &ioError);
 

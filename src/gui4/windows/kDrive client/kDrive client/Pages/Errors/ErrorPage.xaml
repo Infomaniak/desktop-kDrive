@@ -54,14 +54,47 @@
                        VerticalAlignment="Bottom" />
         </Grid>
 
+        <!-- No Error view -->
+        <Grid Grid.Row="1"
+              Visibility="{x:Bind _errorPageVM.HasError, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <controls:SvgIcon Grid.Row="0"
+                              Height="120"
+                              Width="183"
+                              HorizontalAlignment="Center"
+                              
+                              UriString="{ThemeResource Infomaniak.Custom.Images.servin}" />
+            <StackPanel Grid.Row="1"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <TextBlock HorizontalAlignment="Center"
+                           Style="{StaticResource BodyStrongTextBlockStyle}"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelNoErrorsToFix')}" />
+
+                <HyperlinkButton HorizontalAlignment="Center"
+                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
+                                 Click="NoErrorHyperlinkButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Error view -->
         <ScrollView Grid.Row="1"
                     Padding="0"
-                    Margin="0">
+                    Margin="0"
+                    Visibility="{x:Bind _errorPageVM.HasError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
                     <!-- SyncDir -->
                     <RowDefinition Height="Auto" />
                     <!-- Conflicts -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Storage -->
                     <RowDefinition Height="Auto" />
                     <!-- Files -->
                     <RowDefinition Height="Auto" />
@@ -96,12 +129,18 @@
                 </StackPanel>
 
                 <errors:ErrorList Grid.Row="2"
+                                  Header="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage')}"
+                                  Errors="{x:Bind _errorPageVM.StorageErrors, Mode=OneWay}"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
+                                  Visibility="{x:Bind _errorPageVM.StorageErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                
+                <errors:ErrorList Grid.Row="3"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListFilesToVerifyHeader')}"
                                   Errors="{x:Bind _errorPageVM.FileErrors, Mode=OneWay}"
                                   Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"
                                   Visibility="{x:Bind _errorPageVM.FileErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
-                <errors:ErrorList Grid.Row="3"
+                <errors:ErrorList Grid.Row="4"
                                   Header="{x:Bind kDrive:Localizer.Instance.GetString('errorListOthersHeader')}"
                                   Errors="{x:Bind _errorPageVM.OtherErrors, Mode=OneWay}"
                                   Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.L}"

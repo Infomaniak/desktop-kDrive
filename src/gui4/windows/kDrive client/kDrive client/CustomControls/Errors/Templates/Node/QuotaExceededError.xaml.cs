@@ -18,5 +18,18 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+
+        private void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+
+            if (frame is null)
+            {
+                Logger.Log(Logger.Level.Error, "Failed to navigate to the subscription page after a quota exceeded error because the main frame could not be found.");
+                return;
+            }
+
+            frame.Navigate(typeof(Pages.StoragePage));
+        }
     }
 }

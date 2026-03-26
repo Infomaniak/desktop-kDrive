@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-InitFileListWithCursorJob::InitFileListWithCursorJob(const int driveDbId, const NodeId &dirId) :
+InitFileListWithCursorJob::InitFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId) :
     AbstractListingJob(ApiType::Drive, driveDbId),
     _dirId(dirId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;

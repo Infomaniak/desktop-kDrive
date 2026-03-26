@@ -38,6 +38,10 @@
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
+/**
+ * This enum is used in the old communication layer.
+ * Its equivalent in the new communication layer is defined in: src/libcommon/utility/cstypes.h - GuiJobType
+ */
 enum class MsgType {
     REQUEST = 0,
     REPLY,
@@ -367,6 +371,8 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_SHOW_DIALOG";
         case SignalNum::UPDATER_STATE_CHANGED:
             return "UPDATER_STATE_CHANGED";
+        case SignalNum::LOGIN_SEND_AUTHORIZATION_CODE:
+            return "LOGIN_SEND_AUTHORIZATION_CODE";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_ERROR_ADDED_LEGACY:

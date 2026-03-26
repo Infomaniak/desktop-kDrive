@@ -32,14 +32,14 @@ namespace KDC {
 class PARMS_EXPORT User {
     public:
         User();
-        User(int dbId, int userId, const std::string &keychainKey, const std::string &name = std::string(),
+        User(UserDbId dbId, UserId userId, const std::string &keychainKey, const std::string &name = std::string(),
              const std::string &email = std::string(), const std::string &avatarUrl = std::string(),
              std::shared_ptr<std::vector<char>> avatar = nullptr, bool toMigrate = false);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserId(int userId) { _userId = userId; }
-        inline int userId() const { return _userId; }
+        inline void setDbId(const UserDbId dbId) { _dbId = dbId; }
+        inline UserDbId dbId() const { return _dbId; }
+        inline void setUserId(const UserId userId) { _userId = userId; }
+        inline UserId userId() const { return _userId; }
         inline const std::string &keychainKey() const { return _keychainKey; }
         inline void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
         inline const std::string &name() const { return _name; }
@@ -57,14 +57,14 @@ class PARMS_EXPORT User {
 
     private:
         log4cplus::Logger _logger;
-        int _dbId;
-        int _userId;
+        UserDbId _dbId{0};
+        UserId _userId{0};
         std::string _keychainKey;
         std::string _name;
         std::string _email;
         std::string _avatarUrl;
         std::shared_ptr<std::vector<char>> _avatar;
-        bool _toMigrate;
+        bool _toMigrate{false};
 
         // Non DB attributes
         bool _isStaff{false};

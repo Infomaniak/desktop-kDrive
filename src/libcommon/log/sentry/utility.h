@@ -21,7 +21,7 @@
 #include "log/sentry/ptraces.h"
 
 namespace KDC::sentry {
-static inline std::unique_ptr<AbstractPTrace> syncStepToPTrace(SyncStep step, int syncDbId) {
+static inline std::unique_ptr<AbstractPTrace> syncStepToPTrace(const SyncStep step, const SyncDbId syncDbId) {
     switch (step) {
         case KDC::SyncStep::UpdateDetection1:
             return std::make_unique<sentry::pTraces::basic::UpdateDetection1>(syncDbId);

@@ -794,7 +794,7 @@ bool LiteSyncCommClient::connect() {
     return _private->connect();
 }
 
-bool LiteSyncCommClient::vfsStart(int syncDbId, const SyncPath &folderPath, bool &isPlaceholder, bool &isSyncing) {
+bool LiteSyncCommClient::vfsStart(const SyncDbId syncDbId, const SyncPath &folderPath, bool &isPlaceholder, bool &isSyncing) {
     if (!_private) {
         return false;
     }
@@ -823,7 +823,7 @@ bool LiteSyncCommClient::vfsStart(int syncDbId, const SyncPath &folderPath, bool
     return true;
 }
 
-bool LiteSyncCommClient::vfsStop(int syncDbId) {
+bool LiteSyncCommClient::vfsStop(const SyncDbId syncDbId) {
     if (!_private) {
         return false;
     }

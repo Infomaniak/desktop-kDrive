@@ -11,6 +11,6 @@
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('driveAccessDeniedErrorTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('driveAccessDeniedErrorDescription')}"
                      ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonRetry')}"
-                     ActionClick="OnRetryClick"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

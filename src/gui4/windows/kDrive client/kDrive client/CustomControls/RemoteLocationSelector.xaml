@@ -56,7 +56,7 @@
                                    Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
 
                     <local:SvgIcon Grid.Column="0"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
                                    Visibility="{x:Bind IsNotRoot, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    VerticalAlignment="Center"
@@ -122,7 +122,7 @@
                     </Grid.ColumnDefinitions>
 
                     <local:SvgIcon Grid.Column="0"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
@@ -231,7 +231,7 @@
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
                            HorizontalAlignment="Right"
-                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelsize')}"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelSize')}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            Margin="0,0,56,0" />
 

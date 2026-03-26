@@ -37,11 +37,12 @@ constexpr char API_PREFIX_DESKTOP[] = "/desktop";
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
-std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
-std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
+std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> AbstractTokenNetworkJob::_userToApiKeyMap;
+std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> AbstractTokenNetworkJob::_driveToApiKeyMap;
 std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const int userDbId, const int userId, const int driveDbId,
-                                                 const int driveId, const bool returnJson /*= true*/) :
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
+                                                 const DriveDbId driveDbId, const DriveId driveId,
+                                                 const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
     _userId(userId),
@@ -83,7 +84,7 @@ ExitCause AbstractTokenNetworkJob::getExitCause() const {
     return exitInfo().cause();
 }
 
-void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const int userDbId) {
+void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const UserDbId userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
         const std::shared_ptr<Login> currentLogin = it->second.first;

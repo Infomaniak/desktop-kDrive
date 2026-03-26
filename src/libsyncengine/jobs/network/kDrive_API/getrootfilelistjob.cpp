@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-GetRootFileListJob::GetRootFileListJob(const int userDbId, const int driveId, const uint64_t page /*= 1*/,
+GetRootFileListJob::GetRootFileListJob(const UserDbId userDbId, const DriveId driveId, const uint64_t page /*= 1*/,
                                        const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _page(page),
@@ -33,7 +33,7 @@ GetRootFileListJob::GetRootFileListJob(const int userDbId, const int driveId, co
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetRootFileListJob::GetRootFileListJob(const int driveDbId, const uint64_t page /*= 1*/, const bool dirOnly /*= false*/,
+GetRootFileListJob::GetRootFileListJob(const DriveDbId driveDbId, const uint64_t page /*= 1*/, const bool dirOnly /*= false*/,
                                        uint64_t nbItemsPerPage /*= 1000*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _page(page),

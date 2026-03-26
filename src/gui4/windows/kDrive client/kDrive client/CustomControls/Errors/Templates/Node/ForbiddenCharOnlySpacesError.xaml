@@ -12,7 +12,9 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('forbiddenCharOnlySpacesErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenCharOnlySpacesDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenCharOnlySpacesTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errForbiddenCharOnlySpacesDescription', Error.NodeTypeTranslationKey)}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('buttonRenameItem', Error.NodeTypeTranslationKey)}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

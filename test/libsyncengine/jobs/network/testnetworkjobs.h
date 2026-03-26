@@ -114,8 +114,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
 
-        int _driveDbId = 0;
-        int _userDbId = 0;
+        DriveDbId _driveDbId = 0;
+        UserDbId _userDbId = 0;
         NodeId _remoteDirId;
         ApiToken _apiToken;
 

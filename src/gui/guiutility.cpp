@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -554,7 +554,7 @@ void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*
     }
 }
 
-bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
+bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<SyncDbId, SyncInfoClient> &syncInfoMap,
                                          QWidget *parent) {
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);

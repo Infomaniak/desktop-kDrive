@@ -43,18 +43,18 @@ class AddDriveListWidget : public QWidget {
 
         void setDrivesData();
         void setUsersData();
-        inline void setUserDbId(int userDbId) { _userDbId = userDbId; }
+        inline void setUserDbId(const UserDbId userDbId) { _userDbId = userDbId; }
         inline DriveAvailableInfo driveInfo() { return _driveInfo; }
         inline bool isAddUserClicked() const { return _addUserClicked; }
         inline void setAddUserClicked(bool addUserClicked) { _addUserClicked = addUserClicked; }
     signals:
         void exit();
         void terminated(bool next = true);
-        void removeUser(int userDbId);
+        void removeUser(const UserDbId userDbId);
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        int _userDbId;
+        UserDbId _userDbId{0};
         bool _withoutDrives;
         DriveAvailableInfo _driveInfo;
         bool _addUserClicked;
@@ -86,7 +86,7 @@ class AddDriveListWidget : public QWidget {
         void onNextButtonTriggered(bool checked = false);
         void onWidgetPressed(QListWidgetItem *item);
         void onAddUser();
-        void onUserSelected(int userDbId);
+        void onUserSelected(UserDbId userDbId);
 };
 
 } // namespace KDC

@@ -209,6 +209,8 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
         }
 
+        public string RescueFolderPath => System.IO.Path.Combine(LocalPath, App.Constants.Sync.RescueFolderName);
+
         public async Task<bool> Start()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI;
 using DynamicData;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -22,11 +23,11 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
     public void InitTextBlocks()
     {
         // Access Modified
-        string sentence = Localizer.Instance.GetString("localFileAccessErrorDialogFaqLink");
+        string sentence = Localizer.Instance.GetString("errDialogLocalFileAccessFaqLink");
         string faqText = Localizer.Instance.GetString("labelFAQ");
 
         // Split the sentence around the placeholder
-        var parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
+        var parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
 
         // Add first part
         AccessRightsModifiedTextBlock.Inlines.Add(new Run { Text = parts[0] });
@@ -49,7 +50,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         string newSyncText = Localizer.Instance.GetString("labelNewSync");
 
         // Split the sentence around the placeholder
-        parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
+        parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
 
         // Add first part
         FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[0] });
@@ -79,6 +80,11 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
         var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
         frame.Navigate(destPage, Error.Sync?.Drive);
+
+        // Get the containg dialog and close it
+        var dialog = this.FindAscendant<ContentDialog>();
+        if (dialog is not null)
+            dialog.Hide();
     }
 
     private async void FaqHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)

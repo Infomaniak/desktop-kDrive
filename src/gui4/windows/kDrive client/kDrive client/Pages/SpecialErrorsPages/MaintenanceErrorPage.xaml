@@ -43,11 +43,11 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorTitle')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorDescription')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 

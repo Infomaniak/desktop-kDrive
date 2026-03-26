@@ -24,7 +24,7 @@ namespace KDC {
 
 class GetInfoUserJob : public AbstractTokenNetworkJob {
     public:
-        explicit GetInfoUserJob(int userDbId);
+        explicit GetInfoUserJob(UserDbId userDbId);
 
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] const std::string &email() const { return _email; }

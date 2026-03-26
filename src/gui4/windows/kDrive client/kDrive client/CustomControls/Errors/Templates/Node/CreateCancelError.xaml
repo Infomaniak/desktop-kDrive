@@ -12,7 +12,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('forbiddenActionErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errCreateCancelDescription')}"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenActionTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errCreateCancelDescription', Error.NodeTypeTranslationKey)}"
                      Error="{x:Bind Error}" />
 </UserControl>

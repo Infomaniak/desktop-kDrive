@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
 
-UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const QString &email, const QImage &avatar,
+UserInfo::UserInfo(const UserDbId dbId, const UserId userId, const QString &name, const QString &email, const QImage &avatar,
                    const bool connected) :
     _dbId(dbId),
     _userId(userId),
@@ -42,8 +42,6 @@ UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const 
     _email(email),
     _avatar(avatar),
     _connected(connected) {}
-
-UserInfo::UserInfo() {}
 
 void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userInfoDbId, _dbId);
@@ -91,14 +89,18 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
-    in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
+    qint64 userDbId = 0;
+    qint64 userId = 0;
+    in >> userDbId >> userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
             userInfo._isStaff >> userInfo._avatarUrl;
+    userInfo.setDbId(static_cast<UserDbId>(userDbId));
+    userInfo.setUserId(static_cast<UserId>(userId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
-    out << userInfo._dbId << userInfo._userId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected
-        << userInfo._isStaff << userInfo._avatarUrl;
+    out << static_cast<qint64>(userInfo._dbId) << static_cast<qint64>(userInfo._userId) << userInfo._name << userInfo._email
+        << userInfo._avatar << userInfo._connected << userInfo._isStaff << userInfo._avatarUrl;
     return out;
 }
 

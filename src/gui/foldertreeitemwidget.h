@@ -37,13 +37,13 @@ class FolderTreeItemWidget : public QTreeWidget {
     public:
         FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent = nullptr);
 
-        void setSyncDbId(int syncDbId);
-        void setUserDbIdAndDriveInfo(int userDbId, const DriveAvailableInfo &driveInfo);
-        void setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId);
+        void setSyncDbId(const SyncDbId syncDbId);
+        void setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo);
+        void setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId);
         void loadSubFolders();
         QSet<QString> createBlackSet();
         QSet<QString> createWhiteSet();
-        int syncDbId() const { return _syncDbId; }
+        SyncDbId syncDbId() const { return _syncDbId; }
         qint64 nodeSize(QTreeWidgetItem *item) const;
 
     signals:
@@ -57,9 +57,9 @@ class FolderTreeItemWidget : public QTreeWidget {
         };
 
         std::shared_ptr<ClientGui> _gui;
-        int _syncDbId{0};
-        int _userDbId{0};
-        int _driveId{0};
+        SyncDbId _syncDbId{0};
+        UserDbId _userDbId{0};
+        DriveDbId _driveId{0};
         QString _driveName;
         QColor _driveColor;
         QString _nodeId;
@@ -94,7 +94,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         void updateBlacklistPathMap();
         void addTreeWidgetItemToQueue(const QString &nodeId, QTreeWidgetItem *item);
 
-        void setDriveDbId(int driveDbId);
+        void setDriveDbId(const DriveDbId driveDbId);
         void setItemSize(QTreeWidgetItem *item, qint64 size);
 
         bool isRoot(const QTreeWidgetItem *item) const { return item == _root; }

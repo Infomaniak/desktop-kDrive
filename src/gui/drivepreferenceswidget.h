@@ -49,18 +49,18 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
     public:
         explicit DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void setDrive(int driveDbId, bool unresolvedErrors);
+        void setDrive(const DriveDbId driveDbId, bool unresolvedErrors);
         void reset();
         void showErrorBanner(bool unresolvedErrors);
         void refreshStatus();
 
     signals:
-        void displayErrors(int driveDbId);
+        void displayErrors(const DriveDbId driveDbId);
         void errorAdded();
         void openFolder(const QString &filePath);
-        void removeDrive(int driveDbId);
-        void pauseSync(int syncDbId);
-        void resumeSync(int syncDbId);
+        void removeDrive(const DriveDbId driveDbId);
+        void pauseSync(const SyncDbId syncDbId);
+        void resumeSync(const SyncDbId syncDbId);
 
     private:
         enum AddFolderStep {
@@ -71,8 +71,8 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         };
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId{0};
-        int _userDbId{0};
+        DriveDbId _driveDbId{0};
+        UserDbId _userDbId{0};
 
         QVBoxLayout *_mainVBox{nullptr};
         ActionWidget *_displayErrorsWidget{nullptr};
@@ -123,9 +123,9 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void updateUserInfo();
         void askEnableLiteSync(const std::function<void(bool enable)> &callback);
-        void askDisableLiteSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
-        bool switchVfsOn(int syncDbId);
-        bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
+        void askDisableLiteSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, SyncDbId syncDbId);
+        bool switchVfsOn(SyncDbId syncDbId);
+        bool switchVfsOff(SyncDbId syncDbId, bool diskSpaceWarning);
         void resetFoldersBlocs();
         void updateFoldersBlocs();
         void refreshFoldersBlocs() const;
@@ -141,19 +141,19 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
     private slots:
         void onErrorsWidgetClicked();
         void onAddLocalFolder(bool checked = false);
-        void onLiteSyncSwitchSyncChanged(int syncDbId, bool activate);
+        void onLiteSyncSwitchSyncChanged(SyncDbId syncDbId, bool activate);
         void onNotificationsSwitchClicked(bool checked = false);
         void onErrorAdded();
         void onRemoveDrive(bool checked = false);
-        void onUnsyncTriggered(int syncDbId);
-        void onDisplayFolderDetail(int syncDbId, bool display);
+        void onUnsyncTriggered(SyncDbId syncDbId);
+        void onDisplayFolderDetail(SyncDbId syncDbId, bool display);
         void onOpenFolder(const QString &filePath);
         void onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty);
         void onNeedToSave(bool isFolderItemBlackListed) const;
-        void onCancelUpdate(int syncDbId) const;
-        void onValidateUpdate(int syncDbId);
+        void onCancelUpdate(SyncDbId syncDbId) const;
+        void onValidateUpdate(SyncDbId syncDbId);
         void retranslateUi();
-        void onVfsConversionCompleted(int syncDbId);
+        void onVfsConversionCompleted(SyncDbId syncDbId);
         void onDriveBeingRemoved();
         void onSearch();
         void onSearchItemDoubleClicked(const QModelIndex &index);

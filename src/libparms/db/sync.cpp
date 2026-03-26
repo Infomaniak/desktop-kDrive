@@ -30,7 +30,7 @@ Sync::Sync() :
     _hasFullyCompleted(false),
     _listingCursorTimestamp(0) {}
 
-Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
