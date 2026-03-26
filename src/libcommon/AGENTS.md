@@ -10,6 +10,7 @@ Foundational shared library. **Everything depends on it** (`libcommonserver` →
 | `utility/cstypes.h` | All primitive enums — **no Qt/Poco dependency** |
 | `utility/types.h` | Type aliases, `ExitInfo`, concepts, bitwise ops, string conversion macros |
 | `comm.h` | Full IPC protocol: `RequestNum`, `SignalNum`, timeout constants |
+| `commjson.h` | Shared IPC JSON helpers for parsing the message envelope into `Poco::DynamicStruct` |
 | `info/*.h` | All DTO classes (UserInfo, DriveInfo, SyncInfo, ErrorInfo, …) |
 | `utility/utility.h` | `CommonUtility` — static helpers (paths, strings, UUID, disk space, URL, …) |
 | `utility/urlhelper.h` | `UrlHelper` — all Infomaniak API base URLs |
@@ -74,6 +75,7 @@ Defines every request/signal between GUI and server:
 - `RequestNum` — ~70 RPC calls, grouped by domain (`LOGIN_*`, `DRIVE_*`, `SYNC_*`, `NODE_*`, …)
 - `SignalNum` — ~30 async server→client notifications
 - Timeout constants: `COMM_SHORT_TIMEOUT` (1s), `COMM_AVERAGE_TIMEOUT` (10s), `COMM_LONG_TIMEOUT` (60s)
+- `commjson.h` — small shared helper for parsing raw IPC JSON strings into `Poco::DynamicStruct`
 
 **Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
 
