@@ -294,7 +294,8 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
     remoteSnapshotItem.setName(folderName);
     remoteSnapshotItem.setCreatedAt(now);
     remoteSnapshotItem.setLastModified(now);
-    remoteSnapshotItem.setParentId(_driveDbId, ApiTranslator::v2RootFolderRemoteId());
+    if (const auto exitInfo = remoteSnapshotItem.setParentId(_driveDbId, ApiTranslator::v2RootFolderRemoteId()); !exitInfo)
+        return exitInfo;
     if (found) {
         assert(dbNode.type() == NodeType::Directory && "Invalid node type.");
         remoteSnapshotItem.setCreatedAt(dbNode.created().value_or(now));
@@ -686,12 +687,12 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setId(_driveDbId, std::to_string(tmpInt));
+    if (const auto exitInfo = actionInfo.snapshotItem.setId(_driveDbId, std::to_string(tmpInt)); !exitInfo) return exitInfo;
 
     if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    actionInfo.snapshotItem.setParentId(_driveDbId, std::to_string(tmpInt));
+    if (const auto exitInfo = actionInfo.snapshotItem.setParentId(_driveDbId, std::to_string(tmpInt)); !exitInfo) return exitInfo;
 
     SyncName tmpDestPathStr;
     if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpDestPathStr, false)) {
