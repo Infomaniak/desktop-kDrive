@@ -98,7 +98,7 @@ void IpcClient::connectToServer(quint16 port) {
 #endif
 
 /**
- * @param num  Request number (see RequestNum enum in src/libcommon/comm.h)
+ * @param num Request number (see RequestNum enum in src/libcommon/comm.h)
  * @param params Request parameters
  * @param callback Optional callback invoked with the server response. If null, the response is silently discarded.
  * @return the request ID, which can be used to match the response with the request.
@@ -171,9 +171,15 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
         exit(EXIT_FAILURE);
     }
 
-    const auto exitCode = static_cast<ExitCode>(ipcMessage[MSG_RESPONSE_CODE].convert<int>());
-    const auto exitCause = static_cast<ExitCause>(ipcMessage[MSG_RESPONSE_CAUSE].convert<int>());
-    const auto num = static_cast<RequestNum>(ipcMessage[MSG_REQUEST_NUM].convert<int>());
+    auto exitCode = ExitCode::Unknown;
+    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CODE, exitCode);
+
+    auto exitCause = ExitCause::Unknown;
+    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
+
+    auto num = RequestNum::Unknown;
+    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
+
     qCDebug(lcIpcClient) << "Reply received | RequestNum:" << num << "/ id:" << id;
     auto it = _pendingCallbacks.find(id);
     if (it != _pendingCallbacks.end()) {
@@ -205,7 +211,9 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
  * @param params     Deserialized signal payload stored in `params`.
  */
 void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
-    const auto num = static_cast<SignalNum>(ipcMessage[MSG_REQUEST_NUM].convert<int>());
+    SignalNum num = SignalNum::Unknown;
+    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
+
     qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
     emit serverSignalReceived(num, params);
 }
@@ -240,8 +248,12 @@ void IpcClient::processBuffer() {
                 exit(EXIT_FAILURE);
             }
 
-            const auto type = static_cast<GuiJobType>(ipcMessage[MSG_TYPE].convert<int>());
-            const int32_t id = ipcMessage[MSG_REQUEST_ID];
+            auto type = GuiJobType::Unknown;
+            CommonUtility::readValueFromStruct(ipcMessage, MSG_TYPE, type);
+
+            int32_t id = 0;
+            CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_ID, id);
+
             const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
             switch (type) {
@@ -258,7 +270,10 @@ void IpcClient::processBuffer() {
                     exit(EXIT_FAILURE);
             }
         } catch (const Poco::Exception &e) {
-            qCCritical(lcIpcClient) << "Exception while processing message:" << e.what();
+            qCCritical(lcIpcClient) << "Poco exception while processing message:" << e.what();
+            exit(EXIT_FAILURE);
+        } catch (const std::exception &e) {
+            qCCritical(lcIpcClient) << "Std Exception while processing message:" << e.what();
             exit(EXIT_FAILURE);
         }
     }
