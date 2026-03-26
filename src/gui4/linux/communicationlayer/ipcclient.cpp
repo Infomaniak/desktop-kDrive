@@ -29,13 +29,14 @@
 #include <filesystem>
 #include <exception>
 #include <fstream>
+#include <type_traits>
 #include <utility>
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
 namespace {
-constexpr int initialConnectionRetryDelayMs = 2000;
-constexpr int initialConnectionLogEveryAttempts = 10;
+constexpr uint16_t initialConnectionRetryDelayMs = 2000;
+constexpr uint8_t initialConnectionLogEveryAttempts = 10;
 }
 
 namespace KDC {
@@ -185,7 +186,8 @@ void IpcClient::onDisconnected() {
 
 void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) {
     if (!_hasConnectedOnce) {
-        scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(static_cast<int>(socketError)).arg(_socket->errorString()));
+        const auto socketErrorValue = static_cast<std::underlying_type_t<QAbstractSocket::SocketError>>(socketError);
+        scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(socketErrorValue).arg(_socket->errorString()));
         return;
     }
 
