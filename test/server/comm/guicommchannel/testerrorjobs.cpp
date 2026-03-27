@@ -18,6 +18,7 @@
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
+#include "comm/guijobs/errordeletejob.h"
 #include "comm/guijobs/errorinfolistjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
@@ -197,6 +198,37 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
 #else
     const auto cbkAnswerStr2 = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr2, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorDeleteJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_DELETE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("errorDbId", 42);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_DELETE);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
+        CPPUNIT_ASSERT(deleteJob);
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, deleteJob->_errorDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 

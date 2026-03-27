@@ -486,6 +486,15 @@
     "ORDER BY time "                                                                                                           \
     "LIMIT ?1;"
 
+#define SELECT_ERROR_ID "select_error"
+#define SELECT_ERROR_REQUEST                                                                                                   \
+    "SELECT time, "                                                                                                      \
+    "functionName, workerName, exitCode, exitCause, "                                                                          \
+    "localNodeId, remoteNodeId, nodeType, path, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "syncDbId FROM "                                                                                                           \
+    "error "                                                                                                                   \
+    "WHERE dbId=?1;"
+
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \
     "SELECT dbId, time, "                                                                                                   \
@@ -1050,6 +1059,7 @@ bool ParmsDb::prepare() {
                                  SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_ID, SELECT_ALL_ERROR_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ERROR_ID, SELECT_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
@@ -1477,9 +1487,9 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
 
     user.setDbId(dbId);
 
-    int intResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 0, intResult));
-    user.setUserId(intResult);
+    UserId userIdResult{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_USER_REQUEST_ID, 0, userIdResult));
+    user.setUserId(userIdResult);
 
     std::string strResult;
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 1, strResult));
@@ -1498,8 +1508,9 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
     LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
     user.setAvatar(blobResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, intResult));
-    user.setToMigrate(static_cast<bool>(intResult));
+    int32_t int32Result{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, int32Result));
+    user.setToMigrate(static_cast<bool>(int32Result));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
@@ -3018,6 +3029,64 @@ bool ParmsDb::selectAllErrors(const int limit, std::vector<Error> &errs) {
 
     return true;
 }
+
+bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERROR_ID, 1, dbId));
+
+    if (!queryNext(SELECT_ERROR_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_ERROR_ID);
+        return false;
+    }
+    if (!found) {
+        return true;
+    }
+
+    int64_t time{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 0, time));
+    std::string functionName;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 1, functionName));
+    std::string workerName;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 2, workerName));
+    int32_t exitCode{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 3, exitCode));
+    int32_t exitCause{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 4, exitCause));
+    std::string localNodeId;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 5, localNodeId));
+    std::string remoteNodeId;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 6, remoteNodeId));
+    int32_t nodeType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 7, nodeType));
+    SyncName path;
+    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 8, path));
+    int32_t conflictType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, conflictType));
+    int32_t inconsistencyType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, inconsistencyType));
+    int32_t cancelType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, cancelType));
+    SyncName destinationPath;
+    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 12, destinationPath));
+    int32_t intLevel{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 13, intLevel));
+    const auto level = fromInt<ErrorLevel>(intLevel);
+
+    SyncDbId syncDbId{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 14, syncDbId));
+    error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
+                  fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId,
+                  fromInt<NodeType>(nodeType), path, fromInt<ConflictType>(conflictType),
+                  fromInt<InconsistencyType>(inconsistencyType), fromInt<CancelType>(cancelType),
+                  destinationPath);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
+
+    return true;
+}
+
 
 bool ParmsDb::selectAllErrors(const ErrorLevel level, const SyncDbId syncDbId, const int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
