@@ -78,7 +78,16 @@ struct StorageView: View {
     var body: some View {
         ZStack {
             if isShowingVolumeNotFound {
-                Text("Not Found")
+                IKContentUnavailableView(
+                    image: KDriveResources.volumeStrokeDots.swiftUIImage,
+                    title: KDriveLocalizable.storageMissingDiskMacOSTitle,
+                    subtitle: KDriveLocalizable.storageMissingDiskMacOSDescription,
+                    action: .init(title: KDriveLocalizable.buttonRetry) {
+                        Task {
+                            await fetchStorageData()
+                        }
+                    }
+                )
             } else {
                 Form {
                     StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(macStorageItems.values))
@@ -102,16 +111,20 @@ struct StorageView: View {
             getCachedStorageData()
         }
         .task(id: mainViewModel.currentSynchro?.dbId) {
-            guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
-                return
-            }
-
-            try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
+            await fetchStorageData()
         }
     }
 
     private func didTapFreeUpSpace() {
         // TODO: Redirect to Settings/Synchro
+    }
+
+    private func fetchStorageData() async {
+        guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
+            return
+        }
+
+        try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
     }
 
     private func getCachedStorageData() {
