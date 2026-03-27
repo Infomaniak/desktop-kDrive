@@ -49,7 +49,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         NodeId _testFolderId;
         NodeId _testFileId;
 
-        LocalTemporaryDirectory _localTempDir{"testRemoteFileSystemObserverrWorker"};
+        LocalTemporaryDirectory _localTempDir{"testRemoteFileSystemObserverWorker"};
 };
 
 } // namespace KDC
