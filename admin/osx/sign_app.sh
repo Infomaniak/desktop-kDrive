@@ -39,23 +39,23 @@ codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitleme
 
 echo "Signing InfomaniakDI"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI.framework/Versions/A/InfomaniakDI"
-#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI.framework"
 
 echo "Signing kDriveCore"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
-#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework"
 
 echo "Signing kDriveCoreUI"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/kDriveCoreUI"
-#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework"
 
 echo "Signing kDriveResources"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
-#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework"
 
 echo "Signing Lottie.framework"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/A/Lottie"
-#codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework"
 
 echo "Signing kDrive.gui"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
