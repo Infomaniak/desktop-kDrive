@@ -20,7 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
-public enum StorageDataError: Error, Sendable {
+public enum StorageDataError: Error, Sendable, Equatable {
     case cannotGetSynchroInfo
     case cannotGetVolumeInfo
 }
@@ -79,7 +79,7 @@ public final class StorageDataService: StorageDataProviding {
             }
 
             let resolvedKDriveStorage = try await kDriveStorage
-            let usedByComputer = resolvedVolumeStorage.usedStorage - resolvedKDriveStorage
+            let usedByComputer = max(0, resolvedVolumeStorage.usedStorage - resolvedKDriveStorage)
 
             storageData[synchroDbId] = .success(VolumeStorageData(
                 name: volumeName,

@@ -57,6 +57,7 @@ public struct IKContentUnavailableView: View {
                 Text(subtitle)
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
+                    .fixedSize()
 
                 if let action {
                     Button(action.title, action: action.action)
