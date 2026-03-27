@@ -21,7 +21,7 @@ import Cocoa
 @main
 struct KDriveApp {
     @MainActor
-    static func main() async {
+    static func main() {
         let delegate = AppDelegate()
         NSApplication.shared.delegate = delegate
 
