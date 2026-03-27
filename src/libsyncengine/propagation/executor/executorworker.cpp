@@ -46,7 +46,6 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
 #define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
@@ -945,6 +944,7 @@ ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPat
     return ExitCode::Ok;
 }
 
+namespace {
 bool checkIfAnyParentHasMoveOperation(const std::shared_ptr<Node> affectedNode) {
     bool res = false;
     auto parentNode = affectedNode->parentNode();
@@ -957,6 +957,7 @@ bool checkIfAnyParentHasMoveOperation(const std::shared_ptr<Node> affectedNode) 
     }
     return res;
 }
+} // namespace
 
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     bypassProgressComplete = false;
