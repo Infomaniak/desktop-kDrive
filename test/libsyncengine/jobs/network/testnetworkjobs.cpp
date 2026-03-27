@@ -966,51 +966,42 @@ void TestNetworkJobs::testGetFileList() {
 
 void TestNetworkJobs::testGetFileListWithCursor() {
     InitFileListWithCursorJob job(_driveDbId, pictureDirRemoteId);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    const ExitInfo exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-    int counter = 0;
+    Count counter = 0;
     std::string cursor;
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    if (dataObj) {
+    if (Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey); dataObj) {
         cursor = dataObj->get(cursorKey).toString();
-
-        Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey);
-        if (filesArray) {
-            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) {
-                counter++;
-            }
+        if (Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey); filesArray) {
+            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) ++counter;
         }
     }
 
     CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
+    CPPUNIT_ASSERT_EQUAL(Count{5}, counter);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     {
         CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        const ExitInfo exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-        int counter = 0;
-        std::string cursor = job.getCursor();
+        const std::string cursor = job.getCursor();
+        CPPUNIT_ASSERT(!cursor.empty());
+
+        Count counter = 0;
         RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
         while (job.getItem(item, error, ignore, eof)) {
-            if (ignore) {
-                continue;
-            }
-
-            if (item.parentId() == pictureDirRemoteId) {
-                counter++;
-            }
+            if (ignore) continue;
+            if (item.parentId() == pictureDirRemoteId) ++counter;
         }
 
-        CPPUNIT_ASSERT(!cursor.empty());
-        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT_EQUAL(Count{5}, counter);
         CPPUNIT_ASSERT(eof);
     }
 }
@@ -1018,26 +1009,23 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     {
         CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-        int counter = 0;
-        std::string cursor = job.getCursor();
+        const ExitInfo exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+
+        const std::string cursor = job.getCursor();
+        CPPUNIT_ASSERT(!cursor.empty());
+
+        Count counter = 0;
         RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
         while (job.getItem(item, error, ignore, eof)) {
-            if (ignore) {
-                continue;
-            }
-
-            if (item.parentId() == pictureDirRemoteId) {
-                counter++;
-            }
+            if (ignore) continue;
+            if (item.parentId() == pictureDirRemoteId) ++counter;
         }
 
-        CPPUNIT_ASSERT(!cursor.empty());
-        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT_EQUAL(Count{5}, counter);
         CPPUNIT_ASSERT(eof);
     }
 
@@ -1045,8 +1033,9 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     {
         CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
                                          /*blacklist*/ {}, true);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
+        const ExitInfo exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT(!exitInfo);
+
         CPPUNIT_ASSERT(job.hasErrorApi());
         CPPUNIT_ASSERT(!job.backError().code().empty());
         CPPUNIT_ASSERT(!job.backError().description().empty());
@@ -1055,49 +1044,44 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    const ExitInfo exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-    auto counter = 0;
     const std::string cursor = job.getCursor();
+    CPPUNIT_ASSERT(!cursor.empty());
+
+    Count counter = 0;
     RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;
     while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
-        }
-
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        if (ignore) continue;
+        if (item.parentId() == pictureDirRemoteId) ++counter;
     }
 
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 0);
+    CPPUNIT_ASSERT_EQUAL(Count{0}, counter);
     CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1");
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    const ExitInfo exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-    int counter = 0;
     const std::string cursor = job.getCursor();
+    CPPUNIT_ASSERT(!cursor.empty());
+
+    Count counter = 0;
     RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;
     // Call getItem only once to simulate a truncated CSV file
     job.getItem(item, error, ignore, eof);
-    if (item.parentId() == pictureDirRemoteId) {
-        counter++;
-    }
+    if (item.parentId() == pictureDirRemoteId) ++counter;
 
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT_LESS(5, counter);
+    CPPUNIT_ASSERT_LESS(Count{5}, counter);
     CPPUNIT_ASSERT(!eof);
 }
 
