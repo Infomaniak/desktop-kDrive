@@ -199,6 +199,7 @@
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncSubtitle')}"
                                Style="{StaticResource BodyTextBlockStyle}" />
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncDescription')}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
                 <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"

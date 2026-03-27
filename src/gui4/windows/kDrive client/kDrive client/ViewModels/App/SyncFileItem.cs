@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿using Infomaniak.kDrive.Converters;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.Types;
 using System;
 
@@ -24,6 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DateTime _timestamp = DateTime.Now;
         private string _localPath = "";
         private string _parentFolderPath = "";
+        private string _parentFolderName = "";
         private int _progressPercent = 0;
         public Int64 _operationId = 0;
 
@@ -39,9 +41,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Sync = sync;
             _type = info.Type ?? NodeType.File;
-            _path = info.Path ?? string.Empty;
-            _localPath = System.IO.Path.Combine(Sync.LocalPath, _path.TrimStart(System.IO.Path.DirectorySeparatorChar));
-            _parentFolderPath = System.IO.Path.GetDirectoryName(LocalPath) ?? "";
+            Path = info.Path ?? string.Empty;
             _newPath = info.NewPath ?? string.Empty;
             _localNodeId = info.LocalNodeId ?? string.Empty;
             _remoteNodeId = info.RemoteNodeId ?? string.Empty;
@@ -71,6 +71,10 @@ namespace Infomaniak.kDrive.ViewModels
                 SetPropertyInUIThread(ref _path, value);
                 SetPropertyInUIThread(ref _localPath, System.IO.Path.Combine(Sync.LocalPath, _path.TrimStart(System.IO.Path.DirectorySeparatorChar)), nameof(LocalPath));
                 SetPropertyInUIThread(ref _parentFolderPath, System.IO.Path.GetDirectoryName(LocalPath) ?? "", nameof(ParentFolderPath));
+
+                StringPathToFileNameConverter converter = new StringPathToFileNameConverter();
+                var result = converter.Convert(_parentFolderPath, typeof(string), "", "") as string;
+                SetPropertyInUIThread(ref _parentFolderName, result ?? "", nameof(ParentFolderName));
             }
         }
         public string LocalPath
@@ -164,6 +168,11 @@ namespace Infomaniak.kDrive.ViewModels
         public string ParentFolderPath
         {
             get => _parentFolderPath;
+        }
+
+        public string ParentFolderName
+        {
+            get => _parentFolderName;
         }
     }
 }

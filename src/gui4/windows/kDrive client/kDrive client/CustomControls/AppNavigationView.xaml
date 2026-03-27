@@ -32,8 +32,8 @@
 
     <NavigationView.PaneCustomContent>
         <controls:SyncSelector HorizontalAlignment="Stretch"
-                               Margin="4,9,4,20"
-                               Visibility="{x:Bind GetSyncSelectorVisibility(IsPaneOpen, ViewModel.AllSyncs), Mode=OneWay}"
+                               Margin="12,9,12,20"
+                               Visibility="{x:Bind IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                IsEnabled="{x:Bind GetSyncSelectorIsEnabled(ViewModel.SelectedSync, ContentFrame.Content), Mode=OneWay}" />
     </NavigationView.PaneCustomContent>
 

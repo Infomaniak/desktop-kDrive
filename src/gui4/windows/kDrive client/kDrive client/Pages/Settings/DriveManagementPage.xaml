@@ -182,7 +182,7 @@
                     <!-- Remove sync -->
                     <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonRemoveSync')}"
                                           IsClickEnabled="True"
-                                          Foreground="{ThemeResource SystemErrorTextColor}"
+                                          Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
                                           Click="RemoveSyncSettingsCard_Click">
                     </toolKit:SettingsCard>

@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 20:08:29 +0100 
+  Exported at: Fri, 27 Mar 2026 10:21:32 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -132,11 +132,7 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Synchroniser un dossier avec kDrive</value> 
   </data> 
   <data name="advancedSyncTitle" xml:space="preserve"> 
-    <value>Synchronisations avancées</value> 
-  </data> 
-  <data name="allowTrackingLabel" xml:space="preserve"> 
-    <value>Permettre le suivi</value> 
-    <comment>Allow tracking</comment> 
+    <value>Synchronisation avancée</value> 
   </data> 
   <data name="appUpToDate" xml:space="preserve"> 
     <value>L’application est à jour</value> 
@@ -168,10 +164,10 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
     <value>Vous pouvez le réveiller à partir de l’interface web.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
-    <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et contribuez à améliorer l’application en nous faisant part de vos idées d’amélioration.</value> 
+    <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</value> 
   </data> 
-  <data name="betaSettings" xml:space="preserve"> 
-    <value>Programme bêta</value> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Rejoindre le programme bêta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Votre navigateur devrait s’ouvrir automatiquement pour finaliser la connexion. Une fois connecté, vous reviendrez automatiquement dans kDrive.</value> 
@@ -439,9 +435,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
     <value>Création d’un lien de partage…</value> 
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
-    <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles collectées par Infomaniak afin de corriger les bugs et d’améliorer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement par nous.
+    <value>Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous. 
 
-Le code source de cette application peut être consulté, les informations collectées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
+Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
   </data> 
   <data name="dataManagementSettings" xml:space="preserve"> 
     <value>Gestion des données</value> 
@@ -450,13 +446,13 @@ Le code source de cette application peut être consulté, les informations colle
     <value>Infomaniak respecte votre vie privée</value> 
   </data> 
   <data name="debugLevelDescription" xml:space="preserve"> 
-    <value>Sélectionnez la quantité d’informations à enregistrer.</value> 
+    <value>Sélectionner la quantité d’informations enregistrées.</value> 
   </data> 
   <data name="debugLevelSetting" xml:space="preserve"> 
     <value>Niveau de débogage</value> 
   </data> 
   <data name="debugLogsDescription" xml:space="preserve"> 
-    <value>Ils permettent au support d’Infomaniak d’identifier la source d’un problème.</value> 
+    <value>Permettent au support infomaniak d’identifier l’origine d’un incident.</value> 
   </data> 
   <data name="debugLogsSettings" xml:space="preserve"> 
     <value>Journaux de débogage</value> 
@@ -525,14 +521,14 @@ La synchronisation actuelle reste inchangée. Toutefois, si un comportement anor
     <value>Une erreur s’est produite</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
-    <value>Cette opération peut prendre un certain temps, en fonction de la taille de vos données. En cas d’échec, une resynchronisation complète du lecteur peut être nécessaire.
+    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.
 
-Avant de poursuivre, assurez-vous que tous vos fichiers sont à jour et entièrement synchronisés.
+Avant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.
 
-Ne fermez pas l’application pendant la procédure.</value> 
+Ne fermez pas l’application pendant le processus.</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
-    <value>Modifier le mode de synchronisation ?</value> 
+    <value>Changer le mode de synchronisation ?</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Voici comment rétablir la synchronisation :</value> 
@@ -547,7 +543,7 @@ Ne fermez pas l’application pendant la procédure.</value>
     <value>Désactiver les notifications</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
-    <value>Ne pas adhérer</value> 
+    <value>Ne pas rejoindre</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
     <value>Vous n’avez pas la permission d’accéder à ce kDrive.
@@ -596,10 +592,10 @@ Veuillez vous connecter à nouveau avec l’adresse électronique correcte %@</v
     <value>Édition annulée</value> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
-    <value>Sauvegarder les informations de diagnostic sur mon ordinateur.</value> 
+    <value>Enregistrer les informations de diagnostic sur mon ordinateur.</value> 
   </data> 
   <data name="enableDebugLogsSetting" xml:space="preserve"> 
-    <value>Activer la journalisation des informations de débogage</value> 
+    <value>Activer l’enregistrement des informations de débogage</value> 
   </data> 
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Entrez votre mot de passe</value> 
@@ -836,7 +832,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
     <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value> 
   </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
-    <value>Permet la collecte d’informations supplémentaires utiles pour l’assistance.</value> 
+    <value>Active la collecte d’informations supplémentaires utile au support</value> 
   </data> 
   <data name="extendedLogSetting" xml:space="preserve"> 
     <value>Journal détaillé étendu</value> 
@@ -925,6 +921,10 @@ Il s’ouvrira dans votre navigateur.</value>
   </data> 
   <data name="labelAllkDrive" xml:space="preserve"> 
     <value>Tout le kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Autoriser le suivi</value> 
+    <comment>Allow tracking</comment> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Auteur</value> 
@@ -1104,8 +1104,20 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   <data name="labelStatus" xml:space="preserve"> 
     <value>Statut</value> 
   </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ libre</value> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ libres</value> 
+  </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
-    <value>Calculer…</value> 
+    <value>Calcul…</value> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ utilisé</value> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ utilisés</value> 
   </data> 
   <data name="labelSyncDirectionIncoming" xml:space="preserve"> 
     <value>Synchronisé à partir de kDrive web</value> 
@@ -1150,10 +1162,11 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <value>Langue</value> 
   </data> 
   <data name="languageSettingWarning" xml:space="preserve"> 
-    <value>Un redémarrage de l’application est nécessaire pour que la modification soit appliquée correctement dans toute l’application.</value> 
+    <value>Redémarrez l’application pour finir d'appliquer la nouvelle langue.</value> 
   </data> 
   <data name="largeFolderRecommendation" xml:space="preserve"> 
-    <value>Le dossier est volumineux. Pour accélérer le téléchargement, nous recommandons de n’envoyer que la dernière session kDrive.</value> 
+    <value>Le dossier complet est volumineux.
+Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.</value> 
   </data> 
   <data name="learnMore" xml:space="preserve"> 
     <value>En savoir plus</value> 
@@ -1174,10 +1187,10 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <value>Erreur</value> 
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
-    <value>Prolongé</value> 
+    <value>Étendu</value> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
-    <value>Mortel</value> 
+    <value>Critique</value> 
   </data> 
   <data name="logLevelInfo" xml:space="preserve"> 
     <value>Info</value> 
@@ -1200,7 +1213,7 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
     <value>Compression des journaux..</value> 
   </data> 
   <data name="logsStatusUpload" xml:space="preserve"> 
-    <value>Transférer les journaux à l’assistance..</value> 
+    <value>Transfert des journaux vers le support…</value> 
   </data> 
   <data name="logsUploadErrorTooltip" xml:space="preserve"> 
     <value>Le dernier transfert a échoué. Veuillez vérifier votre connexion Internet et vous assurer qu’au moins un utilisateur de kDrive est connecté. Les transferts sont limités à 10 par jour.</value> 
@@ -1212,16 +1225,18 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
     <value>%@ conflits de versions détectés</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
-    <value>Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.</value> 
+    <value>Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
+
+L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application.</value> 
   </data> 
   <data name="moveCancelErrorTitle" xml:space="preserve"> 
     <value>Déplacement annulé</value> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
-    <value>Déplacer les fichiers supprimés vers la corbeille de l’ordinateur</value> 
+    <value>Déplacer les fichiers supprimés dans la corbeille de l’ordinateur</value> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
-    <value>Certains objets ne peuvent pas être déplacés.</value> 
+    <value>Certains éléments ne pourront pas être déplacés.</value> 
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Plus d’espace de stockage, plus de fonctionnalités avec ma kSuite+</value> 
@@ -1347,7 +1362,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Chemin copié dans le presse-papiers</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
-    <value>Définir comment kDrive se connecte à Internet.</value> 
+    <value>Définissez comment kDrive se connecte à Internet.</value> 
   </data> 
   <data name="proxyHost" xml:space="preserve"> 
     <value>Serveur</value> 
@@ -1362,7 +1377,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Port</value> 
   </data> 
   <data name="proxySettings" xml:space="preserve"> 
-    <value>Paramètres du proxy</value> 
+    <value>Paramètres Proxy</value> 
   </data> 
   <data name="proxyType" xml:space="preserve"> 
     <value>Type de proxy</value> 
@@ -1371,7 +1386,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Configuration manuelle</value> 
   </data> 
   <data name="proxyTypeNone" xml:space="preserve"> 
-    <value>Handicapés</value> 
+    <value>Aucun</value> 
   </data> 
   <data name="proxyUser" xml:space="preserve"> 
     <value>Nom d’utilisateur</value> 
@@ -1383,7 +1398,7 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Interne</value> 
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
-    <value>Localisation sur kDrive</value> 
+    <value>Emplacement sur kDrive</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
     <value>Recherche dans %@</value> 
@@ -1401,7 +1416,9 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Envoyer uniquement la dernière session</value> 
   </data> 
   <data name="sentryDescription" xml:space="preserve"> 
-    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller la stabilité de l’application en temps réel et signaler automatiquement les erreurs techniques potentielles à nos développeurs.</value> 
+    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
+
+Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.</value> 
   </data> 
   <data name="settingsTitle" xml:space="preserve"> 
     <value>Paramètres</value> 
@@ -1422,23 +1439,21 @@ Nous vous invitons à patienter quelques instants.</value>
     <value>Connectez-vous  dans votre navigateur</value> 
   </data> 
   <data name="storageComputerFreeSpace" xml:space="preserve"> 
-    <value>Espace libre sur l’ordinateur</value> 
+    <value>Espace libre de l’ordinateur</value> 
   </data> 
   <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
-    <value>fichiers kDrive stockés sur votre ordinateur</value> 
+    <value>Fichiers kDrive stockés sur l’ordinateur</value> 
   </data> 
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
-    <value>Autres fichiers sur l’ordinateur</value> 
-  </data> 
-  <data name="storageFreeLabel" xml:space="preserve"> 
-    <value>%@ libre</value> 
+    <value>Autres fichiers de l’ordinateur</value> 
   </data> 
   <data name="storageMissingDiskDescription" xml:space="preserve"> 
-    <value>kDrive ne peut pas accéder au lecteur %@.
-Assurez-vous qu’il est correctement connecté, déverrouillé et accessible depuis votre ordinateur.</value> 
+    <value>kDrive ne peut pas accéder au disque %@
+Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value> 
   </data> 
   <data name="storageMissingDiskTitle" xml:space="preserve"> 
-    <value>Le lecteur de stockage %@ n’est pas accessible</value> 
+    <value>Le disque de stockage %@ n’est pas accessible</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisation</value> 
@@ -1446,15 +1461,12 @@ Assurez-vous qu’il est correctement connecté, déverrouillé et accessible de
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Ce PC - %@ - %@</value> 
   </data> 
-  <data name="storageUsedLabel" xml:space="preserve"> 
-    <value>%@ utilisé</value> 
-  </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Stockés en ligne</value> 
   </data> 
   <data name="storedOnlineDescription" xml:space="preserve"> 
-    <value>Vos fichiers restent dans le nuage et n’occupent pas d’espace sur votre ordinateur.
-Une connexion internet est nécessaire pour y accéder.</value> 
+    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur. 
+Connexion internet requise pour y accéder.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
     <value>Erreur de synchronisation</value> 
@@ -1490,16 +1502,17 @@ Une connexion internet est nécessaire pour y accéder.</value>
     <value>vos fichiers se synchronisent</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>la synchronisation est interrompue</value> 
+    <value>la synchronisation est en pause</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
-    <value>Vos fichiers récents sont en cours de mise à jour.</value> 
+    <value>Vos fichiers récents sont en train d’être mis à jour.</value> 
   </data> 
   <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
     <value>Synchronisation en cours</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Vos fichiers locaux restent accessibles. La synchronisation reprend automatiquement dès que vous vous reconnectez.</value> 
+    <value>Vos fichiers sont copiés sur votre ordinateur.
+Vous pouvez les ouvrir à tout moment, même sans internet.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Hors ligne</value> 

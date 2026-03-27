@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 20:08:29 +0100 
+  Exported at: Fri, 27 Mar 2026 10:21:32 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -134,10 +134,6 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerkauswahl au
   <data name="advancedSyncTitle" xml:space="preserve"> 
     <value>Erweiterte Synchronisationen</value> 
   </data> 
-  <data name="allowTrackingLabel" xml:space="preserve"> 
-    <value>Verfolgung zulassen</value> 
-    <comment>Allow tracking</comment> 
-  </data> 
   <data name="appUpToDate" xml:space="preserve"> 
     <value>Die Anwendung ist auf dem neuesten Stand</value> 
   </data> 
@@ -170,8 +166,8 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.</value> 
   </data> 
-  <data name="betaSettings" xml:space="preserve"> 
-    <value>Beta-Programm</value> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Am Betaprogramm teilnehmen</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Ihr Browser sollte sich automatisch öffnen, um die Verbindung abzuschließen. Sobald Sie sich angemeldet haben, kehren Sie automatisch zu kDrive zurück.</value> 
@@ -924,7 +920,11 @@ Es wird in Ihrem Browser geöffnet.</value>
     <value>Alle Ordner</value> 
   </data> 
   <data name="labelAllkDrive" xml:space="preserve"> 
-    <value /> 
+    <value>Das ganze kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Verfolgung zulassen</value> 
+    <comment>Allow tracking</comment> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Autor</value> 
@@ -1104,8 +1104,20 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   <data name="labelStatus" xml:space="preserve"> 
     <value>Status</value> 
   </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ frei</value> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ frei</value> 
+  </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
     <value>Berechnen…</value> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ verwendet</value> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ verwendet</value> 
   </data> 
   <data name="labelSyncDirectionIncoming" xml:space="preserve"> 
     <value>Synchronisiert von kDrive web</value> 
@@ -1393,7 +1405,7 @@ Wir bitten Sie, einen Moment zu warten.</value>
     <value>Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar und werden nicht gelöscht.</value> 
   </data> 
   <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
-    <value /> 
+    <value>Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Nur die letzte Sitzung senden</value> 
@@ -1428,9 +1440,6 @@ Wir bitten Sie, einen Moment zu warten.</value>
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Andere Dateien auf dem Computer</value> 
   </data> 
-  <data name="storageFreeLabel" xml:space="preserve"> 
-    <value>%@ frei</value> 
-  </data> 
   <data name="storageMissingDiskDescription" xml:space="preserve"> 
     <value>kDrive kann nicht auf das Laufwerk %@ zugreifen.
 Vergewissern Sie sich, dass das Laufwerk richtig angeschlossen, entsperrt und von Ihrem Computer aus zugänglich ist.</value> 
@@ -1443,9 +1452,6 @@ Vergewissern Sie sich, dass das Laufwerk richtig angeschlossen, entsperrt und vo
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Dieser PC - %@ - %@</value> 
-  </data> 
-  <data name="storageUsedLabel" xml:space="preserve"> 
-    <value>%@ verwendet</value> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Online gespeichert</value> 

@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 20:08:29 +0100 
+  Exported at: Fri, 27 Mar 2026 10:21:32 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -134,10 +134,6 @@ Puede acceder a sus sincronizaciones avanzadas desde el selector de unidades de 
   <data name="advancedSyncTitle" xml:space="preserve"> 
     <value>Sincronizaciones avanzadas</value> 
   </data> 
-  <data name="allowTrackingLabel" xml:space="preserve"> 
-    <value>Permitir el seguimiento</value> 
-    <comment>Allow tracking</comment> 
-  </data> 
   <data name="appUpToDate" xml:space="preserve"> 
     <value>La aplicación está actualizada</value> 
   </data> 
@@ -170,8 +166,8 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="betaProgramDescription" xml:space="preserve"> 
     <value>Obtenga acceso anticipado a las nuevas versiones de la aplicación antes de que se lancen al público en general y ayude a mejorar la aplicación compartiendo con nosotros sus ideas de mejora.</value> 
   </data> 
-  <data name="betaSettings" xml:space="preserve"> 
-    <value>Programa beta</value> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Únase al programa beta</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
     <value>Su navegador debería abrirse automáticamente para completar la conexión. Una vez conectado, volverás automáticamente a kDrive.</value> 
@@ -924,7 +920,11 @@ Se abrirá en su navegador.</value>
     <value>Todos los archivos</value> 
   </data> 
   <data name="labelAllkDrive" xml:space="preserve"> 
-    <value /> 
+    <value>Todo el kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Permitir el seguimiento</value> 
+    <comment>Allow tracking</comment> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
     <value>Autor</value> 
@@ -1104,8 +1104,20 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
   <data name="labelStatus" xml:space="preserve"> 
     <value>Estado</value> 
   </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ libre</value> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ libre</value> 
+  </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
     <value>Calculando…</value> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ utilizado</value> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ utilizado</value> 
   </data> 
   <data name="labelSyncDirectionIncoming" xml:space="preserve"> 
     <value>Sincronizado desde kDrive web</value> 
@@ -1393,7 +1405,7 @@ Por favor, espere unos instantes.</value>
     <value>Las carpetas no seleccionadas no se descargarán en su dispositivo. Seguirán disponibles en línea y no se eliminarán.</value> 
   </data> 
   <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
-    <value /> 
+    <value>Las carpetas no seleccionadas no se descargarán en su dispositivo. Permanecerán disponibles en línea.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
     <value>Enviar sólo la última sesión</value> 
@@ -1428,9 +1440,6 @@ Por favor, espere unos instantes.</value>
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Otros archivos del ordenador</value> 
   </data> 
-  <data name="storageFreeLabel" xml:space="preserve"> 
-    <value>%@ libre</value> 
-  </data> 
   <data name="storageMissingDiskDescription" xml:space="preserve"> 
     <value>kDrive no puede acceder a la unidad %@.
 Asegúrese de que está correctamente conectada, desbloqueada y accesible desde su ordenador.</value> 
@@ -1443,9 +1452,6 @@ Asegúrese de que está correctamente conectada, desbloqueada y accesible desde 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Este PC - %@ - %@</value> 
-  </data> 
-  <data name="storageUsedLabel" xml:space="preserve"> 
-    <value>%@ utilizado</value> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
     <value>Almacenado en línea</value> 
