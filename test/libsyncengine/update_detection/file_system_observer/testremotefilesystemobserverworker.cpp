@@ -26,6 +26,7 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 
 #include "libsyncengine/jobs/syncjobmanager.h"
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
@@ -48,9 +49,9 @@ namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
 static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
-const NodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
-const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
-const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
+const RemoteNodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
+const RemoteNodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
+const RemoteNodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
     TestBase::start();
@@ -144,11 +145,14 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
-    const NodeId nestedRemoteTmpDirId =
+    const RemoteNodeId nestedRemoteTmpDirId =
             testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("test_remote_FSO_nested"));
-    const NodeId nodeIdA = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("A"));
-    const NodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
-    const NodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
+    const RemoteNodeId nodeIdA = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("A"));
+    const RemoteNodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
+    const RemoteNodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
+
+    RemoteNodeId userPrivateFolderId;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, userPrivateFolderId));
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
@@ -169,7 +173,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         }
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).canWrite(_testFileId));
@@ -178,11 +182,11 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test create directory *****");
 
-        const NodeId nodeIdC = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("C"));
-        const NodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
+        const RemoteNodeId nodeIdC = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("C"));
+        const RemoteNodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdC));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdCC));
@@ -204,7 +208,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId));
         CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
@@ -217,7 +221,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDirId, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
 
@@ -232,7 +236,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testhelpers::moveRemoteItem(_driveDbId, nodeIdA, nodeIdB);
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
@@ -249,7 +253,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
                              SyncName2Str(_syncPal->liveSnapshot(ReplicaSide::Remote).name(_testFileId)));
@@ -263,7 +267,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(userPrivateFolderId);
 
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }

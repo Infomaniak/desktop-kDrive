@@ -150,7 +150,9 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::processEvents(const NodeId &remoteDirId) {
+ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remoteDirId) {
+    assert(!remoteDirId.empty() && "Unexpected empty remote node ID.");
+
     if (stopAsked()) return ExitCode::Ok;
 
     // Get last listing cursor used
