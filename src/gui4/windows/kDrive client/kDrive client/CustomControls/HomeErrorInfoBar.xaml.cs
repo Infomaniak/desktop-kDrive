@@ -138,11 +138,11 @@ namespace Infomaniak.kDrive.CustomControls
         public async Task<bool> ResolveTmpDirAccessError()
         {
             List<Error> tmpDirAccessErrorsList = ViewModel.AppErrors.Where(e => e.ExitCause == Types.ExitCause.TmpDirAccessError).ToList();
-            var commSertvice = App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>();
+            var commService = App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>();
             bool result = true;
             foreach (var error in tmpDirAccessErrorsList)
             {
-                result &= await commSertvice.DeleteError(error.DbId, CancellationToken.None);
+                result &= await commService.DeleteError(error.DbId, CancellationToken.None);
             }
             return result;
         }

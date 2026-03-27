@@ -13,8 +13,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     public sealed partial class BackErrorDriveNotRenew : UserControl
     {
         private Error Error { get; init; }
-        private string DescriptionKey => Error.Sync.Drive.IsAdmin ? "driveLockedAdminErrorDescription" : "driveLockedErrorDescription";
-        private string ActionTextKey => Error.Sync.Drive.IsAdmin ? "buttonUpdateSubscription" : "buttonRefresh";
+        private string DescriptionKey => (Error.Sync?.Drive.IsAdmin ?? false) ? "driveLockedAdminErrorDescription" : "driveLockedErrorDescription";
+        private string ActionTextKey => (Error.Sync?.Drive.IsAdmin ?? false) ? "buttonUpdateSubscription" : "buttonRefresh";
         public BackErrorDriveNotRenew(Error error)
         {
             this.InitializeComponent();
