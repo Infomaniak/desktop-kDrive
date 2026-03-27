@@ -41,15 +41,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private async void NetworkTimeOutError_Closed(InfoBar sender, InfoBarClosedEventArgs args)
-        {
-            if (!await ControlViewModel.ResolveNetworkTimeOutError())
-            {
-                Logger.Log(Logger.Level.Error, "Failed to resolve network timeout error");
-                Utility.ShowUnexpectedErrorTeachingTip();
-            }
-        }
-
         private async void kDriveFullInfoBar_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (AppViewModel.SelectedSync is null)
@@ -81,7 +72,10 @@ namespace Infomaniak.kDrive.CustomControls
             _appErrorsSubscriptions = ViewModel.AppErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
             ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
             if (ViewModel.SelectedSync is not null)
+            {
                 ViewModel.SelectedSync.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
+                _selectedSyncErrorsSubscriptions = ViewModel.SelectedSync.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
+            }
             Refresh();
         }
 
@@ -148,21 +142,7 @@ namespace Infomaniak.kDrive.CustomControls
             bool result = true;
             foreach (var error in tmpDirAccessErrorsList)
             {
-                result = await commSertvice.DeleteError(error.DbId, CancellationToken.None);
-            }
-            return result;
-        }
-
-        public async Task<bool> ResolveNetworkTimeOutError()
-        {
-            List<Error> networkTimeOutErrorsList = ViewModel.AppErrors.Where(e => e.ExitCause == Types.ExitCause.NetworkTimeout).ToList();
-            if (ViewModel.SelectedSync is not null)
-                networkTimeOutErrorsList.AddRange(ViewModel.SelectedSync.SyncErrors.Where(e => e.ExitCause == Types.ExitCause.NetworkTimeout));
-            var commSertvice = App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>();
-            bool result = true;
-            foreach (var error in networkTimeOutErrorsList)
-            {
-                result = await commSertvice.DeleteError(error.DbId, CancellationToken.None);
+                result &= await commSertvice.DeleteError(error.DbId, CancellationToken.None);
             }
             return result;
         }

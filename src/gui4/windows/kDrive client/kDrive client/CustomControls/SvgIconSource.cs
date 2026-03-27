@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.CustomControls
                 nameof(UriString),
                 typeof(string),
                 typeof(SvgIconSource),
-                new PropertyMetadata(null, OnDependencyPropertyChanged));
+                new PropertyMetadata(string.Empty, OnDependencyPropertyChanged));
 
         private static void OnDependencyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

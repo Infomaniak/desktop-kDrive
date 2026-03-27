@@ -279,7 +279,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_START_INSTALLER,
-                Params = []
+                Params = new JsonObject()
             };
         }
 
@@ -328,7 +328,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
-                Params = []
+                Params = new JsonObject()
             };
         }
 
@@ -365,7 +365,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Type = CommMessageType.Request,
                     Id = (int)NextId,
                     RequestNum = RequestNum.PARAMETERS_UPDATE,
-                    Params = []
+                    Params = new JsonObject()
                 };
             }
 
@@ -387,7 +387,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.PARAMETERS_UPDATE,
-                Params = []
+                Params = new JsonObject()
             };
         }
 
@@ -400,7 +400,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.ERROR_DELETE,
-                Params = []
+                Params = new JsonObject()
             });
         }
 
