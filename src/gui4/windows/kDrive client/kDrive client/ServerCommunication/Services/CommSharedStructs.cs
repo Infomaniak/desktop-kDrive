@@ -61,6 +61,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public DbId? DbId { get; set; }
         public UserId? UserId { get; set; }
         public string? Name { get; set; }
+        public string? FirstName { get; set; }
         public string? Email { get; set; }
         public byte[]? Avatar { get; set; }
         public bool? IsConnected { get; set; }
@@ -74,6 +75,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
             CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.FirstName), nameof(target.FirstName));
             CopyProperty(source, target, nameof(source.Email), nameof(target.Email));
             CopyProperty(source, target, nameof(source.IsConnected), nameof(target.IsConnected));
             CopyProperty(source, target, nameof(source.IsStaff), nameof(target.IsStaff));
@@ -89,7 +91,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                 target.Avatar = new byte[source.Avatar.Length];
             }
             Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
-
         }
     }
 
