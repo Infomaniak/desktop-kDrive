@@ -426,7 +426,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     try {
         constexpr bool zip = true;
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList, zip);
-    } catch (const std::exception &e) {
+    } catch (const std::bad_alloc &badAllocationException) {
+        return exception2ExitCode(badAllocationException);
+    } catch (const JobException &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << e.what());
         return exception2ExitCode(e);
