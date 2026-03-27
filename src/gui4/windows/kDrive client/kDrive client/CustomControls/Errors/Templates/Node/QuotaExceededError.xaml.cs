@@ -1,6 +1,9 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using Windows.System;
+
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -19,17 +22,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             Error = error;
         }
 
-        private void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
-
-            if (frame is null)
+            if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to navigate to the subscription page after a quota exceeded error because the main frame could not be found.");
+                Logger.Log(Logger.Level.Error, "Sync is null on a node level error");
                 return;
             }
-
-            frame.Navigate(typeof(Pages.StoragePage));
+            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(Error.Sync.Drive.DriveId);
+            await Launcher.LaunchUriAsync(changeOfferUri);
         }
     }
 }
