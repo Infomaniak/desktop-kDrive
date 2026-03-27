@@ -20,6 +20,11 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+public enum StorageDataError: Error, Sendable {
+    case cannotGetSynchroInfo
+    case cannotGetVolumeInfo
+}
+
 public struct VolumeStorageData: Sendable, Equatable {
     public let name: String
 
@@ -28,7 +33,7 @@ public struct VolumeStorageData: Sendable, Equatable {
     public let usedByKDrive: Int64?
 }
 
-public typealias IndexedStorageData = [Int32: VolumeStorageData]
+public typealias IndexedStorageData = [Int32: Result<VolumeStorageData, StorageDataError>]
 
 public protocol StorageDataProviding: Sendable {
     var storageData: IndexedStorageData { get }
@@ -38,11 +43,6 @@ public protocol StorageDataProviding: Sendable {
 }
 
 public final class StorageDataService: StorageDataProviding {
-    enum DomainError: Error, Sendable {
-        case cannotGetSynchroInfo
-        case cannotGetVolumeInfo
-    }
-
     @MainActor
     public private(set) var storageData: IndexedStorageData = [:]
 
@@ -60,33 +60,42 @@ public final class StorageDataService: StorageDataProviding {
 
     @MainActor
     public func fetchStorageData(forSynchroDbId synchroDbId: Int32) async throws {
-        let (volumeName, volumeURL) = try await getVolumeInfo(synchroDbId: synchroDbId)
+        do {
+            let (volumeName, volumeURL) = try await getVolumeInfo(synchroDbId: synchroDbId)
 
-        async let volumeStorage = fetchVolumeStorage(volumeURL: volumeURL)
-        async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
+            async let volumeStorage = fetchVolumeStorage(volumeURL: volumeURL)
+            async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
 
-        let resolvedVolumeStorage = try await volumeStorage
+            let resolvedVolumeStorage = try await volumeStorage
 
-        if storageData[synchroDbId] == nil {
-            storageData[synchroDbId] = VolumeStorageData(
+            if storageData[synchroDbId] == nil {
+                storageData[synchroDbId] = .success(VolumeStorageData(
+                    name: volumeName,
+                    freeSpace: resolvedVolumeStorage.availableStorage,
+                    usedSpace: resolvedVolumeStorage.usedStorage,
+                    usedByKDrive: nil
+                ))
+                storageDataSubject.send(storageData)
+            }
+
+            let resolvedKDriveStorage = try await kDriveStorage
+            let usedByComputer = resolvedVolumeStorage.usedStorage - resolvedKDriveStorage
+
+            storageData[synchroDbId] = .success(VolumeStorageData(
                 name: volumeName,
                 freeSpace: resolvedVolumeStorage.availableStorage,
-                usedSpace: resolvedVolumeStorage.usedStorage,
-                usedByKDrive: nil
-            )
+                usedSpace: usedByComputer,
+                usedByKDrive: resolvedKDriveStorage
+            ))
+            storageDataSubject.send(storageData)
+        } catch {
+            guard let error = error as? StorageDataError else {
+                throw error
+            }
+
+            storageData[synchroDbId] = .failure(error)
             storageDataSubject.send(storageData)
         }
-
-        let resolvedKDriveStorage = try await kDriveStorage
-        let usedByComputer = resolvedVolumeStorage.usedStorage - resolvedKDriveStorage
-
-        storageData[synchroDbId] = VolumeStorageData(
-            name: volumeName,
-            freeSpace: resolvedVolumeStorage.availableStorage,
-            usedSpace: usedByComputer,
-            usedByKDrive: resolvedKDriveStorage
-        )
-        storageDataSubject.send(storageData)
     }
 
     private func fetchVolumeStorage(volumeURL: URL) async throws -> (usedStorage: Int64, availableStorage: Int64) {
@@ -112,17 +121,21 @@ public final class StorageDataService: StorageDataProviding {
         let synchro = await cache.getSynchro(synchroDbId: synchroDbId)
 
         guard let path = synchro?.localPath else {
-            throw DomainError.cannotGetSynchroInfo
+            throw StorageDataError.cannotGetSynchroInfo
         }
 
         let url = URL(fileURLWithPath: path)
-        let resourceValues = try url.resourceValues(forKeys: [.volumeURLKey, .volumeNameKey])
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.volumeURLKey, .volumeNameKey])
 
-        guard let volumeURL = resourceValues.volume,
-              let volumeName = resourceValues.volumeName else {
-            throw DomainError.cannotGetVolumeInfo
+            guard let volumeURL = resourceValues.volume,
+                  let volumeName = resourceValues.volumeName else {
+                throw StorageDataError.cannotGetVolumeInfo
+            }
+
+            return (volumeName, volumeURL)
+        } catch {
+            throw StorageDataError.cannotGetVolumeInfo
         }
-
-        return (volumeName, volumeURL)
     }
 }

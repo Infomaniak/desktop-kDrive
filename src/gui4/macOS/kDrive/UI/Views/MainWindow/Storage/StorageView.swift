@@ -54,12 +54,13 @@ struct StorageView: View {
     @InjectService private var storageDataProviding: StorageDataProviding
 
     @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
-
     @State private var macStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
         .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
     ]
+
+    @State private var isShowingVolumeNotFound = false
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -75,18 +76,24 @@ struct StorageView: View {
     }
 
     var body: some View {
-        Form {
-            StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(macStorageItems.values))
+        ZStack {
+            if isShowingVolumeNotFound {
+                Text("Not Found")
+            } else {
+                Form {
+                    StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(macStorageItems.values))
 
-            Section {
-                InformationBlockContentView(
-                    title: KDriveLocalizable.storageSyncBlockTitle,
-                    subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
-                    button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
-                )
+                    Section {
+                        InformationBlockContentView(
+                            title: KDriveLocalizable.storageSyncBlockTitle,
+                            subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
+                            button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
+                        )
+                    }
+                }
+                .groupedFormatStyle()
             }
         }
-        .groupedFormatStyle()
         .onReceive(
             storageDataProviding.storageDataPublisher.removeDuplicates(),
             perform: handleUpdatedStorageData
@@ -119,15 +126,25 @@ struct StorageView: View {
 
     private func updateMacStorage(from indexedStorageData: IndexedStorageData) {
         guard let synchroDbId = mainViewModel.currentSynchro?.dbId,
-              let storageData = indexedStorageData[Int32(synchroDbId)] else {
+              let storageDataResult = indexedStorageData[Int32(synchroDbId)] else {
             return
         }
 
-        volumeName = storageData.name
+        switch storageDataResult {
+        case .success(let storageData):
+            isShowingVolumeNotFound = false
 
-        macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
-        macStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
-        macStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
+            volumeName = storageData.name
+
+            macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
+            macStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
+            macStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
+        case .failure(let error):
+            guard error == .cannotGetVolumeInfo else {
+                return
+            }
+            isShowingVolumeNotFound = true
+        }
     }
 }
 
