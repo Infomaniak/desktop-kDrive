@@ -38,6 +38,11 @@ public protocol StorageDataProviding: Sendable {
 }
 
 public final class StorageDataService: StorageDataProviding {
+    enum DomainError: Error, Sendable {
+        case cannotGetSynchroInfo
+        case cannotGetVolumeInfo
+    }
+
     @MainActor
     public private(set) var storageData: IndexedStorageData = [:]
 
@@ -107,18 +112,15 @@ public final class StorageDataService: StorageDataProviding {
         let synchro = await cache.getSynchro(synchroDbId: synchroDbId)
 
         guard let path = synchro?.localPath else {
-            throw CocoaError(.fileReadUnknown)
+            throw DomainError.cannotGetSynchroInfo
         }
 
         let url = URL(fileURLWithPath: path)
         let resourceValues = try url.resourceValues(forKeys: [.volumeURLKey, .volumeNameKey])
 
-        guard let volumeURL = resourceValues.volume else {
-            throw CocoaError(.fileReadUnknown)
-        }
-
-        guard let volumeName = resourceValues.volumeName else {
-            throw CocoaError(.fileReadUnknown)
+        guard let volumeURL = resourceValues.volume,
+              let volumeName = resourceValues.volumeName else {
+            throw DomainError.cannotGetVolumeInfo
         }
 
         return (volumeName, volumeURL)
