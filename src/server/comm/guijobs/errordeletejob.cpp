@@ -29,7 +29,7 @@ static const auto inParamsErrorDbId = "errorDbId";
 
 namespace KDC {
 
-ErrorDeleteJob::ErrorDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+ErrorDeleteJob::ErrorDeleteJob(std::shared_ptr<CommManager> commManager, int32_t requestId, const Poco::DynamicStruct &inParams,
                                std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::ERROR_DELETE;
@@ -64,7 +64,7 @@ ExitInfo ErrorDeleteJob::process() {
         LOG_WARN(Log::instance()->getLogger(), "Error with errorDbId=" << _errorDbId << ": not found in database");
 
         // The GUI still needs to be notified to remove the error from its list which is out of sync if we are here
-        _commManager->appServer().commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
+        _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
         return ExitCode::Ok;
     }
 
@@ -90,7 +90,7 @@ ExitInfo ErrorDeleteJob::process() {
         LOG_WARN(Log::instance()->getLogger(), "Error with errorDbId=" << _errorDbId << ": not found in database");
     }
 
-    _commManager->appServer().commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
+    _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(_errorDbId));
     return ExitCode::Ok;
 }
 

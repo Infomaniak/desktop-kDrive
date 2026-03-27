@@ -24,7 +24,7 @@ namespace KDC {
 
 class ErrorDeleteJob : public AbstractGuiJob {
     public:
-        ErrorDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        ErrorDeleteJob(std::shared_ptr<CommManager> commManager, int32_t requestId, const Poco::DynamicStruct &inParams,
                        std::shared_ptr<AbstractCommChannel> channel);
 
     private:
