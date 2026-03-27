@@ -17,6 +17,9 @@
  */
 
 #include "csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
+#include "jobs/network/jobexceptions.h"
 
 #if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
@@ -35,9 +38,12 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
     _snapshotItemHandler(driveDbId, _logger) {
     _customTimeout = apiTimout + 15;
 
-    if (_zip) {
-        addRawHeader("Accept-Encoding", "gzip");
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _remoteDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
     }
+
+    if (_zip) addRawHeader("Accept-Encoding", "gzip");
 }
 
 bool CsvFullFileListWithCursorJob::getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof) {
@@ -94,6 +100,7 @@ ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
         LOGW_DEBUG(_logger,
                    L"Reply " << jobId() << L" received - length=" << length << L" value=" << CommonUtility::s2ws(_ss.str()));
     }
+
     return ExitCode::Ok;
 }
 
