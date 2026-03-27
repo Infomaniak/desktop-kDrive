@@ -295,7 +295,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
-    <value>Changer d'utilisateur</value> 
+    <value>Changer d’utilisateur</value> 
     <comment>Button to switch to a different user account.</comment> 
    
   </data> 
@@ -524,7 +524,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="buttonSave" xml:space="preserve"> 
-    <value>Économiser</value> 
+    <value>Enregistrer</value> 
     <comment>Generic save button used in settings forms.</comment> 
    
   </data> 
@@ -669,7 +669,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
-    <value>Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous. 
+    <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous. 
 
 Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
     <comment>Long description on the data management settings page explaining how Infomaniak collects anonymous usage data.</comment> 
@@ -696,7 +696,7 @@ Le code source de cette application peut être vérifié, les informations réco
    
   </data> 
   <data name="debugLogsDescription" xml:space="preserve"> 
-    <value>Permettent au support infomaniak d’identifier l’origine d’un incident.</value> 
+    <value>Permettent au support Infomaniak d’identifier l’origine d’un incident.</value> 
     <comment>Description explaining the purpose of debug logs (to help Infomaniak support identify issues).</comment> 
    
   </data> 
@@ -1302,7 +1302,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
    
   </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
-    <value>Active la collecte d’informations supplémentaires utile au support</value> 
+    <value>Active la collecte d’informations supplémentaires utiles au support.</value> 
     <comment>Description for the extended log setting, explaining it collects extra diagnostic data for support.</comment> 
    
   </data> 
@@ -1427,7 +1427,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
    
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Cet élément n’est pas disponible sur cet appareil. 
+    <value>Cet élément n’est pas disponible sur cet appareil.
 Il s’ouvrira dans votre navigateur.</value> 
     <comment>Message shown when an item is not available on this device and will be opened in the browser instead.</comment> 
    
@@ -1477,7 +1477,7 @@ Il s’ouvrira dans votre navigateur.</value>
    
   </data> 
   <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
-    <value>Pour chaque fichiers sélectionnez la version à conserver.</value> 
+    <value>Pour chaque fichier, sélectionnez la version à conserver.</value> 
     <comment>Instruction label for individual conflict resolution, asking the user to select a version per file.</comment> 
    
   </data> 
@@ -1492,7 +1492,7 @@ Il s’ouvrira dans votre navigateur.</value>
    
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value>Les versions en ligne de ces %@ fichiers seront remplacées par vos versions locales. 
+    <value>Les versions en ligne de ces %@ fichiers seront remplacées par vos versions locales.
 Attention, cela peut écraser le travail de vos collaborateurs.</value> 
     <comment>Description of the keep local versions conflict strategy; %@ is the number of conflicting files.</comment> 
    
@@ -1513,7 +1513,7 @@ Attention, cela peut écraser le travail de vos collaborateurs.</value>
    
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value>Toutes les modifications locales pour ces %@ fichiers seront annulées. 
+    <value>Toutes les modifications locales pour ces %@ fichiers seront annulées.
 Utile si vous savez que le travail important est en ligne sur kDrive.</value> 
     <comment>Description of the keep remote versions conflict strategy; %@ is the number of conflicting files.</comment> 
    
@@ -1563,7 +1563,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
-    <value>Le dossier a peut être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
+    <value>Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
     <comment>Tooltip explaining a possible reason for the displaced or modified folder status in diagnostics.</comment> 
    
   </data> 
@@ -1593,7 +1593,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>A l’instant</value> 
+    <value>À l’instant</value> 
     <comment>Timestamp label shown for very recent events in activity lists.</comment> 
    
   </data> 
@@ -1652,7 +1652,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <comment>use in pair with:  labelCreateNewSync</comment> 
   </data> 
   <data name="labelNoConflictsFound" xml:space="preserve"> 
-    <value>Aucun conflits ne correspond à votre recherche</value> 
+    <value>Aucun conflit ne correspond à votre recherche</value> 
     <comment>Message shown when no conflicts match the current search query on the conflict resolution page.</comment> 
    
   </data> 
@@ -1692,7 +1692,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
-    <value>Le dossier a peut être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
+    <value>Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
     <comment>Tooltip explaining a possible reason for remote access rights changes in sync folder diagnostics.</comment> 
    
   </data> 
@@ -1842,7 +1842,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="languageSettingWarning" xml:space="preserve"> 
-    <value>Redémarrez l’application pour finir d'appliquer la nouvelle langue.</value> 
+    <value>Redémarrez l’application pour finir d’appliquer la nouvelle langue.</value> 
     <comment>Warning shown after changing the language, informing the user to restart the app for the change to take effect.</comment> 
    
   </data> 
@@ -1920,7 +1920,7 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
    
   </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
-    <value>Compression des journaux..</value> 
+    <value>Compression des journaux…</value> 
     <comment>Status message shown while debug logs are being compressed before upload.</comment> 
    
   </data> 
@@ -1945,9 +1945,9 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
    
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
-    <value>Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
+    <value>Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
 
-L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application.</value> 
+L’étude de ces données permet à notre équipe d’améliorer en continu l’interface de l’application.</value> 
     <comment>Description on the data management page about the Matomo analytics tool hosted exclusively by Infomaniak.</comment> 
    
   </data> 
@@ -2057,7 +2057,7 @@ L’étude de ces données permet à notre équipe d’améliorer en continue l�
    
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
-    <value>Ce kDrive est déjà configuré. 
+    <value>Ce kDrive est déjà configuré.
 Allez dans vos paramètres pour le modifier.</value> 
     <comment>Tooltip shown when a kDrive is already configured during onboarding, directing the user to settings to modify it.</comment> 
    
@@ -2101,7 +2101,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="onboardingLoginDescription" xml:space="preserve"> 
     <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
 
-Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.</value> 
+Connectez-vous et gardez vos documents synchronisés sur tous vos appareils.</value> 
     <comment>Description text on the login/onboarding screen explaining kDrive's value proposition.</comment> 
    
   </data> 
@@ -2116,12 +2116,12 @@ Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.<
    
   </data> 
   <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
-    <value>Récupération vos informations..</value> 
+    <value>Récupération de vos informations…</value> 
     <comment>Loading description shown while the user account information is being retrieved after login.</comment> 
    
   </data> 
   <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
-    <value>Un instant..</value> 
+    <value>Un instant…</value> 
     <comment>Loading title shown while the user account information is being retrieved after login.</comment> 
    
   </data> 
@@ -2258,7 +2258,7 @@ Nous vous invitons à patienter quelques instants.</value>
    
   </data> 
   <data name="sentryDescription" xml:space="preserve"> 
-    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
+    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l’application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
 
 Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.</value> 
     <comment>Description on the data management page about the Sentry error monitoring tool hosted by Infomaniak.</comment> 
@@ -2290,7 +2290,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
    
   </data> 
   <data name="signInBrowser" xml:space="preserve"> 
-    <value>Connectez-vous  dans votre navigateur</value> 
+    <value>Connectez-vous dans votre navigateur</value> 
     <comment>Instruction text on the sign-in screen telling the user to complete sign-in in their browser.</comment> 
    
   </data> 
@@ -2311,7 +2311,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   </data> 
   <data name="storageMissingDiskDescription" xml:space="preserve"> 
     <value>kDrive ne peut pas accéder au disque %@
-Assurez-vous qu’il est bien connecté, 
+Assurez-vous qu’il est bien connecté,
 déverrouillé et accessible depuis votre ordinateur.</value> 
     <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
    
@@ -2337,7 +2337,7 @@ déverrouillé et accessible depuis votre ordinateur.</value>
    
   </data> 
   <data name="storedOnlineDescription" xml:space="preserve"> 
-    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur. 
+    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur.
 Connexion internet requise pour y accéder.</value> 
     <comment>Description of the stored online sync mode, explaining files stay in the cloud and require internet access.</comment> 
    
