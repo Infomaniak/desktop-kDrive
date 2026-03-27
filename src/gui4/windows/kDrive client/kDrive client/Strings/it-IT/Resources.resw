@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 12:19:51 +0100 
+  Exported at: Thu, 26 Mar 2026 17:54:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>Italian</value>
   </metadata> 
-  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Verificare che la connessione a Internet sia attiva, che il nome non sia già in uso e che non contenga caratteri non validi.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versione %@.%@
 © 2019-%@ Infomaniak Network SA -</value> 
@@ -206,6 +203,12 @@
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Cambiare la cartella</value> 
   </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Archiviazione offline</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Archiviazione online</value> 
+  </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
     <value>Cambia utente</value> 
   </data> 
@@ -323,6 +326,9 @@
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Note di rilascio</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Rimuovere</value> 
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Rimuovere la sincronizzazione</value> 
@@ -512,9 +518,6 @@ Prima di continuare, assicurarsi che tutti i file siano aggiornati e completamen
 
 La sincronizzazione corrente rimane invariata. Tuttavia, se si verificano comportamenti anomali, potrebbe essere necessario rimuovere e ricreare la sincronizzazione per ripristinare il corretto funzionamento.</value> 
   </data> 
-  <data name="dialogSyncModeChangeErrorSecondaryButton" xml:space="preserve"> 
-    <value>Chiudere</value> 
-  </data> 
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
     <value>Si è verificato un errore</value> 
   </data> 
@@ -524,9 +527,6 @@ La sincronizzazione corrente rimane invariata. Tuttavia, se si verificano compor
 Prima di continuare, accertarsi che tutti i file siano aggiornati e completamente sincronizzati.
 
 Non chiudere l’applicazione durante il processo.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
-    <value>Continua</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Modificare la modalità di sincronizzazione?</value> 
@@ -1527,6 +1527,15 @@ La sincronizzazione è stata sospesa. Controllare i file e riprovare.</value>
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Stoccaggio</value> 
   </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>La cartella non deve essere la radice di un'unità e non deve contenere o trovarsi in una cartella già sincronizzata.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>La cartella deve essere vuota, non deve essere la radice di un'unità e non deve contenere o trovarsi in una cartella già sincronizzata.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Questa cartella non può essere utilizzata</value> 
+  </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
     <value>Trattamento individuale</value> 
   </data> 
@@ -1540,6 +1549,9 @@ La sincronizzazione è stata sospesa. Controllare i file e riprovare.</value>
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>Aprire kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Verificare che la connessione a Internet sia attiva, che il nome non sia già in uso e che non contenga caratteri non validi.</value> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
     <value>Impossibile creare questa cartella</value> 

@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 12:19:51 +0100 
+  Exported at: Thu, 26 Mar 2026 17:54:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>Spanish</value>
   </metadata> 
-  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Compruebe que su conexión a Internet está activa, que el nombre no está ya en uso y que no contiene caracteres no válidos.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Versión %@.%@
 © 2019-%@ Infomaniak Network SA - </value> 
@@ -206,6 +203,12 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Cambiar la carpeta</value> 
   </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Almacenamiento sin conexión</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Almacenamiento en línea</value> 
+  </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
     <value>Cambiar de usuario</value> 
   </data> 
@@ -323,6 +326,9 @@ Podrás abrirlos en cualquier momento, incluso sin acceso a Internet.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Notas de publicación</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Eliminar</value> 
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Eliminar la sincronización</value> 
@@ -512,9 +518,6 @@ Antes de continuar, asegúrese de que todos sus archivos están actualizados y c
 
 La sincronización actual permanece sin cambios. Sin embargo, si se produce algún comportamiento anómalo, es posible que tenga que eliminar y volver a crear la sincronización para restablecer el funcionamiento correcto.</value> 
   </data> 
-  <data name="dialogSyncModeChangeErrorSecondaryButton" xml:space="preserve"> 
-    <value>Cerrar</value> 
-  </data> 
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
     <value>Se ha producido un error</value> 
   </data> 
@@ -524,9 +527,6 @@ La sincronización actual permanece sin cambios. Sin embargo, si se produce alg�
 Antes de continuar, asegúrese de que todos sus archivos están actualizados y completamente sincronizados.
 
 No cierre la aplicación durante el proceso.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
-    <value>Continúe en</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>¿Cambiar el modo de sincronización?</value> 
@@ -1527,6 +1527,15 @@ La sincronización se ha detenido. Compruebe sus archivos e inténtelo de nuevo.
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Almacenamiento</value> 
   </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>La carpeta no debe ser la raíz de una unidad y no debe contener o estar en una carpeta que ya esté sincronizada.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>La carpeta debe estar vacía, no debe ser la raíz de una unidad y no debe contener ni estar en una carpeta que ya se haya sincronizado.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Esta carpeta no se puede utilizar</value> 
+  </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
     <value>Tratamiento individual</value> 
   </data> 
@@ -1540,6 +1549,9 @@ La sincronización se ha detenido. Compruebe sus archivos e inténtelo de nuevo.
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>Abrir kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Compruebe que su conexión a Internet está activa, que el nombre no está ya en uso y que no contiene caracteres no válidos.</value> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
     <value> No se puede crear esta carpeta</value> 

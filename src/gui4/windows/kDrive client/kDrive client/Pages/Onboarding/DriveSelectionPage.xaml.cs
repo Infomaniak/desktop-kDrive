@@ -82,7 +82,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}'");
                     cb.IsChecked = false;
                     cb.IsEnabled = true;
-                    Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
 

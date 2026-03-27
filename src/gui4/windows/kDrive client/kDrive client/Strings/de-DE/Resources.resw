@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 26 Mar 2026 12:19:51 +0100 
+  Exported at: Thu, 26 Mar 2026 17:54:26 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -72,9 +72,6 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>German</value>
   </metadata> 
-  <data name="UnableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Vergewissern Sie sich, dass Ihre Internetverbindung aktiv ist, dass dieser Name nicht bereits verwendet wird und dass er keine ungültigen Zeichen enthält.</value> 
-  </data> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
     <value>Version %@.%@
 © 2019-%@ Infomaniak Network SA -</value> 
@@ -206,6 +203,12 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   <data name="buttonChangeFolder" xml:space="preserve"> 
     <value>Ändern Sie den Ordner</value> 
   </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Offline speichern</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Online speichern</value> 
+  </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
     <value>Nutzer wechseln</value> 
   </data> 
@@ -323,6 +326,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetzugang.</value>
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
     <value>Anmerkungen zur Veröffentlichung</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Entfernen</value> 
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
     <value>Synchronisierung entfernen</value> 
@@ -512,9 +518,6 @@ Bevor Sie fortfahren, stellen Sie sicher, dass alle Ihre Dateien auf dem neueste
 
 Die aktuelle Synchronisierung bleibt unverändert. Wenn jedoch ein abnormales Verhalten auftritt, müssen Sie die Synchronisierung möglicherweise entfernen und neu erstellen, um den ordnungsgemässen Betrieb wiederherzustellen.</value> 
   </data> 
-  <data name="dialogSyncModeChangeErrorSecondaryButton" xml:space="preserve"> 
-    <value>Schliessen Sie</value> 
-  </data> 
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
     <value>Es ist ein Fehler aufgetreten</value> 
   </data> 
@@ -524,9 +527,6 @@ Die aktuelle Synchronisierung bleibt unverändert. Wenn jedoch ein abnormales Ve
 Bevor Sie fortfahren, vergewissern Sie sich, dass alle Dateien auf dem neuesten Stand und vollständig synchronisiert sind.
 
 Schliessen Sie die Anwendung während des Vorgangs nicht.</value> 
-  </data> 
-  <data name="dialogSyncModeChangeWarningSecondaryButton" xml:space="preserve"> 
-    <value>Weiter</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
     <value>Ändern Sie den Synchronisationsmodus?</value> 
@@ -1527,6 +1527,15 @@ Die Synchronisierung wurde angehalten. Bitte überprüfen Sie Ihre Dateien und v
   <data name="tabTitleStorage" xml:space="preserve"> 
     <value>Speicherplatz</value> 
   </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>Der Ordner darf nicht das Stammverzeichnis eines Laufwerks sein und darf keinen bereits synchronisierten Ordner enthalten oder sich in einem solchen befinden.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>Der Ordner muss leer sein, darf nicht das Stammverzeichnis eines Laufwerks sein und darf keinen bereits synchronisierten Ordner enthalten oder sich in einem solchen befinden.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Dieser Ordner kann nicht verwendet werden</value> 
+  </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
     <value>Individuelle Behandlung</value> 
   </data> 
@@ -1540,6 +1549,9 @@ Die Synchronisierung wurde angehalten. Bitte überprüfen Sie Ihre Dateien und v
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
     <value>KDrive öffnen</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Vergewissern Sie sich, dass Ihre Internetverbindung aktiv ist, dass dieser Name nicht bereits verwendet wird und dass er keine ungültigen Zeichen enthält.</value> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
     <value>Dieser Ordner kann nicht erstellt werden</value> 
