@@ -72,7 +72,7 @@ public struct IKContentUnavailableView: View {
 
 #Preview("No Button") {
     IKContentUnavailableView(
-        image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+        image: KDriveResources.mountainsTreesSun.swiftUIImage,
         title: "Nothing to see here",
         subtitle: "This is just a description"
     )
@@ -80,7 +80,7 @@ public struct IKContentUnavailableView: View {
 
 #Preview("With Button") {
     IKContentUnavailableView(
-        image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+        image: KDriveResources.mountainsTreesSun.swiftUIImage,
         title: "Nothing to see here",
         subtitle: "This is just a description",
         action: .init(title: "Click Here") {}
