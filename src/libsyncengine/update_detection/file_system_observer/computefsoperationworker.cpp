@@ -160,9 +160,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto snapshot = _syncPal->snapshot(side);
     const auto opSet = _syncPal->operationSet(side);
 
-    NodeId parentNodeid;
+    NodeId parentNodeId;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDbReadOnlyCache.parentId(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
+    if (!_syncDbReadOnlyCache.parentId(side, nodeId, parentNodeId, parentNodeIsFoundInDb)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentId");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -186,7 +186,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
             remoteItemUnsynced = true;
-            if (nodeExistsInSnapshot && parentNodeid != snapshot->parentId(nodeId)) {
+            if (nodeExistsInSnapshot && parentNodeId != snapshot->parentId(nodeId)) {
                 movedIntoUnsyncedFolder = true;
             }
         }
@@ -304,7 +304,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     // Detect MOVE
-    if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId)) {
+    if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeId != snapshot->parentId(nodeId)) {
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation
@@ -313,25 +313,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         } else {
             // Move operation
             auto destinationPath = snapshotPath;
-            if (dbPath == snapshotPath) {
-                // The parents are different but the path is the same (new parent has been renamed with the name of a deleted
-                // folder)
-                SyncPath parentDbPath;
-                bool found = false;
-                const auto parentNodeId = snapshot->parentId(nodeId);
-                if (!_syncDbReadOnlyCache.path(side, parentNodeId, parentDbPath, found)) {
-                    LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentDbPath");
-                    setExitCause(ExitCause::DbAccessError);
-                    return ExitCode::DbError;
-                }
-                if (!found) {
-                    // The parent does not exist yet, ignore this move operation for now
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring move operation for now : " << Utility::formatSyncPath(snapshotPath));
-                    return ExitCode::Ok;
-                }
-
-                destinationPath = parentDbPath / snapshotName;
+            if (const auto exitInfo = fixDestinationPathIfNeeded(destinationPath, dbPath, snapshot, nodeId, side, snapshotName);
+                !exitInfo) {
+                return exitInfo;
             }
+
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
                                                  snapshotModificationTime, snapshot->size(nodeId), dbPath, destinationPath);
         }
@@ -340,6 +326,31 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         logOperationGeneration(snapshot->side(), fsOp);
     }
 
+    return ExitCode::Ok;
+}
+
+ExitInfo ComputeFSOperationWorker::fixDestinationPathIfNeeded(SyncPath &destinationPath, const SyncPath &dbPath,
+                                                              const std::shared_ptr<ConstSnapshot> snapshot, const NodeId &nodeId,
+                                                              const ReplicaSide side, const SyncName &snapshotName) {
+    if (dbPath == destinationPath) {
+        // The parents are different but the path is the same (new parent has been renamed with the name of a deleted folder)
+        SyncPath parentDbPath;
+        bool found = false;
+        if (const auto snapshotParentNodeId = snapshot->parentId(nodeId);
+            !_syncDbReadOnlyCache.path(side, snapshotParentNodeId, parentDbPath, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentDbPath");
+            setExitCause(ExitCause::DbAccessError);
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            // The parent does not exist yet, ignore this move operation for now
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Ignoring move operation on item " << Utility::formatSyncName(snapshotName) << L" for now");
+            return ExitCode::Ok;
+        }
+
+        destinationPath = parentDbPath / snapshotName;
+    }
     return ExitCode::Ok;
 }
 
