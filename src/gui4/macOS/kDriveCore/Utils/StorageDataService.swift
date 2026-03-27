@@ -52,10 +52,10 @@ public final class StorageDataService: StorageDataProviding {
 
     @MainActor
     public func fetchStorageData(forSynchroDbId synchroDbId: Int32) async throws {
-        async let macStorage = fetchMacStorage()
+        async let deviceStorage = fetchDeviceStorage()
         async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
 
-        let resolvedMacStorage = try await macStorage
+        let resolvedMacStorage = try await deviceStorage
 
         if storageData[synchroDbId] == nil {
             storageData[synchroDbId] = MacStorageData(
@@ -77,7 +77,7 @@ public final class StorageDataService: StorageDataProviding {
         storageDataSubject.send(storageData)
     }
 
-    private func fetchMacStorage() async throws -> (usedStorage: Int64, availableStorage: Int64) {
+    private func fetchDeviceStorage() async throws -> (usedStorage: Int64, availableStorage: Int64) {
         let rootURL = URL(fileURLWithPath: "/")
         let values = try rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey])
 
