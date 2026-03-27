@@ -133,6 +133,7 @@ namespace Infomaniak.kDrive.Pages
         {
             // Extract the number part from the prettySize to use for pluralization
             var numberPart = new string(prettySize.TakeWhile(c => char.IsDigit(c) || c == '.' || c == ',').ToArray());
+            numberPart.Replace(',', '.'); // Ensure the decimal separator is a dot for parsing
             double number;
             if (!double.TryParse(numberPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out number))
             {

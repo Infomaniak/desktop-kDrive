@@ -104,7 +104,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         public static string GetLocationSummary(bool isDefaultLocation, string location)
         {
-            return isDefaultLocation ? Localizer.Instance.GetString("labelBydefault") : location;
+            return isDefaultLocation ? Localizer.Instance.GetString("labelByDefault") : location;
         }
     }
 }
