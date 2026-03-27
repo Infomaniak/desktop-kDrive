@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 27 Mar 2026 10:21:32 +0100 
+  Exported at: Fri, 27 Mar 2026 13:58:02 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -295,7 +295,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
-    <value>Changer d’utilisateur</value> 
+    <value>Changer d'utilisateur</value> 
     <comment>Button to switch to a different user account.</comment> 
    
   </data> 
@@ -503,6 +503,10 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
     <comment>Button to rename a file or folder; %@ is the item type (file or folder).</comment> 
    
   </data> 
+  <data name="buttonRestartSignIn" xml:space="preserve"> 
+    <value>Relancer la connexion</value> 
+	<comment>Button to allow the user to restart oAuth process after a failure</comment>
+  </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
     <value>Reprendre la synchronisation</value> 
     <comment>Button to resume a paused synchronization.</comment> 
@@ -664,12 +668,11 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
-    <value>Création d’un lien de partage…</value> 
-    <comment>Progress message shown while a share link is being generated.</comment> 
-   
+    <value>Création du lien de partage…</value> 
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
-    <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous. 
+    <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.
+
 
 Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
     <comment>Long description on the data management settings page explaining how Infomaniak collects anonymous usage data.</comment> 
@@ -1461,15 +1464,13 @@ Il s’ouvrira dans votre navigateur.</value>
     <comment>Column header for the author/owner field in activity or file lists.</comment> 
    
   </data> 
-  <data name="labelBydefault" xml:space="preserve"> 
+  <data name="labelByDefault" xml:space="preserve"> 
     <value>Par défaut</value> 
     <comment>Badge or label indicating the default option in a list of choices.</comment> 
    
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
-    <value>b</value> 
-    <comment>Unit abbreviation for bytes, used in file size displays.</comment> 
-   
+    <value>o</value> 
   </data> 
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
     <value>Choisissez la version de vos fichiers que vous souhaitez conserver.</value> 
@@ -1588,7 +1589,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelGigaBytes" xml:space="preserve"> 
-    <value>Gb</value> 
+    <value>Go</value> 
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
    
   </data> 
@@ -1603,7 +1604,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
-    <value>Kb</value> 
+    <value>Ko</value> 
     <comment>Unit abbreviation for kilobytes, used in file size displays.</comment> 
    
   </data> 
@@ -1618,7 +1619,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
-    <value>Mb</value> 
+    <value>Mo</value> 
     <comment>Unit abbreviation for megabytes, used in file size displays.</comment> 
    
   </data> 
@@ -1817,7 +1818,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
    
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
-    <value>Tb</value> 
+    <value>To</value> 
     <comment>Unit abbreviation for terabytes, used in storage displays.</comment> 
    
   </data> 
@@ -2142,7 +2143,8 @@ en toute sécurité sur votre ordinateur.</value>
    
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Nous finalisons la configuration de vos kDrive. 
+    <value>Nous finalisons la configuration de vos kDrive.
+
 Nous vous invitons à patienter quelques instants.</value> 
     <comment>Description on the synchronization progress screen during onboarding setup.</comment> 
    
