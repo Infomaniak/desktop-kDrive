@@ -340,16 +340,17 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                     return ExitCode::Ok;
                 }
 
-                if (!_fixImpossibleMove.isActive) {
-                    opSet->clear(); // Ignore all other operations for now
-                    _fixImpossibleMove = {.side = side, .parentNodeId = parentNodeId, .isActive = true};
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Impossible operation sequence detected. Propagating only move operation inside "
-                                                        << Utility::formatSyncPath(parentDbPath));
-                }
-                if (_fixImpossibleMove.parentNodeId == parentNodeId) {
-                    // Fix only move operations whose direct parent is _fixImpossibleMove.parentNodeId
-                    fixingMoveOp = true;
-                }
+                // if (!_fixImpossibleMove.isActive) {
+                //     opSet->clear(); // Ignore all other operations for now
+                //     _fixImpossibleMove = {.side = side, .parentNodeId = parentNodeId, .isActive = true};
+                //     LOGW_SYNCPAL_DEBUG(_logger, L"Impossible operation sequence detected. Propagating only move operation
+                //     inside "
+                //                                         << Utility::formatSyncPath(parentDbPath));
+                // }
+                // if (_fixImpossibleMove.parentNodeId == parentNodeId) {
+                //     // Fix only move operations whose direct parent is _fixImpossibleMove.parentNodeId
+                //     fixingMoveOp = true;
+                // }
 
                 destinationPath = parentDbPath / snapshotName;
             }
