@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                     if (!await Error.Sync.Start())
                     {
                         Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
-                        Utility.ShowTeachingTipFromKeys("errDialogSystemSyncDirDiskMissingTitle");
+                        Utility.ShowTeachingTip(Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"));
                     }
                 }
             }

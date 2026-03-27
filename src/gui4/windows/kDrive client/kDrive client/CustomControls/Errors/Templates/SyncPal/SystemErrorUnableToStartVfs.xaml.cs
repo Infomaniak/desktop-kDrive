@@ -38,7 +38,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 if (!await Error.Sync.ChangeSyncType(Types.SyncType.Offline))
-                    await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
+                {
+                    ContentDialog errorDialog = new ContentDialog
+                    {
+                        XamlRoot = xamlRoot,
+                        Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
+                        CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                        Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
+                    };
+                    await errorDialog.ShowAsync();
+                }
             }
         }
     }
