@@ -92,11 +92,11 @@ public final class StorageDataService: StorageDataProviding {
     private func fetchVolumeStorage(volumeURL: URL) async throws -> (usedStorage: Int64, availableStorage: Int64) {
         let values = try volumeURL.resourceValues(forKeys: [
             .volumeTotalCapacityKey,
-            .volumeAvailableCapacityForImportantUsageKey
+            .volumeAvailableCapacityKey
         ])
 
         let totalStorage = Int64(values.volumeTotalCapacity ?? 0)
-        let availableStorage = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
+        let availableStorage = Int64(values.volumeAvailableCapacity ?? 0)
         let usedStorage = max(0, totalStorage - availableStorage)
 
         return (usedStorage, availableStorage)
