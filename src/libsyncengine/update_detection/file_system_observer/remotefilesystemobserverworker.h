@@ -100,7 +100,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         using CursorMap = std::unordered_map<NodeId, Cursor, StringHashFunction, std::equal_to<>>;
         // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
         CursorMap _listingCursorMap;
-        ExitInfo listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp timeStamp);
+        ExitInfo listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp &timestamp);
         ExitInfo saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor, const Timestamp timeStamp);
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
