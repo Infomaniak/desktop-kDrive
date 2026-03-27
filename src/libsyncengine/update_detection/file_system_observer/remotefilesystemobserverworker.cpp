@@ -424,8 +424,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
-        constexpr bool zip = true;
-        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList, zip);
+        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
+                                                             CsvFullFileListWithCursorJob::Zip::On);
     } catch (const std::bad_alloc &badAllocationException) {
         return exception2ExitCode(badAllocationException);
     } catch (const JobException &e) {

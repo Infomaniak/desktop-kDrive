@@ -31,7 +31,8 @@ static const uint32_t apiTimout = 900;
 
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId,
-                                                           const RemoteNodeIdSet &blacklist /*= {}*/, const bool zip /*= true*/) :
+                                                           const RemoteNodeIdSet &blacklist /*= {}*/,
+                                                           const Zip zip /*= Zip:On*/) :
     AbstractListingJob(driveDbId, blacklist),
     _remoteDirId(std::move(remoteDirId)),
     _zip(zip),
@@ -43,7 +44,7 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
         throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
     }
 
-    if (_zip) addRawHeader("Accept-Encoding", "gzip");
+    if (_zip == Zip::On) addRawHeader("Accept-Encoding", "gzip");
 }
 
 bool CsvFullFileListWithCursorJob::getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof) {
@@ -81,7 +82,7 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
 }
 
 ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
-    if (_zip) {
+    if (_zip == Zip::On) {
         unzip(is, _ss);
     } else {
         _ss << is.rdbuf();
