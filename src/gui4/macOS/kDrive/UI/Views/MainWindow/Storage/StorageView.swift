@@ -53,6 +53,8 @@ struct StorageView: View {
 
     @InjectService private var storageDataProviding: StorageDataProviding
 
+    @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
+
     @State private var macStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
         .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
@@ -60,10 +62,6 @@ struct StorageView: View {
     ]
 
     @ObservedObject var mainViewModel: MainViewModel
-
-    private var deviceName: String {
-        return Host().localizedName ?? KDriveLocalizable.storageDeviceNameMac
-    }
 
     private var macStorageData: StorageSectionView.StorageData {
         guard let usedByKDrive = macStorageItems[.usedByKDrive]?.usedBytes,
@@ -78,7 +76,7 @@ struct StorageView: View {
 
     var body: some View {
         Form {
-            StorageSectionView(title: deviceName, storageData: macStorageData, items: Array(macStorageItems.values))
+            StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(macStorageItems.values))
 
             Section {
                 InformationBlockContentView(
@@ -124,6 +122,8 @@ struct StorageView: View {
               let storageData = indexedStorageData[Int32(synchroDbId)] else {
             return
         }
+
+        volumeName = storageData.name
 
         macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
         macStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
