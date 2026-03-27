@@ -29,8 +29,8 @@ namespace KDC {
 
 class UserInfo {
     public:
-        UserInfo(UserDbId userDbId, UserId userId, const QString &name, const QString &email, const QImage &avatar,
-                 bool connected);
+        UserInfo(UserDbId userDbId, UserId userId, const QString &name, const QString &firstName, const QString &email,
+                 const QImage &avatar, bool connected);
         UserInfo() = default;
 
         inline void setDbId(const UserDbId dbId) { _dbId = dbId; }
@@ -39,6 +39,8 @@ class UserInfo {
         inline UserId userId() const { return _userId; }
         inline void setName(const QString &name) { _name = name; }
         inline const QString &name() const { return _name; }
+        inline void setFirstName(const QString &firstName) { _firstName = firstName; }
+        inline const QString &firstName() const { return _firstName; }
         inline void setEmail(const QString &email) { _email = email; }
         inline const QString &email() const { return _email; }
 
@@ -57,9 +59,9 @@ class UserInfo {
 
         friend bool operator==(const UserInfo &lhs, const UserInfo &rhs) {
             return (lhs.dbId() == rhs.dbId()) && (lhs.userId() == rhs.userId()) && (lhs.name() == rhs.name()) &&
-                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) && (lhs.avatarUrl() == rhs.avatarUrl()) &&
-                   (lhs.connected() == rhs.connected()) && (lhs.credentialsAsked() == rhs.credentialsAsked()) &&
-                   (lhs.isStaff() == rhs.isStaff());
+                   (lhs.firstName() == rhs.firstName()) && (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) &&
+                   (lhs.avatarUrl() == rhs.avatarUrl()) && (lhs.connected() == rhs.connected()) &&
+                   (lhs.credentialsAsked() == rhs.credentialsAsked()) && (lhs.isStaff() == rhs.isStaff());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
@@ -75,6 +77,7 @@ class UserInfo {
         UserDbId _dbId{-1};
         UserId _userId{-1};
         QString _name;
+        QString _firstName;
         QString _email;
         QImage _avatar;
         QString _avatarUrl;

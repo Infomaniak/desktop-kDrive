@@ -113,6 +113,7 @@
     "userId INTEGER UNIQUE,"           \
     "keychainKey TEXT,"                \
     "name TEXT,"                       \
+    "firstName TEXT,"                       \
     "email TEXT,"                      \
     "avatarUrl TEXT,"                  \
     "avatar BLOB, "                    \
@@ -121,13 +122,13 @@
 
 #define INSERT_USER_REQUEST_ID "insert_user"
 #define INSERT_USER_REQUEST                                                                    \
-    "INSERT INTO user (dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate) " \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);"
+    "INSERT INTO user (dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate) " \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);"
 
 #define UPDATE_USER_REQUEST_ID "update_user"
 #define UPDATE_USER_REQUEST                                                                                \
-    "UPDATE user SET userId=?1, keychainKey=?2, name=?3, email=?4, avatarUrl=?5, avatar=?6, toMigrate=?7 " \
-    "WHERE dbId=?8;"
+    "UPDATE user SET userId=?1, keychainKey=?2, name=?3, firstName=?4, email=?5, avatarUrl=?6, avatar=?7, toMigrate=?8 " \
+    "WHERE dbId=?9;"
 
 #define DELETE_USER_REQUEST_ID "delete_user"
 #define DELETE_USER_REQUEST \
@@ -136,22 +137,22 @@
 
 #define SELECT_USER_REQUEST_ID "select_user"
 #define SELECT_USER_REQUEST                                                            \
-    "SELECT userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+    "SELECT userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE dbId=?1;"
 
 #define SELECT_USER_BY_USERID_REQUEST_ID "select_user_by_userid"
 #define SELECT_USER_BY_USERID_REQUEST                                                \
-    "SELECT dbId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+    "SELECT dbId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE userId=?1;"
 
 #define SELECT_ALL_USERS_REQUEST_ID "select_users"
 #define SELECT_ALL_USERS_REQUEST                                                             \
-    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "ORDER BY dbId;"
 
 #define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
 #define SELECT_LAST_CONNECTED_USER_REQUEST \
-    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
+    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
 //
 // account
 //
@@ -1158,6 +1159,12 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    // User table
+    tableName = "user";
+    if (!addTextColumnIfMissing(tableName, "firstName")) {
+        return false;
+    }
+
     LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
 
     return true;
@@ -1409,10 +1416,11 @@ bool ParmsDb::insertUser(const User &user) {
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 2, user.userId()));
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 3, user.keychainKey()));
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 4, user.name()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.email()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.avatarUrl()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatar()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.toMigrate()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.firstName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.email()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 9, user.toMigrate()));
     if (!queryExec(INSERT_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_USER_REQUEST_ID);
         return false;
@@ -1431,11 +1439,12 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 1, user.userId()));
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 2, user.keychainKey()));
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 3, user.name()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.email()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.avatarUrl()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatar()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.toMigrate()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.firstName()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.email()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.toMigrate()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 9, user.dbId()));
     if (!queryExec(UPDATE_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_USER_REQUEST_ID);
         return false;
@@ -1499,17 +1508,20 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 3, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 5, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 6, blobResult));
     user.setAvatar(blobResult);
 
     int32_t int32Result{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, int32Result));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 7, int32Result));
     user.setToMigrate(static_cast<bool>(int32Result));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
@@ -1544,17 +1556,20 @@ bool ParmsDb::selectUserByUserId(const UserId userId, User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 3, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, blobResult));
     user.setAvatar(blobResult);
 
     int setToMigrateResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, setToMigrateResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 7, setToMigrateResult));
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
@@ -1618,17 +1633,20 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, blobResult));
     user.setAvatar(blobResult);
 
     int setToMigrateResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, setToMigrateResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 8, setToMigrateResult));
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
@@ -1661,17 +1679,19 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 2, keychainKey));
         std::string name;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 3, name));
+        std::string firstName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, firstName));
         std::string email;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, email));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, email));
         std::string avatarUrl;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, avatarUrl));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatarUrl));
         std::shared_ptr<std::vector<char>> avatar;
-        LOG_IF_FAIL(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatar));
+        LOG_IF_FAIL(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 7, avatar));
         int toMigrateResult{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 7, toMigrateResult));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 8, toMigrateResult));
 
         userList.push_back(
-                User(userDbId, userId, keychainKey, name, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult)));
+                User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
