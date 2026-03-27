@@ -2428,7 +2428,7 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
     uint16_t fieldIndex = 0;
 
     SyncDbId syncDbIdResult = -1;
-    LOG_IF_FAIL(queryInt64Value(requestId, 0, syncDbIdResult));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, syncDbIdResult));
     sync.setDbId(syncDbIdResult);
 
     if (driveDbId.has_value()) {
@@ -2449,7 +2449,7 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
     sync.setLocalNodeId(strResult);
 
     LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
-    sync.setTargetPath(SyncPath(syncNameResult));
+    sync.setTargetPath(syncNameResult);
 
     LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setTargetNodeId(strResult);
@@ -2493,6 +2493,9 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
 bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
     static const char *requestId = SELECT_SYNC_BY_PATH_REQUEST_ID;
 
+    sync = {};
+    found = false;
+
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
@@ -2504,7 +2507,6 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
     if (!found) return true;
 
-
     fillSyncWithQueryResult(sync, requestId);
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
@@ -2514,6 +2516,9 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
 bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
     static const char *requestId = SELECT_SYNC_REQUEST_ID;
+
+    sync = {};
+    found = false;
 
     const std::scoped_lock lock(_mutex);
 
@@ -2525,7 +2530,6 @@ bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
     }
 
     if (!found) return true;
-
 
     fillSyncWithQueryResult(sync, requestId);
 
