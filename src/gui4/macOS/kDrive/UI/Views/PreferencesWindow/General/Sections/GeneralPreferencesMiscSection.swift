@@ -23,22 +23,12 @@ import SwiftUI
 struct GeneralPreferencesMiscSection: View {
     @ObservedObject var repository: PreferencesRepository
 
-    @State private var language: UIAppLanguage = .english
     @State private var notificationsState: UINotificationState = .never
     @State private var launchOnStartup = true
     @State private var moveDeletedFilesToTrash = true
 
     var body: some View {
         Section {
-            OptionPicker(
-                KDriveLocalizable.languageSetting,
-                options: UIAppLanguage.allCases,
-                selection: $language
-            )
-            .onChange(of: language) { newValue in
-                updateValue(\.$language, \.language, newValue: newValue)
-            }
-
             OptionPicker(
                 KDriveLocalizable.labelNotifications,
                 options: UINotificationState.allCases,
@@ -94,7 +84,6 @@ struct GeneralPreferencesMiscSection: View {
     }
 
     private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
-        language = parametersInfo.language
         notificationsState = parametersInfo.notificationsState
         launchOnStartup = parametersInfo.launchOnStartup
         moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
