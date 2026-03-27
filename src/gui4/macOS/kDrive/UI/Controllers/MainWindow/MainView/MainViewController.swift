@@ -215,7 +215,7 @@ extension MainViewController {
         settingsButton.image = KDriveResources.cog.image
         settingsButton.label = KDriveLocalizable.buttonSettings
         settingsButton.target = nil
-        settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
+        settingsButton.action = #selector(AppDelegate.openPreferencesWindow)
 
         let group = NSToolbarItemGroup(itemIdentifier: .syncControlsGroup)
         group.subitems = [pauseResumeButton, settingsButton]

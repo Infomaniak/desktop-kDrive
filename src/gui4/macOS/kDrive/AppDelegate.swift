@@ -22,7 +22,7 @@ import kDriveCore
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
-    private lazy var preferencesWindow = PreferencesWindowController()
+    private var preferencesWindow: PreferencesWindowController?
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -56,8 +56,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc func openPreferencesWindow(_ sender: Any?) {
-        preferencesWindow.showWindow(sender)
-        preferencesWindow.window?.makeKeyAndOrderFront(sender)
+    @objc func openPreferencesWindow() {
+        if preferencesWindow == nil {
+            preferencesWindow = PreferencesWindowController()
+        }
+        preferencesWindow?.showWindow(nil)
+        preferencesWindow?.window?.makeKeyAndOrderFront(nil)
+        preferencesWindow?.window?.isReleasedWhenClosed = false
     }
 }
