@@ -42,10 +42,10 @@ struct StorageItem: Sendable, Identifiable {
     }
 }
 
-enum MacStorageItems {
-    case usedByKDrive
-    case usedByComputer
+enum VolumeStorageItems {
     case freeSpace
+    case usedSpace
+    case usedByKDrive
 }
 
 struct StorageView: View {
@@ -53,9 +53,9 @@ struct StorageView: View {
 
     @InjectService private var storageDataProviding: StorageDataProviding
 
-    @State private var macStorageItems: OrderedDictionary<MacStorageItems, StorageItem> = [
+    @State private var macStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
-        .usedByComputer: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
+        .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
     ]
 
@@ -67,7 +67,7 @@ struct StorageView: View {
 
     private var macStorageData: StorageSectionView.StorageData {
         guard let usedByKDrive = macStorageItems[.usedByKDrive]?.usedBytes,
-              let usedByComputer = macStorageItems[.usedByComputer]?.usedBytes,
+              let usedByComputer = macStorageItems[.usedSpace]?.usedBytes,
               let freeSpace = macStorageItems[.freeSpace]?.usedBytes else {
             return .loading
         }
@@ -126,7 +126,7 @@ struct StorageView: View {
         }
 
         macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
-        macStorageItems[.usedByComputer]?.usedBytes = storageData.usedByComputer
+        macStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
         macStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
     }
 }

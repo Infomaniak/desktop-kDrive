@@ -19,13 +19,13 @@
 import Combine
 import Foundation
 
-public struct MacStorageData: Sendable, Equatable {
-    public let usedByKDrive: Int64?
-    public let usedByComputer: Int64
+public struct VolumeStorageData: Sendable, Equatable {
     public let freeSpace: Int64
+    public let usedSpace: Int64
+    public let usedByKDrive: Int64?
 }
 
-public typealias IndexedStorageData = [Int32: MacStorageData]
+public typealias IndexedStorageData = [Int32: VolumeStorageData]
 
 public protocol StorageDataProviding: Sendable {
     var storageData: IndexedStorageData { get }
@@ -52,27 +52,27 @@ public final class StorageDataService: StorageDataProviding {
 
     @MainActor
     public func fetchStorageData(forSynchroDbId synchroDbId: Int32) async throws {
-        async let deviceStorage = fetchDeviceStorage()
+        async let volumeStorage = fetchVolumeStorage(synchroDbId: synchroDbId)
         async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
 
-        let resolvedMacStorage = try await deviceStorage
+        let resolvedVolumeStorage = try await volumeStorage
 
         if storageData[synchroDbId] == nil {
-            storageData[synchroDbId] = MacStorageData(
-                usedByKDrive: nil,
-                usedByComputer: resolvedMacStorage.usedStorage,
-                freeSpace: resolvedMacStorage.availableStorage
+            storageData[synchroDbId] = VolumeStorageData(
+                freeSpace: resolvedVolumeStorage.availableStorage,
+                usedSpace: resolvedVolumeStorage.usedStorage,
+                usedByKDrive: nil
             )
             storageDataSubject.send(storageData)
         }
 
         let resolvedKDriveStorage = try await kDriveStorage
-        let usedByComputer = resolvedMacStorage.usedStorage - resolvedKDriveStorage
+        let usedByComputer = resolvedVolumeStorage.usedStorage - resolvedKDriveStorage
 
-        storageData[synchroDbId] = MacStorageData(
-            usedByKDrive: resolvedKDriveStorage,
-            usedByComputer: usedByComputer,
-            freeSpace: resolvedMacStorage.availableStorage
+        storageData[synchroDbId] = VolumeStorageData(
+            freeSpace: resolvedVolumeStorage.availableStorage,
+            usedSpace: usedByComputer,
+            usedByKDrive: resolvedKDriveStorage
         )
         storageDataSubject.send(storageData)
     }
