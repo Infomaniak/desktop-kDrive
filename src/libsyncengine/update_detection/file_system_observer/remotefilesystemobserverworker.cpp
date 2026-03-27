@@ -158,7 +158,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     if (stopAsked()) return ExitCode::Ok;
 
     // Get last listing cursor used
-    int64_t timestamp = 0;
+    Timestamp timestamp = 0;
     if (const auto exitInfo = listingCursor(remoteDirId, _listingCursorMap[remoteDirId], timestamp); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
         return exitInfo;
@@ -508,7 +508,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     std::shared_ptr<LongPollJob> notifyJob = nullptr;
-    auto timestamp = 0;
+    Timestamp timestamp = 0;
     if (const auto exitInfo = listingCursor(remoteDirId, _listingCursorMap.at(remoteDirId), timestamp); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
         return exitInfo;
@@ -1030,7 +1030,7 @@ ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp timestamp) {
+ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp &timestamp) {
     RemoteNodeId userPrivateFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, userPrivateFolderRemoteId); !exitInfo)
         return exitInfo;
