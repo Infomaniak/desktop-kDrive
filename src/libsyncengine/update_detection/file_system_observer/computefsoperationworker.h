@@ -25,12 +25,6 @@
 
 namespace KDC {
 
-struct FixImpossibleMove {
-        ReplicaSide side{ReplicaSide::Unknown};
-        NodeId parentNodeId;
-        bool isActive{false};
-};
-
 class ComputeFSOperationWorker : public ISyncWorker {
     public:
         ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
@@ -115,7 +109,6 @@ class ComputeFSOperationWorker : public ISyncWorker {
         NodeIdSet _remoteTmpUnsyncedList;
         NodeIdSet _localTmpUnsyncedList;
         NodeIdSet _localReusedIds;
-        FixImpossibleMove _fixImpossibleMove;
 
         std::unordered_set<SyncPath, PathHashFunction> _dirPathToDeleteSet;
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
