@@ -166,7 +166,9 @@
                             </ToolTipService.ToolTip>
                         </HyperlinkButton>
 
-                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
+                        <TextBlock Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveCustomizeLocationTip')}"
                                    Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>

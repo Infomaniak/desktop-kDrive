@@ -128,15 +128,16 @@ namespace Infomaniak.kDrive.Pages.Settings
             bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
             if (canceledByUser)
             {
-                Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
                 // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
                 if (targetOnline)
                 {
+                    Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
                     sync.SyncType = Types.SyncType.Online;
                     sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
                 else
                 {
+                    Logger.Log(Logger.Level.Info, "User canceled the change to offline Sync mode");
                     sync.SyncType = Types.SyncType.Offline;
                     sync.SyncType = Types.SyncType.Online; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
