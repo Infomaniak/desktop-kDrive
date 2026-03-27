@@ -157,7 +157,7 @@ namespace Infomaniak.kDrive.ViewModels
             if (decodePixelWidth > 0)
             {
                 bitmap.DecodePixelType = DecodePixelType.Physical;
-                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot.RasterizationScale ?? 1.0;
+                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot?.RasterizationScale ?? 1.0;
                 bitmap.DecodePixelWidth = (int)(decodePixelWidth * rasterization);
             }
             bitmap.SetSource(stream);

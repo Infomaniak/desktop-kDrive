@@ -60,8 +60,8 @@ namespace Infomaniak.kDrive
                 fileSizeLimitBytes: 500L * 1024L * 1024L, // 500 MB
                 rollOnFileSizeLimit: true,                // roll when exceeding size
                 retainedFileCountLimit: 5,                // keep up to 5 rolled files
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message}{NewLine}{Exception}")
-            .CreateLogger();
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u1}] ({ThreadId}) {Message}{NewLine}{Exception}")
+            .Enrich.WithThreadId().CreateLogger();
 
 
         public static Level LogLevel =>

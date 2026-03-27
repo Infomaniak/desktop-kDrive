@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.Pages.Settings;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -148,6 +149,14 @@ namespace Infomaniak.kDrive.CustomControls
         private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
+        }
+
+        private Visibility GetSyncSelectorVisibility(bool isPaneOpen, IList<Sync> syncs)
+        {
+            if(isPaneOpen && syncs.Count > 0)
+                return Visibility.Visible;
+            else
+                return Visibility.Collapsed;
         }
     }
 }
