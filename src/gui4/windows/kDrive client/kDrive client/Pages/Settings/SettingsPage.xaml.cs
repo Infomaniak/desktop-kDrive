@@ -279,12 +279,18 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "selected item is null or invalid");
             }
 
+            if (selectedProxyType == ProxyType.HTTP && ViewModel.Settings.ProxyConfig.Type != ProxyType.HTTP)
+                ProxySettingsExpander.IsExpanded = true;
+            else
+                ProxySettingsExpander.IsExpanded = false;
+
 
             if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change proxy type");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+
             control.IsEnabled = true;
         }
 
