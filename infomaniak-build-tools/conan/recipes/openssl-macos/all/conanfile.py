@@ -26,7 +26,7 @@ class OpenSSLMacos(ConanFile):
         if str(self.settings.os) != "Macos":
             raise ConanInvalidConfiguration("This recipe is only supported on macOS.")
 
-    def config_option(self):
+    def config_options(self):
         if not self.options.shared:
             self.options.shared = True
             self.output.warning("This recipe only supports shared libraries on Apple platforms. The 'shared' option has been overwritten to True.")
