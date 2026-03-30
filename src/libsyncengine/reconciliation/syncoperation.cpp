@@ -110,7 +110,9 @@ bool SyncOperationList::pushOp(SyncOpPtr op) {
     _opSortedList.push_back(op->id());
     (void) _opListByType[op->type()].insert(op->id());
     _nodeIdSource2ops[*op->affectedNode()->id()].push_back(op->id());
-    _nodeIdTarget2ops[*op->correspondingNode()->id()].push_back(op->id());
+    if (op->correspondingNode() && op->correspondingNode()->id().has_value()) {
+        _nodeIdTarget2ops[*op->correspondingNode()->id()].push_back(op->id());
+    }
     return true;
 }
 
@@ -121,7 +123,9 @@ void SyncOperationList::popOp() {
     _opSortedList.pop_back();
     _opListByType[op->type()].erase(opId);
     _nodeIdSource2ops[*op->affectedNode()->id()].pop_back();
-    _nodeIdTarget2ops[*op->correspondingNode()->id()].pop_back();
+    if (op->correspondingNode() && op->correspondingNode()->id().has_value()) {
+        _nodeIdTarget2ops[*op->correspondingNode()->id()].pop_back();
+    }
     _allOps.erase(opId);
 }
 
@@ -131,7 +135,9 @@ void SyncOperationList::insertOp(const std::list<UniqueId>::const_iterator pos, 
     _opSortedList.insert(pos, op->id());
     _opListByType[op->type()].insert(op->id());
     _nodeIdSource2ops[*op->affectedNode()->id()].push_back(op->id());
-    _nodeIdTarget2ops[*op->correspondingNode()->id()].push_back(op->id());
+    if (op->correspondingNode() && op->correspondingNode()->id().has_value()) {
+        _nodeIdTarget2ops[*op->correspondingNode()->id()].push_back(op->id());
+    }
 }
 
 void SyncOperationList::deleteOp(const std::list<UniqueId>::const_iterator it) {
