@@ -45,6 +45,16 @@ enum StatusItemState {
     }
 }
 
+struct UISynchroStateContext: Sendable, Equatable {
+    let synchro: UISynchro
+    let state: UISynchroState
+
+    init(synchro: Synchro) {
+        self.synchro = UISynchro(synchro: synchro)
+        state = UISynchroState(fromSynchro: synchro)
+    }
+}
+
 @MainActor
 final class StatusBarManager {
     static let autosaveName = "kdrive.statusbaritem"
@@ -62,47 +72,63 @@ final class StatusBarManager {
         statusItem.button?.action = #selector(AppDelegate.openMainWindow)
 
         observeSynchros()
+        setupInitialState()
+    }
+
+    private func setupInitialState() {
+        Task {
+            @InjectService var cache: CoherentCache
+            let synchros = await cache.getSynchroContexts()
+
+            let synchroStates = synchros.map { UISynchroStateContext(synchro: $0.synchro) }
+            updateStatusItem(context: synchroStates)
+        }
     }
 
     private func observeSynchros() {
         @InjectService var observableCache: CoherentCacheObservable
         cancellable = observableCache.usersPublisher
-            .map { indexedUsers in
-                var synchroStates = [UISynchroState]()
-
-                for user in indexedUsers.values {
-                    for account in user.accounts.values {
-                        for drive in account.drives.values {
-                            for synchro in drive.synchros.values {
-                                let state = UISynchroState(fromSynchro: synchro)
-                                synchroStates.append(state)
-                            }
-                        }
-                    }
-                }
-
-                return synchroStates
+            .allSynchrosPublisher()
+            .map { contexts in
+                contexts.map { UISynchroStateContext(synchro: $0.synchro) }
             }
             .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink(receiveValue: updateStatusItem)
     }
 
-    private func updateStatusItem(states: [UISynchroState]) {
-        let statusItemState = guessStatusItemState(from: states)
+    private func updateStatusItem(context: [UISynchroStateContext]) {
+        let statusItemState = guessStatusItemState(from: context)
         statusItem.button?.image = statusItemState.icon
+
+        let tooltip = generateTooltip(from: context)
+        statusItem.button?.toolTip = tooltip
     }
 
-    private func guessStatusItemState(from synchroStates: [UISynchroState]) -> StatusItemState {
-        if synchroStates.contains(where: { $0.status == .running }) {
+    private func guessStatusItemState(from contexts: [UISynchroStateContext]) -> StatusItemState {
+        if contexts.contains(where: { $0.state.status == .running }) {
             return .running
         }
-        if synchroStates.contains(where: { $0.errorCount != 0 }) {
+        if contexts.contains(where: { $0.state.errorCount != 0 }) {
             return .error
         }
-        if synchroStates.allSatisfy({ $0.status == .paused || $0.status == .stopped }) {
+        if contexts.allSatisfy({ $0.state.status == .paused || $0.state.status == .stopped }) {
             return .paused
         }
         return .idle
+    }
+
+    private func generateTooltip(from contexts: [UISynchroStateContext]) -> String {
+        var tooltip = ""
+        for context in contexts {
+            let folder = context.synchro.localPath.lastPathComponent
+            tooltip += "\(folder): WIP"
+
+            if context != contexts.last {
+                tooltip += "\n"
+            }
+        }
+
+        return tooltip
     }
 }
