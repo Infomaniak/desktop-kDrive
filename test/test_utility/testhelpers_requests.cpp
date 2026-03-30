@@ -18,6 +18,8 @@
 
 #include "testhelpers_requests.h"
 
+#include "jobs/network/kDrive_API/renamejob.h"
+
 namespace KDC::testhelpers {
 
 NodeId createRemoteDir(const DriveDbId driveDbId, const NodeId &remoteParentId, const SyncName &name) {
@@ -50,6 +52,12 @@ void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncT
 void moveRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name /*= {}*/) {
     MoveJob job(nullptr, driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
+    job.setBypassCheck(true);
+    (void) job.runSynchronously();
+}
+
+void renameRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const SyncName &name) {
+    RenameJob job(nullptr, driveDbId, remoteFileId, name);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
 }

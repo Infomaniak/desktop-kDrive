@@ -64,7 +64,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
-    // Check if `newItem` already exists with the same path but a different Id
+    // Check if `newItem` already exists with the same path but a different ID
     if (const auto newParent = findItem(newItem.parentId()); newParent) {
         for (const auto &child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {

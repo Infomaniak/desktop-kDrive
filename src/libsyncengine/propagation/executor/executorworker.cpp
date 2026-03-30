@@ -46,7 +46,6 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
 #define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
@@ -931,6 +930,35 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
     return ExitCode::Ok;
 }
 
+ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPath &path) {
+    bool found = false;
+    if (!_syncPal->syncDb()->path(node->side(), node->id().value(), path, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb:: path");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOGW_SYNCPAL_WARN(_logger, L"Path not in DB for item ID " << CommonUtility::s2ws(node->id().value()) << L" on side "
+                                                                  << node->side());
+        return {ExitCode::DataError, ExitCause::NotFound};
+    }
+    return ExitCode::Ok;
+}
+
+namespace {
+bool checkIfAnyParentHasMoveOperation(const std::shared_ptr<Node> affectedNode) {
+    bool res = false;
+    auto parentNode = affectedNode->parentNode();
+    while (parentNode) {
+        if (parentNode->hasChangeEvent(OperationType::Move)) {
+            res = true;
+            break;
+        }
+        parentNode = parentNode->parentNode();
+    }
+    return res;
+}
+} // namespace
+
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     bypassProgressComplete = false;
 
@@ -961,10 +989,20 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return ExitCode::DataError;
         }
 
-        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
-        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+
+        if (checkIfAnyParentHasMoveOperation(syncOp->affectedNode())) {
+            // Get the parent corresponding node
+            SyncPath relativeParentPath;
+            if (const auto exitInfo = getPathFromDb(syncOp->affectedNode()->parentNode(), relativeParentPath); !exitInfo) {
+                return exitInfo;
+            }
+            relativeDestLocalFilePath = relativeParentPath / syncOp->newName();
+        } else {
+            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        }
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
 
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
@@ -985,12 +1023,24 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return ExitCode::DataError;
         }
 
-        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
-        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
-        if (syncOp->isBreakingCycleOp() || relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+        bool bypassCheck = true;
+        if (checkIfAnyParentHasMoveOperation(syncOp->affectedNode())) {
+            // Get the parent corresponding node
+            SyncPath relativeParentPath;
+            if (const auto exitInfo = getPathFromDb(syncOp->affectedNode()->parentNode(), relativeParentPath); !exitInfo) {
+                return exitInfo;
+            }
+            relativeDestLocalFilePath = relativeParentPath / syncOp->newName();
+            bypassCheck = true;
+        } else {
+            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        }
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
+
+        if (syncOp->isBreakingCycleOp() || absoluteOriginLocalFilePath.parent_path() == absoluteDestLocalFilePath.parent_path()) {
             // This is just a rename
             try {
                 job = std::make_shared<RenameJob>(_syncPal->vfs(), _syncPal->driveDbId(), correspondingNode->id().value_or(""),
@@ -1026,7 +1076,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             }
         }
 
-        if (syncOp->hasConflict() || syncOp->isBreakingCycleOp()) {
+        if (syncOp->hasConflict() || syncOp->isBreakingCycleOp() || bypassCheck) {
             job->setBypassCheck(true);
         }
     }
@@ -1635,14 +1685,14 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
                   syncOp->omit() ? SyncFileStatus::Success : SyncFileStatus::Unknown);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Inserting in DB: " << L" localName=" << Utility::quotedSyncName(localName)
-                                                         << L" / remoteName=" << Utility::quotedSyncName(remoteName)
-                                                         << L" / localId=" << CommonUtility::s2ws(localId) << L" / remoteId="
-                                                         << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
-                                                         << newCorrespondingParentNode->idb().value_or(-1) << L" / createdAt="
-                                                         << newCreationTime.value_or(-1) << L" / lastModTime="
-                                                         << newLastModificationTime.value_or(-1) << L" / type="
-                                                         << syncOp->affectedNode()->type() << L" / size=" << size);
+        LOGW_SYNCPAL_DEBUG(_logger,
+                           L"Inserting in DB: "
+                                   << L" localName=" << Utility::quotedSyncName(localName) << L" / remoteName="
+                                   << Utility::quotedSyncName(remoteName) << L" / DB ID=" << dbNode.nodeId() << L" / localId="
+                                   << CommonUtility::s2ws(localId) << L" / remoteId=" << CommonUtility::s2ws(remoteId)
+                                   << L" / parent DB ID=" << newCorrespondingParentNode->idb().value_or(-1) << L" / createdAt="
+                                   << newCreationTime.value_or(-1) << L" / lastModTime=" << newLastModificationTime.value_or(-1)
+                                   << L" / type=" << syncOp->affectedNode()->type() << L" / size=" << size);
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
@@ -1655,11 +1705,11 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
     DbNodeId newDbNodeId;
     bool constraintError = false;
     if (!_syncPal->syncDb()->insertNode(dbNode, newDbNodeId, constraintError)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to insert node into DB:" << L" local ID: " << CommonUtility::s2ws(localId)
-                                                                     << L", remote ID: " << CommonUtility::s2ws(remoteId)
-                                                                     << L", local name: " << Utility::quotedSyncName(localName)
-                                                                     << L", remote name: " << Utility::quotedSyncName(remoteName)
-                                                                     << L", parent DB ID: "
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to insert node into DB:" << L" DB ID=" << dbNode.nodeId() << L", local ID: "
+                                                                     << CommonUtility::s2ws(localId) << L", remote ID: "
+                                                                     << CommonUtility::s2ws(remoteId) << L", local name: "
+                                                                     << Utility::quotedSyncName(localName) << L", remote name: "
+                                                                     << Utility::quotedSyncName(remoteName) << L", parent DB ID: "
                                                                      << (newCorrespondingParentNode->idb().value_or(-1)));
 
         if (!constraintError) {
@@ -1778,9 +1828,9 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
 
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" / localName=" << Utility::quotedSyncName(localName)
-                                                     << L" / remoteName=" << Utility::quotedSyncName(remoteName) << L" / localId="
-                                                     << CommonUtility::s2ws(localId) << L" / remoteId="
-                                                     << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
+                                                     << L" / remoteName=" << Utility::quotedSyncName(remoteName) << L" / DB ID="
+                                                     << dbNode.nodeId() << L" / localId=" << CommonUtility::s2ws(localId)
+                                                     << L" / remoteId=" << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
                                                      << dbNode.parentNodeId().value_or(-1) << L" / createdAt="
                                                      << newCreationTime.value_or(-1) << L" / lastModTime="
                                                      << newLastModificationTime.value_or(-1) << L" / type="
@@ -1788,12 +1838,12 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     }
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: " << L"local ID: " << CommonUtility::s2ws(localId)
-                                                                      << L", remote ID: " << CommonUtility::s2ws(remoteId)
-                                                                      << L", local name: " << Utility::quotedSyncName(localName)
-                                                                      << L", remote name: " << Utility::quotedSyncName(remoteName)
-                                                                      << L", parent DB ID: "
-                                                                      << dbNode.parentNodeId().value_or(-1));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
+                                           << L" DB ID=" << dbNode.nodeId() << L", local ID: " << CommonUtility::s2ws(localId)
+                                           << L", remote ID: " << CommonUtility::s2ws(remoteId) << L", local name: "
+                                           << Utility::quotedSyncName(localName) << L", remote name: "
+                                           << Utility::quotedSyncName(remoteName) << L", parent DB ID: "
+                                           << dbNode.parentNodeId().value_or(-1));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
@@ -1871,7 +1921,8 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Updating DB: " << L" localName=" << Utility::quotedSyncName(syncOp->newName())
                                                      << L" / remoteName=" << Utility::quotedSyncName(syncOp->newName())
-                                                     << L" / localId=" << CommonUtility::s2ws(localId) << L" / remoteId="
+                                                     << L" / DB ID=" << dbNode.nodeId() << L" / localId="
+                                                     << CommonUtility::s2ws(localId) << L" / remoteId="
                                                      << CommonUtility::s2ws(remoteId) << L" / parent DB ID="
                                                      << dbNode.parentNodeId().value_or(-1) << L" / createdAt="
                                                      << syncOp->affectedNode()->createdAt().value_or(-1) << L" / lastModTime="
@@ -1881,8 +1932,8 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
     if (!_syncPal->syncDb()->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
-                                           << L"local ID: " << CommonUtility::s2ws(localId) << L", remote ID: "
-                                           << CommonUtility::s2ws(remoteId) << L", local name: "
+                                           << L" DB ID=" << dbNode.nodeId() << L", local ID: " << CommonUtility::s2ws(localId)
+                                           << L", remote ID: " << CommonUtility::s2ws(remoteId) << L", local name: "
                                            << Utility::quotedSyncName(syncOp->newName()) << L", remote name: "
                                            << Utility::quotedSyncName(syncOp->newName()) << L", parent DB ID: "
                                            << dbNode.parentNodeId().value_or(-1));
@@ -1946,7 +1997,8 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << Utility::formatSyncName(node->name()) << L"\" removed from DB");
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncName(node->name()) << L" (DB ID=" << *node->idb()
+                                             << L") removed from DB");
     }
 
     return ExitCode::Ok;

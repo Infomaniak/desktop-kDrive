@@ -720,14 +720,14 @@ void TestSyncDb::testNodesTemplate(SyncDb &db, T &testObj) {
     }
     // parent
     NodeId parentNodeidFile3;
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) && found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdLocal() == parentNodeidFile3);
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) && found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdRemote() == parentNodeidFile3);
     NodeId parentNodeidDir1;
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) && found);
     CPPUNIT_ASSERT(testObj.rootNode().nodeIdLocal() == parentNodeidDir1);
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) && found);
     CPPUNIT_ASSERT(testObj.rootNode().nodeIdRemote() == parentNodeidDir1);
 
     // path
