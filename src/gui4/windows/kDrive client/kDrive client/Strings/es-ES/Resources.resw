@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 30 Mar 2026 15:03:51 +0200 
+  Exported at: Mon, 30 Mar 2026 17:11:42 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -84,10 +84,6 @@
   <data name="aboutKDriveDescription" xml:space="preserve"> 
     <value>Desarrollado y alojado exclusivamente en Suiza, kDrive garantiza la protección total de sus datos, sin reventa ni espionaje, en centros de datos certificados ISO, con cifrado y copia de seguridad en varios soportes.</value> 
     <comment>Description text on the About page explaining kDrive's privacy, hosting, and data protection.</comment> 
-  </data> 
-  <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
-    <value>Actividades visibles</value> 
-    <comment>Accessibility label for the activity type filter/picker control in the activity panel.</comment> 
   </data> 
   <data name="activitiesTitleIdle" xml:space="preserve"> 
     <value>Sincronización completada</value> 
@@ -182,10 +178,6 @@ Puede acceder a sus sincronizaciones avanzadas desde el selector de unidades en 
     <value>Sus archivos se copian en su ordenador.
 Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</value> 
     <comment>Description of the available offline sync mode, explaining files are stored locally on the device.</comment> 
-  </data> 
-  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
-    <value>No tiene permiso para acceder a este kDrive. Verifique sus derechos o contacte con su administrador.</value> 
-    <comment>Error description when user doesn’t have permission to access a kDrive</comment> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>Puede activarlo desde la interfaz web.</value> 
@@ -748,10 +740,6 @@ Inicie sesión nuevamente con la dirección de correo electrónico correcta %@</
   <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
     <value>Nombres duplicados</value> 
     <comment>Title for the error shown when duplicate file or folder names are detected.</comment> 
-  </data> 
-  <data name="editCancelErrorTitle" xml:space="preserve"> 
-    <value>Edición cancelada</value> 
-    <comment>Title shown when a file edit was cancelled due to insufficient permissions.</comment> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
     <value>Registrar información de diagnóstico en mi ordenador.</value> 
@@ -1513,8 +1501,11 @@ Para acelerar el envío, recomendamos enviar solo la última sesión de kDrive.<
     <value>Enlace copiado al portapapeles</value> 
     <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
   </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Disco incompatible o carpeta directamente en la raíz del disco (ej: elige una carpeta como D:/Mon drive en lugar de D:/)</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
-    <value>Ubicación en mi PC</value> 
+    <value>Ubicación en el ordenador</value> 
     <comment>Label for the local PC folder location field in sync settings.</comment> 
   </data> 
   <data name="logLevelDebug" xml:space="preserve"> 
@@ -1664,6 +1655,12 @@ El análisis de estos datos permite a nuestro equipo mejorar continuamente la in
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Elija las carpetas a sincronizar en este ordenador</value> 
     <comment>Title of the folder exclusion selection step during onboarding.</comment> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>Los archivos se descargan solo al abrirlos, para ahorrar espacio en disco.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Activar Lite Sync</value> 
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
     <value>Este kDrive ya está configurado.
@@ -1910,6 +1907,15 @@ Se requiere conexión a Internet para acceder a ellos.</value>
   <data name="syncRules" xml:space="preserve"> 
     <value>Reglas de sincronización</value> 
     <comment>Label for the sync rules section in sync settings.</comment> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Last Sync was successful</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Sync is paused</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Sync is running</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizado</value> 

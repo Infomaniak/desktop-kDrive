@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 30 Mar 2026 15:03:51 +0200 
+  Exported at: Mon, 30 Mar 2026 17:11:42 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -84,10 +84,6 @@
   <data name="aboutKDriveDescription" xml:space="preserve"> 
     <value>Sviluppato e ospitato esclusivamente in Svizzera, kDrive garantisce la totale protezione dei tuoi dati, senza rivendita né sorveglianza, in data center certificati ISO, con crittografia e backup su più supporti.</value> 
     <comment>Description text on the About page explaining kDrive's privacy, hosting, and data protection.</comment> 
-  </data> 
-  <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
-    <value>Attività visibili</value> 
-    <comment>Accessibility label for the activity type filter/picker control in the activity panel.</comment> 
   </data> 
   <data name="activitiesTitleIdle" xml:space="preserve"> 
     <value>Sincronizzazione completata</value> 
@@ -182,10 +178,6 @@ Puoi accedere alle sincronizzazioni avanzate dal selettore di unità nella pagin
     <value>I tuoi file vengono copiati sul tuo computer.
 Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</value> 
     <comment>Description of the available offline sync mode, explaining files are stored locally on the device.</comment> 
-  </data> 
-  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
-    <value>Non hai il permesso di accedere a questo kDrive. Verifica i tuoi diritti o contatta il tuo amministratore.</value> 
-    <comment>Error description when user doesn’t have permission to access a kDrive</comment> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>Puoi riattivarlo dall’interfaccia web.</value> 
@@ -748,10 +740,6 @@ Accedi di nuovo con l’indirizzo email corretto %@</value>
   <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
     <value>Nomi duplicati</value> 
     <comment>Title for the error shown when duplicate file or folder names are detected.</comment> 
-  </data> 
-  <data name="editCancelErrorTitle" xml:space="preserve"> 
-    <value>Modifica annullata</value> 
-    <comment>Title shown when a file edit was cancelled due to insufficient permissions.</comment> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
     <value>Registra informazioni diagnostiche sul mio computer.</value> 
@@ -1513,8 +1501,11 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
     <value>Link copiato negli appunti</value> 
     <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
   </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Disco incompatibile o cartella direttamente nella radice del disco (es: scegli una cartella come D:/Mon drive invece di D:/)</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
-    <value>Posizione sul mio PC</value> 
+    <value>Posizione sul computer</value> 
     <comment>Label for the local PC folder location field in sync settings.</comment> 
   </data> 
   <data name="logLevelDebug" xml:space="preserve"> 
@@ -1664,6 +1655,12 @@ L’analisi di questi dati consente al nostro team di migliorare continuamente l
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Scegli le cartelle da sincronizzare su questo computer</value> 
     <comment>Title of the folder exclusion selection step during onboarding.</comment> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>I file vengono scaricati solo all’apertura, per risparmiare spazio su disco.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Attivare Lite Sync</value> 
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
     <value>Questo kDrive è già configurato.
@@ -1910,6 +1907,15 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
   <data name="syncRules" xml:space="preserve"> 
     <value>Regole di sincronizzazione</value> 
     <comment>Label for the sync rules section in sync settings.</comment> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Last Sync was successful</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Sync is paused</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Sync is running</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizzato</value> 

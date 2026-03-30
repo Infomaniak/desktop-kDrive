@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 30 Mar 2026 15:03:51 +0200 
+  Exported at: Mon, 30 Mar 2026 17:11:42 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -84,10 +84,6 @@
   <data name="aboutKDriveDescription" xml:space="preserve"> 
     <value>Développé et hébergé exclusivement en Suisse, kDrive assure une protection totale de vos données, sans revente ni espionnage, dans des centres certifiés ISO, avec chiffrement et sauvegarde sur plusieurs supports.</value> 
     <comment>Description text on the About page explaining kDrive's privacy, hosting, and data protection.</comment> 
-  </data> 
-  <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
-    <value>Activités visibles</value> 
-    <comment>Accessibility label for the activity type filter/picker control in the activity panel.</comment> 
   </data> 
   <data name="activitiesTitleIdle" xml:space="preserve"> 
     <value>Synchronisation terminée</value> 
@@ -182,10 +178,6 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Vos fichiers sont copiés sur votre ordinateur.
 Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value> 
     <comment>Description of the available offline sync mode, explaining files are stored locally on the device.</comment> 
-  </data> 
-  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive. Veuillez vérifier vos droits ou contacter votre administrateur.</value> 
-    <comment>Error description when user doesn’t have permission to access a kDrive</comment> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>Vous pouvez le réveiller à partir de l’interface web.</value> 
@@ -748,10 +740,6 @@ Veuillez vous connecter à nouveau avec l’adresse électronique correcte %@</v
   <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
     <value>Dédoublement de noms</value> 
     <comment>Title for the error shown when duplicate file or folder names are detected.</comment> 
-  </data> 
-  <data name="editCancelErrorTitle" xml:space="preserve"> 
-    <value>Édition annulée</value> 
-    <comment>Title shown when a file edit was cancelled due to insufficient permissions.</comment> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
     <value>Enregistrer les informations de diagnostic sur mon ordinateur.</value> 
@@ -1513,8 +1501,12 @@ Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la derniè
     <value>Lien copié dans le presse-papiers</value> 
     <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
   </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Disque incompatible ou dossier directement à la racine du disque (ex : choisissez un dossier comme D:/Mon drive au lieu de D:/)
+</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
-    <value>Emplacement sur mon PC</value> 
+    <value>Emplacement sur l’ordinateur</value> 
     <comment>Label for the local PC folder location field in sync settings.</comment> 
   </data> 
   <data name="logLevelDebug" xml:space="preserve"> 
@@ -1664,6 +1656,12 @@ L’étude de ces données permet à notre équipe d’améliorer en continu l�
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
     <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value> 
     <comment>Title of the folder exclusion selection step during onboarding.</comment> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>Les fichiers sont téléchargés uniquement à l’ouverture, pour économiser de l’espace disque.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Activer la Lite Sync</value> 
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
     <value>Ce kDrive est déjà configuré.
@@ -1910,6 +1908,15 @@ Connexion internet requise pour y accéder.</value>
   <data name="syncRules" xml:space="preserve"> 
     <value>Règles de synchronisation</value> 
     <comment>Label for the sync rules section in sync settings.</comment> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Last Sync was successful</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Sync is paused</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Sync is running</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synchronisé</value> 
