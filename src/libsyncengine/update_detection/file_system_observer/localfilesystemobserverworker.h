@@ -50,7 +50,8 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         bool canComputeChecksum(const SyncPath &absolutePath);
 
 #if defined(KD_MACOS)
-        ExitCode isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal, bool &valid) const;
+        ExitCode isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal, int64_t sizeLocal,
+                             bool &valid) const;
 #endif
 
         void sendAccessDeniedError(const SyncPath &absolutePath);

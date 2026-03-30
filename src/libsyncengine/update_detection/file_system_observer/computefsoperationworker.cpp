@@ -32,9 +32,6 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> sync
                                                    const std::string &shortName) :
     ISyncWorker(syncPal, name, shortName),
     _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {
-    // Resolution for the modification time is 2s on FAT filesystems:
-    // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
-    if (CommonUtility::isFAT(_syncPal->localPath())) _timeDifferenceThresholdForEdit = 1;
 }
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
@@ -289,13 +286,14 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const SyncTime snapshotModificationTime = snapshot->lastModified(nodeId);
     // On FAT filesystems, the time resolution for modification time is 2 seconds. Therefor, we ignore EDIT operations if the
     // difference between modification time in DB and the one on the filesystem is less or equal to 1sec.
-    const bool modifiedTimeDiffIsEnough = abs(snapshotModificationTime - dbModificationTime) > _timeDifferenceThresholdForEdit;
+    const bool sameModifiedTime =
+            CommonUtility::modificationTimesAreEqual(_syncPal->localPath(), snapshotModificationTime, dbModificationTime);
     const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
     // Size can differ for links between remote and local replica, do not check it in that case
     if (dbNode.type() == NodeType::File &&
-        (modifiedTimeDiffIsEnough || !sameSize || (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local))) {
+        (!sameModifiedTime || !sameSize || (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local))) {
         // Edit operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
                                                         snapshotModificationTime, snapshot->size(nodeId), snapshotPath);
