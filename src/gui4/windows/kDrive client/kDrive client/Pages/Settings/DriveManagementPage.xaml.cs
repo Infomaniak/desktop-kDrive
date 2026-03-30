@@ -253,7 +253,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
+            NewSync newSync = new(BaseDrive) { DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
             List<NewSync> newSyncs = [newSync];
 

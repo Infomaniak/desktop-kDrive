@@ -35,10 +35,14 @@ namespace Infomaniak.kDrive.ViewModels
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
-        private IDrive? drive;
+        private IDrive _drive;
         private ObservableCollection<NodeId> _excludedNodeIds = [];
 
-        public NewSync() { }
+        public NewSync(IDrive drive)
+        {
+            _drive = drive;
+        }
+
         public NewSync(NewSync other)
         {
             DefaultPath = other.DefaultPath;
@@ -82,10 +86,10 @@ namespace Infomaniak.kDrive.ViewModels
             get => _remoteNodeId;
             set => SetPropertyInUIThread(ref _remoteNodeId, value);
         }
-        public IDrive? Drive
+        public IDrive Drive
         {
-            get => drive;
-            init => SetPropertyInUIThread(ref drive, value);
+            get => _drive;
+            init => SetPropertyInUIThread(ref _drive, value);
         }
 
         public SyncType SyncType
