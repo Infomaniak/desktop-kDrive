@@ -53,7 +53,7 @@ std::string FileListJob::createLogMessage(const std::string &coreMsg) const {
     return ss.str();
 }
 
-std::string FileListJob::getConstructorFailureLogMessage(const std::exception &e) const {
+std::string FileListJob::getConstructorFailureLogMessage(const JobException &e) const {
     return createLogMessage(getConstructorFailureCoreMsg()) + " error=" + e.what();
 }
 
