@@ -295,7 +295,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) userInfoObj2.set("isConnected", false);
     (void) userInfoObj2.set("isStaff", false);
     (void) userInfoObj2.set("name", toBase64(Str("bbbbb")));
-    (void) userInfoObj1.set("firstName", toBase64(Str("b1b1b1")));
+    (void) userInfoObj2.set("firstName", toBase64(Str("b1b1b1")));
     (void) userInfoObj2.set("userId", 1002);
 
     Poco::JSON::Array userInfoListObj;
