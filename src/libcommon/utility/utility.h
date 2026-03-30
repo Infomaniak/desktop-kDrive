@@ -305,6 +305,8 @@ struct COMMON_EXPORT CommonUtility {
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
 
+        static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
+
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :

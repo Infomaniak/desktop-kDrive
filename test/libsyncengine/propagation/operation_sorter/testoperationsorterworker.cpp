@@ -715,8 +715,8 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     _syncPal->syncOps()->setOpList({lMoveOpB, lMoveOpAAB, rMoveOpC, rMoveOpA, rMoveOpAAA});
     const auto reshuffledOp = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
     CPPUNIT_ASSERT(reshuffledOp);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.size() == 2);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.back() == rMoveOpA->id());
+    CPPUNIT_ASSERT(reshuffledOp->get()._opSortedList.size() == 2);
+    CPPUNIT_ASSERT(reshuffledOp->get()._opSortedList.back() == rMoveOpA->id());
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
