@@ -198,7 +198,7 @@ function clean_app_directory() {
 
   echo "  Removing Qt development tools..."
   cd ./usr/libexec
-  ls | xargs rm -f
+  find . -maxdepth 1 -type f -delete
   cd /app
 
   # Remove development plugins
