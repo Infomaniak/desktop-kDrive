@@ -197,7 +197,7 @@ QSize CustomMessageBox::sizeHint() const {
     // Get the size hint of all buttons
     QSize buttonsSizeHint;
     for (const auto &child: _buttonsHBox->children()) {
-        if (const auto *button = qobject_cast<QPushButton *>(child); button) buttonsSizeHint += button->sizeHint();
+        if (const auto *const button = qobject_cast<QPushButton *>(child); button) buttonsSizeHint += button->sizeHint();
     }
     const auto widthHint = std::max((_warningLabel ? _warningLabel->width() : 0) + (_textLabel ? _textLabel->width() : 0),
                                     buttonsSizeHint.width());
