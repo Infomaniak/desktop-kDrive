@@ -61,12 +61,6 @@ static constexpr int textHSpacing = 10;
 static const QString debuggingFolderLink = "debuggingFolderLink";
 static const QString moveToTrashFAQLink = "https://faq.infomaniak.com/2383#desktop";
 
-static const QString englishCode = "en";
-static const QString frenchCode = "fr";
-static const QString germanCode = "de";
-static const QString spanishCode = "es";
-static const QString italianCode = "it";
-
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
@@ -508,6 +502,7 @@ void PreferencesWidget::retranslateUi() const {
     _languageSelectorComboBox->addItem(tr("German"), toInt(Language::German));
     _languageSelectorComboBox->addItem(tr("Spanish"), toInt(Language::Spanish));
     _languageSelectorComboBox->addItem(tr("Italian"), toInt(Language::Italian));
+    _languageSelectorComboBox->addItem(tr("Dutch"), toInt(Language::Dutch));
     const int languageIndex =
             _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);

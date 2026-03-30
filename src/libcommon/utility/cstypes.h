@@ -180,6 +180,7 @@ enum class Language {
     German,
     Spanish,
     Italian,
+    Dutch,
     EnumEnd
 };
 
