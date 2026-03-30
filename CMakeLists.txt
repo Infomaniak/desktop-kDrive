@@ -321,7 +321,7 @@ elseif(BUILD_CLIENT)
             file(COPY sync-exclude-linux.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
             file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-linux.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         else()
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/usr/bin/ RENAME sync-exclude.lst)
+            install(FILES sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
         endif()
 
         # Sentry
