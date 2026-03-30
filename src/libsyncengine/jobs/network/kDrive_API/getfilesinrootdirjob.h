@@ -43,4 +43,11 @@ class GetFilesInRootDirJob : public FileListJob {
         }
 };
 
+std::string getFileListConstructorErrorMsg(FileListJob *job, UserDbId userDbId, DriveId driveId, const JobException &e);
+std::string getFileListConstructorErrorMsg(FileListJob *job, DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                           const JobException &e);
+std::string getFileListExecErrorMsg(FileListJob *job, UserDbId userDbId, DriveId driveId, const ExitInfo &exitInfo);
+std::string getFileListExecErrorMsg(FileListJob *job, DriveDbId driveDbId, const RemoteNodeId &nodeId, const ExitInfo &exitInfo);
+
+
 } // namespace KDC
