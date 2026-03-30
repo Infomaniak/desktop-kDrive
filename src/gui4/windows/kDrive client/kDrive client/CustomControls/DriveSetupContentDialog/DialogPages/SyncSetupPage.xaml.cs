@@ -170,5 +170,23 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             newSync.LocalPath = newSync.DefaultPath;
             await newSync.SelectBestVfsMode();
         }
+
+        private void LiteSyncToggleSwitch_Toggle(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sender is not a ToggleSwitch");
+                return;
+            }
+
+            if (DriveSetupContentDialogVM?.CurrentSync is null)
+            {
+                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM?.CurrentSync is null");
+                return;
+            }
+
+            DriveSetupContentDialogVM.CurrentSync.SyncType = toggleSwitch.IsOn ? SyncType.Online : SyncType.Offline;
+        }
     }
 }

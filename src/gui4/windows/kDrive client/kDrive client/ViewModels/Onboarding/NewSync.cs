@@ -35,6 +35,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
+        private bool _supportLiteSync = false;
         private IDrive? drive;
         private ObservableCollection<NodeId> _excludedNodeIds = [];
 
@@ -94,6 +95,12 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncType, value);
         }
 
+        public bool SupportLiteSync
+        {
+            get => _supportLiteSync;
+            set => SetPropertyInUIThread(ref _supportLiteSync, value);
+        }
+
         public ObservableCollection<NodeId> ExcludedNodeIds
         {
             get => _excludedNodeIds;
@@ -107,7 +114,8 @@ namespace Infomaniak.kDrive.ViewModels
             if (CanSupportOnlineMode is null)
                 Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
 
-            SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
+            SupportLiteSync = CanSupportOnlineMode ?? false;
+            SyncType = SupportLiteSync ? SyncType.Online : SyncType.Offline;
         }
 
         public Task<List<NodeId>?> GetExcludedNodeIds()

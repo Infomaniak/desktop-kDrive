@@ -18,6 +18,7 @@
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+        <converters:SyncTypeToBoolConverter x:Key="SyncTypeToBoolConverter" />
     </Page.Resources>
     <Page.Transitions>
         <TransitionCollection>
@@ -37,6 +38,9 @@
                 <RowDefinition Height="Auto" />
 
                 <!-- Exclusion -->
+                <RowDefinition Height="Auto" />
+
+                <!-- Lite sync -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!-- Title -->
@@ -261,6 +265,53 @@
                                    Style="{StaticResource BodyTextBlockStyle}"
                                    VerticalAlignment="Center" />
                     </Grid>
+                </Grid>
+            </Border>
+
+            <!--Lite sync -->
+            <Border Grid.Row="4"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0"
+                          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsLiteSyncTitle')}"
+                                   Style="{StaticResource BodyTextBlockStyle}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsLiteSyncDescription')}"
+                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ToggleSwitch Grid.Row="1"
+                                  IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
+                                  Toggled="LiteSyncToggleSwitch_Toggle" />
+
+                    <TextBlock Grid.ColumnSpan="2"
+                               Grid.Row="2"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('liteSyncUnavailableDescription')}"
+                               TextWrapping="WrapWholeWords"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               VerticalAlignment="Center" />
                 </Grid>
             </Border>
         </Grid>
