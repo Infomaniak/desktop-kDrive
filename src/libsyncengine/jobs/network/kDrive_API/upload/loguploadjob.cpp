@@ -72,14 +72,15 @@ void LogUploadJob::abort() {
     }
 }
 
-void LogUploadJob::cancelUpload() {
+bool LogUploadJob::cancelUpload() {
     const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_INFO(Log::instance()->getLogger(), "Cancelling log upload job.");
         _runningJob->abort();
-        return;
+        return true;
     }
     LOG_WARN(Log::instance()->getLogger(), "No log upload in progress, unable to cancel the job.");
+    return false;
 }
 
 bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {

@@ -168,9 +168,9 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is Control control)
             {
-                var curentForeground = control.Foreground;
+                var currentForeground = control.Foreground;
                 control.Foreground = null;
-                control.Foreground = curentForeground;
+                control.Foreground = currentForeground;
             }
         }
 

@@ -150,6 +150,16 @@ namespace Infomaniak.kDrive.Pages.Settings
             // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
+        private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (sender is Control control)
+            {
+                var currentForeground = control.Foreground;
+                control.Foreground = null;
+                control.Foreground = currentForeground;
+            }
+        }
+
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
         {
             User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;

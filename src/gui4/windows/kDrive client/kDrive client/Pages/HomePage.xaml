@@ -141,7 +141,8 @@
                       x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
-                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}"
+                  MaxWidth="277">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
@@ -150,7 +151,7 @@
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.offline}"
                                        PlayCount="1"
-                                       MaxWidth="180" />
+                                       MaxWidth="227" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -160,7 +161,7 @@
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                    <TextBlock Style="{StaticResource CaptionTextBlockStyle}"
                                Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
