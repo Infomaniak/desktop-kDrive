@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
 
-    private(set) var statusBarItem: NSStatusItem?
+    private(set) var statusBarManager: StatusBarManager?
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -41,8 +41,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         SentryService().initSentry()
+        statusBarManager = StatusBarManager()
 
-        setupStatusBarIcon()
         openMainWindow()
     }
 
@@ -68,13 +68,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow?.showWindow(nil)
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
-    }
-
-    private func setupStatusBarIcon() {
-        let statusBar = NSStatusBar.system
-
-        statusBarItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
-        statusBarItem?.button?.image = KDriveResources.kdriveNeutral.image
-        statusBarItem?.button?.action = #selector(openMainWindow)
     }
 }
