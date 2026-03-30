@@ -301,7 +301,8 @@
                     </Grid>
 
                     <ToggleSwitch Grid.Row="1"
-                                  IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
+                                  IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Mode=OneWay}"
+                                  IsOn="{x:Bind DriveSetupContentDialogVM.CurrentSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
                                   Toggled="LiteSyncToggleSwitch_Toggle" />
 
                     <TextBlock Grid.ColumnSpan="2"

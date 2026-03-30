@@ -216,7 +216,8 @@
         <Border Grid.Row="3"
                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                 CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                Visibility="{x:Bind IsStringEmptyToVisibility(AdvancedSyncSetupContentDialogVM.NewSync.LocalPath, x:True), Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -245,7 +246,8 @@
                 </Grid>
 
                 <ToggleSwitch Grid.Row="1"
-                              IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportLiteSync, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
+                              IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportLiteSync, Mode=OneWay}"
+                              IsOn="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
                               Toggled="LiteSyncToggleSwitch_Toggle" />
 
                 <TextBlock Grid.ColumnSpan="2"
