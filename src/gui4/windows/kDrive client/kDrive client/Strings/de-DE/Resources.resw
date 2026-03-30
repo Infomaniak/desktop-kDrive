@@ -436,7 +436,7 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</value>
    
   </data> 
   <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
-    <value>Zum Standardordner zurückehren</value> 
+    <value>Zum Standardordner zurückkehren</value> 
    
   </data> 
   <data name="buttonSave" xml:space="preserve"> 
