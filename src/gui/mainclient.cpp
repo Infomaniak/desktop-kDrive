@@ -143,7 +143,8 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+    // Calling isSystemTrayAvailable() with appmenu-qt5 can hide the tray icon (issue #4693).
+    if (qgetenv("QT_QPA_PLATFORMTHEME") != "appmenu-qt5" && !QSystemTrayIcon::isSystemTrayAvailable()) {
         // If the systemtray is not there, we will wait one second for it to maybe start
         // (eg boot time) then we show the settings dialog if there is still no systemtray.
         // On XFCE however, we show a message box with explanation how to install a systemtray.
