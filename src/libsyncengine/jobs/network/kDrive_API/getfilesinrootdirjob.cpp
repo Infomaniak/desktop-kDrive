@@ -49,15 +49,17 @@ ExitInfo GetFilesInRootDirJob::runJob() {
                                                   _driveDbId, ApiTranslator::v2RootFolderRemoteId(), translateV2ToV3)
                                         : std::make_shared<GetAllFilesInDirectoryJob>(
                                                   _userDbId, _driveId, ApiTranslator::v2RootFolderRemoteId(), translateV2ToV3);
-        } catch (const std::exception &e) {
-            LOG_WARN(Log::instance()->getLogger(), getConstructorFailureLogMessage(e));
+        } catch (const std::bad_alloc &badAllocationException) {
+            return exception2ExitCode(badAllocationException);
+        } catch (const JobException &e) {
+            LOG_WARN(_logger, getConstructorFailureLogMessage(e));
 
             return exception2ExitCode(e);
         }
 
         getRootListJob->setListingConf(_listingConf);
         if (const auto exitInfo = getRootListJob->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), getRunSynchronouslyFailureLogMessage(exitInfo));
+            LOG_WARN(_logger, getRunSynchronouslyFailureLogMessage(exitInfo));
 
             return exitInfo;
         }
@@ -73,6 +75,46 @@ ExitInfo GetFilesInRootDirJob::runJob() {
     }
 
     return ExitCode::Ok;
+}
+
+std::string getFileListConstructorErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId,
+                                           const JobException &e) {
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                                                   : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId, const ExitInfo &exitInfo) {
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                   : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
+std::string getFileListConstructorErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                           const JobException &e) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
+                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                    const ExitInfo &exitInfo) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
 }
 
 } // namespace KDC
