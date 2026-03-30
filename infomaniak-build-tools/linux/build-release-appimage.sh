@@ -198,7 +198,7 @@ function clean_app_directory() {
 
   echo "  Removing Qt development tools..."
   cd ./usr/libexec
-  ls | xargs rm -f
+  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -delete
   cd /app
 
   # Remove development plugins
@@ -220,7 +220,7 @@ function clean_app_directory() {
   # Remove unnecessary platform plugins (keep only xcb and wayland)
   echo "  Removing unnecessary platform plugins..."
   cd ./usr/plugins/platforms
-  ls | grep -vE "^libqxcb\.so$|^libqwayland" | xargs rm -f
+  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqxcb.so" ! -name "libqwayland*" -delete
   cd /app
 
   # Remove egldeviceintegrations (embedded systems)
@@ -229,7 +229,7 @@ function clean_app_directory() {
   # Remove unnecessary SQL drivers (keep only sqlite)
   echo "  Removing unnecessary SQL drivers..."
   cd ./usr/plugins/sqldrivers
-  ls | grep -v "libqsqlite.so" | xargs rm -f
+  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqsqlite.so" -delete
   cd /app
 
   # Clean translations - keep only de, es, fr, it, en
@@ -242,7 +242,8 @@ function clean_app_directory() {
   # For other Qt translations, keep only supported languages
   for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebsockets; do
     # Remove all except de, es, fr, it, en
-    ls ${prefix}_*.qm 2>/dev/null | grep -vE "_(de|es|fr|it|en)\.qm$" | xargs rm -f 2>/dev/null || true
+    find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name "${prefix}_*.qm" \
+      ! -name "*_de.qm" ! -name "*_es.qm" ! -name "*_fr.qm" ! -name "*_it.qm" ! -name "*_en.qm" -delete
   done
 
   cd /app
@@ -397,4 +398,3 @@ if [ ! "$?" -eq "0" ]; then
 fi
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."
-
