@@ -103,7 +103,7 @@ class OperationSorterWorker : public OperationProcessor {
          */
         void fixMoveBeforeMoveHierarchyFlip();
 
-        std::optional<const std::reference_wrapper<SyncOperationList>> fixImpossibleFirstMoveOp();
+        bool fixImpossibleFirstMoveOp(SyncOperationList &syncOperationList);
         bool breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp);
         /**
          * @brief Move `opFirst` immediately after `opSecond` in the sorted operation list.
