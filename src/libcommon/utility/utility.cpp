@@ -1133,7 +1133,12 @@ void CommonUtility::initAppImageEnvironment() {
             }
         } else {
             // Fallback if APPDIR is not set (should not happen in a proper AppImage)
-            _workingDirPath /= "usr/bin";
+            // Use APPIMAGE environment variable to determine the AppImage location
+            const std::string appImagePath = envVarValue("APPIMAGE");
+            if (!appImagePath.empty()) {
+                _workingDirPath = KDC::SyncPath(appImagePath).parent_path() / "usr/bin";
+            }
+            // If neither APPDIR nor APPIMAGE is set, leave _workingDirPath as is
         }
     }
 }
