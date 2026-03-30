@@ -47,15 +47,18 @@ enum StatusItemState {
 
 @MainActor
 final class StatusBarManager {
-    private var statusItem: NSStatusItem
+    static let autosaveName = "kdrive.statusbaritem"
 
+    private var statusItem: NSStatusItem
     private var cancellable: AnyCancellable?
 
     init() {
         let statusBar = NSStatusBar.system
 
         statusItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem.autosaveName = StatusBarManager.autosaveName
         statusItem.button?.image = StatusItemState.idle.icon
+
         statusItem.button?.action = #selector(AppDelegate.openMainWindow)
 
         observeSynchros()
