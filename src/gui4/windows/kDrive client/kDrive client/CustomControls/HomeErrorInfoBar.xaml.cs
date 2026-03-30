@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.CustomControls
         public async Task<bool> ResolveDriveFullError()
         {
             if (ViewModel.SelectedSync is null)
-                return true;
+                return false;
 
             ViewModel.SelectedSync.Drive.DisplayRemoteSpaceWarning = false;
             return true;
@@ -178,8 +178,15 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private bool HasTmpDirAccessError() =>
-            ViewModel.AppErrors.Any(e => e.ExitCause == Types.ExitCause.TmpDirAccessError);
+        private bool HasTmpDirAccessError()
+        {
+            bool result = ViewModel.AppErrors.Any(e => e.ExitCause == Types.ExitCause.TmpDirAccessError);
+
+            if (result || ViewModel.SelectedSync is null)
+                return result;
+
+            return ViewModel.SelectedSync.SyncErrors.Any(e => e.ExitCause == Types.ExitCause.TmpDirAccessError);
+        }
 
         private bool HasDriveFullError() =>
             ViewModel.SelectedSync?.Drive.DisplayRemoteSpaceWarning ?? false;

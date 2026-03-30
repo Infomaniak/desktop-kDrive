@@ -21,6 +21,7 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -372,7 +373,12 @@ namespace Infomaniak.kDrive.ViewModels
                 HasExcludedFolder = excludedNodeIds is not null && excludedNodeIds.Count > 0;
                 Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
             });
+        }
 
+        public Visibility GetSyncSelectorInfoBadgeVisibility(IList<Error> errors, Sync selectedSync)
+        {
+            bool isVisible = selectedSync is not null && errors.Any() && selectedSync != this;
+            return isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

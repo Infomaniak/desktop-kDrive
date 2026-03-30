@@ -572,7 +572,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     SyncPath cacheDirectoryPath;
     if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
         LOGW_WARN(_logger, L"Failed to get cache directory");
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
 
     std::ofstream output;
@@ -585,7 +585,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
             const bool enoughSpace = Utility::enoughSpace(_tmpPath);
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
                                                             << (enoughSpace ? L"file access error." : L"not enough space."));
-            return {ExitCode::SystemError, enoughSpace ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
+            return {ExitCode::SystemError, enoughSpace ? ExitCause::TmpDirAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
         output.seekp(0, std::ios_base::end);
