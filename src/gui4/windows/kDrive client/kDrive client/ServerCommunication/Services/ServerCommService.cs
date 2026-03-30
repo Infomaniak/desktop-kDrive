@@ -1637,8 +1637,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
                 {
-                    // We never want to remove an item that as sucessfully completed
-                    if (item.Status == SyncFileStatus.Success)
+                    // We never want to remove an item that has successfully completed or is still syncing
+                    if (item.Status == SyncFileStatus.Success || item.Status == SyncFileStatus.Syncing)
                         return false;
 
 

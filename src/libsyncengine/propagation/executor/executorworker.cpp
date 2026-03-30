@@ -150,6 +150,16 @@ void ExecutorWorker::execute() {
 
         if (job) {
             job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
+
+            const auto progressPercentCallback = [job, this](UniqueId,
+                                                             int progress // %
+                                                 ) {
+                if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+                }
+            };
+            job->setProgressPercentCallback(progressPercentCallback);
+
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             (void) _ongoingJobs.try_emplace(job->jobId(), job);
             (void) _jobToSyncOpMap.try_emplace(job->jobId(), syncOp);
