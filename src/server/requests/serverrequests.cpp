@@ -839,30 +839,6 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const QString &local
                    syncInfo);
 }
 
-namespace {
-
-std::string getFileListConstructorErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId,
-                                           const std::exception &e) {
-    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
-                                                                   : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
-    std::stringstream ss;
-    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " error=" << e.what();
-
-    return ss.str();
-}
-
-std::string getFileListExecErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId, const ExitInfo &exitInfo) {
-    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
-                                                                   : " GetAllFilesInDirectoryJob::runSynchronously";
-    std::stringstream ss;
-    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " ExitInfo:" << exitInfo;
-
-    return ss.str();
-}
-
-} // namespace
-
-
 ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &nodeId,
                                        RemoteNodeInfoList &list, const bool withPath /*= false*/) {
     list.clear();
@@ -874,7 +850,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
         } else {
             job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, nodeId, TranslationMode::V2ToV3);
         }
-    } catch (const std::exception &e) {
+    } catch (const JobException &e) {
         LOG_WARN(Log::instance()->getLogger(), getFileListConstructorErrorMsg(job.get(), userDbId, driveId, e));
         return exception2ExitCode(e);
     }
