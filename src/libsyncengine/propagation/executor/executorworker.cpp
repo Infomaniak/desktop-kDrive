@@ -426,32 +426,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     return ExitCode::Ok;
 }
 
-namespace {
-std::string getFileListConstructorErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
-                                           const std::exception &e) {
-    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
-                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
-                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
-    std::stringstream ss;
-    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " error=" << e.what();
-
-    return ss.str();
-}
-
-std::string getFileListExecErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
-                                    const ExitInfo &exitInfo) {
-    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
-                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
-    std::stringstream ss;
-    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " ExitInfo:" << exitInfo;
-
-    return ss.str();
-}
-
-} // namespace
-
-
-ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
+ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const RemoteNodeId &parentId) {
     constexpr auto maxNumberOfItemsParRequest = 1000;
     std::shared_ptr<FileListJob> job = nullptr;
 
