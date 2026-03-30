@@ -49,6 +49,8 @@ clang-format -i <file>
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
+- In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
+- For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 <!-- Add project-specific user corrections here -->
 
 ## JIT Index
