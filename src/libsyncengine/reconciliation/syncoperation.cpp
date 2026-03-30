@@ -92,7 +92,8 @@ std::vector<SyncOpPtr> SyncOperationList::getOpsFromTargetNodeId(const NodeId &n
     for (const auto opId: _nodeIdTarget2ops[nodeId]) {
         const auto opPtr = _allOps[opId];
         // Filter by side, type and path
-        if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->relativeDestinationPath() == relativePath)
+        if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
+            opPtr->correspondingNode()->getPath() == relativePath)
             opPtrList.push_back(opPtr);
     }
     return opPtrList;
