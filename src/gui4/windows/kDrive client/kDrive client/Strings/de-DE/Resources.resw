@@ -72,4 +72,2053 @@
   <metadata name="locoLocaleName" xml:space="preserve">
     <value>German</value>
   </metadata> 
+  <data name="aboutAppVersionCopyright" xml:space="preserve"> 
+    <value>Version %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
+   
+  </data> 
+  <data name="aboutKDrive" xml:space="preserve"> 
+    <value>Über kDrive</value> 
+   
+  </data> 
+  <data name="aboutKDriveDescription" xml:space="preserve"> 
+    <value>In der Schweiz entwickelt und gehostet, gewährleistet kDrive den vollständigen Schutz Ihrer Daten, ohne Weiterverkauf oder Überwachung, in ISO-zertifizierten Rechenzentren, mit Verschlüsselung und Sicherung auf mehreren Medien.</value> 
+   
+  </data> 
+  <data name="accessibilityActivityTypePicker" xml:space="preserve"> 
+    <value>Sichtbare Aktivitäten</value> 
+   
+  </data> 
+  <data name="activitiesTitleIdle" xml:space="preserve"> 
+    <value>Synchronisierung abgeschlossen</value> 
+   
+  </data> 
+  <data name="activitiesTitleInProgress" xml:space="preserve"> 
+    <value>Synchronisierung läuft</value> 
+   
+  </data> 
+  <data name="activitiesTitleNoActivity" xml:space="preserve"> 
+    <value>Keine aktuellen Aktivitäten</value> 
+   
+  </data> 
+  <data name="activitiesTitleOffline" xml:space="preserve"> 
+    <value>Sie sind offline</value> 
+   
+  </data> 
+  <data name="activitiesTitlePause" xml:space="preserve"> 
+    <value>Synchronisierung pausiert</value> 
+   
+  </data> 
+  <data name="activitiesTypeAllActivities" xml:space="preserve"> 
+    <value>Alle Aktivitäten</value> 
+   
+  </data> 
+  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
+    <value>Nur meine Aktivitäten</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Einen Ordner mit kDrive synchronisieren</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Wählen Sie den Ordner auf Ihrem Computer aus, der mit kDrive synchronisiert werden soll:</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Synchronisierter Ordner</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Passen Sie den Speicherort Ihres Computerordners auf kDrive an:</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Wählen Sie den Ordnerstandort auf kDrive aus</value> 
+   
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>kDrive-Speicherort</value> 
+   
+  </data> 
+  <data name="advancedSyncDescription" xml:space="preserve"> 
+    <value>Wählen Sie einen Ordner auf Ihrem Computer aus, der mit kDrive synchronisiert werden soll.
+Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerksauswahl auf der Startseite zugreifen.</value> 
+   
+  </data> 
+  <data name="advancedSyncSubtitle" xml:space="preserve"> 
+    <value>Einen Ordner mit kDrive synchronisieren</value> 
+   
+  </data> 
+  <data name="advancedSyncTitle" xml:space="preserve"> 
+    <value>Erweiterte Synchronisierung</value> 
+   
+  </data> 
+  <data name="appUpToDate" xml:space="preserve"> 
+    <value>Die Anwendung ist auf dem neuesten Stand</value> 
+   
+  </data> 
+  <data name="applyingChange" xml:space="preserve"> 
+    <value>Änderung wird angewendet…</value> 
+   
+  </data> 
+  <data name="autoCleanupLogsDescription" xml:space="preserve"> 
+    <value>Löscht Protokolle, die älter als 7 Tage sind, um Speicherplatz zu sparen.</value> 
+   
+  </data> 
+  <data name="autoCleanupLogsSetting" xml:space="preserve"> 
+    <value>Automatische Bereinigung</value> 
+   
+  </data> 
+  <data name="automaticUpdatesSetting" xml:space="preserve"> 
+    <value>Automatische Aktualisierungen</value> 
+   
+  </data> 
+  <data name="availableOffline" xml:space="preserve"> 
+    <value>Offline verfügbar</value> 
+   
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien werden auf Ihren Computer kopiert.
+Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</value> 
+   
+  </data> 
+  <data name="backErrorDriveAccessErrorDescription" xml:space="preserve"> 
+    <value>Sie haben keine Berechtigung, auf dieses kDrive zuzugreifen. Bitte überprüfen Sie Ihre Rechte oder wenden Sie sich an Ihren Administrator.</value> 
+   
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>Sie können es über die Web-Oberfläche aktivieren.</value> 
+   
+  </data> 
+  <data name="betaProgramDescription" xml:space="preserve"> 
+    <value>Erhalten Sie frühzeitigen Zugriff auf neue Versionen der Anwendung, bevor diese für die Öffentlichkeit veröffentlicht werden, und helfen Sie, die App zu verbessern, indem Sie Ihre Verbesserungsideen mit uns teilen.</value> 
+   
+  </data> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Am Beta-Programm teilnehmen</value> 
+   
+  </data> 
+  <data name="browserSignInInstruction" xml:space="preserve"> 
+    <value>Ihr Browser sollte sich automatisch öffnen, um die Anmeldung abzuschließen. Nach der Anmeldung werden Sie automatisch zu kDrive zurückgeleitet.</value> 
+   
+  </data> 
+  <data name="butonRestartSignIn" xml:space="preserve"> 
+    <value>Anmeldung neu starten</value> 
+   
+  </data> 
+  <data name="buttonActivateOfflineSync" xml:space="preserve"> 
+    <value>Offline-Synchronisierung aktivieren</value> 
+   
+  </data> 
+  <data name="buttonAddAdvancedSync" xml:space="preserve"> 
+    <value>Einen Ordner synchronisieren</value> 
+   
+  </data> 
+  <data name="buttonAddFileExclusionRule" xml:space="preserve"> 
+    <value>Eine Regel hinzufügen</value> 
+   
+  </data> 
+  <data name="buttonAddStorage" xml:space="preserve"> 
+    <value>Speicher hinzufügen</value> 
+   
+  </data> 
+  <data name="buttonAdvancedParameters" xml:space="preserve"> 
+    <value>Erweiterte Einstellungen</value> 
+   
+  </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Auf %@ Dateien anwenden</value> 
+   
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value>Zugriff anfragen</value> 
+   
+  </data> 
+  <data name="buttonCancel" xml:space="preserve"> 
+    <value>Abbrechen</value> 
+   
+  </data> 
+  <data name="buttonChangeFolder" xml:space="preserve"> 
+    <value>Ordner ändern</value> 
+   
+  </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Offline speichern</value> 
+   
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Online speichern</value> 
+   
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Benutzer wechseln</value> 
+   
+  </data> 
+  <data name="buttonClose" xml:space="preserve"> 
+    <value>Schließen</value> 
+   
+  </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>kDrive schließen</value> 
+   
+  </data> 
+  <data name="buttonConfigure" xml:space="preserve"> 
+    <value>Konfigurieren</value> 
+   
+  </data> 
+  <data name="buttonConfirm" xml:space="preserve"> 
+    <value>Bestätigen</value> 
+   
+  </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Anmelden</value> 
+   
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Ein Konto verbinden</value> 
+   
+  </data> 
+  <data name="buttonCopyShareLink" xml:space="preserve"> 
+    <value>Freigabelink kopieren</value> 
+   
+  </data> 
+  <data name="buttonCreateAccount" xml:space="preserve"> 
+    <value>Ein Konto erstellen</value> 
+   
+  </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Eine neue Synchronisierung erstellen</value> 
+   
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Benutzerdefinierter Speicherort</value> 
+   
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Dieses Konto trennen</value> 
+   
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Aktivieren</value> 
+   
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>In den Windows-Einstellungen aktivieren</value> 
+   
+  </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Das Problem verstehen</value> 
+   
+  </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Eine Idee teilen</value> 
+   
+  </data> 
+  <data name="buttonFixErrors" xml:space="preserve"> 
+    <value>Fehler beheben</value> 
+   
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Support</value> 
+   
+  </data> 
+  <data name="buttonKDriveOnline" xml:space="preserve"> 
+    <value>kDrive online</value> 
+   
+  </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Konto behalten</value> 
+   
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Abmelden</value> 
+   
+  </data> 
+  <data name="buttonLogin" xml:space="preserve"> 
+    <value>Anmelden</value> 
+   
+  </data> 
+  <data name="buttonManage" xml:space="preserve"> 
+    <value>Verwalten</value> 
+   
+  </data> 
+  <data name="buttonManageDiskSpace" xml:space="preserve"> 
+    <value>Speicherplatz verwalten</value> 
+   
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Dateien einzeln verwalten</value> 
+   
+  </data> 
+  <data name="buttonManageStorage" xml:space="preserve"> 
+    <value>Speicher verwalten</value> 
+   
+  </data> 
+  <data name="buttonOpenDebugFolder" xml:space="preserve"> 
+    <value>Debug-Ordner öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenExplorer" xml:space="preserve"> 
+    <value>Explorer öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenFolder" xml:space="preserve"> 
+    <value>Ordner öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenInBrowser" xml:space="preserve"> 
+    <value>Im Browser öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenInExplorer" xml:space="preserve"> 
+    <value>In Explorer öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenInKDrive" xml:space="preserve"> 
+    <value>In kDrive Web öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenKDrive" xml:space="preserve"> 
+    <value>kDrive öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Übergeordneten Ordner öffnen</value> 
+   
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Ausschlüsse verwalten</value> 
+   
+  </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Synchronisierungseinstellungen öffnen</value> 
+   
+  </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Pausieren</value> 
+   
+  </data> 
+  <data name="buttonRefresh" xml:space="preserve"> 
+    <value>Aktualisieren</value> 
+   
+  </data> 
+  <data name="buttonReleaseNotes" xml:space="preserve"> 
+    <value>Versionshinweise</value> 
+   
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Entfernen</value> 
+   
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Synchronisierung entfernen</value> 
+   
+  </data> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
+    <value>%@ umbenennen</value> 
+   
+  </data> 
+  <data name="buttonRestartSignIn" xml:space="preserve"> 
+    <value>Anmeldung neu starten</value> 
+   
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Synchronisierung fortsetzen</value> 
+   
+  </data> 
+  <data name="buttonRestartSynchro" xml:space="preserve"> 
+    <value>Synchronisierung neu starten</value> 
+   
+  </data> 
+  <data name="buttonRetry" xml:space="preserve"> 
+    <value>Erneut versuchen</value> 
+   
+  </data> 
+  <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
+    <value>Zum Standardordner zurückehren</value> 
+   
+  </data> 
+  <data name="buttonSave" xml:space="preserve"> 
+    <value>Speichern</value> 
+   
+  </data> 
+  <data name="buttonSaveMyChoices" xml:space="preserve"> 
+    <value>Meine Auswahl speichern</value> 
+   
+  </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Suchen</value> 
+   
+  </data> 
+  <data name="buttonSeeActivities" xml:space="preserve"> 
+    <value>Aktivitäten anzeigen</value> 
+   
+  </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>Auswählen</value> 
+   
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Einen Ordner auswählen</value> 
+   
+  </data> 
+  <data name="buttonSelectFolders" xml:space="preserve"> 
+    <value>Ordner auswählen</value> 
+   
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Einen Speicherort auswählen</value> 
+   
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>Ausgewählt</value> 
+   
+  </data> 
+  <data name="buttonSend" xml:space="preserve"> 
+    <value>Senden</value> 
+   
+  </data> 
+  <data name="buttonSendLog" xml:space="preserve"> 
+    <value>Debug-Ordner senden</value> 
+   
+  </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Einstellungen öffnen</value> 
+   
+  </data> 
+  <data name="buttonShowOffers" xml:space="preserve"> 
+    <value>Angebote anzeigen</value> 
+   
+  </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Abmelden</value> 
+   
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Starten</value> 
+   
+  </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Versionsauswahl starten</value> 
+   
+  </data> 
+  <data name="buttonStartForFree" xml:space="preserve"> 
+    <value>Kostenlos starten</value> 
+   
+  </data> 
+  <data name="buttonSynchronizeOffline" xml:space="preserve"> 
+    <value>Offline synchronisieren</value> 
+   
+  </data> 
+  <data name="buttonUpdate" xml:space="preserve"> 
+    <value>Aktualisieren</value> 
+   
+  </data> 
+  <data name="buttonUpdateSubscription" xml:space="preserve"> 
+    <value>Abonnement aktualisieren</value> 
+   
+  </data> 
+  <data name="buttonUpgradeOffer" xml:space="preserve"> 
+    <value>Upgraden</value> 
+   
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Bestätigen</value> 
+   
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Bestätigen und weiter</value> 
+   
+  </data> 
+  <data name="buttonWakeUp" xml:space="preserve"> 
+    <value>Aktivieren</value> 
+   
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Eine Version auswählen</value> 
+   
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Zwei verschiedene Versionen dieser Dateien wurden erkannt.</value> 
+   
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Versionskonflikte</value> 
+   
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Nach einer Datei suchen</value> 
+   
+  </data> 
+  <data name="creatingShareLink" xml:space="preserve"> 
+    <value>Freigabelink wird erstellt…</value> 
+   
+  </data> 
+  <data name="dataManagementDescription" xml:space="preserve"> 
+    <value>Sie können die von Infomaniak erfassten Nutzungs- und Betriebsdaten anpassen, um Fehler zu beheben und die Anwendung zu verbessern. Beide verwendeten Tools werden ausschließlich von uns gehostet und verwaltet.
+
+
+Der Quellcode dieser Anwendung kann überprüft werden, die gesammelten Informationen sind anonym und Ihre persönlichen Daten bleiben streng vertraulich und werden niemals an Dritte weitergegeben.</value> 
+   
+  </data> 
+  <data name="dataManagementSettings" xml:space="preserve"> 
+    <value>Datenverwaltung</value> 
+   
+  </data> 
+  <data name="dataManagementSubtitle" xml:space="preserve"> 
+    <value>Infomaniak respektiert Ihre Privatsphäre</value> 
+   
+  </data> 
+  <data name="debugLevelDescription" xml:space="preserve"> 
+    <value>Wählen Sie die Menge der zu protokollierenden Informationen aus.</value> 
+   
+  </data> 
+  <data name="debugLevelSetting" xml:space="preserve"> 
+    <value>Debug-Stufe</value> 
+   
+  </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>Ermöglicht dem Infomaniak-Support, die Ursache eines Vorfalls zu identifizieren.</value> 
+   
+  </data> 
+  <data name="debugLogsSettings" xml:space="preserve"> 
+    <value>Debug-Protokolle</value> 
+   
+  </data> 
+  <data name="defaultErrorDescription" xml:space="preserve"> 
+    <value>Die Synchronisierung wird automatisch neu gestartet.
+Wenn das Problem weiterhin besteht, wenden Sie sich an unseren Support und fügen Sie die nachstehenden technischen Details bei.</value> 
+   
+  </data> 
+  <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
+    <value>Technische Details</value> 
+   
+  </data> 
+  <data name="defaultErrorTitle" xml:space="preserve"> 
+    <value>Ein unerwarteter Fehler ist aufgetreten</value> 
+   
+  </data> 
+  <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
+    <value>Diese Dateien sind standardmäßig ausgeschlossen und können nicht geändert werden.</value> 
+   
+  </data> 
+  <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
+    <value>Automatischer Ausschluss</value> 
+   
+  </data> 
+  <data name="deleteCancelErrorTitle" xml:space="preserve"> 
+    <value>Löschvorgang abgebrochen</value> 
+   
+  </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>In diesen Situationen ist eine neue Synchronisierung erforderlich, um kDrive korrekt weiter zu verwenden.</value> 
+   
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Bitte wählen Sie einen leeren Ordner aus, der sich nicht im Stammverzeichnis eines Laufwerks befindet.
+
+Dieser Ordner darf nicht in einem anderen Synchronisierungsordner enthalten sein und darf keinen Synchronisierungsunterordner enthalten.</value> 
+   
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Dieser Ordner kann nicht ausgewählt werden</value> 
+   
+  </data> 
+  <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
+    <value>Eine Regel hinzufügen</value> 
+   
+  </data> 
+  <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
+    <value>Eine Ausschlussregel hinzufügen</value> 
+   
+  </data> 
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Sie sind dabei, %@ von der Anwendung zu trennen.
+Der Synchronisierungsordner verbleibt auf Ihrem Computer, wird jedoch nicht mehr mit kDrive synchronisiert.
+
+Alle Ihre Daten bleiben online auf kDrive zugänglich.</value> 
+   
+  </data> 
+  <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
+    <value>Von diesem Konto abmelden?</value> 
+   
+  </data> 
+  <data name="dialogSyncDeletionWarningContent" xml:space="preserve"> 
+    <value>Der lokale Ordner verbleibt auf Ihrem Computer, wird jedoch nicht mehr mit kDrive synchronisiert.
+Diese Aktion ist dauerhaft.
+Um Ihr Laufwerk erneut zu synchronisieren, müssen Sie es später neu verbinden.
+
+Stellen Sie vor dem Fortfahren sicher, dass alle Ihre Dateien auf dem neuesten Stand und vollständig synchronisiert sind.</value> 
+   
+  </data> 
+  <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
+    <value>Synchronisierung entfernen?</value> 
+   
+  </data> 
+  <data name="dialogSyncModeChangeErrorContent" xml:space="preserve"> 
+    <value>Die Änderung des Synchronisierungsmodus wurde abgebrochen.
+
+Die aktuelle Synchronisierung bleibt unverändert. Wenn jedoch ein abnormales Verhalten auftritt, müssen Sie möglicherweise die Synchronisierung löschen und neu erstellen, um den ordnungsgemäßen Betrieb wiederherzustellen.</value> 
+   
+  </data> 
+  <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
+    <value>Ein Fehler ist aufgetreten</value> 
+   
+  </data> 
+  <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
+    <value>Dieser Vorgang kann je nach Größe Ihrer Daten einige Zeit in Anspruch nehmen. Wenn er fehlschlägt, kann eine vollständige Neusynchronisierung des Laufwerks erforderlich sein.
+
+Stellen Sie vor dem Fortfahren sicher, dass alle Ihre Dateien auf dem neuesten Stand und synchronisiert sind.
+
+Schließen Sie die Anwendung während des Vorgangs nicht.</value> 
+   
+  </data> 
+  <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
+    <value>Synchronisierungsmodus ändern?</value> 
+   
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>So stellen Sie die Synchronisierung wieder her:</value> 
+   
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>Das Laufwerk, das Ihren Synchronisierungsordner enthält, ist nicht mehr verbunden</value> 
+   
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Verbinden Sie es erneut, um die Synchronisierung fortzusetzen.</value> 
+   
+  </data> 
+  <data name="disableNotificationsSetting" xml:space="preserve"> 
+    <value>Benachrichtigungen deaktivieren</value> 
+   
+  </data> 
+  <data name="doNotJoin" xml:space="preserve"> 
+    <value>Nicht beitreten</value> 
+   
+  </data> 
+  <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
+    <value>Sie haben keine Berechtigung, auf dieses kDrive zuzugreifen.
+Bitte überprüfen Sie Ihre Berechtigungen oder wenden Sie sich an Ihren Administrator.</value> 
+   
+  </data> 
+  <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
+    <value>Zugriff auf kDrive verweigert</value> 
+   
+  </data> 
+  <data name="driveAsleepErrorTitle" xml:space="preserve"> 
+    <value>Ihr kDrive befindet sich im Ruhemodus</value> 
+   
+  </data> 
+  <data name="driveLockedAdminErrorDescription" xml:space="preserve"> 
+    <value>Dieses kDrive wurde nicht verlängert. Sie können nicht mehr darauf zugreifen.
+Erneuern Sie Ihr Abonnement, um den Dienst zu reaktivieren.</value> 
+   
+  </data> 
+  <data name="driveLockedErrorDescription" xml:space="preserve"> 
+    <value>Dieses kDrive wurde nicht verlängert. Sie können nicht mehr darauf zugreifen.
+Wenden Sie sich an Ihren Administrator, um den Dienst zu reaktivieren.</value> 
+   
+  </data> 
+  <data name="driveLockedErrorTitle" xml:space="preserve"> 
+    <value>Ihr kDrive ist abgelaufen</value> 
+   
+  </data> 
+  <data name="driveLoggingErrorDescription" xml:space="preserve"> 
+    <value>Melden Sie sich erneut an, um kDrive weiterhin zu verwenden.</value> 
+   
+  </data> 
+  <data name="driveLoggingErrorTitle" xml:space="preserve"> 
+    <value>Sie wurden abgemeldet</value> 
+   
+  </data> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
+    <value>Das für diese Verbindung verwendete Konto stimmt nicht mit dem Konto für dieses kDrive überein.
+Bitte melden Sie sich erneut mit der korrekten E-Mail-Adresse %@ an</value> 
+   
+  </data> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
+    <value>Dieses Konto stimmt nicht überein</value> 
+   
+  </data> 
+  <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
+    <value>kDrive wird aktiviert… dies kann einen Moment dauern.</value> 
+   
+  </data> 
+  <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
+    <value>kDrive wird aktiviert</value> 
+   
+  </data> 
+  <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
+    <value>Doppelte Namen</value> 
+   
+  </data> 
+  <data name="editCancelErrorTitle" xml:space="preserve"> 
+    <value>Bearbeitung abgebrochen</value> 
+   
+  </data> 
+  <data name="enableDebugLogDescription" xml:space="preserve"> 
+    <value>Diagnoseinformationen auf meinem Computer aufzeichnen.</value> 
+   
+  </data> 
+  <data name="enableDebugLogsSetting" xml:space="preserve"> 
+    <value>Debug-Protokollierung aktivieren</value> 
+   
+  </data> 
+  <data name="enterPasswordPlaceholder" xml:space="preserve"> 
+    <value>Geben Sie Ihr Passwort ein</value> 
+   
+  </data> 
+  <data name="errCreateCancelDescription" xml:space="preserve"> 
+    <value>Sie haben nicht die erforderlichen Berechtigungen, um %@ zu diesem Speicherort hinzuzufügen.
+Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value> 
+   
+  </data> 
+  <data name="errDeleteCancelDescription" xml:space="preserve"> 
+    <value>Sie haben keine Berechtigung, %@ zu löschen. Es wurde an seinen ursprünglichen Speicherort wiederhergestellt. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value> 
+   
+  </data> 
+  <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
+    <value>Eine Änderung in Ihrer Konfiguration wurde erkannt</value> 
+   
+  </data> 
+  <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>In diesen Situationen kann eine neue Synchronisierung erforderlich sein, um kDrive korrekt weiter zu verwenden.</value> 
+   
+  </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Die Zugriffsberechtigungen für %@ wurden geändert, was die Synchronisierung verhindert.</value> 
+   
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Überprüfen Sie %@, um den Zugriff wiederherzustellen</value> 
+   
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Letzter Speicherort von %@:</value> 
+   
+  </data> 
+  <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
+    <value>Externes Laufwerk getrennt</value> 
+   
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Dieser Vorgang kann je nach Datenmenge einige Zeit in Anspruch nehmen.
+
+Schließen Sie die Anwendung während des Vorgangs nicht.
+
+Wenn er fehlschlägt, können Sie einfach eine vollständige Neusynchronisierung des Laufwerks starten oder unseren Support kontaktieren.</value> 
+   
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Offline-Synchronisierung aktivieren</value> 
+   
+  </data> 
+  <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
+    <value>Dieses kDrive ist vorübergehend aufgrund von Wartungsarbeiten nicht verfügbar.
+Bitte versuchen Sie es in einigen Minuten erneut.</value> 
+   
+  </data> 
+  <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
+    <value>Wartung in Bearbeitung</value> 
+   
+  </data> 
+  <data name="errDuplicateNamesDescription" xml:space="preserve"> 
+    <value>Eine Datei oder ein Ordner mit diesem Namen existiert bereits.</value> 
+   
+  </data> 
+  <data name="errEditCancelDescription" xml:space="preserve"> 
+    <value>Sie haben keine Rechte, diese Datei zu bearbeiten.
+Die Originalversion wurde beibehalten und Ihre Bearbeitung wurde in einer separaten Datei mit „Konflikt“ im Namen gespeichert. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value> 
+   
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Der Name dieses %@ endet mit einem Leerzeichen, was die Synchronisierung verhindert. Benennen Sie %@ über kDrive online um.</value> 
+   
+  </data> 
+  <data name="errEndWithSpaceTitle" xml:space="preserve"> 
+    <value>Abschließendes Leerzeichen im Namen von %@</value> 
+   
+  </data> 
+  <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
+    <value>Eine Ausschlussregel verhindert die Synchronisierung dieses %@.</value> 
+   
+  </data> 
+  <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
+    <value>Von der Synchronisierung ausgeschlossen</value> 
+   
+  </data> 
+  <data name="errFileExistsDescription" xml:space="preserve"> 
+    <value>Eine Datei mit diesem Namen existiert bereits.</value> 
+   
+  </data> 
+  <data name="errFileLockedDescription" xml:space="preserve"> 
+    <value>Diese Datei wird derzeit von einem anderen Benutzer verwendet.
+Ihre Änderungen werden später synchronisiert.</value> 
+   
+  </data> 
+  <data name="errFileLockedTitle" xml:space="preserve"> 
+    <value>Datei gesperrt</value> 
+   
+  </data> 
+  <data name="errFileRescuedDescription" xml:space="preserve"> 
+    <value>Diese Datei wurde auf kDrive online gelöscht, während Sie sie bearbeiteten. Eine Kopie wurde auf Ihrem Computer im Wiederherstellungsordner gespeichert.</value> 
+   
+  </data> 
+  <data name="errFileRescuedTitle" xml:space="preserve"> 
+    <value>Datei gerettet</value> 
+   
+  </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
+Wenden Sie sich an den Support, um das Limit aufzuheben.</value> 
+   
+  </data> 
+  <data name="errFileTooBigDescription" xml:space="preserve"> 
+    <value>Diese Datei überschreitet die maximal zulässige Größe (50 GB).
+Wenden Sie sich an Ihren Administrator, um das Dateigrößenlimit zu erhöhen.</value> 
+   
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Datei zu groß</value> 
+   
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Zugriff verboten</value> 
+   
+  </data> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden. Benennen Sie %@ über kDrive online um.</value> 
+   
+  </data> 
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
+    <value>Dieser Name enthält nur Leerzeichen und kann nicht verwendet werden. Benennen Sie %@ über kDrive online um.</value> 
+   
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Ungültiger Name</value> 
+   
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
+   
+  </data> 
+  <data name="errGenericForbiddenDescription" xml:space="preserve"> 
+    <value>Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.
+Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value> 
+   
+  </data> 
+  <data name="errGenericForbiddenTitle" xml:space="preserve"> 
+    <value>Zugriff verboten</value> 
+   
+  </data> 
+  <data name="errHardlinkDescription" xml:space="preserve"> 
+    <value>Diese Datei ist ein Hardlink, der nicht synchronisiert werden kann.</value> 
+   
+  </data> 
+  <data name="errHardlinkTitle" xml:space="preserve"> 
+    <value>Nicht unterstützter Dateityp</value> 
+   
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.</value> 
+   
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synchronisierungsordner nicht gefunden</value> 
+   
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
+    <value>Eines Ihrer kDrives wird innerhalb des Synchronisierungsordners eines anderen kDrive synchronisiert.
+Verschieben Sie einen der Ordner, damit sie nicht mehr verschachtelt sind, oder löschen Sie Ihre Synchronisierung, um sie neu zu erstellen.</value> 
+   
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
+    <value>Verschachtelte kDrives</value> 
+   
+  </data> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Auf %@ kann auf Ihrem Computer nicht zugegriffen werden. Überprüfen Sie, ob es noch vorhanden ist und ob Sie die Rechte haben, darauf zuzugreifen.</value> 
+   
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>%@ nicht zugänglich</value> 
+   
+  </data> 
+  <data name="errMoveCancelDescription" xml:space="preserve"> 
+    <value>Sie haben keine Rechte, %@ hierhin zu verschieben; es wird an seinen ursprünglichen Speicherort wiederhergestellt. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value> 
+   
+  </data> 
+  <data name="errNameLengthDescription" xml:space="preserve"> 
+    <value>Dieser Name überschreitet die zulässige Länge (250 Zeichen). Benennen Sie %@ um.</value> 
+   
+  </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Name von %@ zu lang</value> 
+   
+  </data> 
+  <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
+    <value>Verbindung zu kDrive nicht möglich.
+Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederhergestellt ist.</value> 
+   
+  </data> 
+  <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
+    <value>Verbindung vorübergehend nicht verfügbar</value> 
+   
+  </data> 
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.</value> 
+   
+  </data> 
+  <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Unzureichender Speicherplatz</value> 
+   
+  </data> 
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
+    <value>Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung noch nicht unterstützt werden. Benennen Sie die Datei über kDrive online um.</value> 
+   
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Nicht unterstütztes Zeichen</value> 
+   
+  </data> 
+  <data name="errPathLengthDescription" xml:space="preserve"> 
+    <value>Der Pfad zu diesem %@ ist zu lang, um synchronisiert zu werden. Benennen Sie einen oder mehrere Ordner, in denen es sich befindet, um, um den Pfad zu verkürzen.</value> 
+   
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Pfad zu %@ zu lang</value> 
+   
+  </data> 
+  <data name="errQuotaExceededDescription" xml:space="preserve"> 
+    <value>Ihr kDrive ist voll. Geben Sie Speicherplatz frei oder upgraden Sie Ihr Abonnement, um %@ zu synchronisieren.</value> 
+   
+  </data> 
+  <data name="errQuotaExceededTitle" xml:space="preserve"> 
+    <value>Speicherlimit erreicht</value> 
+   
+  </data> 
+  <data name="errReservedNameDescription" xml:space="preserve"> 
+    <value>Dieser Name ist vom System Ihres Computers reserviert. Benennen Sie %@ über kDrive online um.</value> 
+   
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Name von %@ reserviert</value> 
+   
+  </data> 
+  <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Überprüfen Sie den Speicherort oder die Zugriffsrechte des Ordners.</value> 
+   
+  </data> 
+  <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synchronisierungsordner nicht zugänglich</value> 
+   
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Der Speicherplatz Ihres Geräts ist voll. Die Synchronisierung wurde pausiert. Geben Sie Speicherplatz frei, um die Synchronisierung fortzusetzen.</value> 
+   
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Unzureichender Speicherplatz</value> 
+   
+  </data> 
+  <data name="errSystemSyncDirChanged" xml:space="preserve"> 
+    <value>Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.</value> 
+   
+  </data> 
+  <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
+    <value>Dieser Ordner ist nicht mehr zugänglich. Eine Aktion ist erforderlich, um die Synchronisierung fortzusetzen.</value> 
+   
+  </data> 
+  <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
+    <value>Synchronisierungsordner nicht gefunden</value> 
+   
+  </data> 
+  <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Lite Sync kann nicht gestartet werden. Sie können Ihre Dateien weiterhin synchronisieren, indem Sie die Offline-Synchronisierung in den Einstellungen aktivieren. Wenden Sie sich an den Support, wenn das Problem weiterhin besteht.</value> 
+   
+  </data> 
+  <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Lite Sync kann nicht gestartet werden</value> 
+   
+  </data> 
+  <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
+    <value>Die Synchronisierung dieses Elements ist fehlgeschlagen. Es wird später automatisch erneut versucht.</value> 
+   
+  </data> 
+  <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
+    <value>Synchronisierung vorübergehend fehlgeschlagen</value> 
+   
+  </data> 
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
+    <value>Der Upload konnte nicht abgeschlossen werden. Bitte versuchen Sie es später erneut.</value> 
+   
+  </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Zu prüfende Dateien</value> 
+   
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Sonstige</value> 
+   
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Zu behebende Fehler</value> 
+   
+  </data> 
+  <data name="excludeRuleDescription" xml:space="preserve"> 
+    <value>Dateien, die dieser Regel entsprechen, werden nicht synchronisiert.</value> 
+   
+  </data> 
+  <data name="extendedLogDescription" xml:space="preserve"> 
+    <value>Aktiviert die Erfassung zusätzlicher Informationen, die für den Support nützlich sind.</value> 
+   
+  </data> 
+  <data name="extendedLogSetting" xml:space="preserve"> 
+    <value>Erweitertes detailliertes Protokoll</value> 
+   
+  </data> 
+  <data name="extendedLogWarning" xml:space="preserve"> 
+    <value>Wenn diese Option aktiviert ist, läuft kDrive langsamer.</value> 
+   
+  </data> 
+  <data name="failedToCreateShareLinkError" xml:space="preserve"> 
+    <value>Freigabelink konnte nicht erstellt werden</value> 
+   
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Helfen Sie uns, kDrive zu verbessern</value> 
+   
+  </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6</value> 
+   
+  </data> 
+  <data name="fileExistsErrorTitle" xml:space="preserve"> 
+    <value>Datei existiert bereits</value> 
+   
+  </data> 
+  <data name="fileSyncMode" xml:space="preserve"> 
+    <value>Dateisynchronisierungsmodus</value> 
+   
+  </data> 
+  <data name="fileSyncModeDescription" xml:space="preserve"> 
+    <value>Legen Sie fest, wie Ihre Dateien gespeichert und abgerufen werden.</value> 
+   
+  </data> 
+  <data name="filesToExclude" xml:space="preserve"> 
+    <value>Auszuschließende Dateien</value> 
+   
+  </data> 
+  <data name="folderFavorites" xml:space="preserve"> 
+    <value>Favoriten</value> 
+   
+  </data> 
+  <data name="folderShares" xml:space="preserve"> 
+    <value>Freigaben</value> 
+   
+  </data> 
+  <data name="folderTrash" xml:space="preserve"> 
+    <value>Papierkorb</value> 
+   
+  </data> 
+  <data name="forOneHour" xml:space="preserve"> 
+    <value>Für 1 Stunde</value> 
+   
+  </data> 
+  <data name="forOneWeek" xml:space="preserve"> 
+    <value>Für eine Woche</value> 
+   
+  </data> 
+  <data name="forThreeDays" xml:space="preserve"> 
+    <value>Für drei Tage</value> 
+   
+  </data> 
+  <data name="greetingLabel" xml:space="preserve"> 
+    <value>Hallo %@, %@</value> 
+   
+  </data> 
+  <data name="helpKDriveName" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+   
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/de/support</value> 
+   
+  </data> 
+  <data name="infomaniakSupport" xml:space="preserve"> 
+    <value>Infomaniak Support</value> 
+   
+  </data> 
+  <data name="informationBlockKDriveFullSubtitle" xml:space="preserve"> 
+    <value>Geben Sie Speicherplatz frei oder upgraden Sie Ihren Plan, um Ihre Dateien weiterhin zu synchronisieren.</value> 
+   
+  </data> 
+  <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
+    <value>Ihr kDrive ist voll</value> 
+   
+  </data> 
+  <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
+    <value>Einige Dateien konnten nicht synchronisiert werden.</value> 
+   
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>Wir können nicht auf Ihre Dateien zugreifen. Starten Sie die Anwendung neu, um die Synchronisierung fortzusetzen. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.</value> 
+   
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Verbindung zu kDrive unterbrochen</value> 
+   
+  </data> 
+  <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
+    <value>Dieses Element ist auf diesem Gerät nicht verfügbar.
+Es wird in Ihrem Browser geöffnet.</value> 
+   
+  </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value>Zugriffsrechte geändert</value> 
+   
+  </data> 
+  <data name="labelAgo" xml:space="preserve"> 
+    <value>Vor %@</value> 
+   
+  </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Alle Ordner</value> 
+   
+  </data> 
+  <data name="labelAllkDrive" xml:space="preserve"> 
+    <value>Alle kDrive</value> 
+   
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Tracking erlauben</value> 
+   
+  </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Autor</value> 
+   
+  </data> 
+  <data name="labelByDefault" xml:space="preserve"> 
+    <value>Standardmäßig</value> 
+   
+  </data> 
+  <data name="labelBytes" xml:space="preserve"> 
+    <value>B</value> 
+   
+  </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Wählen Sie aus, welche Version Ihrer Dateien Sie behalten möchten.</value> 
+   
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Wählen Sie für jede Datei die zu behaltende Version aus.</value> 
+   
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Welche Version möchten Sie behalten?</value> 
+   
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Zu behaltende Version auswählen</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value>Die Online-Versionen dieser %@ Dateien werden durch Ihre lokalen Versionen ersetzt.
+Achtung: Dies kann die Arbeit Ihrer Mitarbeiter überschreiben.</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value>Nur lokale Versionen behalten</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>Bei jedem Konflikt behalten wir automatisch die zuletzt geänderte Version (lokal oder online). Dies ist in den meisten Fällen die sicherste Wahl.</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>Die neuesten Versionen behalten</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value>Alle lokalen Änderungen für diese %@ Dateien werden verworfen.
+Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</value> 
+   
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value>Nur Online-Versionen behalten</value> 
+   
+  </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Melden Sie sich an, um zu beginnen.</value> 
+   
+  </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Eine %@ erstellen.</value> 
+   
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Datum</value> 
+   
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+   
+  </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>Datei</value> 
+   
+  </data> 
+  <data name="labelFolder" xml:space="preserve"> 
+    <value>Ordner</value> 
+   
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Ordner gelöscht</value> 
+   
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Ordner verschoben oder geändert</value> 
+   
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>Der Ordner wurde möglicherweise auf ein anderes Laufwerk verschoben und dann an seinen ursprünglichen Speicherort zurückgebracht.</value> 
+   
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>Ordner</value> 
+   
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Ordner verschoben oder umbenannt</value> 
+   
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Ordner neu erstellt oder ersetzt</value> 
+   
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>Der Ordner wurde gelöscht und neu erstellt oder durch einen anderen Ordner mit demselben Namen ersetzt.</value> 
+   
+  </data> 
+  <data name="labelGigaBytes" xml:space="preserve"> 
+    <value>GB</value> 
+   
+  </data> 
+  <data name="labelJustNow" xml:space="preserve"> 
+    <value>Gerade eben</value> 
+   
+  </data> 
+  <data name="labelKDriveVersion" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+   
+  </data> 
+  <data name="labelKiloBytes" xml:space="preserve"> 
+    <value>KB</value> 
+   
+  </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Lokal</value> 
+   
+  </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>%@ Dateien wurden sowohl auf Ihrem Computer als auch auf kDrive geändert.</value> 
+   
+  </data> 
+  <data name="labelMegaBytes" xml:space="preserve"> 
+    <value>MB</value> 
+   
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Am neuesten</value> 
+   
+  </data> 
+  <data name="labelName" xml:space="preserve"> 
+    <value>Name</value> 
+   
+  </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>Neues Gerät erkannt</value> 
+   
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>Sie verwenden kDrive auf einem neuen Computer nach der Wiederherstellung aus einer Sicherungskopie.</value> 
+   
+  </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Neuer Ordner</value> 
+   
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>neue Synchronisierung</value> 
+   
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Keine Konflikte entsprechen Ihrer Suche</value> 
+   
+  </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Keine Fehler zu beheben.</value> 
+   
+  </data> 
+  <data name="labelNotifications" xml:space="preserve"> 
+    <value>Benachrichtigung</value> 
+   
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>Online</value> 
+   
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
+    <value>Online-Ordner gelöscht</value> 
+   
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
+    <value>Der synchronisierte Ordner wurde auf kDrive online gelöscht oder ist nicht mehr zugänglich.</value> 
+   
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Ursprünglicher Speicherort:</value> 
+   
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Empfohlen</value> 
+   
+  </data> 
+  <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
+    <value>Der Ordner wurde möglicherweise auf ein anderes Laufwerk verschoben und dann an seinen ursprünglichen Speicherort zurückgebracht.</value> 
+   
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>An den ursprünglichen Speicherort wiederherstellen.</value> 
+   
+  </data> 
+  <data name="labelRules" xml:space="preserve"> 
+    <value>Regeln</value> 
+   
+  </data> 
+  <data name="labelSameAsSystem" xml:space="preserve"> 
+    <value>Wie das System</value> 
+   
+  </data> 
+  <data name="labelShortDay" xml:space="preserve"> 
+    <value>T</value> 
+   
+  </data> 
+  <data name="labelShortHour" xml:space="preserve"> 
+    <value>Std</value> 
+   
+  </data> 
+  <data name="labelShortMinute" xml:space="preserve"> 
+    <value>Min</value> 
+   
+  </data> 
+  <data name="labelShortSecond" xml:space="preserve"> 
+    <value>Sek</value> 
+   
+  </data> 
+  <data name="labelSince" xml:space="preserve"> 
+    <value>Seit: %@</value> 
+   
+  </data> 
+  <data name="labelSize" xml:space="preserve"> 
+    <value>Größe</value> 
+   
+  </data> 
+  <data name="labelStatus" xml:space="preserve"> 
+    <value>Status</value> 
+   
+  </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ frei</value> 
+   
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ frei</value> 
+   
+  </data> 
+  <data name="labelStorageLoading" xml:space="preserve"> 
+    <value>Wird berechnet…</value> 
+   
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ verwendet</value> 
+   
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ verwendet</value> 
+   
+  </data> 
+  <data name="labelSyncDirectionIncoming" xml:space="preserve"> 
+    <value>Von kDrive Web synchronisiert</value> 
+   
+  </data> 
+  <data name="labelSyncDirectionOutgoing" xml:space="preserve"> 
+    <value>Von Ihrem Computer synchronisiert</value> 
+   
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Dieses kDrive enthält nur Dateien. Alle Dateien werden auf diesem Gerät synchronisiert.</value> 
+   
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Kein Ordner zum Auswählen</value> 
+   
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Synchronisierungsordner</value> 
+   
+  </data> 
+  <data name="labelSyncLocation" xml:space="preserve"> 
+    <value>Speicherort</value> 
+   
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Synchronisieren Sie Ihre kDrives auf diesem Gerät</value> 
+   
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synchronisierte Ordner</value> 
+   
+  </data> 
+  <data name="labelSynchronisation" xml:space="preserve"> 
+    <value>Synchronisierung</value> 
+   
+  </data> 
+  <data name="labelTeraBytes" xml:space="preserve"> 
+    <value>TB</value> 
+   
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Willkommen bei kDrive</value> 
+   
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ von %@</value> 
+   
+  </data> 
+  <data name="labelkDriveManagement" xml:space="preserve"> 
+    <value>kDrive-Verwaltung</value> 
+   
+  </data> 
+  <data name="languageSetting" xml:space="preserve"> 
+    <value>Sprache</value> 
+   
+  </data> 
+  <data name="languageSettingWarning" xml:space="preserve"> 
+    <value>Starten Sie die Anwendung neu, um die neue Sprache vollständig zu übernehmen.</value> 
+   
+  </data> 
+  <data name="largeFolderRecommendation" xml:space="preserve"> 
+    <value>Der gesamte Ordner ist groß.
+Um den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu senden.</value> 
+   
+  </data> 
+  <data name="learnMore" xml:space="preserve"> 
+    <value>Mehr erfahren</value> 
+   
+  </data> 
+  <data name="licensesHyperLink" xml:space="preserve"> 
+    <value>LGPL v3 Lizenz – Git-Quellen</value> 
+   
+  </data> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
+    <value>Link in die Zwischenablage kopiert</value> 
+   
+  </data> 
+  <data name="localLocation" xml:space="preserve"> 
+    <value>Speicherort auf meinem PC</value> 
+   
+  </data> 
+  <data name="logLevelDebug" xml:space="preserve"> 
+    <value>Debug</value> 
+   
+  </data> 
+  <data name="logLevelError" xml:space="preserve"> 
+    <value>Fehler</value> 
+   
+  </data> 
+  <data name="logLevelExtended" xml:space="preserve"> 
+    <value>Erweitert</value> 
+   
+  </data> 
+  <data name="logLevelFatal" xml:space="preserve"> 
+    <value>Fatal</value> 
+   
+  </data> 
+  <data name="logLevelInfo" xml:space="preserve"> 
+    <value>Info</value> 
+   
+  </data> 
+  <data name="logLevelWarning" xml:space="preserve"> 
+    <value>Warnung</value> 
+   
+  </data> 
+  <data name="logUploadPopupTitle" xml:space="preserve"> 
+    <value>Debug-Ordner an Infomaniak Support senden</value> 
+   
+  </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Einige Dateinamen enthalten möglicherweise Sonderzeichen, die nicht unterstützt werden (wie doppelte Anführungszeichen, Backslashes oder Zeilenumbrüche).
+
+Bitte überprüfen und benennen Sie Dateien mit ungewöhnlichen Zeichen um und versuchen Sie es erneut.</value> 
+   
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Ungültiger Dateiname</value> 
+   
+  </data> 
+  <data name="logsStatusCompression" xml:space="preserve"> 
+    <value>Protokolle werden komprimiert…</value> 
+   
+  </data> 
+  <data name="logsStatusUpload" xml:space="preserve"> 
+    <value>Protokolle werden an den Support hochgeladen…</value> 
+   
+  </data> 
+  <data name="logsUploadErrorTooltip" xml:space="preserve"> 
+    <value>Der letzte Upload ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und stellen Sie sicher, dass mindestens ein kDrive-Benutzer angemeldet ist. Uploads sind auf 10 pro Tag begrenzt.</value> 
+   
+  </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Verschiedene Versionen dieser Dateien wurden erkannt.</value> 
+   
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%@ Versionskonflikte erkannt</value> 
+   
+  </data> 
+  <data name="matomoDescription" xml:space="preserve"> 
+    <value>Matomo ist ein Analysetool, das ausschließlich von Infomaniak gehostet und verwaltet wird, um zu verstehen, wie die Anwendung verwendet wird.
+
+Die Analyse dieser Daten ermöglicht es unserem Team, die Benutzeroberfläche der Anwendung kontinuierlich zu verbessern.</value> 
+   
+  </data> 
+  <data name="moveCancelErrorTitle" xml:space="preserve"> 
+    <value>Verschiebung abgebrochen</value> 
+   
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
+    <value>Gelöschte Dateien in den Papierkorb des Computers verschieben</value> 
+   
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
+    <value>Einige Elemente können möglicherweise nicht verschoben werden.</value> 
+   
+  </data> 
+  <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
+    <value>Mehr Speicherplatz, mehr Funktionen mit my kSuite+</value> 
+   
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Hilfe benötigt?</value> 
+   
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>Fügen Sie ein Konto hinzu, um zu beginnen</value> 
+   
+  </data> 
+  <data name="noResultsFound" xml:space="preserve"> 
+    <value>Keine Ergebnisse gefunden</value> 
+   
+  </data> 
+  <data name="notSyncedDrive" xml:space="preserve"> 
+    <value>Nicht synchronisiert</value> 
+   
+  </data> 
+  <data name="notificationsDisabledAlways" xml:space="preserve"> 
+    <value>Immer</value> 
+   
+  </data> 
+  <data name="notificationsDisabledNever" xml:space="preserve"> 
+    <value>Nie</value> 
+   
+  </data> 
+  <data name="notifyOnFileExcluded" xml:space="preserve"> 
+    <value>Eine Benachrichtigung erhalten, wenn eine Datei ausgeschlossen wird</value> 
+   
+  </data> 
+  <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
+    <value>Synchronisierung für dieses kDrive konfigurieren</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
+    <value>Passen Sie den Speicherort Ihres kDrive-Ordners auf Ihrem Computer an:</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
+    <value>Der gewählte Ordner muss leer sein, damit die Synchronisierung korrekt funktioniert.</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
+    <value>Wählen Sie die Ordner aus, die auf diesem Computer synchronisiert werden sollen:</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
+    <value>Synchronisierte Ordner</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
+    <value>Für jedes kDrive können Sie auswählen, wo es auf Ihrem Computer synchronisiert wird und welche Ordner synchronisiert werden sollen.</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
+    <value>Synchronisierter Inhalt:</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
+    <value>Speicherort:</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
+    <value>Ihre kDrives konfigurieren</value> 
+   
+  </data> 
+  <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
+    <value>Wählen Sie die Ordner aus, die auf diesem Computer synchronisiert werden sollen</value> 
+   
+  </data> 
+  <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
+    <value>Dieses kDrive ist bereits konfiguriert.
+Gehen Sie zu Ihren Einstellungen, um es zu ändern.</value> 
+   
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
+    <value>Starten Sie kostenlos mit my kSuite,
+oder wählen Sie einen Plan, der Ihren Bedürfnissen entspricht.</value> 
+   
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveTitle" xml:space="preserve"> 
+    <value>Sie haben noch kein kDrive.</value> 
+   
+  </data> 
+  <data name="onboardingDriveSelectionSelectTitle" xml:space="preserve"> 
+    <value>Wählen Sie die kDrives aus, die auf diesem Computer synchronisiert werden sollen:</value> 
+   
+  </data> 
+  <data name="onboardingDriveSelectionSyncInProgress" xml:space="preserve"> 
+    <value>Synchronisierung läuft</value> 
+   
+  </data> 
+  <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
+    <value>Schön, Sie zu sehen!</value> 
+   
+  </data> 
+  <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
+    <value>Alle kDrive-Ordner</value> 
+   
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Benutzerdefinierte Auswahl</value> 
+   
+  </data> 
+  <data name="onboardingLoginDescription" xml:space="preserve"> 
+    <value>Die private, schnelle und sichere Cloud, gehostet in der Schweiz.
+
+Melden Sie sich an und halten Sie Ihre Dokumente auf allen Ihren Geräten synchronisiert.</value> 
+   
+  </data> 
+  <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
+    <value>Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.</value> 
+   
+  </data> 
+  <data name="onboardingLoginErrorTitle" xml:space="preserve"> 
+    <value>Anmeldefehler</value> 
+   
+  </data> 
+  <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
+    <value>Ihre Informationen werden abgerufen…</value> 
+   
+  </data> 
+  <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
+    <value>Einen Moment…</value> 
+   
+  </data> 
+  <data name="onboardingLoginTitle" xml:space="preserve"> 
+    <value>Willkommen bei kDrive</value> 
+   
+  </data> 
+  <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
+    <value>Ihre Dateien sind bereit, sicher auf Ihrem Computer synchronisiert zu werden.</value> 
+   
+  </data> 
+  <data name="onboardingSynchronizationAppReadyTitle" xml:space="preserve"> 
+    <value>Alles bereit!</value> 
+   
+  </data> 
+  <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
+    <value>Wir schließen die Konfiguration Ihrer kDrives ab.
+
+Bitte warten Sie einen Moment.</value> 
+   
+  </data> 
+  <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
+    <value>Synchronisierung läuft…</value> 
+   
+  </data> 
+  <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
+    <value>kDrive beim Computerstart öffnen</value> 
+   
+  </data> 
+  <data name="openLoginPage" xml:space="preserve"> 
+    <value>Anmeldeseite öffnen</value> 
+   
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Pfad in die Zwischenablage kopiert</value> 
+   
+  </data> 
+  <data name="proxyConnectionDescription" xml:space="preserve"> 
+    <value>Legen Sie fest, wie kDrive eine Verbindung zum Internet herstellt.</value> 
+   
+  </data> 
+  <data name="proxyHost" xml:space="preserve"> 
+    <value>Server</value> 
+   
+  </data> 
+  <data name="proxyNeedAuth" xml:space="preserve"> 
+    <value>Authentifizierung erforderlich</value> 
+   
+  </data> 
+  <data name="proxyPassword" xml:space="preserve"> 
+    <value>Passwort</value> 
+   
+  </data> 
+  <data name="proxyPort" xml:space="preserve"> 
+    <value>Port</value> 
+   
+  </data> 
+  <data name="proxySettings" xml:space="preserve"> 
+    <value>Proxy-Einstellungen</value> 
+   
+  </data> 
+  <data name="proxyType" xml:space="preserve"> 
+    <value>Proxy-Typ</value> 
+   
+  </data> 
+  <data name="proxyTypeHTTP" xml:space="preserve"> 
+    <value>Manuelle Konfiguration</value> 
+   
+  </data> 
+  <data name="proxyTypeNone" xml:space="preserve"> 
+    <value>Keiner</value> 
+   
+  </data> 
+  <data name="proxyUser" xml:space="preserve"> 
+    <value>Benutzername</value> 
+   
+  </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Beta</value> 
+   
+  </data> 
+  <data name="releaseChannelInternal" xml:space="preserve"> 
+    <value>Intern</value> 
+   
+  </data> 
+  <data name="remoteLocation" xml:space="preserve"> 
+    <value>Speicherort auf kDrive</value> 
+   
+  </data> 
+  <data name="searchBoxPlaceholder" xml:space="preserve"> 
+    <value>In %@ suchen</value> 
+   
+  </data> 
+  <data name="selectFoldersToSync" xml:space="preserve"> 
+    <value>Wählen Sie die Ordner aus, die auf diesem Computer synchronisiert werden sollen.</value> 
+   
+  </data> 
+  <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
+    <value>Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar und werden nicht gelöscht.</value> 
+   
+  </data> 
+  <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
+    <value>Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar.</value> 
+   
+  </data> 
+  <data name="sendLastSessionOnly" xml:space="preserve"> 
+    <value>Nur letzte Sitzung senden</value> 
+   
+  </data> 
+  <data name="sentryDescription" xml:space="preserve"> 
+    <value>Sentry ist ein Tool, das ausschließlich von Infomaniak gehostet und verwaltet wird, um die Stabilität der Anwendung in Echtzeit zu überwachen und technische Fehler automatisch an unsere Entwickler zu melden.
+
+Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und zu optimieren, was zu einer besseren Benutzererfahrung für Sie führt.</value> 
+   
+  </data> 
+  <data name="settingsTitle" xml:space="preserve"> 
+    <value>Einstellungen</value> 
+   
+  </data> 
+  <data name="sidebarItemAccounts" xml:space="preserve"> 
+    <value>Konten</value> 
+   
+  </data> 
+  <data name="sidebarItemAdvanced" xml:space="preserve"> 
+    <value>Erweitert</value> 
+   
+  </data> 
+  <data name="sidebarItemGeneral" xml:space="preserve"> 
+    <value>Allgemein</value> 
+   
+  </data> 
+  <data name="sidebarItemKDriveTitle" xml:space="preserve"> 
+    <value>kDrive-Ordner</value> 
+   
+  </data> 
+  <data name="signInBrowser" xml:space="preserve"> 
+    <value>In Ihrem Browser anmelden</value> 
+   
+  </data> 
+  <data name="storageComputerFreeSpace" xml:space="preserve"> 
+    <value>Freier Speicherplatz auf dem Computer</value> 
+   
+  </data> 
+  <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
+    <value>kDrive-Dateien auf dem Computer gespeichert</value> 
+   
+  </data> 
+  <data name="storageComputerUsedByOther" xml:space="preserve"> 
+    <value>Andere Dateien auf dem Computer</value> 
+   
+  </data> 
+  <data name="storageMissingDiskDescription" xml:space="preserve"> 
+    <value>kDrive kann nicht auf Laufwerk %@ zugreifen.
+Stellen Sie sicher, dass es verbunden,
+entriegelt und von Ihrem Computer aus zugänglich ist.</value> 
+   
+  </data> 
+  <data name="storageMissingDiskTitle" xml:space="preserve"> 
+    <value>Speicherlaufwerk %@ ist nicht zugänglich</value> 
+   
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synchronisierung</value> 
+   
+  </data> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
+    <value>Dieser PC – %@ – %@</value> 
+   
+  </data> 
+  <data name="storedOnline" xml:space="preserve"> 
+    <value>Online gespeichert</value> 
+   
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien bleiben in der Cloud und belegen keinen Speicherplatz auf Ihrem Computer.
+Für den Zugriff ist eine Internetverbindung erforderlich.</value> 
+   
+  </data> 
+  <data name="syncErrorTooltip" xml:space="preserve"> 
+    <value>Synchronisierungsfehler</value> 
+   
+  </data> 
+  <data name="syncFolderCustomLocation" xml:space="preserve"> 
+    <value>Benutzerdefinierter Ordner</value> 
+   
+  </data> 
+  <data name="syncFolderDefaultLocation" xml:space="preserve"> 
+    <value>Standardordner</value> 
+   
+  </data> 
+  <data name="syncInProgressTooltip" xml:space="preserve"> 
+    <value>Synchronisierung</value> 
+   
+  </data> 
+  <data name="syncModeApplying" xml:space="preserve"> 
+    <value>Ihr neuer Synchronisierungsmodus wird angewendet…</value> 
+   
+  </data> 
+  <data name="syncRules" xml:space="preserve"> 
+    <value>Synchronisierungsregeln</value> 
+   
+  </data> 
+  <data name="syncSuccessTooltip" xml:space="preserve"> 
+    <value>Synchronisiert</value> 
+   
+  </data> 
+  <data name="syncedDrive" xml:space="preserve"> 
+    <value>Synchronisiert</value> 
+   
+  </data> 
+  <data name="syncedFromComputer" xml:space="preserve"> 
+    <value>Von Ihrem Computer synchronisiert</value> 
+   
+  </data> 
+  <data name="syncedFromKDriveWeb" xml:space="preserve"> 
+    <value>Von kDrive Web synchronisiert</value> 
+   
+  </data> 
+  <data name="synchroInProgress" xml:space="preserve"> 
+    <value>Ihre Dateien werden synchronisiert</value> 
+   
+  </data> 
+  <data name="synchroPaused" xml:space="preserve"> 
+    <value>Synchronisierung ist pausiert</value> 
+   
+  </data> 
+  <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
+    <value>Ihre aktuellen Dateien werden aktualisiert.</value> 
+   
+  </data> 
+  <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
+    <value>Synchronisierung läuft</value> 
+   
+  </data> 
+  <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
+    <value>Ihre Dateien werden auf Ihren Computer kopiert.
+Sie können sie jederzeit öffnen, auch ohne Internet.</value> 
+   
+  </data> 
+  <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
+    <value>Offline</value> 
+   
+  </data> 
+  <data name="synchroStatusPausedDescription" xml:space="preserve"> 
+    <value>Die Synchronisierung wurde vorübergehend gestoppt.</value> 
+   
+  </data> 
+  <data name="synchroStatusPausedTitle" xml:space="preserve"> 
+    <value>Pausiert</value> 
+   
+  </data> 
+  <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
+    <value>Ihre Dateien sind zugänglich und synchronisiert.</value> 
+   
+  </data> 
+  <data name="synchroStatusUpToDateTitle" xml:space="preserve"> 
+    <value>Keine laufenden Aktivitäten</value> 
+   
+  </data> 
+  <data name="synchroUpToDate" xml:space="preserve"> 
+    <value>Ihre Dateien sind auf dem neuesten Stand</value> 
+   
+  </data> 
+  <data name="synchronizationSettings" xml:space="preserve"> 
+    <value>Synchronisierung</value> 
+   
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Eine Datei oder ein Ordner in Ihrem Synchronisierungsordner scheint beschädigt zu sein.
+Die Synchronisierung wurde pausiert. Bitte überprüfen Sie Ihre Dateien und versuchen Sie es erneut.</value> 
+   
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Beschädigte Datei erkannt</value> 
+   
+  </data> 
+  <data name="tabTitleActivities" xml:space="preserve"> 
+    <value>Aktivität</value> 
+   
+  </data> 
+  <data name="tabTitleHome" xml:space="preserve"> 
+    <value>Startseite</value> 
+   
+  </data> 
+  <data name="tabTitleStorage" xml:space="preserve"> 
+    <value>Speicher</value> 
+   
+  </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>Der Ordner darf nicht das Stammverzeichnis eines Laufwerks sein und darf keinen bereits synchronisierten Ordner enthalten oder sich darin befinden.</value> 
+   
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>Der Ordner muss leer sein, darf nicht das Stammverzeichnis eines Laufwerks sein und darf keinen bereits synchronisierten Ordner enthalten oder sich darin befinden.</value> 
+   
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Dieser Ordner kann nicht verwendet werden</value> 
+   
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Individuelle Bearbeitung</value> 
+   
+  </data> 
+  <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
+    <value>Eine Benachrichtigung informiert Sie, wenn eine Datei durch diese Regel ausgeschlossen wird</value> 
+   
+  </data> 
+  <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
+    <value>kDrive schließen</value> 
+   
+  </data> 
+  <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
+    <value>kDrive öffnen</value> 
+   
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Stellen Sie sicher, dass Ihre Internetverbindung aktiv ist, dass dieser Name nicht bereits verwendet wird und dass er keine ungültigen Zeichen enthält.</value> 
+   
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value>Dieser Ordner kann nicht erstellt werden</value> 
+   
+  </data> 
+  <data name="unauthorizedAccess" xml:space="preserve"> 
+    <value>Nicht autorisierter Zugriff</value> 
+   
+  </data> 
+  <data name="unavailableContentNoActivityDescription" xml:space="preserve"> 
+    <value>Ihre Dateien sind zugänglich und synchronisiert.</value> 
+   
+  </data> 
+  <data name="unavailableContentNoActivityTitle" xml:space="preserve"> 
+    <value>Keine aktuellen Aktivitäten</value> 
+   
+  </data> 
+  <data name="unexpectedErrorTeachingTipContent" xml:space="preserve"> 
+    <value>Bitte versuchen Sie es in einigen Momenten erneut.
+Wenn das Problem weiterhin besteht, wenden Sie sich bitte an den Support.</value> 
+   
+  </data> 
+  <data name="unexpectedErrorTeachingTipTitle" xml:space="preserve"> 
+    <value>Ein unerwarteter Fehler ist aufgetreten</value> 
+   
+  </data> 
+  <data name="untilTomorrow" xml:space="preserve"> 
+    <value>Bis morgen</value> 
+   
+  </data> 
+  <data name="updateAvailable" xml:space="preserve"> 
+    <value>kDrive %@ verfügbar</value> 
+   
+  </data> 
+  <data name="updateSettings" xml:space="preserve"> 
+    <value>Aktualisierung</value> 
+   
+  </data> 
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
+    <value>Unvollständiger Upload</value> 
+   
+  </data> 
+  <data name="userExclusionFileListDescription" xml:space="preserve"> 
+    <value>Fügen Sie Dateien hinzu, die von der Synchronisierung ausgeschlossen werden sollen.</value> 
+   
+  </data> 
+  <data name="userExclusionFileListHeader" xml:space="preserve"> 
+    <value>Benutzerdefinierte Ausschlussregeln</value> 
+   
+  </data> 
+  <data name="viewSourceCode" xml:space="preserve"> 
+    <value>Quellcode anzeigen</value> 
+   
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve"> 
+    <value>Sie haben einen Synchronisierungsfehler</value> 
+   
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve"> 
+    <value>Sie haben {0} Synchronisierungsfehler</value> 
+   
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
+    <value>Entfernen</value> 
+   
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
+    <value>Entfernen (%@ Regeln)</value> 
+   
+  </data> 
 </root>
