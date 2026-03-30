@@ -1436,6 +1436,14 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
+bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2) {
+    // Resolution for the modification time is 2s on FAT filesystems:
+    // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+    const uint16_t timeDifferenceThresholdForEdit = CommonUtility::isFAT(path) ? 1 // +/- 1 sec
+                                                                               : 0;
+    return abs(time1 - time2) <= timeDifferenceThresholdForEdit;
+}
+
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);

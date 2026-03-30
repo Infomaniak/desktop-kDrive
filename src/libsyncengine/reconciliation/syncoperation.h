@@ -23,12 +23,21 @@
 #include "update_detection/update_detector/node.h"
 #include "utility/types.h"
 
+#include <mutex>
 #include <list>
+#include <vector>
 
 namespace KDC {
 
 class SyncOperation {
     public:
+        enum class PropagationStatus {
+            ToPropagate = 0,
+            InProgress,
+            Propagated,
+            EnumEnd
+        };
+
         SyncOperation();
 
         [[nodiscard]] OperationType type() const { return _type; }
@@ -90,6 +99,9 @@ class SyncOperation {
         [[nodiscard]] bool isRescueOperation() const { return _isRescueOperation; }
         void setIsRescueOperation(const bool val) { _isRescueOperation = val; }
 
+        [[nodiscard]] PropagationStatus propagationStatus() const { return _propagationStatus; }
+        void setPropagationStatus(PropagationStatus val) { _propagationStatus = val; }
+
         [[nodiscard]] const SyncPath &relativeOriginPath() const { return _relativeOriginPath; }
         void setRelativeOriginPath(const SyncPath &relativeOriginPath) { _relativeOriginPath = relativeOriginPath; }
         [[nodiscard]] const SyncPath &relativeDestinationPath() const { return _relativeDestinationPath; }
@@ -111,6 +123,7 @@ class SyncOperation {
         bool _isBreakingCycleOp{false};
         bool _isDehydratedPlaceholder{false};
         bool _isRescueOperation{false};
+        PropagationStatus _propagationStatus{PropagationStatus::ToPropagate};
 
         SyncPath _relativeOriginPath;
         SyncPath _relativeDestinationPath;
@@ -125,40 +138,65 @@ using SyncOpPtr = std::shared_ptr<SyncOperation>;
 class SyncOperationList : public SharedObject {
     public:
         SyncOperationList() = default;
-        SyncOperationList(const SyncOperationList &other) = default;
         ~SyncOperationList();
 
         void setOpList(const std::list<SyncOpPtr> &opList);
 
         SyncOpPtr getOp(UniqueId id);
-        [[nodiscard]] const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
-        const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
+        [[nodiscard]] const std::list<UniqueId> &opSortedList() const;
+        const std::unordered_set<UniqueId> &opListIdByType(const OperationType type);
         /**
-         * @brief Get the list of operation IDs related to the given node. The side must also be provided to handle cases where
-         * the same ID exists on both the local and remote replicas.
+         * @brief Get the list of operation IDs related to the given source node. The side must also be provided to handle cases
+         * where the same ID exists on both the local and remote replicas.
          * @param nodeId The ID of the object whose operations we want to retrieve.
          * @param side The side of the object designated by `nodeId`.
          * @return A list of operation IDs.
          */
-        std::list<UniqueId> getOpIdsFromNodeId(const NodeId &nodeId, const ReplicaSide side);
-        [[nodiscard]] const std::unordered_map<UniqueId, SyncOpPtr> &allOps() const { return _allOps; }
+        std::list<UniqueId> getOpIdsFromSourceNodeId(const NodeId &nodeId, const ReplicaSide side);
+
+        [[nodiscard]] const std::unordered_map<UniqueId, SyncOpPtr> &allOps() const;
 
         bool pushOp(SyncOpPtr op);
         void popOp();
         void insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op);
         void deleteOp(std::list<UniqueId>::const_iterator it);
-        [[nodiscard]] size_t size() const { return _allOps.size(); }
-        [[nodiscard]] bool isEmpty() const { return _allOps.empty(); }
+        [[nodiscard]] size_t size() const;
+        [[nodiscard]] bool isEmpty() const;
         void clear();
         SyncOperationList &operator=(SyncOperationList const &other);
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
+        /**
+         * @brief Check if a local Edit operation is caused by the current sync.
+         * @param nodeId The ID of the object.
+         * @param rootPath The localPath of the sync.
+         * @param relativePath The absolutePath of the object.
+         * @param lastModified The modified time of the object.
+         * @param size The size of the object.
+         * @return true is the Edit operation corresponds to a sync operation.
+         */
+        bool isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
+                                       SyncTime lastModified, int64_t size);
+
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;
         std::list<UniqueId> _opSortedList;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opListByType;
-        std::unordered_map<NodeId, std::list<UniqueId>, StringHashFunction, std::equal_to<>> _node2op;
+        std::unordered_map<NodeId, std::list<UniqueId>, StringHashFunction, std::equal_to<>> _nodeIdSource2ops;
+        std::unordered_map<NodeId, std::list<UniqueId>, StringHashFunction, std::equal_to<>> _nodeIdTarget2ops;
+        mutable std::recursive_mutex _mutex;
+
+        /**
+         * @brief Get the list of operations related to the given target node.
+         * @param nodeId The ID of the object whose operations we want to retrieve.
+         * @param side The side of the object designated by `nodeId`.
+         * @param type The type of operations.
+         * @param relativePath The relativePath of the object designated by `nodeId`.
+         * @return A list of operations.
+         */
+        std::vector<SyncOpPtr> getOpsFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type,
+                                                      const SyncPath &relativePath);
 
         friend class TestOperationSorterWorker;
         friend class TestOperationGeneratorWorker;

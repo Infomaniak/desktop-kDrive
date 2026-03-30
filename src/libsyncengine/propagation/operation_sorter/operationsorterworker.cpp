@@ -97,7 +97,7 @@ void OperationSorterWorker::sortOperations() {
         }
     }
 
-    if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->isEmpty()) {
+    if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->get().isEmpty()) {
         *_syncPal->_syncOps = *reshuffledOps;
         // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
         _syncPal->setRestart(true);
@@ -293,7 +293,7 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
     depth = ancestorNode ? 1 : 0;
 
     while (ancestorNode && ancestorNode != _syncPal->updateTree(node->side())->rootNode()) {
-        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id(), node->side());
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromSourceNodeId(*ancestorNode->id(), node->side());
              const auto &parentOpId: parentOpIdList) {
             const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
             if (parentOp->type() != OperationType::Create) {
@@ -349,7 +349,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
 }
 
-std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp() {
+std::optional<const std::reference_wrapper<SyncOperationList>> OperationSorterWorker::fixImpossibleFirstMoveOp() {
     if (_syncPal->_syncOps->isEmpty()) {
         return std::nullopt;
     }
@@ -402,7 +402,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     int32_t lowestIndex = INT32_MAX;
     SyncOpPtr selectedOp = nullptr;
     for (const auto &n: moveDirectoryList) {
-        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id(), n->side()); const auto opId: opIds) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromSourceNodeId(*n->id(), n->side()); const auto opId: opIds) {
             const auto op = _syncPal->_syncOps->getOp(opId);
             LOG_IF_FAIL(op)
             if (op->type() != OperationType::Move) {
