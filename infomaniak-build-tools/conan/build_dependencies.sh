@@ -257,6 +257,7 @@ log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
 echo
 
+conan remove 'xxhash' -c
 log "Installing dependencies..."
 conan install . --update --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter -vv
 
