@@ -105,7 +105,7 @@ void TestParmsDb::testParameters() {
 }
 
 void TestParmsDb::testUser() {
-    User user1(1, 5555555, "123");
+    User user1(1, 5555555, "123", "john doe", "john", "john.doe@ik.me", "https://johndoeavatar");
     User user2(2, 6666666, "456");
     User user3(3, 7777777, "789");
 
@@ -113,16 +113,35 @@ void TestParmsDb::testUser() {
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user2));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user3));
 
-    user3.setUserId(9999999);
-    user3.setEmail("toto@titi.com");
-    bool found;
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user3, found) && found);
+    bool found = false;
 
     User user4;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(user3.dbId(), user4, found) && found);
-    CPPUNIT_ASSERT(user4.dbId() == user3.dbId());
-    CPPUNIT_ASSERT(user4.userId() == user3.userId());
-    CPPUNIT_ASSERT(user4.email() == user3.email());
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(user1.dbId(), user4, found) && found);
+    CPPUNIT_ASSERT(user4.dbId() == user1.dbId());
+    CPPUNIT_ASSERT(user4.userId() == user1.userId());
+    CPPUNIT_ASSERT(user4.email() == user1.email());
+    CPPUNIT_ASSERT(user4.name() == user1.name());
+    CPPUNIT_ASSERT(user4.firstName() == user1.firstName());
+    CPPUNIT_ASSERT(user4.isStaff() == user1.isStaff());
+
+
+    user3.setUserId(9999999);
+    user3.setName("toto");
+    user3.setFirstName("titi");
+    user3.setEmail("toto@titi.com");
+    user3.setAvatarUrl("https://tototitiavatar");
+    user3.setIsStaff(true);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user3, found) && found);
+
+
+    User user5;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(user3.dbId(), user5, found) && found);
+    CPPUNIT_ASSERT(user5.dbId() == user3.dbId());
+    CPPUNIT_ASSERT(user5.userId() == user3.userId());
+    CPPUNIT_ASSERT(user5.email() == user3.email());
+    CPPUNIT_ASSERT(user5.name() == user3.name());
+    CPPUNIT_ASSERT(user5.firstName() == user3.firstName());
+    CPPUNIT_ASSERT(user5.isStaff() == user3.isStaff());
 
     std::vector<User> userList;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllUsers(userList));
