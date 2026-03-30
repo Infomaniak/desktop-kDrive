@@ -191,7 +191,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <controls:SvgIcon Grid.Column="0"
-                                              UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
+                                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                               Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                               Foreground="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive.Color, Converter={StaticResource ColorToBrushConverter}}" />
 
