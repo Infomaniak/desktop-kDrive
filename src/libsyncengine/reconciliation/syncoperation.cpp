@@ -149,12 +149,12 @@ void SyncOperationList::deleteOp(const std::list<UniqueId>::const_iterator it) {
         _opListByType[type].erase(opId);
         if (syncOp->affectedNode()) {
             if (const auto nodeId = syncOp->affectedNode()->id(); nodeId.has_value()) {
-                _nodeIdSource2ops.erase(*nodeId);
+                (void) _nodeIdSource2ops.erase(*nodeId);
             }
         }
         if (syncOp->correspondingNode()) {
             if (const auto nodeId = syncOp->correspondingNode()->id(); nodeId.has_value()) {
-                _nodeIdTarget2ops.erase(*nodeId);
+                (void) _nodeIdTarget2ops.erase(*nodeId);
             }
         }
     }
@@ -200,12 +200,13 @@ bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const Sync
                                                   SyncTime lastModified, int64_t size) {
     const std::scoped_lock lock(_mutex);
     const auto opPtrList = getOpsFromTargetNodeId(nodeId, ReplicaSide::Local, OperationType::Edit, relativePath);
-    if (opPtrList.size() > 0) {
+    if (!opPtrList.empty()) {
         assert(opPtrList.size() == 1);
 
         // Check modification time & size
-        const SyncTime lastModifiedLocalRemote =
-                opPtrList[0]->affectedNode()->modificationTime() ? *opPtrList[0]->affectedNode()->modificationTime() : 0;
+        const SyncTime lastModifiedLocalRemote = opPtrList[0]->affectedNode()->modificationTime().has_value()
+                                                         ? *opPtrList[0]->affectedNode()->modificationTime()
+                                                         : 0;
         const bool sameModifiedTime = CommonUtility::modificationTimesAreEqual(rootPath, lastModifiedLocalRemote, lastModified);
         const bool sameSize = opPtrList[0]->affectedNode()->size() == size;
         if (!sameModifiedTime || !sameSize) {
