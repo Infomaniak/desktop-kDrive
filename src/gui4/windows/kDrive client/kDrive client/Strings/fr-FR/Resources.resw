@@ -295,7 +295,7 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
    
   </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
-    <value>Changer d'utilisateur</value> 
+    <value>Changer d’utilisateur</value> 
     <comment>Button to switch to a different user account.</comment> 
    
   </data> 
