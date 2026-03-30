@@ -18,11 +18,14 @@
 
 import Cocoa
 import kDriveCore
+import kDriveResources
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
+
+    private(set) var statusBarItem: NSStatusItem?
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -32,12 +35,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let testing = AppDelegate.isRunningTests
         DriveTargetAssembly.setupDI(testing: testing)
+
         guard !testing else {
             return
         }
 
         SentryService().initSentry()
 
+        setupStatusBarIcon()
         openMainWindow()
     }
 
@@ -45,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func openMainWindow() {
+    @objc func openMainWindow() {
         mainWindow.showWindow(nil)
         mainWindow.window?.makeKeyAndOrderFront(nil)
 
@@ -63,5 +68,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow?.showWindow(nil)
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
+    }
+
+    private func setupStatusBarIcon() {
+        let statusBar = NSStatusBar.system
+
+        statusBarItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
+        statusBarItem?.button?.image = KDriveResources.kdriveNeutral.image
+        statusBarItem?.button?.action = #selector(openMainWindow)
     }
 }
