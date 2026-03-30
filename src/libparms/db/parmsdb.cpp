@@ -113,7 +113,7 @@
     "userId INTEGER UNIQUE,"           \
     "keychainKey TEXT,"                \
     "name TEXT,"                       \
-    "firstName TEXT,"                       \
+    "firstName TEXT,"                  \
     "email TEXT,"                      \
     "avatarUrl TEXT,"                  \
     "avatar BLOB, "                    \
@@ -121,12 +121,12 @@
     "WITHOUT ROWID;"
 
 #define INSERT_USER_REQUEST_ID "insert_user"
-#define INSERT_USER_REQUEST                                                                    \
+#define INSERT_USER_REQUEST                                                                               \
     "INSERT INTO user (dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate) " \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);"
 
 #define UPDATE_USER_REQUEST_ID "update_user"
-#define UPDATE_USER_REQUEST                                                                                \
+#define UPDATE_USER_REQUEST                                                                                              \
     "UPDATE user SET userId=?1, keychainKey=?2, name=?3, firstName=?4, email=?5, avatarUrl=?6, avatar=?7, toMigrate=?8 " \
     "WHERE dbId=?9;"
 
@@ -136,23 +136,24 @@
     "WHERE dbId=?1;"
 
 #define SELECT_USER_REQUEST_ID "select_user"
-#define SELECT_USER_REQUEST                                                            \
+#define SELECT_USER_REQUEST                                                                       \
     "SELECT userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE dbId=?1;"
 
 #define SELECT_USER_BY_USERID_REQUEST_ID "select_user_by_userid"
-#define SELECT_USER_BY_USERID_REQUEST                                                \
+#define SELECT_USER_BY_USERID_REQUEST                                                           \
     "SELECT dbId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE userId=?1;"
 
 #define SELECT_ALL_USERS_REQUEST_ID "select_users"
-#define SELECT_ALL_USERS_REQUEST                                                             \
+#define SELECT_ALL_USERS_REQUEST                                                                        \
     "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "ORDER BY dbId;"
 
 #define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
-#define SELECT_LAST_CONNECTED_USER_REQUEST \
-    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
+#define SELECT_LAST_CONNECTED_USER_REQUEST                                                                                       \
+    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT " \
+    "1;"
 //
 // account
 //
@@ -488,12 +489,12 @@
     "LIMIT ?1;"
 
 #define SELECT_ERROR_ID "select_error"
-#define SELECT_ERROR_REQUEST                                                                                                   \
-    "SELECT time, "                                                                                                      \
-    "functionName, workerName, exitCode, exitCause, "                                                                          \
+#define SELECT_ERROR_REQUEST                                                                                           \
+    "SELECT time, "                                                                                                    \
+    "functionName, workerName, exitCode, exitCause, "                                                                  \
     "localNodeId, remoteNodeId, nodeType, path, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
-    "syncDbId FROM "                                                                                                           \
-    "error "                                                                                                                   \
+    "syncDbId FROM "                                                                                                   \
+    "error "                                                                                                           \
     "WHERE dbId=?1;"
 
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
@@ -1690,8 +1691,8 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         int toMigrateResult{0};
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 8, toMigrateResult));
 
-        userList.push_back(
-                User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult)));
+        userList.push_back(User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar,
+                                static_cast<bool>(toMigrateResult)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
@@ -3097,10 +3098,9 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
     SyncDbId syncDbId{0};
     LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 14, syncDbId));
     error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
-                  fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId,
-                  fromInt<NodeType>(nodeType), path, fromInt<ConflictType>(conflictType),
-                  fromInt<InconsistencyType>(inconsistencyType), fromInt<CancelType>(cancelType),
-                  destinationPath);
+                  fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId, fromInt<NodeType>(nodeType), path,
+                  fromInt<ConflictType>(conflictType), fromInt<InconsistencyType>(inconsistencyType),
+                  fromInt<CancelType>(cancelType), destinationPath);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
 

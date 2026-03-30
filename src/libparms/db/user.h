@@ -32,9 +32,8 @@ namespace KDC {
 class PARMS_EXPORT User {
     public:
         User();
-        User(UserDbId dbId, UserId userId, const std::string &keychainKey, const std::string &name = std::string(),
-             const std::string &firstName = std::string(), const std::string &email = std::string(),
-             const std::string &avatarUrl = std::string(),
+        User(UserDbId dbId, UserId userId, const std::string &keychainKey, const std::string &name = {},
+             const std::string &firstName = {}, const std::string &email = {}, const std::string &avatarUrl = {},
              std::shared_ptr<std::vector<char>> avatar = nullptr, bool toMigrate = false);
 
         inline void setDbId(const UserDbId dbId) { _dbId = dbId; }
@@ -48,9 +47,7 @@ class PARMS_EXPORT User {
 
         // User logged in a version of kDrive Desktop < 4.0 might not have the firstName field populated until they have network
         // connectivity. In this case, we can use the name field as a fallback to avoid showing an empty name in the UI.
-        inline const std::string &firstName() const {
-            return _firstName.empty() ? _name : _firstName;
-        } 
+        inline const std::string &firstName() const { return _firstName.empty() ? _name : _firstName; }
 
         inline void setFirstName(const std::string &firstName) { _firstName = firstName; }
         inline const std::string &email() const { return _email; }
