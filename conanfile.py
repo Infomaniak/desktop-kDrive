@@ -45,22 +45,17 @@ class KDriveDesktop(ConanFile):
             self.output.warning("Cannot detect Linux distribution. Skipping Ubuntu version check.")
             return
 
-        # Read /etc/os-release to get distro info
-        with open("/etc/os-release", "r") as f:
-            os_release = f.read()
+        os_release = self._read_os_release()
 
         # Check if it's Ubuntu
-        if "ID=ubuntu" not in os_release.lower() and "ID_LIKE=" not in os_release.lower():
+        distro_id = os_release.get("id", "")
+        distro_like = os_release.get("id_like", "")
+        if distro_id != "ubuntu" and "ubuntu" not in distro_like.split():
             # Not Ubuntu, skip validation
             return
 
         # Extract Ubuntu version
-        version_id = None
-        for line in os_release.splitlines():
-            if line.startswith("VERSION_ID="):
-                version_id = line.split("=")[1].strip('"')
-                break
-
+        version_id = os_release.get("version_id")
         if not version_id:
             self.output.warning("Cannot detect Ubuntu version. Skipping version check.")
             return
@@ -74,24 +69,36 @@ class KDriveDesktop(ConanFile):
 
         # Get architecture
         arch = str(self.settings.arch)
+        min_versions_by_arch = {
+            "x86_64": 22.04,
+            "armv8": 24.04,
+        }
 
-        # Validation rules
-        if arch in ["x86_64"]:
-            min_version = 22.04
-            if ubuntu_version < min_version:
-                raise ConanInvalidConfiguration(
-                    f"Ubuntu {ubuntu_version} on {arch} is not supported. "
-                    f"Minimum required version: Ubuntu {min_version} for {arch} architecture."
-                )
-        elif arch in ["armv8"]:
-            min_version = 24.04
-            if ubuntu_version < min_version:
-                raise ConanInvalidConfiguration(
-                    f"Ubuntu {ubuntu_version} on {arch} is not supported. "
-                    f"Minimum required version: Ubuntu {min_version} for {arch} architecture."
-                )
+        min_version = min_versions_by_arch.get(arch)
+        if min_version is None:
+            self.output.info(f"No Ubuntu version constraint defined for architecture {arch}.")
+            return
+
+        if ubuntu_version < min_version:
+            raise ConanInvalidConfiguration(
+                f"Ubuntu {ubuntu_version} on {arch} is not supported. "
+                f"Minimum required version: Ubuntu {min_version} for {arch} architecture."
+            )
 
         self.output.info(f"Ubuntu {ubuntu_version} on {arch} meets minimum requirements.")
+
+    @staticmethod
+    def _read_os_release():
+        """
+        Parse /etc/os-release into a case-normalized dictionary.
+        """
+        with open("/etc/os-release", "r", encoding="utf-8") as f:
+            return {
+                key.strip().lower(): value.strip().strip('"').lower()
+                for line in f
+                if "=" in line and not line.lstrip().startswith("#")
+                for key, value in [line.rstrip().split("=", 1)]
+            }
 
     def configure(self):
         if self.settings.os == "Macos":
