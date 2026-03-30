@@ -1,7 +1,10 @@
 import glob
 import os
+import re
 from os.path import join as pjoin
-import platform
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
+from urllib.request import urlopen
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
@@ -11,6 +14,7 @@ from conan.tools.files import copy, rmdir, mkdir, download
 class QtConan(ConanFile):
     name = "qt"
     settings = "os", "arch", "compiler", "build_type"
+    _qt_online_installers_base_url = "https://download.qt.io/official_releases/online_installers"
 
     options = {
         # ini:       Read the qtaccount.ini file from the user's home directory to get the email and JWT token (default option; if the file does not exist)
@@ -29,35 +33,97 @@ class QtConan(ConanFile):
         "verbose": False
     }
 
-    @staticmethod
-    def _get_real_arch():
-        return "arm64" if str(platform.machine().lower()) in [ "arm64", "aarch64" ] else "x64"
+    class _InstallerIndexParser(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.hrefs = []
 
-    @staticmethod
-    def _get_distant_name(os_key=None):
+        def handle_starttag(self, tag, attrs):
+            if tag != "a":
+                return
+            attributes = dict(attrs)
+            href = attributes.get("href")
+            if href:
+                self.hrefs.append(href)
+
+    def _get_linux_arch(self):
+        arch_map = {
+            "x86_64": "x64",
+            "armv8": "arm64"
+        }
+        linux_arch = arch_map.get(str(self.settings.arch))
+        if linux_arch is None:
+            raise ConanInvalidConfiguration(f"Unsupported Linux architecture for Qt installation: {self.settings.arch}")
+        return linux_arch
+
+    def _get_distant_name(self):
         """
         Get the name of the installer to download based on the OS and architecture.
         See 'https://download.qt.io/official_releases/online_installers/' for available installers.
-        :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe'.
+        :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'linux' or 'windows',
+            architecture is 'arm64' or 'x64', and ext is 'run' or 'exe'. On macOS, Qt currently ships a
+            universal DMG.
         """
+        if self.settings.os == "Macos":
+            return self._resolve_installer_name_from_index(r"^qt-online-installer-macOS-.*\.dmg$")
+        if self.settings.os == "Linux":
+            return self._resolve_installer_name_from_index(rf"^qt-online-installer-linux-{self._get_linux_arch()}-online\.run$")
+        if self.settings.os == "Windows":
+            return self._resolve_installer_name_from_index(r"^qt-online-installer-windows-x64-online\.exe$")
+        raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation: {self.settings.os}")
 
-        # Here we don't use self.settings.os or self.settings.arch because the settings are not available yet inside the source() method.
-        if os_key is None:
-            os_key = platform.system().lower()
-        data_map = {
-            "darwin": [ "mac", "dmg"],
-            "linux": [ "linux", "run"],
-            "windows": [ "windows", "exe"]
-        }
-        os_name, ext = data_map.get(os_key, ("windows", "exe"))
+    def _list_available_installers(self):
+        self.output.info(f"Fetching Qt installer index: {self._qt_online_installers_base_url}/")
+        with urlopen(f"{self._qt_online_installers_base_url}/") as response:
+            html = response.read().decode("utf-8", errors="replace")
 
-        # For macOS, we always use x64 arch because the installer is universal and supports both arm64 and x64.
-        if os_name in [ "mac", "windows" ]:
-            architecture = "x64"
-        else:
-            architecture = QtConan._get_real_arch()
+        parser = self._InstallerIndexParser()
+        parser.feed(html)
 
-        return f"qt-online-installer-{os_name}-{architecture}-online.{ext}"
+        installers = []
+        for href in parser.hrefs:
+            if href.endswith(".mirrorlist"):
+                continue
+            filename = os.path.basename(urlparse(href).path)
+            if filename.startswith("qt-online-installer-"):
+                installers.append(filename)
+
+        unique_installers = sorted(set(installers))
+        if not unique_installers:
+            raise ConanException("Failed to discover Qt online installers from the official index")
+        return unique_installers
+
+    def _resolve_installer_name_from_index(self, pattern):
+        installers = self._list_available_installers()
+        matches = [installer for installer in installers if re.match(pattern, installer)]
+        if len(matches) != 1:
+            raise ConanException(
+                f"Expected exactly one Qt installer matching '{pattern}', found: {', '.join(matches) if matches else 'none'}"
+            )
+        return matches[0]
+
+    def _get_distant_url(self):
+        override_url = os.getenv("QT_ONLINE_INSTALLER_URL")
+        if override_url:
+            self.output.warning(f"Using Qt installer URL override from QT_ONLINE_INSTALLER_URL: {override_url}")
+            return override_url
+
+        return urljoin(f"{self._qt_online_installers_base_url}/", self._get_distant_name())
+
+    def _download_installer(self):
+        self.output.highlight("Downloading Qt installer...")
+        url = self._get_distant_url()
+        parsed_url = urlparse(url)
+        downloaded_file_name = os.path.basename(parsed_url.path) or self._get_distant_name()
+        dst = pjoin(self.build_folder, downloaded_file_name)
+
+        if os.path.exists(dst):
+            self.output.info(f"Reusing downloaded installer: {dst}")
+            return dst
+
+        self.output.info(f"Downloading from: {url}")
+        download(self, url=url, filename=dst)
+        return dst
 
     def _get_compiler(self):
         """
@@ -67,7 +133,7 @@ class QtConan(ConanFile):
         if self.settings.os == "Macos":
             return "clang_64"
         elif self.settings.os == "Linux":
-            if self._get_real_arch() == "arm64":
+            if self._get_linux_arch() == "arm64":
                 return "linux_gcc_arm64"
             else:
                 # Qt 6.2.3 uses 'gcc_64', but newer versions (6.7.3+) use 'linux_gcc_64'
@@ -233,7 +299,7 @@ class QtConan(ConanFile):
         import io
         output = io.StringIO()
         self.output.highlight("Mounting Qt installer DMG...")
-        mount_point = pjoin(self.source_folder, "mnt")
+        mount_point = pjoin(self.build_folder, "mnt")
         os.makedirs(mount_point, exist_ok=False)
 
         app_bundle = ""
@@ -293,19 +359,15 @@ class QtConan(ConanFile):
 
     def source(self):
         """
-        Download the Qt installer based on the OS and architecture.
+        This recipe downloads the installer in build() because the installer binary depends on the
+        active configuration.
         :return: None
         """
-        self.output.highlight("Downloading Qt installer...")
-        downloaded_file_name = self._get_distant_name()
-        url = f"https://download.qt.io/official_releases/online_installers/{downloaded_file_name}"
-        self.output.info(f"Downloading from: {url}")
-        dst = pjoin(self.source_folder, downloaded_file_name)
-        download(self, url=url, filename=dst)
+        pass
 
     def build(self):
         self.output.highlight("Launching Qt installer...")
-        installer_path = self._get_executable_path(pjoin(self.source_folder, self._get_distant_name()))
+        installer_path = self._get_executable_path(self._download_installer())
 
         # Set cache path to build folder to keep all installer data isolated
         cache_path = pjoin(self.build_folder, "qt-installer-cache")
@@ -384,7 +446,7 @@ class QtConan(ConanFile):
         if self.settings.os == "Macos":
             return "macos"
         elif self.settings.os == "Linux":
-            if self._get_real_arch() == "arm64":
+            if self._get_linux_arch() == "arm64":
                 return "gcc_arm64"
             else:
                 return "gcc_64"
