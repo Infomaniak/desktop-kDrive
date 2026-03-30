@@ -355,7 +355,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
-                if (const auto exitCode = isEditValid(nodeId, absolutePath, fileStat.modificationTime, valid);
+                if (const auto exitCode = isEditValid(nodeId, absolutePath, fileStat.modificationTime, fileStat.size, valid);
                     exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid code=" << exitCode);
                     tryToInvalidateSnapshot();
@@ -512,7 +512,7 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
 #if defined(KD_MACOS)
 
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
-                                                    bool &valid) const {
+                                                    int64_t sizeLocal, bool &valid) const {
     // If the item is a dehydrated placeholder, only metadata update are possible
     VfsStatus vfsStatus;
     if (!_syncPal->vfs()->status(path.native(), vfsStatus)) {
@@ -521,7 +521,15 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
     }
 
     if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
-        // Check if it is a metadata update
+        // Check if the local Edit operation is caused by the current sync (i.e. check in syncOps)
+        const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+        if (_syncPal->_syncOps->isLocalEditCausedBySync(nodeId, _syncPal->localPath(), relativePath, lastModifiedLocal,
+                                                        sizeLocal)) {
+            valid = false;
+            return ExitCode::Ok;
+        }
+
+        // Check if the local Edit operation is caused by a finished sync (i.e. check in syncDb)
         DbNodeId dbNodeId = 0;
         bool found = false;
         if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
