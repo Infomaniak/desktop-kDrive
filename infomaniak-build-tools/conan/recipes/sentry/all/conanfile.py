@@ -1,6 +1,8 @@
 from os.path import join as pjoin
 import os
 
+import shutil
+
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
@@ -113,7 +115,6 @@ class SentryNativeConan(ConanFile):
         copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
         cmake = CMake(self)
         cmake.install()
-        import shutil
         if self.settings.os == "Macos":
             dsym_path = os.path.join(self.package_folder, "lib", "libsentry.dylib.dSYM")
             if os.path.exists(dsym_path):
