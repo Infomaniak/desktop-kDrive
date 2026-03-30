@@ -24,6 +24,13 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void SendLogsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (LogUploadManager is null)
+            {
+                Logger.Log(Logger.Level.Error, "LogUploadManager is not set for LogUploadSettingsCard");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = XamlRoot,

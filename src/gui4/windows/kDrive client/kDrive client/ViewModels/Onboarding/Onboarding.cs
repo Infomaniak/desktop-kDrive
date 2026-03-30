@@ -39,7 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public void Dispose()
         {
-            StopDriveAvailabilityWatcherAsync();
+            _ = StopDriveAvailabilityWatcherAsync();
         }
 
         public void StartDriveAvailabilityWatcher()

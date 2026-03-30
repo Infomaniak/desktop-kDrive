@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                     {
                         targetPropType = Nullable.GetUnderlyingType(targetPropType)!;
                     }
-                    object newObj = targetPropType == typeof(string) ? string.Empty : Activator.CreateInstance(targetPropType);
+                    object? newObj = targetPropType == typeof(string) ? string.Empty : Activator.CreateInstance(targetPropType);
                 }
 
                 targetProp.SetValue(target, sourceValue);

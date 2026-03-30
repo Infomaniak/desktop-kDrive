@@ -304,7 +304,6 @@ namespace Infomaniak.kDrive.CustomControls
             if (RootTreeItem is not null)
             {
                 RootTreeItem.Dispose();
-                RootTreeItem = null;
             }
             foreach (var item in _rootLevelItems)
             {
@@ -320,7 +319,6 @@ namespace Infomaniak.kDrive.CustomControls
             if (RootTreeItem is not null)
             {
                 RootTreeItem.Dispose();
-                RootTreeItem = null;
             }
             _rootLevelItems.Clear();
 

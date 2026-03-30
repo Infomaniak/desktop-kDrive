@@ -282,12 +282,12 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (ManagedDrive is null) // if the drive was not configured before, set it up now
             {
-                Drive? drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                Drive? drive = ViewModel.AllDrives.FirstOrDefault(d => d?.DriveId == BaseDrive.DriveId && d?.AccountId == BaseDrive.AccountId && d?.UserDbId == BaseDrive.UserDbId, null);
                 int count = 100;
                 while (drive is null && count > 0)
                 {
                     await Task.Delay(100);
-                    drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                    drive = ViewModel.AllDrives.FirstOrDefault(d => d?.DriveId == BaseDrive.DriveId && d?.AccountId == BaseDrive.AccountId && d?.UserDbId == BaseDrive.UserDbId, null);
                     count--;
                 }
 

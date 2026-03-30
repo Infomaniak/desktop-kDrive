@@ -352,9 +352,9 @@ namespace Infomaniak.kDrive.Pages.Settings
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
         }
 
-        private void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(Logger.LogFolder);
+            await Utility.OpenFolderSecurely(Logger.LogFolder);
         }
 
         private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)

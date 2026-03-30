@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive.ViewModels
             RemotePath = other.RemotePath;
             RemoteNodeId = other.RemoteNodeId;
             SyncType = other.SyncType;
-            Drive = other.Drive;
+            _drive = other.Drive;
             ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
         }
 
@@ -114,10 +114,7 @@ namespace Infomaniak.kDrive.ViewModels
             SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
 
-        public Task<List<NodeId>?> GetExcludedNodeIds()
-        {
-            return Task.FromResult(new List<NodeId>(ExcludedNodeIds));
-        }
+        public Task<List<NodeId>?> GetExcludedNodeIds() => Task.FromResult<List<NodeId>?>(new List<NodeId>(ExcludedNodeIds));
 
     }
 }

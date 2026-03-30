@@ -16,9 +16,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
     public sealed partial class DefaultError : UserControl
     {
-        private Error Error { get; init; }
+        private Error Error { get; set; }
 
-        public bool ShowDetails => Error is not null;
         public ObservableCollection<DefaultErrorProperty> Properties = new ObservableCollection<DefaultErrorProperty>();
 
         public DefaultError(Error error)
