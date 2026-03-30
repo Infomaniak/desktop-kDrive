@@ -122,7 +122,6 @@ void TestParmsDb::testUser() {
     CPPUNIT_ASSERT(user4.email() == user1.email());
     CPPUNIT_ASSERT(user4.name() == user1.name());
     CPPUNIT_ASSERT(user4.firstName() == user1.firstName());
-    CPPUNIT_ASSERT(user4.isStaff() == user1.isStaff());
 
 
     user3.setUserId(9999999);
@@ -130,7 +129,6 @@ void TestParmsDb::testUser() {
     user3.setFirstName("titi");
     user3.setEmail("toto@titi.com");
     user3.setAvatarUrl("https://tototitiavatar");
-    user3.setIsStaff(true);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user3, found) && found);
 
 
@@ -141,7 +139,6 @@ void TestParmsDb::testUser() {
     CPPUNIT_ASSERT(user5.email() == user3.email());
     CPPUNIT_ASSERT(user5.name() == user3.name());
     CPPUNIT_ASSERT(user5.firstName() == user3.firstName());
-    CPPUNIT_ASSERT(user5.isStaff() == user3.isStaff());
 
     std::vector<User> userList;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAllUsers(userList));
