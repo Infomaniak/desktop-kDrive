@@ -158,6 +158,7 @@ namespace Infomaniak.kDrive
                 presenter.PreferredMinimumWidth = scaledWidth;
                 presenter.PreferredMinimumHeight = scaledHeight;
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
+                appWindow.SetIcon("Assets\\kDrive.ico");
             }
         }
 
