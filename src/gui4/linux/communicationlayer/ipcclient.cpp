@@ -36,7 +36,7 @@ Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 namespace {
 constexpr uint16_t initialConnectionRetryDelayMs = 2000;
 constexpr uint8_t initialConnectionLogEveryAttempts = 10;
-}
+} // namespace
 
 namespace KDC {
 
@@ -109,7 +109,8 @@ void IpcClient::attemptInitialConnection() {
     }
 
     if (_initialConnectionAttemptCount == 1 || _initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
-        qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt" << _initialConnectionAttemptCount;
+        qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt"
+                            << _initialConnectionAttemptCount;
     }
 
     _socket->abort();
@@ -121,13 +122,15 @@ void IpcClient::attemptInitialConnection() {
  * @param params Request parameters
  * @param callback Optional callback invoked with the server response. If null, the response is silently discarded.
  * @return the request ID, which can be used to match the response with the request.
- * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client calls exit(EXIT_FAILURE).
- * @note Callbacks are invoked on the Qt event loop. If the callback captures a raw `this`, the caller must ensure the object outlives the response.
- *       Use `QPointer<T>` to guard against dangling pointers when lifetime is uncertain.
+ * @note Any communication error (socket not connected, serialization failure, partial write) is considered fatal: the client
+ * calls exit(EXIT_FAILURE).
+ * @note Callbacks are invoked on the Qt event loop. If the callback captures a raw `this`, the caller must ensure the object
+ * outlives the response. Use `QPointer<T>` to guard against dangling pointers when lifetime is uncertain.
  */
 int32_t IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
     if (_socket->state() != QAbstractSocket::ConnectedState) {
-        qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state() << ")"; // See qabstractsocket.h#SocketState
+        qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state()
+                                << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
     }
     const int32_t id = _nextId++;
@@ -149,7 +152,8 @@ int32_t IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &
         if (writtenData < 0) {
             qCCritical(lcIpcClient) << "Failed to send request, error:" << _socket->errorString();
         } else {
-            // Very unlikely: the kernel buffer is filled by an internal write to the fd; if the server is not reading in time, another issue is probably occurring on its side.
+            // Very unlikely: the kernel buffer is filled by an internal write to the fd; if the server is not reading in time,
+            // another issue is probably occurring on its side.
             qCCritical(lcIpcClient) << "Partial write detected, expected:" << jsonSize << "written:" << writtenData;
         }
         exit(EXIT_FAILURE);
@@ -346,17 +350,22 @@ void IpcClient::processBuffer() {
 
 /**
  * Extract the first complete JSON message from the buffer.
- * Here, we can count the brackets because every string is base64 encoded so it cannot contain brackets, and there are no escape characters in the JSON messages.
- * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{' and ending with the matching '}'.
- * @param outMessage The extracted JSON message, if a complete message is found at the beginning of the buffer. The message is removed from the buffer.
- * @return true if a complete message was successfully extracted and removed from the buffer, false if the buffer is empty or does not yet contain a complete JSON object.
- * @note Malformed input (buffer not starting with '{', or too many nested objects) is considered fatal: the client calls exit(EXIT_FAILURE).
+ * Here, we can count the brackets because every string is base64 encoded so it cannot contain brackets, and there are no escape
+ * characters in the JSON messages.
+ * @param buffer The buffer containing one or more JSON messages. Each message is expected to be a JSON object starting with '{'
+ * and ending with the matching '}'.
+ * @param outMessage The extracted JSON message, if a complete message is found at the beginning of the buffer. The message is
+ * removed from the buffer.
+ * @return true if a complete message was successfully extracted and removed from the buffer, false if the buffer is empty or does
+ * not yet contain a complete JSON object.
+ * @note Malformed input (buffer not starting with '{', or too many nested objects) is considered fatal: the client calls
+ * exit(EXIT_FAILURE).
  */
 bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage) {
     if (buffer.empty()) {
         return false;
     }
-    
+
     if (buffer[0] != '{') {
         qCCritical(lcIpcClient) << "Invalid message format: buffer does not start with '{'";
         exit(EXIT_FAILURE);
@@ -365,7 +374,9 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
     uint8_t balance = 1;
     for (size_t i = 1; i < buffer.size(); ++i) {
         if (buffer[i] == '{') {
-            if (balance == std::numeric_limits<decltype(balance)>::max()) { // Avoid overflow of balance variable, which would cause incorrect parsing and potential security issues
+            if (balance ==
+                std::numeric_limits<decltype(balance)>::max()) { // Avoid overflow of balance variable, which would cause
+                                                                 // incorrect parsing and potential security issues
                 qCCritical(lcIpcClient) << "Invalid message format: too many nested objects";
                 exit(EXIT_FAILURE);
             }
