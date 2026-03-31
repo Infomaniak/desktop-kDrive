@@ -860,7 +860,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.native;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -899,7 +899,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.native;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
