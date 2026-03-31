@@ -284,6 +284,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) userInfoObj1.set("isConnected", true);
     (void) userInfoObj1.set("isStaff", false);
     (void) userInfoObj1.set("name", toBase64(Str("aaaaa")));
+    (void) userInfoObj1.set("firstName", toBase64(Str("a1a1a1")));
     (void) userInfoObj1.set("userId", 1001);
 
     Poco::JSON::Object userInfoObj2;
@@ -294,6 +295,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) userInfoObj2.set("isConnected", false);
     (void) userInfoObj2.set("isStaff", false);
     (void) userInfoObj2.set("name", toBase64(Str("bbbbb")));
+    (void) userInfoObj2.set("firstName", toBase64(Str("b1b1b1")));
     (void) userInfoObj2.set("userId", 1002);
 
     Poco::JSON::Array userInfoListObj;
@@ -323,8 +325,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
         QImage avatar;
         (void) avatar.loadFromData(avatarQBA);
 
-        const UserInfo ui1(1, 1001, "aaaaa", "aaaaa@xxx.com", avatar, true);
-        const UserInfo ui2(2, 1002, "bbbbb", "bbbbb@xxx.com", avatar, false);
+        const UserInfo ui1(1, 1001, "aaaaa","a1a1a1", "aaaaa@xxx.com", avatar, true);
+        const UserInfo ui2(2, 1002, "bbbbb","b1b1b1", "bbbbb@xxx.com", avatar, false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
     };

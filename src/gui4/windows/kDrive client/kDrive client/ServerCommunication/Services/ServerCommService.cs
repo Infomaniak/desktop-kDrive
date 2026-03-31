@@ -498,8 +498,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (type == SyncType.Online)
             {
                 // Ensure the path supports online mode
-                bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
-                if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
+                bool? supportsLiteSync = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
+                if (!supportsLiteSync.HasValue || !supportsLiteSync.Value)
                 {
                     Logger.Log(Logger.Level.Warning, $"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.");
                     return false;
@@ -1660,8 +1660,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
                 {
-                    // We never want to remove an item that as sucessfully completed
-                    if (item.Status == SyncFileStatus.Success)
+                    // We never want to remove an item that has successfully completed or is still syncing
+                    if (item.Status == SyncFileStatus.Success || item.Status == SyncFileStatus.Syncing)
                         return false;
 
 

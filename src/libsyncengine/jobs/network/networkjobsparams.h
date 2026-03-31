@@ -104,6 +104,7 @@ static const std::string redirectUriKey = "redirect_uri";
 static const std::string symbolicLinkKey = "symbolic_link";
 static const std::string updatedByKey = "updated_by";
 static const std::string displayNameKey = "display_name";
+static const std::string firstNameKey = "first_name";
 static const std::string emailKey = "email";
 static const std::string avatarKey = "avatar";
 static const std::string isStaffKey = "is_staff";

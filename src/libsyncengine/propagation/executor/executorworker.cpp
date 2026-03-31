@@ -150,6 +150,28 @@ void ExecutorWorker::execute() {
 
         if (job) {
             job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
+
+            // Use a weak_ptr to avoid a reference cycle:
+            // The job owns the progress callback, and capturing a shared_ptr<SyncJob> inside
+            // the callback would create a cycle (job → callback → job).
+            // This would prevent the job from being destroyed after completion and removal
+            // from the job map, resulting in a memory leak.
+            std::weak_ptr<SyncJob> weakJobPtr = job;
+            const auto progressPercentCallback = [weakJobPtr, this]([[maybe_unused]] UniqueId, int progress /* % */) {
+                auto job = weakJobPtr.lock();
+                if (!job) {
+                    LOG_SYNCPAL_WARN(_logger, "Job no longer exists in progress callback");
+                    return;
+                }
+
+                if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: path="
+                                                       << Utility::formatSyncPath(job->affectedFilePath()) << L", progress="
+                                                       << progress << L"%" << L", jobId=" << job->jobId());
+                }
+            };
+            job->setProgressPercentCallback(progressPercentCallback);
+
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             (void) _ongoingJobs.try_emplace(job->jobId(), job);
             (void) _jobToSyncOpMap.try_emplace(job->jobId(), syncOp);
