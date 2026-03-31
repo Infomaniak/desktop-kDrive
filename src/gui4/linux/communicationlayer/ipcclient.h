@@ -56,7 +56,7 @@ class IpcClient : public QObject {
          * @param num    Signal number identifying the event (see SignalNum in comm.h)
          * @param params Deserialized JSON parameters associated with the signal
          */
-        void serverSignalReceived(SignalNum num, Poco::DynamicStruct params);
+        void serverSignalReceived(SignalNum num, const Poco::DynamicStruct &params);
 
     private slots:
         void attemptInitialConnection();
