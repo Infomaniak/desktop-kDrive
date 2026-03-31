@@ -76,6 +76,7 @@ class ErrorInfo {
         inline void setAutoResolved(bool newAutoResolved) { _autoResolved = newAutoResolved; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         friend QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo);
         friend QDataStream &operator<<(QDataStream &out, const ErrorInfo &errorInfo);
