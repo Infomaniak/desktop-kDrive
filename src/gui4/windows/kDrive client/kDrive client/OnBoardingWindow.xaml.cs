@@ -44,7 +44,8 @@ namespace Infomaniak.kDrive.OnBoarding
         public OnBoardingWindow()
         {
             InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
+            this.ExtendsContentIntoTitleBar = true;  // enable custom titlebarcdcdc
+            
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 600, false);
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
@@ -63,10 +64,10 @@ namespace Infomaniak.kDrive.OnBoarding
 
         }
 
-        private void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
+        private async void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
             LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
-            _onBoardingViewModel.Dispose();
+            await _onBoardingViewModel.DisposeAsync();
         }
 
         private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)

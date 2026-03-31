@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Onboarding : UISafeObservableObject, IDisposable
+    public class Onboarding : UISafeObservableObject, IAsyncDisposable
     {
         private readonly IServerCommService _serverCommService;
         private OAuth2State _currentOAuth2State = OAuth2State.None;
@@ -37,19 +37,17 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _selectedUser, value);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _ = StopDriveAvailabilityWatcherAsync().ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                {
-                    Logger.Log(Logger.Level.Error, $"Error while disposing Onboarding: {t.Exception?.GetBaseException().Message}");
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Info, "Onboarding disposed successfully");
-                }
-            });
+                await StopDriveAvailabilityWatcherAsync();
+                Logger.Log(Logger.Level.Info, "Onboarding disposed successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Error while disposing Onboarding: {ex.Message}");
+            }
         }
 
         public void StartDriveAvailabilityWatcher()
