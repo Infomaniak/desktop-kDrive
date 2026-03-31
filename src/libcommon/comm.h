@@ -386,7 +386,7 @@ inline std::string toString(SignalNum e) {
         case SignalNum::UTILITY_ERROR_ADDED:
             return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERROR_REMOVED:
-            return "UTILITY_ERROR_ADDED";
+            return "UTILITY_ERROR_REMOVED";
         case SignalNum::UTILITY_ERRORS_CLEARED:
             return "UTILITY_ERRORS_CLEARED";
         case SignalNum::UTILITY_SHOW_SETTINGS:
