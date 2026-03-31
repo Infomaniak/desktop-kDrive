@@ -62,8 +62,8 @@ namespace Infomaniak.kDrive
     {
         public Uri HomeUri { get; }
         public Uri TarrifsUri { get; }
+        public Uri HelpUri { get; }
     }
-
 
     internal sealed class CustomAppConstants : IAppConstants
     {
@@ -146,6 +146,7 @@ namespace Infomaniak.kDrive
     {
         public Uri HomeUri { get; } = new Uri("https://www.infomaniak.com/fr/ksuite");
         public Uri TarrifsUri { get; } = new Uri("https://www.infomaniak.com/gtl/myksuite#prices");
+        public Uri HelpUri { get; } = new Uri("https://www.infomaniak.com/gtl/support");
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
