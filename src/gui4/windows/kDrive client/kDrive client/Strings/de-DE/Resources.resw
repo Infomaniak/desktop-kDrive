@@ -873,6 +873,9 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederh
     <value>Freigabelink konnte nicht erstellt werden</value> 
     <comment>Error message displayed when share link creation fails.</comment> 
   </data> 
+  <data name="faqUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/de/support/faq/admin2/kdrive</value> 
+  </data> 
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Helfen Sie uns, kDrive zu verbessern</value> 
     <comment>Section header for the feedback and suggestions section in application settings.</comment> 
@@ -1228,6 +1231,9 @@ Um den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu 
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link in die Zwischenablage kopiert</value> 
     <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
+  </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Inkompatibles Laufwerk oder Ordner direkt im Stammverzeichnis des Laufwerks (z. B. wählen Sie einen Ordner wie D:/Mon drive statt D:/)</value> 
   </data> 
   <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
     <value>Inkompatibles Laufwerk oder Ordner direkt im Stammverzeichnis des Laufwerks (z. B. wählen Sie einen Ordner wie D:/Mon drive statt D:/)</value> 

@@ -1232,6 +1232,9 @@ To speed up the upload, we recommend sending only the last kDrive session.</valu
   <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
     <value>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like D:/My drive instead of D:/)</value> 
   </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like D:/My drive instead of D:/)</value> 
+  </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Location on computer</value> 
     <comment>Label for the local PC folder location field in sync settings.</comment> 

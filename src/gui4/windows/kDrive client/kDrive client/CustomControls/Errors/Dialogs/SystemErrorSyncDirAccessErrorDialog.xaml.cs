@@ -89,6 +89,6 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
     private async void FaqHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
-        await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.FAQUri);
+        await kDrive.Localizer.Instance.TryLaunchUriAsync("faqUrl");
     }
 }
