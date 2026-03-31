@@ -51,10 +51,12 @@ namespace Infomaniak.kDrive.CustomControls
                 try
                 {
                     await lottiePlayer.UpdateLottieAsync();
-                }catch (Exception ex)
-                {
-                   Logger.Log(Logger.Level.Error, $"Failed to load Lottie animation: {ex.Message}");
                 }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to load Lottie animation: {ex.Message}");
+                }
+            }
         }
 
         private async Task UpdateLottieAsync()
