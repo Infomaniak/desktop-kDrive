@@ -1372,7 +1372,7 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
     }
     _syncPal->addError(error);
 
-    return ExitCode::Ok;
+    return {ExitCode::Ok, ExitCause::OperationCanceled};
 }
 
 namespace details {

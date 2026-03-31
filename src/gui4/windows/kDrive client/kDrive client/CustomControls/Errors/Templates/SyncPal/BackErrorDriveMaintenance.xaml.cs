@@ -20,6 +20,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (Error.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;

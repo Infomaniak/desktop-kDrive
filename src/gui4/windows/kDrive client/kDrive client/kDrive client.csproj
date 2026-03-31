@@ -152,6 +152,9 @@
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharEndWithSpaceError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\TmpDirAccessError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ReservedNameError.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -245,7 +248,7 @@
     <Page Update="CustomControls\ItemPathPresenter.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\ServerErrorInfoBar.xaml">
+    <Page Update="CustomControls\HomeErrorInfoBar.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SyncIcon.xaml">
@@ -348,6 +351,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="CustomControls\LocalizedHyperlinkText.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />

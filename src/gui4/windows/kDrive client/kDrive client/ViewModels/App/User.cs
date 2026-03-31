@@ -46,6 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
         private readonly ObservableCollection<DriveAvailable> _drivesAvailable = [];
+        private readonly AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private bool _driveRefreshInProgress = false;
         private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
@@ -65,6 +66,8 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _allDriveSubscribtion.Dispose();
         }
+
+        public AppModel AppModel => _appModel;
 
         public DbId DbId
         {
