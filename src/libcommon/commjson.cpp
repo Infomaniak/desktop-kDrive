@@ -29,7 +29,13 @@ namespace KDC::CommJson {
 Poco::DynamicStruct parseObject(const std::string &json) {
     Poco::JSON::Parser parser;
     const Poco::Dynamic::Var parsedJson = parser.parse(json);
-    const auto jsonObject = parsedJson.extract<Poco::JSON::Object::Ptr>();
+    Poco::JSON::Object::Ptr jsonObject;
+    try {
+        jsonObject = parsedJson.extract<Poco::JSON::Object::Ptr>();
+    } catch (const Poco::BadCastException &) {
+        throw Poco::InvalidArgumentException("Expected a JSON object");
+    }
+
     if (!jsonObject) {
         throw Poco::InvalidArgumentException("Expected a JSON object");
     }
