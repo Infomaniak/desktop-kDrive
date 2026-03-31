@@ -231,7 +231,7 @@ void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
  * @param ipcMessage Fully parsed IPC message envelope.
  * @param id         Request identifier used to correlate the response.
  */
-void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
+void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     if (!ipcMessage.contains(MSG_RESPONSE_CODE) || !ipcMessage.contains(MSG_RESPONSE_CAUSE)) {
         qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
         exit(EXIT_FAILURE);
@@ -276,7 +276,7 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
  * @param ipcMessage Fully parsed IPC message envelope.
  * @param id         Signal identifier assigned by the server.
  */
-void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
+void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     SignalNum num = SignalNum::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
 
@@ -323,11 +323,11 @@ void IpcClient::processBuffer() {
 
             switch (type) {
                 case GuiJobType::Query: {
-                    handle_response_message(ipcMessage, id);
+                    handleResponseMessage(ipcMessage, id);
                     break;
                 }
                 case GuiJobType::Signal: {
-                    handle_server_signal(ipcMessage, id);
+                    handleServerSignal(ipcMessage, id);
                     break;
                 }
                 default:
