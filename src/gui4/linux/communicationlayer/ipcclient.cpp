@@ -214,10 +214,9 @@ void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
     }
 
     if (_initialConnectionAttemptCount == 1) {
-        qCInfo(lcIpcClient) << "Initial IPC connection not ready yet:" << reason << "- retrying in" << initialConnectionRetryDelayMs << "ms";
-    }
-
-    if (_initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
+        qCInfo(lcIpcClient) << "Initial IPC connection not ready yet:" << reason << "- retrying in"
+                            << initialConnectionRetryDelayMs << "ms";
+    } else if (_initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
         qCWarning(lcIpcClient) << "Initial connection still unavailable after" << _initialConnectionAttemptCount
                                << "attempts:" << reason << "- retrying in" << initialConnectionRetryDelayMs << "ms";
     }
