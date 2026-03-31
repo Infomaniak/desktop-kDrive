@@ -17,11 +17,12 @@
  */
 
 #pragma once
+#include <cstdint>
 #include <string>
 
-inline constexpr int COMM_SHORT_TIMEOUT = 1000;
-inline constexpr int COMM_AVERAGE_TIMEOUT = 10000;
-inline constexpr int COMM_LONG_TIMEOUT = 60000;
+inline constexpr uint8_t COMM_SHORT_TIMEOUT = 1000;
+inline constexpr uint8_t COMM_AVERAGE_TIMEOUT = 10000;
+inline constexpr uint8_t COMM_LONG_TIMEOUT = 60000;
 
 inline constexpr char MSG_TYPE[] = "type";
 
