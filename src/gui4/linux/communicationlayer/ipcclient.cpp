@@ -181,14 +181,12 @@ void IpcClient::onConnected() {
 }
 
 void IpcClient::onDisconnected() {
-    qCWarning(lcIpcClient) << "Socket disconnected";
-    emit disconnected();
-
     if (!_hasConnectedOnce) {
         scheduleInitialConnectionRetry("Socket disconnected before the first successful connection");
         return;
     }
-
+    qCWarning(lcIpcClient) << "Socket disconnected";
+    emit disconnected();
     exit(EXIT_FAILURE);
 }
 
