@@ -50,6 +50,30 @@ void NodeInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, nodeInfoAccessDenied, _accessDenied);
 }
 
+void NodeInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommString nodeId;
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoNodeId, nodeId);
+    _nodeId = CommonUtility::commString2QStr(nodeId);
+
+    CommString name;
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoName, name);
+    _name = CommonUtility::commString2QStr(name);
+
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoSize, _size);
+
+    CommString parentNodeId;
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoParentNodeId, parentNodeId);
+    _parentNodeId = CommonUtility::commString2QStr(parentNodeId);
+
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoModtime, _modtime);
+
+    CommString path;
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoPath, path);
+    _path = CommonUtility::commString2QStr(path);
+
+    CommonUtility::readValueFromStruct(dstruct, nodeInfoAccessDenied, _accessDenied);
+}
+
 QDataStream &operator>>(QDataStream &in, NodeInfo &info) {
     in >> info._nodeId >> info._name >> info._size >> info._parentNodeId >> info._modtime >> info._path >> info._accessDenied;
     return in;
