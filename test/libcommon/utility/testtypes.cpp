@@ -252,6 +252,7 @@ void TestTypes::testToString() {
     testToStringIntValues<TooManyDeletesNotificationType>();
     testToStringIntValues<TooManyDeletesUserChoice>();
     testToStringIntValues<UpsellTarget>();
+    testToStringIntValues<GuiJobType>();
 }
 
 } // namespace KDC
