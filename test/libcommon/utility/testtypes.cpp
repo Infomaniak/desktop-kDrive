@@ -248,6 +248,7 @@ void TestTypes::testToString() {
     testToStringIntValues<ConflictResolutionStrategy>();
     testToStringIntValues<sentry::ConfidentialityLevel>();
     testToStringIntValues<SyncConfiguration>();
+    testToStringIntValues<GuiJobType>();
 }
 
 } // namespace KDC
