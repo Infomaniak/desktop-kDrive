@@ -23,6 +23,8 @@ set(testcommon_SRCS
         utility/testtypes.cpp utility/testtypes.h
         utility/testurlhelper.h utility/testurlhelper.cpp
         utility/testjsonparserutility.h utility/testjsonparserutility.cpp
+        utility/testcommjson.h utility/testcommjson.cpp
+        utility/testinfodynamicstruct.h utility/testinfodynamicstruct.cpp
         # Log
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
         log/testlog.h log/testlog.cpp
