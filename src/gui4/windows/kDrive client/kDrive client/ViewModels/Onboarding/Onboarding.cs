@@ -39,7 +39,17 @@ namespace Infomaniak.kDrive.ViewModels
 
         public void Dispose()
         {
-            _ = StopDriveAvailabilityWatcherAsync();
+            _ = StopDriveAvailabilityWatcherAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Logger.Log(Logger.Level.Error, $"Error while disposing Onboarding: {t.Exception?.GetBaseException().Message}");
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Info, "Onboarding disposed successfully");
+                }
+            });
         }
 
         public void StartDriveAvailabilityWatcher()

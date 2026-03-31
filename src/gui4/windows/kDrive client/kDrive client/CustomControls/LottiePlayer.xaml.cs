@@ -48,8 +48,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (d is LottiePlayer lottiePlayer && e.NewValue is Uri)
             {
                 // Fire-and-forget the async method
-                await lottiePlayer.UpdateLottieAsync();
-            }
+                try
+                {
+                    await lottiePlayer.UpdateLottieAsync();
+                }catch (Exception ex)
+                {
+                   Logger.Log(Logger.Level.Error, $"Failed to load Lottie animation: {ex.Message}");
+                }
         }
 
         private async Task UpdateLottieAsync()
