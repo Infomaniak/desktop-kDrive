@@ -230,13 +230,14 @@ void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
  *
  * @param ipcMessage Fully parsed IPC message envelope.
  * @param id         Request identifier used to correlate the response.
- * @param params     Deserialized response payload stored in `params`.
  */
-void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
+void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     if (!ipcMessage.contains(MSG_RESPONSE_CODE) || !ipcMessage.contains(MSG_RESPONSE_CAUSE)) {
         qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
         exit(EXIT_FAILURE);
     }
+
+    const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
     auto exitCode = ExitCode::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CODE, exitCode);
@@ -274,11 +275,12 @@ void IpcClient::handle_response_message(const Poco::DynamicStruct &ipcMessage, c
  *
  * @param ipcMessage Fully parsed IPC message envelope.
  * @param id         Signal identifier assigned by the server.
- * @param params     Deserialized signal payload stored in `params`.
  */
-void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id, const Poco::DynamicStruct &params) {
+void IpcClient::handle_server_signal(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     SignalNum num = SignalNum::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
+
+    const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
     qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
     emit serverSignalReceived(num, params);
@@ -318,8 +320,6 @@ void IpcClient::processBuffer() {
 
             int32_t id = 0;
             CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_ID, id);
-
-            const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
             switch (type) {
                 case GuiJobType::Query: {
