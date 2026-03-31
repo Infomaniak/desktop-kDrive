@@ -64,38 +64,21 @@ runs:
 
       - name: Build kDrive desktop
         id: build
-        shell: cmd
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-
           IF "${{ inputs.release_build }}"=="true" (
-
             powershell "certutil -scinfo -Silent"
 
-            SET "NEW_GUI_PARAM="
             IF "${{ inputs.build_new_client }}"=="true" (
-              SET "NEW_GUI_PARAM=-newGui $true"
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} -newGui $true
+            ) ELSE (
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
             )
 
-            REM --- build display command (no secrets) ---
-            SET "DISPLAY_CMD=powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext -msi -clean remake -upload -tokenPass *** %NEW_GUI_PARAM%"
-
-            ECHO [DEBUG] Running: %DISPLAY_CMD%
-
-            REM --- real execution ---
-            powershell ^
-              "./infomaniak-build-tools/windows/build-drive.ps1" ^
-              -ci -ext -msi -clean remake -upload ^
-              -tokenPass ${{ inputs.physical_cert_pass }} ^
-              %NEW_GUI_PARAM%
-
           ) ELSE (
-
-            SET "DISPLAY_CMD=powershell -File ./infomaniak-build-tools/windows/build-drive.ps1 -ci -unitTests"
-            ECHO [DEBUG] Running: %DISPLAY_CMD%
-
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
           )
+        shell: cmd
 
       - name: Fetch dependencies
         run: |
