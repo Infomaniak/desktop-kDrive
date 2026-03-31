@@ -41,10 +41,10 @@ void SignalDispatcher::registerHandler(const SignalNum num, SignalHandler handle
 void SignalDispatcher::dispatch(const SignalNum num, const Poco::DynamicStruct &params) const {
     const auto it = _handlers.constFind(num);
     if (it == _handlers.constEnd()) {
-        qCDebug(lcSignalDispatcher) << "No handler registered for signal num:" << num ;
+        qCDebug(lcSignalDispatcher) << "No handler registered for signal num:" << num;
         return;
     }
-    for (const auto& handlers = *it; const auto &handler : handlers) {
+    for (const auto &handlers = *it; const auto &handler: handlers) {
         try {
             handler(params);
         } catch (const std::exception &e) {
