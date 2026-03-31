@@ -172,23 +172,5 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
                 isEmpty = !isEmpty;
             return isEmpty ? Visibility.Visible : Visibility.Collapsed;
         }
-
-        private void LiteSyncToggleSwitch_Toggle(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
-            if (toggleSwitch is null)
-            {
-                Logger.Log(Logger.Level.Error, "Sender is not a ToggleSwitch");
-                return;
-            }
-
-            if (AdvancedSyncSetupContentDialogVM?.NewSync is null)
-            {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM?.NewSync is null");
-                return;
-            }
-
-            AdvancedSyncSetupContentDialogVM.NewSync.SyncType = toggleSwitch.IsOn ? SyncType.Online : SyncType.Offline;
-        }
     }
 }

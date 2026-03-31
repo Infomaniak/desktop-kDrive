@@ -1502,8 +1502,7 @@ Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la derniè
     <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
   </data> 
   <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
-    <value>Disque incompatible ou dossier directement à la racine du disque (ex : choisissez un dossier comme D:/Mon drive au lieu de D:/)
-</value> 
+    <value>Disque incompatible ou dossier directement à la racine du disque (ex : choisissez un dossier comme D:/Mon drive au lieu de D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Emplacement sur l’ordinateur</value> 

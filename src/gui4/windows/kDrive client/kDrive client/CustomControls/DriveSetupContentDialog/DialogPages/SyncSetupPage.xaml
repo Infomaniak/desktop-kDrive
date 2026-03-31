@@ -301,9 +301,8 @@
                     </Grid>
 
                     <ToggleSwitch Grid.Row="1"
-                                  IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Mode=OneWay}"
-                                  IsOn="{x:Bind DriveSetupContentDialogVM.CurrentSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
-                                  Toggled="LiteSyncToggleSwitch_Toggle" />
+                                  IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportsLiteSync , Mode=OneWay}"
+                                  IsOn="{x:Bind DriveSetupContentDialogVM.CurrentSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}" />
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="2"
@@ -311,7 +310,7 @@
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource CaptionTextBlockStyle}"
-                               Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportLiteSync, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               Visibility="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportsLiteSync , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                VerticalAlignment="Center" />
                 </Grid>
             </Border>

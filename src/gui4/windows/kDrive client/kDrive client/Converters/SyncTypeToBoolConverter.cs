@@ -23,7 +23,12 @@ namespace Infomaniak.kDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException();
+            if (value is bool boolValue)
+            {
+                return boolValue ? SyncType.Online : SyncType.Offline;
+            }
+            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected bool, got {value.GetType()}");
+            return SyncType.Offline;
         }
     }
 }

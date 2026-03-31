@@ -36,7 +36,7 @@
 
             <!-- Exclusion -->
             <RowDefinition Height="Auto" />
-            
+
             <!-- Lite sync -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -211,7 +211,7 @@
                 </Grid>
             </Grid>
         </Border>
-        
+
         <!--Lite sync -->
         <Border Grid.Row="3"
                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
@@ -246,9 +246,8 @@
                 </Grid>
 
                 <ToggleSwitch Grid.Row="1"
-                              IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportLiteSync, Mode=OneWay}"
-                              IsOn="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=OneWay}"
-                              Toggled="LiteSyncToggleSwitch_Toggle" />
+                              IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportsLiteSync , Mode=OneWay}"
+                              IsOn="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}" />
 
                 <TextBlock Grid.ColumnSpan="2"
                            Grid.Row="2"
@@ -256,7 +255,7 @@
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            Style="{StaticResource CaptionTextBlockStyle}"
-                           Visibility="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportLiteSync, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                           Visibility="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportsLiteSync , Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                            VerticalAlignment="Center" />
             </Grid>
         </Border>
