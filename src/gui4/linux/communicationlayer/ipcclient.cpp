@@ -109,7 +109,7 @@ void IpcClient::attemptInitialConnection() {
     }
 
     if (_initialConnectionAttemptCount == 1 || _initialConnectionAttemptCount % initialConnectionLogEveryAttempts == 0) {
-        qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt" << _initialConnectionAttemptCount << "";
+        qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt" << _initialConnectionAttemptCount;
     }
 
     _socket->abort();
