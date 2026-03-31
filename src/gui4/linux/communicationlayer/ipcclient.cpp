@@ -264,11 +264,11 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
         try {
             callback(ExitInfo(exitCode, exitCause), params);
         } catch (const std::exception &e) {
-            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << requestNum << ") -"
-                                    << e.what();
+            qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << requestNum
+                                    << ") -" << e.what();
         } catch (...) {
-            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id << "(RequestNum:" << requestNum
-                                    << ")";
+            qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id
+                                    << "(RequestNum:" << requestNum << ")";
         }
     } else {
         qCWarning(lcIpcClient) << "Received response for unknown request id:" << id;
