@@ -81,6 +81,7 @@ class SyncFileItem {
         bool isDirectory() const { return _type == NodeType::Directory; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         /// TODO : to be removed once we moved to the new GUI ///
         friend QDataStream &operator>>(QDataStream &in, SyncFileItem &info) {
