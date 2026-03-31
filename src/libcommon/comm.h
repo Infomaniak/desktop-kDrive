@@ -17,6 +17,7 @@
  */
 
 #pragma once
+#include <cstdint>
 #include <string>
 // keychain key for tls certificate
 inline constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
@@ -28,9 +29,9 @@ inline constexpr char localHostName[] = "kDrive-localhost";
 inline constexpr char serverCertSubject[] = "kdrive-server-localhost";
 inline constexpr char clientCertSubject[] = "kdrive-client-localhost";
 
-inline constexpr int COMM_SHORT_TIMEOUT = 1000;
-inline constexpr int COMM_AVERAGE_TIMEOUT = 10000;
-inline constexpr int COMM_LONG_TIMEOUT = 60000;
+inline constexpr uint8_t COMM_SHORT_TIMEOUT = 1000;
+inline constexpr uint8_t COMM_AVERAGE_TIMEOUT = 10000;
+inline constexpr uint8_t COMM_LONG_TIMEOUT = 60000;
 
 inline constexpr char MSG_TYPE[] = "type";
 
