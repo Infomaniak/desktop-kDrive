@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return boolValue ? SyncType.Online : SyncType.Offline;
             }
-            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected bool, got {value.GetType()}");
+            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected bool, got {value?.GetType().ToString() ?? "null"}");
             return SyncType.Offline;
         }
     }
