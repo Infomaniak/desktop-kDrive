@@ -38,7 +38,7 @@ class IpcClient : public QObject {
         Q_OBJECT
 
     public:
-        using ResponseCallback = std::function<void(ExitInfo, Poco::DynamicStruct)>;
+        using ResponseCallback = std::function<void(ExitInfo, const Poco::DynamicStruct &)>;
 
         explicit IpcClient(QObject *parent = nullptr);
 #ifdef QT_DEBUG
