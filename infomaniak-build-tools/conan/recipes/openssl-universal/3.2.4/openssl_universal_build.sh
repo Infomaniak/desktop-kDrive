@@ -64,6 +64,10 @@ lipo -create -output openssl.multi/lib/libcrypto.3.dylib  openssl.x86_64/libcryp
 install_name_tool -id "@rpath/libssl.3.dylib" openssl.multi/lib/libssl.3.dylib
 install_name_tool -id "@rpath/libcrypto.3.dylib" openssl.multi/lib/libcrypto.3.dylib
 
+# Fix cross-references: libssl has dependencies on libcrypto with absolute paths from the build environment.
+# These need to be changed to use @rpath so they can be resolved at runtime.
+install_name_tool -change /usr/local/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib openssl.multi/lib/libssl.3.dylib
+
 cp -R openssl.x86_64/include openssl.multi/include
 
 popd
