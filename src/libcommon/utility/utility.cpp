@@ -799,7 +799,7 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    return strToLanguage(languageCode) == Language::Default;
+    return strToLanguage(languageCode) != Language::Default;
 }
 
 Language CommonUtility::strToLanguage(const QString &lang) {
