@@ -23,6 +23,8 @@
 #include "utility/testtypes.h"
 #include "log/sentry/testsentryhandler.h"
 #include "utility/testurlhelper.h"
+#include "utility/testcommjson.h"
+#include "utility/testinfodynamicstruct.h"
 #include "utility/testjsonparserutility.h"
 #include "log/testlog.h"
 #include "io/testio.h"
@@ -33,6 +35,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUrlHelper);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestCommJson);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestInfoDynamicStruct);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJsonParserUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
