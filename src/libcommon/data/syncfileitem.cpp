@@ -20,6 +20,8 @@
 
 #include "utility/utility.h"
 
+#include <cstdint>
+
 static const auto outParamsType = "type";
 static const auto outParamsPath = "path";
 static const auto outParamsNewPath = "newPath";
@@ -87,6 +89,40 @@ void SyncFileItem::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsSize, _size);
     CommonUtility::writeValueToStruct(dstruct, outParamsProgress, _progress);
     CommonUtility::writeValueToStruct(dstruct, outParamsOperationId, _operationId);
+}
+
+void SyncFileItem::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, outParamsType, _type);
+
+    std::string path;
+    CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
+    _path = QStr2Path(QString::fromStdString(path));
+
+    std::string newPath;
+    CommonUtility::readValueFromStruct(dstruct, outParamsNewPath, newPath);
+    _newPath = newPath.empty() ? std::nullopt : std::optional<SyncPath>(QStr2Path(QString::fromStdString(newPath)));
+
+    std::string localNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
+    _localNodeId = localNodeId.empty() ? std::nullopt : std::optional<NodeId>(localNodeId);
+
+    std::string remoteNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
+    _remoteNodeId = remoteNodeId.empty() ? std::nullopt : std::optional<NodeId>(remoteNodeId);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsDirection, _direction);
+    CommonUtility::readValueFromStruct(dstruct, outParamsInstruction, _instruction);
+    CommonUtility::readValueFromStruct(dstruct, outParamsStatus, _status);
+    CommonUtility::readValueFromStruct(dstruct, outParamsConflict, _conflict);
+    int32_t inconsistencyValue = 0;
+    CommonUtility::readValueFromStruct(dstruct, outParamsInconsistency, inconsistencyValue);
+    _inconsistency = fromInt<InconsistencyType>(inconsistencyValue);
+    CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsError, _error);
+    CommonUtility::readValueFromStruct(dstruct, outParamsSize, _size);
+    CommonUtility::readValueFromStruct(dstruct, outParamsProgress, _progress);
+    CommonUtility::readValueFromStruct(dstruct, outParamsOperationId, _operationId);
 }
 
 } // namespace KDC
