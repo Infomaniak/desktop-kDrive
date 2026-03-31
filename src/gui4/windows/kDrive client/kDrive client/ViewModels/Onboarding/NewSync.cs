@@ -110,11 +110,11 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task SelectBestVfsMode()
         {
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
-            if (CanSupportOnlineMode is null)
+            bool? canSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
+            if (canSupportOnlineMode is null)
                 Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
 
-            SupportsLiteSync = CanSupportOnlineMode ?? false;
+            SupportsLiteSync = canSupportOnlineMode ?? false;
             SyncType = SupportsLiteSync ? SyncType.Online : SyncType.Offline;
         }
 
