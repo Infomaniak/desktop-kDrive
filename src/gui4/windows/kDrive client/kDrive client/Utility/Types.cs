@@ -118,7 +118,7 @@ namespace Infomaniak.kDrive.Types
         public bool IsConfigured { get; } // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
     }
 
-    public class DriveAvailable : UISafeObservableObject, IDrive
+    public partial class DriveAvailable : UISafeObservableObject, IDrive
     {
         public DriveId DriveId { get; set; } = 0;
         public UserId UserId { get; set; } = 0;

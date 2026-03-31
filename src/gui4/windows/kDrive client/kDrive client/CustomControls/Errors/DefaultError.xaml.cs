@@ -18,7 +18,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
     {
         private Error Error { get; set; }
 
-        public ObservableCollection<DefaultErrorProperty> Properties = new ObservableCollection<DefaultErrorProperty>();
+        public ObservableCollection<DefaultErrorProperty> Properties = new();
 
 #pragma warning disable CS8618 // Error is initialized in the constructor, but the compiler can't statically verify that. We ensure it's always set in the constructor, so we can safely ignore this warning.
         public DefaultError(Error error)
