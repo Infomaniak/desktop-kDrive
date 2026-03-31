@@ -285,9 +285,13 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
  * @param id         Signal identifier assigned by the server.
  */
 void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
-    SignalNum num = SignalNum::Unknown;
+    auto num = SignalNum::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
 
+    if (!ipcMessage[MSG_REQUEST_PARAMS].isStruct()) {
+        qCCritical(lcIpcClient) << "params field is not a JSON object for signal id:" << id;
+        exit(EXIT_FAILURE);
+    }
     const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
 
     qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
