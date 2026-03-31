@@ -62,10 +62,10 @@
                               UriString="{StaticResource Infomaniak.Custom.Images.hardware}" />
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('storageMissingDiskTitle', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskTitle', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
                            TextAlignment="Center"
                            Style="{ThemeResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('storageMissingDiskDescription', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskDescription', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
                            TextAlignment="Center" />
                 <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRetry')}"
                                  HorizontalAlignment="Center"
