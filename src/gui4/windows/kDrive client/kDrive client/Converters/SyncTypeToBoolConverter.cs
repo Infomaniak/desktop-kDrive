@@ -16,7 +16,7 @@ namespace Infomaniak.kDrive.Converters
                 return syncType == SyncType.Online;
             }
 
-            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected SyncType, got {value.GetType()}");
+            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected SyncType, got {value?.GetType().ToString() ?? "null"}");
             return false;
 
         }
