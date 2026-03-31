@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         public AdvancedSyncSetupContentDialogVM(IDrive drive)
         {
-            _newSync = new NewSync() { Drive = drive };
+            _newSync = new NewSync(drive);
         }
 
         // ContentDialogButtonClickEventHandler

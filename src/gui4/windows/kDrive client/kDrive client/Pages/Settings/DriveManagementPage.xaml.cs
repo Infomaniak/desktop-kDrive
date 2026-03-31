@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
                 ManagedDrive = drive;
             }
-            else if (ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null) is not null)
+            else if (ViewModel.AllDrives.Any(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId))
             {
                 // Can happen if a user uses the back button after setting up a new drive.
                 Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -253,7 +253,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            NewSync newSync = new() { Drive = BaseDrive, DefaultPath = result, LocalPath = result };
+            NewSync newSync = new(BaseDrive) { DefaultPath = result, LocalPath = result };
             await newSync.SelectBestVfsMode();
             List<NewSync> newSyncs = [newSync];
 
@@ -282,12 +282,12 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (ManagedDrive is null) // if the drive was not configured before, set it up now
             {
-                Drive? drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                Drive? drive = ViewModel.AllDrives.FirstOrDefault(d => d?.DriveId == BaseDrive.DriveId && d?.AccountId == BaseDrive.AccountId && d?.UserDbId == BaseDrive.UserDbId, null);
                 int count = 100;
                 while (drive is null && count > 0)
                 {
                     await Task.Delay(100);
-                    drive = ViewModel.AllDrives.FirstOrDefault(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId, null);
+                    drive = ViewModel.AllDrives.FirstOrDefault(d => d?.DriveId == BaseDrive.DriveId && d?.AccountId == BaseDrive.AccountId && d?.UserDbId == BaseDrive.UserDbId, null);
                     count--;
                 }
 

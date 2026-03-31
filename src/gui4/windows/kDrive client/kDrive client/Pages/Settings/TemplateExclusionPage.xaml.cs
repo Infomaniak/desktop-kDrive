@@ -154,7 +154,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (_templateListModel is null)
             {
@@ -177,7 +177,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             exclusionTemplate.Warning = toggleSwitch.IsOn;
-            _templateListModel.SaveUserTemplates();
+            await _templateListModel.SaveUserTemplates();
         }
     }
 }
