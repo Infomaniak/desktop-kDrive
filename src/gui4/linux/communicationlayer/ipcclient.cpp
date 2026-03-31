@@ -30,6 +30,7 @@
 #include <exception>
 #include <fstream>
 #include <utility>
+#include <limits>
 
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
