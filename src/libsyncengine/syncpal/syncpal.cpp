@@ -735,9 +735,22 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
 
-    const auto progressPercentCallback = [job, this](UniqueId,
-                                                     int progress // %
+
+    // Use a weak_ptr to avoid a reference cycle:
+    // The job owns the progress callback, and capturing a shared_ptr<SyncJob> inside
+    // the callback would create a cycle (job → callback → job).
+    // This would prevent the job from being destroyed after completion and removal
+    // from the job map, resulting in a memory leak.
+    std::weak_ptr<SyncJob> weakJobPtr = job;
+    const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
+                                                            int progress // %
                                          ) {
+        auto job = weakJobPtr.lock();
+        if (!job) {
+            LOG_SYNCPAL_WARN(_logger, "Job no longer exists in progress callback");
+            return;
+        }
+
         if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
