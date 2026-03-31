@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class TestInfoDynamicStruct final : public CppUnit::TestFixture, public TestBase {
+class TestInfoDynamicStruct : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestInfoDynamicStruct);
         CPPUNIT_TEST(testErrorInfoRoundTrip);
         CPPUNIT_TEST(testNodeInfoRoundTrip);
