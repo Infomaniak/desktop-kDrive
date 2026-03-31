@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
+ * Exported at: Tue, 31 Mar 2026 09:25:22 +0200
  */
 
 
@@ -581,6 +581,18 @@
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Synchronisierung";
+
+/* loco:69cb7b4436165087ff055e92 */
+"syncShortStatusError" = "Es ist ein Fehler aufgetreten";
+
+/* loco:69ca840f10c2c8213703f4f2 */
+"syncShortStatusIdle" = "Letzte Synchronisierung war erfolgreich";
+
+/* loco:69ca84317f5583d81f03c7f2 */
+"syncShortStatusPaused" = "Die Synchronisierung wird angehalten";
+
+/* loco:69ca84494136086fe60cebf2 */
+"syncShortStatusRunning" = "Die Synchronisierung läuft";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synchronisiert";
