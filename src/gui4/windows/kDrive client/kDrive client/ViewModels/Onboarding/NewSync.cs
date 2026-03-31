@@ -35,6 +35,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
+        private bool _supportsLiteSync = false;
         private IDrive _drive;
         private ObservableCollection<NodeId> _excludedNodeIds = [];
 
