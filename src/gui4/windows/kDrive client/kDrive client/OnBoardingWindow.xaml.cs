@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.OnBoarding
         public OnBoardingWindow()
         {
             InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;  // enable custom titlebarcdcdc
+            this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 600, false);
