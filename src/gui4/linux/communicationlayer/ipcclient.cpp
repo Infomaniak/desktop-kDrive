@@ -74,7 +74,10 @@ quint16 IpcClient::readPortFromCommFile() {
         return 0;
     }
     quint16 port = 0;
-    commFile >> port;
+    if (!(commFile >> port)) {
+        qCWarning(lcIpcClient) << "Failed to parse port from .comm file (corrupted content?)";
+        return 0;
+    }
     return port;
 }
 
