@@ -44,7 +44,7 @@ void SignalDispatcher::dispatch(const SignalNum num, const Poco::DynamicStruct &
         qCDebug(lcSignalDispatcher) << "No handler registered for signal num:" << num ;
         return;
     }
-    for (const auto handlers = *it; const auto &handler : handlers) {
+    for (const auto& handlers = *it; const auto &handler : handlers) {
         try {
             handler(params);
         } catch (const std::exception &e) {
