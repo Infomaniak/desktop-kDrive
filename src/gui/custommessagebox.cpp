@@ -195,17 +195,9 @@ void CustomMessageBox::setIcon() {
 
 QSize CustomMessageBox::sizeHint() const {
     // Get the size hint of all buttons
-    int buttonsWidthHint = 0;
-    if (_buttonsHBox) {
-        for (auto i = 0; i < _buttonsHBox->count(); ++i) {
-            if (const auto *const button = qobject_cast<QPushButton *>(_buttonsHBox->itemAt(i)->widget()); button) {
-                buttonsWidthHint += button->sizeHint().width();
-            }
-        }
-    }
     const auto labelWidthHint = std::max((_warningLabel ? _warningLabel->width() : 0), (_textLabel ? _textLabel->width() : 0));
-    const auto widthHint =
-            contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin + std::max(labelWidthHint, buttonsWidthHint);
+    const auto widthHint = contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin +
+                           std::max(labelWidthHint, _buttonsHBox ? _buttonsHBox->sizeHint().width() : 0);
 
     const auto heightHint = contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
                             (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
