@@ -19,6 +19,8 @@
 #include "errorinfo.h"
 #include "utility/utility.h"
 
+#include <cstdint>
+
 static const auto outParamsDbId = "dbId";
 static const auto outParamsTime = "time";
 static const auto outParamsLevel = "level";
@@ -100,6 +102,50 @@ void ErrorInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
     CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
     CommonUtility::writeValueToStruct(dstruct, outParamsAutoResolved, _autoResolved);
+}
+
+void ErrorInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, outParamsDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, outParamsTime, _time);
+    CommonUtility::readValueFromStruct(dstruct, outParamsLevel, _level);
+
+    std::string functionName;
+    CommonUtility::readValueFromStruct(dstruct, outParamsFunctionName, functionName);
+    _functionName = QString::fromStdString(functionName);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsSyncDbId, _syncDbId);
+
+    std::string workerName;
+    CommonUtility::readValueFromStruct(dstruct, outParamsWorkerName, workerName);
+    _workerName = QString::fromStdString(workerName);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsExitCode, _exitCode);
+    CommonUtility::readValueFromStruct(dstruct, outParamsExitCause, _exitCause);
+
+    std::string localNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
+    _localNodeId = QString::fromStdString(localNodeId);
+
+    std::string remoteNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
+    _remoteNodeId = QString::fromStdString(remoteNodeId);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsNodeType, _nodeType);
+
+    std::string path;
+    CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
+    _path = QString::fromStdString(path);
+
+    std::string destinationPath;
+    CommonUtility::readValueFromStruct(dstruct, outParamsDestinationPath, destinationPath);
+    _destinationPath = QString::fromStdString(destinationPath);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsConflictType, _conflictType);
+    int32_t inconsistencyTypeValue = 0;
+    CommonUtility::readValueFromStruct(dstruct, outParamsInconsistencyType, inconsistencyTypeValue);
+    _inconsistencyType = fromInt<InconsistencyType>(inconsistencyTypeValue);
+    CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
+    CommonUtility::readValueFromStruct(dstruct, outParamsAutoResolved, _autoResolved);
 }
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {
