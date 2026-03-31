@@ -43,7 +43,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public event EventHandler<SignalEventArgs>? SignalReceived;
+
+#pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
         public event EventHandler? ConnectionLost;
+#pragma warning restore CS0067 
+
         protected Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
