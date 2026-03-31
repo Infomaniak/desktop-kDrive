@@ -241,19 +241,23 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
         exit(EXIT_FAILURE);
     }
 
-    const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
-
-    auto exitCode = ExitCode::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CODE, exitCode);
-
-    auto exitCause = ExitCause::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
-
     auto requestNum = RequestNum::Unknown;
     CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, requestNum);
 
     qCDebug(lcIpcClient) << "Reply received | RequestNum:" << requestNum << "/ id:" << id;
     if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
+        if (!ipcMessage[MSG_REQUEST_PARAMS].isStruct()) {
+            qCCritical(lcIpcClient) << "params field is not a JSON object for id:" << id;
+            exit(EXIT_FAILURE);
+        }
+        const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
+
+        auto exitCode = ExitCode::Unknown;
+        CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CODE, exitCode);
+
+        auto exitCause = ExitCause::Unknown;
+        CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
+
         const auto callback = std::move(it.value());
         _pendingCallbacks.erase(it);
 
