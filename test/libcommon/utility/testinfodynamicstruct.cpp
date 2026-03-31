@@ -29,8 +29,8 @@ namespace KDC {
 void TestInfoDynamicStruct::testErrorInfoRoundTrip() {
     const ErrorInfo source(ErrorDbId{41}, int64_t{1712345678}, ErrorLevel::SyncPal, QString("syncStep"), SyncDbId{99},
                            QString("workerA"), ExitCode::NetworkError, ExitCause::NetworkTimeout, QString("local-1"),
-                           QString("remote-2"), NodeType::File, QString("/tmp/file.txt"), ConflictType::EditEdit,
-                           InconsistencyType::ForbiddenChar, CancelType::Move, QString("/tmp/file-copy.txt"));
+                           QString("remote-2"), NodeType::File, QString("workspace/file.txt"), ConflictType::EditEdit,
+                           InconsistencyType::ForbiddenChar, CancelType::Move, QString("workspace/file-copy.txt"));
 
     Poco::DynamicStruct dstruct;
     source.toDynamicStruct(dstruct);
@@ -49,8 +49,8 @@ void TestInfoDynamicStruct::testErrorInfoRoundTrip() {
     CPPUNIT_ASSERT_EQUAL(std::string("local-1"), parsed.localNodeId().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("remote-2"), parsed.remoteNodeId().toStdString());
     CPPUNIT_ASSERT_EQUAL(NodeType::File, parsed.nodeType());
-    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/file.txt"), parsed.path().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/file-copy.txt"), parsed.destinationPath().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file.txt"), parsed.path().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file-copy.txt"), parsed.destinationPath().toStdString());
     CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, parsed.conflictType());
     CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, parsed.inconsistencyType());
     CPPUNIT_ASSERT_EQUAL(CancelType::Move, parsed.cancelType());
@@ -59,7 +59,7 @@ void TestInfoDynamicStruct::testErrorInfoRoundTrip() {
 
 void TestInfoDynamicStruct::testNodeInfoRoundTrip() {
     const NodeInfo source(QString("node-123"), QString("FolderA"), int64_t{4096}, QString("parent-99"), SyncTime{123456789},
-                          QString("/root/FolderA"));
+                          QString("workspace/FolderA"));
 
     Poco::DynamicStruct dstruct;
     source.toDynamicStruct(dstruct);
@@ -72,7 +72,7 @@ void TestInfoDynamicStruct::testNodeInfoRoundTrip() {
     CPPUNIT_ASSERT_EQUAL(qint64{4096}, parsed.size());
     CPPUNIT_ASSERT_EQUAL(std::string("parent-99"), parsed.parentNodeId().toStdString());
     CPPUNIT_ASSERT_EQUAL(qint64{123456789}, parsed.modtime());
-    CPPUNIT_ASSERT_EQUAL(std::string("/root/FolderA"), parsed.path().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("workspace/FolderA"), parsed.path().toStdString());
     CPPUNIT_ASSERT_EQUAL(false, parsed.accessDenied());
 }
 
