@@ -36,10 +36,14 @@ std::wstring stringToWideString(const std::string &str) {
 
 std::string toString(const GuiJobType e) {
     switch (e) {
-        case GuiJobType::Unknown: return "Unknown";
-        case GuiJobType::Query:   return "Query";
-        case GuiJobType::Signal:  return "Signal";
-        default:                  return noConversionStr;
+        case GuiJobType::Unknown:
+            return "Unknown";
+        case GuiJobType::Query:
+            return "Query";
+        case GuiJobType::Signal:
+            return "Signal";
+        default:
+            return noConversionStr;
     }
 }
 
