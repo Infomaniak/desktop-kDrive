@@ -24,6 +24,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
 
+    // periphery:ignore - We keep a strong reference on the statusBarManager
+    private(set) var statusBarManager: StatusBarManager?
+
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
@@ -32,11 +35,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let testing = AppDelegate.isRunningTests
         DriveTargetAssembly.setupDI(testing: testing)
+
         guard !testing else {
             return
         }
 
         SentryService().initSentry()
+        statusBarManager = StatusBarManager()
 
         openMainWindow()
     }
@@ -45,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func openMainWindow() {
+    @objc func openMainWindow() {
         mainWindow.showWindow(nil)
         mainWindow.window?.makeKeyAndOrderFront(nil)
 
