@@ -28,16 +28,28 @@ namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
 
+/**
+ * Top-level application object for the Linux GUI client.
+ *
+ * Owns the IPC client and the signal dispatcher. On construction, sets up logging,
+ * wires IPC signals to the dispatcher, and initiates the connection to the server.
+ */
 class AppClientLinux : public QGuiApplication {
         Q_OBJECT
 
     public:
         explicit AppClientLinux(int &argc, char **argv);
 
+        /**
+         * Provides access to the signal dispatcher for registering server signal handlers.
+         * Call registerHandler() on the returned dispatcher before the IPC connection is established.
+         */
         SignalDispatcher &signalDispatcher() { return _signalDispatcher; }
 
     signals:
+        /** Emitted once the first IPC connection to the server has been successfully established. */
         void ipcConnected();
+        /** Emitted when the IPC connection is lost after having been established. Considered fatal. */
         void ipcDisconnected();
 
     private:
