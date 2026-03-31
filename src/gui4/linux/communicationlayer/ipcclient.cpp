@@ -323,11 +323,11 @@ void IpcClient::processBuffer() {
 
             switch (type) {
                 case GuiJobType::Query: {
-                    handle_response_message(ipcMessage, id, params);
+                    handle_response_message(ipcMessage, id);
                     break;
                 }
                 case GuiJobType::Signal: {
-                    handle_server_signal(ipcMessage, id, params);
+                    handle_server_signal(ipcMessage, id);
                     break;
                 }
                 default:
