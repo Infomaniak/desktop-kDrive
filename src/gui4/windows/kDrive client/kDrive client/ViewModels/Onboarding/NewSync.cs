@@ -98,6 +98,12 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncType, value);
         }
 
+        public bool SupportsLiteSync
+        {
+            get => _supportsLiteSync;
+            set => SetPropertyInUIThread(ref _supportsLiteSync, value);
+        }
+
         public ObservableCollection<NodeId> ExcludedNodeIds
         {
             get => _excludedNodeIds;
@@ -107,11 +113,12 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task SelectBestVfsMode()
         {
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
-            if (CanSupportOnlineMode is null)
+            bool? canSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
+            if (canSupportOnlineMode is null)
                 Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
 
-            SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
+            SupportsLiteSync = canSupportOnlineMode ?? false;
+            SyncType = SupportsLiteSync ? SyncType.Online : SyncType.Offline;
         }
 
         public Task<List<NodeId>?> GetExcludedNodeIds() => Task.FromResult<List<NodeId>?>(new List<NodeId>(ExcludedNodeIds));

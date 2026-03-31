@@ -39,6 +39,10 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
+    if (!JsonParserUtility::extractValue(dataObj, firstNameKey, _firstName)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
     if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }

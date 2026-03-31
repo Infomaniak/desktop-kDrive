@@ -1995,6 +1995,11 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
         updated = true;
     }
 
+    if (user.firstName() != job->firstName()) {
+        user.setFirstName(job->firstName());
+        updated = true;
+    }
+
     if (user.email() != job->email()) {
         user.setEmail(job->email());
         updated = true;
@@ -2196,6 +2201,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
     userInfo.setDbId(user.dbId());
     userInfo.setUserId(user.userId());
     userInfo.setName(QString::fromStdString(user.name()));
+    userInfo.setFirstName(QString::fromStdString(user.firstName()));
     userInfo.setEmail(QString::fromStdString(user.email()));
     if (user.avatar()) {
         QByteArray avatarArr;
