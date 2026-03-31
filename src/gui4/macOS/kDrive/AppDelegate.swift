@@ -18,13 +18,13 @@
 
 import Cocoa
 import kDriveCore
-import kDriveResources
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
 
+    // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
 
     private static var isRunningTests: Bool {
