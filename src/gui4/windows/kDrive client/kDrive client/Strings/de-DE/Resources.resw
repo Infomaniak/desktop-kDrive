@@ -1172,7 +1172,7 @@ Es wird in Ihrem Browser geöffnet.</value>
     <comment>Option label for selecting all folders in the sync exclusion picker.</comment> 
   </data> 
   <data name="labelAllkDrive" xml:space="preserve"> 
-    <value>Alle kDrive</value> 
+    <value>Gesamtes kDrive</value>
     <comment>Option label for syncing the entire kDrive content without folder exclusions.</comment> 
   </data> 
   <data name="labelAllowTracking" xml:space="preserve"> 
