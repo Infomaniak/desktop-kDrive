@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class TestCommJson final : public CppUnit::TestFixture, public TestBase {
+class TestCommJson : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestCommJson);
         CPPUNIT_TEST(testParseObject);
         CPPUNIT_TEST(testParseCommObject);
