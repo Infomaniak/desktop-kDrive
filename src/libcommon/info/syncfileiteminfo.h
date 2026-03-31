@@ -72,6 +72,7 @@ class SyncFileItemInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list);
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
     private:
         NodeType _type;
