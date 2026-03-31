@@ -49,6 +49,7 @@ class NodeInfo {
         inline void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
         friend QDataStream &operator>>(QDataStream &in, NodeInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const NodeInfo &info);
 
