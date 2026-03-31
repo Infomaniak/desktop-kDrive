@@ -85,6 +85,7 @@ quint16 IpcClient::readPortFromCommFile() {
 /**
  * In release mode, the port is passed as a command-line argument by the server when launching the client.
  * The first connection is retried until it succeeds once.
+ * @param port TCP port on which the server is listening.
  */
 void IpcClient::connectToServer(quint16 port) {
     _configuredPort = port;
@@ -93,6 +94,13 @@ void IpcClient::connectToServer(quint16 port) {
 }
 #endif
 
+/**
+ * Attempts to connect to the server. Called on the first attempt and on each retry timer tick.
+ * No-op if a connection has already been established (@c _hasConnectedOnce).
+ * In debug mode, the port is resolved from the .comm file on every attempt (the server may not have written it yet).
+ * In release mode, the port was set once at startup via connectToServer(quint16).
+ * Schedules a retry if the port is not yet available.
+ */
 void IpcClient::attemptInitialConnection() {
     if (_hasConnectedOnce) {
         return;
@@ -180,6 +188,11 @@ void IpcClient::onConnected() {
     emit connected();
 }
 
+/**
+ * Handles socket disconnection.
+ * Before the first successful connection: schedules a reconnection retry (server may not be ready yet).
+ * After the first successful connection: considered fatal — emits disconnected() and calls exit(EXIT_FAILURE).
+ */
 void IpcClient::onDisconnected() {
     if (!_hasConnectedOnce) {
         scheduleInitialConnectionRetry("Socket disconnected before the first successful connection");
@@ -190,6 +203,12 @@ void IpcClient::onDisconnected() {
     exit(EXIT_FAILURE);
 }
 
+/**
+ * Handles socket errors.
+ * Before the first successful connection: schedules a retry (e.g. server not started yet, port not bound).
+ * After the first successful connection: considered fatal — logs the error and calls exit(EXIT_FAILURE).
+ * @param socketError The socket error code (see QAbstractSocket::SocketError).
+ */
 void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) {
     if (!_hasConnectedOnce) {
         scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(toInt(socketError)).arg(_socket->errorString()));
@@ -208,6 +227,13 @@ void IpcClient::onReadyRead() {
     processBuffer();
 }
 
+/**
+ * Schedules a retry of the initial connection after @c initialConnectionRetryDelayMs milliseconds.
+ * No-op if a connection has already been established or a retry is already pending.
+ * Logging is throttled: logged at Info on the first attempt, then at Warning every @c initialConnectionLogEveryAttempts attempts,
+ * to avoid flooding the log during normal server startup delays.
+ * @param reason Human-readable explanation of why the retry is needed, included in the log message.
+ */
 void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
     if (_hasConnectedOnce || _initialConnectionRetryTimer.isActive()) {
         return;
