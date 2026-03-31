@@ -60,6 +60,13 @@ namespace Infomaniak.kDrive
             return GetString(key, new object?[] { arg1 });
         }
 
+        // This method is similar to GetString1s but the argument is expected to be a key for another localized string, so it calls GetString on the argument before passing it to GetString.
+        public string GetStringCombine1s(string key, string arg1Key)
+        {
+            string arg1 = GetString(arg1Key);
+            return GetString(key, new object?[] { arg1 });
+        }
+
         public string GetString1i(string key, int arg1)
         {
             return GetString(key, new object?[] { arg1 });
@@ -150,7 +157,7 @@ namespace Infomaniak.kDrive
                 if (pos == -1)
                     break;
 
-                localizedString = localizedString.Substring(0, pos) + "{" + argIndex + "}" + localizedString.Substring(pos + macOSPlaceholder.Length);
+                localizedString = localizedString.Substring(0, pos) + "{" + Math.Min(argIndex, (args?.Length - 1) ?? 0) + "}" + localizedString.Substring(pos + macOSPlaceholder.Length);
                 ++argIndex;
             }
 

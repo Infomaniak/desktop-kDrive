@@ -14,9 +14,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     {
         private Error Error { get; init; }
 
-        private string DescriptionKey
+        private string DescriptionLabel
         {
-            get => (Error.Sync?.Drive?.IsAdmin ?? false) ? "errFileTooBigDescriptionAdmin" : "errFileTooBigDescription";
+            get => (Error.Sync?.Drive?.IsAdmin ?? false) ? Localizer.Instance.GetString("errFileTooBigAdminDescription") : Localizer.Instance.GetString("errFileTooBigDescription");
         }
         public FileTooBigError(Error error)
         {

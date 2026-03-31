@@ -13,6 +13,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     {
         private readonly AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
+
         public AppModel AppModel => _appModel;
         public ViewModels.Onboarding? OnboardingViewModel => _onboardingViewModel;
         public NoDrivesPage()
@@ -69,6 +70,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private async void OnOffersButtonClick(object sender, RoutedEventArgs e)
         {
             await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.TarrifsUri);
+        }
+
+        private void ChangeUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnboardingViewModel?.Reset();
+            Frame.Navigate(typeof(Onboarding.WelcomePage), OnboardingViewModel);
         }
     }
 }

@@ -15,7 +15,7 @@
     </UserControl.Resources>
     <Border Grid.Row="1"
             Grid.Column="0"
-            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
             Margin="{StaticResource Infomaniak.Style.Thickness.Right.XL}"
             Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"
@@ -38,7 +38,7 @@
                               Visibility="{x:Bind IsFileIconVisible}" />
             
             <controls:SvgIcon Grid.Column="0"
-                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                               Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                               Visibility="{x:Bind IsDirectoryIconVisible}" />

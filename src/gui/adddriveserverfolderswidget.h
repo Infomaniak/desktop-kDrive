@@ -44,7 +44,7 @@ class AddDriveServerFoldersWidget : public QWidget {
     public:
         explicit AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void init(int userDbId, const DriveAvailableInfo &driveInfo);
+        void init(UserDbId userDbId, const DriveAvailableInfo &driveInfo);
         qint64 selectionSize() const;
         QSet<QString> createBlackList() const;
         QSet<QString> createWhiteList() const;

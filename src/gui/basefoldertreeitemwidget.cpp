@@ -47,7 +47,7 @@ static const int nodeIdRole = Qt::UserRole + 3;
 
 Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
-BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
+BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, const DriveDbId driveDbId, bool displayRoot,
                                                    QWidget *parent) :
     QTreeWidget(parent),
     _gui(gui),

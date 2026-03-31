@@ -70,7 +70,7 @@ class ISyncWorker {
         // Implement this method in your subclass with the code you want your thread to run
         virtual void execute() = 0;
 
-        inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
+        inline SyncDbId syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
         const std::string _name;

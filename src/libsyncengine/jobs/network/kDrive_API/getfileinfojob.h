@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetFileInfoJob : public AbstractTokenNetworkJob {
     public:
-        GetFileInfoJob(int userDbId, int driveId, const NodeId &nodeId);
-        GetFileInfoJob(int driveDbId, const NodeId &nodeId);
+        GetFileInfoJob(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
+        GetFileInfoJob(DriveDbId driveDbId, const NodeId &nodeId);
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline const NodeId &parentNodeId() const { return _parentNodeId; }

@@ -140,7 +140,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             if (!result.Value)
             {
-                Utility.ShowTeachingTipFromxUid("CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;
@@ -155,6 +155,20 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         private void Exclusionbutton_click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(SyncExclusionPage), DriveSetupContentDialogVM);
+        }
+
+        private async void ReturnToDefaultFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DriveSetupContentDialogVM?.CurrentSync is null)
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            var newSync = DriveSetupContentDialogVM.CurrentSync;
+
+            newSync.LocalPath = newSync.DefaultPath;
+            await newSync.SelectBestVfsMode();
         }
     }
 }

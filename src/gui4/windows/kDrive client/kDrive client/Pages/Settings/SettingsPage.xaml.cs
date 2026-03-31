@@ -150,6 +150,16 @@ namespace Infomaniak.kDrive.Pages.Settings
             // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
+        private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (sender is Control control)
+            {
+                var currentForeground = control.Foreground;
+                control.Foreground = null;
+                control.Foreground = currentForeground;
+            }
+        }
+
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
         {
             User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
@@ -166,8 +176,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 XamlRoot = this.XamlRoot,
                 Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
-                PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonKeepAccount"),
+                SecondaryButtonText = Localizer.Instance.GetString("buttonLogOut"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name)
             };
@@ -279,12 +289,18 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "selected item is null or invalid");
             }
 
+            if (selectedProxyType == ProxyType.HTTP && ViewModel.Settings.ProxyConfig.Type != ProxyType.HTTP)
+                ProxySettingsExpander.IsExpanded = true;
+            else
+                ProxySettingsExpander.IsExpanded = false;
+
 
             if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change proxy type");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+
             control.IsEnabled = true;
         }
 

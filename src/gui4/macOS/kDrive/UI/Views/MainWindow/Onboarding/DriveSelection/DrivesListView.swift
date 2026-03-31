@@ -32,6 +32,12 @@ class DrivesListView: NSView {
 
     private(set) var cells = [Int: DriveCellView]()
 
+    var selectedDrives = Set<UIAvailableDrive>() {
+        didSet {
+            updateSelectedCells(newValue: selectedDrives, oldValue: oldValue)
+        }
+    }
+
     var drives: [UIAvailableDrive] = [] {
         didSet {
             updateDrivesList()
@@ -84,6 +90,24 @@ class DrivesListView: NSView {
             drivesStackView.addArrangedSubview(cell)
 
             cells[drive.id] = cell
+            if selectedDrives.contains(drive) {
+                cell.state = .on
+            } else {
+                cell.state = .off
+            }
+        }
+    }
+
+    private func updateSelectedCells(newValue: Set<UIAvailableDrive>, oldValue: Set<UIAvailableDrive>) {
+        let deselectedDrives = oldValue.subtracting(newValue)
+        let selectedDrives = newValue.subtracting(oldValue)
+
+        for drive in deselectedDrives {
+            cells[drive.id]?.state = .off
+        }
+
+        for drive in selectedDrives {
+            cells[drive.id]?.state = .on
         }
     }
 }

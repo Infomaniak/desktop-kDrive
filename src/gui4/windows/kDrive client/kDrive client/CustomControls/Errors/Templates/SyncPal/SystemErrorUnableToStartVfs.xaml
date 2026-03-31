@@ -8,9 +8,9 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('systemErrorUnableToStartVfsTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('systemErrorUnableToStartVfsDescription')}"
-                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenSyncSettings')}"
-                     ActionClick="OnOpenSyncSettingsClick"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errSystemUnableToStartVfsTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errSystemUnableToStartVfsDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonActivateOfflineSync')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

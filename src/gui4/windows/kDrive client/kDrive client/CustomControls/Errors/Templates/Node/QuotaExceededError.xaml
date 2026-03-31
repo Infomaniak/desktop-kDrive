@@ -9,10 +9,19 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
-    <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind kDrive:Localizer.Instance.GetString('quotaExceededErrorTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errQuotaExceededDescription')}"
-                     Error="{x:Bind Error}" />
+    <Grid>
+        <local:ErrorCard Visibility="{x:Bind Error.Sync.Drive.IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                         Title="{x:Bind kDrive:Localizer.Instance.GetString('errQuotaExceededTitle')}"
+                         Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errQuotaExceededDescription', Error.NodeTypeTranslationKey)}"
+                         ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonManageStorage')}"
+                         ActionClick="ErrorCard_ActionClick"
+                         Error="{x:Bind Error}" />
+
+        <local:ErrorCard Visibility="{x:Bind Error.Sync.Drive.IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                         Title="{x:Bind kDrive:Localizer.Instance.GetString('errQuotaExceededTitle')}"
+                         Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errQuotaExceededDescription', Error.NodeTypeTranslationKey)}"
+                         Error="{x:Bind Error}" />
+    </Grid>
 </UserControl>

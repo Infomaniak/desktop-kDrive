@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 void operator>>(QDataStream &in, DriveInfo &info) {
-    int dbId{0};
-    int id{0};
-    int accountDbId{0};
+    qint64 dbId{0};
+    qint64 id{0};
+    qint64 accountDbId{0};
     QString name;
     QColor color;
     bool notifications{false};
@@ -91,9 +91,9 @@ void operator>>(QDataStream &in, DriveInfo &info) {
     in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied >>
             packIsFree;
 
-    info.setDbId(dbId);
-    info.setId(id);
-    info.setAccountDbId(accountDbId);
+    info.setDbId(static_cast<DriveDbId>(dbId));
+    info.setId(static_cast<DriveId>(id));
+    info.setAccountDbId(static_cast<AccountDbId>(accountDbId));
     info.setName(name);
     info.setColor(color);
     info.setNotifications(notifications);
@@ -105,8 +105,9 @@ void operator>>(QDataStream &in, DriveInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
-    out << info.dbId() << info.id() << info.accountDbId() << info.name() << info.color() << info.notifications() << info.admin()
-        << info.maintenance() << info.locked() << info.accessDenied() << info.packIsFree();
+    out << static_cast<qint64>(info.dbId()) << static_cast<qint64>(info.id()) << static_cast<qint64>(info.accountDbId())
+        << info.name() << info.color() << info.notifications() << info.admin() << info.maintenance() << info.locked()
+        << info.accessDenied() << info.packIsFree();
     return out;
 }
 

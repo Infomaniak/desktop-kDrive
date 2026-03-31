@@ -46,7 +46,7 @@ static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
 
-FixConflictingFilesDialog::FixConflictingFilesDialog(const int driveDbId, std::shared_ptr<ClientGui> gui,
+FixConflictingFilesDialog::FixConflictingFilesDialog(const DriveDbId driveDbId, std::shared_ptr<ClientGui> gui,
                                                      QWidget *parent /*= nullptr*/) :
     CustomDialog(true, parent),
     _gui(gui),

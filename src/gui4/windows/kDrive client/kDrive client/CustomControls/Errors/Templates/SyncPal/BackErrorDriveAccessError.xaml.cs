@@ -18,11 +18,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             Error = error;
         }
 
-        private async void OnRetryClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (Error?.Sync is null)
+            if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Warning, "Retry clicked but Sync is null");
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

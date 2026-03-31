@@ -38,7 +38,7 @@
             <!-- Title -->
             <RowDefinition Height="Auto" />
             <!-- Main -->
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <!-- Manage storage -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -50,6 +50,7 @@
 
         <!-- Main - Missing disk -->
         <Grid  Grid.Row="1"
+               VerticalAlignment="Center"
                Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
                RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
             <Grid.RowDefinitions>
@@ -60,16 +61,15 @@
                               Width="120"
                               UriString="{StaticResource Infomaniak.Custom.Images.hardware}" />
             <StackPanel Grid.Row="1"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
-                <TextBlock Text="{x:Bind PageViewModel.MissingDiskTitle, Mode=OneWay}"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskTitle', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
                            TextAlignment="Center"
                            Style="{ThemeResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="{x:Bind PageViewModel.MissingDiskSubtitle, Mode=OneWay}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskDescription', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
                            TextAlignment="Center" />
-                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRetry')}"
-                        HorizontalAlignment="Center"
-                        Style="{ThemeResource TextBlockButtonStyle}"
-                        Click="RetryButton_click" />
+                <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRetry')}"
+                                 HorizontalAlignment="Center"
+                                 Click="RetryButton_click" />
                 <ProgressRing x:Name="RetryProgressRing"
                               Width="16"
                               Height="16"
@@ -79,6 +79,7 @@
         </Grid>
         <!-- Main -->
         <Grid Grid.Row="1"
+              VerticalAlignment="Top"
               Background="{ThemeResource LayerFillColorDefaultBrush}"
               CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
@@ -111,14 +112,14 @@
                                                 Color2="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
                                                 Color3="{ThemeResource AccentAAFillColorDisabledBrush}" />
                 <Grid>
-                    
+
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorSecondary}"
                                Text="{x:Bind GetStorageUsedLabel(PageViewModel.DiskUsedSize), Mode=OneWay}" />
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorSecondary}"
-                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.DiskFreeSize), Mode=OneWay}" 
-                               HorizontalAlignment="Right"/>
+                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.DiskFreeSize), Mode=OneWay}"
+                               HorizontalAlignment="Right" />
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="1">

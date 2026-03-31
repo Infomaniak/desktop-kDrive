@@ -93,7 +93,7 @@ namespace Infomaniak.kDrive.CustomControls
             dataPackage.SetText(ToolTipPath);
             Clipboard.SetContent(dataPackage);
 
-            Utility.ShowTeachingTipFromKeys("pathCopiedToClipboard");
+            Utility.ShowTeachingTip(Localizer.Instance.GetString("pathCopiedToClipboard"));
         }
     }
 }

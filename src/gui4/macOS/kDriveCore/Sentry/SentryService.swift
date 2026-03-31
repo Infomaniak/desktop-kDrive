@@ -23,8 +23,7 @@ public struct SentryService {
 
     public func initSentry() {
         SentrySDK.start { options in
-            // TODO: Setup correct Sentry DSN
-            // options.dsn = "https://8018fd7b5c8adf98e1052d5bea678793@sentry-mobile.infomaniak.com/21"
+             options.dsn = "https://b6784e934228fe7683d206898d9d0f1e@sentry-desktop.infomaniak.com/6"
             options.tracePropagationTargets = []
             options.enableNetworkTracking = false
             options.enableNetworkBreadcrumbs = false

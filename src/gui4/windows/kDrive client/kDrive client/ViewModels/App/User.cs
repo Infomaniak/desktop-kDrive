@@ -46,6 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
         private readonly ObservableCollection<DriveAvailable> _drivesAvailable = [];
+        private readonly AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private bool _driveRefreshInProgress = false;
         private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
@@ -65,6 +66,8 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _allDriveSubscribtion.Dispose();
         }
+
+        public AppModel AppModel => _appModel;
 
         public DbId DbId
         {
@@ -147,14 +150,17 @@ namespace Infomaniak.kDrive.ViewModels
                 return null;
 
             using var stream = new InMemoryRandomAccessStream();
-            stream.AsStreamForWrite().Write(imageData, 0, imageData.Length);
+            var writeStream = stream.AsStreamForWrite();
+            writeStream.Write(imageData, 0, imageData.Length);
+            writeStream.Flush();
+
             stream.Seek(0);
 
             var bitmap = new BitmapImage();
             if (decodePixelWidth > 0)
             {
                 bitmap.DecodePixelType = DecodePixelType.Physical;
-                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot.RasterizationScale ?? 1.0;
+                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot?.RasterizationScale ?? 1.0;
                 bitmap.DecodePixelWidth = (int)(decodePixelWidth * rasterization);
             }
             bitmap.SetSource(stream);

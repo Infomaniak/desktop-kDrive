@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -231,7 +231,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
-            int userDbId;
+            qint64 userDbId = 0;
             bool connected;
             QString connexionError;
             paramsStream >> userDbId;
@@ -242,7 +242,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::USER_REMOVED: {
-            int userDbId;
+            qint64 userDbId = 0;
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
@@ -263,7 +263,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
-            int accountDbId;
+            qint64 accountDbId = 0;
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
@@ -284,7 +284,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
-            int driveDbId;
+            qint64 driveDbId = 0;
             qint64 total;
             qint64 used;
             paramsStream >> driveDbId;
@@ -295,14 +295,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_REMOVED: {
-            int driveDbId;
+            qint64 driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveRemoved(driveDbId);
             break;
         }
         case SignalNum::DRIVE_DELETE_FAILED: {
-            int driveDbId;
+            qint64 driveDbId = 0;
             paramsStream >> driveDbId;
 
             emit driveDeletionFailed(driveDbId);
@@ -323,14 +323,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_REMOVED: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncRemoved(syncDbId);
             break;
         }
         case SignalNum::SYNC_PROGRESSINFO: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             SyncStatus status;
             SyncStep step;
             qint64 currentFile;
@@ -352,7 +352,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             SyncFileItemInfo itemInfo;
             paramsStream >> syncDbId;
             paramsStream >> itemInfo;
@@ -361,14 +361,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
             break;
         }
         case SignalNum::SYNC_DELETE_FAILED: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
@@ -384,7 +384,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED: {
-            int syncDbId = 0;
+            qint64 syncDbId = 0;
             QVariant var;
             paramsStream >> syncDbId;
             paramsStream >> var;
@@ -413,18 +413,18 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UTILITY_ERROR_ADDED_LEGACY: {
-            bool serverLevel;
-            ExitCode exitCode;
-            int syncDbId;
+            bool serverLevel = false;
+            ExitCode exitCode = ExitCode::Unknown;
+            qint64 syncDbId = 0;
             paramsStream >> serverLevel;
             paramsStream >> exitCode;
             paramsStream >> syncDbId;
 
-            emit errorAdded(serverLevel, exitCode, syncDbId);
+            emit errorAdded(serverLevel, exitCode, static_cast<SyncDbId>(syncDbId));
             break;
         }
         case SignalNum::UTILITY_ERRORS_CLEARED: {
-            int syncDbId;
+            qint64 syncDbId = 0;
             paramsStream >> syncDbId;
 
             emit errorsCleared(syncDbId);
@@ -452,7 +452,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
-            int progress; // Progress in percentage
+            int progress = 0; // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
             emit logUploadStatusUpdated(status, progress);
@@ -537,7 +537,7 @@ void AppClient::onWizardDone(int res) {
     if (res == QDialog::Accepted) {
         // If one account is configured: enable autostart
         ExitCode exitCode;
-        QList<int> userDbIdList;
+        QList<UserDbId> userDbIdList;
         exitCode = GuiRequests::getUserDbIdList(userDbIdList);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient) << "Error in Requests::getUserDbIdList";
@@ -715,7 +715,7 @@ void AppClient::updateSystrayIcon() {
     }
 }
 
-void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError) {
+void AppClient::askUserToLoginAgain(const UserDbId userDbId, QString userEmail, bool invalidTokenError) {
     CustomMessageBox msgBox(QMessageBox::Information, tr("The user %1 is not connected. Please log in again.").arg(userEmail),
                             QMessageBox::Ok);
     msgBox.exec();

@@ -54,7 +54,7 @@
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaSettings'), Mode=OneWay}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramTitle'), Mode=OneWay}"
                               Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
@@ -64,11 +64,11 @@
                 <ComboBoxItem Tag="Prod"
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('doNotJoin'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Beta"
-                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelbeta'), Mode=OneWay}" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelBeta'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
-                              Foreground="{ThemeResource SystemErrorTextColor}"
+                              Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                               Visibility="Collapsed" />
             </ComboBox>
         </toolKit:SettingsCard>

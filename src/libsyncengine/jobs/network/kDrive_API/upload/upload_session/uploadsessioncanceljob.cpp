@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-UploadSessionCancelJob::UploadSessionCancelJob(const UploadSessionType uploadType, const int driveDbId, const SyncPath &filepath,
-                                               const std::string &sessionToken) :
+UploadSessionCancelJob::UploadSessionCancelJob(const UploadSessionType uploadType, const DriveDbId driveDbId,
+                                               const SyncPath &filepath, const std::string &sessionToken) :
     AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }

@@ -20,7 +20,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             Error = error;
         }
 
-        private async void OnActionClick(object sender, RoutedEventArgs e)
+        private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
             bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
             if (!result)

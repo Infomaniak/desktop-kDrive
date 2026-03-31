@@ -29,27 +29,27 @@ namespace KDC {
 
 class ErrorInfo {
     public:
-        ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
+        ErrorInfo(const ErrorDbId dbId, qint64 time, ErrorLevel level, const QString &functionName, SyncDbId syncDbId,
                   const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
                   const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
                   InconsistencyType inconsistencyType, CancelType cancelType = CancelType::None,
                   const QString &destinationPath = "");
-        ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
+        ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, SyncDbId syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
                   CancelType cancelType = CancelType::None, const QString &destinationPath = "");
-        ErrorInfo();
+        ErrorInfo() = default;
 
-        inline int64_t dbId() const { return _dbId; }
-        inline void setDbId(int64_t dbId) { _dbId = dbId; }
+        inline ErrorDbId dbId() const { return _dbId; }
+        inline void setDbId(const ErrorDbId dbId) { _dbId = dbId; }
         inline qint64 getTime() const { return _time; }
         inline void setTime(qint64 time) { _time = time; }
         inline ErrorLevel level() const { return _level; }
         inline void setLevel(ErrorLevel newLevel) { _level = newLevel; }
         inline const QString &functionName() const { return _functionName; }
         inline void setFunctionName(const QString &newFunctionName) { _functionName = newFunctionName; }
-        inline int syncDbId() const { return _syncDbId; }
-        inline void setSyncDbId(int newSyncDbId) { _syncDbId = newSyncDbId; }
+        inline SyncDbId syncDbId() const { return _syncDbId; }
+        inline void setSyncDbId(const SyncDbId newSyncDbId) { _syncDbId = newSyncDbId; }
         inline const QString &workerName() const { return _workerName; }
         inline void setWorkerName(const QString &newWorkerName) { _workerName = newWorkerName; }
         inline ExitCode exitCode() const { return _exitCode; }
@@ -84,11 +84,11 @@ class ErrorInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list);
 
     private:
-        int64_t _dbId{0};
+        ErrorDbId _dbId{0};
         qint64 _time{0};
         ErrorLevel _level{ErrorLevel::Unknown};
         QString _functionName;
-        int _syncDbId{0};
+        SyncDbId _syncDbId{0};
         QString _workerName;
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};

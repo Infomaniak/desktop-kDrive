@@ -26,7 +26,7 @@ namespace KDC {
 
 static const uint32_t apiTimout = 900;
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, const NodeId &dirId,
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId,
                                                            const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist),
     _dirId(dirId),

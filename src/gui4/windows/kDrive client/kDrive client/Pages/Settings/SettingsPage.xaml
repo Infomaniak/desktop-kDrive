@@ -129,16 +129,20 @@
                                 <!-- These options are disabled until the notification snooze feature is fixed (see card 1172-Fix NotificationsDisabled ) -->
                                 <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneHour'), Mode=OneWay}"
                                               Tag="OneHour"
-                                              IsEnabled="False" />
+                                              IsEnabled="False"
+                                              Visibility="Collapsed" />
                                 <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('untilTomorrow'), Mode=OneWay}"
                                               Tag="UntilTomorrow"
-                                              IsEnabled="False" />
+                                              IsEnabled="False"
+                                              Visibility="Collapsed" />
                                 <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forThreeDays'), Mode=OneWay}"
                                               Tag="ThreeDays"
-                                              IsEnabled="False" />
+                                              IsEnabled="False"
+                                              Visibility="Collapsed" />
                                 <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('forOneWeek'), Mode=OneWay}"
                                               Tag="OneWeek"
-                                              IsEnabled="False" />
+                                              IsEnabled="False"
+                                              Visibility="Collapsed" />
                             </ComboBox>
                             <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonEnableInSettings'), Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.Settings.NotificationsAuthorizedInSystemSettings, Converter={StaticResource BooleanToVisibilityConverter},ConverterParameter='Inverted=True', Mode=OneWay}"
@@ -158,10 +162,13 @@
                         <toolKit:SettingsCard.Description>
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding IsOn, ElementName=MoveToTrashToggleSwitch, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}"
-                                           TextWrapping="WrapWholeWords" />
-                                <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}"
-                                                 NavigateUri="https://faq.infomaniak.com/2383#desktop" />
+                                <TextBlock TextWrapping="WrapWholeWords">
+                                    <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}" />
+                                    <Hyperlink NavigateUri="https://faq.infomaniak.com/2383#desktop"
+                                               UnderlineStyle="None">
+                                        <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
+                                    </Hyperlink>
+                                </TextBlock>
                             </StackPanel>
                         </toolKit:SettingsCard.Description>
                     </toolKit:SettingsCard>
@@ -174,6 +181,7 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonHelpdesk'), Mode=OneWay}"
+                                MinWidth="120"
                                 Click="HelpDeskButton_Click" />
                     </toolKit:SettingsCard>
 
@@ -194,10 +202,10 @@
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemAccounts'), Mode=OneWay}"
                                    HorizontalAlignment="Left"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                        <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
-                                         HorizontalAlignment="Right"
-                                         Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
-                                         Click="CreateAccountButton_Click" />
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConnectAccount'), Mode=OneWay}"
+                                HorizontalAlignment="Right"
+                                Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                Click="CreateAccountButton_Click" />
                     </Grid>
 
                     <!-- Account - No account case -->
@@ -226,7 +234,7 @@
 
                             </StackPanel>
                         </toolKit:SettingsCard.Header>
-                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('connectAccount'), Mode=OneWay}"
+                        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonConnectAccount'), Mode=OneWay}"
                                 HorizontalAlignment="Right"
                                 Click="CreateAccountButton_Click" />
                     </toolKit:SettingsCard>
@@ -295,7 +303,9 @@
                                     <toolKit:SettingsExpander.ItemsFooter>
                                         <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonDisconnectAccount'), Mode=OneWay}"
                                                               Style="{StaticResource DefaultSettingsExpanderItemStyle}"
+                                                              Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                                               IsClickEnabled="True"
+                                                              PointerExited="FixForegroundOnPointerExited"
                                                               Click="DisconectUser_Click" />
                                     </toolKit:SettingsExpander.ItemsFooter>
                                 </toolKit:SettingsExpander>

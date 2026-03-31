@@ -1,8 +1,10 @@
 ﻿using Infomaniak.kDrive.ViewModels;
 using Microsoft.Diagnostics.Utilities;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
 
@@ -93,6 +95,22 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Warning, "Attempted to show a notification while not registered. Call Init() first.");
                     return 0;
                 }
+            }
+
+            const int maxTitleLength = 63;
+            const int maxMessageLength = 5096;
+            if (title.Length > maxTitleLength)
+            {
+                Logger.Log(Logger.Level.Warning, $"Notification title is too long and will be truncated to {maxTitleLength} characters.");
+                title = title.Substring(0, maxTitleLength);
+                title += "…";
+            }
+
+            if (message.Length > maxMessageLength)
+            {
+                Logger.Log(Logger.Level.Warning, $"Notification message is too long and will be truncated to {maxMessageLength} characters.");
+                message = message.Substring(0, maxMessageLength);
+                message += "…";
             }
 
             var appNotification = new AppNotificationBuilder()

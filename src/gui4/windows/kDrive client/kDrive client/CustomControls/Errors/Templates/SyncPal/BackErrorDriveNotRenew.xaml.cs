@@ -13,19 +13,19 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     public sealed partial class BackErrorDriveNotRenew : UserControl
     {
         private Error Error { get; init; }
-        private string DescriptionKey => (Error?.Sync?.Drive?.IsAdmin ?? false) ? "driveLockedAdminErrorDescription" : "driveLockedErrorDescription\r\n\r\n";
-        private string ActionTextKey => (Error?.Sync?.Drive?.IsAdmin ?? false) ? "buttonUpdateSubscription" : "buttonRefresh";
+        private string DescriptionLabel => (Error.Sync?.Drive.IsAdmin ?? false) ? Localizer.Instance.GetString("driveLockedAdminErrorDescription") : Localizer.Instance.GetString("driveLockedErrorDescription");
+        private string ActionTextLabel => (Error.Sync?.Drive.IsAdmin ?? false) ? Localizer.Instance.GetString("buttonUpdateSubscription") : Localizer.Instance.GetString("buttonRefresh");
         public BackErrorDriveNotRenew(Error error)
         {
             this.InitializeComponent();
             Error = error;
         }
 
-        private async void OnClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (Error?.Sync is null)
+            if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Warning, "Button clicked but Sync is null");
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

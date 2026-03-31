@@ -128,6 +128,7 @@
                     VerticalAlignment="Center"
                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
                     Style="{ThemeResource DefaultButtonStyle}"
+                    MinWidth="120"
                     Visibility="{x:Bind LogUploadManager.UploadInProgress , Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                     Click="CancelButton_Click" />
         </StackPanel>

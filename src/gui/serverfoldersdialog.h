@@ -38,7 +38,7 @@ class ServerFoldersDialog : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit ServerFoldersDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &serverFolderName,
+        explicit ServerFoldersDialog(std::shared_ptr<ClientGui> gui, const DriveDbId driveDbId, const QString &serverFolderName,
                                      const QString &serverFolderNodeId, QWidget *parent = nullptr);
 
         qint64 selectionSize() const;
@@ -47,7 +47,7 @@ class ServerFoldersDialog : public CustomDialog {
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
+        DriveDbId _driveDbId{0};
         const QString _serverFolderName;
         const QString _serverFolderNodeId;
         FolderTreeItemWidget *_folderTreeItemWidget;

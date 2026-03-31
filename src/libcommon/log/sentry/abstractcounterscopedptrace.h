@@ -37,7 +37,8 @@ class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
             AbstractScopedPTrace(info, PTraceStatus::Cancelled),
             _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
-        explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace, int syncDbId) :
+        explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace,
+                                             const SyncDbId syncDbId) :
             AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId),
             _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 

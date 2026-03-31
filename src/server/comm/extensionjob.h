@@ -39,8 +39,8 @@ struct FileData {
         // Relative path of the file
         SyncPath relativePath;
 
-        int syncDbId{0};
-        int driveDbId{0};
+        SyncDbId syncDbId{0};
+        DriveDbId driveDbId{0};
 
         bool isDirectory{false};
         bool isLink{false};
@@ -164,7 +164,7 @@ class ExtensionJob : public AbstractJob {
 
 #if defined(KD_MACOS)
         void processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList);
-        bool cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList);
+        bool cancelDownloadJobs(SyncDbId syncDbId, const std::vector<CommString> &fileList);
 #endif
 
         // Commands texts translated
@@ -183,8 +183,8 @@ class ExtensionJob : public AbstractJob {
 
         // Retrieve map iterators.
         // Returns the end() iterator on failure but also add an error and log a message in this case.
-        VfsMap::const_iterator retrieveVfsMapIt(const int syncDbId) const;
-        SyncPalMap::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
+        VfsMap::const_iterator retrieveVfsMapIt(const SyncDbId syncDbId) const;
+        SyncPalMap::const_iterator retrieveSyncPalMapIt(const SyncDbId syncDbId) const;
 
         static void copyUrlToClipboard(const std::string &link);
         static void openPrivateLink(const std::string &link);

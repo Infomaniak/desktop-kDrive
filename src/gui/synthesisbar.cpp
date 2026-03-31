@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ void SynthesisBar::refreshErrorsButton() {
     bool drivesWithInfos = false;
 
     for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
-        std::map<int, SyncInfoClient> syncInfoMap;
+        std::map<SyncDbId, SyncInfoClient> syncInfoMap;
         _gui->loadSyncInfoMap(driveId, syncInfoMap);
         if (syncInfoMap.empty()) {
             driveInfo.setUnresolvedErrorsCount(0);
@@ -117,7 +117,7 @@ void SynthesisBar::reset() {
     _infosButton->setVisible(false);
 }
 
-QUrl SynthesisBar::syncUrl(int syncDbId, const QString &filePath) {
+QUrl SynthesisBar::syncUrl(const SyncDbId syncDbId, const QString &filePath) {
     const QString fullFilePath = _gui->folderPath(syncDbId, filePath);
     return KDC::GuiUtility::getUrlFromLocalPath(fullFilePath);
 }
@@ -125,8 +125,8 @@ QUrl SynthesisBar::syncUrl(int syncDbId, const QString &filePath) {
 void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     list.clear();
     for (auto const &driveInfoElt: _gui->driveInfoMap()) {
-        const int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
-        const int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
+        const auto driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
+        const auto driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
         if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
             ErrorsPopup::DriveError driveError;
             driveError.driveDbId = driveInfoElt.first;
@@ -138,11 +138,11 @@ void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     }
 }
 
-void SynthesisBar::displayErrors(int driveDbId) {
+void SynthesisBar::displayErrors(const DriveDbId driveDbId) {
     emit showParametersDialog(driveDbId, true);
 }
 
-void SynthesisBar::openUrl(int syncDbId, const QString &filePath) {
+void SynthesisBar::openUrl(const SyncDbId syncDbId, const QString &filePath) {
     const QUrl url = syncUrl(syncDbId, filePath);
     if (url.isValid()) {
         if (!QDesktopServices::openUrl(url)) {
@@ -187,7 +187,7 @@ bool SynthesisBar::eventFilter(QObject *obj, QEvent *event) {
     return false;
 }
 
-void SynthesisBar::onDisplayErrors(int driveDbId) {
+void SynthesisBar::onDisplayErrors(const DriveDbId driveDbId) {
     MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "displayErrors", driveDbId);
     displayErrors(driveDbId);
 }
@@ -212,7 +212,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
     MatomoClient::sendVisit(MatomoNameField::PG_SynthesisPopover_KebabMenu);
     // Open Folder
-    std::map<int, SyncInfoClient> syncInfoMap;
+    std::map<SyncDbId, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
     if (!syncInfoMap.empty()) {
         auto *foldersMenuAction = new QWidgetAction(this);
@@ -222,7 +222,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
         if (syncInfoMap.size() == 1) {
             auto const &syncInfoMapElt = syncInfoMap.begin();
-            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
+            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), static_cast<qint64>(syncInfoMapElt->first));
             (void) connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisBar::onOpenFolder);
         } else if (syncInfoMap.size() > 1) {
             foldersMenuItemWidget->setHasSubmenu(true);
@@ -235,7 +235,7 @@ void SynthesisBar::onOpenMiscellaneousMenu() {
 
             for (auto const &[syncId, syncInfo]: syncInfoMap) {
                 auto *openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncId);
+                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), static_cast<qint64>(syncId));
                 auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);

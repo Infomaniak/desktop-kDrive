@@ -71,7 +71,7 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
     }
 
     // Validate that all errors share the same syncDbId
-    int32_t syncDbId = 0;
+    SyncDbId syncDbId = 0;
     if (ExitInfo exitInfo = getSyncDbIdFromErrors(matchedErrors, syncDbId); !exitInfo) {
         return exitInfo;
     }

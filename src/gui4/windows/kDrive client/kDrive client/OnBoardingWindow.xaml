@@ -45,12 +45,19 @@
         </Grid.ColumnDefinitions>
 
         <!-- Set the backgrounds -->
-        <Border x:Name="AppTitleBar"
-                Grid.Row="0"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
-        </Border>
+        <TitleBar x:Name="AppTitleBar"
+                  Grid.Row="0"
+                  Grid.ColumnSpan="2"
+                  Title="kDrive"
+                  Subtitle="Beta">
+            <TitleBar.IconSource>
+                <ImageIconSource>
+                    <ImageIconSource.ImageSource>
+                        <SvgImageSource UriSource="{StaticResource Infomaniak.Custom.Icons.kDrive}" />
+                    </ImageIconSource.ImageSource>
+                </ImageIconSource>
+            </TitleBar.IconSource>
+        </TitleBar>
         <Border  Grid.Row="1"
                  Grid.Column="0"
                  Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
@@ -59,8 +66,6 @@
                 Grid.Column="1"
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
-        <controls:AppTitleBarLogo Grid.Column="0"
-                                  Margin="8,8,0,0" />
 
         <controls:LottiePlayer x:Name="LottiePlayer"
                                Grid.Row="1"

@@ -24,14 +24,14 @@
 
 namespace KDC {
 
-GetDriveUserInfoJob::GetDriveUserInfoJob(const int32_t userDbId, const int32_t driveId, const int32_t userId) :
+GetDriveUserInfoJob::GetDriveUserInfoJob(const UserDbId userDbId, const DriveId driveId, const UserId userId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
 }
 
-GetDriveUserInfoJob::GetDriveUserInfoJob(const int32_t driveDbId, const int32_t userId) :
+GetDriveUserInfoJob::GetDriveUserInfoJob(const DriveDbId driveDbId, const UserId userId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;

@@ -127,8 +127,8 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu{50};
         int _uploadSessionParallelJobs;
         VersionChannel _distributionChannel{VersionChannel::Prod};
-        bool _sentryEnabled{false};
-        bool _matomoEnabled{false};
+        bool _sentryEnabled{true};
+        bool _matomoEnabled{true};
 };
 
 } // namespace KDC

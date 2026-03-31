@@ -17,5 +17,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (Error.Sync is not null && !await Utility.OpenFolderSecurely(Error.Sync.RescueFolderPath))
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to open rescue folder at path {Error.Sync?.RescueFolderPath}");
+                Utility.BringCurrentWindowToFront();
+            }
+        }
     }
 }

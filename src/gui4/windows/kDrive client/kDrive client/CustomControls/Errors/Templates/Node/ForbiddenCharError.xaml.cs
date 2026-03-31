@@ -1,17 +1,15 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        InconsistencyTypes = new[] { InconsistencyType.ForbiddenChar }
-    // CancelTypes = new[] { CancelType.None },
-    // ConflictTypes = new[] { ConflictType.None },
-    // ExitCodes = new[] { ExitCode.Unknown },
-    // ExitCauses = new[] { ExitCause.Unknown }
+        InconsistencyTypes = new[] { InconsistencyType.ForbiddenChar, InconsistencyType.NotYetSupportedChar }
     )]
     public sealed partial class ForbiddenCharError : UserControl
     {
@@ -20,6 +18,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         {
             this.InitializeComponent();
             Error = error;
+        }
+
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (!await Error.OpenItemInWebViewAsync())
+                Utility.ShowUnexpectedErrorTeachingTip();
         }
     }
 }

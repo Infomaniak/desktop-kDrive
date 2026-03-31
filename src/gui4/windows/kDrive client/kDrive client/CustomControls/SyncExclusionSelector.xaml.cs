@@ -135,6 +135,15 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty HasPendingChangesProperty =
             DependencyProperty.Register(nameof(HasPendingChanges), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
 
+        public bool HasSubDirectory
+        {
+            get => (bool)GetValue(HasSubDirectoryProperty);
+            set => SetValue(HasSubDirectoryProperty, value);
+
+        }
+        public static readonly DependencyProperty HasSubDirectoryProperty =
+            DependencyProperty.Register(nameof(HasSubDirectory), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
+
         public bool IsLoading
         {
             get => (bool)GetValue(IsLoadingProperty);
@@ -320,7 +329,7 @@ namespace Infomaniak.kDrive.CustomControls
             RootTreeItem = new TreeItem(rootNode, UserDbId, DriveId, null, _excludedNodePathsMap);
 
             await RootTreeItem.LoadImmediateChildrenAsync();
-
+            HasSubDirectory = RootTreeItem.Children.Any();
             _rootLevelItems.AddRange(RootTreeItem.Children);
             List<Task> tasks = [];
             foreach (var item in _rootLevelItems)

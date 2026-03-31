@@ -37,6 +37,7 @@ struct UtilityGoodPathNewSyncResponse: Codable, Sendable {
 
 struct UtilityIsPathValidForNewSyncQuery: Codable, Sendable {
     @Base64CodedString var path: String
+    let syncConfiguration: KDC.SyncConfiguration
 }
 
 struct UtilityIsPathValidForNewSyncResponse: Codable, Sendable {

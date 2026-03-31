@@ -127,7 +127,6 @@ final class DriveCellView: NSView {
         isActivated = false
         needsDisplay = true
 
-        state = state == .on ? .off : .on
         toggleDrive?(drive)
     }
 }

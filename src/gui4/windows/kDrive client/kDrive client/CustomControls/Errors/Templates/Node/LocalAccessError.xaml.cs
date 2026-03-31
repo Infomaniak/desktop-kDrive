@@ -18,11 +18,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class LocalAccessError : UserControl
     {
-        private readonly Error _error;
+        private Error Error { get; init; }
         public LocalAccessError(Error error)
         {
             this.InitializeComponent();
-            _error = error;
+            Error = error;
         }
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
@@ -32,20 +32,26 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             {
                 return;
             }
+
+            if(Error.Sync is null) {          
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString("localFileAccessErrorTitle"),
-                Content = Localizer.Instance.GetString("localFileAccessErrorDialogOpenParentFolder"),
+                Title = Localizer.Instance.GetStringCombine1s("errLocalFileAccessTitle", Error.NodeTypeTranslationKey),
                 DefaultButton = ContentDialogButton.Primary,
-                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
-            dialog.Content = new LocalAccessErrorDialog(_error) { XamlRoot = xamlRoot };
+            dialog.Content = new LocalAccessErrorDialog(Error) { XamlRoot = xamlRoot };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string absolutPath = Path.Combine(_error.Sync?.LocalPath ?? "", _error.Path);
+                string absolutPath = Path.Combine(Error.Sync.LocalPath, Error.Path);
                 if (string.IsNullOrEmpty(Path.GetDirectoryName(absolutPath)))
                 {
                     Utility.ShowUnexpectedErrorTeachingTip();

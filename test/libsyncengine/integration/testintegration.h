@@ -85,6 +85,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testDeleteAndRecreateBranch();
         void testDeleteAndMoveCase();
+        void initTestMoveDeleteRename(const RemoteTemporaryDirectory &remoteTempDir, NodeId &nodeIdA, NodeId &nodeIdAA,
+                                      NodeId &nodeIdAAA, NodeId &nodeIdB);
+        void testMoveDeleteRename();
+        void testCreateMoveDeleteRename();
 
         void testSynchronizationOfSymLinks();
         void testSymLinkWithTooManySymbolicLevels();

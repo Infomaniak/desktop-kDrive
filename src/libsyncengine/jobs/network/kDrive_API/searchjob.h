@@ -26,10 +26,10 @@ namespace KDC {
 
 class SearchJob : public AbstractTokenNetworkJob {
     public:
-        SearchJob(int driveDbId, int syncDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         // Using this constructor will lead to SearchInfo::isAvailableLocally always being false
-        SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         std::list<SearchInfo> searchResults() const { return _searchResults; }
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }

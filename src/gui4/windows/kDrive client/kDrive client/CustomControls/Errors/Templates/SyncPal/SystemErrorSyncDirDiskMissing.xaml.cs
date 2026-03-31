@@ -20,7 +20,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             this.InitializeComponent();
             Error = error;
 
-            error.Path = Error.Sync?.LocalPath ?? "";
+            error.Path = Error.Sync?.LocalPath ?? string.Empty;
             error.NodeType = Types.NodeType.Directory;
         }
 
@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString("systemErrorSyncDirMissingErrorTitle"),
+                Title = Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"),
                 DefaultButton = ContentDialogButton.Primary,
                 CloseButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonRestartSync"),
@@ -43,7 +43,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string? absolutPath = Path.GetDirectoryName(Error.Sync?.LocalPath ?? "") ?? Error.Sync?.LocalPath;
+                if (Error.Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                string? absolutPath = Path.GetDirectoryName(Error.Sync.LocalPath) ?? Error.Sync.LocalPath;
                 if (string.IsNullOrEmpty(absolutPath))
                 {
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -60,7 +67,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                     if (!await Error.Sync.Start())
                     {
                         Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
-                        Utility.ShowTeachingTipFromKeys("systemErrorSyncDirMissingErrorTitle");
+                        Utility.ShowTeachingTip(Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"));
                     }
                 }
             }

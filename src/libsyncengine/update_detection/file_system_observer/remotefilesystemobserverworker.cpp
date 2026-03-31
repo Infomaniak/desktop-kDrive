@@ -357,10 +357,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _liveSnapshot.path(item.parentId(), path, ignore);
             path /= item.name();
 
-            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
-                      CancelType::TmpBlacklisted);
-            _syncPal->addError(err);
-
+            _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None,
+                                     InconsistencyType::None, CancelType::TmpBlacklisted));
             continue;
         }
 

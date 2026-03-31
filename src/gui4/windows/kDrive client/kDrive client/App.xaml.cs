@@ -32,7 +32,6 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
-using Microsoft.Windows.AppNotifications;
 
 namespace Infomaniak.kDrive
 {
@@ -207,29 +206,14 @@ namespace Infomaniak.kDrive
                 }
                 CurrentWindow?.Close();
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
-                TypedEventHandler<object, WindowEventArgs> closedEventHandler = (s, e) =>
-                {
-                    if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
-                    {
-                        Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
-                        // Detach the event handler to avoid multiple calls
-                        ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
 
-                        CurrentWindow = new MainWindow();
-                        CurrentWindow.Activate();
-                    }
-                };
-
-                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += closedEventHandler;
+                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
                 CurrentWindow.Activate();
             });
         }
 
         private void OnOnboardingClosed(object sender, WindowEventArgs e)
         {
-            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any())
-                return;
-
             Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
 
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;

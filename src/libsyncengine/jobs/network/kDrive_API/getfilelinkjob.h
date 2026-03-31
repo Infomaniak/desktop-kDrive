@@ -24,7 +24,7 @@ namespace KDC {
 
 class GetFileLinkJob : public AbstractTokenNetworkJob {
     public:
-        GetFileLinkJob(int driveDbId, const NodeId &nodeId);
+        GetFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId);
 
     private:
         virtual std::string getSpecificUrl() override;

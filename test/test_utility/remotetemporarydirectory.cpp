@@ -31,7 +31,7 @@ namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(const std::string &testType) :
     _testType(testType) {}
 
-RemoteTemporaryDirectory::RemoteTemporaryDirectory(const int driveDbId, const NodeId &parentId,
+RemoteTemporaryDirectory::RemoteTemporaryDirectory(const DriveDbId driveDbId, const NodeId &parentId,
                                                    const std::string &testType /*= "undef"*/) :
     RemoteTemporaryDirectory(testType) {
     createDirectory(driveDbId, parentId);
@@ -42,7 +42,7 @@ RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     deleteDirectory();
 }
 
-void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId &parentId) {
+void RemoteTemporaryDirectory::createDirectory(const DriveDbId driveDbId, const NodeId &parentId) {
     assert(_driveDbId == 0 && _parentId.empty()); // Do not allow to generate several temporary directories.
 
     _driveDbId = driveDbId;

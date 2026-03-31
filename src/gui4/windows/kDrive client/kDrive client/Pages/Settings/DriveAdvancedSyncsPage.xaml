@@ -23,7 +23,7 @@
                       x:DataType="viewmodel:Sync">
             <toolKit:SettingsExpander Header="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}">
                 <toolKit:SettingsExpander.HeaderIcon>
-                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}"
                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                       Height="32" />
                 </toolKit:SettingsExpander.HeaderIcon>
@@ -73,7 +73,7 @@
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                                                     VerticalAlignment="Center">
 
-                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-maybe-check}"
+                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.pencil}"
                                                               Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingExclusionSummarySome')}"
@@ -157,7 +157,7 @@
                         </Grid>
                     </toolKit:SettingsCard>
 
-                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('removeSync')}"
+                    <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('buttonRemoveSync')}"
                                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                           PointerExited="FixForegroundOnPointerExited"
                                           IsClickEnabled="True"
@@ -199,6 +199,7 @@
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncSubtitle')}"
                                Style="{StaticResource BodyTextBlockStyle}" />
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('advancedSyncDescription')}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
                 <ListView ItemsSource="{x:Bind ManagedDrive.AdvancedSyncs, Mode=OneWay}"

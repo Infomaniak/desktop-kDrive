@@ -15,7 +15,7 @@ namespace Infomaniak.kDrive.TemplateSelectors
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
             // Null value can be passed by IDE designer
-            if (item == null)
+            if (item is null)
                 return null;
 
             SyncStatus syncStatus;

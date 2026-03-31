@@ -7,10 +7,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
-  <local:ErrorCard x:Name="ErrorCard"
-                   Title="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorTitle')}"
-                   Description="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorDescription')}"
-                   ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonRefresh')}"
-                   ActionClick="OnRefreshClick"
-                   Error="{x:Bind Error}" />
+    <local:ErrorCard x:Name="ErrorCard"
+                     Title="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceTitle')}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('buttonRefresh')}"
+                     ActionClick="ErrorCard_ActionClick"
+                     Error="{x:Bind Error}" />
 </UserControl>

@@ -9,6 +9,7 @@ namespace Infomaniak.kDrive
     {
         ISentryConstants Sentry { get; }
         IGitHubConstants GitHub { get; }
+        ISyncConstants Sync { get; }
         IDriveConstants Drive { get; }
         IkSuiteConstants kSuite { get; }
         IStorageConstants Storage { get; }
@@ -40,7 +41,11 @@ namespace Infomaniak.kDrive
         Uri OAtuhAuthorizationEndpoint { get; }
         string OAtuhClientId { get; }
     }
-
+    internal interface ISyncConstants
+    {
+        public NodeId RootNodeId { get; }
+        public string RescueFolderName { get; }
+    }
     internal interface IDriveConstants
     {
         Uri RenewUrl(DriveId? driveId);
@@ -53,7 +58,6 @@ namespace Infomaniak.kDrive
         Uri ChangeOfferUri(DriveId? driveId);
         public Uri StartFreeUri { get; }
         public Uri FAQUri { get; }
-        public NodeId RootNodeId { get; }
     }
     internal interface IkSuiteConstants
     {
@@ -68,13 +72,15 @@ namespace Infomaniak.kDrive
         public IGitHubConstants GitHub { init; get; }
         public IDriveConstants Drive { init; get; }
         public IStorageConstants Storage { init; get; }
+        public ISyncConstants Sync { init; get; }
         public ILoginConstants Login { init; get; }
         public IkSuiteConstants kSuite { init; get; }
 
-        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
+        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, ISyncConstants sync, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
         {
             Sentry = sentry;
             GitHub = gitHub;
+            Sync = sync;
             Drive = drive;
             Storage = storage;
             Login = oAuth;
@@ -100,6 +106,14 @@ namespace Infomaniak.kDrive
         public Uri LicenseUrl { get; } = new($"{Repo}?tab=GPL-3.0-1-ov-file");
     }
 
+    internal sealed class ProductionSync : ISyncConstants
+    {
+        public NodeId RootNodeId { get; } = "1";
+
+        public string RescueFolderName { get; } = "kDrive Rescue Folder";
+    }
+
+
     internal sealed class ProductionDrive : IDriveConstants
     {
         public Uri RenewUrl(DriveId? driveId) =>
@@ -115,8 +129,6 @@ namespace Infomaniak.kDrive
         public Uri ChangeOfferUri(DriveId? driveId) => new($"https://shop.infomaniak.com/order/drive/{driveId}");
         public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
         public Uri FAQUri { get; } = new Uri("https://www.infomaniak.com/fr/support/faq/admin2"); // TODO: Replace with static link.
-        public NodeId RootNodeId { get; } = "1";
-
     }
 
     internal sealed class ProductionStorage : IStorageConstants
@@ -142,6 +154,7 @@ namespace Infomaniak.kDrive
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
+        public ISyncConstants Sync { get; } = new ProductionSync();
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new ProductionLogin();
@@ -162,6 +175,8 @@ namespace Infomaniak.kDrive
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
+        public ISyncConstants Sync { get; } = new ProductionSync();
+
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new PreProdLogin();

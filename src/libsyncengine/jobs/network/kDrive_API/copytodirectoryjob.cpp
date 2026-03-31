@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-CopyToDirectoryJob::CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId,
+CopyToDirectoryJob::CopyToDirectoryJob(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId,
                                        const SyncName &newName) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _remoteFileId(remoteFileId),

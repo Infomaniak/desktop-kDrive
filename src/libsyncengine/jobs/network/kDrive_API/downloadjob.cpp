@@ -45,7 +45,7 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const NodeId &remoteFileId,
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
                          const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
                          const SyncTime modificationTime, const bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
@@ -61,8 +61,8 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, co
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                         int64_t expectedSize) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
+                         const SyncPath &localpath, int64_t expectedSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
@@ -572,7 +572,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     SyncPath cacheDirectoryPath;
     if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
         LOGW_WARN(_logger, L"Failed to get cache directory");
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
 
     std::ofstream output;
@@ -585,7 +585,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
             const bool enoughSpace = Utility::enoughSpace(_tmpPath);
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
                                                             << (enoughSpace ? L"file access error." : L"not enough space."));
-            return {ExitCode::SystemError, enoughSpace ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
+            return {ExitCode::SystemError, enoughSpace ? ExitCause::TmpDirAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
         output.seekp(0, std::ios_base::end);

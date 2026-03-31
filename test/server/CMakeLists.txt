@@ -66,6 +66,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.cpp
+    ${server_srcs_path}/comm/guijobs/errordeletejob.h ${server_srcs_path}/comm/guijobs/errordeletejob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp

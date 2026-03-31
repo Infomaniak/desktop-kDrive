@@ -137,7 +137,7 @@
                                Grid.Row="0"
                                Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                               UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
+                               UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}" />
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"

@@ -28,11 +28,11 @@ namespace KDC {
 
 class SynchronizedItem {
     public:
-        SynchronizedItem(int syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
+        SynchronizedItem(SyncDbId syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
                          SyncDirection direction, NodeType type, const QString &fullFilePath, const QDateTime &dateTime,
                          const QString &error = QString());
 
-        inline int syncDbId() const { return _syncDbId; }
+        inline SyncDbId syncDbId() const { return _syncDbId; }
         inline QString filePath() const { return _filePath; }
         inline QString fileId() const { return _fileId; }
         inline SyncFileStatus status() const { return _status; }
@@ -45,7 +45,7 @@ class SynchronizedItem {
         inline void setDisplayed(bool value) { _displayed = value; }
 
     private:
-        int _syncDbId;
+        SyncDbId _syncDbId{0};
         QString _filePath;
         QString _fileId;
         SyncFileStatus _status;

@@ -1,6 +1,9 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using Windows.System;
+
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -17,6 +20,17 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         {
             this.InitializeComponent();
             Error = error;
+        }
+
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (Error.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sync is null on a node level error");
+                return;
+            }
+            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(Error.Sync.Drive.DriveId);
+            await Launcher.LaunchUriAsync(changeOfferUri);
         }
     }
 }

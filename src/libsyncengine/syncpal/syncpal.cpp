@@ -360,13 +360,13 @@ void SyncPal::addError(const Error &error) {
     }
 }
 
-void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
+void SyncPal::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
     }
 }
 
-void SyncPal::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
+void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbErrors) {
     if (_fixConflictedFilesCompleted) {
         _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
@@ -735,9 +735,22 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
 
-    const auto progressPercentCallback = [job, this](UniqueId,
-                                                     int progress // %
+
+    // Use a weak_ptr to avoid a reference cycle:
+    // The job owns the progress callback, and capturing a shared_ptr<SyncJob> inside
+    // the callback would create a cycle (job → callback → job).
+    // This would prevent the job from being destroyed after completion and removal
+    // from the job map, resulting in a memory leak.
+    std::weak_ptr<SyncJob> weakJobPtr = job;
+    const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
+                                                            int progress // %
                                          ) {
+        auto job = weakJobPtr.lock();
+        if (!job) {
+            LOG_SYNCPAL_WARN(_logger, "Job no longer exists in progress callback");
+            return;
+        }
+
         if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
@@ -1073,7 +1086,7 @@ ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalEr
 }
 
 ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                      std::vector<int32_t> &removedErrorsDbIds) {
+                                      std::vector<ErrorDbId> &removedErrorsDbIds) {
     setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
     ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
 

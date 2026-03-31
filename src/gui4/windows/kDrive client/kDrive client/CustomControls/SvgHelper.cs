@@ -1,0 +1,106 @@
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
+using Svg;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Infomaniak.kDrive.CustomControls
+{
+    internal static class SvgHelper
+    {
+        internal static Uri ResolveUri(Uri source)
+        {
+            if (source.Scheme != "ms-appx")
+                return source;
+
+            var path = source.LocalPath.TrimStart('/');
+            var absPath = Path.Combine(AppContext.BaseDirectory, path.Replace('/', Path.DirectorySeparatorChar));
+            return new Uri(absPath);
+        }
+
+        internal static void ApplyForeground(SvgDocument svgDoc, Brush? foreground)
+        {
+            if (foreground is SolidColorBrush solid)
+            {
+                var color = System.Drawing.Color.FromArgb(solid.Color.A, solid.Color.R, solid.Color.G, solid.Color.B);
+                foreach (var elem in svgDoc.Descendants().OfType<SvgVisualElement>())
+                {
+                    if (elem.Fill != null && elem.Fill != SvgPaintServer.None)
+                        elem.Fill = new SvgColourServer(color);
+                    if (elem.Stroke != null && elem.Stroke != SvgPaintServer.None)
+                        elem.Stroke = new SvgColourServer(color);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Opens the SVG at <paramref name="uriSource"/>, applies <paramref name="foreground"/>,
+        /// and serialises the result into a rewound <see cref="MemoryStream"/>.
+        /// Returns <c>null</c> when the file does not exist (already logged); throws on other errors.
+        /// </summary>
+        internal static (SvgDocument Doc, MemoryStream Stream)? TryLoad(
+            Uri uriSource, Brush? foreground, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var fullUri = ResolveUri(uriSource);
+            if (!File.Exists(fullUri.LocalPath))
+            {
+                Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
+                return null;
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var svgDoc = SvgDocument.Open(fullUri.LocalPath);
+            ApplyForeground(svgDoc, foreground);
+
+            token.ThrowIfCancellationRequested();
+
+            var ms = new MemoryStream();
+            svgDoc.Write(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+
+            token.ThrowIfCancellationRequested();
+
+            return (svgDoc, ms);
+        }
+
+        /// <summary>
+        /// Cancels any in-flight refresh, creates a fresh <see cref="CancellationTokenSource"/>,
+        /// and enqueues <paramref name="refreshAction"/> on <paramref name="dispatcherQueue"/>.
+        /// Returns the new <see cref="CancellationTokenSource"/> so the caller can store it.
+        /// </summary>
+        internal static CancellationTokenSource ScheduleOnDispatcher(
+            CancellationTokenSource? previousCts,
+            DispatcherQueue dispatcherQueue,
+            Func<CancellationToken, Task> refreshAction,
+            string logContext)
+        {
+            previousCts?.Cancel();
+            var newCts = new CancellationTokenSource();
+            var token = newCts.Token;
+
+            dispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    await refreshAction(token);
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.Log(Logger.Level.Extended, $"{logContext} refresh canceled");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"{logContext} refresh failed: {ex.Message}");
+                }
+            });
+
+            return newCts;
+        }
+    }
+}

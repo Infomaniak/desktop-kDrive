@@ -818,7 +818,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         if (_updateTree->nodes().find(newNodeId) == _updateTree->nodes().end()) {
             // create node
             NodeId parentId;
-            if (!_syncDbReadOnlyCache.parent(_side, previousNodeId, parentId, found)) {
+            if (!_syncDbReadOnlyCache.parentId(_side, previousNodeId, parentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
                 return ExitCode::DbError;
             }
