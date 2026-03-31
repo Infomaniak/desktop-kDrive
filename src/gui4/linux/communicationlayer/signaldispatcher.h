@@ -46,6 +46,7 @@ class SignalDispatcher : public QObject {
         /**
          * Register a handler for a given server signal.
          * Multiple handlers for the same SignalNum are all called in registration order.
+         * @note Must not be called from within a handler for the same @p num during dispatch (would invalidate the iterator).
          */
         void registerHandler(SignalNum num, SignalHandler handler);
 
