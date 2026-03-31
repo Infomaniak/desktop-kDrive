@@ -65,8 +65,8 @@ class IpcClient : public QObject {
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
 
-        void handle_response_message(const Poco::DynamicStruct &ipcMessage, int32_t id, const Poco::DynamicStruct &params);
-        void handle_server_signal(const Poco::DynamicStruct &ipcMessage, int32_t id, const Poco::DynamicStruct &params);
+        void handle_response_message(const Poco::DynamicStruct &ipcMessage, int32_t id);
+        void handle_server_signal(const Poco::DynamicStruct &ipcMessage, int32_t id);
 
     private:
         QTcpSocket *_socket;
