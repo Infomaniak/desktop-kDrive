@@ -354,7 +354,14 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            await Utility.OpenFolderSecurely(Logger.LogFolder);
+            try
+            {
+                await Utility.OpenFolderSecurely(Logger.LogFolder);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to open debug folder: {ex.Message}");
+            }
         }
 
         private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)

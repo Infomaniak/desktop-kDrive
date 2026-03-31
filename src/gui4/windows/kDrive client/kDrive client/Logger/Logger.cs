@@ -202,12 +202,19 @@ namespace Infomaniak.kDrive
                 options.IsGlobalModeEnabled = true;
                 options.Environment = App.Constants.Sentry.Environment;
             });
+            App.Current.UnhandledException += CaptureExceptionWithSentry;
 
+        }
+
+        private static void CaptureExceptionWithSentry(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            SentrySdk.CaptureException(e.Exception);
         }
 
         public static void StopSentry()
         {
             Sentry.SentrySdk.Close();
+            App.Current.UnhandledException -= CaptureExceptionWithSentry;
 
             if (_sentryHandler is not null)
             {
