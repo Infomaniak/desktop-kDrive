@@ -47,7 +47,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (d is LottiePlayer lottiePlayer && e.NewValue is Uri)
             {
-                // Fire-and-forget the async method
                 try
                 {
                     await lottiePlayer.UpdateLottieAsync();
