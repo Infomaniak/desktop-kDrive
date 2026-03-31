@@ -45,6 +45,21 @@ enum StatusItemState {
     }
 }
 
+extension UISynchroStatus {
+    var statusItemTooltip: String {
+        switch self {
+        case .starting, .running:
+            return KDriveLocalizable.syncShortStatusRunning
+        case .idle:
+            return KDriveLocalizable.syncShortStatusIdle
+        case .pauseAsked, .paused, .stopAsked, .stopped:
+            return KDriveLocalizable.syncShortStatusPaused
+        case .error:
+            return KDriveLocalizable.syncShortStatusError
+        }
+    }
+}
+
 struct UISynchroStateContext: Sendable, Equatable {
     let synchro: UISynchro
     let state: UISynchroState
@@ -109,7 +124,7 @@ final class StatusBarManager {
         if contexts.contains(where: { $0.state.status == .running }) {
             return .running
         }
-        if contexts.contains(where: { $0.state.errorCount != 0 }) {
+        if contexts.contains(where: { $0.state.status == .error }) {
             return .error
         }
         if contexts.allSatisfy({ $0.state.status == .paused || $0.state.status == .stopped }) {
@@ -119,11 +134,16 @@ final class StatusBarManager {
     }
 
     private func generateTooltip(from contexts: [UISynchroStateContext]) -> String {
+        if contexts.count == 1, let context = contexts.first {
+            return context.state.status.statusItemTooltip
+        }
+
         var tooltip = ""
         for context in contexts {
             let folder = context.synchro.localPath.lastPathComponent
-            tooltip += "\(folder): WIP"
+            let status = context.state.status.statusItemTooltip
 
+            tooltip += "\(folder) - \(status)"
             if context != contexts.last {
                 tooltip += "\n"
             }
