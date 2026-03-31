@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 31 Mar 2026 08:57:45 +0200 
+  Exported at: Tue, 31 Mar 2026 11:35:43 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -145,7 +145,6 @@ Puoi accedere alle sincronizzazioni avanzate dal selettore di unità nella pagin
   </data> 
   <data name="automaticUpdatesSetting" xml:space="preserve"> 
     <value>Aggiornamenti automatici</value> 
-    <comment>Label for the automatic updates toggle in the update settings section.</comment> 
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
     <value>Disponibile offline</value> 
@@ -263,7 +262,6 @@ Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</value>
   </data> 
   <data name="buttonLogOut" xml:space="preserve"> 
     <value>Esci</value> 
-    <comment>Button to log out of the current account.</comment> 
   </data> 
   <data name="buttonLogin" xml:space="preserve"> 
     <value>Accedi</value> 
@@ -442,14 +440,12 @@ Il codice sorgente di questa applicazione è verificabile, le informazioni racco
   </data> 
   <data name="dataManagementSubtitle" xml:space="preserve"> 
     <value>Infomaniak rispetta la tua privacy</value> 
-    <comment>Subtitle on the data management settings page.</comment> 
   </data> 
   <data name="debugLevelDescription" xml:space="preserve"> 
     <value>Seleziona la quantità di informazioni da registrare.</value> 
   </data> 
   <data name="debugLevelSetting" xml:space="preserve"> 
     <value>Livello di debug</value> 
-    <comment>Label for the debug level dropdown selector in advanced settings.</comment> 
   </data> 
   <data name="debugLogsDescription" xml:space="preserve"> 
     <value>Consente al supporto Infomaniak di identificare la causa di un incidente.</value> 
@@ -641,31 +637,25 @@ Riprova tra qualche minuto.</value>
   </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
     <value>Esiste già un file o una cartella con questo nome.</value> 
-    <comment>Error description when a file or folder with the same name already exists at the destination.</comment> 
   </data> 
   <data name="errEditCancelDescription" xml:space="preserve"> 
     <value>Non hai i diritti per modificare questo file.
 La versione originale è stata mantenuta e la tua modifica è stata salvata in un file separato con "conflict" nel nome. Richiedi l’accesso al proprietario o all’amministratore.</value> 
-    <comment>Error description when a file edit was cancelled; explains a conflict copy was saved locally.</comment> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
     <value>Il nome di questo %@ termina con uno spazio, impedendone la sincronizzazione. Rinomina il %@ da kDrive online.</value> 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
     <value>Spazio finale nel nome del %@</value> 
-    <comment>Title for the error when a name ends with a trailing space; %@ is the item type.</comment> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
     <value>Una regola di esclusione impedisce la sincronizzazione di questo %@.</value> 
-    <comment>Error description when an item is blocked from syncing by an exclusion rule; %@ is the item type.</comment> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
     <value>Escluso dalla sincronizzazione</value> 
-    <comment>Title for the error when an item is excluded from synchronization by a template rule.</comment> 
   </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
     <value>Esiste già un file con questo nome.</value> 
-    <comment>Error description when a file with the same name already exists at the destination.</comment> 
   </data> 
   <data name="errFileLockedDescription" xml:space="preserve"> 
     <value>Questo file è attualmente in uso da un altro utente.
@@ -673,15 +663,12 @@ Le tue modifiche verranno sincronizzate in seguito.</value>
   </data> 
   <data name="errFileLockedTitle" xml:space="preserve"> 
     <value>File bloccato</value> 
-    <comment>Title for the file locked by another user error.</comment> 
   </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
     <value>Questo file è stato eliminato da kDrive online mentre lo stavi modificando. Una copia è stata conservata sul tuo computer nella cartella di recupero.</value> 
-    <comment>Description when a file deleted online was being edited locally; a recovery copy was saved on the computer.</comment> 
   </data> 
   <data name="errFileRescuedTitle" xml:space="preserve"> 
     <value>File recuperato</value> 
-    <comment>Title for the rescued/recovered file notification.</comment> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
     <value>Questo file supera la dimensione massima consentita (50 GB).
@@ -700,18 +687,15 @@ Contatta il tuo amministratore per aumentare il limite di dimensione del file.</
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
     <value>Il nome di questo %@ contiene uno o più caratteri non supportati dall’applicazione kDrive per Windows. Rinomina il %@ da kDrive online.</value> 
-    <comment>Error description for unsupported characters in a file/folder name on Windows; %@ is the item type.</comment> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Questo nome contiene solo spazi e non può essere utilizzato. Rinomina il %@ da kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
     <value>Nome non valido</value> 
-    <comment>Title for the invalid name (spaces only) error.</comment> 
   </data> 
   <data name="errForbiddenCharTitle" xml:space="preserve"> 
     <value>Carattere non supportato</value> 
-    <comment>Title for the unsupported character in name error.</comment> 
   </data> 
   <data name="errGenericForbiddenDescription" xml:space="preserve"> 
     <value>Non hai le autorizzazioni necessarie per eseguire questa azione.
@@ -722,11 +706,9 @@ Richiedi l’accesso al proprietario o all’amministratore.</value>
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Questo file è un hard link e non può essere sincronizzato.</value> 
-    <comment>Error description when a file is a hard link, which cannot be synchronized by kDrive.</comment> 
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Tipo di file non supportato</value> 
-    <comment>Title for the unsupported file type (hard link) error.</comment> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Questa cartella non è più accessibile nella sua posizione originale.</value> 
@@ -743,22 +725,18 @@ Sposta una delle cartelle in modo che non siano più annidate, o elimina la sinc
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
     <value>Impossibile accedere a questo %@ sul tuo computer. Verifica che esista ancora e che tu abbia i diritti per accedervi.</value> 
-    <comment>Error description when a local file/folder is inaccessible on the computer; %@ is the item type.</comment> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
     <value>%@ non accessibile</value> 
-    <comment>Title for the inaccessible local item error; %@ is the item type.</comment> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
     <value>Non hai i diritti per spostare questo %@ qui; verrà ripristinato nella posizione originale. Richiedi l’accesso al proprietario o all’amministratore.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
     <value>Questo nome supera la lunghezza consentita (250 caratteri). Rinomina il %@.</value> 
-    <comment>Error description when a file/folder name exceeds the 250-character limit; %@ is the item type.</comment> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
     <value>Nome del %@ troppo lungo</value> 
-    <comment>Title for the name too long error; %@ is the item type.</comment> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
     <value>Impossibile connettersi a kDrive.
@@ -772,38 +750,30 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   </data> 
   <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
     <value>Spazio su disco insufficiente</value> 
-    <comment>Title for the insufficient local disk space error.</comment> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
     <value>Il nome di questo file contiene uno o più caratteri non ancora supportati dall’applicazione kDrive. Rinomina il file da kDrive online.</value> 
   </data> 
   <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
     <value>Carattere non supportato</value> 
-    <comment>Title for the unsupported character in filename error.</comment> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
     <value>Il percorso di questo %@ è troppo lungo per essere sincronizzato. Rinomina una o più cartelle al suo interno per accorciare il percorso.</value> 
-    <comment>Error description when the full file path is too long to sync; %@ is the item type.</comment> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
     <value>Percorso verso %@ troppo lungo</value> 
-    <comment>Title for the path too long error; %@ is the item type.</comment> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
     <value>Il tuo kDrive è pieno. Libera spazio o aggiorna il tuo abbonamento per sincronizzare questo %@.</value> 
-    <comment>Error description when kDrive storage quota is full; %@ is the item type.</comment> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Limite di archiviazione raggiunto</value> 
-    <comment>Title for the storage quota exceeded error.</comment> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
     <value>Questo nome è riservato dal sistema del tuo computer. Rinomina il %@ da kDrive online.</value> 
-    <comment>Error description when a file/folder name is reserved by the operating system; %@ is the item type.</comment> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
     <value>Nome del %@ riservato</value> 
-    <comment>Title for the OS-reserved name error; %@ is the item type.</comment> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Verifica la posizione o i diritti di accesso della cartella.</value> 
@@ -834,15 +804,12 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
     <value>La sincronizzazione di questo elemento ha avuto esito negativo. Verrà riprovata automaticamente in seguito.</value> 
-    <comment>Description when an item is temporarily blacklisted from syncing and will retry automatically later.</comment> 
   </data> 
   <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
     <value>Sincronizzazione temporaneamente fallita</value> 
-    <comment>Title for the temporarily failed synchronization error.</comment> 
   </data> 
   <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
     <value>Il caricamento non ha potuto essere completato. Riprova più tardi.</value> 
-    <comment>Error description when an upload could not be completed; advises retrying later.</comment> 
   </data> 
   <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
     <value>File da verificare</value> 
@@ -855,46 +822,39 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
     <value>I file corrispondenti a questa regola non verranno sincronizzati.</value> 
-    <comment>Description explaining what a sync exclusion rule does in the exclusion settings.</comment> 
   </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
     <value>Abilita la raccolta di informazioni aggiuntive utili per il supporto.</value> 
-    <comment>Description for the extended log setting, explaining it collects extra diagnostic data for support.</comment> 
   </data> 
   <data name="extendedLogSetting" xml:space="preserve"> 
     <value>Log dettagliato esteso</value> 
-    <comment>Label for the extended debug log toggle in advanced settings.</comment> 
   </data> 
   <data name="extendedLogWarning" xml:space="preserve"> 
     <value>Quando questa opzione è abilitata, kDrive funziona più lentamente.</value> 
-    <comment>Warning shown when extended logging is enabled, noting the performance impact on the application.</comment> 
   </data> 
   <data name="failedToCreateShareLinkError" xml:space="preserve"> 
     <value>Impossibile creare un link di condivisione</value> 
-    <comment>Error message displayed when share link creation fails.</comment> 
+  </data> 
+  <data name="faqUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/it/assistenza/faq/admin2/kdrive</value> 
   </data> 
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Aiutaci a migliorare kDrive</value> 
-    <comment>Section header for the feedback and suggestions section in application settings.</comment> 
   </data> 
   <data name="feedbackURL" xml:space="preserve"> 
     <value>https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee</value> 
   </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Il file esiste già</value> 
-    <comment>Title shown when a file with the same name already exists at the destination.</comment> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Modalità di sincronizzazione file</value> 
-    <comment>Label for the file synchronization mode setting in sync settings.</comment> 
   </data> 
   <data name="fileSyncModeDescription" xml:space="preserve"> 
     <value>Definisci come i tuoi file vengono archiviati e accessibili.</value> 
-    <comment>Description for the file sync mode setting explaining the available storage options.</comment> 
   </data> 
   <data name="filesToExclude" xml:space="preserve"> 
     <value>File da escludere</value> 
-    <comment>Label for the files-to-exclude section header in sync settings.</comment> 
   </data> 
   <data name="folderFavorites" xml:space="preserve"> 
     <value>Preferiti</value> 
@@ -904,23 +864,18 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   </data> 
   <data name="folderTrash" xml:space="preserve"> 
     <value>Cestino</value> 
-    <comment>Label for the Trash virtual folder in the kDrive folder picker.</comment> 
   </data> 
   <data name="forOneHour" xml:space="preserve"> 
     <value>Per 1 ora</value> 
-    <comment>Notification pause duration option: temporarily disable notifications for one hour.</comment> 
   </data> 
   <data name="forOneWeek" xml:space="preserve"> 
     <value>Per una settimana</value> 
-    <comment>Notification pause duration option: temporarily disable notifications for one week.</comment> 
   </data> 
   <data name="forThreeDays" xml:space="preserve"> 
     <value>Per tre giorni</value> 
-    <comment>Notification pause duration option: temporarily disable notifications for three days.</comment> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
     <value>Ciao %@, %@</value> 
-    <comment>Greeting label on the home page; first %@ is the user's first name, second %@ is a subtitle or account detail.</comment> 
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1052,11 +1007,9 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
     <value>Proprio adesso</value> 
-    <comment>Timestamp label shown for very recent events in activity lists.</comment> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
-    <comment>Version label for kDrive displayed in About or settings; %@ is the version string.</comment> 
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>KB</value> 
@@ -1098,7 +1051,6 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notifica</value> 
-    <comment>Label for the notifications section in application settings.</comment> 
   </data> 
   <data name="labelOnline" xml:space="preserve"> 
     <value>Online</value> 
@@ -1123,11 +1075,9 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
   </data> 
   <data name="labelRules" xml:space="preserve"> 
     <value>Regole</value> 
-    <comment>Label for the rules section in sync exclusion settings.</comment> 
   </data> 
   <data name="labelSameAsSystem" xml:space="preserve"> 
     <value>Come il sistema</value> 
-    <comment>Option label for matching the system theme in appearance settings.</comment> 
   </data> 
   <data name="labelShortDay" xml:space="preserve"> 
     <value>g</value> 
@@ -1216,18 +1166,15 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
   <data name="largeFolderRecommendation" xml:space="preserve"> 
     <value>La cartella completa è grande.
 Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessione kDrive.</value> 
-    <comment>Recommendation message when the debug log folder is large, suggesting to send only the last session.</comment> 
   </data> 
   <data name="learnMore" xml:space="preserve"> 
     <value>Scopri di più</value> 
-    <comment>Generic Learn more hyperlink label used throughout the app to link to help articles.</comment> 
   </data> 
   <data name="licensesHyperLink" xml:space="preserve"> 
     <value>Licenza LGPL v3 - Sorgenti Git</value> 
   </data> 
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link copiato negli appunti</value> 
-    <comment>Toast/notification title shown when a share link has been successfully copied to the clipboard.</comment> 
   </data> 
   <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
     <value>Disco incompatibile o cartella direttamente nella radice del disco (es: scegli una cartella come D:/Mon drive invece di D:/)</value> 
@@ -1238,11 +1185,9 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
   </data> 
   <data name="logLevelDebug" xml:space="preserve"> 
     <value>Debug</value> 
-    <comment>Debug log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelError" xml:space="preserve"> 
     <value>Errore</value> 
-    <comment>Error log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Esteso</value> 
@@ -1250,15 +1195,12 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Fatale</value> 
-    <comment>Fatal/Critical log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelInfo" xml:space="preserve"> 
     <value>Info</value> 
-    <comment>Info log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelWarning" xml:space="preserve"> 
     <value>Avviso</value> 
-    <comment>Warning log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logUploadPopupTitle" xml:space="preserve"> 
     <value>Invia cartella debug al supporto Infomaniak</value> 
@@ -1290,49 +1232,39 @@ Verifica e rinomina i file contenenti caratteri insoliti, quindi riprova.</value
     <value>Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.
 
 L’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.</value> 
-    <comment>Description on the data management page about the Matomo analytics tool hosted exclusively by Infomaniak.</comment> 
   </data> 
   <data name="moveCancelErrorTitle" xml:space="preserve"> 
     <value>Spostamento annullato</value> 
-    <comment>Title shown when a file or folder move was cancelled due to insufficient permissions.</comment> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
     <value>Sposta i file eliminati nel cestino del computer</value> 
-    <comment>Label for the setting to move locally deleted files to the Windows Recycle Bin instead of permanent deletion.</comment> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Alcuni elementi potrebbero non poter essere spostati.</value> 
-    <comment>Warning shown next to the Recycle Bin setting that some items may not be movable to it.</comment> 
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Più spazio, più funzionalità con my kSuite+</value> 
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Hai bisogno di aiuto?</value> 
-    <comment>Label for the help section header in the settings page.</comment> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
     <value>Aggiungi un account per iniziare</value> 
-    <comment>Message shown on the home page when no Infomaniak account is connected yet.</comment> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
     <value>Nessun risultato trovato</value> 
   </data> 
   <data name="notSyncedDrive" xml:space="preserve"> 
     <value>Non sincronizzato</value> 
-    <comment>Status label for a kDrive that is not currently synchronized with this device.</comment> 
   </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
     <value>Sempre</value> 
-    <comment>Notification disable duration option: always disable notifications.</comment> 
   </data> 
   <data name="notificationsDisabledNever" xml:space="preserve"> 
     <value>Mai</value> 
-    <comment>Notification disable duration option: never disable notifications (always receive them).</comment> 
   </data> 
   <data name="notifyOnFileExcluded" xml:space="preserve"> 
     <value>Ricevi una notifica quando un file viene escluso</value> 
-    <comment>Toggle label to enable a notification when a file is excluded from sync by an exclusion rule.</comment> 
   </data> 
   <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
     <value>Configura la sincronizzazione per questo kDrive</value> 
@@ -1412,7 +1344,6 @@ Accedi e mantieni i tuoi documenti sincronizzati su tutti i tuoi dispositivi.</v
   </data> 
   <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
     <value>Un momento…</value> 
-    <comment>Loading title shown while the user account information is being retrieved after login.</comment> 
   </data> 
   <data name="onboardingLoginTitle" xml:space="preserve"> 
     <value>Benvenuto su kDrive</value> 
@@ -1563,14 +1494,17 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
   <data name="syncRules" xml:space="preserve"> 
     <value>Regole di sincronizzazione</value> 
   </data> 
+  <data name="syncShortStatusError" xml:space="preserve"> 
+    <value>Si è verificato un errore</value> 
+  </data> 
   <data name="syncShortStatusIdle" xml:space="preserve"> 
-    <value>Last Sync was successful</value> 
+    <value>L'ultima sincronizzazione è avvenuta con successo</value> 
   </data> 
   <data name="syncShortStatusPaused" xml:space="preserve"> 
-    <value>Sync is paused</value> 
+    <value>La sincronizzazione è in pausa</value> 
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
-    <value>Sync is running</value> 
+    <value>La sincronizzazione è in corso</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizzato</value> 
