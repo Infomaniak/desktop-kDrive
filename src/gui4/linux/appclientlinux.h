@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/services/servercommservice.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 
@@ -45,6 +46,7 @@ class AppClientLinux : public QGuiApplication {
          * Call registerHandler() on the returned dispatcher before the IPC connection is established.
          */
         SignalDispatcher &signalDispatcher() { return _signalDispatcher; }
+        ServerCommService &serverCommService() { return _serverCommService; }
 
     signals:
         /** Emitted once the first IPC connection to the server has been successfully established. */
@@ -57,6 +59,7 @@ class AppClientLinux : public QGuiApplication {
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
+        ServerCommService _serverCommService{_signalDispatcher, this};
 };
 
 } // namespace KDC
