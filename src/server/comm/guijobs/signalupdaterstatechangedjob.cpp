@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsUpdateState = "updateState";
+
+// Signal: SignalNum::UPDATER_STATE_CHANGED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_UPDATE_STATE ("updateState"): UpdateState
+// }
 
 namespace KDC {
 
