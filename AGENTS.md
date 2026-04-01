@@ -1,7 +1,7 @@
 # kDrive Desktop — Root AGENTS.md
 
 ## Project Snapshot
-C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. Ships two processes: a background **server** daemon (`src/server/`) and a **Qt Widgets GUI** (`src/gui/`). All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
+C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
 All code is in the `KDC` namespace.
 
@@ -61,8 +61,9 @@ clang-format -i <file>
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
 - GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
-- GUI (macOS Swift redesign for v4): `src/front/macOS/` → [see AGENTS.md](src/front/macOS/AGENTS.md)
-- GUI (Windows WinUI3 redesign for v4): `src/gui4/` → [see AGENTS.md](src/gui4/AGENTS.md)
+- GUI (Linux Qt/QML redesign for v4): `src/gui4/linux/` → [see AGENTS.md](src/gui4/linux/AGENTS.md)
+- GUI (macOS Swift redesign for v4): `src/gui4/macOS/` → [see AGENTS.md](src/gui4/macOS/AGENTS.md)
+- GUI (Windows WinUI3 redesign for v4): `src/gui4/windows/` → [see AGENTS.md](src/gui4/windows/AGENTS.md)
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
