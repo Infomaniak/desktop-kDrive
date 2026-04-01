@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsAccountInfo = "accountInfo";
+
+// Signal: SignalNum::ACCOUNT_UPDATED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_ACCOUNT_INFO ("accountInfo"): AccountInfo
+// }
 
 namespace KDC {
 
