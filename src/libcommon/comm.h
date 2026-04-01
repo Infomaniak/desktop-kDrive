@@ -39,6 +39,40 @@ inline constexpr char MSG_SIGNAL_ID[] = "id";
 inline constexpr char MSG_SIGNAL_NUM[] = "num";
 inline constexpr char MSG_SIGNAL_PARAMS[] = "params";
 
+// Signal / request–response payload parameter keys.
+// Shared between server-side jobs (src/server/comm/guijobs/) and GUI clients.
+inline constexpr char MSG_PARAM_USER_INFO[] = "userInfo";
+inline constexpr char MSG_PARAM_USER_DB_ID[] = "userDbId";
+inline constexpr char MSG_PARAM_USER_INFO_LIST[] = "userInfoList";
+inline constexpr char MSG_PARAM_USER_DB_ID_LIST[] = "userDbIdList";
+inline constexpr char MSG_PARAM_ACCOUNT_INFO[] = "accountInfo";
+inline constexpr char MSG_PARAM_ACCOUNT_DB_ID[] = "accountDbId";
+inline constexpr char MSG_PARAM_ACCOUNT_INFO_LIST[] = "accountInfoList";
+inline constexpr char MSG_PARAM_DRIVE_INFO[] = "driveInfo";
+inline constexpr char MSG_PARAM_DRIVE_DB_ID[] = "driveDbId";
+inline constexpr char MSG_PARAM_DRIVE_INFO_LIST[] = "driveInfoList";
+inline constexpr char MSG_PARAM_SYNC_INFO[] = "syncInfo";
+inline constexpr char MSG_PARAM_SYNC_DB_ID[] = "syncDbId";
+inline constexpr char MSG_PARAM_SYNC_INFO_LIST[] = "syncInfoList";
+inline constexpr char MSG_PARAM_SYNC_STATUS[] = "syncStatus";
+inline constexpr char MSG_PARAM_SYNC_STEP[] = "syncStep";
+inline constexpr char MSG_PARAM_SYNC_PROGRESS[] = "SyncProgress";
+inline constexpr char MSG_PARAM_CURRENT_FILE[] = "currentFile";
+inline constexpr char MSG_PARAM_TOTAL_FILES[] = "totalFiles";
+inline constexpr char MSG_PARAM_COMPLETED_SIZE[] = "completedSize";
+inline constexpr char MSG_PARAM_TOTAL_SIZE[] = "totalSize";
+inline constexpr char MSG_PARAM_ESTIMATED_REMAINING_TIME[] = "estimatedRemainingTime";
+inline constexpr char MSG_PARAM_ITEM_INFO[] = "itemInfo";
+inline constexpr char MSG_PARAM_ERROR_INFO[] = "errorInfo";
+inline constexpr char MSG_PARAM_ERROR_DB_ID[] = "errorDbId";
+inline constexpr char MSG_PARAM_ERROR_INFO_LIST[] = "errorInfoList";
+inline constexpr char MSG_PARAM_UPDATE_STATE[] = "updateState";
+inline constexpr char MSG_PARAM_VERSION_INFO[] = "versionInfo";
+inline constexpr char MSG_PARAM_TITLE[] = "title";
+inline constexpr char MSG_PARAM_MESSAGE[] = "message";
+inline constexpr char MSG_PARAM_LOG_UPLOAD_STATE[] = "state";
+inline constexpr char MSG_PARAM_PERCENTAGE[] = "percentage";
+
 inline constexpr char EXECUTE_ERROR_MSG[] = "C/S function call timeout or error!";
 
 /**
