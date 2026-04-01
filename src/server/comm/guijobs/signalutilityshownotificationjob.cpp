@@ -22,10 +22,6 @@
 
 
 // Signal: SignalNum::UTILITY_SHOW_NOTIFICATION
-// serializeOutputParms() writes: {
-//   MSG_PARAM_TITLE ("title"):     CommString,
-//   MSG_PARAM_MESSAGE ("message"): CommString
-// }
 
 namespace KDC {
 

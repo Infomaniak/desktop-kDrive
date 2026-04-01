@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::USER_UPDATED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_USER_INFO ("userInfo"): UserInfo
-// }
 
 namespace KDC {
 
