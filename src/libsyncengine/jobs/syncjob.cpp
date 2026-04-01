@@ -33,9 +33,9 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
         if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
             LOG_DEBUG(_logger,
                       "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
-                      "_progressSizeCallback is set by the caller).");
+                      "_progressPercentCallback is set by the caller).");
             sentry::Handler::captureMessage(sentry::Level::Warning, "SyncJob::setProgress",
-                                            "_expectedFinishProgress is not set but _progressSizeCallback is set");
+                                            "_expectedFinishProgress is not set but _progressPercentCallback is set");
             _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
             _progressPercentCallback(jobId(), -1);
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
