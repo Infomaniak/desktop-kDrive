@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsDriveDbId = "driveDbId";
+
+// Signal: SignalNum::DRIVE_REMOVED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_DRIVE_DB_ID ("driveDbId"): DriveDbId
+// }
 
 namespace KDC {
 
