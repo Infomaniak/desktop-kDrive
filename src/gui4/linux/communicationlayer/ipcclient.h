@@ -19,13 +19,17 @@
 #pragma once
 
 #include "libcommon/comm.h"
-#include "utility/cstypes.h"
+#include "libcommon/utility/types.h"
 
-#include <QTcpSocket>
 #include <cstdint>
+#include <QHash>
+#include <QString>
+#include <QTcpSocket>
+#include <QTimer>
 
 #include <Poco/Dynamic/Struct.h>
 
+#include <functional>
 #include <string>
 
 namespace KDC {
@@ -34,38 +38,51 @@ class IpcClient : public QObject {
         Q_OBJECT
 
     public:
+        using ResponseCallback = std::function<void(ExitInfo, const Poco::DynamicStruct &)>;
+
         explicit IpcClient(QObject *parent = nullptr);
 #ifdef QT_DEBUG
         void connectToServer();
 #else
         void connectToServer(quint16 port);
 #endif
-        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {});
+        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
 
     signals:
         void connected();
         void disconnected();
         /**
-         * Emitted when a complete JSON message has been received and parsed from the server.
-         * @param type   Message type (1 = request, 2 = signal — see GuiJobType in cstypes.h)
-         * @param id     Request ID matching the one returned by sendRequest(), or the signal ID for server-initiated signals
-         * @param num    Request number (RequestNum) or signal number (SignalNum) identifying the operation
-         * @param params Deserialized JSON parameters associated with the message
+         * Emitted when a server-initiated signal (type:2) has been received and parsed.
+         * @param num    Signal number identifying the event (see SignalNum in comm.h)
+         * @param params Deserialized JSON parameters associated with the signal
          */
-        void messageReceived(GuiJobType type, int32_t id, uint8_t num, Poco::DynamicStruct params);
+        void serverSignalReceived(SignalNum num, const Poco::DynamicStruct &params);
 
     private slots:
+        void attemptInitialConnection();
         void onConnected();
+        void onDisconnected();
+        void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
 
+
     private:
+        void handleResponseMessage(const Poco::DynamicStruct &ipcMessage, int32_t id);
+        void handleServerSignal(const Poco::DynamicStruct &ipcMessage, int32_t id);
+
         QTcpSocket *_socket;
+        QTimer _initialConnectionRetryTimer;
         std::string _readBuffer;
         int32_t _nextId{0};
+        QHash<int32_t, ResponseCallback> _pendingCallbacks;
+        bool _hasConnectedOnce{false};
+        uint32_t _initialConnectionAttemptCount{0};
+        quint16 _configuredPort{0};
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
 #endif
+        void scheduleInitialConnectionRetry(const QString &reason);
         void processBuffer();
         static bool extractNextMessage(std::string &buffer, std::string &outMessage);
 };

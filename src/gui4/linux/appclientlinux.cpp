@@ -22,6 +22,8 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 
+#include <Poco/Dynamic/Struct.h>
+
 #include <QGuiApplication>
 #include <QLocale>
 #include <QScreen>
@@ -38,9 +40,10 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QGuiApplication(argc, argv) {
     setupLogging();
 
-    connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
-    connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
-    connect(&_ipcClient, &IpcClient::messageReceived, this, &AppClientLinux::ipcMessageReceived);
+    (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
+    (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
+    (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+
 
 #ifdef QT_DEBUG
     _ipcClient.connectToServer();
@@ -56,6 +59,7 @@ void AppClientLinux::setupLogging() {
     logger->setLogDebug(true);
     logger->setupTemporaryFolderLogDir();
     logger->enterNextLogFile();
+    // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
     qInfo(lcAppClientLinux) << "***** Application & System Informations *****";
     qInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();

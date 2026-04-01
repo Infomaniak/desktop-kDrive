@@ -52,6 +52,8 @@ clang-format -i <file>
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 <!-- Add project-specific user corrections here -->
+- Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
+- Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 
 ## JIT Index
 
