@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::ACCOUNT_UPDATED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_ACCOUNT_INFO ("accountInfo"): AccountInfo
-// }
 
 namespace KDC {
 

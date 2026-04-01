@@ -21,9 +21,6 @@
 #include "libcommon/comm.h"
 
 // Signal: SignalNum::ACCOUNT_ADDED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_ACCOUNT_INFO ("accountInfo"): AccountInfo
-// }
 
 namespace KDC {
 
