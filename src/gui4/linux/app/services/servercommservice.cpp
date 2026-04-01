@@ -139,5 +139,58 @@ void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Sync ----------------------------------------------------------------------
+
+void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::SYNC_ADDED, [this](const Poco::DynamicStruct &params) {
+        SyncInfo info;
+        info.fromDynamicStruct(params[kSyncInfo].extract<Poco::DynamicStruct>());
+        emit syncAdded(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::SYNC_UPDATED, [this](const Poco::DynamicStruct &params) {
+        SyncInfo info;
+        info.fromDynamicStruct(params[kSyncInfo].extract<Poco::DynamicStruct>());
+        emit syncUpdated(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::SYNC_REMOVED, [this](const Poco::DynamicStruct &params) {
+        SyncDbId syncDbId = 0;
+        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
+        emit syncRemoved(syncDbId);
+    });
+
+    dispatcher.registerHandler(SignalNum::SYNC_PROGRESSINFO, [this](const Poco::DynamicStruct &params) {
+        SyncDbId syncDbId = 0;
+        auto status = SyncStatus::Undefined;
+        auto step = SyncStep::Idle;
+        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
+        CommonUtility::readValueFromStruct(params, kSyncStatus, status);
+        CommonUtility::readValueFromStruct(params, kSyncStep, step);
+
+        const Poco::DynamicStruct progressStruct = params[kSyncProgress].extract<Poco::DynamicStruct>();
+        int64_t currentFile = 0;
+        int64_t totalFiles = 0;
+        int64_t completedSize = 0;
+        int64_t totalSize = 0;
+        int64_t estimatedRemainingTime = 0;
+        CommonUtility::readValueFromStruct(progressStruct, kCurrentFile, currentFile);
+        CommonUtility::readValueFromStruct(progressStruct, kTotalFiles, totalFiles);
+        CommonUtility::readValueFromStruct(progressStruct, kCompletedSize, completedSize);
+        CommonUtility::readValueFromStruct(progressStruct, kTotalSize, totalSize);
+        CommonUtility::readValueFromStruct(progressStruct, kEstimatedRemainingTime, estimatedRemainingTime);
+
+        emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
+    });
+
+    dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM, [this](const Poco::DynamicStruct &params) {
+        SyncDbId syncDbId = 0;
+        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
+        SyncFileItemInfo info;
+        info.fromDynamicStruct(params[kItemInfo].extract<Poco::DynamicStruct>());
+        emit itemCompleted(syncDbId, info);
+    });
+}
+
 
 } // namespace KDC
