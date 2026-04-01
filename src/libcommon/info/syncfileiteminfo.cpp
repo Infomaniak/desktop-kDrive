@@ -106,7 +106,7 @@ void SyncFileItemInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString error;
     CommonUtility::readValueFromStruct(dstruct, outParamsError, error);
-    _error = QString::fromStdString(error);
+    _error = CommonUtility::commString2QStr(error);
 
     CommonUtility::readValueFromStruct(dstruct, outParamsSize, _size);
     CommonUtility::readValueFromStruct(dstruct, outParamsProgress, _progress);
