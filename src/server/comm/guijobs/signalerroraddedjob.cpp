@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsErrorInfo = "errorInfo";
+
+// Signal: SignalNum::UTILITY_ERROR_ADDED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_ERROR_INFO ("errorInfo"): ErrorInfo
+// }
 
 namespace KDC {
 
