@@ -84,7 +84,9 @@ final class StatusBarManager {
         statusItem.autosaveName = StatusBarManager.autosaveName
         statusItem.button?.image = StatusItemState.idle.icon
 
-        statusItem.button?.action = #selector(AppDelegate.openMainWindow)
+        statusItem.button?.target = self
+        statusItem.button?.action = #selector(handleItemClick)
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
         observeSynchros()
         setupInitialState()
@@ -150,5 +152,41 @@ final class StatusBarManager {
         }
 
         return tooltip
+    }
+
+    @objc private func handleItemClick() {
+        guard let event = NSApp.currentEvent else { return }
+
+        switch event.type {
+        case .leftMouseUp:
+            (NSApp.delegate as? AppDelegate)?.openMainWindow()
+        case .rightMouseUp:
+            presentMenu()
+        default:
+            break
+        }
+    }
+
+    private func presentMenu() {
+        let menu = NSMenu()
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarOpenApp,
+            action: #selector(AppDelegate.openMainWindow),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarSettings,
+            action: #selector(AppDelegate.openPreferencesWindow),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarQuitApp,
+            action: #selector(AppDelegate.quitApp),
+            keyEquivalent: "q"
+        )
+
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        statusItem.menu = nil
     }
 }
