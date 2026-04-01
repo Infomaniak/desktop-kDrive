@@ -21,9 +21,6 @@
 #include "libcommon/comm.h"
 
 // Signal: SignalNum::UTILITY_ERROR_ADDED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_ERROR_INFO ("errorInfo"): Error
-// }
 namespace KDC {
 
 SignalErrorAddedJob::SignalErrorAddedJob(const Error &error) :

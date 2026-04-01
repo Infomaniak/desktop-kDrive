@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::UPDATER_STATE_CHANGED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_UPDATE_STATE ("updateState"): UpdateState
-// }
 
 namespace KDC {
 

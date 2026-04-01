@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::DRIVE_UPDATED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_DRIVE_INFO ("driveInfo"): DriveInfo
-// }
 
 namespace KDC {
 

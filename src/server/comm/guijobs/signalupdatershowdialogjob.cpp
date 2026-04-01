@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::UPDATER_SHOW_DIALOG
-// serializeOutputParms() writes: {
-//   MSG_PARAM_VERSION_INFO ("versionInfo"): VersionInfo
-// }
 
 namespace KDC {
 
