@@ -117,5 +117,27 @@ void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Drive ---------------------------------------------------------------------
+
+void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::DRIVE_ADDED, [this](const Poco::DynamicStruct &params) {
+        DriveInfo info;
+        info.fromDynamicStruct(params[kDriveInfo].extract<Poco::DynamicStruct>());
+        emit driveAdded(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::DRIVE_UPDATED, [this](const Poco::DynamicStruct &params) {
+        DriveInfo info;
+        info.fromDynamicStruct(params[kDriveInfo].extract<Poco::DynamicStruct>());
+        emit driveUpdated(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::DRIVE_REMOVED, [this](const Poco::DynamicStruct &params) {
+        DriveDbId driveDbId = 0;
+        CommonUtility::readValueFromStruct(params, kDriveDbId, driveDbId);
+        emit driveRemoved(driveDbId);
+    });
+}
+
 
 } // namespace KDC
