@@ -33,8 +33,8 @@ SignalUtilityLogUploadStateJob::SignalUtilityLogUploadStateJob(const LogUploadSt
 }
 
 ExitInfo SignalUtilityLogUploadStateJob::serializeOutputParms() {
-    writeParamValue(outParamsLogUploadState, _state);
-    writeParamValue(outParamsPercentage, _percentage);
+    writeParamValue(MSG_PARAM_LOG_UPLOAD_STATE, _state);
+    writeParamValue(MSG_PARAM_PERCENTAGE, _percentage);
 
     return ExitCode::Ok;
 }
