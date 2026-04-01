@@ -569,6 +569,15 @@
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "Dossier kDrive";
 
+/* loco:69ccceaed2b63271de0326d3 */
+"statusBarOpenApp" = "Ouvrir kDrive";
+
+/* loco:69ccce749ecf25eb9005e002 */
+"statusBarQuitApp" = "Quitter";
+
+/* loco:69ccce9808d1b71a410eab92 */
+"statusBarSettings" = "Paramètres";
+
 /* loco:697b37c632d0fb5b5d0b4db6 */
 "storageDeviceNameMac" = "Macintosh";
 

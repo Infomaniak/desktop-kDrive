@@ -159,8 +159,7 @@ final class StatusBarManager {
 
         switch event.type {
         case .leftMouseUp:
-            let appDelegate = NSApp.delegate as? AppDelegate
-            appDelegate?.openMainWindow()
+            (NSApp.delegate as? AppDelegate)?.openMainWindow()
         case .rightMouseUp:
             presentMenu()
         default:
@@ -170,9 +169,21 @@ final class StatusBarManager {
 
     private func presentMenu() {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Open kDrive", action: #selector(AppDelegate.openMainWindow), keyEquivalent: "")
-        menu.addItem(withTitle: "Settings", action: #selector(AppDelegate.openPreferencesWindow), keyEquivalent: "")
-        menu.addItem(withTitle: "Quit kDrive", action: #selector(AppDelegate.quitApp), keyEquivalent: "q")
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarOpenApp,
+            action: #selector(AppDelegate.openMainWindow),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarSettings,
+            action: #selector(AppDelegate.openPreferencesWindow),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: KDriveLocalizable.statusBarQuitApp,
+            action: #selector(AppDelegate.quitApp),
+            keyEquivalent: "q"
+        )
 
         statusItem.menu = menu
         statusItem.button?.performClick(nil)

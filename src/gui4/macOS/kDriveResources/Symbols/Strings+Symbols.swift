@@ -374,6 +374,12 @@ public enum KDriveLocalizable {
   public static let sidebarItemGeneral = KDriveLocalizable.tr("Localizable", "sidebarItemGeneral", fallback: "General")
   /// loco:68a70c92c32749426b06db02
   public static let sidebarItemKDriveTitle = KDriveLocalizable.tr("Localizable", "sidebarItemKDriveTitle", fallback: "kDrive folder")
+  /// loco:69ccceaed2b63271de0326d3
+  public static let statusBarOpenApp = KDriveLocalizable.tr("Localizable", "statusBarOpenApp", fallback: "Open kDrive")
+  /// loco:69ccce749ecf25eb9005e002
+  public static let statusBarQuitApp = KDriveLocalizable.tr("Localizable", "statusBarQuitApp", fallback: "Quit")
+  /// loco:69ccce9808d1b71a410eab92
+  public static let statusBarSettings = KDriveLocalizable.tr("Localizable", "statusBarSettings", fallback: "Settings")
   /// loco:697b37c632d0fb5b5d0b4db6
   public static let storageDeviceNameMac = KDriveLocalizable.tr("Localizable", "storageDeviceNameMac", fallback: "Macintosh")
   /// loco:69981716cfa89b9c940ef652
