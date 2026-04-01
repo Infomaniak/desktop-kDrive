@@ -224,4 +224,30 @@ void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Utility -------------------------------------------------------------------
+
+void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_NOTIFICATION, [this](const Poco::DynamicStruct &params) {
+        CommString title;
+        CommString message;
+        CommonUtility::readValueFromStruct(params, kTitle, title);
+        CommonUtility::readValueFromStruct(params, kMessage, message);
+        emit showNotification(CommonUtility::commString2QStr(title), CommonUtility::commString2QStr(message));
+    });
+
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS, [this](const Poco::DynamicStruct &) { emit showSettings(); });
+
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS, [this](const Poco::DynamicStruct &) { emit showSynthesis(); });
+
+    dispatcher.registerHandler(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, [this](const Poco::DynamicStruct &params) {
+        LogUploadState state = LogUploadState::None;
+        int32_t percentage = 0;
+        CommonUtility::readValueFromStruct(params, kLogUploadState, state);
+        CommonUtility::readValueFromStruct(params, kPercentage, percentage);
+        emit logUploadStatusUpdated(state, percentage);
+    });
+
+    dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) { emit quit(); });
+}
+
 } // namespace KDC
