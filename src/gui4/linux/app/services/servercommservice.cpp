@@ -208,5 +208,20 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Updater -------------------------------------------------------------------
+
+void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::UPDATER_STATE_CHANGED, [this](const Poco::DynamicStruct &params) {
+        UpdateState state = UpdateState::Unknown;
+        CommonUtility::readValueFromStruct(params, kUpdateState, state);
+        emit updateStateChanged(state);
+    });
+
+    dispatcher.registerHandler(SignalNum::UPDATER_SHOW_DIALOG, [this](const Poco::DynamicStruct &params) {
+        VersionInfo info;
+        info.fromDynamicStruct(params[kVersionInfo].extract<Poco::DynamicStruct>());
+        emit showUpdateDialog(info);
+    });
+}
 
 } // namespace KDC
