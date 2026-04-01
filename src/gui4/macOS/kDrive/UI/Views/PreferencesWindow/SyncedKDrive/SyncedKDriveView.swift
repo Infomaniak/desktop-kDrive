@@ -136,7 +136,7 @@ struct SyncedKDriveView: View {
             await fetchSynchros()
         }
         .sheet(isPresented: $isShowingRemoveSynchroConfirmation) {
-            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0)
+            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0, completion: handleSynchroIsDeleted)
         }
         .errorAlert(domainError)
     }
@@ -180,6 +180,12 @@ struct SyncedKDriveView: View {
 
     private func navigateToAdvancedSynchro() {
         // TODO: Navigate to advanced synchros
+    }
+
+    private func handleSynchroIsDeleted(_ error: Error?) {
+        guard error == nil else {
+            return
+        }
     }
 }
 

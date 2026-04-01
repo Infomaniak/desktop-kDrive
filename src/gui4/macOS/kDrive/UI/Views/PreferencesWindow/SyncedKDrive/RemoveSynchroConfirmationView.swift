@@ -25,6 +25,7 @@ struct RemoveSynchroConfirmationView: View {
     @Environment(\.dismiss) private var dismiss
 
     let synchroDbId: Int
+    let completion: (Error?) -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -41,8 +42,16 @@ struct RemoveSynchroConfirmationView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonRemove) {
-                    removeSynchro()
-                    dismiss()
+                    Task {
+                        do {
+                            try await removeSynchro()
+                            completion(nil)
+                        } catch {
+                            completion(error)
+                        }
+
+                        dismiss()
+                    }
                 }
             }
             ToolbarItem(placement: .cancellationAction) {
@@ -53,13 +62,11 @@ struct RemoveSynchroConfirmationView: View {
         }
     }
 
-    private func removeSynchro() {
-        Task {
-            try? await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
-        }
+    private func removeSynchro() async throws {
+        try await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
     }
 }
 
 #Preview {
-    RemoveSynchroConfirmationView(synchroDbId: 42)
+    RemoveSynchroConfirmationView(synchroDbId: 42) { _ in }
 }
