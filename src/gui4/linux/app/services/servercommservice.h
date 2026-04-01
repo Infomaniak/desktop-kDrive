@@ -35,9 +35,6 @@ namespace KDC {
 /**
  * Registers handlers on the SignalDispatcher for every server-initiated signal
  * and re-emits them as typed Qt signals for consumption by app models and QML.
- *
- * Signals that are still sent via the legacy QDataStream channel (OldCommServer)
- * are not handled here and are listed in the implementation file for reference.
  */
 class ServerCommService : public QObject {
         Q_OBJECT
