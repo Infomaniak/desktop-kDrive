@@ -20,6 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
+// Signal: SignalNum::SYNC_ADDED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_SYNC_INFO ("syncInfo"): BaseSync
+// }
+
 namespace KDC {
 
 SignalSyncAddedJob::SignalSyncAddedJob(const BaseSync &syncInfo) :

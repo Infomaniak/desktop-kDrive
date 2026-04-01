@@ -20,6 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
+// Signal: SignalNum::ACCOUNT_ADDED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_ACCOUNT_INFO ("accountInfo"): Account
+// }
+
 namespace KDC {
 
 SignalAccountAddedJob::SignalAccountAddedJob(const Account &accountInfo) :
