@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsVersionInfo = "versionInfo";
+
+// Signal: SignalNum::UPDATER_SHOW_DIALOG
+// serializeOutputParms() writes: {
+//   MSG_PARAM_VERSION_INFO ("versionInfo"): VersionInfo
+// }
 
 namespace KDC {
 
