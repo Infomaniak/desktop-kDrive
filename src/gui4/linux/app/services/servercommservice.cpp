@@ -22,11 +22,24 @@
 #include "libcommon/utility/utility.h"
 
 #include <QLoggingCategory>
+#include <QPointer>
 
 Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
 
-namespace KDC {
+namespace {
 
+bool checkSelf(const QPointer<KDC::ServerCommService> &self, SignalNum num) {
+    if (!self) {
+        qCWarning(lcServerCommService) << "Signal" << toString(num).c_str()
+                                       << "received after ServerCommService destruction - ignoring";
+        return true;
+    }
+    return false;
+}
+
+} // namespace
+
+namespace KDC {
 
 ServerCommService::ServerCommService(SignalDispatcher &dispatcher, QObject *parent) :
     QObject(parent) {
