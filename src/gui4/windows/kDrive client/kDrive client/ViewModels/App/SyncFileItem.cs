@@ -27,6 +27,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _parentFolderPath = "";
         private string _parentFolderName = "";
         private int _progressPercent = 0;
+        private bool _isIndeterminateProgress = false;
         public Int64 _operationId = 0;
 
         public Sync Sync { get; }
@@ -122,7 +123,17 @@ namespace Infomaniak.kDrive.ViewModels
         public int ProgressPercent
         {
             get => _progressPercent;
-            set => SetPropertyInUIThread(ref _progressPercent, value);
+            set
+            {
+                SetPropertyInUIThread(ref _progressPercent, value);
+                IsIndeterminateProgress = _progressPercent < 0;
+            }
+        }
+
+        public bool IsIndeterminateProgress
+        {
+            get => _isIndeterminateProgress;
+            set => SetPropertyInUIThread(ref _isIndeterminateProgress, value);
         }
 
         public ConflictType Conflict

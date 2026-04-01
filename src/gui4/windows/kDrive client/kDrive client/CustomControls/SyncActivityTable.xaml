@@ -184,7 +184,7 @@
                                     <ProgressRing Height="16"
                                                   Width="16"
                                                   Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                                                  IsIndeterminate="False"
+                                                  IsIndeterminate="{Binding DataContext.IsIndeterminateProgress, Mode=OneWay}"
                                                   kDrive:AncestorSource.AncestorType="ContentControl"
                                                   Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
 
