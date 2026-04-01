@@ -79,19 +79,19 @@ void SyncFileItemInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 void SyncFileItemInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, outParamsType, _type);
 
-    std::string path;
+    CommString path;
     CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
     _path = QString::fromStdString(path);
 
-    std::string newPath;
+    CommString newPath;
     CommonUtility::readValueFromStruct(dstruct, outParamsNewPath, newPath);
     _newPath = QString::fromStdString(newPath);
 
-    std::string localNodeId;
+    CommString localNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
     _localNodeId = QString::fromStdString(localNodeId);
 
-    std::string remoteNodeId;
+    CommString remoteNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
     _remoteNodeId = QString::fromStdString(remoteNodeId);
 
@@ -104,7 +104,7 @@ void SyncFileItemInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     _inconsistency = fromInt<InconsistencyType>(inconsistencyValue);
     CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
 
-    std::string error;
+    CommString error;
     CommonUtility::readValueFromStruct(dstruct, outParamsError, error);
     _error = QString::fromStdString(error);
 
