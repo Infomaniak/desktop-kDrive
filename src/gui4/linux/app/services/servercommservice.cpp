@@ -95,4 +95,27 @@ void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Account ------------------------------------------------------------------
+
+void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::ACCOUNT_ADDED, [this](const Poco::DynamicStruct &params) {
+        AccountInfo info;
+        info.fromDynamicStruct(params[kAccountInfo].extract<Poco::DynamicStruct>());
+        emit accountAdded(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::ACCOUNT_UPDATED, [this](const Poco::DynamicStruct &params) {
+        AccountInfo info;
+        info.fromDynamicStruct(params[kAccountInfo].extract<Poco::DynamicStruct>());
+        emit accountUpdated(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::ACCOUNT_REMOVED, [this](const Poco::DynamicStruct &params) {
+        AccountDbId accountDbId = 0;
+        CommonUtility::readValueFromStruct(params, kAccountDbId, accountDbId);
+        emit accountRemoved(accountDbId);
+    });
+}
+
+
 } // namespace KDC
