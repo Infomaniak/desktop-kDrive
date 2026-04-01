@@ -104,7 +104,7 @@ void TestInfoDynamicStruct::testSyncFileItemInfoRoundTrip() {
     CPPUNIT_ASSERT_EQUAL(CancelType::TmpBlacklisted, parsed.cancelType());
     CPPUNIT_ASSERT_EQUAL(std::string("temporary error"), parsed.error().toStdString());
     CPPUNIT_ASSERT_EQUAL(int64_t{2048}, parsed.size());
-    CPPUNIT_ASSERT_EQUAL(int32_t{73}, static_cast<int32_t>(parsed.progress()));
+    CPPUNIT_ASSERT_EQUAL(int32_t{73}, parsed.progress());
     CPPUNIT_ASSERT_EQUAL(UniqueId{555}, parsed.operationId());
 }
 
