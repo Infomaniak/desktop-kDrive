@@ -69,4 +69,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
     }
+
+    @objc func quitApp() {
+        Task {
+            try? await UtilityJobs().quit()
+        }
+    }
 }
