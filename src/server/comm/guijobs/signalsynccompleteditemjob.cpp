@@ -22,10 +22,6 @@
 
 
 // Signal: SignalNum::SYNC_COMPLETEDITEM
-// serializeOutputParms() writes: {
-//   MSG_PARAM_SYNC_DB_ID ("syncDbId"): SyncDbId,
-//   MSG_PARAM_ITEM_INFO ("itemInfo"):  SyncFileItemInfo
-// }
 
 namespace KDC {
 
