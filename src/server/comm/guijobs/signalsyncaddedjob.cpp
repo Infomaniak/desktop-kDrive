@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::SYNC_ADDED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_SYNC_INFO ("syncInfo"): SyncInfo
-// }
 
 namespace KDC {
 
