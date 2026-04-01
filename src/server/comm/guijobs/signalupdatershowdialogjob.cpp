@@ -31,7 +31,7 @@ SignalUpdaterShowDialogJob::SignalUpdaterShowDialogJob(const VersionInfo &versio
 }
 
 ExitInfo SignalUpdaterShowDialogJob::serializeOutputParms() {
-    writeParamValue(outParamsVersionInfo, _versionInfo, info2DynamicVar<VersionInfo>);
+    writeParamValue(MSG_PARAM_VERSION_INFO, _versionInfo, info2DynamicVar<VersionInfo>);
     return ExitCode::Ok;
 }
 
