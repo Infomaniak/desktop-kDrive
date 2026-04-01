@@ -96,22 +96,6 @@ MigrationParams::MigrationParams() :
     _logger(Log::instance()->getLogger()),
     _proxyNotSupported(false) {}
 
-Language MigrationParams::strToLanguage(QString lang) {
-    if (lang == "en") {
-        return Language::English;
-    } else if (lang == "fr") {
-        return Language::French;
-    } else if (lang == "de") {
-        return Language::German;
-    } else if (lang == "es") {
-        return Language::Spanish;
-    } else if (lang == "it") {
-        return Language::Italian;
-    } else {
-        return Language::Default;
-    }
-}
-
 LogLevel MigrationParams::intToLogLevel(int log) {
     switch (log) {
         case 0:
@@ -215,7 +199,7 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
+    ParametersCache::instance()->parameters().setLanguage(CommonUtility::strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
         purgeOldLogs = true;

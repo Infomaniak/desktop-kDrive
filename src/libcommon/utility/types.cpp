@@ -537,6 +537,8 @@ std::string toString(const Language e) {
             return "Spanish";
         case Language::Italian:
             return "Italian";
+        case Language::Dutch:
+            return "Dutch";
         default:
             return noConversionStr;
     }
