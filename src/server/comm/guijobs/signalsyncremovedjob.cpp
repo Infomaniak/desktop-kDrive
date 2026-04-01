@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::SYNC_REMOVED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_SYNC_DB_ID ("syncDbId"): SyncDbId
-// }
 
 namespace KDC {
 

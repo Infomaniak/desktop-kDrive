@@ -22,10 +22,6 @@
 
 
 // Signal: SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_LOG_UPLOAD_STATE ("state"):  LogUploadState,
-//   MSG_PARAM_PERCENTAGE ("percentage"):   int32_t
-// }
 
 namespace KDC {
 
