@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsDriveInfo = "driveInfo";
+
+// Signal: SignalNum::DRIVE_UPDATED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_DRIVE_INFO ("driveInfo"): DriveInfo
+// }
 
 namespace KDC {
 
