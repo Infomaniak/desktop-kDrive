@@ -20,9 +20,12 @@
 
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsLogUploadState = "state";
-static const auto outParamsPercentage = "percentage";
+
+// Signal: SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_LOG_UPLOAD_STATE ("state"):  LogUploadState,
+//   MSG_PARAM_PERCENTAGE ("percentage"):   int32_t
+// }
 
 namespace KDC {
 
