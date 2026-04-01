@@ -19,25 +19,9 @@
 import Cocoa
 import SwiftUI
 
+// MARK: - Synchro State
+
 public extension ThemedAnimation {
-    static let kDriveLoader = ThemedAnimation(
-        light: "kdrive-loader-light",
-        dark: "kdrive-loader-dark"
-    )
-    static let kDriveSynchronizeFiles = ThemedAnimation(
-        light: "kdrive-synchronize-files-light",
-        dark: "kdrive-synchronize-files-dark"
-    )
-
-    static let permissionFullDiskAccess = ThemedAnimation(
-        light: "permission-full-disk-access-light",
-        dark: "permission-full-disk-access-dark"
-    )
-    static let permissionLightSyncExtension = ThemedAnimation(
-        light: "permission-light-sync-extension-light",
-        dark: "permission-light-sync-extension-dark"
-    )
-
     static let kDriveCheckmark = ThemedAnimation(
         light: "kdrive-checkmark-light",
         dark: "kdrive-checkmark-dark"
@@ -54,6 +38,36 @@ public extension ThemedAnimation {
         light: "offline-light",
         dark: "offline-dark"
     )
+}
+
+// MARK: - Onboarding
+
+public extension ThemedAnimation {
+    static let kDriveLoader = ThemedAnimation(
+        light: osRelatedAnimation("kdrive-loader-light"),
+        dark: osRelatedAnimation("kdrive-loader-dark")
+    )
+    static let kDriveSynchronizeFiles = ThemedAnimation(
+        light: osRelatedAnimation("kdrive-synchronize-files-light"),
+        dark: osRelatedAnimation("kdrive-synchronize-files-dark")
+    )
+
+    static let permissionFullDiskAccess = ThemedAnimation(
+        light: osRelatedAnimation("permission-full-disk-access-light"),
+        dark: osRelatedAnimation("permission-full-disk-access-dark")
+    )
+    static let permissionLightSyncExtension = ThemedAnimation(
+        light: osRelatedAnimation("permission-light-sync-extension-light"),
+        dark: osRelatedAnimation("permission-light-sync-extension-dark")
+    )
+
+    private static func osRelatedAnimation(_ name: String) -> String {
+        if #available(macOS 26.0, *) {
+            return "macos26-\(name)"
+        } else {
+            return "older-\(name)"
+        }
+    }
 }
 
 public struct ThemedAnimation: Sendable, Hashable {
