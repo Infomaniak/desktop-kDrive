@@ -20,8 +20,11 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsUserInfo = "userInfo";
+
+// Signal: SignalNum::USER_ADDED
+// serializeOutputParms() writes: {
+//   MSG_PARAM_USER_INFO ("userInfo"): UserInfo
+// }
 
 namespace KDC {
 
