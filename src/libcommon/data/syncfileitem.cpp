@@ -94,19 +94,19 @@ void SyncFileItem::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 void SyncFileItem::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, outParamsType, _type);
 
-    std::string path;
+    CommString path;
     CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
     _path = QStr2Path(QString::fromStdString(path));
 
-    std::string newPath;
+    CommString newPath;
     CommonUtility::readValueFromStruct(dstruct, outParamsNewPath, newPath);
     _newPath = newPath.empty() ? std::nullopt : std::optional<SyncPath>(QStr2Path(QString::fromStdString(newPath)));
 
-    std::string localNodeId;
+    CommString localNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
     _localNodeId = localNodeId.empty() ? std::nullopt : std::optional<NodeId>(localNodeId);
 
-    std::string remoteNodeId;
+    CommString remoteNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
     _remoteNodeId = remoteNodeId.empty() ? std::nullopt : std::optional<NodeId>(remoteNodeId);
 
