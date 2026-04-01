@@ -20,9 +20,12 @@
 
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsTitle = "title";
-static const auto outParamsMessage = "message";
+
+// Signal: SignalNum::UTILITY_SHOW_NOTIFICATION
+// serializeOutputParms() writes: {
+//   MSG_PARAM_TITLE ("title"):     CommString,
+//   MSG_PARAM_MESSAGE ("message"): CommString
+// }
 
 namespace KDC {
 
