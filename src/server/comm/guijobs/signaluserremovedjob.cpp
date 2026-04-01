@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::USER_REMOVED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_USER_DB_ID ("userDbId"): UserDbId
-// }
 
 namespace KDC {
 
