@@ -71,8 +71,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func quitApp() {
+        NSApp.terminate(nil)
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         Task {
             try? await UtilityJobs().quit()
+            NSApp.reply(toApplicationShouldTerminate: true)
         }
+        return .terminateLater
     }
 }
