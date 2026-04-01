@@ -38,10 +38,10 @@ SignalSyncProgressInfoJob::SignalSyncProgressInfoJob(int syncDbId, SyncStatus sy
 }
 
 ExitInfo SignalSyncProgressInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsSyncstatus, _syncStatus);
-    writeParamValue(outParamsSyncStep, _syncStep);
-    writeParamValue(outParamsSyncProgress, _syncProgress, info2DynamicVar<SyncProgress>);
+    writeParamValue(MSG_PARAM_SYNC_DB_ID, _syncDbId);
+    writeParamValue(MSG_PARAM_SYNC_STATUS, _syncStatus);
+    writeParamValue(MSG_PARAM_SYNC_STEP, _syncStep);
+    writeParamValue(MSG_PARAM_SYNC_PROGRESS, _syncProgress, info2DynamicVar<SyncProgress>);
     return ExitCode::Ok;
 }
 
