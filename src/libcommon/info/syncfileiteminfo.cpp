@@ -19,6 +19,8 @@
 #include "syncfileiteminfo.h"
 #include "utility/utility.h"
 
+#include <cstdint>
+
 static const auto outParamsType = "type";
 static const auto outParamsPath = "path";
 static const auto outParamsNewPath = "newPath";
@@ -72,6 +74,43 @@ void SyncFileItemInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsSize, _size);
     CommonUtility::writeValueToStruct(dstruct, outParamsProgress, _progress);
     CommonUtility::writeValueToStruct(dstruct, outParamsOperationId, _operationId);
+}
+
+void SyncFileItemInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, outParamsType, _type);
+
+    CommString path;
+    CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
+    _path = CommonUtility::commString2QStr(path);
+
+    CommString newPath;
+    CommonUtility::readValueFromStruct(dstruct, outParamsNewPath, newPath);
+    _newPath = CommonUtility::commString2QStr(newPath);
+
+    CommString localNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
+    _localNodeId = CommonUtility::commString2QStr(localNodeId);
+
+    CommString remoteNodeId;
+    CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
+    _remoteNodeId = CommonUtility::commString2QStr(remoteNodeId);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsDirection, _direction);
+    CommonUtility::readValueFromStruct(dstruct, outParamsInstruction, _instruction);
+    CommonUtility::readValueFromStruct(dstruct, outParamsStatus, _status);
+    CommonUtility::readValueFromStruct(dstruct, outParamsConflict, _conflict);
+    int32_t inconsistencyValue = 0;
+    CommonUtility::readValueFromStruct(dstruct, outParamsInconsistency, inconsistencyValue);
+    _inconsistency = fromInt<InconsistencyType>(inconsistencyValue);
+    CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
+
+    CommString error;
+    CommonUtility::readValueFromStruct(dstruct, outParamsError, error);
+    _error = CommonUtility::commString2QStr(error);
+
+    CommonUtility::readValueFromStruct(dstruct, outParamsSize, _size);
+    CommonUtility::readValueFromStruct(dstruct, outParamsProgress, _progress);
+    CommonUtility::readValueFromStruct(dstruct, outParamsOperationId, _operationId);
 }
 
 QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info) {
