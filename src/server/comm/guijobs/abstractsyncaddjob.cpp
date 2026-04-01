@@ -35,9 +35,6 @@ static const auto inParamsServerFolderNodeId = "serverFolderNodeId";
 static const auto inParamsLiteSync = "liteSync";
 static const auto inParamsBlackList = "blackList";
 
-// Output parameters keys
-static const auto outParamsSyncInfo = "syncInfo";
-
 namespace KDC {
 
 AbstractSyncAddJob::AbstractSyncAddJob(std::shared_ptr<CommManager> commManager, int requestId,
@@ -66,7 +63,7 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
 }
 
 ExitInfo AbstractSyncAddJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncInfo, _sync, info2DynamicVar<Sync>);
+    writeParamValue(MSG_PARAM_SYNC_INFO, _sync, info2DynamicVar<Sync>);
 
     return ExitCode::Ok;
 }
