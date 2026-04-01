@@ -212,7 +212,8 @@ ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePath, time_t creatio
     Q_UNUSED(fileIdStr);
 
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatSyncPath(absoluteFilePath) << L" creation time: "
+                                                  << creationTime << L" modification time: " << modtime << L" size: " << size);
     }
 
     if (!_connector) {

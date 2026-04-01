@@ -521,15 +521,16 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
     }
 
     if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
-        // Check if the local Edit operation is caused by the current sync (i.e. check in syncOps)
+        // Check if the local Edit is caused by the current sync (i.e. check in syncOps)
         const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
         if (_syncPal->_syncOps->isLocalEditCausedBySync(nodeId, _syncPal->localPath(), relativePath, lastModifiedLocal,
                                                         sizeLocal)) {
-            valid = false;
+            valid = true;
             return ExitCode::Ok;
         }
 
-        // Check if the local Edit operation is caused by a finished sync (i.e. check in syncDb)
+        // There is no sync in progress or the Edit does not correspond to a sync operation
+        // If the date of the file on disk does not match the date in the DB, it is an invalid operation
         DbNodeId dbNodeId = 0;
         bool found = false;
         if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
