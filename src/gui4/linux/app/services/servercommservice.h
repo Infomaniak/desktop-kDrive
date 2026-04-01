@@ -81,7 +81,7 @@ class ServerCommService : public QObject {
         void showNotification(const QString &title, const QString &message);
         void showSettings();
         void showSynthesis();
-        void logUploadStatusUpdated(LogUploadState state, int percentage);
+        void logUploadStatusUpdated(LogUploadState state, int32_t percentage);
         void quit();
 
     private:
