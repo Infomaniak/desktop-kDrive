@@ -18,6 +18,7 @@
 
 #include "servercommservice.h"
 
+#include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
 
 #include <QLoggingCategory>
@@ -26,41 +27,6 @@ Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
 
 namespace KDC {
 
-// Param keys ─ mirrors the server-side signal job static constants.
-namespace {
-// User
-constexpr auto kUserInfo = "userInfo";
-constexpr auto kUserDbId = "userDbId";
-// Account
-constexpr auto kAccountInfo = "accountInfo";
-constexpr auto kAccountDbId = "accountDbId";
-// Drive
-constexpr auto kDriveInfo = "driveInfo";
-constexpr auto kDriveDbId = "driveDbId";
-// Sync
-constexpr auto kSyncInfo = "syncInfo";
-constexpr auto kSyncDbId = "syncDbId";
-constexpr auto kSyncStatus = "syncStatus";
-constexpr auto kSyncStep = "syncStep";
-constexpr auto kSyncProgress = "SyncProgress";
-constexpr auto kCurrentFile = "currentFile";
-constexpr auto kTotalFiles = "totalFiles";
-constexpr auto kCompletedSize = "completedSize";
-constexpr auto kTotalSize = "totalSize";
-constexpr auto kEstimatedRemainingTime = "estimatedRemainingTime";
-constexpr auto kItemInfo = "itemInfo";
-// Error
-constexpr auto kErrorInfo = "errorInfo";
-constexpr auto kErrorDbId = "errorDbId";
-// Updater
-constexpr auto kUpdateState = "updateState";
-constexpr auto kVersionInfo = "versionInfo";
-// Utility
-constexpr auto kTitle = "title";
-constexpr auto kMessage = "message";
-constexpr auto kLogUploadState = "state";
-constexpr auto kPercentage = "percentage";
-} // namespace
 
 ServerCommService::ServerCommService(SignalDispatcher &dispatcher, QObject *parent) :
     QObject(parent) {
@@ -78,19 +44,19 @@ ServerCommService::ServerCommService(SignalDispatcher &dispatcher, QObject *pare
 void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::USER_ADDED, [this](const Poco::DynamicStruct &params) {
         UserInfo info;
-        info.fromDynamicStruct(params[kUserInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_USER_INFO].extract<Poco::DynamicStruct>());
         emit userAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::USER_UPDATED, [this](const Poco::DynamicStruct &params) {
         UserInfo info;
-        info.fromDynamicStruct(params[kUserInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_USER_INFO].extract<Poco::DynamicStruct>());
         emit userUpdated(info);
     });
 
     dispatcher.registerHandler(SignalNum::USER_REMOVED, [this](const Poco::DynamicStruct &params) {
         UserDbId userDbId = 0;
-        CommonUtility::readValueFromStruct(params, kUserDbId, userDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_USER_DB_ID, userDbId);
         emit userRemoved(userDbId);
     });
 }
@@ -100,19 +66,19 @@ void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::ACCOUNT_ADDED, [this](const Poco::DynamicStruct &params) {
         AccountInfo info;
-        info.fromDynamicStruct(params[kAccountInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_ACCOUNT_INFO].extract<Poco::DynamicStruct>());
         emit accountAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::ACCOUNT_UPDATED, [this](const Poco::DynamicStruct &params) {
         AccountInfo info;
-        info.fromDynamicStruct(params[kAccountInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_ACCOUNT_INFO].extract<Poco::DynamicStruct>());
         emit accountUpdated(info);
     });
 
     dispatcher.registerHandler(SignalNum::ACCOUNT_REMOVED, [this](const Poco::DynamicStruct &params) {
         AccountDbId accountDbId = 0;
-        CommonUtility::readValueFromStruct(params, kAccountDbId, accountDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_ACCOUNT_DB_ID, accountDbId);
         emit accountRemoved(accountDbId);
     });
 }
@@ -122,19 +88,19 @@ void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::DRIVE_ADDED, [this](const Poco::DynamicStruct &params) {
         DriveInfo info;
-        info.fromDynamicStruct(params[kDriveInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_DRIVE_INFO].extract<Poco::DynamicStruct>());
         emit driveAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::DRIVE_UPDATED, [this](const Poco::DynamicStruct &params) {
         DriveInfo info;
-        info.fromDynamicStruct(params[kDriveInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_DRIVE_INFO].extract<Poco::DynamicStruct>());
         emit driveUpdated(info);
     });
 
     dispatcher.registerHandler(SignalNum::DRIVE_REMOVED, [this](const Poco::DynamicStruct &params) {
         DriveDbId driveDbId = 0;
-        CommonUtility::readValueFromStruct(params, kDriveDbId, driveDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_DRIVE_DB_ID, driveDbId);
         emit driveRemoved(driveDbId);
     });
 }
@@ -144,19 +110,19 @@ void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_ADDED, [this](const Poco::DynamicStruct &params) {
         SyncInfo info;
-        info.fromDynamicStruct(params[kSyncInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_SYNC_INFO].extract<Poco::DynamicStruct>());
         emit syncAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_UPDATED, [this](const Poco::DynamicStruct &params) {
         SyncInfo info;
-        info.fromDynamicStruct(params[kSyncInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_SYNC_INFO].extract<Poco::DynamicStruct>());
         emit syncUpdated(info);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_REMOVED, [this](const Poco::DynamicStruct &params) {
         SyncDbId syncDbId = 0;
-        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_DB_ID, syncDbId);
         emit syncRemoved(syncDbId);
     });
 
@@ -164,30 +130,30 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
         SyncDbId syncDbId = 0;
         auto status = SyncStatus::Undefined;
         auto step = SyncStep::Idle;
-        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
-        CommonUtility::readValueFromStruct(params, kSyncStatus, status);
-        CommonUtility::readValueFromStruct(params, kSyncStep, step);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_DB_ID, syncDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_STATUS, status);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_STEP, step);
 
-        const Poco::DynamicStruct progressStruct = params[kSyncProgress].extract<Poco::DynamicStruct>();
+        const Poco::DynamicStruct progressStruct = params[MSG_PARAM_SYNC_PROGRESS].extract<Poco::DynamicStruct>();
         int64_t currentFile = 0;
         int64_t totalFiles = 0;
         int64_t completedSize = 0;
         int64_t totalSize = 0;
         int64_t estimatedRemainingTime = 0;
-        CommonUtility::readValueFromStruct(progressStruct, kCurrentFile, currentFile);
-        CommonUtility::readValueFromStruct(progressStruct, kTotalFiles, totalFiles);
-        CommonUtility::readValueFromStruct(progressStruct, kCompletedSize, completedSize);
-        CommonUtility::readValueFromStruct(progressStruct, kTotalSize, totalSize);
-        CommonUtility::readValueFromStruct(progressStruct, kEstimatedRemainingTime, estimatedRemainingTime);
+        CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_CURRENT_FILE, currentFile);
+        CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_TOTAL_FILES, totalFiles);
+        CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_COMPLETED_SIZE, completedSize);
+        CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_TOTAL_SIZE, totalSize);
+        CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_ESTIMATED_REMAINING_TIME, estimatedRemainingTime);
 
         emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM, [this](const Poco::DynamicStruct &params) {
         SyncDbId syncDbId = 0;
-        CommonUtility::readValueFromStruct(params, kSyncDbId, syncDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_DB_ID, syncDbId);
         SyncFileItemInfo info;
-        info.fromDynamicStruct(params[kItemInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_ITEM_INFO].extract<Poco::DynamicStruct>());
         emit itemCompleted(syncDbId, info);
     });
 }
@@ -197,13 +163,13 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED, [this](const Poco::DynamicStruct &params) {
         ErrorInfo info;
-        info.fromDynamicStruct(params[kErrorInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_ERROR_INFO].extract<Poco::DynamicStruct>());
         emit errorAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_REMOVED, [this](const Poco::DynamicStruct &params) {
         ErrorDbId errorDbId = 0;
-        CommonUtility::readValueFromStruct(params, kErrorDbId, errorDbId);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_ERROR_DB_ID, errorDbId);
         emit errorRemoved(errorDbId);
     });
 }
@@ -213,13 +179,13 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UPDATER_STATE_CHANGED, [this](const Poco::DynamicStruct &params) {
         UpdateState state = UpdateState::Unknown;
-        CommonUtility::readValueFromStruct(params, kUpdateState, state);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_UPDATE_STATE, state);
         emit updateStateChanged(state);
     });
 
     dispatcher.registerHandler(SignalNum::UPDATER_SHOW_DIALOG, [this](const Poco::DynamicStruct &params) {
         VersionInfo info;
-        info.fromDynamicStruct(params[kVersionInfo].extract<Poco::DynamicStruct>());
+        info.fromDynamicStruct(params[MSG_PARAM_VERSION_INFO].extract<Poco::DynamicStruct>());
         emit showUpdateDialog(info);
     });
 }
@@ -230,8 +196,8 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_SHOW_NOTIFICATION, [this](const Poco::DynamicStruct &params) {
         CommString title;
         CommString message;
-        CommonUtility::readValueFromStruct(params, kTitle, title);
-        CommonUtility::readValueFromStruct(params, kMessage, message);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_TITLE, title);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_MESSAGE, message);
         emit showNotification(CommonUtility::commString2QStr(title), CommonUtility::commString2QStr(message));
     });
 
@@ -242,8 +208,8 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, [this](const Poco::DynamicStruct &params) {
         LogUploadState state = LogUploadState::None;
         int32_t percentage = 0;
-        CommonUtility::readValueFromStruct(params, kLogUploadState, state);
-        CommonUtility::readValueFromStruct(params, kPercentage, percentage);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_LOG_UPLOAD_STATE, state);
+        CommonUtility::readValueFromStruct(params, MSG_PARAM_PERCENTAGE, percentage);
         emit logUploadStatusUpdated(state, percentage);
     });
 
