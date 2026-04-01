@@ -96,19 +96,21 @@ void SyncFileItem::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString path;
     CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
-    _path = QStr2Path(QString::fromStdString(path));
+    _path = QStr2Path(CommonUtility::commString2QStr(path));
 
     CommString newPath;
     CommonUtility::readValueFromStruct(dstruct, outParamsNewPath, newPath);
-    _newPath = newPath.empty() ? std::nullopt : std::optional<SyncPath>(QStr2Path(QString::fromStdString(newPath)));
+    _newPath = newPath.empty() ? std::nullopt : std::optional<SyncPath>(QStr2Path(CommonUtility::commString2QStr(newPath)));
 
     CommString localNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
-    _localNodeId = localNodeId.empty() ? std::nullopt : std::optional<NodeId>(localNodeId);
+    _localNodeId = localNodeId.empty() ? std::nullopt
+                                       : std::optional<NodeId>(CommonUtility::commString2QStr(localNodeId).toStdString());
 
     CommString remoteNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
-    _remoteNodeId = remoteNodeId.empty() ? std::nullopt : std::optional<NodeId>(remoteNodeId);
+    _remoteNodeId = remoteNodeId.empty() ? std::nullopt
+                                         : std::optional<NodeId>(CommonUtility::commString2QStr(remoteNodeId).toStdString());
 
     CommonUtility::readValueFromStruct(dstruct, outParamsDirection, _direction);
     CommonUtility::readValueFromStruct(dstruct, outParamsInstruction, _instruction);
