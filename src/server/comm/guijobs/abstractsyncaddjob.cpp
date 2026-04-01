@@ -28,12 +28,22 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Input parameters keys
+// deserializeInputParms() reads: {
+//   "localFolderPath":    CommString,
+//   "serverFolderPath":   CommString,
+//   "serverFolderNodeId": NodeId,
+//   "liteSync":           bool,
+//   "blackList":          NodeId[]
+// }
 static const auto inParamsLocalFolderPath = "localFolderPath";
 static const auto inParamsServerFolderPath = "serverFolderPath";
 static const auto inParamsServerFolderNodeId = "serverFolderNodeId";
 static const auto inParamsLiteSync = "liteSync";
 static const auto inParamsBlackList = "blackList";
+
+// serializeOutputParms() writes: {
+//   MSG_PARAM_SYNC_INFO ("syncInfo"): Sync
+// }
 
 namespace KDC {
 

@@ -20,11 +20,20 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsSyncstatus = "syncStatus";
-static const auto outParamsSyncStep = "syncStep";
-static const auto outParamsSyncProgress = "SyncProgress";
+
+// Signal: SignalNum::SYNC_PROGRESSINFO
+// serializeOutputParms() writes: {
+//   MSG_PARAM_SYNC_DB_ID ("syncDbId"):       SyncDbId,
+//   MSG_PARAM_SYNC_STATUS ("syncStatus"):    SyncStatus,
+//   MSG_PARAM_SYNC_STEP ("syncStep"):        SyncStep,
+//   MSG_PARAM_SYNC_PROGRESS ("SyncProgress"): {
+//     MSG_PARAM_CURRENT_FILE ("currentFile"):                        int64_t,
+//     MSG_PARAM_TOTAL_FILES ("totalFiles"):                          int64_t,
+//     MSG_PARAM_COMPLETED_SIZE ("completedSize"):                    int64_t,
+//     MSG_PARAM_TOTAL_SIZE ("totalSize"):                            int64_t,
+//     MSG_PARAM_ESTIMATED_REMAINING_TIME ("estimatedRemainingTime"): int64_t
+//   }
+// }
 
 namespace KDC {
 
