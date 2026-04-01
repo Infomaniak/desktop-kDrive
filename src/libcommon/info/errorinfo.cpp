@@ -109,34 +109,34 @@ void ErrorInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, outParamsTime, _time);
     CommonUtility::readValueFromStruct(dstruct, outParamsLevel, _level);
 
-    std::string functionName;
+    CommString functionName;
     CommonUtility::readValueFromStruct(dstruct, outParamsFunctionName, functionName);
     _functionName = QString::fromStdString(functionName);
 
     CommonUtility::readValueFromStruct(dstruct, outParamsSyncDbId, _syncDbId);
 
-    std::string workerName;
+    CommString workerName;
     CommonUtility::readValueFromStruct(dstruct, outParamsWorkerName, workerName);
     _workerName = QString::fromStdString(workerName);
 
     CommonUtility::readValueFromStruct(dstruct, outParamsExitCode, _exitCode);
     CommonUtility::readValueFromStruct(dstruct, outParamsExitCause, _exitCause);
 
-    std::string localNodeId;
+    CommString localNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsLocalNodeId, localNodeId);
     _localNodeId = QString::fromStdString(localNodeId);
 
-    std::string remoteNodeId;
+    CommString remoteNodeId;
     CommonUtility::readValueFromStruct(dstruct, outParamsRemoteNodeId, remoteNodeId);
     _remoteNodeId = QString::fromStdString(remoteNodeId);
 
     CommonUtility::readValueFromStruct(dstruct, outParamsNodeType, _nodeType);
 
-    std::string path;
+    CommString path;
     CommonUtility::readValueFromStruct(dstruct, outParamsPath, path);
     _path = QString::fromStdString(path);
 
-    std::string destinationPath;
+    CommString destinationPath;
     CommonUtility::readValueFromStruct(dstruct, outParamsDestinationPath, destinationPath);
     _destinationPath = QString::fromStdString(destinationPath);
 
