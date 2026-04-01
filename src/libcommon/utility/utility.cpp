@@ -96,6 +96,7 @@ const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
 const QString CommonUtility::spanishCode = "es";
 const QString CommonUtility::italianCode = "it";
+const QString CommonUtility::dutchCode = "nl";
 const QString CommonUtility::swedishCode = "sv";
 const QString CommonUtility::portugueseCode = "pt";
 const QString CommonUtility::polishCode = "pl";
@@ -812,8 +813,8 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
     static const std::unordered_set<QString> supportedLanguages = {englishCode,   frenchCode,  germanCode,     italianCode,
-                                                                   spanishCode,   swedishCode, portugueseCode, polishCode,
-                                                                   norwegianCode, finnishCode, danishCode,     greekCode};
+                                                                   spanishCode,   dutchCode,   swedishCode,    portugueseCode, 
+                                                                   polishCode,    norwegianCode, finnishCode, danishCode,     greekCode};
     return supportedLanguages.contains(languageCode);
 }
 
@@ -833,6 +834,8 @@ QString CommonUtility::languageCode(const Language language) {
             return italianCode;
         case Language::Spanish:
             return spanishCode;
+        case Language::Dutch:
+            return dutchCode;
         case Language::Swedish:
             return swedishCode;
         case Language::Portuguese:

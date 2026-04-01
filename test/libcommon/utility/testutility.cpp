@@ -485,6 +485,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("nl"), CommonUtility::languageCode(Language::Dutch).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("sv"), CommonUtility::languageCode(Language::Swedish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("pt"), CommonUtility::languageCode(Language::Portuguese).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("pl"), CommonUtility::languageCode(Language::Polish).toStdString());
@@ -506,6 +507,7 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("de"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("nl"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("sv"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pt"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pl"));

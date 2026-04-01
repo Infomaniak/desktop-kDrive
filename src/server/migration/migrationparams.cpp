@@ -109,6 +109,8 @@ Language MigrationParams::strToLanguage(QString lang) {
         return Language::Italian;
     } else if (lang == "sv") {
         return Language::Swedish;
+    }  else if (lang == "nl") {
+        return Language::Dutch;
     } else if (lang == "pt") {
         return Language::Portuguese;
     } else if (lang == "pl") {
@@ -229,7 +231,7 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
+    ParametersCache::instance()->parameters().setLanguage(CommonUtility::strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
         purgeOldLogs = true;

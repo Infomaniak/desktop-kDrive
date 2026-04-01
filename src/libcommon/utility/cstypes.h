@@ -186,6 +186,7 @@ enum class Language {
     German,
     Spanish,
     Italian,
+    Dutch,
     Swedish,
     Portuguese,
     Polish,

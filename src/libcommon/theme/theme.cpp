@@ -141,6 +141,7 @@ QString Theme::feedbackUrl(const Language language) const {
             return FEEDBACK_ES_URL;
         case Language::Italian:
             return FEEDBACK_IT_URL;
+        case Language::Dutch:
         default:
             break;
     }

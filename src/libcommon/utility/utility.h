@@ -111,6 +111,8 @@ struct COMMON_EXPORT CommonUtility {
         static const QString germanCode;
         static const QString spanishCode;
         static const QString italianCode;
+        static const QString dutchCode;
+        static Language strToLanguage(const QString &lang);
         static const QString swedishCode;
         static const QString portugueseCode;
         static const QString polishCode;

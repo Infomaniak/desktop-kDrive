@@ -44,7 +44,6 @@ CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, 
     _textLabel(nullptr),
     _iconLabel(nullptr),
     _buttonsHBox(nullptr),
-    _iconSize(QSize()),
     _buttonCount(0) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
@@ -195,11 +194,16 @@ void CustomMessageBox::setIcon() {
 }
 
 QSize CustomMessageBox::sizeHint() const {
-    return QSize(
-            contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin + (_warningLabel ? _warningLabel->width() : 0),
-            contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
-                    (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
-                    QPushButton().height());
+    // Get the size hint of all buttons
+    const auto labelWidthHint = std::max((_warningLabel ? _warningLabel->width() : 0), (_textLabel ? _textLabel->width() : 0));
+    const auto widthHint = contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin +
+                           std::max(labelWidthHint, _buttonsHBox ? _buttonsHBox->sizeHint().width() : 0);
+
+    const auto heightHint = contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
+                            (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
+                            QPushButton().height();
+
+    return QSize(widthHint, heightHint);
 }
 
 void CustomMessageBox::showEvent(QShowEvent *event) {
