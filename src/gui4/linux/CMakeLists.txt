@@ -18,6 +18,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/ipcclient.h
         communicationlayer/signaldispatcher.cpp
         communicationlayer/signaldispatcher.h
+        app/services/servercommservice.cpp
+        app/services/servercommservice.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
