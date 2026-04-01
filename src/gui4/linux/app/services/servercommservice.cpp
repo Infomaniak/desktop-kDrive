@@ -192,5 +192,21 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     });
 }
 
+// -- Error ---------------------------------------------------------------------
+
+void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED, [this](const Poco::DynamicStruct &params) {
+        ErrorInfo info;
+        info.fromDynamicStruct(params[kErrorInfo].extract<Poco::DynamicStruct>());
+        emit errorAdded(info);
+    });
+
+    dispatcher.registerHandler(SignalNum::UTILITY_ERROR_REMOVED, [this](const Poco::DynamicStruct &params) {
+        ErrorDbId errorDbId = 0;
+        CommonUtility::readValueFromStruct(params, kErrorDbId, errorDbId);
+        emit errorRemoved(errorDbId);
+    });
+}
+
 
 } // namespace KDC
