@@ -45,12 +45,13 @@ struct RemoveSynchroConfirmationView: View {
                     Task {
                         do {
                             try await removeSynchro()
+
+                            dismiss()
                             completion(nil)
                         } catch {
+                            dismiss()
                             completion(error)
                         }
-
-                        dismiss()
                     }
                 }
             }
