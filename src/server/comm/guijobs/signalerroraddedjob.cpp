@@ -22,9 +22,6 @@
 
 
 // Signal: SignalNum::UTILITY_ERROR_ADDED
-// serializeOutputParms() writes: {
-//   MSG_PARAM_ERROR_INFO ("errorInfo"): ErrorInfo
-// }
 
 namespace KDC {
 
