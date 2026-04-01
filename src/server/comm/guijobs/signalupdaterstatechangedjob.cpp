@@ -31,7 +31,7 @@ SignalUpdaterStateChangedJob::SignalUpdaterStateChangedJob(const UpdateState upd
 }
 
 ExitInfo SignalUpdaterStateChangedJob::serializeOutputParms() {
-    writeParamValue(outParamsUpdateState, _updateState);
+    writeParamValue(MSG_PARAM_UPDATE_STATE, _updateState);
 
     return ExitCode::Ok;
 }
