@@ -85,18 +85,17 @@ std::list<UniqueId> SyncOperationList::getOpIdsFromSourceNodeId(const NodeId &no
     return opList;
 }
 
-std::vector<SyncOpPtr> SyncOperationList::getOpsFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type,
-                                                                 const SyncPath &relativePath) {
+SyncOpPtr SyncOperationList::getOpFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type,
+                                                   const SyncPath &relativePath) {
     const std::scoped_lock lock(_mutex);
-    std::vector<SyncOpPtr> opPtrList;
     for (const auto opId: _nodeIdTarget2ops[nodeId]) {
         const auto opPtr = _allOps[opId];
         // Filter by side, type and path
         if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
             opPtr->correspondingNode()->getPath() == relativePath)
-            opPtrList.push_back(opPtr);
+            return opPtr;
     }
-    return opPtrList;
+    return nullptr;
 }
 
 const std::unordered_map<UniqueId, SyncOpPtr> &SyncOperationList::allOps() const {
@@ -199,23 +198,20 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
 bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
                                                   SyncTime lastModified, int64_t size) {
     const std::scoped_lock lock(_mutex);
-    const auto opPtrList = getOpsFromTargetNodeId(nodeId, ReplicaSide::Local, OperationType::Edit, relativePath);
-    if (!opPtrList.empty()) {
-        assert(opPtrList.size() == 1);
-
+    const auto opPtr = getOpFromTargetNodeId(nodeId, ReplicaSide::Local, OperationType::Edit, relativePath);
+    if (opPtr) {
         // Check modification time & size
-        const SyncTime lastModifiedLocalRemote = opPtrList[0]->affectedNode()->modificationTime().has_value()
-                                                         ? *opPtrList[0]->affectedNode()->modificationTime()
-                                                         : 0;
+        const SyncTime lastModifiedLocalRemote =
+                opPtr->affectedNode()->modificationTime().has_value() ? *opPtr->affectedNode()->modificationTime() : 0;
         const bool sameModifiedTime = CommonUtility::modificationTimesAreEqual(rootPath, lastModifiedLocalRemote, lastModified);
-        const bool sameSize = opPtrList[0]->affectedNode()->size() == size;
+        const bool sameSize = opPtr->affectedNode()->size() == size;
         if (!sameModifiedTime || !sameSize) {
             return false;
         }
 
         // Check propagation status
-        if (opPtrList[0]->propagationStatus() == SyncOperation::PropagationStatus::InProgress ||
-            opPtrList[0]->propagationStatus() == SyncOperation::PropagationStatus::Propagated) {
+        if (opPtr->propagationStatus() == SyncOperation::PropagationStatus::InProgress ||
+            opPtr->propagationStatus() == SyncOperation::PropagationStatus::Propagated) {
             LOGW_DEBUG(Log::instance()->getLogger(),
                        L"Edit propagation operation in progress for " << Utility::formatSyncPath(relativePath));
             return true;
