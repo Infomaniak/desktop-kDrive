@@ -31,18 +31,7 @@ struct SyncedKDriveView: View {
     @State private var advancedSynchros = [UISynchro]()
 
     @State private var isShowingRemoveSynchroConfirmation = false
-    @State private var domainError: ShowableError?
-
-    enum ShowableError: LocalizedError {
-        case cannotChangeVFSMode
-
-        var errorDescription: String? {
-            switch self {
-            case .cannotChangeVFSMode:
-                return KDriveLocalizable.errorWhileChangingSynchroMode
-            }
-        }
-    }
+    @State private var isShowingGenericError = false
 
     var body: some View {
         Form {
@@ -136,9 +125,9 @@ struct SyncedKDriveView: View {
             await fetchSynchros()
         }
         .sheet(isPresented: $isShowingRemoveSynchroConfirmation) {
-            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0)
+            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0, completion: handleSynchroIsDeleted)
         }
-        .errorAlert(domainError)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func fetchSynchros() async {
@@ -173,13 +162,23 @@ struct SyncedKDriveView: View {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
             } catch {
-                throw ShowableError.cannotChangeVFSMode
+                isShowingGenericError = true
             }
         }
     }
 
     private func navigateToAdvancedSynchro() {
         // TODO: Navigate to advanced synchros
+    }
+
+    private func handleSynchroIsDeleted(_ error: Error?) {
+        guard error == nil else {
+            isShowingGenericError = true
+            return
+        }
+
+        @InjectService var router: PreferencesViewRouter
+        router.append(.accounts)
     }
 }
 
