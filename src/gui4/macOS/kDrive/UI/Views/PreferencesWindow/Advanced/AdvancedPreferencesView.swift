@@ -44,6 +44,10 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
         }
     }
 
+    var isDisabled: Bool {
+        return true
+    }
+
     var preferencesViewDetail: PreferencesViewDetail {
         fatalError("Not yet implemented")
     }
@@ -56,6 +60,7 @@ struct AdvancedPreferencesView: View {
                 FormNavigationCell(label: item.label) {
                     navigate(to: item)
                 }
+                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()
