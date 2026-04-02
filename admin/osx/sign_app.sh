@@ -68,6 +68,9 @@ codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
+echo "Re-Signing kDrive_client4.app without entitlements"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app"
+
 # Verify the signature
 codesign -dv $src_app
 codesign --verify -v --strict $src_app
