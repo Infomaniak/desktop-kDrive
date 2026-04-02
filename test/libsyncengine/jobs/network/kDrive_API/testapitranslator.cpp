@@ -105,7 +105,8 @@ void TestApiTranslator::testTranslateV2ToV3() {
 }
 
 void TestApiTranslator::testTranslateV3ToV2() {
-    SyncPath remotePath = SyncPath{ApiTranslator::v3UserPrivate} / Str("folder_A") / Str("text.txt");
+    SyncPath remotePath = SyncPath{ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private)} /
+                          Str("folder_A") / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
 
     const auto expectedPath = SyncPath{Str("folder_A")} / Str("text.txt");
@@ -119,23 +120,26 @@ void TestApiTranslator::testTranslateV3ToV2() {
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
 
-    remotePath = SyncPath{ApiTranslator::v3UserPrivate};
+    remotePath = SyncPath{ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private)};
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
 
     RemoteNodeId remoteNodeId;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
+                                                         _driveDbId, ApiTranslator::SpecialFolder::Private, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId(), remoteNodeId);
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(
+            ExitInfo(ExitCode::Ok),
+            ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeId));
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 }
 
 void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
     RemoteNodeId privateFolderId;
-    (void) ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, privateFolderId);
+    (void) ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private, privateFolderId);
     const auto privateFolderIdQStr = QString::fromStdString(privateFolderId);
 
     NodeInfo nodeInfo1;
@@ -148,7 +152,7 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
 
     NodeInfo nodeInfo3;
     RemoteNodeId parentId;
-    (void) ApiTranslator::getCommonDocumentsRemoteId(_driveDbId, parentId);
+    (void) ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments, parentId);
     nodeInfo3.setParentNodeId(QString::fromStdString(parentId));
     nodeInfo3.setNodeId("sub_common_documents_folder");
 
@@ -163,15 +167,18 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
 
 void TestApiTranslator::testGetSpecialFolders() {
     RemoteNodeId id1;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getCommonDocumentsRemoteId(_driveDbId, id1));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments, id1));
     CPPUNIT_ASSERT(!id1.empty());
 
     RemoteNodeId id2;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, id2));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private, id2));
     CPPUNIT_ASSERT(!id2.empty());
 
     RemoteNodeId id3;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSharedRemoteId(_driveDbId, id3));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Shared, id3));
     CPPUNIT_ASSERT(id3.empty()); // There is no 'Shared' sub-folder in the test drive.
 
     const RemoteNodeIdSet folderIds{id1, id2, id3};

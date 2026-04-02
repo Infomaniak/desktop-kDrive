@@ -41,11 +41,12 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;
-    constexpr Count maxPages = 1000;
+    constexpr Count maxListingPages = 100000; // To detect and avoid potential infinite loop.
     Count pageCount = 0;
     do {
-        if (++pageCount > maxPages) {
-            LOG_WARN(Log::instance()->getLogger(), "Exceeded maximum page count in GetAllFilesInDirectoryJob");
+        if (++pageCount > maxListingPages) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Exceeded maximum page count in GetAllFilesInDirectoryJob: maxListingPages=" << maxListingPages << ".");
             return {ExitCode::BackError, ExitCause::Unknown};
         }
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;

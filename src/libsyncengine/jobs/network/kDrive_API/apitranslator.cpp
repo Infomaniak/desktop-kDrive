@@ -21,15 +21,15 @@
 #include "jobs/network/jobexceptions.h"
 
 namespace KDC {
-const char *ApiTranslator::v3CommonDocuments = "Common documents";
-const char *ApiTranslator::v3UserPrivate = "Private";
-const char *ApiTranslator::v3Shared = "Shared";
+const ApiTranslator::SpecialFolderNames ApiTranslator::v3SpecialFolderNames = {
+        {ApiTranslator::SpecialFolder::CommonDocuments, "Common documents"},
+        {ApiTranslator::SpecialFolder::Private, "Private"},
+        {ApiTranslator::SpecialFolder::Shared, "Shared"}};
 
 std::mutex ApiTranslator::_mutex;
 
-ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_rootNodeIdCache = {};
-ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_commonDocumentsNodeIdCache = {};
-ApiTranslator::RemoteNodeIdCacheMap ApiTranslator::_sharedNodeIdCache = {};
+
+ApiTranslator::RemoteSpecialFoldersCacheMap ApiTranslator::_specialFolderRemoteIdsCache;
 
 RemoteNodeId ApiTranslator::v2RootFolderRemoteId() {
     const auto v2RootFolderRemoteId_ = SyncDb::driveRootNode().nodeIdRemote();
@@ -91,22 +91,12 @@ ExitInfo ApiTranslator::updateCache(const DriveDbId driveDbId) {
 
     const std::scoped_lock lock(_mutex);
 
-    auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                           [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3UserPrivate; });
-
-
-    if (it != nodeInfoList.cend()) _rootNodeIdCache[driveDbId] = it->nodeId().toStdString();
-
-    it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3Shared; });
-
-    if (it != nodeInfoList.cend()) _sharedNodeIdCache[driveDbId] = it->nodeId().toStdString();
-
-
-    it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                      [](const NodeInfo &nodeInfo) { return nodeInfo.name() == v3CommonDocuments; });
-
-    if (it != nodeInfoList.cend()) _commonDocumentsNodeIdCache[driveDbId] = it->nodeId().toStdString();
+    for (const auto specialFolder: {SpecialFolder::CommonDocuments, SpecialFolder::Private, SpecialFolder::Shared}) {
+        const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(), [specialFolder](const NodeInfo &nodeInfo) {
+            return nodeInfo.name() == v3SpecialFolderNames.at(specialFolder).c_str();
+        });
+        if (it != nodeInfoList.cend()) _specialFolderRemoteIdsCache[specialFolder][driveDbId] = it->nodeId().toStdString();
+    }
 
     return ExitCode::Ok;
 }
@@ -118,38 +108,15 @@ RemoteNodeId ApiTranslator::getValue(const DriveDbId driveDbId, const RemoteNode
     return {};
 }
 
-ExitInfo ApiTranslator::getUserPrivateFolderRemoteId(const DriveDbId driveDbId, RemoteNodeId &userPrivateFolderRemoteId) {
-    if (const auto value = getValue(driveDbId, _rootNodeIdCache); value.empty()) {
+ExitInfo ApiTranslator::getSpecialFolderRemoteId(const DriveDbId driveDbId, const SpecialFolder specialFolder,
+                                                 RemoteNodeId &folderRemoteId) {
+    if (const auto value = getValue(driveDbId, _specialFolderRemoteIdsCache[specialFolder]); value.empty()) {
         if (const auto exitInfo = updateCache(driveDbId); !exitInfo) return exitInfo;
     } else {
-        userPrivateFolderRemoteId = value;
+        folderRemoteId = value;
         return ExitCode::Ok;
     }
-    userPrivateFolderRemoteId = getValue(driveDbId, _rootNodeIdCache);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ApiTranslator::getCommonDocumentsRemoteId(const DriveDbId driveDbId, RemoteNodeId &commonDocumentsRemoteNodeId) {
-    if (const auto value = getValue(driveDbId, _commonDocumentsNodeIdCache); value.empty()) {
-        if (const auto exitInfo = updateCache(driveDbId); !exitInfo) return exitInfo;
-    } else {
-        commonDocumentsRemoteNodeId = value;
-        return ExitCode::Ok;
-    }
-    commonDocumentsRemoteNodeId = getValue(driveDbId, _commonDocumentsNodeIdCache);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ApiTranslator::getSharedRemoteId(const DriveDbId driveDbId, RemoteNodeId &sharedRemoteNodeId) {
-    if (const auto value = getValue(driveDbId, _sharedNodeIdCache); value.empty()) {
-        if (const auto exitInfo = updateCache(driveDbId); !exitInfo) return exitInfo;
-    } else {
-        sharedRemoteNodeId = value;
-        return ExitCode::Ok;
-    }
-    sharedRemoteNodeId = getValue(driveDbId, _sharedNodeIdCache);
+    folderRemoteId = getValue(driveDbId, _specialFolderRemoteIdsCache[specialFolder]);
 
     return ExitCode::Ok;
 }
@@ -158,22 +125,24 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
     if (remoteDirectoryId != v2RootFolderRemoteId()) return ExitCode::Ok;
 
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = getUserPrivateFolderRemoteId(driveDbId, userPrivateFolderRemoteId); !exitInfo) return exitInfo;
+    if (const auto exitInfo = getSpecialFolderRemoteId(driveDbId, SpecialFolder::Private, userPrivateFolderRemoteId); !exitInfo)
+        return exitInfo;
     remoteDirectoryId = userPrivateFolderRemoteId;
 
     return ExitCode::Ok;
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
-    if (remotePath.empty() || *remotePath.begin() != v3UserPrivate) return;
+    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialFolder::Private)) return;
 
-    remotePath = std::filesystem::relative(remotePath, v3UserPrivate);
+    remotePath = std::filesystem::relative(remotePath, v3SpecialFolderNames.at(SpecialFolder::Private));
     if (remotePath == ".") remotePath = SyncPath{};
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeId &remoteNodeId) {
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = getUserPrivateFolderRemoteId(driveDbId, userPrivateFolderRemoteId); !exitInfo) return exitInfo;
+    if (const auto exitInfo = getSpecialFolderRemoteId(driveDbId, SpecialFolder::Private, userPrivateFolderRemoteId); !exitInfo)
+        return exitInfo;
 
     if (remoteNodeId != userPrivateFolderRemoteId) return ExitCode::Ok;
 
@@ -184,7 +153,8 @@ ExitInfo ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeId 
 
 ExitInfo ApiTranslator::translateV3ToV2(const DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList) {
     RemoteNodeId privateFolderId;
-    if (const auto exitInfo = getUserPrivateFolderRemoteId(driveDbId, privateFolderId); !exitInfo) return exitInfo;
+    if (const auto exitInfo = getSpecialFolderRemoteId(driveDbId, SpecialFolder::Private, privateFolderId); !exitInfo)
+        return exitInfo;
 
     (void) std::erase_if(v3RemoteNodeInfoList, [&privateFolderId](const NodeInfo &nodeInfo) {
         return nodeInfo.nodeId().toStdString() == privateFolderId;
