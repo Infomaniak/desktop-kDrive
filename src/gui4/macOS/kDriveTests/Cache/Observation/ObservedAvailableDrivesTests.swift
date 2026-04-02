@@ -53,7 +53,7 @@ struct ObservedAvailableDrivesTests {
         try await cache.updateAvailableDrives([expectedDrive], forUserDbId: CacheData.expectedUserDbId)
 
         // THEN
-        _ = await receivedValues.first(where: { _ in true })
+        _ = await receivedValues.dropFirst().first(where: { _ in true })
 
         let cachedDrive = await cache.getAvailableDrive(
             driveDb: CacheData.expectedAvailableDriveId,
