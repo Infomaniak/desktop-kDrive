@@ -28,7 +28,7 @@ Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
 
 namespace {
 
-bool checkSelf(const QPointer<KDC::ServerCommService> &self, SignalNum num) {
+bool isSelfInvalid(const QPointer<KDC::ServerCommService> &self, SignalNum num) {
     if (!self) {
         qCWarning(lcServerCommService) << "Signal" << toString(num).c_str()
                                        << "received after ServerCommService destruction - ignoring";
@@ -57,7 +57,7 @@ ServerCommService::ServerCommService(SignalDispatcher &dispatcher, QObject *pare
 void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::USER_ADDED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::USER_ADDED)) return;
+                                   if (isSelfInvalid(self, SignalNum::USER_ADDED)) return;
                                    UserInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_USER_INFO].extract<Poco::DynamicStruct>());
                                    emit self->userAdded(info);
@@ -65,7 +65,7 @@ void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::USER_UPDATED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::USER_UPDATED)) return;
+                                   if (isSelfInvalid(self, SignalNum::USER_UPDATED)) return;
                                    UserInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_USER_INFO].extract<Poco::DynamicStruct>());
                                    emit self->userUpdated(info);
@@ -73,7 +73,7 @@ void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::USER_REMOVED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::USER_REMOVED)) return;
+                                   if (isSelfInvalid(self, SignalNum::USER_REMOVED)) return;
                                    UserDbId userDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_USER_DB_ID, userDbId);
                                    emit self->userRemoved(userDbId);
@@ -85,7 +85,7 @@ void ServerCommService::registerUserHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::ACCOUNT_ADDED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::ACCOUNT_ADDED)) return;
+                                   if (isSelfInvalid(self, SignalNum::ACCOUNT_ADDED)) return;
                                    AccountInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_ACCOUNT_INFO].extract<Poco::DynamicStruct>());
                                    emit self->accountAdded(info);
@@ -93,7 +93,7 @@ void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::ACCOUNT_UPDATED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::ACCOUNT_UPDATED)) return;
+                                   if (isSelfInvalid(self, SignalNum::ACCOUNT_UPDATED)) return;
                                    AccountInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_ACCOUNT_INFO].extract<Poco::DynamicStruct>());
                                    emit self->accountUpdated(info);
@@ -101,7 +101,7 @@ void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::ACCOUNT_REMOVED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::ACCOUNT_REMOVED)) return;
+                                   if (isSelfInvalid(self, SignalNum::ACCOUNT_REMOVED)) return;
                                    AccountDbId accountDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_ACCOUNT_DB_ID, accountDbId);
                                    emit self->accountRemoved(accountDbId);
@@ -113,7 +113,7 @@ void ServerCommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::DRIVE_ADDED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::DRIVE_ADDED)) return;
+                                   if (isSelfInvalid(self, SignalNum::DRIVE_ADDED)) return;
                                    DriveInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_DRIVE_INFO].extract<Poco::DynamicStruct>());
                                    emit self->driveAdded(info);
@@ -121,7 +121,7 @@ void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::DRIVE_UPDATED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::DRIVE_UPDATED)) return;
+                                   if (isSelfInvalid(self, SignalNum::DRIVE_UPDATED)) return;
                                    DriveInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_DRIVE_INFO].extract<Poco::DynamicStruct>());
                                    emit self->driveUpdated(info);
@@ -129,7 +129,7 @@ void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::DRIVE_REMOVED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::DRIVE_REMOVED)) return;
+                                   if (isSelfInvalid(self, SignalNum::DRIVE_REMOVED)) return;
                                    DriveDbId driveDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_DRIVE_DB_ID, driveDbId);
                                    emit self->driveRemoved(driveDbId);
@@ -141,7 +141,7 @@ void ServerCommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_ADDED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::SYNC_ADDED)) return;
+                                   if (isSelfInvalid(self, SignalNum::SYNC_ADDED)) return;
                                    SyncInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_SYNC_INFO].extract<Poco::DynamicStruct>());
                                    emit self->syncAdded(info);
@@ -149,7 +149,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::SYNC_UPDATED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::SYNC_UPDATED)) return;
+                                   if (isSelfInvalid(self, SignalNum::SYNC_UPDATED)) return;
                                    SyncInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_SYNC_INFO].extract<Poco::DynamicStruct>());
                                    emit self->syncUpdated(info);
@@ -157,7 +157,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::SYNC_REMOVED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::SYNC_REMOVED)) return;
+                                   if (isSelfInvalid(self, SignalNum::SYNC_REMOVED)) return;
                                    SyncDbId syncDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_DB_ID, syncDbId);
                                    emit self->syncRemoved(syncDbId);
@@ -165,7 +165,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(
             SignalNum::SYNC_PROGRESSINFO, [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                if (checkSelf(self, SignalNum::SYNC_PROGRESSINFO)) return;
+                if (isSelfInvalid(self, SignalNum::SYNC_PROGRESSINFO)) return;
                 SyncDbId syncDbId = 0;
                 auto status = SyncStatus::Undefined;
                 auto step = SyncStep::Idle;
@@ -191,7 +191,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::SYNC_COMPLETEDITEM)) return;
+                                   if (isSelfInvalid(self, SignalNum::SYNC_COMPLETEDITEM)) return;
                                    SyncDbId syncDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_SYNC_DB_ID, syncDbId);
                                    SyncFileItemInfo info;
@@ -205,7 +205,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::UTILITY_ERROR_ADDED)) return;
+                                   if (isSelfInvalid(self, SignalNum::UTILITY_ERROR_ADDED)) return;
                                    ErrorInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_ERROR_INFO].extract<Poco::DynamicStruct>());
                                    emit self->errorAdded(info);
@@ -213,7 +213,7 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_REMOVED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::UTILITY_ERROR_REMOVED)) return;
+                                   if (isSelfInvalid(self, SignalNum::UTILITY_ERROR_REMOVED)) return;
                                    ErrorDbId errorDbId = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_ERROR_DB_ID, errorDbId);
                                    emit self->errorRemoved(errorDbId);
@@ -225,7 +225,7 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UPDATER_STATE_CHANGED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::UPDATER_STATE_CHANGED)) return;
+                                   if (isSelfInvalid(self, SignalNum::UPDATER_STATE_CHANGED)) return;
                                    UpdateState state = UpdateState::Unknown;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_UPDATE_STATE, state);
                                    emit self->updateStateChanged(state);
@@ -233,7 +233,7 @@ void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::UPDATER_SHOW_DIALOG,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::UPDATER_SHOW_DIALOG)) return;
+                                   if (isSelfInvalid(self, SignalNum::UPDATER_SHOW_DIALOG)) return;
                                    VersionInfo info;
                                    info.fromDynamicStruct(params[MSG_PARAM_VERSION_INFO].extract<Poco::DynamicStruct>());
                                    emit self->showUpdateDialog(info);
@@ -245,7 +245,7 @@ void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
 void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(
             SignalNum::UTILITY_SHOW_NOTIFICATION, [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                if (checkSelf(self, SignalNum::UTILITY_SHOW_NOTIFICATION)) return;
+                if (isSelfInvalid(self, SignalNum::UTILITY_SHOW_NOTIFICATION)) return;
                 CommString title;
                 CommString message;
                 CommonUtility::readValueFromStruct(params, MSG_PARAM_TITLE, title);
@@ -255,19 +255,19 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &) {
-                                   if (checkSelf(self, SignalNum::UTILITY_SHOW_SETTINGS)) return;
+                                   if (isSelfInvalid(self, SignalNum::UTILITY_SHOW_SETTINGS)) return;
                                    emit self->showSettings();
                                });
 
     dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &) {
-                                   if (checkSelf(self, SignalNum::UTILITY_SHOW_SYNTHESIS)) return;
+                                   if (isSelfInvalid(self, SignalNum::UTILITY_SHOW_SYNTHESIS)) return;
                                    emit self->showSynthesis();
                                });
 
     dispatcher.registerHandler(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED,
                                [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &params) {
-                                   if (checkSelf(self, SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED)) return;
+                                   if (isSelfInvalid(self, SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED)) return;
                                    LogUploadState state = LogUploadState::None;
                                    int32_t percentage = 0;
                                    CommonUtility::readValueFromStruct(params, MSG_PARAM_LOG_UPLOAD_STATE, state);
@@ -276,7 +276,7 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
                                });
 
     dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [self = QPointer<ServerCommService>(this)](const Poco::DynamicStruct &) {
-        if (checkSelf(self, SignalNum::UTILITY_QUIT)) return;
+        if (isSelfInvalid(self, SignalNum::UTILITY_QUIT)) return;
         emit self->quit();
     });
 }
