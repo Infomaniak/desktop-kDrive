@@ -188,15 +188,14 @@ class SyncOperationList : public SharedObject {
         mutable std::recursive_mutex _mutex;
 
         /**
-         * @brief Get the list of operations related to the given target node.
+         * @brief Get an operation related to the given target node.
          * @param nodeId The ID of the object whose operations we want to retrieve.
          * @param side The side of the object designated by `nodeId`.
          * @param type The type of operations.
          * @param relativePath The relativePath of the object designated by `nodeId`.
-         * @return A list of operations.
+         * @return The operation if there is one.
          */
-        std::vector<SyncOpPtr> getOpsFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type,
-                                                      const SyncPath &relativePath);
+        SyncOpPtr getOpFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type, const SyncPath &relativePath);
 
         friend class TestOperationSorterWorker;
         friend class TestOperationGeneratorWorker;
