@@ -101,7 +101,7 @@ struct ObservableCoherentCacheTests {
         try await cache.addOrUpdateError(serverError)
 
         // THEN
-        _ = await receivedValues.first(where: { _ in true })
+        _ = await receivedValues.dropFirst().first(where: { _ in true })
 
         #expect(receivedServerErrors != nil, "Should have received errors")
         #expect(receivedServerErrors!.count == 1, "Should have received one error")
