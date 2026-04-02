@@ -59,7 +59,7 @@ struct ObservedSynchrosTests {
         try await cache.addSynchro(expectedSynchro)
 
         // THEN
-        _ = await receivedValues.first(where: { _ in true })
+        _ = await receivedValues.dropFirst().first(where: { _ in true })
 
         let fetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         #expect(fetchedSynchro == ObservableData.expectedSynchro, "We should find the object in cache")
