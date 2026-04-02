@@ -18,6 +18,7 @@
 
 import InfomaniakDI
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
@@ -28,18 +29,18 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
     case synchroRules
     case dataManagement
     case network
-    case debugging
+    case debugLogs
 
     var label: String {
         switch self {
         case .synchroRules:
-            return "Règles de synchronisation"
+            return KDriveLocalizable.syncRules
         case .dataManagement:
-            return "Gestion des données"
+            return KDriveLocalizable.dataManagementSettings
         case .network:
-            return "Réseau"
-        case .debugging:
-            return "Débogage"
+            return KDriveLocalizable.networkSettings
+        case .debugLogs:
+            return KDriveLocalizable.debugLogsSettings
         }
     }
 
