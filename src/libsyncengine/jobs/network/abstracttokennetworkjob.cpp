@@ -17,6 +17,7 @@
  */
 
 #include "abstracttokennetworkjob.h"
+#include "jobexceptions.h"
 
 #include "config.h"
 #include "utility/urlhelper.h"
@@ -37,9 +38,26 @@ constexpr char API_PREFIX_DESKTOP[] = "/desktop";
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
-std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> AbstractTokenNetworkJob::_userToApiKeyMap;
-std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> AbstractTokenNetworkJob::_driveToApiKeyMap;
+
 std::recursive_mutex AbstractTokenNetworkJob::_cacheMutex;
+AbstractTokenNetworkJob::UserCache AbstractTokenNetworkJob::_userToApiKeyMap;
+AbstractTokenNetworkJob::DriveCache AbstractTokenNetworkJob::_driveToApiKeyMap;
+
+
+void AbstractTokenNetworkJob::checkParametersValidity() {
+    bool areParametersInvalid = (_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
+                                (_userDbId == 0 || _driveId == 0);
+    areParametersInvalid =
+            areParametersInvalid || ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0);
+
+    if (areParametersInvalid) {
+        assert(false);
+        constexpr auto errorMsg = "Invalid parameters in AbstractTokenNetworkJob constructor.";
+        LOG_WARN(_logger, errorMsg);
+        throw InvalidArgumentError(errorMsg);
+    }
+}
+
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
                                                  const DriveDbId driveDbId, const DriveId driveId,
                                                  const bool returnJson /*= true*/) :
@@ -55,14 +73,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
         throw DbError("ParmsDb must be initialized!");
     }
 
-    if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
-         (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
-        assert(false);
-        LOG_WARN(_logger, "Invalid parameters!");
-        throw std::runtime_error("Invalid parameters!");
-    }
-
+    checkParametersValidity();
     _apiToken = loadApiToken();
 
     addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
@@ -87,10 +98,10 @@ ExitCause AbstractTokenNetworkJob::getExitCause() const {
 void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const UserDbId userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
-        const std::shared_ptr<Login> currentLogin = it->second.first;
+        const std::shared_ptr<Login> currentLogin = it->second.login;
         // get new credentials
-        const ApiToken newApiToken = login.apiToken();
-        const std::string newKeychainKey = login.keychainKey();
+        const ApiToken &newApiToken = login.apiToken();
+        const std::string &newKeychainKey = login.keychainKey();
         // set new credentials to Login class
         currentLogin->setApiToken(newApiToken);
         currentLogin->setKeychainKey(newKeychainKey);
@@ -315,6 +326,159 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
     return ExitCode::Ok;
 }
 
+void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
+    assert(_userDbId && "Invalid user DB ID.");
+
+    const std::scoped_lock lock(_cacheMutex);
+
+    if (_userToApiKeyMap.contains(_userDbId)) return;
+
+    // Get user
+    User user;
+    bool found = false;
+    if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectUser"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+    if (!found) {
+        assert(false);
+        const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    if (user.keychainKey().empty()) {
+        const std::string err{"Access token is empty"};
+        LOG_DEBUG(_logger, err);
+        throw TokenError(err);
+    }
+
+    // Read token form keystore
+    auto login = std::make_shared<Login>(user.keychainKey());
+    if (!login->hasToken()) {
+        const std::string err{"Failed to retrieve access token"};
+        LOG_WARN(_logger, err);
+        throw TokenError(err);
+    }
+
+    _userToApiKeyMap[_userDbId] = {login, user.userId()};
+}
+
+Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
+    assert(driveDbId > 0 && "Invalid drive DB ID.");
+
+    Drive drive;
+    bool found = false;
+    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+        assert(false);
+        constexpr auto err{"Error in ParmsDb::selectDrive"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (!found) {
+        assert(false);
+        const std::string err{"Drive not found for driveDbId=" + std::to_string(driveDbId)};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    return drive;
+}
+
+Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
+    assert(drive.dbId() > 0 && "Invalid drive DB ID.");
+
+    Account account;
+    bool found = false;
+    if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAccount"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (!found) {
+        assert(false);
+        const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    return account;
+}
+
+void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
+    assert(_driveDbId > 0 && "Invalid drive DB ID.");
+
+    {
+        const std::scoped_lock lock(_cacheMutex);
+
+        if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
+            _userDbId = it->second.userDbId;
+            _driveId = it->second.driveId;
+
+            return;
+        }
+    }
+
+    // Get drive
+    const Drive &drive = getDrive(_driveDbId);
+    _driveId = drive.driveId();
+
+    // Get account
+    const Account &account = getAccount(drive);
+    _userDbId = account.userDbId();
+
+    loadUserInfoFromUserDbId();
+
+    const std::scoped_lock lock(_cacheMutex);
+    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
+}
+
+ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
+    assert(_userDbId > 0 && "Invalid user DB ID.");
+
+    const std::scoped_lock lock(_cacheMutex);
+
+    if (const auto it = _userToApiKeyMap.find(_userDbId); it == _userToApiKeyMap.cend()) {
+        const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
+        LOG_WARN(_logger, err);
+        throw std::runtime_error(err);
+    } else {
+        _userId = it->second.userId;
+        return it->second.login->apiToken();
+    }
+}
+
+void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
+    assert(_driveId > 0 && "Invalid drive ID.");
+
+    Drive drive;
+    bool found = false;
+    if (!ParmsDb::instance()->selectDriveByDriveId(_driveId, drive, found)) {
+        assert(false);
+        constexpr auto err{"Error in ParmsDb::selectDriveById"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (!found) {
+        assert(false);
+        const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    _driveDbId = drive.dbId();
+
+    const std::scoped_lock lock(_cacheMutex);
+
+    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
+}
+
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
     if (_apiType == ApiType::Desktop) {
@@ -341,138 +505,15 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::Drive:
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
-            const std::scoped_lock lock(_cacheMutex);
-            if (_driveDbId) {
-                if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
-                    // driveDbId found in Drive cache
-                    _userDbId = it->second.first;
-                    _driveId = it->second.second;
-                } else {
-                    // Get drive
-                    Drive drive;
-                    bool found = false;
-                    if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
-                        assert(false);
-                        const std::string err{"Error in ParmsDb::selectDrive"};
-                        LOG_WARN(_logger, err);
-                        throw DbError(err);
-                    }
-                    if (!found) {
-                        assert(false);
-                        const std::string err{"Drive not found for driveDbId=" + std::to_string(_driveDbId)};
-                        LOG_WARN(_logger, err);
-                        throw DataError(err);
-                    }
-
-                    _driveId = drive.driveId();
-
-                    // Get account
-                    Account account;
-                    if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
-                        assert(false);
-                        const std::string err{"Error in ParmsDb::selectAccount"};
-                        LOG_WARN(_logger, err);
-                        throw DbError(err);
-                    }
-                    if (!found) {
-                        assert(false);
-                        const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
-                        LOG_WARN(_logger, err);
-                        throw DataError(err);
-                    }
-
-                    _userDbId = account.userDbId();
-
-                    if (!_userToApiKeyMap.contains(_userDbId)) {
-                        // Get user
-                        User user;
-                        if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
-                            assert(false);
-                            const std::string err{"Error in ParmsDb::selectUser"};
-                            LOG_WARN(_logger, err);
-                            throw DbError(err);
-                        }
-                        if (!found) {
-                            assert(false);
-                            const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
-                            LOG_WARN(_logger, err);
-                            throw DataError(err);
-                        }
-
-                        if (user.keychainKey().empty()) {
-                            const std::string err{"Access token is empty"};
-                            LOG_DEBUG(_logger, err);
-                            throw TokenError(err);
-                        }
-
-                        // Read token form keystore
-                        auto login = std::make_shared<Login>(user.keychainKey());
-                        if (!login->hasToken()) {
-                            const std::string err{"Failed to retrieve access token"};
-                            LOG_WARN(_logger, err);
-                            throw TokenError(err);
-                        }
-
-                        _userToApiKeyMap[_userDbId] = {login, user.userId()};
-                    }
-
-                    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
-                }
-            }
-
-            if (const auto it = _userToApiKeyMap.find(_userDbId); it != _userToApiKeyMap.end()) {
-                // userDbId found in User cache
-                _userId = it->second.second;
-                apiToken = it->second.first->apiToken();
-            } else {
-                const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
-                LOG_WARN(_logger, err);
-                throw std::runtime_error(err);
-            }
+            if (_driveDbId) loadUserInfoFromDriveDbId();
+            apiToken = retrieveApiTokenFromUserCache();
+            if (!_driveDbId) setDriveDbIdFromDriveId();
             break;
         }
         case ApiType::Profile:
         case ApiType::DriveByUser: {
-            const std::scoped_lock lock(_cacheMutex);
-            if (const auto it = _userToApiKeyMap.find(_userDbId); it != _userToApiKeyMap.end()) {
-                // userDbId found in User cache
-                _userId = it->second.second;
-                apiToken = it->second.first->apiToken();
-            } else {
-                // Get user
-                User user;
-                bool found = false;
-                if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
-                    assert(false);
-                    const std::string err{"Error in ParmsDb::selectUser"};
-                    LOG_WARN(_logger, err);
-                    throw DbError(err);
-                }
-                if (!found) {
-                    assert(false);
-                    const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
-                    LOG_WARN(_logger, err);
-                    throw DataError(err);
-                }
-
-                if (user.keychainKey().empty()) {
-                    const std::string err{"Access token is empty"};
-                    LOG_DEBUG(_logger, err);
-                    throw TokenError(err);
-                }
-
-                // Read token form keystore
-                auto login = std::make_shared<Login>(user.keychainKey());
-                if (!login->hasToken()) {
-                    const std::string err{"Failed to retrieve access token"};
-                    LOG_WARN(_logger, err);
-                    throw TokenError(err);
-                }
-
-                _userId = user.userId();
-                apiToken = login->apiToken();
-                _userToApiKeyMap[_userDbId] = {login, _userId};
-            }
+            loadUserInfoFromUserDbId();
+            apiToken = retrieveApiTokenFromUserCache();
             break;
         }
         default:
@@ -498,7 +539,7 @@ ExitInfo AbstractTokenNetworkJob::refreshToken() {
     }
 
     // userDbId found in User cache
-    const std::shared_ptr<Login> login = it->second.first;
+    const std::shared_ptr<Login> login = it->second.login;
     if (auto exitInfo = login->refreshToken(); !exitInfo) {
         LOG_WARN(_logger, "Failed to refresh token: code=" << exitInfo << " login error=" << login->error()
                                                            << " login error descr=" << login->errorDescr());
@@ -541,22 +582,8 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
         return 0;
     }
     // userDbId found in User cache
-    const std::shared_ptr<Login> login = it->second.first;
+    const std::shared_ptr<Login> login = it->second.login;
     return login->tokenUpdateDurationFromNow();
-}
-
-ExitCode AbstractTokenNetworkJob::exception2ExitCode(const std::exception &exc) {
-    if (dynamic_cast<const AbstractTokenNetworkJob::DbError *>(&exc)) {
-        return ExitCode::DbError;
-    }
-    if (dynamic_cast<const AbstractTokenNetworkJob::DataError *>(&exc)) {
-        return ExitCode::DataError;
-    }
-    if (dynamic_cast<const AbstractTokenNetworkJob::TokenError *>(&exc)) {
-        return ExitCode::InvalidToken;
-    }
-
-    return ExitCode::Unknown;
 }
 
 } // namespace KDC

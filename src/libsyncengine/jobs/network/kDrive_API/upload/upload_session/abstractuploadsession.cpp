@@ -19,6 +19,7 @@
 #include "abstractuploadsession.h"
 
 #include "io/iohelper.h"
+#include "jobs/network/jobexceptions.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjobmanager.h"
 #include "utility/timerutility.h"
@@ -209,7 +210,7 @@ ExitInfo AbstractUploadSession::startSession() {
         startJob = createStartJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionStartJob::UploadSessionStartJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
@@ -415,7 +416,7 @@ ExitInfo AbstractUploadSession::closeSession() {
         finishJob = createFinishJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob::UploadSessionFinishJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
@@ -464,7 +465,7 @@ ExitInfo AbstractUploadSession::cancelSession() {
         cancelJob = createCancelJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     if (const auto exitInfo = cancelJob->runSynchronously(); !exitInfo) {

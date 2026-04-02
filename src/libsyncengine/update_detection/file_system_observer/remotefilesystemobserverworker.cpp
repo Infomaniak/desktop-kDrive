@@ -18,6 +18,8 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/syncjobmanager.h"
+
+#include "jobs/network/jobexceptions.h"
 #include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
@@ -181,7 +183,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
-            exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
+            exitInfo = exception2ExitCode(e);
             break;
         }
 
@@ -274,7 +276,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
@@ -410,7 +412,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
+            return exception2ExitCode(e);
         }
 
         SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
@@ -762,7 +764,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
                                                                           << " error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
 
     job->runSynchronously();

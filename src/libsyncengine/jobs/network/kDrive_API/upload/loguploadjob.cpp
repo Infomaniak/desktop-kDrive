@@ -15,6 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "loguploadjob.h"
+
+#include "jobs/network/jobexceptions.h"
+
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
@@ -504,7 +507,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     };
 
     bool canceledByUser = false;

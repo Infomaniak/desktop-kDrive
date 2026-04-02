@@ -22,6 +22,9 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
+#include "libparms/db/account.h"
+#include "libparms/db/drive.h"
+
 #include <unordered_map>
 
 namespace KDC {
@@ -33,18 +36,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
     public:
-        struct DbError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
-        struct DataError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
-        struct TokenError : std::runtime_error {
-                using std::runtime_error::runtime_error;
-        };
-
         enum class ApiType {
             Drive,
             DriveByUser,
@@ -57,12 +48,14 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw DbError
         /// @throw DataError
         /// @throw TokenError
+        /// @throw InvalidArgumentError
         AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
                                 bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
+        DriveDbId driveDbId() const { return _driveDbId; };
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
@@ -70,8 +63,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
-
-        static ExitCode exception2ExitCode(const std::exception &e);
 
     protected:
         std::string getSpecificUrl() override;
@@ -84,15 +75,22 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         [[nodiscard]] UserId userId() const { return _userId; }
         [[nodiscard]] DriveId driveId() const { return _driveId; }
-        ApiType getApiType() const { return _apiType; }
+        [[nodiscard]] ApiType getApiType() const { return _apiType; }
 
     private:
-        // User cache: <userDbId, <Login, userId>>
-        static std::unordered_map<UserDbId, std::pair<std::shared_ptr<Login>, UserId>> _userToApiKeyMap;
-
-        // Drive cache: <driveDbId, <userDbId, driveId>>
-        static std::unordered_map<DriveDbId, std::pair<UserDbId, DriveId>> _driveToApiKeyMap;
+        struct LoginEntry {
+                std::shared_ptr<Login> login;
+                UserId userId{0};
+        };
+        using UserCache = std::unordered_map<UserDbId, LoginEntry>;
+        static UserCache _userToApiKeyMap;
         static std::recursive_mutex _cacheMutex;
+        struct UserEntry {
+                UserDbId userDbId{0};
+                DriveId driveId{0};
+        };
+        using DriveCache = std::unordered_map<DriveDbId, UserEntry>;
+        static DriveCache _driveToApiKeyMap;
 
         ApiType _apiType{ApiType::Drive};
         UserDbId _userDbId{0};
@@ -109,6 +107,20 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
+
+        // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
+        void loadUserInfoFromDriveDbId();
+
+        // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
+        void loadUserInfoFromUserDbId();
+
+        ApiToken retrieveApiTokenFromUserCache();
+        Account getAccount(const Drive &drive) const;
+        Drive getDrive(DriveDbId driveDbId) const;
+        void setDriveDbIdFromDriveId();
+
+        /// @throw InvalidArgumentError
+        void checkParametersValidity();
 
         friend class TestServerRequests;
 };
