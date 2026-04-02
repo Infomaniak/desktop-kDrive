@@ -390,6 +390,10 @@ public enum KDriveLocalizable {
   public static let storageMacUsedByComputer = KDriveLocalizable.tr("Localizable", "storageMacUsedByComputer", fallback: "Other Mac files")
   /// loco:697a07436d99d0c2c00449e2
   public static let storageMacUsedByKDrive = KDriveLocalizable.tr("Localizable", "storageMacUsedByKDrive", fallback: "kDrive files stored on your Mac")
+  /// loco:69c67d8e7c0702965a003512
+  public static let storageMissingDiskMacOSDescription = KDriveLocalizable.tr("Localizable", "storageMissingDiskMacOSDescription", fallback: "kDrive can’t access the volume\nMake sure it is connected,\nunlocked and accessible from your computer.")
+  /// loco:69c67d717e089c303405cee2
+  public static let storageMissingDiskMacOSTitle = KDriveLocalizable.tr("Localizable", "storageMissingDiskMacOSTitle", fallback: "The volume is not accessible")
   /// loco:697a2640c1c052cea305d2d6
   public static let storageSyncBlockMacDescription = KDriveLocalizable.tr("Localizable", "storageSyncBlockMacDescription", fallback: "Manage synchronized folders to free up space on your Mac.")
   /// loco:697a26183f570e1362040242

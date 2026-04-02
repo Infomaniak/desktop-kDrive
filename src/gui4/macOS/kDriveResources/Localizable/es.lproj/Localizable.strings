@@ -558,6 +558,12 @@
 /* loco:697a07436d99d0c2c00449e2 */
 "storageMacUsedByKDrive" = "Archivos kDrive almacenados en tu Mac";
 
+/* loco:69c67d8e7c0702965a003512 */
+"storageMissingDiskMacOSDescription" = "kDrive no puede acceder al volumen\nAsegúrese de que está conectado\ndesbloqueado y accesible desde su ordenador.";
+
+/* loco:69c67d717e089c303405cee2 */
+"storageMissingDiskMacOSTitle" = "No se puede acceder al volumen";
+
 /* loco:697a2640c1c052cea305d2d6 */
 "storageSyncBlockMacDescription" = "Gestiona las carpetas sincronizadas para liberar espacio en tu Mac.";
 

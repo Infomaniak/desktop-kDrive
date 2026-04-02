@@ -64,7 +64,7 @@ struct ActivitiesView: View {
                 .overlay(alignment: .top) {
                     if !hasAnyActivity {
                         IKContentUnavailableView(
-                            image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+                            image: KDriveResources.mountainsTreesSun.swiftUIImage,
                             title: KDriveLocalizable.unavailableContentNoActivityTitle,
                             subtitle: KDriveLocalizable.unavailableContentNoActivityDescription
                         )

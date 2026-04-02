@@ -18,14 +18,22 @@
 
 import Combine
 import Foundation
+import InfomaniakDI
 
-public struct MacStorageData: Sendable, Equatable {
-    public let usedByKDrive: Int64?
-    public let usedByComputer: Int64
-    public let freeSpace: Int64
+public enum StorageDataError: Error, Sendable, Equatable {
+    case cannotGetSynchroInfo
+    case cannotGetVolumeInfo
 }
 
-public typealias IndexedStorageData = [Int32: MacStorageData]
+public struct VolumeStorageData: Sendable, Equatable {
+    public let name: String
+
+    public let freeSpace: Int64
+    public let usedSpace: Int64
+    public let usedByKDrive: Int64?
+}
+
+public typealias IndexedStorageData = [Int32: Result<VolumeStorageData, StorageDataError>]
 
 public protocol StorageDataProviding: Sendable {
     var storageData: IndexedStorageData { get }
@@ -52,37 +60,52 @@ public final class StorageDataService: StorageDataProviding {
 
     @MainActor
     public func fetchStorageData(forSynchroDbId synchroDbId: Int32) async throws {
-        async let macStorage = fetchMacStorage()
-        async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
+        do {
+            let (volumeName, volumeURL) = try await getVolumeInfo(synchroDbId: synchroDbId)
 
-        let resolvedMacStorage = try await macStorage
+            async let volumeStorage = fetchVolumeStorage(volumeURL: volumeURL)
+            async let kDriveStorage = fetchSynchroStorage(synchroDbId: synchroDbId)
 
-        if storageData[synchroDbId] == nil {
-            storageData[synchroDbId] = MacStorageData(
-                usedByKDrive: nil,
-                usedByComputer: resolvedMacStorage.usedStorage,
-                freeSpace: resolvedMacStorage.availableStorage
-            )
+            let resolvedVolumeStorage = try await volumeStorage
+
+            if storageData[synchroDbId] == nil {
+                storageData[synchroDbId] = .success(VolumeStorageData(
+                    name: volumeName,
+                    freeSpace: resolvedVolumeStorage.availableStorage,
+                    usedSpace: resolvedVolumeStorage.usedStorage,
+                    usedByKDrive: nil
+                ))
+                storageDataSubject.send(storageData)
+            }
+
+            let resolvedKDriveStorage = try await kDriveStorage
+            let usedByComputer = max(0, resolvedVolumeStorage.usedStorage - resolvedKDriveStorage)
+
+            storageData[synchroDbId] = .success(VolumeStorageData(
+                name: volumeName,
+                freeSpace: resolvedVolumeStorage.availableStorage,
+                usedSpace: usedByComputer,
+                usedByKDrive: resolvedKDriveStorage
+            ))
+            storageDataSubject.send(storageData)
+        } catch {
+            guard let error = error as? StorageDataError else {
+                throw error
+            }
+
+            storageData[synchroDbId] = .failure(error)
             storageDataSubject.send(storageData)
         }
-
-        let resolvedKDriveStorage = try await kDriveStorage
-        let usedByComputer = resolvedMacStorage.usedStorage - resolvedKDriveStorage
-
-        storageData[synchroDbId] = MacStorageData(
-            usedByKDrive: resolvedKDriveStorage,
-            usedByComputer: usedByComputer,
-            freeSpace: resolvedMacStorage.availableStorage
-        )
-        storageDataSubject.send(storageData)
     }
 
-    private func fetchMacStorage() async throws -> (usedStorage: Int64, availableStorage: Int64) {
-        let rootURL = URL(fileURLWithPath: "/")
-        let values = try rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey])
+    private func fetchVolumeStorage(volumeURL: URL) async throws -> (usedStorage: Int64, availableStorage: Int64) {
+        let values = try volumeURL.resourceValues(forKeys: [
+            .volumeTotalCapacityKey,
+            .volumeAvailableCapacityKey
+        ])
 
         let totalStorage = Int64(values.volumeTotalCapacity ?? 0)
-        let availableStorage = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
+        let availableStorage = Int64(values.volumeAvailableCapacity ?? 0)
         let usedStorage = max(0, totalStorage - availableStorage)
 
         return (usedStorage, availableStorage)
@@ -91,5 +114,28 @@ public final class StorageDataService: StorageDataProviding {
     private func fetchSynchroStorage(synchroDbId: Int32) async throws -> Int64 {
         let filesSize = try await SyncJobs().getOfflineFilesSize(syncDbId: synchroDbId)
         return Int64(filesSize)
+    }
+
+    private func getVolumeInfo(synchroDbId: Int32) async throws -> (name: String, url: URL) {
+        @InjectService var cache: CoherentCache
+        let synchro = await cache.getSynchro(synchroDbId: synchroDbId)
+
+        guard let path = synchro?.localPath else {
+            throw StorageDataError.cannotGetSynchroInfo
+        }
+
+        let url = URL(fileURLWithPath: path)
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.volumeURLKey, .volumeNameKey])
+
+            guard let volumeURL = resourceValues.volume,
+                  let volumeName = resourceValues.volumeName else {
+                throw StorageDataError.cannotGetVolumeInfo
+            }
+
+            return (volumeName, volumeURL)
+        } catch {
+            throw StorageDataError.cannotGetVolumeInfo
+        }
     }
 }
