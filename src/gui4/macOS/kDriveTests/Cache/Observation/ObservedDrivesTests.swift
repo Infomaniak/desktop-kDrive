@@ -53,7 +53,7 @@ struct ObservedDrivesTests {
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
         // THEN
-        _ = await receivedValues.first(where: { _ in true })
+        _ = await receivedValues.dropFirst().first(where: { _ in true })
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
