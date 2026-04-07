@@ -20,9 +20,8 @@
 
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsTitle = "title";
-static const auto outParamsMessage = "message";
+
+// Signal: SignalNum::UTILITY_SHOW_NOTIFICATION
 
 namespace KDC {
 
@@ -33,8 +32,8 @@ SignalUtilityShowNotificationJob::SignalUtilityShowNotificationJob(CommString ti
 }
 
 ExitInfo SignalUtilityShowNotificationJob::serializeOutputParms() {
-    writeParamValue(outParamsTitle, _title);
-    writeParamValue(outParamsMessage, _message);
+    writeParamValue(MSG_PARAM_TITLE, _title);
+    writeParamValue(MSG_PARAM_MESSAGE, _message);
 
     return ExitCode::Ok;
 }

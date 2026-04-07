@@ -20,8 +20,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsAccountInfo = "accountInfo";
+// Signal: SignalNum::ACCOUNT_ADDED
 
 namespace KDC {
 
@@ -31,7 +30,7 @@ SignalAccountAddedJob::SignalAccountAddedJob(const AccountInfo &accountInfo) :
 }
 
 ExitInfo SignalAccountAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsAccountInfo, _accountInfo, info2DynamicVar<AccountInfo>);
+    writeParamValue(MSG_PARAM_ACCOUNT_INFO, _accountInfo, info2DynamicVar<AccountInfo>);
     return ExitCode::Ok;
 }
 

@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsVersionInfo = "versionInfo";
+
+// Signal: SignalNum::UPDATER_SHOW_DIALOG
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalUpdaterShowDialogJob::SignalUpdaterShowDialogJob(const VersionInfo &versio
 }
 
 ExitInfo SignalUpdaterShowDialogJob::serializeOutputParms() {
-    writeParamValue(outParamsVersionInfo, _versionInfo, info2DynamicVar<VersionInfo>);
+    writeParamValue(MSG_PARAM_VERSION_INFO, _versionInfo, info2DynamicVar<VersionInfo>);
     return ExitCode::Ok;
 }
 

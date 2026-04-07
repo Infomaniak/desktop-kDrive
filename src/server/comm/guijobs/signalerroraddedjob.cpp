@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsErrorInfo = "errorInfo";
+
+// Signal: SignalNum::UTILITY_ERROR_ADDED
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalErrorAddedJob::SignalErrorAddedJob(const ErrorInfo &errorInfo) :
 }
 
 ExitInfo SignalErrorAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsErrorInfo, _errorInfo, info2DynamicVar<ErrorInfo>);
+    writeParamValue(MSG_PARAM_ERROR_INFO, _errorInfo, info2DynamicVar<ErrorInfo>);
     return ExitCode::Ok;
 }
 

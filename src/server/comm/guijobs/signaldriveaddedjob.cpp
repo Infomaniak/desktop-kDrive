@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsDriveInfo = "driveInfo";
+
+// Signal: SignalNum::DRIVE_ADDED
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalDriveAddedJob::SignalDriveAddedJob(const DriveInfo &driveInfo) :
 }
 
 ExitInfo SignalDriveAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsDriveInfo, _driveInfo, info2DynamicVar<DriveInfo>);
+    writeParamValue(MSG_PARAM_DRIVE_INFO, _driveInfo, info2DynamicVar<DriveInfo>);
     return ExitCode::Ok;
 }
 

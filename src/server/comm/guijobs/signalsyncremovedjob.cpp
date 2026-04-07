@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
+
+// Signal: SignalNum::SYNC_REMOVED
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalSyncRemovedJob::SignalSyncRemovedJob(int syncDbId) :
 }
 
 ExitInfo SignalSyncRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
+    writeParamValue(MSG_PARAM_SYNC_DB_ID, _syncDbId);
     return ExitCode::Ok;
 }
 

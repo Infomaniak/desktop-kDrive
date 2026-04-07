@@ -20,9 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsItemInfo = "itemInfo";
+
+// Signal: SignalNum::SYNC_COMPLETEDITEM
 
 namespace KDC {
 
@@ -33,8 +32,8 @@ SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncF
 }
 
 ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
+    writeParamValue(MSG_PARAM_SYNC_DB_ID, _syncDbId);
+    writeParamValue(MSG_PARAM_ITEM_INFO, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
     return ExitCode::Ok;
 }
 

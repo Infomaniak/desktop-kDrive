@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsSyncInfo = "syncInfo";
+
+// Signal: SignalNum::SYNC_ADDED
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalSyncAddedJob::SignalSyncAddedJob(const SyncInfo &syncInfo) :
 }
 
 ExitInfo SignalSyncAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
+    writeParamValue(MSG_PARAM_SYNC_INFO, _syncInfo, info2DynamicVar<SyncInfo>);
     return ExitCode::Ok;
 }
 

@@ -20,9 +20,8 @@
 
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsLogUploadState = "state";
-static const auto outParamsPercentage = "percentage";
+
+// Signal: SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED
 
 namespace KDC {
 
@@ -33,8 +32,8 @@ SignalUtilityLogUploadStateJob::SignalUtilityLogUploadStateJob(const LogUploadSt
 }
 
 ExitInfo SignalUtilityLogUploadStateJob::serializeOutputParms() {
-    writeParamValue(outParamsLogUploadState, _state);
-    writeParamValue(outParamsPercentage, _percentage);
+    writeParamValue(MSG_PARAM_LOG_UPLOAD_STATE, _state);
+    writeParamValue(MSG_PARAM_PERCENTAGE, _percentage);
 
     return ExitCode::Ok;
 }
