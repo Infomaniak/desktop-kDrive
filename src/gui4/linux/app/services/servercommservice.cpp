@@ -540,6 +540,22 @@ void ServerCommService::requestNodeInfo(const UserDbId userDbId, const DriveId d
                            });
 }
 
+void ServerCommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPath &relativePath,
+                                                const ReplicaSide replicaSide, NodeConflictInfoCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
+    params[MSG_PARAM_RELATIVE_PATH] = CommonUtility::syncPath2CommString(relativePath);
+    params[MSG_PARAM_REPLICA_SIDE] = toInt(replicaSide);
+    _ipcClient.sendRequest(RequestNum::NODE_CONFLICT_INFO, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                               NodeConflictInfo info;
+                               if (exitInfo.code() == ExitCode::Ok) {
+                                   info.fromDynamicStruct(result[MSG_PARAM_NODE_CONFLICT_INFO].extract<Poco::DynamicStruct>());
+                               }
+                               callback(exitInfo, info);
+                           });
+}
+
 void ServerCommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId, StringCallback callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
@@ -619,22 +635,6 @@ void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbI
                                    CommonUtility::readValueFromStruct(result, MSG_PARAM_NODE_ID, nodeId);
                                }
                                callback(exitInfo, nodeId);
-                           });
-}
-
-void ServerCommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPath &relativePath,
-                                                const ReplicaSide replicaSide, NodeConflictInfoCallback callback) const {
-    Poco::DynamicStruct params;
-    params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
-    params[MSG_PARAM_RELATIVE_PATH] = CommonUtility::syncPath2CommString(relativePath);
-    params[MSG_PARAM_REPLICA_SIDE] = static_cast<int>(replicaSide);
-    _ipcClient.sendRequest(RequestNum::NODE_CONFLICT_INFO, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               NodeConflictInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
-                                   info.fromDynamicStruct(result[MSG_PARAM_NODE_CONFLICT_INFO].extract<Poco::DynamicStruct>());
-                               }
-                               callback(exitInfo, info);
                            });
 }
 
