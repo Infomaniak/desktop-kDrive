@@ -222,7 +222,7 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
 // -- Login ---------------------------------------------------------------
 
-void ServerCommService::requestLoginToken(const QString &code, const QString &codeVerifier, LoginTokenCallback callback) const {
+void ServerCommService::requestLoginToken(const QString &code, const QString &codeVerifier, const LoginTokenCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_AUTH_CODE] = CommonUtility::qStr2CommString(code);
     params[MSG_PARAM_CODE_VERIFIER] = CommonUtility::qStr2CommString(codeVerifier);
@@ -245,7 +245,7 @@ void ServerCommService::requestLoginToken(const QString &code, const QString &co
 
 // -- User ----------------------------------------------------------------
 
-void ServerCommService::requestUserDbIdList(UserDbIdListCallback callback) const {
+void ServerCommService::requestUserDbIdList(const UserDbIdListCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::USER_DBIDLIST, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<UserDbId> list;
@@ -256,7 +256,7 @@ void ServerCommService::requestUserDbIdList(UserDbIdListCallback callback) const
                            });
 }
 
-void ServerCommService::requestUserInfoList(UserInfoListCallback callback) const {
+void ServerCommService::requestUserInfoList(const UserInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::USER_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<UserInfo> list;
@@ -267,7 +267,7 @@ void ServerCommService::requestUserInfoList(UserInfoListCallback callback) const
             });
 }
 
-void ServerCommService::requestUserAvailableDrives(const UserDbId userDbId, DriveAvailableInfoListCallback callback) const {
+void ServerCommService::requestUserAvailableDrives(const UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     _ipcClient.sendRequest(RequestNum::USER_AVAILABLEDRIVES, params,
@@ -281,7 +281,7 @@ void ServerCommService::requestUserAvailableDrives(const UserDbId userDbId, Driv
                            });
 }
 
-void ServerCommService::requestDeleteUser(const UserDbId userDbId, VoidCallback callback) const {
+void ServerCommService::requestDeleteUser(const UserDbId userDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     _ipcClient.sendRequest(RequestNum::USER_DELETE, params,
@@ -290,7 +290,7 @@ void ServerCommService::requestDeleteUser(const UserDbId userDbId, VoidCallback 
 
 // -- Account -------------------------------------------------------------
 
-void ServerCommService::requestAccountInfoList(AccountInfoListCallback callback) const {
+void ServerCommService::requestAccountInfoList(const AccountInfoListCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::ACCOUNT_INFOLIST, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<AccountInfo> list;
@@ -304,7 +304,7 @@ void ServerCommService::requestAccountInfoList(AccountInfoListCallback callback)
 
 // -- Drive ---------------------------------------------------------------
 
-void ServerCommService::requestDriveInfoList(DriveInfoListCallback callback) const {
+void ServerCommService::requestDriveInfoList(const DriveInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::DRIVE_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<DriveInfo> list;
@@ -315,7 +315,7 @@ void ServerCommService::requestDriveInfoList(DriveInfoListCallback callback) con
             });
 }
 
-void ServerCommService::requestDriveUpdate(const DriveInfo &driveInfo, VoidCallback callback) const {
+void ServerCommService::requestDriveUpdate(const DriveInfo &driveInfo, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::DynamicStruct driveStruct;
     driveInfo.toDynamicStruct(driveStruct);
@@ -324,7 +324,7 @@ void ServerCommService::requestDriveUpdate(const DriveInfo &driveInfo, VoidCallb
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestDriveDelete(const DriveDbId driveDbId, VoidCallback callback) const {
+void ServerCommService::requestDriveDelete(const DriveDbId driveDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     _ipcClient.sendRequest(RequestNum::DRIVE_DELETE, params,
@@ -332,7 +332,7 @@ void ServerCommService::requestDriveDelete(const DriveDbId driveDbId, VoidCallba
 }
 
 void ServerCommService::requestDriveSearch(const SyncDbId syncDbId, const QString &searchString,
-                                           DriveSearchCallback callback) const {
+                                           const DriveSearchCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     params[MSG_PARAM_SEARCH_STRING] = CommonUtility::qStr2CommString(searchString);
@@ -350,7 +350,7 @@ void ServerCommService::requestDriveSearch(const SyncDbId syncDbId, const QStrin
 
 // -- Sync core -----------------------------------------------------------
 
-void ServerCommService::requestSyncInfoList(SyncInfoListCallback callback) const {
+void ServerCommService::requestSyncInfoList(const SyncInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::SYNC_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<SyncInfo> list;
@@ -361,7 +361,7 @@ void ServerCommService::requestSyncInfoList(SyncInfoListCallback callback) const
             });
 }
 
-void ServerCommService::requestSyncAdd(const SyncAddRequest &request, SyncInfoCallback callback) const {
+void ServerCommService::requestSyncAdd(const SyncAddRequest &request, const SyncInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = request.userDbId;
     params[MSG_PARAM_ACCOUNT_ID] = request.accountId;
@@ -380,7 +380,7 @@ void ServerCommService::requestSyncAdd(const SyncAddRequest &request, SyncInfoCa
     });
 }
 
-void ServerCommService::requestSyncAdd2(const SyncAdd2Request &request, SyncInfoCallback callback) const {
+void ServerCommService::requestSyncAdd2(const SyncAdd2Request &request, const SyncInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = request.driveDbId;
     params[MSG_PARAM_LOCAL_FOLDER_PATH] = CommonUtility::syncPath2CommString(request.localFolderPath);
@@ -398,21 +398,21 @@ void ServerCommService::requestSyncAdd2(const SyncAdd2Request &request, SyncInfo
                            });
 }
 
-void ServerCommService::requestSyncStart(const SyncDbId syncDbId, VoidCallback callback) const {
+void ServerCommService::requestSyncStart(const SyncDbId syncDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_START, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestSyncStop(const SyncDbId syncDbId, VoidCallback callback) const {
+void ServerCommService::requestSyncStop(const SyncDbId syncDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_STOP, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestSyncStatus(const SyncDbId syncDbId, SyncStatusCallback callback) const {
+void ServerCommService::requestSyncStatus(const SyncDbId syncDbId, const SyncStatusCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_STATUS, params,
@@ -425,14 +425,14 @@ void ServerCommService::requestSyncStatus(const SyncDbId syncDbId, SyncStatusCal
                            });
 }
 
-void ServerCommService::requestSyncDelete(const SyncDbId syncDbId, VoidCallback callback) const {
+void ServerCommService::requestSyncDelete(const SyncDbId syncDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_DELETE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestStartSyncsAfterLogin(const UserDbId userDbId, VoidCallback callback) const {
+void ServerCommService::requestStartSyncsAfterLogin(const UserDbId userDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_START_AFTER_LOGIN, params,
@@ -441,7 +441,7 @@ void ServerCommService::requestStartSyncsAfterLogin(const UserDbId userDbId, Voi
 
 // -- Sync advanced -------------------------------------------------------
 
-void ServerCommService::requestSyncTriggerProgressUpdate(const SyncDbId syncDbId, VoidCallback callback) const {
+void ServerCommService::requestSyncTriggerProgressUpdate(const SyncDbId syncDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, params,
@@ -449,7 +449,7 @@ void ServerCommService::requestSyncTriggerProgressUpdate(const SyncDbId syncDbId
 }
 
 void ServerCommService::requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId,
-                                                     StringCallback callback) const {
+                                                     const StringCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_NODE_ID] = nodeId;
@@ -466,7 +466,7 @@ void ServerCommService::requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, 
 }
 
 void ServerCommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId,
-                                                    StringCallback callback) const {
+                                                    const StringCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_NODE_ID] = nodeId;
@@ -484,7 +484,7 @@ void ServerCommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, c
 
 // -- Error ---------------------------------------------------------------
 
-void ServerCommService::requestErrorInfoList(ErrorInfoListCallback callback) const {
+void ServerCommService::requestErrorInfoList(const ErrorInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::ERROR_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<ErrorInfo> list;
@@ -495,7 +495,7 @@ void ServerCommService::requestErrorInfoList(ErrorInfoListCallback callback) con
             });
 }
 
-void ServerCommService::requestErrorDelete(const ErrorDbId errorDbId, VoidCallback callback) const {
+void ServerCommService::requestErrorDelete(const ErrorDbId errorDbId, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_ERROR_DB_ID] = errorDbId;
     _ipcClient.sendRequest(RequestNum::ERROR_DELETE, params,
@@ -503,7 +503,7 @@ void ServerCommService::requestErrorDelete(const ErrorDbId errorDbId, VoidCallba
 }
 
 void ServerCommService::requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
-                                                     const std::vector<ErrorDbId> &keepRemoteList, VoidCallback callback) const {
+                                                     const std::vector<ErrorDbId> &keepRemoteList, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_KEEP_LOCAL_ERROR_DB_ID_LIST] = keepLocalList;
     params[MSG_PARAM_KEEP_REMOTE_ERROR_DB_ID_LIST] = keepRemoteList;
@@ -513,7 +513,7 @@ void ServerCommService::requestErrorResolveConflicts(const std::vector<ErrorDbId
 
 void ServerCommService::requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList,
                                                           const ConflictResolutionStrategy strategy,
-                                                          VoidCallback callback) const {
+                                                          const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_ERROR_DB_ID_LIST] = errorDbIdList;
     params[MSG_PARAM_STRATEGY] = toInt(strategy);
@@ -524,7 +524,7 @@ void ServerCommService::requestErrorResolveConflictsQuick(const std::vector<Erro
 // -- Node ----------------------------------------------------------------
 
 void ServerCommService::requestNodeInfo(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId, const bool withPath,
-                                        NodeInfoCallback callback) const {
+                                        const NodeInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     params[MSG_PARAM_DRIVE_ID] = driveId;
@@ -541,7 +541,7 @@ void ServerCommService::requestNodeInfo(const UserDbId userDbId, const DriveId d
 }
 
 void ServerCommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPath &relativePath,
-                                                const ReplicaSide replicaSide, NodeConflictInfoCallback callback) const {
+                                                const ReplicaSide replicaSide, const NodeConflictInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     params[MSG_PARAM_RELATIVE_PATH] = CommonUtility::syncPath2CommString(relativePath);
@@ -556,7 +556,7 @@ void ServerCommService::requestNodeConflictInfo(const SyncDbId syncDbId, const S
                            });
 }
 
-void ServerCommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId, StringCallback callback) const {
+void ServerCommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId, const StringCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     params[MSG_PARAM_NODE_ID] = nodeId;
@@ -573,7 +573,7 @@ void ServerCommService::requestNodePath(const SyncDbId syncDbId, const NodeId &n
 }
 
 void ServerCommService::requestNodeSubfolders(const DriveDbId driveDbId, const NodeId &nodeId, const bool withPath,
-                                              NodeInfoListCallback callback) const {
+                                              const NodeInfoListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_NODE_ID] = nodeId;
@@ -590,7 +590,7 @@ void ServerCommService::requestNodeSubfolders(const DriveDbId driveDbId, const N
 }
 
 void ServerCommService::requestNodeSubfolders2(const DriveDbId driveDbId, const NodeId &nodeId, const bool withPath,
-                                               NodeInfoListCallback callback) const {
+                                               const NodeInfoListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_NODE_ID] = nodeId;
@@ -607,7 +607,7 @@ void ServerCommService::requestNodeSubfolders2(const DriveDbId driveDbId, const 
 }
 
 void ServerCommService::requestNodeFolderSize(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
-                                              FolderSizeCallback callback) const {
+                                              const FolderSizeCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     params[MSG_PARAM_DRIVE_ID] = driveId;
@@ -623,7 +623,7 @@ void ServerCommService::requestNodeFolderSize(const UserDbId userDbId, const Dri
 }
 
 void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbId, const NodeId &parentNodeId,
-                                                        const SyncPath &relativePath, NodeIdCallback callback) const {
+                                                        const SyncPath &relativePath, const NodeIdCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_PARENT_NODE_ID] = parentNodeId;
@@ -640,7 +640,7 @@ void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbI
 
 // -- Parameters ----------------------------------------------------------
 
-void ServerCommService::requestParametersInfo(ParametersInfoCallback callback) const {
+void ServerCommService::requestParametersInfo(const ParametersInfoCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::PARAMETERS_INFO, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                ParametersInfo info;
@@ -651,7 +651,7 @@ void ServerCommService::requestParametersInfo(ParametersInfoCallback callback) c
                            });
 }
 
-void ServerCommService::requestParametersUpdate(const ParametersInfo &parametersInfo, VoidCallback callback) const {
+void ServerCommService::requestParametersUpdate(const ParametersInfo &parametersInfo, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::DynamicStruct infoStruct;
     parametersInfo.toDynamicStruct(infoStruct);
@@ -662,7 +662,7 @@ void ServerCommService::requestParametersUpdate(const ParametersInfo &parameters
 
 // -- Exclusions ---------------------------------------------------------
 
-void ServerCommService::requestBlacklistedNodeList(const SyncDbId syncDbId, NodeIdListCallback callback) const {
+void ServerCommService::requestBlacklistedNodeList(const SyncDbId syncDbId, const NodeIdListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     _ipcClient.sendRequest(RequestNum::BLACKLISTED_NODE_LIST, params,
@@ -676,7 +676,7 @@ void ServerCommService::requestBlacklistedNodeList(const SyncDbId syncDbId, Node
 }
 
 void ServerCommService::requestBlacklistedNodeSetList(const SyncDbId syncDbId, const std::vector<NodeId> &nodeIdList,
-                                                      VoidCallback callback) const {
+                                                      const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
     params[MSG_PARAM_NODE_ID_LIST] = nodeIdList;
@@ -684,7 +684,7 @@ void ServerCommService::requestBlacklistedNodeSetList(const SyncDbId syncDbId, c
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestExclTemplGetList(const bool defaultTemplates, ExclusionTemplateListCallback callback) const {
+void ServerCommService::requestExclTemplGetList(const bool defaultTemplates, const ExclusionTemplateListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DEFAULT] = defaultTemplates;
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETLIST, params,
@@ -699,7 +699,7 @@ void ServerCommService::requestExclTemplGetList(const bool defaultTemplates, Exc
 }
 
 void ServerCommService::requestExclTemplSetList(const std::vector<ExclusionTemplateInfo> &templateList,
-                                                VoidCallback callback) const {
+                                                const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::Dynamic::Array arr;
     for (const auto &tmpl: templateList) {
@@ -712,7 +712,7 @@ void ServerCommService::requestExclTemplSetList(const std::vector<ExclusionTempl
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestExclTemplGetExcluded(const QString &name, BoolCallback callback) const {
+void ServerCommService::requestExclTemplGetExcluded(const QString &name, const BoolCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_NAME] = CommonUtility::qStr2CommString(name);
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETEXCLUDED, params,
@@ -727,7 +727,7 @@ void ServerCommService::requestExclTemplGetExcluded(const QString &name, BoolCal
 
 // -- Updater ------------------------------------------------------------
 
-void ServerCommService::requestUpdaterState(UpdateStateCallback callback) const {
+void ServerCommService::requestUpdaterState(const UpdateStateCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UPDATER_STATE, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                auto state = UpdateState::Unknown;
@@ -738,7 +738,7 @@ void ServerCommService::requestUpdaterState(UpdateStateCallback callback) const 
                            });
 }
 
-void ServerCommService::requestUpdaterVersionInfo(const VersionChannel channel, VersionInfoCallback callback) const {
+void ServerCommService::requestUpdaterVersionInfo(const VersionChannel channel, const VersionInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_CHANNEL] = toInt(channel);
     _ipcClient.sendRequest(RequestNum::UPDATER_VERSION_INFO, params,
@@ -751,26 +751,26 @@ void ServerCommService::requestUpdaterVersionInfo(const VersionChannel channel, 
                            });
 }
 
-void ServerCommService::requestUpdaterSkipVersion(const QString &skippedVersion, VoidCallback callback) const {
+void ServerCommService::requestUpdaterSkipVersion(const QString &skippedVersion, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_SKIPPED_VERSION] = CommonUtility::qStr2CommString(skippedVersion);
     _ipcClient.sendRequest(RequestNum::UPDATER_SKIP_VERSION, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestUpdaterStartInstaller(VoidCallback callback) const {
+void ServerCommService::requestUpdaterStartInstaller(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UPDATER_START_INSTALLER, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
 // -- Utility ------------------------------------------------------------
 
-void ServerCommService::requestCheckCommStatus(VoidCallback callback) const {
+void ServerCommService::requestCheckCommStatus(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_CHECKCOMMSTATUS, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestFindGoodPathForNewSync(const SyncPath &basePath, GoodPathCallback callback) const {
+void ServerCommService::requestFindGoodPathForNewSync(const SyncPath &basePath, const GoodPathCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_BASE_PATH] = CommonUtility::syncPath2CommString(basePath);
     _ipcClient.sendRequest(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params,
@@ -791,7 +791,7 @@ void ServerCommService::requestFindGoodPathForNewSync(const SyncPath &basePath, 
 }
 
 void ServerCommService::requestIsPathValidForNewSync(const SyncPath &path, const SyncConfiguration syncConfiguration,
-                                                     BoolCallback callback) const {
+                                                     const BoolCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_PATH] = CommonUtility::syncPath2CommString(path);
     params[MSG_PARAM_SYNC_CONFIGURATION] = toInt(syncConfiguration);
@@ -805,7 +805,7 @@ void ServerCommService::requestIsPathValidForNewSync(const SyncPath &path, const
                            });
 }
 
-void ServerCommService::requestGetAppState(const AppStateKey key, AppStateCallback callback) const {
+void ServerCommService::requestGetAppState(const AppStateKey key, const AppStateCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_KEY] = toInt(key);
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_APPSTATE, params,
@@ -821,7 +821,7 @@ void ServerCommService::requestGetAppState(const AppStateKey key, AppStateCallba
                            });
 }
 
-void ServerCommService::requestSetAppState(const AppStateKey key, const QString &value, VoidCallback callback) const {
+void ServerCommService::requestSetAppState(const AppStateKey key, const QString &value, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_KEY] = toInt(key);
     params[MSG_PARAM_VALUE] = CommonUtility::qStr2CommString(value);
@@ -829,7 +829,7 @@ void ServerCommService::requestSetAppState(const AppStateKey key, const QString 
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestHasSystemLaunchOnStartup(BoolCallback callback) const {
+void ServerCommService::requestHasSystemLaunchOnStartup(const BoolCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                bool enabled = false;
@@ -840,24 +840,24 @@ void ServerCommService::requestHasSystemLaunchOnStartup(BoolCallback callback) c
                            });
 }
 
-void ServerCommService::requestActivateLoadInfo(VoidCallback callback) const {
+void ServerCommService::requestActivateLoadInfo(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_ACTIVATELOADINFO, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestSendLogToSupport(const bool includeArchivedLogs, VoidCallback callback) const {
+void ServerCommService::requestSendLogToSupport(const bool includeArchivedLogs, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_INCLUDE_ARCHIVED_LOGS] = includeArchivedLogs;
     _ipcClient.sendRequest(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestCancelLogToSupport(VoidCallback callback) const {
+void ServerCommService::requestCancelLogToSupport(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestGetLogEstimatedSize(LogSizeCallback callback) const {
+void ServerCommService::requestGetLogEstimatedSize(const LogSizeCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                uint64_t logSize = 0;
@@ -868,12 +868,12 @@ void ServerCommService::requestGetLogEstimatedSize(LogSizeCallback callback) con
                            });
 }
 
-void ServerCommService::requestSendAppStartTrace(VoidCallback callback) const {
+void ServerCommService::requestSendAppStartTrace(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_SEND_APP_START_TRACE, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestQuit(VoidCallback callback) const {
+void ServerCommService::requestQuit(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_QUIT, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
