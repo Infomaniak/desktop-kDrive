@@ -151,6 +151,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
                 const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
                 LOG_WARN(logger(), "Native CF Error description: " << errorDescriptionStdString);
                 CFRelease(error);
+                CFRelease(errorDescription);
 
                 return false;
             }
