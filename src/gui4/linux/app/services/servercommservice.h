@@ -27,7 +27,9 @@
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/info/nodeconflictinfo.h"
 #include "libcommon/info/nodeinfo.h"
+#include "libcommon/info/searchinfo.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommon/info/syncinfo.h"
@@ -65,6 +67,20 @@ struct SyncAddRequest {
         NodeId serverFolderNodeId;
         bool liteSync{false};
         std::vector<NodeId> blackList;
+};
+
+struct SyncAdd2Request {
+        DriveDbId driveDbId{0};
+        SyncPath localFolderPath;
+        SyncPath serverFolderPath;
+        NodeId serverFolderNodeId;
+        bool liteSync{false};
+        std::vector<NodeId> blackList;
+};
+
+struct DriveSearchResult {
+        std::vector<SearchInfo> searchInfoList;
+        bool hasMore{false};
 };
 
 // ---------------------------------------------------------------------------
@@ -109,6 +125,8 @@ class ServerCommService : public QObject {
         using UpdateStateCallback = std::function<void(const ExitInfo &, UpdateState)>;
         using VersionInfoCallback = std::function<void(const ExitInfo &, const VersionInfo &)>;
         using NodeIdCallback = std::function<void(const ExitInfo &, const NodeId &)>;
+        using DriveSearchCallback = std::function<void(const ExitInfo &, const DriveSearchResult &)>;
+        using NodeConflictInfoCallback = std::function<void(const ExitInfo &, const NodeConflictInfo &)>;
 
         explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
@@ -136,10 +154,12 @@ class ServerCommService : public QObject {
         void requestDriveInfoList(DriveInfoListCallback callback) const;
         void requestDriveUpdate(const DriveInfo &driveInfo, VoidCallback callback) const;
         void requestDriveDelete(DriveDbId driveDbId, VoidCallback callback) const;
+        void requestDriveSearch(SyncDbId syncDbId, const QString &searchString, DriveSearchCallback callback) const;
 
         // --- Sync ---
         void requestSyncInfoList(SyncInfoListCallback callback) const;
         void requestSyncAdd(const SyncAddRequest &request, SyncInfoCallback callback) const;
+        void requestSyncAdd2(const SyncAdd2Request &request, SyncInfoCallback callback) const;
         void requestSyncStart(SyncDbId syncDbId, VoidCallback callback) const;
         void requestSyncStop(SyncDbId syncDbId, VoidCallback callback) const;
         void requestSyncStatus(SyncDbId syncDbId, SyncStatusCallback callback) const;
@@ -151,10 +171,17 @@ class ServerCommService : public QObject {
 
         // --- Error ---
         void requestErrorInfoList(ErrorInfoListCallback callback) const;
+        void requestErrorDelete(ErrorDbId errorDbId, VoidCallback callback) const;
+        void requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
+                                          const std::vector<ErrorDbId> &keepRemoteList, VoidCallback callback) const;
+        void requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList,
+                                               ConflictResolutionStrategy strategy, VoidCallback callback) const;
 
         // --- Node ---
         void requestNodeInfo(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, bool withPath,
                              NodeInfoCallback callback) const;
+        void requestNodeConflictInfo(SyncDbId syncDbId, const SyncPath &relativePath, ReplicaSide replicaSide,
+                                     NodeConflictInfoCallback callback) const;
         void requestNodePath(SyncDbId syncDbId, const NodeId &nodeId, StringCallback callback) const;
         void requestNodeSubfolders(DriveDbId driveDbId, const NodeId &nodeId, bool withPath, NodeInfoListCallback callback) const;
         void requestNodeSubfolders2(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
