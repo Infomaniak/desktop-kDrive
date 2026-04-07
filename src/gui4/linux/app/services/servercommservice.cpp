@@ -216,7 +216,7 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) { emit quit(); });
 }
 // =============================================================================
-// B3 — Request methods
+// Request methods
 // =============================================================================
 
 // -- Login ---------------------------------------------------------------
@@ -403,7 +403,7 @@ void ServerCommService::requestStartSyncsAfterLogin(const UserDbId userDbId, Voi
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-// -- B3.6 Sync advanced -------------------------------------------------------
+// -- Sync advanced -------------------------------------------------------
 
 void ServerCommService::requestSyncTriggerProgressUpdate(const SyncDbId syncDbId, VoidCallback callback) const {
     Poco::DynamicStruct params;
@@ -446,7 +446,7 @@ void ServerCommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, c
                            });
 }
 
-// -- B3.7 Error ---------------------------------------------------------------
+// -- Error ---------------------------------------------------------------
 
 void ServerCommService::requestErrorInfoList(ErrorInfoListCallback callback) const {
     _ipcClient.sendRequest(
@@ -459,7 +459,7 @@ void ServerCommService::requestErrorInfoList(ErrorInfoListCallback callback) con
             });
 }
 
-// -- B3.8 Node ----------------------------------------------------------------
+// -- Node ----------------------------------------------------------------
 
 void ServerCommService::requestNodeInfo(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId, const bool withPath,
                                         NodeInfoCallback callback) const {
@@ -562,7 +562,7 @@ void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbI
                            });
 }
 
-// -- B3.9 Parameters ----------------------------------------------------------
+// -- Parameters ----------------------------------------------------------
 
 void ServerCommService::requestParametersInfo(ParametersInfoCallback callback) const {
     _ipcClient.sendRequest(RequestNum::PARAMETERS_INFO, {},
@@ -584,7 +584,7 @@ void ServerCommService::requestParametersUpdate(const ParametersInfo &parameters
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-// -- B3.10 Exclusions ---------------------------------------------------------
+// -- Exclusions ---------------------------------------------------------
 
 void ServerCommService::requestBlacklistedNodeList(const SyncDbId syncDbId, NodeIdListCallback callback) const {
     Poco::DynamicStruct params;
@@ -649,7 +649,7 @@ void ServerCommService::requestExclTemplGetExcluded(const QString &name, BoolCal
                            });
 }
 
-// -- B3.11 Updater ------------------------------------------------------------
+// -- Updater ------------------------------------------------------------
 
 void ServerCommService::requestUpdaterState(UpdateStateCallback callback) const {
     _ipcClient.sendRequest(RequestNum::UPDATER_STATE, {},
@@ -687,7 +687,7 @@ void ServerCommService::requestUpdaterStartInstaller(VoidCallback callback) cons
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-// -- B3.12 Utility ------------------------------------------------------------
+// -- Utility ------------------------------------------------------------
 
 void ServerCommService::requestCheckCommStatus(VoidCallback callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_CHECKCOMMSTATUS, {},
