@@ -108,6 +108,7 @@ class ServerCommService : public QObject {
         using ExclusionTemplateListCallback = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplateInfo> &)>;
         using UpdateStateCallback = std::function<void(const ExitInfo &, UpdateState)>;
         using VersionInfoCallback = std::function<void(const ExitInfo &, const VersionInfo &)>;
+        using NodeIdCallback = std::function<void(const ExitInfo &, const NodeId &)>;
 
         explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
@@ -154,7 +155,7 @@ class ServerCommService : public QObject {
                                     NodeInfoListCallback callback) const;
         void requestNodeFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, FolderSizeCallback callback) const;
         void requestNodeCreateMissingFolders(DriveDbId driveDbId, const NodeId &parentNodeId, const SyncPath &relativePath,
-                                             StringCallback callback) const;
+                                             NodeIdCallback callback) const;
 
         // --- Parameters ---
         void requestParametersInfo(ParametersInfoCallback callback) const;
