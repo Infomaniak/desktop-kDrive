@@ -1,0 +1,12 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 99,
+  "params": {
+    "nodeConflictInfo": {
+      "authorName": "VGVzdCBBdXRob3I=",
+      "fileSize": 12345678,
+      "lastModificationDate": 1704067200
+    }
+  }
+}
