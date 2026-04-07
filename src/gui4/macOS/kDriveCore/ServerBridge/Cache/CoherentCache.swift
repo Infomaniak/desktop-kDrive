@@ -19,6 +19,8 @@
 import Foundation
 import OrderedCollections
 
+// trigger mac test
+
 /// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCache: Sendable {
     // MARK: - User
