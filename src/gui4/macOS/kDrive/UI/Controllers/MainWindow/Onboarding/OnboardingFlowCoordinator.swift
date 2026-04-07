@@ -79,10 +79,6 @@ final class OnboardingFlowCoordinator: ObservableObject {
     }
 
     private func didFinishOnboarding() {
-        if currentStep == .appReady {
-            UserDefaults.standard.shouldPresentOnboarding = false
-        }
-
         @InjectService var windowRouter: MainWindowRouter
         windowRouter.navigate(to: .mainWindow())
     }

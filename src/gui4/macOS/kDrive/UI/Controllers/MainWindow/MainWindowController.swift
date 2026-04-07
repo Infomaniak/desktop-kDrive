@@ -89,12 +89,7 @@ final class MainWindowController: NSWindowController {
     private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
         let hasConnectedUser = await coherentCache.getFirstAvailableUser() != nil
 
-        if UserDefaults.standard.isFirstLaunch {
-            UserDefaults.standard.shouldPresentOnboarding = !hasConnectedUser
-            UserDefaults.standard.isFirstLaunch = false
-        }
-
-        if hasConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
+        if hasConnectedUser {
             return .mainWindow()
         } else {
             return .onboarding()
