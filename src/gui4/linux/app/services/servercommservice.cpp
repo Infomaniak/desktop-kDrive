@@ -27,8 +27,9 @@ Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
 
 namespace KDC {
 
-ServerCommService::ServerCommService(SignalDispatcher &dispatcher, QObject *parent) :
-    QObject(parent) {
+ServerCommService::ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent) :
+    QObject(parent),
+    _ipcClient(client) {
     registerUserHandlers(dispatcher);
     registerAccountHandlers(dispatcher);
     registerDriveHandlers(dispatcher);
@@ -145,8 +146,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
         CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_TOTAL_SIZE, totalSize);
         CommonUtility::readValueFromStruct(progressStruct, MSG_PARAM_ESTIMATED_REMAINING_TIME, estimatedRemainingTime);
 
-        emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize,
-                              estimatedRemainingTime);
+        emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM, [this](const Poco::DynamicStruct &params) {
@@ -201,13 +201,9 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
         emit showNotification(CommonUtility::commString2QStr(title), CommonUtility::commString2QStr(message));
     });
 
-    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS, [this](const Poco::DynamicStruct &) {
-        emit showSettings();
-    });
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS, [this](const Poco::DynamicStruct &) { emit showSettings(); });
 
-    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS, [this](const Poco::DynamicStruct &) {
-        emit showSynthesis();
-    });
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS, [this](const Poco::DynamicStruct &) { emit showSynthesis(); });
 
     dispatcher.registerHandler(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, [this](const Poco::DynamicStruct &params) {
         LogUploadState state = LogUploadState::None;
@@ -219,5 +215,6 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) { emit quit(); });
 }
+
 
 } // namespace KDC
