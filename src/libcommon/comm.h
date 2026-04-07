@@ -73,6 +73,48 @@ inline constexpr char MSG_PARAM_MESSAGE[] = "message";
 inline constexpr char MSG_PARAM_LOG_UPLOAD_STATE[] = "state";
 inline constexpr char MSG_PARAM_PERCENTAGE[] = "percentage";
 
+// Request parameter keys
+inline constexpr char MSG_PARAM_CODE[] = "code";
+inline constexpr char MSG_PARAM_CODE_VERIFIER[] = "codeVerifier";
+inline constexpr char MSG_PARAM_ERROR[] = "error";
+inline constexpr char MSG_PARAM_ERROR_DESCR[] = "errorDescr";
+inline constexpr char MSG_PARAM_DRIVE_AVAILABLE_INFO_LIST[] = "driveAvailableInfoList";
+inline constexpr char MSG_PARAM_ACCOUNT_ID[] = "accountId";
+inline constexpr char MSG_PARAM_DRIVE_ID[] = "driveId";
+inline constexpr char MSG_PARAM_LOCAL_FOLDER_PATH[] = "localFolderPath";
+inline constexpr char MSG_PARAM_SERVER_FOLDER_PATH[] = "serverFolderPath";
+inline constexpr char MSG_PARAM_SERVER_FOLDER_NODE_ID[] = "serverFolderNodeId";
+inline constexpr char MSG_PARAM_LITE_SYNC[] = "liteSync";
+inline constexpr char MSG_PARAM_BLACK_LIST[] = "blackList";
+inline constexpr char MSG_PARAM_BASE_PATH[] = "basePath";
+inline constexpr char MSG_PARAM_GOOD_PATH[] = "goodPath";
+inline constexpr char MSG_PARAM_ERROR_MESSAGE[] = "errorMessage";
+inline constexpr char MSG_PARAM_PATH[] = "path";
+inline constexpr char MSG_PARAM_SYNC_CONFIGURATION[] = "syncConfiguration";
+inline constexpr char MSG_PARAM_IS_VALID[] = "isValid";
+inline constexpr char MSG_PARAM_KEY[] = "key";
+inline constexpr char MSG_PARAM_VALUE[] = "value";
+inline constexpr char MSG_PARAM_ENABLED[] = "enabled";
+inline constexpr char MSG_PARAM_LOG_SIZE[] = "logSize";
+inline constexpr char MSG_PARAM_INCLUDE_ARCHIVED_LOGS[] = "includeArchivedLogs";
+inline constexpr char MSG_PARAM_NODE_ID[] = "nodeId";
+inline constexpr char MSG_PARAM_NODE_ID_LIST[] = "nodeIdList";
+inline constexpr char MSG_PARAM_NODE_INFO[] = "nodeInfo";
+inline constexpr char MSG_PARAM_NODE_SUB_FOLDER_INFO_LIST[] = "nodeSubFolderInfoList";
+inline constexpr char MSG_PARAM_FOLDER_SIZE[] = "folderSize";
+inline constexpr char MSG_PARAM_LINK_URL[] = "linkUrl";
+inline constexpr char MSG_PARAM_PARAMETERS_INFO[] = "parametersInfo";
+inline constexpr char MSG_PARAM_EXCLUSION_TEMPLATE_LIST[] = "exclusionTemplateList";
+inline constexpr char MSG_PARAM_IS_EXCLUDED[] = "isExcluded";
+inline constexpr char MSG_PARAM_DEFAULT[] = "default";
+inline constexpr char MSG_PARAM_NAME[] = "name";
+inline constexpr char MSG_PARAM_CHANNEL[] = "channel";
+inline constexpr char MSG_PARAM_SKIPPED_VERSION[] = "skippedVersion";
+inline constexpr char MSG_PARAM_REPLICA_SIDE[] = "replicaSide";
+inline constexpr char MSG_PARAM_PARENT_NODE_ID[] = "parentNodeId";
+inline constexpr char MSG_PARAM_WITH_PATH[] = "withPath";
+inline constexpr char MSG_PARAM_RELATIVE_PATH[] = "relativePath";
+
 inline constexpr char EXECUTE_ERROR_MSG[] = "C/S function call timeout or error!";
 
 /**
