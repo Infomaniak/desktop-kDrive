@@ -113,6 +113,12 @@ class ServerCommService : public QObject {
         explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
         // --- Request methods ---
+        //
+        // All request methods are marked `const` because they do not modify any member of *this*.
+        // They do, however, cause observable side effects by sending IPC messages through _ipcClient,
+        // which is stored as a reference member (so the const qualifier of *this* does not propagate to it).
+        // Callers must ensure that any objects captured in the callback outlive the server response.
+        //
 
         // --- Login ---
         void requestLoginToken(const QString &code, const QString &codeVerifier, LoginTokenCallback callback) const;
