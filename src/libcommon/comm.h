@@ -74,7 +74,7 @@ inline constexpr char MSG_PARAM_LOG_UPLOAD_STATE[] = "state";
 inline constexpr char MSG_PARAM_PERCENTAGE[] = "percentage";
 
 // Request parameter keys
-inline constexpr char MSG_PARAM_CODE[] = "code";
+inline constexpr char MSG_PARAM_AUTH_CODE[] = "code";
 inline constexpr char MSG_PARAM_CODE_VERIFIER[] = "codeVerifier";
 inline constexpr char MSG_PARAM_ERROR[] = "error";
 inline constexpr char MSG_PARAM_ERROR_DESCR[] = "errorDescr";
