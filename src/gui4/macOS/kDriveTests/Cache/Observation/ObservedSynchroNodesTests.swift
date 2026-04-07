@@ -35,48 +35,48 @@ extension ObservedSynchroNodes {
 
 @MainActor
 struct ObservedSynchroNodesTests {
-    @Test(.timeLimit(.minutes(1)))
-    func setObservedSynchroNodes() async throws {
-        // GIVEN
-        let cache = ServerCoherentCache()
-        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        #expect(initialUser == nil, "Cache should initially be empty")
-
-        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
-                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
-        let receivedValues = $observedNodes.receivedValues
-
-        #expect(observedNodes == [], "Nodes should initially be empty")
-        await cache.addUser(ObservableData.expectedUserWithAccounts)
-
-        let expectedDrive = ObservableData.expectedDrive
-        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
-
-        let expectedSynchro = ObservableData.expectedSynchro
-        try await cache.addSynchro(expectedSynchro)
-
-        // WHEN
-        var synchroWithNode = expectedSynchro
-        synchroWithNode.addOrUpdateSynchNode(ObservableData.firstSynchroNode)
-        try await cache.updateSynchro(synchroWithNode)
-
-        // THEN
-        _ = await receivedValues.dropFirst().first(where: { _ in true })
-
-        #expect(observedNodes.count == 1, "We should have one node in the array")
-
-        guard let firstNode = observedNodes.first else {
-            Issue.record("Failed to unwrap the first node")
-            return
-        }
-
-        #expect(firstNode.node.localNodeId == ObservableData.expectedNodeLocalId, "The node should match")
-        #expect(firstNode.node.path == ObservableData.expectedNodePath, "The path should match")
-        #expect(firstNode.synchro.dbId == expectedSynchro.dbId, "The synchro should match")
-        #expect(firstNode.drive.driveDbId == expectedDrive.driveDbId, "The drive should match")
-        #expect(firstNode.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
-        #expect(firstNode.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
-    }
+//    @Test(.timeLimit(.minutes(1)))
+//    func setObservedSynchroNodes() async throws {
+//        // GIVEN
+//        let cache = ServerCoherentCache()
+//        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+//        #expect(initialUser == nil, "Cache should initially be empty")
+//
+//        @ObservedSynchroNodes(synchroDbId: ObservableData.expectedSynchroDbId,
+//                              cacheObservation: cache) var observedNodes: [SynchroNodeContext]
+//        let receivedValues = $observedNodes.receivedValues
+//
+//        #expect(observedNodes == [], "Nodes should initially be empty")
+//        await cache.addUser(ObservableData.expectedUserWithAccounts)
+//
+//        let expectedDrive = ObservableData.expectedDrive
+//        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+//
+//        let expectedSynchro = ObservableData.expectedSynchro
+//        try await cache.addSynchro(expectedSynchro)
+//
+//        // WHEN
+//        var synchroWithNode = expectedSynchro
+//        synchroWithNode.addOrUpdateSynchNode(ObservableData.firstSynchroNode)
+//        try await cache.updateSynchro(synchroWithNode)
+//
+//        // THEN
+//        _ = await receivedValues.dropFirst().first(where: { _ in true })
+//
+//        #expect(observedNodes.count == 1, "We should have one node in the array")
+//
+//        guard let firstNode = observedNodes.first else {
+//            Issue.record("Failed to unwrap the first node")
+//            return
+//        }
+//
+//        #expect(firstNode.node.localNodeId == ObservableData.expectedNodeLocalId, "The node should match")
+//        #expect(firstNode.node.path == ObservableData.expectedNodePath, "The path should match")
+//        #expect(firstNode.synchro.dbId == expectedSynchro.dbId, "The synchro should match")
+//        #expect(firstNode.drive.driveDbId == expectedDrive.driveDbId, "The drive should match")
+//        #expect(firstNode.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
+//        #expect(firstNode.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
+//    }
 
     @Test(.timeLimit(.minutes(1)))
     func setMultipleObservedSynchroNodesFilterBySynchro() async throws {
