@@ -116,7 +116,7 @@ final class DriveSelectionViewModel: ObservableObject {
                 }
 
                 flowCoordinator.synchronizations = syncCandidates
-                await flowCoordinator.navigateToNextStep()
+                await flowCoordinator.navigateToNextStepOrFinish()
             } catch {
                 // TODO: Handle error
                 isLoading = false

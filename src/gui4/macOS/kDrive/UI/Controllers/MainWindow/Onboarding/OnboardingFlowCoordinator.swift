@@ -35,49 +35,20 @@ final class OnboardingFlowCoordinator: ObservableObject {
     @Published var currentUser: UIUser?
     @Published private(set) var currentStep: OnboardingStep
 
+    private let steps: [OnboardingStep] = [
+        .login,
+        .drivesSelection,
+        .permissions(.endpointSecurityExtension),
+        .permissions(.fullDiskAccess),
+        .synchronization,
+        .appReady
+    ]
+
     var synchronizations = [NewSyncCandidate]()
 
     init(user: UIUser?, initialStep: OnboardingStep?) {
         currentUser = user
         currentStep = initialStep ?? .login
-    }
-
-    func navigate(to step: OnboardingStep) {
-        currentStep = step
-    }
-
-    func navigateToNextStep() async {
-        guard let nextStep = await nextRequiredStep(from: currentStep) else {
-            return
-        }
-
-        navigate(to: nextStep)
-    }
-
-    func nextRequiredStep(from currentStep: OnboardingStep) async -> OnboardingStep? {
-        switch currentStep {
-        case .login:
-            return .drivesSelection
-
-        case .drivesSelection:
-            for permission in PermissionsViewModel.requiredPermissions {
-                @InjectService var permissionHandler: MacOSPermissionHandling
-                if await !permissionHandler.isAuthorized(for: permission) {
-                    return .permissions(permission)
-                }
-            }
-
-            return synchronizations.isEmpty ? .appReady : .synchronization
-
-        case .permissions:
-            return synchronizations.isEmpty ? .appReady : .synchronization
-
-        case .synchronization:
-            return .appReady
-
-        case .appReady:
-            return nil
-        }
     }
 
     func guessAndNavigateToInitialStep() {
@@ -90,7 +61,60 @@ final class OnboardingFlowCoordinator: ObservableObject {
             }
 
             currentUser = UIUser(user: user)
-            await navigateToNextStep()
+            await navigateToNextStepOrFinish()
+        }
+    }
+
+    func navigate(to step: OnboardingStep) {
+        currentStep = step
+    }
+
+    func navigateToNextStepOrFinish() async {
+        guard let nextStep = await nextRequiredStep(from: currentStep) else {
+            didFinishOnboarding()
+            return
+        }
+
+        navigate(to: nextStep)
+    }
+
+    private func didFinishOnboarding() {
+        if currentStep == .appReady {
+            UserDefaults.standard.shouldPresentOnboarding = false
+        }
+
+        @InjectService var windowRouter: MainWindowRouter
+        windowRouter.navigate(to: .mainWindow())
+    }
+
+    private func nextRequiredStep(from currentStep: OnboardingStep) async -> OnboardingStep? {
+        guard let indexOfCurrentStep = steps.firstIndex(of: currentStep), indexOfCurrentStep + 1 < steps.endIndex else {
+            return nil
+        }
+
+        let remainingSteps = steps[(indexOfCurrentStep + 1)...]
+        for step in remainingSteps {
+            if await shouldNavigate(toStep: step) {
+                return step
+            }
+        }
+
+        return nil
+    }
+
+    private func shouldNavigate(toStep step: OnboardingStep) async -> Bool {
+        switch step {
+        case .login:
+            return currentUser == nil
+        case .drivesSelection:
+            return true
+        case .permissions(let macOSPermission):
+            @InjectService var permissionHandler: MacOSPermissionHandling
+            return await !permissionHandler.isAuthorized(for: macOSPermission)
+        case .synchronization:
+            return !synchronizations.isEmpty
+        case .appReady:
+            return true
         }
     }
 }

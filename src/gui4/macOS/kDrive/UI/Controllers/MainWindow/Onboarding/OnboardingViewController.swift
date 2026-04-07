@@ -133,7 +133,7 @@ final class OnboardingViewController: NSViewController {
         case .synchronization:
             return SynchronizationViewController(flowCoordinator: flowCoordinator)
         case .appReady:
-            return AppReadyViewController()
+            return AppReadyViewController(flowCoordinator: flowCoordinator)
         }
     }
 

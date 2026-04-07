@@ -68,19 +68,10 @@ final class PermissionsViewModel: ObservableObject {
 
     func navigateIfPossible() {
         Task {
-            guard currentState == .done else { return }
-
-            switch currentPermission {
-            case .endpointSecurityExtension:
-                let nextPermission = MacOSPermission.fullDiskAccess
-                if await permissionHander.isAuthorized(for: nextPermission) {
-                    await flowCoordinator.navigateToNextStep()
-                } else {
-                    flowCoordinator.navigate(to: .permissions(nextPermission))
-                }
-            case .fullDiskAccess:
-                await flowCoordinator.navigateToNextStep()
+            guard currentState == .done else {
+                return
             }
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 
