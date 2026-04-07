@@ -28,6 +28,7 @@ final class AppReadyViewController: OnboardingStepViewController {
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
         super.init(nibName: nil, bundle: nil)
+        setupUI()
     }
 
     @available(*, unavailable)

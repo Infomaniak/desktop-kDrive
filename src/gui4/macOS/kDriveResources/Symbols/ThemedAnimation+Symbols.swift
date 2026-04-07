@@ -44,12 +44,12 @@ public extension ThemedAnimation {
 
 public extension ThemedAnimation {
     static let kDriveLoader = ThemedAnimation(
-        light: osRelatedAnimation("kdrive-loader-light"),
-        dark: osRelatedAnimation("kdrive-loader-dark")
+        light: "kdrive-loader-light",
+        dark: "kdrive-loader-dark"
     )
     static let kDriveSynchronizeFiles = ThemedAnimation(
-        light: osRelatedAnimation("kdrive-synchronize-files-light"),
-        dark: osRelatedAnimation("kdrive-synchronize-files-dark")
+        light: "kdrive-synchronize-files-light",
+        dark: "kdrive-synchronize-files-dark"
     )
 
     static let permissionFullDiskAccess = ThemedAnimation(
