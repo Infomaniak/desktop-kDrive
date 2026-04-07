@@ -33,7 +33,7 @@ public struct ReplyMock: Codable, Sendable {
 
 public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvider {
     public var guiConnectionState: XPCConnectionState = .notConnected
-    
+
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     @InjectService var signalHandler: XPCSignalHandlerProtocol

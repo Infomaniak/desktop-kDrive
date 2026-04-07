@@ -18,7 +18,6 @@
 
 import Cocoa
 import InfomaniakDI
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
