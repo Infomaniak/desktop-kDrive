@@ -116,7 +116,7 @@ struct XPCQueryFetcherTests {
         CallbackMessage<NodeInfoResponse>.self,
         CallbackMessage<NodeSubfoldersResponse>.self,
         CallbackMessage<NodeSizeResponse>.self,
-        CallbackMessage<MissingFolderResponse>.self
+        CallbackMessage<CreateMissingFoldersResponse>.self
     ]
 
     @Test func decodingNoErrorResponse() async throws {
