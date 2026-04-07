@@ -48,6 +48,7 @@ final class MainWindowController: NSWindowController {
         window.center()
         window.setFrameAutosaveName(WindowConstants.frameName)
         window.minSize = NSSize(width: 800, height: 450)
+        window.delegate = self
 
         observeRouter()
         observeXPConnectionState()
@@ -80,6 +81,8 @@ final class MainWindowController: NSWindowController {
             router.navigate(to: .preloading(isShowingError: true))
         case .connected:
             Task {
+                guard await !presentPermissionsViewIfNecessary() else { return }
+
                 let route = await guessBestRouteWhenXPCIsConnected()
                 router.navigate(to: route)
             }
@@ -100,8 +103,8 @@ final class MainWindowController: NSWindowController {
         switch route {
         case .preloading(let isShowingError):
             setViewController(PreloadingViewController(isShowingError: isShowingError))
-        case .onboarding(let user, let onboardingStep):
-            setViewController(OnboardingViewController(user: user, initialStep: onboardingStep))
+        case .onboarding(let user, let steps, let initialStep):
+            setViewController(OnboardingViewController(user: user, steps: steps, initialStep: initialStep))
         case .mainWindow(let tab):
             setViewController(MainViewController())
             if let tab {
@@ -114,5 +117,42 @@ final class MainWindowController: NSWindowController {
     private func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
+    }
+
+    @discardableResult
+    private func presentPermissionsViewIfNecessary() async -> Bool {
+        guard xpcConnectionProvider.guiConnectionState == .connected else {
+            return false
+        }
+
+        @InjectService var windowRouter: MainWindowRouter
+        if case .onboarding = windowRouter.currentRoute {
+            return false
+        }
+
+        @InjectService var permissionHander: MacOSPermissionHandling
+        var permissionsToShow = [OnboardingStep]()
+        for requiredPermission in PermissionsViewModel.requiredPermissions {
+            if await !permissionHander.isAuthorized(for: requiredPermission) {
+                permissionsToShow.append(.permissions(requiredPermission))
+            }
+        }
+
+        guard !permissionsToShow.isEmpty else {
+            return false
+        }
+        windowRouter.navigate(to: .onboarding(nil, permissionsToShow, permissionsToShow.first))
+
+        return true
+    }
+}
+
+// MARK: - NSWindowDelegate
+
+extension MainWindowController: NSWindowDelegate {
+    func windowDidBecomeMain(_ notification: Notification) {
+        Task {
+            await presentPermissionsViewIfNecessary()
+        }
     }
 }

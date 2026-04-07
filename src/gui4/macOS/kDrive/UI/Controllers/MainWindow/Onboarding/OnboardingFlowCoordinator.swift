@@ -35,7 +35,10 @@ final class OnboardingFlowCoordinator: ObservableObject {
     @Published var currentUser: UIUser?
     @Published private(set) var currentStep: OnboardingStep
 
-    private let steps: [OnboardingStep] = [
+    private let steps: [OnboardingStep]
+    var synchronizations = [NewSyncCandidate]()
+
+    private static let defaultSteps: [OnboardingStep] = [
         .login,
         .drivesSelection,
         .permissions(.endpointSecurityExtension),
@@ -44,11 +47,11 @@ final class OnboardingFlowCoordinator: ObservableObject {
         .appReady
     ]
 
-    var synchronizations = [NewSyncCandidate]()
-
-    init(user: UIUser?, initialStep: OnboardingStep?) {
+    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?) {
         currentUser = user
-        currentStep = initialStep ?? .login
+        self.steps = steps ?? Self.defaultSteps
+
+        currentStep = initialStep ?? steps?.first ?? .login
     }
 
     func guessAndNavigateToInitialStep() {
@@ -56,9 +59,7 @@ final class OnboardingFlowCoordinator: ObservableObject {
             @InjectService var coherentCache: CoherentCache
             let user = await coherentCache.getFirstAvailableUser()
 
-            guard let user else {
-                return
-            }
+            guard let user else { return }
 
             currentUser = UIUser(user: user)
             await navigateToNextStepOrFinish()
