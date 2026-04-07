@@ -215,6 +215,7 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) { emit quit(); });
 }
+
 // =============================================================================
 // Request methods
 // =============================================================================
@@ -702,6 +703,8 @@ void ServerCommService::requestFindGoodPathForNewSync(const SyncPath &basePath, 
                                    CommString goodPath;
                                    CommString errorMessage;
                                    CommonUtility::readValueFromStruct(result, MSG_PARAM_GOOD_PATH, goodPath);
+                                   // The server always serializes both goodPath and errorMessage (even on success).
+                                   // errorMessage may be non-empty as supplementary info even when ExitCode::Ok.
                                    CommonUtility::readValueFromStruct(result, MSG_PARAM_ERROR_MESSAGE, errorMessage);
                                    pathResult.goodPath = SyncPath(goodPath);
                                    pathResult.errorMessage = CommonUtility::commString2QStr(errorMessage);
@@ -731,7 +734,10 @@ void ServerCommService::requestGetAppState(const AppStateKey key, AppStateCallba
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_APPSTATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString value;
-                               if (exitInfo.code() == ExitCode::Ok && result.contains(MSG_PARAM_VALUE)) {
+                               if (exitInfo.code() == ExitCode::Ok) {
+                                   // AppState values are stored as a std::variant on the server side, so the wire
+                                   // type may not be a plain string. Use Poco's type-coercing convert<> instead
+                                   // of readValueFromStruct (which uses strict extraction) to handle all variants.
                                    value = QString::fromStdString(result[MSG_PARAM_VALUE].convert<std::string>());
                                }
                                callback(exitInfo, value);
