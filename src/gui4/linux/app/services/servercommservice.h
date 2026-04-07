@@ -111,26 +111,26 @@ class ServerCommService : public QObject {
 
         explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
-        // --- B3 Request methods ---
+        // --- Request methods ---
 
-        // B3.1 — Login
+        // --- Login ---
         void requestLoginToken(const QString &code, const QString &codeVerifier, LoginTokenCallback callback) const;
 
-        // B3.2 — User
+        // --- User ---
         void requestUserDbIdList(UserDbIdListCallback callback) const;
         void requestUserInfoList(UserInfoListCallback callback) const;
         void requestUserAvailableDrives(const UserDbId userDbId, DriveAvailableInfoListCallback callback) const;
         void requestDeleteUser(const UserDbId userDbId, VoidCallback callback) const;
 
-        // B3.3 — Account
+        // --- Account ---
         void requestAccountInfoList(AccountInfoListCallback callback) const;
 
-        // B3.4 — Drive
+        // --- Drive ---
         void requestDriveInfoList(DriveInfoListCallback callback) const;
         void requestDriveUpdate(const DriveInfo &driveInfo, VoidCallback callback) const;
         void requestDriveDelete(const DriveDbId driveDbId, VoidCallback callback) const;
 
-        // B3.5 — Sync
+        // --- Sync ---
         void requestSyncInfoList(SyncInfoListCallback callback) const;
         void requestSyncAdd(const SyncAddRequest &request, SyncInfoCallback callback) const;
         void requestSyncStart(const SyncDbId syncDbId, VoidCallback callback) const;
@@ -139,15 +139,13 @@ class ServerCommService : public QObject {
         void requestSyncDelete(const SyncDbId syncDbId, VoidCallback callback) const;
         void requestStartSyncsAfterLogin(const UserDbId userDbId, VoidCallback callback) const;
         void requestSyncTriggerProgressUpdate(const SyncDbId syncDbId, VoidCallback callback) const;
-        void requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId,
-                                         StringCallback callback) const;
-        void requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId,
-                                        StringCallback callback) const;
+        void requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, StringCallback callback) const;
+        void requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, StringCallback callback) const;
 
-        // B3.6 — Error
+        // --- Error ---
         void requestErrorInfoList(ErrorInfoListCallback callback) const;
 
-        // B3.7 — Node
+        // --- Node ---
         void requestNodeInfo(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId, const bool withPath,
                              NodeInfoCallback callback) const;
         void requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId, StringCallback callback) const;
@@ -157,35 +155,34 @@ class ServerCommService : public QObject {
                                     NodeInfoListCallback callback) const;
         void requestNodeFolderSize(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                    FolderSizeCallback callback) const;
-        void requestNodeCreateMissingFolders(const DriveDbId driveDbId, const NodeId &parentNodeId,
-                                             const SyncPath &relativePath, StringCallback callback) const;
+        void requestNodeCreateMissingFolders(const DriveDbId driveDbId, const NodeId &parentNodeId, const SyncPath &relativePath,
+                                             StringCallback callback) const;
 
-        // B3.8 — Parameters
+        // --- Parameters ---
         void requestParametersInfo(ParametersInfoCallback callback) const;
         void requestParametersUpdate(const ParametersInfo &parametersInfo, VoidCallback callback) const;
 
-        // B3.9 — Blacklist
+        // --- Blacklist ---
         void requestBlacklistedNodeList(const SyncDbId syncDbId, NodeIdListCallback callback) const;
         void requestBlacklistedNodeSetList(const SyncDbId syncDbId, const std::vector<NodeId> &nodeIdList,
                                            VoidCallback callback) const;
 
-        // B3.10 — Exclusion templates
+        // --- Exclusion templates ---
         void requestExclTemplGetList(const bool defaultTemplates, ExclusionTemplateListCallback callback) const;
-        void requestExclTemplSetList(const std::vector<ExclusionTemplateInfo> &templateList,
-                                     VoidCallback callback) const;
+        void requestExclTemplSetList(const std::vector<ExclusionTemplateInfo> &templateList, VoidCallback callback) const;
         void requestExclTemplGetExcluded(const QString &name, BoolCallback callback) const;
 
-        // B3.11 — Updater
+        // --- Updater ---
         void requestUpdaterState(UpdateStateCallback callback) const;
         void requestUpdaterVersionInfo(const VersionChannel channel, VersionInfoCallback callback) const;
         void requestUpdaterSkipVersion(const QString &skippedVersion, VoidCallback callback) const;
         void requestUpdaterStartInstaller(VoidCallback callback) const;
 
-        // B3.12 — Utility
+        // --- Utility ---
         void requestCheckCommStatus(VoidCallback callback) const;
         void requestFindGoodPathForNewSync(const SyncPath &basePath, GoodPathCallback callback) const;
         void requestIsPathValidForNewSync(const SyncPath &path, const SyncConfiguration syncConfiguration,
-                                         BoolCallback callback) const;
+                                          BoolCallback callback) const;
         void requestGetAppState(const AppStateKey key, AppStateCallback callback) const;
         void requestSetAppState(const AppStateKey key, const QString &value, VoidCallback callback) const;
         void requestHasSystemLaunchOnStartup(BoolCallback callback) const;
