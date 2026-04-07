@@ -121,6 +121,9 @@ final class MainWindowController: NSWindowController {
 
     @discardableResult
     private func presentPermissionsViewIfNecessary() async -> Bool {
+        #if DEBUG
+        return false
+        #else
         guard xpcConnectionProvider.guiConnectionState == .connected else {
             return false
         }
@@ -144,6 +147,7 @@ final class MainWindowController: NSWindowController {
         windowRouter.navigate(to: .onboarding(nil, permissionsToShow, permissionsToShow.first))
 
         return true
+        #endif
     }
 }
 
