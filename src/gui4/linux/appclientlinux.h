@@ -59,7 +59,7 @@ class AppClientLinux : public QGuiApplication {
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
-        ServerCommService _serverCommService{_signalDispatcher, this};
+        ServerCommService _serverCommService{_ipcClient, _signalDispatcher, this};
 };
 
 } // namespace KDC
