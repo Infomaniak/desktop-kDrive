@@ -110,6 +110,7 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     Utility::restartFinderExtension();
 #endif
 
+    _syncInfo = syncInfo;
     return ExitCode::Ok;
 }
 
