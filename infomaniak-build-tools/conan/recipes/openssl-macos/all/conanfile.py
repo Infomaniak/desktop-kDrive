@@ -31,7 +31,6 @@ class OpenSSLMacos(ConanFile):
             self.options.shared = True
             self.output.warning("This recipe only supports shared libraries on Apple platforms. The 'shared' option has been overwritten to True.")
         if self.settings.build_type != "Release":
-            self.settings.build_type = "Release"
             self.output.warning("This recipe will build OpenSSL in Release mode regardless of the build type specified in the profile.")
 
     def build(self):
