@@ -94,7 +94,6 @@ void AppClientLinux::setupLogging() {
         qInfo(lcAppClientLinux) << "  - scale factor:" << screen->devicePixelRatio();
     }
     qInfo(lcAppClientLinux) << "********************";
-
 }
 
 } // namespace KDC
