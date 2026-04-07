@@ -101,4 +101,16 @@ public struct NodeJobs: Sendable {
 
         return decodedMessage.body.nodeId
     }
+
+    public func getNodeConflictInfo(syncDbId: Int32,
+                                    relativePath: String,
+                                    replicaSide: KDC.ReplicaSide) async throws -> NodeConflictInfo {
+        IKLogger.data.log("Query to get node conflict info")
+        let query = NodeConflictInfoQuery(syncDbId: syncDbId, relativePath: relativePath, replicaSide: replicaSide)
+        let request = await RequestMessage<NodeConflictInfoQuery>(num: RequestNum.NODE_CONFLICT_INFO, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeConflictInfoResponse>.self)
+
+        return decodedMessage.body.nodeConflictInfo
+    }
 }
