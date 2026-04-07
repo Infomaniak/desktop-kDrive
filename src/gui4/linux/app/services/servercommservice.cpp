@@ -516,7 +516,7 @@ void ServerCommService::requestErrorResolveConflictsQuick(const std::vector<Erro
                                                           VoidCallback callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_ERROR_DB_ID_LIST] = errorDbIdList;
-    params[MSG_PARAM_STRATEGY] = static_cast<int>(strategy);
+    params[MSG_PARAM_STRATEGY] = toInt(strategy);
     _ipcClient.sendRequest(RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
@@ -740,7 +740,7 @@ void ServerCommService::requestUpdaterState(UpdateStateCallback callback) const 
 
 void ServerCommService::requestUpdaterVersionInfo(const VersionChannel channel, VersionInfoCallback callback) const {
     Poco::DynamicStruct params;
-    params[MSG_PARAM_CHANNEL] = static_cast<int>(channel);
+    params[MSG_PARAM_CHANNEL] = toInt(channel);
     _ipcClient.sendRequest(RequestNum::UPDATER_VERSION_INFO, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                VersionInfo info;
@@ -794,7 +794,7 @@ void ServerCommService::requestIsPathValidForNewSync(const SyncPath &path, const
                                                      BoolCallback callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_PATH] = CommonUtility::syncPath2CommString(path);
-    params[MSG_PARAM_SYNC_CONFIGURATION] = static_cast<int>(syncConfiguration);
+    params[MSG_PARAM_SYNC_CONFIGURATION] = toInt(syncConfiguration);
     _ipcClient.sendRequest(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                bool isValid = false;
@@ -807,7 +807,7 @@ void ServerCommService::requestIsPathValidForNewSync(const SyncPath &path, const
 
 void ServerCommService::requestGetAppState(const AppStateKey key, AppStateCallback callback) const {
     Poco::DynamicStruct params;
-    params[MSG_PARAM_KEY] = static_cast<int>(key);
+    params[MSG_PARAM_KEY] = toInt(key);
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_APPSTATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString value;
@@ -823,7 +823,7 @@ void ServerCommService::requestGetAppState(const AppStateKey key, AppStateCallba
 
 void ServerCommService::requestSetAppState(const AppStateKey key, const QString &value, VoidCallback callback) const {
     Poco::DynamicStruct params;
-    params[MSG_PARAM_KEY] = static_cast<int>(key);
+    params[MSG_PARAM_KEY] = toInt(key);
     params[MSG_PARAM_VALUE] = CommonUtility::qStr2CommString(value);
     _ipcClient.sendRequest(RequestNum::UTILITY_SET_APPSTATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
