@@ -18,29 +18,98 @@
 
 #pragma once
 
+#include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/driveinfo.h"
+#include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/errorinfo.h"
+#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/info/nodeinfo.h"
+#include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
 
 #include <QObject>
+#include <QString>
+
+#include <functional>
+#include <vector>
 
 namespace KDC {
 
+// ---------------------------------------------------------------------------
+// Result types for requests that return more than one semantic value
+// ---------------------------------------------------------------------------
+
+struct LoginTokenResult {
+        UserDbId userDbId{0};
+        QString error;
+        QString errorDescription;
+};
+
+struct GoodPathResult {
+        SyncPath goodPath;
+        QString errorMessage;
+};
+
+struct SyncAddRequest {
+        UserDbId userDbId{0};
+        AccountId accountId{0};
+        DriveId driveId{0};
+        SyncPath localFolderPath;
+        SyncPath serverFolderPath;
+        NodeId serverFolderNodeId;
+        bool liteSync{false};
+        std::vector<NodeId> blackList;
+};
+
+// ---------------------------------------------------------------------------
+
 /**
- * Registers handlers on the SignalDispatcher for every server-initiated signal
- * and re-emits them as typed Qt signals for consumption by app models and QML.
+ * Low-level backend-facing service.
+ *
+ * Responsibilities:
+ * - registers handlers on SignalDispatcher and re-emits server-push signals as typed Qt signals (B2)
+ * - sends feature requests through IpcClient and parses JSON results into typed DTOs (B3)
+ *
+ * This is an internal C++ boundary. QML must not call this class directly;
+ * it should interact with higher-level C1 services instead.
  */
 class ServerCommService : public QObject {
         Q_OBJECT
 
     public:
-        explicit ServerCommService(SignalDispatcher &dispatcher, QObject *parent = nullptr);
+        // Callback types
+        using VoidCallback                   = std::function<void(const ExitInfo &)>;
+        using BoolCallback                   = std::function<void(const ExitInfo &, bool)>;
+        using LoginTokenCallback             = std::function<void(const ExitInfo &, const LoginTokenResult &)>;
+        using UserDbIdListCallback           = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
+        using UserInfoListCallback           = std::function<void(const ExitInfo &, const std::vector<UserInfo> &)>;
+        using DriveAvailableInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailableInfo> &)>;
+        using AccountInfoListCallback        = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
+        using DriveInfoListCallback          = std::function<void(const ExitInfo &, const std::vector<DriveInfo> &)>;
+        using SyncInfoListCallback           = std::function<void(const ExitInfo &, const std::vector<SyncInfo> &)>;
+        using SyncInfoCallback               = std::function<void(const ExitInfo &, const SyncInfo &)>;
+        using SyncStatusCallback             = std::function<void(const ExitInfo &, SyncStatus)>;
+        using GoodPathCallback               = std::function<void(const ExitInfo &, const GoodPathResult &)>;
+        using AppStateCallback               = std::function<void(const ExitInfo &, const QString &)>;
+        using LogSizeCallback                = std::function<void(const ExitInfo &, uint64_t)>;
+        using StringCallback                 = std::function<void(const ExitInfo &, const QString &)>;
+        using NodeIdListCallback             = std::function<void(const ExitInfo &, const std::vector<NodeId> &)>;
+        using NodeInfoCallback               = std::function<void(const ExitInfo &, const NodeInfo &)>;
+        using NodeInfoListCallback           = std::function<void(const ExitInfo &, const std::vector<NodeInfo> &)>;
+        using FolderSizeCallback             = std::function<void(const ExitInfo &, int64_t)>;
+        using ParametersInfoCallback         = std::function<void(const ExitInfo &, const ParametersInfo &)>;
+        using ErrorInfoListCallback          = std::function<void(const ExitInfo &, const std::vector<ErrorInfo> &)>;
+        using ExclusionTemplateListCallback  = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplateInfo> &)>;
+        using UpdateStateCallback            = std::function<void(const ExitInfo &, UpdateState)>;
+        using VersionInfoCallback            = std::function<void(const ExitInfo &, const VersionInfo &)>;
+
+        explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
     signals:
         // --- User ---
@@ -82,6 +151,8 @@ class ServerCommService : public QObject {
         void quit();
 
     private:
+        IpcClient &_ipcClient;
+
         void registerUserHandlers(SignalDispatcher &dispatcher);
         void registerAccountHandlers(SignalDispatcher &dispatcher);
         void registerDriveHandlers(SignalDispatcher &dispatcher);
