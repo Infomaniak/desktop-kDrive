@@ -545,18 +545,16 @@ void ServerCommService::requestNodeFolderSize(const UserDbId userDbId, const Dri
 }
 
 void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbId, const NodeId &parentNodeId,
-                                                        const SyncPath &relativePath, StringCallback callback) const {
+                                                        const SyncPath &relativePath, NodeIdCallback callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DRIVE_DB_ID] = driveDbId;
     params[MSG_PARAM_PARENT_NODE_ID] = parentNodeId;
     params[MSG_PARAM_RELATIVE_PATH] = CommonUtility::syncPath2CommString(relativePath);
     _ipcClient.sendRequest(RequestNum::NODE_CREATEMISSINGFOLDERS, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               QString nodeId;
+                               NodeId nodeId;
                                if (exitInfo.code() == ExitCode::Ok) {
-                                   NodeId id;
-                                   CommonUtility::readValueFromStruct(result, MSG_PARAM_NODE_ID, id);
-                                   nodeId = QString::fromStdString(id);
+                                   CommonUtility::readValueFromStruct(result, MSG_PARAM_NODE_ID, nodeId);
                                }
                                callback(exitInfo, nodeId);
                            });
