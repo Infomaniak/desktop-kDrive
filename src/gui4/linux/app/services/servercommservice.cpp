@@ -331,6 +331,23 @@ void ServerCommService::requestDriveDelete(const DriveDbId driveDbId, VoidCallba
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
+void ServerCommService::requestDriveSearch(const SyncDbId syncDbId, const QString &searchString,
+                                           DriveSearchCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
+    params[MSG_PARAM_SEARCH_STRING] = CommonUtility::qStr2CommString(searchString);
+    _ipcClient.sendRequest(
+            RequestNum::DRIVE_SEARCH, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                DriveSearchResult searchResult;
+                if (exitInfo.code() == ExitCode::Ok) {
+                    CommonUtility::readValuesFromStruct(result, MSG_PARAM_SEARCH_INFO_LIST, searchResult.searchInfoList,
+                                                        dynamicVar2Struct<SearchInfo>);
+                    CommonUtility::readValueFromStruct(result, MSG_PARAM_HAS_MORE, searchResult.hasMore);
+                }
+                callback(exitInfo, searchResult);
+            });
+}
+
 // -- Sync core -----------------------------------------------------------
 
 void ServerCommService::requestSyncInfoList(SyncInfoListCallback callback) const {
@@ -361,6 +378,24 @@ void ServerCommService::requestSyncAdd(const SyncAddRequest &request, SyncInfoCa
         }
         callback(exitInfo, info);
     });
+}
+
+void ServerCommService::requestSyncAdd2(const SyncAdd2Request &request, SyncInfoCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_DRIVE_DB_ID] = request.driveDbId;
+    params[MSG_PARAM_LOCAL_FOLDER_PATH] = CommonUtility::syncPath2CommString(request.localFolderPath);
+    params[MSG_PARAM_SERVER_FOLDER_PATH] = CommonUtility::syncPath2CommString(request.serverFolderPath);
+    params[MSG_PARAM_SERVER_FOLDER_NODE_ID] = request.serverFolderNodeId;
+    params[MSG_PARAM_LITE_SYNC] = request.liteSync;
+    params[MSG_PARAM_BLACK_LIST] = request.blackList;
+    _ipcClient.sendRequest(RequestNum::SYNC_ADD2, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                               SyncInfo info;
+                               if (exitInfo.code() == ExitCode::Ok) {
+                                   info.fromDynamicStruct(result[MSG_PARAM_SYNC_INFO].extract<Poco::DynamicStruct>());
+                               }
+                               callback(exitInfo, info);
+                           });
 }
 
 void ServerCommService::requestSyncStart(const SyncDbId syncDbId, VoidCallback callback) const {
@@ -458,6 +493,32 @@ void ServerCommService::requestErrorInfoList(ErrorInfoListCallback callback) con
                 }
                 callback(exitInfo, list);
             });
+}
+
+void ServerCommService::requestErrorDelete(const ErrorDbId errorDbId, VoidCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_ERROR_DB_ID] = errorDbId;
+    _ipcClient.sendRequest(RequestNum::ERROR_DELETE, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
+}
+
+void ServerCommService::requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
+                                                     const std::vector<ErrorDbId> &keepRemoteList, VoidCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_KEEP_LOCAL_ERROR_DB_ID_LIST] = keepLocalList;
+    params[MSG_PARAM_KEEP_REMOTE_ERROR_DB_ID_LIST] = keepRemoteList;
+    _ipcClient.sendRequest(RequestNum::ERROR_RESOLVE_CONFLICTS, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
+}
+
+void ServerCommService::requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList,
+                                                          const ConflictResolutionStrategy strategy,
+                                                          VoidCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_ERROR_DB_ID_LIST] = errorDbIdList;
+    params[MSG_PARAM_STRATEGY] = static_cast<int>(strategy);
+    _ipcClient.sendRequest(RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
 // -- Node ----------------------------------------------------------------
@@ -558,6 +619,22 @@ void ServerCommService::requestNodeCreateMissingFolders(const DriveDbId driveDbI
                                    CommonUtility::readValueFromStruct(result, MSG_PARAM_NODE_ID, nodeId);
                                }
                                callback(exitInfo, nodeId);
+                           });
+}
+
+void ServerCommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPath &relativePath,
+                                                const ReplicaSide replicaSide, NodeConflictInfoCallback callback) const {
+    Poco::DynamicStruct params;
+    params[MSG_PARAM_SYNC_DB_ID] = syncDbId;
+    params[MSG_PARAM_RELATIVE_PATH] = CommonUtility::syncPath2CommString(relativePath);
+    params[MSG_PARAM_REPLICA_SIDE] = static_cast<int>(replicaSide);
+    _ipcClient.sendRequest(RequestNum::NODE_CONFLICT_INFO, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                               NodeConflictInfo info;
+                               if (exitInfo.code() == ExitCode::Ok) {
+                                   info.fromDynamicStruct(result[MSG_PARAM_NODE_CONFLICT_INFO].extract<Poco::DynamicStruct>());
+                               }
+                               callback(exitInfo, info);
                            });
 }
 
