@@ -140,11 +140,18 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     if (bookmarkRef == nil) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            CFRelease(error);
             if (ioError != IoError::Unknown) {
+                CFRelease(error);
+
                 return true;
             } else {
                 LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
+
+                CFStringRef errorDescription = CFErrorCopyDescription(error);
+                const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
+                LOG_WARN(logger(), "Native CF Error description: " << errorDescriptionStdString);
+                CFRelease(error);
+
                 return false;
             }
         }
