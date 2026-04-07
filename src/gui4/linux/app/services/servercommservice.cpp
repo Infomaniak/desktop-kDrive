@@ -223,7 +223,7 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
 void ServerCommService::requestLoginToken(const QString &code, const QString &codeVerifier, LoginTokenCallback callback) const {
     Poco::DynamicStruct params;
-    params[MSG_PARAM_CODE] = CommonUtility::qStr2CommString(code);
+    params[MSG_PARAM_AUTH_CODE] = CommonUtility::qStr2CommString(code);
     params[MSG_PARAM_CODE_VERIFIER] = CommonUtility::qStr2CommString(codeVerifier);
     _ipcClient.sendRequest(RequestNum::LOGIN_REQUESTTOKEN, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
