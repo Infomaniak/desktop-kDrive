@@ -30,7 +30,7 @@ SignalSyncAddedJob::SignalSyncAddedJob(const BaseSync &syncInfo) :
 }
 
 ExitInfo SignalSyncAddedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_SYNC_INFO, _syncInfo, info2DynamicVar<BaseSync>);
+    writeParamValue(msgParamSyncInfo, _syncInfo, info2DynamicVar<BaseSync>);
     return ExitCode::Ok;
 }
 
