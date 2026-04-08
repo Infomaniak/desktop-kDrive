@@ -75,8 +75,10 @@ struct VersionManagementView: View {
             }
             handleUpdateState(UIUpdateState(updateState: currentUpdateState))
         }
-        .onReceive(updaterCacheObservable.updateStatePublisher.map { UIUpdateState(updateState: $0) }) {
-            handleUpdateState($0)
+        .onReceive(updaterCacheObservable.updateStatePublisher
+            .map { UIUpdateState(updateState: $0) }
+            .receive(on: RunLoop.main)) { @MainActor in
+                handleUpdateState($0)
         }
         .alert(isPresented: $isShowingError, error: error) {}
     }
