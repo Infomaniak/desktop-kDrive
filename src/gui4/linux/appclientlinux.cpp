@@ -78,14 +78,12 @@ void AppClientLinux::setupLogging() const {
     qCInfo(lcAppClientLinux) << "application dir:" << QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
     qCInfo(lcAppClientLinux) << "working directory:" << QDir::toNativeSeparators(QDir::currentPath());
     qCInfo(lcAppClientLinux) << "client pid:" << QCoreApplication::applicationPid();
-    qCInfo(lcAppClientLinux) << "user:" << qEnvironmentVariable("USER");
-    qCInfo(lcAppClientLinux) << "logname:" << qEnvironmentVariable("LOGNAME");
-    qCInfo(lcAppClientLinux) << "uid:" << getuid() << "euid:" << geteuid();
+    qCInfo(lcAppClientLinux) << "user:" << qEnvironmentVariable("USER") << "| logname:" << qEnvironmentVariable("LOGNAME");
+    qCInfo(lcAppClientLinux) << "uid:" << getuid() << "| euid:" << geteuid();
     qCInfo(lcAppClientLinux) << "home directory:" << QDir::toNativeSeparators(QDir::homePath());
     qCInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
     qCInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion();
-    qCInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
-    qCInfo(lcAppClientLinux) << "kernel type:" << QSysInfo::kernelType();
+    qCInfo(lcAppClientLinux) << "kernel type/version:" << QSysInfo::kernelType() << QSysInfo::kernelVersion();
     qCInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
     qCInfo(lcAppClientLinux) << "# of logical CPU cores:" << std::thread::hardware_concurrency();
     qCInfo(lcAppClientLinux) << "locale:" << QLocale::system().name();
