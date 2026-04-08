@@ -76,7 +76,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         Task {
+            #if !DEBUG
             try? await UtilityJobs().quit()
+            #endif
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
