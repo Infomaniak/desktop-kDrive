@@ -67,43 +67,43 @@ void AppClientLinux::setupLogging() {
     logger->enterNextLogFile();
     // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
-    qInfo(lcAppClientLinux) << "***** Application & System Informations *****";
-    qInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion().c_str();
-    qInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag().c_str();
-    qInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
-    qInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
-    qInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
-    qInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion().c_str();
-    qInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
-    qInfo(lcAppClientLinux) << "kernel type:" << QSysInfo::kernelType();
-    qInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
-    qInfo(lcAppClientLinux) << "# of logical CPU cores:" << std::thread::hardware_concurrency();
-    qInfo(lcAppClientLinux) << "locale:" << QLocale::system().name();
+    qCInfo(lcAppClientLinux) << "***** Application & System Informations *****";
+    qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion().c_str();
+    qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag().c_str();
+    qCInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
+    qCInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
+    qCInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
+    qCInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion().c_str();
+    qCInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
+    qCInfo(lcAppClientLinux) << "kernel type:" << QSysInfo::kernelType();
+    qCInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
+    qCInfo(lcAppClientLinux) << "# of logical CPU cores:" << std::thread::hardware_concurrency();
+    qCInfo(lcAppClientLinux) << "locale:" << QLocale::system().name();
 
-    qInfo(lcAppClientLinux) << "display server:" << qEnvironmentVariable("XDG_SESSION_TYPE");
-    qInfo(lcAppClientLinux) << "display (X11):" << qEnvironmentVariable("DISPLAY");
-    qInfo(lcAppClientLinux) << "display (Wayland):" << qEnvironmentVariable("WAYLAND_DISPLAY");
-    qInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
+    qCInfo(lcAppClientLinux) << "display server:" << qEnvironmentVariable("XDG_SESSION_TYPE");
+    qCInfo(lcAppClientLinux) << "display (X11):" << qEnvironmentVariable("DISPLAY");
+    qCInfo(lcAppClientLinux) << "display (Wayland):" << qEnvironmentVariable("WAYLAND_DISPLAY");
+    qCInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
 
-    qInfo(lcAppClientLinux) << "Qt version:" << qVersion();
-    qInfo(lcAppClientLinux) << "Qt platform:" << qEnvironmentVariable("QT_QPA_PLATFORM");
+    qCInfo(lcAppClientLinux) << "Qt version:" << qVersion();
+    qCInfo(lcAppClientLinux) << "Qt platform:" << qEnvironmentVariable("QT_QPA_PLATFORM");
     if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
-        qInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
+        qCInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
     if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR"))
-        qInfo(lcAppClientLinux) << "Qt auto screen scale:" << qEnvironmentVariable("QT_AUTO_SCREEN_SCALE_FACTOR");
+        qCInfo(lcAppClientLinux) << "Qt auto screen scale:" << qEnvironmentVariable("QT_AUTO_SCREEN_SCALE_FACTOR");
     if (qEnvironmentVariableIsSet("QT_FONT_DPI"))
-        qInfo(lcAppClientLinux) << "Qt font DPI:" << qEnvironmentVariable("QT_FONT_DPI");
+        qCInfo(lcAppClientLinux) << "Qt font DPI:" << qEnvironmentVariable("QT_FONT_DPI");
 
     const auto screens = QGuiApplication::screens();
-    qInfo(lcAppClientLinux) << "# of screens:" << screens.size();
+    qCInfo(lcAppClientLinux) << "# of screens:" << screens.size();
     for (const auto *screen: screens) {
-        qInfo(lcAppClientLinux) << "  screen:" << screen->name();
-        qInfo(lcAppClientLinux) << "  - resolution:" << screen->size();
-        qInfo(lcAppClientLinux) << "  - physical DPI:" << screen->physicalDotsPerInch();
-        qInfo(lcAppClientLinux) << "  - logical DPI:" << screen->logicalDotsPerInch();
-        qInfo(lcAppClientLinux) << "  - scale factor:" << screen->devicePixelRatio();
+        qCInfo(lcAppClientLinux) << "  screen:" << screen->name();
+        qCInfo(lcAppClientLinux) << "  - resolution:" << screen->size();
+        qCInfo(lcAppClientLinux) << "  - physical DPI:" << screen->physicalDotsPerInch();
+        qCInfo(lcAppClientLinux) << "  - logical DPI:" << screen->logicalDotsPerInch();
+        qCInfo(lcAppClientLinux) << "  - scale factor:" << screen->devicePixelRatio();
     }
-    qInfo(lcAppClientLinux) << "********************";
+    qCInfo(lcAppClientLinux) << "********************";
 }
 
 } // namespace KDC
