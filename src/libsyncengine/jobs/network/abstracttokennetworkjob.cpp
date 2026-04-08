@@ -410,34 +410,6 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
     return account;
 }
 
-void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
-    assert(_driveDbId > 0 && "Invalid drive DB ID.");
-
-    {
-        const std::scoped_lock lock(_cacheMutex);
-
-        if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
-            _userDbId = it->second.userDbId;
-            _driveId = it->second.driveId;
-
-            return;
-        }
-    }
-
-    // Get drive
-    const Drive &drive = getDrive(_driveDbId);
-    _driveId = drive.driveId();
-
-    // Get account
-    const Account &account = getAccount(drive);
-    _userDbId = account.userDbId();
-
-    loadUserInfoFromUserDbId();
-
-    const std::scoped_lock lock(_cacheMutex);
-    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
-}
-
 ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     assert(_userDbId > 0 && "Invalid user DB ID.");
 
@@ -507,7 +479,6 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::NotifyDrive: {
             if (_driveDbId) loadUserInfoFromDriveDbId();
             apiToken = retrieveApiTokenFromUserCache();
-            if (!_driveDbId) setDriveDbIdFromDriveId();
             break;
         }
         case ApiType::Profile:
