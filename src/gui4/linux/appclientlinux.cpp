@@ -77,7 +77,7 @@ void AppClientLinux::setupLogging() {
     qCInfo(lcAppClientLinux) << "executable path:" << QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
     qCInfo(lcAppClientLinux) << "application dir:" << QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
     qCInfo(lcAppClientLinux) << "working directory:" << QDir::toNativeSeparators(QDir::currentPath());
-    qCInfo(lcAppClientLinux) << "pid:" << QCoreApplication::applicationPid();
+    qCInfo(lcAppClientLinux) << "client pid:" << QCoreApplication::applicationPid();
     qCInfo(lcAppClientLinux) << "user:" << qEnvironmentVariable("USER");
     qCInfo(lcAppClientLinux) << "logname:" << qEnvironmentVariable("LOGNAME");
     qCInfo(lcAppClientLinux) << "uid:" << getuid() << "euid:" << geteuid();
