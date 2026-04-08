@@ -31,7 +31,7 @@ SignalUserRemovedJob::SignalUserRemovedJob(int userDbId) :
 }
 
 ExitInfo SignalUserRemovedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_USER_DB_ID, _userDbId);
+    writeParamValue(msgParamUserDbId, _userDbId);
     return ExitCode::Ok;
 }
 

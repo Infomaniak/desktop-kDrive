@@ -29,7 +29,7 @@ SignalErrorAddedJob::SignalErrorAddedJob(const Error &error) :
 }
 
 ExitInfo SignalErrorAddedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_ERROR_INFO, _error, info2DynamicVar<Error>);
+    writeParamValue(msgParamErrorInfo, _error, info2DynamicVar<Error>);
     return ExitCode::Ok;
 }
 
