@@ -158,7 +158,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     const RemoteNodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
 
     RemoteNodeId userPrivateFolderId;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getUserPrivateFolderRemoteId(_driveDbId, userPrivateFolderId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
+                                                         _driveDbId, ApiTranslator::SpecialFolder::Private, userPrivateFolderId));
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
