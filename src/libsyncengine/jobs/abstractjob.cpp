@@ -74,7 +74,7 @@ bool AbstractJob::isAborted() const {
 void AbstractJob::callback(const UniqueId id) {
     try {
         const std::scoped_lock lock(_additionalCallbackMutex);
-        if (_mainCallback && _additionalCallback && !_aborted) {
+        if (_mainCallback && _additionalCallback) {
             _additionalCallback(id); // Call the "additional" callback first since the main callback might delete the last
                                      // reference on the job
         }
