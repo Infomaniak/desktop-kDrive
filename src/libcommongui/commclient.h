@@ -43,9 +43,9 @@ class CommClient : public QObject {
         void operator=(CommClient const &) = delete;
 
         bool connectToServer(quint16 commPort);
-        bool execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout = COMM_SHORT_TIMEOUT);
-        bool execute(RequestNum num, const QByteArray &params, int timeout = COMM_SHORT_TIMEOUT);
-        bool execute(RequestNum num, int timeout = COMM_SHORT_TIMEOUT);
+        bool execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout = commShortTimeout);
+        bool execute(RequestNum num, const QByteArray &params, int timeout = commShortTimeout);
+        bool execute(RequestNum num, int timeout = commShortTimeout);
 
         void stop();
         static bool isConnected() { return _instance != nullptr; }
