@@ -68,12 +68,12 @@ void AppClientLinux::setupLogging() {
     // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
     qCInfo(lcAppClientLinux) << "***** Application & System Informations *****";
-    qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion().c_str();
-    qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag().c_str();
+    qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion();
+    qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag();
     qCInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
     qCInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
     qCInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
-    qCInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion().c_str();
+    qCInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion();
     qCInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
     qCInfo(lcAppClientLinux) << "kernel type:" << QSysInfo::kernelType();
     qCInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
