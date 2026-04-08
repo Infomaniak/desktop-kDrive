@@ -29,6 +29,8 @@
 #include <unistd.h>
 #endif
 
+#include "../../../../libcommonserver/io/cachedirectory.h"
+
 #include "utility/timerutility.h"
 
 #include <fstream>
@@ -45,9 +47,9 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                         const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
-                         const SyncTime modificationTime, const bool isCreate) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, const DriveDbId driveDbId,
+                         const NodeId &remoteFileId, const SyncPath &localpath, const int64_t expectedSize,
+                         const SyncTime creationTime, const SyncTime modificationTime, const bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
@@ -55,20 +57,22 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDb
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
     _isCreate(isCreate),
-    _vfs(vfs) {
+    _vfs(vfs),
+    _localSyncFolder(localSyncFolder) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                         const SyncPath &localpath, int64_t expectedSize) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, const DriveDbId driveDbId,
+                         const NodeId &remoteFileId, const SyncPath &localpath, const int64_t expectedSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
     _expectedSize(expectedSize),
     _ignoreDateTime(true),
-    _vfs(vfs) {
+    _vfs(vfs),
+    _localSyncFolder(localSyncFolder) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -569,16 +573,11 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     fetchFinished = false;
     fetchError = false;
 
-    SyncPath cacheDirectoryPath;
-    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
-        LOGW_WARN(_logger, L"Failed to get cache directory");
-        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
-    }
-
+    CacheDirectory cacheDirectory(_localSyncFolder);
     std::ofstream output;
     do {
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-        _tmpPath = cacheDirectoryPath / tmpFileName;
+        _tmpPath = cacheDirectory.path() / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {

@@ -25,10 +25,11 @@ namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
-        DownloadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate);
-        DownloadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize);
+        DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, DriveDbId driveDbId,
+                    const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize, SyncTime creationTime,
+                    SyncTime modificationTime, bool isCreate);
+        DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, DriveDbId driveDbId,
+                    const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize);
         ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _remoteFileId; }
@@ -92,6 +93,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
 
         const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
+        const SyncPath _localSyncFolder;
 
         friend class TestNetworkJobs;
 };

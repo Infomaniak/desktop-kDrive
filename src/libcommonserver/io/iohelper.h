@@ -125,15 +125,6 @@ struct IoHelper {
          */
         static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
-
-        //! Returns the directory location suitable for temporary files.
-        /*! This directory is deleted at the end of the application run.
-          ! The location of this folder can be enforced with the env variable: KDRIVE_CACHE_PATH
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
-
         //! Returns the log directory path of the application.
         /*!
          \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
@@ -597,7 +588,6 @@ struct IoHelper {
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
-        static void setCacheDirectoryPath(const SyncPath &newPath);
 
     private:
         static log4cplus::Logger _logger;

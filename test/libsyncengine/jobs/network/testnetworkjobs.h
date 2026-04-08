@@ -128,6 +128,6 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
         static uint64_t _nbParallelThreads;
 
-        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
+        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
 };
 } // namespace KDC
