@@ -55,7 +55,7 @@ class AppClientLinux : public QGuiApplication {
         void ipcDisconnected();
 
     private:
-        void setupLogging();
+        void setupLogging() const;
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
