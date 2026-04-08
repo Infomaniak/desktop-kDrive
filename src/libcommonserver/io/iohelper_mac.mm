@@ -146,12 +146,12 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
                 return true;
             } else {
                 LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-
-                CFStringRef errorDescription = CFErrorCopyDescription(error);
-                const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
-                LOG_WARN(logger(), "Native CF Error description: " << errorDescriptionStdString);
+                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
+                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
+                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
+                    CFRelease(errorDescription);
+                }
                 CFRelease(error);
-                CFRelease(errorDescription);
 
                 return false;
             }
@@ -160,8 +160,8 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
         return false;
     }
 
-    const uint32_t size = (uint32_t) CFDataGetLength(bookmarkRef);
-    unsigned char *buffer = new unsigned char[size];
+    const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
+    auto *buffer = new unsigned char[size];
     CFDataGetBytes(bookmarkRef, CFRangeMake(0, size), (UInt8 *) buffer);
     data = std::string(reinterpret_cast<char const *>(buffer), size);
     delete[] buffer;
