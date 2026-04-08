@@ -21,10 +21,6 @@
 #include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
 
-#include <QLoggingCategory>
-
-Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
-
 namespace KDC {
 
 ServerCommService::ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent) :
