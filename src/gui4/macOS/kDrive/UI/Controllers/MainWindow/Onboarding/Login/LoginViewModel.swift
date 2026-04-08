@@ -69,7 +69,7 @@ final class LoginViewModel: ObservableObject {
 
         Task {
             guard flowCoordinator.currentStep == .login else { return }
-            await flowCoordinator.navigateToNextStep()
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 }

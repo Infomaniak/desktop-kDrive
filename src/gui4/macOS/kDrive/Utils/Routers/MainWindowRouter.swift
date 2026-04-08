@@ -22,7 +22,7 @@ import kDriveCoreUI
 
 enum WindowRoute {
     case preloading(isShowingError: Bool = false)
-    case onboarding(UIUser? = nil, OnboardingStep? = nil)
+    case onboarding(UIUser? = nil, [OnboardingStep]? = nil, OnboardingStep? = nil)
     case mainWindow(MainViewTab? = nil)
 }
 

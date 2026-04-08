@@ -40,7 +40,7 @@ final class SynchronizationViewModel: ObservableObject {
                 try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
             }
 
-            await flowCoordinator.navigateToNextStep()
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 }
