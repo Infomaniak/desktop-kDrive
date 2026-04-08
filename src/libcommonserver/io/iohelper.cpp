@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
@@ -645,120 +646,6 @@ bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) n
     (void) std::filesystem::create_directory(directoryPath, ec);
     ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
-}
-
-namespace details {
-
-class CacheDirectoryHandler {
-    public:
-        static CacheDirectoryHandler &instance() noexcept {
-            static CacheDirectoryHandler instance;
-            return instance;
-        }
-        const SyncPath &directoryPath() noexcept {
-            std::scoped_lock lock(_mutex);
-
-            bool exists = false;
-            auto ioError = IoError::Unknown;
-            if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-                sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
-                                                CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
-            }
-
-            if (_directoryPath.empty() || !exists) {
-                resetDirectoryPathInternal();
-            }
-            return _directoryPath;
-        }
-        void setDirectoryPath(const SyncPath &newPath) {
-            deleteDirectoryPath();
-            _directoryPath = newPath;
-            createDirectoryPath();
-        }
-        void resetDirectoryPath() noexcept {
-            std::lock_guard<std::mutex> lock(_mutex);
-            resetDirectoryPathInternal();
-        }
-        ~CacheDirectoryHandler() { deleteDirectoryPath(); }
-
-    private:
-        mutable std::mutex _mutex;
-        SyncPath _directoryPath;
-
-        void resetDirectoryPathInternal() noexcept {
-            deleteDirectoryPath();
-            initDirectoryPath();
-            if (!_directoryPath.empty()) createDirectoryPath();
-        }
-
-        CacheDirectoryHandler() {
-            if (_directoryPath.empty()) initDirectoryPath();
-            if (!_directoryPath.empty()) createDirectoryPath();
-        }
-
-        void initDirectoryPath() noexcept {
-            static const SyncName cacheDirName =
-                    SyncName("." + Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
-            // if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
-
-            // #if defined(KD_LINUX)
-            //             if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
-            //             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
-            // #endif
-            // IoError ioError = IoError::Success;
-            // if (!IoHelper::deviceTempDirectoryPath(_directoryPath, ioError)) {
-            //     return;
-            // }
-            _directoryPath /= cacheDirName;
-            return;
-        }
-
-        bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
-                                      const SyncPath &subDir = "") noexcept {
-            bool isSet = false;
-            if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
-                if (subDir.empty()) {
-                    _directoryPath = SyncPath(value) / cacheDirName;
-                } else {
-                    _directoryPath = SyncPath(value) / subDir / cacheDirName;
-                }
-                return true;
-            }
-            return false;
-        };
-
-        void createDirectoryPath() noexcept {
-            if (!_directoryPath.empty()) {
-                IoError ioError = IoError::Success;
-                if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
-                    sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
-                                                    CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
-                    _directoryPath.clear(); // Clear the path if the directory could not be created.
-                    return;
-                }
-            }
-        }
-
-        void deleteDirectoryPath() noexcept {
-            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
-            IoError ioError = IoError::Success;
-            (void) IoHelper::deleteItem(_directoryPath, ioError);
-        }
-};
-
-} // namespace details
-
-void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
-    if (!newPath.empty()) {
-        details::CacheDirectoryHandler::instance().setDirectoryPath(newPath);
-    } else {
-        details::CacheDirectoryHandler::instance().resetDirectoryPath();
-    }
-}
-
-bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
-    directoryPath = details::CacheDirectoryHandler::instance().directoryPath();
-    return !directoryPath.empty();
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {

@@ -18,15 +18,19 @@
 
 #include "cachedirectory.h"
 
+#include "config.h" // APPLICATION
+
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) {
-    static const auto cacheDirName = std::format(".{}-cache", APPLICATION_NAME);
-    _cacheDirectoryPath = localSyncPath / cacheDirName;
-    initDirectory();
+    initDirectory(localSyncPath);
 }
 
-const SyncPath &CacheDirectory::directoryPath() noexcept {
+CacheDirectory::~CacheDirectory() {
+    if (_deleteFolderUponDestruction) deleteDirectory();
+}
+
+const SyncPath &CacheDirectory::path() noexcept {
     const std::scoped_lock lock(_mutex);
 
     bool exists = false;
@@ -36,22 +40,10 @@ const SyncPath &CacheDirectory::directoryPath() noexcept {
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
     }
 
-    if (_cacheDirectoryPath.empty() || !exists) {
+    if (!exists) {
         resetDirectoryPath();
     }
     return _cacheDirectoryPath;
-}
-
-void CacheDirectory::initDirectory() noexcept {
-    if (auto ioError = IoError::Success;
-        !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {
-        sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
-                                        CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
-        _cacheDirectoryPath.clear(); // Clear the path if the directory could not be created.
-        return;
-    }
-
-    return;
 }
 
 void CacheDirectory::deleteDirectory() const noexcept {
@@ -60,9 +52,23 @@ void CacheDirectory::deleteDirectory() const noexcept {
     (void) IoHelper::deleteItem(_cacheDirectoryPath, ioError);
 }
 
+void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
+    static const auto cacheDirName = std::format(".{}-cache", APPLICATION_NAME);
+    _cacheDirectoryPath = localSyncPath / cacheDirName;
+
+    if (auto ioError = IoError::Success;
+        !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {
+        sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
+                                        CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
+        return;
+    }
+
+    return;
+}
+
 void CacheDirectory::resetDirectoryPath() noexcept {
     deleteDirectory();
-    initDirectory();
+    initDirectory(_cacheDirectoryPath.parent_path());
 }
 
 } // namespace KDC
