@@ -51,7 +51,7 @@ namespace KDC {
 
 struct SYNCENGINE_EXPORT ServerRequests {
         // C/S requests (access to DB)
-        // Use COMM_SHORT_TIMEOUT
+        // Use commShortTimeout
         // TODO: Remove functions with QList parameter after switching to the new comm layer
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserDbIdList(std::vector<UserDbId> &list);
@@ -96,7 +96,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
 #endif
 
         // C/S requests (access to network)
-        // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        // !!! Use commAverageTimeout !!!
         static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
@@ -140,10 +140,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getPathByNodeId(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
-        static ExitInfo deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitInfo deleteAccount(AccountDbId accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(SyncDbId syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteUser(UserDbId userDbId); // !!! Use commLongTimeout !!!
+        static ExitInfo deleteAccount(AccountDbId accountDbId); // !!! Use commLongTimeout !!!
+        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use commLongTimeout !!!
+        static ExitCode deleteSync(SyncDbId syncDbId); // !!! Use commLongTimeout !!!
 
         // Server requests
         static ExitInfo loadAccountInfo(Account &account, bool &updated);

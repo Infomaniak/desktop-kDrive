@@ -30,7 +30,7 @@ SignalAccountAddedJob::SignalAccountAddedJob(const AccountInfo &accountInfo) :
 }
 
 ExitInfo SignalAccountAddedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_ACCOUNT_INFO, _accountInfo, info2DynamicVar<AccountInfo>);
+    writeParamValue(msgParamAccountInfo, _accountInfo, info2DynamicVar<AccountInfo>);
     return ExitCode::Ok;
 }
 

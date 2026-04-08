@@ -31,7 +31,7 @@ SignalUserAddedJob::SignalUserAddedJob(const UserInfo &userInfo) :
 }
 
 ExitInfo SignalUserAddedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_USER_INFO, _userInfo, info2DynamicVar<UserInfo>);
+    writeParamValue(msgParamUserInfo, _userInfo, info2DynamicVar<UserInfo>);
     return ExitCode::Ok;
 }
 
