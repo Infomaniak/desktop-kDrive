@@ -59,6 +59,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
+        CPPUNIT_TEST(testReadAlias);
 #endif
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testCreateJunction);
@@ -106,6 +107,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         void testRemoveXAttr(void);
         void testCreateAlias(void);
+        void testReadAlias();
 #elif defined(KD_WINDOWS)
         void testCreateJunction();
         void testGetLongPathName();
