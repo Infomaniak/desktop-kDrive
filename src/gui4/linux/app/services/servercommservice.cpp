@@ -21,7 +21,11 @@
 #include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
 
+#include <QLoggingCategory>
+
 namespace KDC {
+
+Q_LOGGING_CATEGORY(lcServerCommService, "gui.v4.servercommservice", QtInfoMsg)
 
 ServerCommService::ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent) :
     QObject(parent),
@@ -107,6 +111,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_ADDED, [this](const Poco::DynamicStruct &params) {
         SyncInfo info;
         info.fromDynamicStruct(params[msgParamSyncInfo].extract<Poco::DynamicStruct>());
+        qCInfo(lcServerCommService) << "Sync added | syncDbId:" << info.dbId() << "/ driveDbId:" << info.driveDbId();
         emit syncAdded(info);
     });
 
@@ -119,6 +124,7 @@ void ServerCommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_REMOVED, [this](const Poco::DynamicStruct &params) {
         SyncDbId syncDbId = 0;
         CommonUtility::readValueFromStruct(params, msgParamSyncDbId, syncDbId);
+        qCInfo(lcServerCommService) << "Sync removed | syncDbId:" << syncDbId;
         emit syncRemoved(syncDbId);
     });
 
@@ -160,12 +166,15 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED, [this](const Poco::DynamicStruct &params) {
         ErrorInfo info;
         info.fromDynamicStruct(params[msgParamErrorInfo].extract<Poco::DynamicStruct>());
+        qCWarning(lcServerCommService) << "Server error added | errorDbId:" << info.dbId() << "/ syncDbId:" << info.syncDbId()
+                                       << "/ ExitCode:" << info.exitCode() << "/ ExitCause:" << info.exitCause();
         emit errorAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_REMOVED, [this](const Poco::DynamicStruct &params) {
         ErrorDbId errorDbId = 0;
         CommonUtility::readValueFromStruct(params, msgParamErrorDbId, errorDbId);
+        qCInfo(lcServerCommService) << "Server error removed | errorDbId:" << errorDbId;
         emit errorRemoved(errorDbId);
     });
 }
@@ -176,6 +185,7 @@ void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UPDATER_STATE_CHANGED, [this](const Poco::DynamicStruct &params) {
         UpdateState state = UpdateState::Unknown;
         CommonUtility::readValueFromStruct(params, msgParamUpdateState, state);
+        qCInfo(lcServerCommService) << "Updater state changed | state:" << state;
         emit updateStateChanged(state);
     });
 }
@@ -188,22 +198,35 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
         CommString message;
         CommonUtility::readValueFromStruct(params, msgParamTitle, title);
         CommonUtility::readValueFromStruct(params, msgParamMessage, message);
-        emit showNotification(CommonUtility::commString2QStr(title), CommonUtility::commString2QStr(message));
+        const QString qTitle = CommonUtility::commString2QStr(title);
+        const QString qMessage = CommonUtility::commString2QStr(message);
+        qCInfo(lcServerCommService) << "Show notification requested | title:" << qTitle << "/ hasMessage:" << !qMessage.isEmpty();
+        emit showNotification(qTitle, qMessage);
     });
 
-    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS, [this](const Poco::DynamicStruct &) { emit showSettings(); });
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SETTINGS, [this](const Poco::DynamicStruct &) {
+        qCInfo(lcServerCommService) << "Show settings requested";
+        emit showSettings();
+    });
 
-    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS, [this](const Poco::DynamicStruct &) { emit showSynthesis(); });
+    dispatcher.registerHandler(SignalNum::UTILITY_SHOW_SYNTHESIS, [this](const Poco::DynamicStruct &) {
+        qCInfo(lcServerCommService) << "Show synthesis requested";
+        emit showSynthesis();
+    });
 
     dispatcher.registerHandler(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, [this](const Poco::DynamicStruct &params) {
         LogUploadState state = LogUploadState::None;
         int32_t percentage = 0;
         CommonUtility::readValueFromStruct(params, msgParamLogUploadState, state);
         CommonUtility::readValueFromStruct(params, msgParamPercentage, percentage);
+        qCInfo(lcServerCommService) << "Log upload status updated | state:" << state << "/ percentage:" << percentage;
         emit logUploadStatusUpdated(state, percentage);
     });
 
-    dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) { emit quit(); });
+    dispatcher.registerHandler(SignalNum::UTILITY_QUIT, [this](const Poco::DynamicStruct &) {
+        qCInfo(lcServerCommService) << "Quit requested by server";
+        emit quit();
+    });
 }
 
 // =============================================================================
