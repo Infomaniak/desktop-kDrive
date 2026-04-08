@@ -31,7 +31,7 @@ SignalAccountRemovedJob::SignalAccountRemovedJob(int accountDbId) :
 }
 
 ExitInfo SignalAccountRemovedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_ACCOUNT_DB_ID, _accountDbId);
+    writeParamValue(msgParamAccountDbId, _accountDbId);
     return ExitCode::Ok;
 }
 
