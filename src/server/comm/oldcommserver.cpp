@@ -193,10 +193,10 @@ void OldCommServer::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::REQUEST)) {
-                const int id(msgObj[MSG_REQUEST_ID].toInt());
-                const RequestNum num(static_cast<RequestNum>(msgObj[MSG_REQUEST_NUM].toInt()));
-                const QByteArray params(QByteArray::fromBase64(msgObj[MSG_REQUEST_PARAMS].toString().toUtf8()));
+            if (msgObj[msgType].toInt() == toInt(MsgType::REQUEST)) {
+                const int id(msgObj[msgRequestId].toInt());
+                const RequestNum num(static_cast<RequestNum>(msgObj[msgRequestNum].toInt()));
+                const QByteArray params(QByteArray::fromBase64(msgObj[msgRequestParams].toString().toUtf8()));
 
                 // Request received
                 LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << num);
@@ -244,9 +244,9 @@ void OldCommServer::onSendReply(int id, const QByteArray &result) {
     }
 
     QJsonObject replyObj;
-    replyObj[MSG_TYPE] = toInt(MsgType::REPLY);
-    replyObj[MSG_REPLY_ID] = id;
-    replyObj[MSG_REPLY_RESULT] = QString(result.toBase64());
+    replyObj[msgType] = toInt(MsgType::REPLY);
+    replyObj[msgReplyId] = id;
+    replyObj[msgReplyResult] = QString(result.toBase64());
 
     QJsonDocument replyDoc(replyObj);
     QByteArray reply(replyDoc.toJson(QJsonDocument::Compact));
@@ -277,10 +277,10 @@ void OldCommServer::onSendSignal(int id, SignalNum num, const QByteArray &params
     }
 
     QJsonObject signalObj;
-    signalObj[MSG_TYPE] = toInt(MsgType::SIGNAL);
-    signalObj[MSG_SIGNAL_ID] = id;
-    signalObj[MSG_SIGNAL_NUM] = toInt(num);
-    signalObj[MSG_SIGNAL_PARAMS] = QString(params.toBase64());
+    signalObj[msgType] = toInt(MsgType::SIGNAL);
+    signalObj[msgSignalId] = id;
+    signalObj[msgSignalNum] = toInt(num);
+    signalObj[msgSignalParams] = QString(params.toBase64());
 
     QJsonDocument signalDoc(signalObj);
     QByteArray signal(signalDoc.toJson(QJsonDocument::Compact));
