@@ -222,7 +222,8 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
 
 // -- Login ---------------------------------------------------------------
 
-void ServerCommService::requestLoginToken(const QString &code, const QString &codeVerifier, const LoginTokenCallback &callback) const {
+void ServerCommService::requestLoginToken(const QString &code, const QString &codeVerifier,
+                                          const LoginTokenCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_AUTH_CODE] = CommonUtility::qStr2CommString(code);
     params[MSG_PARAM_CODE_VERIFIER] = CommonUtility::qStr2CommString(codeVerifier);
@@ -267,7 +268,8 @@ void ServerCommService::requestUserInfoList(const UserInfoListCallback &callback
             });
 }
 
-void ServerCommService::requestUserAvailableDrives(const UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const {
+void ServerCommService::requestUserAvailableDrives(const UserDbId userDbId,
+                                                   const DriveAvailableInfoListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_USER_DB_ID] = userDbId;
     _ipcClient.sendRequest(RequestNum::USER_AVAILABLEDRIVES, params,
@@ -503,7 +505,8 @@ void ServerCommService::requestErrorDelete(const ErrorDbId errorDbId, const Void
 }
 
 void ServerCommService::requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
-                                                     const std::vector<ErrorDbId> &keepRemoteList, const VoidCallback &callback) const {
+                                                     const std::vector<ErrorDbId> &keepRemoteList,
+                                                     const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_KEEP_LOCAL_ERROR_DB_ID_LIST] = keepLocalList;
     params[MSG_PARAM_KEEP_REMOTE_ERROR_DB_ID_LIST] = keepRemoteList;
@@ -684,7 +687,8 @@ void ServerCommService::requestBlacklistedNodeSetList(const SyncDbId syncDbId, c
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void ServerCommService::requestExclTemplGetList(const bool defaultTemplates, const ExclusionTemplateListCallback &callback) const {
+void ServerCommService::requestExclTemplGetList(const bool defaultTemplates,
+                                                const ExclusionTemplateListCallback &callback) const {
     Poco::DynamicStruct params;
     params[MSG_PARAM_DEFAULT] = defaultTemplates;
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETLIST, params,
