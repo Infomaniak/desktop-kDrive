@@ -167,9 +167,9 @@ namespace Infomaniak.kDrive.CustomControls
             DependencyProperty.Register(nameof(CanShowSaveMenu), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
 
         // Internal root item
-        private TreeItem RootTreeItem
+        private TreeItem? RootTreeItem
         {
-            get => (TreeItem)GetValue(RootTreeItemProperty);
+            get => (TreeItem?)GetValue(RootTreeItemProperty);
             set => SetValue(RootTreeItemProperty, value);
         }
         private static readonly DependencyProperty RootTreeItemProperty =
@@ -317,12 +317,7 @@ namespace Infomaniak.kDrive.CustomControls
         public async Task BuildRootLevelItemsAsync()
         {
 
-            if (RootTreeItem is not null)
-            {
-                RootTreeItem.Dispose();
-                RootTreeItem = null;
-            }
-            _rootLevelItems.Clear();
+            ClearAllTreeItems();
 
             // Logical root node
             Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId, false);

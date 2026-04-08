@@ -60,8 +60,8 @@ namespace Infomaniak.kDrive
                 fileSizeLimitBytes: 500L * 1024L * 1024L, // 500 MB
                 rollOnFileSizeLimit: true,                // roll when exceeding size
                 retainedFileCountLimit: 5,                // keep up to 5 rolled files
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message}{NewLine}{Exception}")
-            .CreateLogger();
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u1}] ({ThreadId}) {Message}{NewLine}{Exception}")
+            .Enrich.WithThreadId().CreateLogger();
 
 
         public static Level LogLevel =>
@@ -202,12 +202,19 @@ namespace Infomaniak.kDrive
                 options.IsGlobalModeEnabled = true;
                 options.Environment = App.Constants.Sentry.Environment;
             });
+            App.Current.UnhandledException += CaptureExceptionWithSentry;
 
+        }
+
+        private static void CaptureExceptionWithSentry(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            SentrySdk.CaptureException(e.Exception);
         }
 
         public static void StopSentry()
         {
             Sentry.SentrySdk.Close();
+            App.Current.UnhandledException -= CaptureExceptionWithSentry;
 
             if (_sentryHandler is not null)
             {

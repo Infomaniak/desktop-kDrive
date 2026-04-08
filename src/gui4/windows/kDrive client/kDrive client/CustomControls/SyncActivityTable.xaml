@@ -19,7 +19,6 @@
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
-        <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BindingLocalizerHelper x:Key="BindingLocalizerHelper" />
 
@@ -141,8 +140,8 @@
                             <DataTemplate x:Key="DirectoryIconTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}" />
+                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-outline}" />
                             </DataTemplate>
 
                             <local:ItemTypeDataTemplateSelector x:Key="ItemTypeSizeDataTemplateSelector"
@@ -155,9 +154,9 @@
                             <DataTemplate x:Key="SynchronizationErrorTemplate"
                                           x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                  PointerPressed="ItemErrorIcon_PointerPressed"
-                                                  Foreground="{ThemeResource colors.status.medium.warning}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
+                                                   PointerPressed="ItemErrorIcon_PointerPressed"
+                                                   Foreground="{ThemeResource colors.status.medium.warning}"
+                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
                                     </ToolTipService.ToolTip>
@@ -166,8 +165,8 @@
                             <DataTemplate x:Key="SynchronizedTemplate"
                                           x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                  Foreground="{ThemeResource colors.status.medium.success}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
+                                                   Foreground="{ThemeResource colors.status.medium.success}"
+                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />
                                     </ToolTipService.ToolTip>
@@ -203,6 +202,7 @@
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
                                         Background="Transparent"
+                                        Visibility="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
                                         kDrive:AncestorSource.AncestorType="ContentControl">
                                     <Button.Content>
                                         <controls:SvgIcon Style="{StaticResource Infomaniak.Style.Icon.Size.XS}"
@@ -213,30 +213,27 @@
                                     <Button.Flyout>
                                         <MenuFlyout Placement="RightEdgeAlignedTop">
                                             <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonOpenInExplorer'}"
-                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="OpenInExplorer_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                                      UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
-                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                                       UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonOpenInKDrive'}"
-                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="OpenOnline_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
-                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=buttonCopyShareLink'}"
-                                                            IsEnabled="{Binding DataContext.IsDeletion, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
                                                             Click="CopyPublicLink_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
-                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
@@ -265,8 +262,8 @@
                                                             Click="NavigateToErrorPageButton_Click">
                                                 <MenuFlyoutItem.Icon>
                                                     <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
-                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
                                         </MenuFlyout>

@@ -5,6 +5,7 @@ global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 
@@ -106,7 +107,7 @@ namespace Infomaniak.kDrive.Types
         Success,
         Error
     }
-    public interface IDrive
+    public interface IDrive : INotifyPropertyChanged
     {
         public string Name { get; }
         public System.Drawing.Color Color { get; }
@@ -117,7 +118,7 @@ namespace Infomaniak.kDrive.Types
         public bool IsConfigured { get; } // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
     }
 
-    public class DriveAvailable : IDrive
+    public partial class DriveAvailable : UISafeObservableObject, IDrive
     {
         public DriveId DriveId { get; set; } = 0;
         public UserId UserId { get; set; } = 0;

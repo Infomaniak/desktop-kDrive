@@ -138,7 +138,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public new async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
+        public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
             try
             {

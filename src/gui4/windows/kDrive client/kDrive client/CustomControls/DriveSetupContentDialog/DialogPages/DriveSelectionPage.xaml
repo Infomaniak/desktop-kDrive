@@ -93,26 +93,32 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <!-- Local path -->
-                                <TextBlock Grid.Row="1"
-                                           Text="{x:Bind local:DriveSelectionPage.GetLocationSummary(IsDefaultLocalPath,  LocalPath), Mode=OneWay}"
+                                <TextBlock Grid.Row="0"
                                            FontSize="12"
-                                           FontWeight="Normal"
                                            TextTrimming="WordEllipsis"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}" />
                                         </ToolTipService.ToolTip>
+                                    <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionLocation')}"
+                                         FontWeight="Normal" />
+                                    <Run Text="{x:Bind local:DriveSelectionPage.GetLocationSummary(IsDefaultLocalPath, LocalPath), Mode=OneWay}"
+                                         FontWeight="SemiBold" />
+
                                 </TextBlock>
 
                                 <!-- Exclusions -->
-                                <TextBlock Grid.Row="0"
-                                           Text="{x:Bind local:DriveSelectionPage.GetExclusionsSummary(ExcludedNodeIds.Count), Mode=OneWay}"
+                                <TextBlock Grid.Row="1"
                                            FontSize="12"
-                                           FontWeight="Normal"
                                            TextTrimming="WordEllipsis"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsDriveSelectionExclusion')}"
+                                         FontWeight="Normal" />
+                                    <Run Text="{x:Bind local:DriveSelectionPage.GetExclusionsSummary(ExcludedNodeIds.Count), Mode=OneWay}"
+                                         FontWeight="SemiBold" />
+                                </TextBlock>
                             </Grid>
+                            
                             <!-- Edit button -->
                             <HyperlinkButton Grid.Column="2"
                                              Grid.RowSpan="2"

@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Svg;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,28 +109,8 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 return; // UriSource changed will trigger Refresh
             }
-            // Cancel any previous refresh
-            _refreshCts?.Cancel();
-            _refreshCts = new CancellationTokenSource();
-            var token = _refreshCts.Token;
 
-            // Enqueue on UI dispatcher
-            DispatcherQueue.TryEnqueue(async () =>
-            {
-                try
-                {
-                    await RefreshSource(token);
-                }
-                catch (OperationCanceledException)
-                {
-                    Logger.Log(Logger.Level.Extended, $"SvgIcon refresh canceled");
-
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(Logger.Level.Error, $"SvgIcon refresh failed: {ex.Message}");
-                }
-            });
+            _refreshCts = SvgHelper.ScheduleOnDispatcher(_refreshCts, DispatcherQueue, RefreshSource, "SvgIcon");
         }
 
         private async Task RefreshSource(CancellationToken token)
@@ -142,31 +121,18 @@ namespace Infomaniak.kDrive.CustomControls
                 if (UriSource is null)
                     return;
 
-                // Resolve ms-appx URIs
-                var fullUri = ResolveUri(UriSource);
-                if (!File.Exists(fullUri.LocalPath))
+                var foreground = IsIconEnabled ? Foreground : ResolveDisabledForeground();
+                var result = SvgHelper.TryLoad(UriSource, foreground, token);
+                if (result is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
                     TryFallback();
                     return;
                 }
 
-                token.ThrowIfCancellationRequested();
-
-                // Load SVG
-                var svgDoc = SvgDocument.Open(fullUri.LocalPath);
-                ApplyForeground(svgDoc);
-
-                token.ThrowIfCancellationRequested();
-
-                using var memoryStream = new MemoryStream();
-                svgDoc.Write(memoryStream);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                token.ThrowIfCancellationRequested();
+                using var memoryStream = result.Value.Stream;
 
                 // Compute raster size for current DPI
-                var (pixelWidth, pixelHeight) = ComputeRasterSize(svgDoc);
+                var (pixelWidth, pixelHeight) = ComputeRasterSize(result.Value.Doc);
 
                 var svgImage = new SvgImageSource
                 {
@@ -189,32 +155,6 @@ namespace Infomaniak.kDrive.CustomControls
                 TryFallback();
             }
         }
-        private static Uri ResolveUri(Uri source)
-        {
-            if (source.Scheme != "ms-appx")
-                return source;
-
-            var path = source.LocalPath.TrimStart('/');
-            var absPath = Path.Combine(AppContext.BaseDirectory, path.Replace('/', Path.DirectorySeparatorChar));
-            return new Uri(absPath);
-        }
-
-        private void ApplyForeground(SvgDocument svgDoc)
-        {
-            var foreground = IsIconEnabled ? Foreground : ResolveDisabledForeground();
-            if (foreground is SolidColorBrush solid)
-            {
-                var color = System.Drawing.Color.FromArgb(solid.Color.A, solid.Color.R, solid.Color.G, solid.Color.B);
-                foreach (var elem in svgDoc.Descendants().OfType<SvgVisualElement>())
-                {
-                    if (elem.Fill != null && elem.Fill != SvgPaintServer.None)
-                        elem.Fill = new SvgColourServer(color);
-                    if (elem.Stroke != null && elem.Stroke != SvgPaintServer.None)
-                        elem.Stroke = new SvgColourServer(color);
-                }
-            }
-        }
-
         private SolidColorBrush? ResolveDisabledForeground()
         {
             const string key = "TextFillColorDisabledBrush";

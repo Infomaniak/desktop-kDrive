@@ -60,7 +60,10 @@ namespace Infomaniak.kDrive.Pages
 
         private void RedirectToErrorPageIfNeeded()
         {
-            switch (ViewModel.SelectedSync?.SyncErrorState)
+            if (ViewModel.SelectedSync is null)
+                return;
+
+            switch (ViewModel.SelectedSync.SyncErrorState)
             {
                 case SyncErrorStates.Undefined:
                     // No error, stay on the HomePage
@@ -88,15 +91,6 @@ namespace Infomaniak.kDrive.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (ViewModel.SelectedSync is null)
-            {
-                AppModel.UIThreadDispatcher.TryEnqueue(() =>
-                {
-                    DetachHandlers();
-                    Frame.Navigate(typeof(SettingsPage));
-                });
-                return;
-            }
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
             RedirectToErrorPageIfNeeded();
@@ -131,8 +125,12 @@ namespace Infomaniak.kDrive.Pages
             await ViewModel.SelectedSync.Start();
         }
 
-        public string GetGreetingLabel(string userName, SyncStatus status)
+        public string GetGreetingLabel(string? userName, SyncStatus? status)
         {
+            if(userName is null || status is null)
+                return Localizer.Instance.GetString("labelWelcomeToKDrive");
+
+
             const string transitionStr = "...";
             string syncStateStr = status switch
             {
@@ -145,10 +143,16 @@ namespace Infomaniak.kDrive.Pages
                 SyncStatus.StopAsked => transitionStr,
                 SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.Error => transitionStr,
-                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused")
+                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused"),
+                _ => Localizer.Instance.GetString("labelWelcomeToKDrive")
             };
 
             return Localizer.Instance.GetString("greetingLabel", userName, syncStateStr);
+        }
+
+        private void StartOnboardingButton_Click(object sender, RoutedEventArgs e)
+        {
+            (App.Current as App)?.StartOnboarding();
         }
     }
 }

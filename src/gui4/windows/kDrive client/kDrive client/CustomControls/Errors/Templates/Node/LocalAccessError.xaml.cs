@@ -32,6 +32,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             {
                 return;
             }
+
+            if(Error.Sync is null) {          
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,

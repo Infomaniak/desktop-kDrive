@@ -76,6 +76,11 @@ public enum KDriveResources {
   public static let wrench = ImageAsset(name: "wrench")
   public static let mountainsTreesSunLight = ImageAsset(name: "mountains_trees_sun_light")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
+  public static let kdriveCircleFilledArrowsClockwise = ImageAsset(name: "kdrive-circle-filled-arrows-clockwise")
+  public static let kdriveCircleFilledExclamationMark = ImageAsset(name: "kdrive-circle-filled-exclamation-mark")
+  public static let kdriveCircleFilledPause = ImageAsset(name: "kdrive-circle-filled-pause")
+  public static let kdriveCircleFilled = ImageAsset(name: "kdrive-circle-filled")
+  public static let kdriveNeutral = ImageAsset(name: "kdrive-neutral")
   public static let onboardingGradient = ImageAsset(name: "OnboardingGradient")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name

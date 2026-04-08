@@ -18,6 +18,7 @@
 
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -26,6 +27,8 @@ namespace Infomaniak.kDrive
     public sealed partial class MainWindow : Window
     {
         public AppNavigationView AppNavView { get { return NavView; } }
+        public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
+
         public MainWindow()
         {
             InitializeComponent();

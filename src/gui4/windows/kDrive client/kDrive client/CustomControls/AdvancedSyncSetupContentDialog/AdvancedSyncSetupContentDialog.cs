@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.MinWidth = 540;
             base.DataContext = _advancedSyncSetupContentDialogVM;
             base.XamlRoot = xamlRoot;
-            base.PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm");
+            base.PrimaryButtonText = Localizer.Instance.GetString("buttonValidate");
             base.IsPrimaryButtonEnabled = false;
             base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
             base.DefaultButton = ContentDialogButton.Primary;

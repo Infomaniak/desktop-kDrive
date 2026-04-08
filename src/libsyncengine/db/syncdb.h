@@ -61,7 +61,7 @@ class SyncDb : public Db {
         bool size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found);
         bool created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
         bool lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
         bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
         bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);

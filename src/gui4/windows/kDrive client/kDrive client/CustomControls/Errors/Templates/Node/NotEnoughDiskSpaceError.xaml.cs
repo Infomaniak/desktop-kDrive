@@ -23,6 +23,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
+            if (Error.Sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             if (Error.Sync.LocalPath.StartsWith("C:"))
             {
                 bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));

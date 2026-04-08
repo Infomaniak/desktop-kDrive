@@ -38,7 +38,9 @@ void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncT
                     SyncTime *modificationTime = nullptr, int64_t *size = nullptr);
 void moveRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name = {});
+void renameRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const SyncName &name = {});
 NodeId duplicateRemoteItem(const DriveDbId driveDbId, const NodeId &id, const SyncName &newName);
 void deleteRemoteItem(const DriveDbId driveDbId, const NodeId &id);
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
 
 } // namespace KDC::testhelpers

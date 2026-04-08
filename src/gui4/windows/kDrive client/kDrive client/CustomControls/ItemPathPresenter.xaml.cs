@@ -46,12 +46,22 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private string DisplayedPath { get; set; } = string.Empty;
-        private string ToolTipPath { get; set; } = string.Empty;
+        private string DisplayedPath
+        {
+            get => (string)GetValue(DisplayedPathProperty);
+            set => SetValue(DisplayedPathProperty, value);
+        }
 
-        public static readonly DependencyProperty ItemRelativePathProperty = DependencyProperty.Register(nameof(RelativeItemPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(null));
+        private string ToolTipPath { 
+            get => (string)GetValue(ToolTipPathProperty);
+            set => SetValue(ToolTipPathProperty, value);
+        }
+
+        public static readonly DependencyProperty ItemRelativePathProperty = DependencyProperty.Register(nameof(RelativeItemPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty SyncProperty = DependencyProperty.Register(nameof(Sync), typeof(Sync), typeof(ItemPathPresenter), new PropertyMetadata(null));
-        public static readonly DependencyProperty ItemAbsolutePathProperty = DependencyProperty.Register(nameof(AbsoluteItemPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(null));
+        public static readonly DependencyProperty ItemAbsolutePathProperty = DependencyProperty.Register(nameof(AbsoluteItemPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty DisplayedPathProperty = DependencyProperty.Register(nameof(DisplayedPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty ToolTipPathProperty = DependencyProperty.Register(nameof(ToolTipPath), typeof(string), typeof(ItemPathPresenter), new PropertyMetadata(string.Empty));
 
         public void UpdateDisplayedPath()
         {
@@ -93,7 +103,7 @@ namespace Infomaniak.kDrive.CustomControls
             dataPackage.SetText(ToolTipPath);
             Clipboard.SetContent(dataPackage);
 
-            Utility.ShowTeachingTipFromKeys("pathCopiedToClipboard");
+            Utility.ShowTeachingTip(Localizer.Instance.GetString("pathCopiedToClipboard"));
         }
     }
 }

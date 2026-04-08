@@ -120,7 +120,6 @@ void ComputeFSOperationWorker::execute() {
         _syncPal->operationSet(ReplicaSide::Local)->clear();
         _syncPal->operationSet(ReplicaSide::Remote)->clear();
         LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
-
     } else {
         /* If the current snapshot state does not reveal any operation, we store the current revision number.
          * On the next call to compute filesystem operations, only items from the snapshot that were modified in a higher
@@ -161,15 +160,15 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto snapshot = _syncPal->snapshot(side);
     const auto opSet = _syncPal->operationSet(side);
 
-    NodeId parentNodeid;
+    NodeId parentNodeId;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDbReadOnlyCache.parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
+    if (!_syncDbReadOnlyCache.parentId(side, nodeId, parentNodeId, parentNodeIsFoundInDb)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentId");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
     }
     if (!parentNodeIsFoundInDb) {
-        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId);
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node parent ID for node ID=" << nodeId);
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
@@ -187,7 +186,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
             remoteItemUnsynced = true;
-            if (nodeExistsInSnapshot && parentNodeid != snapshot->parentId(nodeId)) {
+            if (nodeExistsInSnapshot && parentNodeId != snapshot->parentId(nodeId)) {
                 movedIntoUnsyncedFolder = true;
             }
         }
@@ -305,7 +304,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     // Detect MOVE
-    if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId)) {
+    if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeId != snapshot->parentId(nodeId)) {
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation
@@ -313,14 +312,45 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                                                  snapshotModificationTime, snapshot->size(nodeId), dbPath);
         } else {
             // Move operation
+            auto destinationPath = snapshotPath;
+            if (const auto exitInfo = fixDestinationPathIfNeeded(destinationPath, dbPath, snapshot, nodeId, side, snapshotName);
+                !exitInfo) {
+                return exitInfo;
+            }
+
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, snapshotPath);
+                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, destinationPath);
         }
 
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
     }
 
+    return ExitCode::Ok;
+}
+
+ExitInfo ComputeFSOperationWorker::fixDestinationPathIfNeeded(SyncPath &destinationPath, const SyncPath &dbPath,
+                                                              const std::shared_ptr<ConstSnapshot> snapshot, const NodeId &nodeId,
+                                                              const ReplicaSide side, const SyncName &snapshotName) {
+    if (dbPath == destinationPath) {
+        // The parents are different but the path is the same (new parent has been renamed with the name of a deleted folder)
+        SyncPath parentDbPath;
+        bool found = false;
+        if (const auto snapshotParentNodeId = snapshot->parentId(nodeId);
+            !_syncDbReadOnlyCache.path(side, snapshotParentNodeId, parentDbPath, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parentDbPath");
+            setExitCause(ExitCause::DbAccessError);
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            // The parent does not exist yet, ignore this move operation for now
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Ignoring move operation on item " << Utility::formatSyncName(snapshotName) << L" for now");
+            return ExitCode::Ok;
+        }
+
+        destinationPath = parentDbPath / snapshotName;
+    }
     return ExitCode::Ok;
 }
 
@@ -357,7 +387,6 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             nodesIdsIt = remainingNodesIds.erase(nodesIdsIt);
             continue;
         }
-
 
         if (dbNode.type() != nodeType) {
             ++nodesIdsIt;
@@ -648,7 +677,7 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
             return true;
         }
 
-        if (!_syncDbReadOnlyCache.parent(side, tmpNodeId, tmpNodeId, found)) {
+        if (!_syncDbReadOnlyCache.parentId(side, tmpNodeId, tmpNodeId, found)) {
             LOG_WARN(_logger, "Error in SyncDb::parent");
             break;
         }

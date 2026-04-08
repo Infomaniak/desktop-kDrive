@@ -21,7 +21,7 @@
                    MaxWidth="350"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    TextWrapping="WrapWholeWords"
-                   Foreground="{ThemeResource TextBoxDisabledForegroundThemeBrush}" />
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
     </StackPanel>
 
 </Page>

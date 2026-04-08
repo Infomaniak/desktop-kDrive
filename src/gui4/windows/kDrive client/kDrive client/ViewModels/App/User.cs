@@ -40,12 +40,14 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _dbId = -1;
         private UserId _userId = -1;
         private string _name = "";
+        private string _firstName = "";
         private string _email = "";
         private byte[]? _avatar;
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = [];
         private readonly ObservableCollection<DriveAvailable> _drivesAvailable = [];
+        private readonly AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private bool _driveRefreshInProgress = false;
         private Task<bool>? _refreshAvailableDrivesTask;
         private readonly IDisposable _allDriveSubscribtion;
@@ -66,6 +68,8 @@ namespace Infomaniak.kDrive.ViewModels
             _allDriveSubscribtion.Dispose();
         }
 
+        public AppModel AppModel => _appModel;
+
         public DbId DbId
         {
             get => _dbId;
@@ -83,7 +87,11 @@ namespace Infomaniak.kDrive.ViewModels
             get => _name;
             set => SetPropertyInUIThread(ref _name, value);
         }
-
+        public string FirstName
+        {
+            get => _firstName;
+            set => SetPropertyInUIThread(ref _firstName, value);
+        }
         public string Email
         {
             get => _email;
@@ -157,7 +165,7 @@ namespace Infomaniak.kDrive.ViewModels
             if (decodePixelWidth > 0)
             {
                 bitmap.DecodePixelType = DecodePixelType.Physical;
-                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot.RasterizationScale ?? 1.0;
+                double rasterization = (App.Current as App)?.CurrentWindow?.Content?.XamlRoot?.RasterizationScale ?? 1.0;
                 bitmap.DecodePixelWidth = (int)(decodePixelWidth * rasterization);
             }
             bitmap.SetSource(stream);

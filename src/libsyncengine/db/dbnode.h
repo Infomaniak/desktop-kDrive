@@ -41,7 +41,7 @@ class DbNode {
                const std::optional<std::string> &checksum = std::nullopt, SyncFileStatus status = SyncFileStatus::Unknown,
                bool syncing = false);
 
-        DbNode();
+        DbNode() = default;
         virtual ~DbNode() = default;
 
         inline DbNodeId nodeId() const { return _nodeId; }
@@ -96,7 +96,7 @@ class DbNode {
         }
 
     protected:
-        DbNodeId _nodeId;
+        DbNodeId _nodeId{0};
         std::optional<DbNodeId> _parentNodeId;
         SyncName _nameLocal; // /!\ Must be in NFC form
         SyncName _nameRemote; // /!\ Must be in NFC form
@@ -105,11 +105,11 @@ class DbNode {
         std::optional<SyncTime> _created;
         std::optional<SyncTime> _lastModifiedLocal;
         std::optional<SyncTime> _lastModifiedRemote;
-        NodeType _type;
-        int64_t _size;
+        NodeType _type{NodeType::Unknown};
+        int64_t _size{0};
         std::optional<std::string> _checksum;
-        SyncFileStatus _status;
-        bool _syncing;
+        SyncFileStatus _status{SyncFileStatus::Unknown};
+        bool _syncing{false};
 };
 
 } // namespace KDC

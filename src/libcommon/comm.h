@@ -89,6 +89,7 @@ enum class RequestNum {
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
+    ERROR_DELETE,
     ERROR_RESOLVE_CONFLICTS_LEGACY,
     ERROR_RESOLVE_CONFLICTS,
     ERROR_RESOLVE_CONFLICTS_QUICK,
@@ -204,6 +205,8 @@ inline std::string toString(RequestNum e) {
             return "ERROR_DELETE_SYNC";
         case RequestNum::ERROR_DELETE_INVALIDTOKEN:
             return "ERROR_DELETE_INVALIDTOKEN";
+        case RequestNum::ERROR_DELETE:
+            return "ERROR_DELETE";
         case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY:
             return "ERROR_RESOLVE_CONFLICTS_LEGACY";
         case RequestNum::ERROR_RESOLVE_CONFLICTS:

@@ -90,6 +90,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
+        static ExitInfo keepError(const Error &error, bool &keepErrorFlag);
 #ifdef Q_OS_MAC
         static ExitCode deleteLiteSyncErrors();
 #endif

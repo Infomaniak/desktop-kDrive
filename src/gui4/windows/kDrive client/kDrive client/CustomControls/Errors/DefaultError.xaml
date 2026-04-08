@@ -24,8 +24,7 @@
             <!-- Technical Details Expander -->
             <Expander x:Name="DetailsExpander"
                       HorizontalAlignment="Stretch"
-                      Margin="{StaticResource Infomaniak.Style.Thickness.Top.L}"
-                      Visibility="{x:Bind ShowDetails}">
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Top.L}">
                 <Expander.Header>
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('defaultErrorDetailsLabel')}"
                                FontSize="12"

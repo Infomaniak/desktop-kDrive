@@ -1728,7 +1728,7 @@ bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<
 }
 
 // Returns the parent directory ID of the object with ID nodeId
-bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
+bool SyncDb::parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);

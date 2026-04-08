@@ -25,13 +25,6 @@
     <Content Remove="Assets\Custom\Animations\Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!--
@@ -56,6 +49,7 @@
     <PackageReference Include="Sentry" Version="6.0.0" />
     <PackageReference Include="Sentry.Profiling" Version="6.0.0" />
     <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
@@ -88,9 +82,9 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
- <!-- <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
+  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
-  </Target>-->
+  </Target>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -156,6 +150,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharEndWithSpaceError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\TmpDirAccessError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ReservedNameError.xaml">
@@ -249,6 +246,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\ItemPathPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\HomeErrorInfoBar.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SyncIcon.xaml">
@@ -351,6 +351,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="CustomControls\LocalizedHyperlinkText.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />

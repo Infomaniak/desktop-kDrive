@@ -113,6 +113,7 @@
     "userId INTEGER UNIQUE,"           \
     "keychainKey TEXT,"                \
     "name TEXT,"                       \
+    "firstName TEXT,"                  \
     "email TEXT,"                      \
     "avatarUrl TEXT,"                  \
     "avatar BLOB, "                    \
@@ -120,14 +121,14 @@
     "WITHOUT ROWID;"
 
 #define INSERT_USER_REQUEST_ID "insert_user"
-#define INSERT_USER_REQUEST                                                                    \
-    "INSERT INTO user (dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate) " \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);"
+#define INSERT_USER_REQUEST                                                                               \
+    "INSERT INTO user (dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate) " \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);"
 
 #define UPDATE_USER_REQUEST_ID "update_user"
-#define UPDATE_USER_REQUEST                                                                                \
-    "UPDATE user SET userId=?1, keychainKey=?2, name=?3, email=?4, avatarUrl=?5, avatar=?6, toMigrate=?7 " \
-    "WHERE dbId=?8;"
+#define UPDATE_USER_REQUEST                                                                                              \
+    "UPDATE user SET userId=?1, keychainKey=?2, name=?3, firstName=?4, email=?5, avatarUrl=?6, avatar=?7, toMigrate=?8 " \
+    "WHERE dbId=?9;"
 
 #define DELETE_USER_REQUEST_ID "delete_user"
 #define DELETE_USER_REQUEST \
@@ -135,23 +136,24 @@
     "WHERE dbId=?1;"
 
 #define SELECT_USER_REQUEST_ID "select_user"
-#define SELECT_USER_REQUEST                                                            \
-    "SELECT userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+#define SELECT_USER_REQUEST                                                                       \
+    "SELECT userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE dbId=?1;"
 
 #define SELECT_USER_BY_USERID_REQUEST_ID "select_user_by_userid"
-#define SELECT_USER_BY_USERID_REQUEST                                                \
-    "SELECT dbId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+#define SELECT_USER_BY_USERID_REQUEST                                                           \
+    "SELECT dbId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "WHERE userId=?1;"
 
 #define SELECT_ALL_USERS_REQUEST_ID "select_users"
-#define SELECT_ALL_USERS_REQUEST                                                             \
-    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
+#define SELECT_ALL_USERS_REQUEST                                                                        \
+    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user " \
     "ORDER BY dbId;"
 
 #define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
-#define SELECT_LAST_CONNECTED_USER_REQUEST \
-    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
+#define SELECT_LAST_CONNECTED_USER_REQUEST                                                                                       \
+    "SELECT dbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT " \
+    "1;"
 //
 // account
 //
@@ -485,6 +487,15 @@
     "error "                                                                                                                   \
     "ORDER BY time "                                                                                                           \
     "LIMIT ?1;"
+
+#define SELECT_ERROR_ID "select_error"
+#define SELECT_ERROR_REQUEST                                                                                           \
+    "SELECT time, "                                                                                                    \
+    "functionName, workerName, exitCode, exitCause, "                                                                  \
+    "localNodeId, remoteNodeId, nodeType, path, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "syncDbId FROM "                                                                                                   \
+    "error "                                                                                                           \
+    "WHERE dbId=?1;"
 
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \
@@ -1050,6 +1061,7 @@ bool ParmsDb::prepare() {
                                  SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_ID, SELECT_ALL_ERROR_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ERROR_ID, SELECT_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
@@ -1148,6 +1160,12 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    // User table
+    tableName = "user";
+    if (!addTextColumnIfMissing(tableName, "firstName")) {
+        return false;
+    }
+
     LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
 
     return true;
@@ -1172,6 +1190,14 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
         }
 #endif
+        const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
+        if (CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.0")) {
+            if (!enableSentryAndMatomo()) {
+                LOG_WARN(_logger, "Failed to enable Sentry and Matomo.");
+                // Not a critical error, at worst it will just result in missing some telemetry data, so we don't return false
+                // here to avoid blocking the upgrade.
+            }
+        }
     }
     LOG_INFO(_logger, "Upgrade " << dbType() << " successfully completed.");
 
@@ -1391,10 +1417,11 @@ bool ParmsDb::insertUser(const User &user) {
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 2, user.userId()));
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 3, user.keychainKey()));
     LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 4, user.name()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.email()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.avatarUrl()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatar()));
-    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.toMigrate()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 5, user.firstName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 6, user.email()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 7, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 8, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(INSERT_USER_REQUEST_ID, 9, user.toMigrate()));
     if (!queryExec(INSERT_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_USER_REQUEST_ID);
         return false;
@@ -1413,11 +1440,12 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 1, user.userId()));
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 2, user.keychainKey()));
     LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 3, user.name()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.email()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.avatarUrl()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatar()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.toMigrate()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 4, user.firstName()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 5, user.email()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 6, user.avatarUrl()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 7, user.avatar()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 8, user.toMigrate()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_USER_REQUEST_ID, 9, user.dbId()));
     if (!queryExec(UPDATE_USER_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_USER_REQUEST_ID);
         return false;
@@ -1469,9 +1497,9 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
 
     user.setDbId(dbId);
 
-    int intResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 0, intResult));
-    user.setUserId(intResult);
+    UserId userIdResult{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_USER_REQUEST_ID, 0, userIdResult));
+    user.setUserId(userIdResult);
 
     std::string strResult;
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 1, strResult));
@@ -1481,17 +1509,21 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 3, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_REQUEST_ID, 5, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_REQUEST_ID, 6, blobResult));
     user.setAvatar(blobResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 6, intResult));
-    user.setToMigrate(static_cast<bool>(intResult));
+    int32_t int32Result{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_REQUEST_ID, 7, int32Result));
+    user.setToMigrate(static_cast<bool>(int32Result));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
@@ -1525,17 +1557,20 @@ bool ParmsDb::selectUserByUserId(const UserId userId, User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 3, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 5, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, blobResult));
     user.setAvatar(blobResult);
 
     int setToMigrateResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 6, setToMigrateResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_USER_BY_USERID_REQUEST_ID, 7, setToMigrateResult));
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
@@ -1599,17 +1634,20 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
     user.setName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
-    user.setEmail(strResult);
+    user.setFirstName(strResult);
 
     LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
+    user.setEmail(strResult);
+
+    LOG_IF_FAIL(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, strResult));
     user.setAvatarUrl(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, blobResult));
     user.setAvatar(blobResult);
 
     int setToMigrateResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, setToMigrateResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 8, setToMigrateResult));
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
@@ -1642,17 +1680,19 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 2, keychainKey));
         std::string name;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 3, name));
+        std::string firstName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, firstName));
         std::string email;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 4, email));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, email));
         std::string avatarUrl;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 5, avatarUrl));
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatarUrl));
         std::shared_ptr<std::vector<char>> avatar;
-        LOG_IF_FAIL(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 6, avatar));
+        LOG_IF_FAIL(queryBlobValue(SELECT_ALL_USERS_REQUEST_ID, 7, avatar));
         int toMigrateResult{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 7, toMigrateResult));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 8, toMigrateResult));
 
-        userList.push_back(
-                User(userDbId, userId, keychainKey, name, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult)));
+        userList.push_back(User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar,
+                                static_cast<bool>(toMigrateResult)));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
@@ -3011,6 +3051,63 @@ bool ParmsDb::selectAllErrors(const int limit, std::vector<Error> &errs) {
     return true;
 }
 
+bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERROR_ID, 1, dbId));
+
+    if (!queryNext(SELECT_ERROR_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_ERROR_ID);
+        return false;
+    }
+    if (!found) {
+        return true;
+    }
+
+    int64_t time{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 0, time));
+    std::string functionName;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 1, functionName));
+    std::string workerName;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 2, workerName));
+    int32_t exitCode{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 3, exitCode));
+    int32_t exitCause{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 4, exitCause));
+    std::string localNodeId;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 5, localNodeId));
+    std::string remoteNodeId;
+    LOG_IF_FAIL(queryStringValue(SELECT_ERROR_ID, 6, remoteNodeId));
+    int32_t nodeType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 7, nodeType));
+    SyncName path;
+    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 8, path));
+    int32_t conflictType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 9, conflictType));
+    int32_t inconsistencyType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 10, inconsistencyType));
+    int32_t cancelType{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 11, cancelType));
+    SyncName destinationPath;
+    LOG_IF_FAIL(querySyncNameValue(SELECT_ERROR_ID, 12, destinationPath));
+    int32_t intLevel{0};
+    LOG_IF_FAIL(queryIntValue(SELECT_ERROR_ID, 13, intLevel));
+    const auto level = fromInt<ErrorLevel>(intLevel);
+
+    SyncDbId syncDbId{0};
+    LOG_IF_FAIL(queryInt64Value(SELECT_ERROR_ID, 14, syncDbId));
+    error = Error(dbId, time, level, functionName, syncDbId, workerName, fromInt<ExitCode>(exitCode),
+                  fromInt<ExitCause>(exitCause), localNodeId, remoteNodeId, fromInt<NodeType>(nodeType), path,
+                  fromInt<ConflictType>(conflictType), fromInt<InconsistencyType>(inconsistencyType),
+                  fromInt<CancelType>(cancelType), destinationPath);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERROR_ID));
+
+    return true;
+}
+
+
 bool ParmsDb::selectAllErrors(const ErrorLevel level, const SyncDbId syncDbId, const int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
@@ -3258,4 +3355,42 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 }
 #endif
 
+bool ParmsDb::enableSentryAndMatomo() {
+    LOG_INFO(_logger, "Enabling sentry and matomo by default")
+
+    if (!createAndPrepareRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) {
+        LOG_WARN(_logger, "Error creating and preparing query: " << SELECT_PARAMETERS_REQUEST_ID);
+        return false;
+    }
+    Parameters parameters;
+    bool found = false;
+    if (!selectParameters(parameters, found)) {
+        LOG_WARN(_logger, "Error selecting parameters");
+        return false;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Parameters not found");
+        return false;
+    }
+    queryFree(SELECT_PARAMETERS_REQUEST_ID);
+    parameters.setSentryEnabled(true);
+    parameters.setMatomoEnabled(true);
+
+    if (!createAndPrepareRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) {
+        LOG_WARN(_logger, "Error creating and preparing query: " << UPDATE_PARAMETERS_REQUEST_ID);
+        return false;
+    }
+    if (!updateParameters(parameters, found)) {
+        LOG_WARN(_logger, "Error updating parameters");
+        return false;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Parameters not found for update");
+        return false;
+    }
+
+    queryFree(UPDATE_PARAMETERS_REQUEST_ID);
+
+    return true;
+}
 } // namespace KDC

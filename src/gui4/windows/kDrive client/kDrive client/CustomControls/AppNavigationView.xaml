@@ -32,7 +32,7 @@
 
     <NavigationView.PaneCustomContent>
         <controls:SyncSelector HorizontalAlignment="Stretch"
-                               Margin="4,9,4,20"
+                               Margin="12,9,12,20"
                                Visibility="{x:Bind IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                IsEnabled="{x:Bind GetSyncSelectorIsEnabled(ViewModel.SelectedSync, ContentFrame.Content), Mode=OneWay}" />
     </NavigationView.PaneCustomContent>
@@ -41,8 +41,7 @@
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleHome'), Mode=OneWay}"
                             Tag="HomePage"
                             MinHeight="30"
-                            IsSelected="True"
-                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                            IsSelected="True">
             <NavigationViewItem.Icon>
                 <controls:SvgIcon Height="32"
                                   UriString="{StaticResource Infomaniak.DS.Icons.Essentials.house}"
@@ -61,7 +60,7 @@
             <NavigationViewItem.InfoBadge>
                 <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
                            VerticalAlignment="Center"
-                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                           Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed}" />
             </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
         <NavigationViewItem Content="{x:Bind kDrive:Localizer.Instance.GetString('tabTitleStorage'), Mode=OneWay}"

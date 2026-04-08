@@ -32,7 +32,7 @@ class SyncDbReadOnlyCache {
         bool reloadIfNeeded();
         void clear();
         // Getters with replica IDs
-        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
         // Returns database ID for the ID nodeId of the snapshot from replica `side`
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);

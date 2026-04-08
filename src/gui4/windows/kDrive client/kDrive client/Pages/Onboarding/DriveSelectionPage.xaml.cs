@@ -82,11 +82,11 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}'");
                     cb.IsChecked = false;
                     cb.IsEnabled = true;
-                    Utility.ShowTeachingTipFromxUid("InvalidDefaultSyncLocationTeachingTip");
+                    Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
 
-                NewSync newSync = new() { Drive = drive, DefaultPath = result, LocalPath = result };
+                NewSync newSync = new(drive) { DefaultPath = result, LocalPath = result };
                 await newSync.SelectBestVfsMode();
 
                 _onBoardingViewModel.NewSyncs.Add(newSync);
@@ -127,7 +127,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             _onBoardingViewModel?.Reset();
             Frame.Navigate(typeof(Onboarding.WelcomePage), _onBoardingViewModel);
-
         }
     }
 

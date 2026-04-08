@@ -248,11 +248,13 @@ void SyncPalWorker::execute() {
                 if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::TmpDirAccessError ||
                       stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
                       stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
                     (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::TmpDirAccessError ||
                       stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
                       stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing))) {
                     // Exit without error

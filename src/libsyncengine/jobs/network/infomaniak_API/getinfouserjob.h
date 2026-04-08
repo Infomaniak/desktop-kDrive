@@ -27,6 +27,7 @@ class GetInfoUserJob : public AbstractTokenNetworkJob {
         explicit GetInfoUserJob(UserDbId userDbId);
 
         [[nodiscard]] const std::string &name() const { return _name; }
+        [[nodiscard]] const std::string &firstName() const { return _firstName; }
         [[nodiscard]] const std::string &email() const { return _email; }
         [[nodiscard]] const std::string &avatarUrl() const { return _avatarUrl; }
         [[nodiscard]] bool isStaff() const { return _isStaff; }
@@ -38,6 +39,7 @@ class GetInfoUserJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
 
         std::string _name;
+        std::string _firstName;
         std::string _email;
         std::string _avatarUrl;
         bool _isStaff{false};

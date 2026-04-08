@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.CustomControls
             _driveSetupContentDialogVM = new DriveSetupContentDialogVM(newSyncs);
             base.DataContext = _driveSetupContentDialogVM;
             base.XamlRoot = xamlRoot;
-            base.PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm");
+            base.PrimaryButtonText = Localizer.Instance.GetString("buttonValidate");
             base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
             base.DefaultButton = ContentDialogButton.Primary;
             var frame = new Frame();

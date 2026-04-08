@@ -61,6 +61,16 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     }
 
     @MainActor
+    func setCurrentTabIfNecessary(_ tab: Tab) {
+        let rootPath = tab.rootPath
+        guard currentPath.details.first != rootPath else {
+            return
+        }
+
+        setCurrentTab(tab)
+    }
+
+    @MainActor
     func setCurrentModal(_ modal: ModalPath?) {
         currentModal = modal
     }

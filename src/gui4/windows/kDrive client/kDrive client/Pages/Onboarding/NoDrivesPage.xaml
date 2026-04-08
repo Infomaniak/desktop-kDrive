@@ -29,22 +29,52 @@
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- User info -->
-            <StackPanel Orientation="Horizontal"
-                        Spacing="12"
-                        VerticalAlignment="Center">
-                <PersonPicture ProfilePicture="{x:Bind OnboardingViewModel.SelectedUser.GetAvatarImageSource(24), Mode=OneWay}"
-                               Height="24"
-                               Width="24" />
-                <TextBlock Text="{x:Bind OnboardingViewModel.SelectedUser.Name}"
-                           VerticalAlignment="Center"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                           Foreground="{ThemeResource TextFillColorSecondary}" />
-            </StackPanel>
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                  VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                        HorizontalAlignment="Left">
+                    <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                          Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
+                          VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <PersonPicture Grid.Column="0"
+                                       ProfilePicture="{x:Bind OnboardingViewModel.SelectedUser.GetAvatarImageSource(48), Mode=OneWay}"
+                                       HorizontalAlignment="Left"
+                                       Height="24"
+                                       Width="24" />
+
+                        <TextBlock Grid.Column="1"
+                                   MaxWidth="200"
+                                   Text="{x:Bind OnboardingViewModel.SelectedUser.Name}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Left"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Foreground="{ThemeResource TextFillColorSecondary}" />
+                    </Grid>
+                </Border>
+
+                <HyperlinkButton Grid.Column="1"
+                                 Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonChangeUser')}"
+                                 HorizontalAlignment="Left"
+                                 Click="ChangeUserButton_Click" />
+
+            </Grid>
         </StackPanel>
 
         <!-- No drive available -->
         <StackPanel Grid.Row="1"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
             <!-- Subtitle -->
             <TextBlock Grid.Row="0"
                        Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingDriveSelectionNoDriveTitle')}"
@@ -61,12 +91,12 @@
         <!-- Offers Buttons -->
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Top.S}">
 
-            <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonShowOffers')}"
-                    HorizontalAlignment="Left"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Click="OnOffersButtonClick" />
+            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonShowOffers')}"
+                             HorizontalAlignment="Left"
+                             Click="OnOffersButtonClick" />
 
             <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonStartForFree')}"
                     HorizontalAlignment="Left"

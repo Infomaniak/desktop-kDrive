@@ -2317,7 +2317,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
-            LogUploadJob::cancelUpload();
+            (void) LogUploadJob::cancelUpload();
             break;
         }
         case RequestNum::UTILITY_CRASH: {

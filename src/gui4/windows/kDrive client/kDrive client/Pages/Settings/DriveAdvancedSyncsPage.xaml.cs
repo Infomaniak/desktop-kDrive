@@ -49,7 +49,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
             ManagedDrive = drive;
         }
-        else if (_viewModel.AllDrives.FirstOrDefault(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId, null) is not null)
+        else if (_viewModel.AllDrives.Any(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId))
         {
             // Can happen if a user uses the back button after setting up a new drive.
             Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -127,7 +127,17 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncDeletionWarning");
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
+            PrimaryButtonText = Localizer.Instance.GetString("buttonRemove"),
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = Localizer.Instance.GetString("dialogSyncDeletionWarningContent")
+        };
+
+        var dialogResult = await dialog.ShowAsync();
         if (dialogResult != ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -164,12 +174,31 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeWarning") == ContentDialogResult.Primary;
+        bool targetOnline = radioButton.Name == "OnlineRadioButton";
+        bool targetOffline = radioButton.Name == "OfflineRadioButton";
+
+        if (!targetOffline && !targetOnline)
+        {
+            Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+            return;
+        }
+
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
+            PrimaryButtonText = targetOnline ? Localizer.Instance.GetString("buttonChangeToOnline") : Localizer.Instance.GetString("buttonChangeToOffline"),
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = Localizer.Instance.GetString("dialogSyncModeChangeWarningContent")
+        };
+
+        bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
         if (canceledByUser)
         {
             Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
             // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
-            if (radioButton.Name == "OnlineRadioButton")
+            if (targetOnline)
             {
                 sync.SyncType = Types.SyncType.Online;
                 sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
@@ -184,22 +213,31 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
 
         bool success = false;
-        if (radioButton.Name == "OnlineRadioButton")
+        if (targetOnline)
             success = await sync.ChangeSyncType(Types.SyncType.Online);
-        else if (radioButton.Name == "OfflineRadioButton")
+        else
             success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
         if (!success)
-            await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
+        {
+            ContentDialog errorDialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
+            };
+            await errorDialog.ShowAsync();
+        }
     }
 
     private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         if (sender is Control control)
         {
-            var curentForeground = control.Foreground;
+            var currentForeground = control.Foreground;
             control.Foreground = null;
-            control.Foreground = curentForeground;
+            control.Foreground = currentForeground;
         }
     }
 

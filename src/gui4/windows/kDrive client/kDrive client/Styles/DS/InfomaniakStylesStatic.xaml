@@ -118,5 +118,8 @@
     <!-- Products -->
     <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive">ms-appx:///Assets/DS/Icons/Products/kDrive.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive-outline">ms-appx:///Assets/DS/Icons/Products/kDrive-outline.svg</x:String>
+    
+    <!-- Time -->
+    <x:String x:Key="Infomaniak.DS.Icons.Time.hourglass">ms-appx:///Assets/DS/Icons/Time/hourglass.svg</x:String>
 
 </ResourceDictionary>

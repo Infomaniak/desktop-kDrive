@@ -1729,22 +1729,26 @@ ExitCode ServerRequests::deleteErrorsServer() {
     return ExitCode::Ok;
 }
 
-bool keepError(const SyncDbId syncDbId, const Error &error, ExitInfo &exitInfo) {
-    exitInfo = ExitCode::Ok;
+ExitInfo ServerRequests::keepError(const Error &error, bool &keepErrorFlag) {
+    keepErrorFlag = false;
+
+    if (error.level() == ErrorLevel::Server) {
+        // Server errors can always be deleted by user.
+        return ExitCode::Ok;
+    }
+
     if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit ||
         error.cancelType() == CancelType::FileRescued) {
         // For the selected conflict types, the local item is renamed.
         Sync sync;
         bool found = false;
-        if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+        if (!ParmsDb::instance()->selectSync(error.syncDbId(), sync, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-            exitInfo = ExitCode::DbError;
-            return false;
+            return ExitCode::DbError;
         }
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
-            exitInfo = ExitCode::DataError;
-            return false;
+            LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << error.syncDbId() << " not found");
+            return ExitCode::DataError;
         }
 
         auto ioError = IoError::Success;
@@ -1753,16 +1757,13 @@ bool keepError(const SyncDbId syncDbId, const Error &error, ExitInfo &exitInfo) 
             !success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
-            exitInfo = ExitCode::SystemError;
-            return false;
+            return ExitCode::SystemError;
         }
 
         // If the conflicted file still exists, keep the error.
-        if (found) {
-            return true;
-        }
+        keepErrorFlag = found;
     }
-    return false;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::deleteErrorsForSync(const SyncDbId syncDbId, const bool autoResolved) {
@@ -1778,9 +1779,9 @@ ExitCode ServerRequests::deleteErrorsForSync(const SyncDbId syncDbId, const bool
     }
 
     for (const Error &error: errorList) {
-        ExitInfo exitInfo;
-        if (keepError(syncDbId, error, exitInfo)) continue;
-        if (!exitInfo) return exitInfo;
+        bool keepErrorFlag = false;
+        if (const auto exitInfo = keepError(error, keepErrorFlag); !exitInfo) return exitInfo;
+        if (keepErrorFlag) continue;
 
         if (isAutoResolvedError(error) == autoResolved) {
             bool found = false;
@@ -1996,6 +1997,11 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
         updated = true;
     }
 
+    if (user.firstName() != job->firstName()) {
+        user.setFirstName(job->firstName());
+        updated = true;
+    }
+
     if (user.email() != job->email()) {
         user.setEmail(job->email());
         updated = true;
@@ -2197,6 +2203,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
     userInfo.setDbId(user.dbId());
     userInfo.setUserId(user.userId());
     userInfo.setName(QString::fromStdString(user.name()));
+    userInfo.setFirstName(QString::fromStdString(user.firstName()));
     userInfo.setEmail(QString::fromStdString(user.email()));
     if (user.avatar()) {
         QByteArray avatarArr;

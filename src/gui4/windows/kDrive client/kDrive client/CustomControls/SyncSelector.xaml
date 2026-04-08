@@ -9,45 +9,72 @@
     <UserControl.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <!-- Template for main sync entry -->
         <DataTemplate x:Key="MainSyncTemplate"
                       x:DataType="viewmodel:Sync">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
                 <ToolTipService.ToolTip>
                     <TextBlock Text="{Binding LocalPath}" />
                 </ToolTipService.ToolTip>
-                <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
-                                   Height="16"
-                                   Width="16" />
-                <TextBlock Text="{Binding Drive.Name}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-            </StackPanel>
+                <StackPanel Grid.Column="0"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
+                                       Height="16"
+                                       Width="16" />
+                    <TextBlock Text="{Binding Drive.Name}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                </StackPanel>
+                <InfoBadge Grid.Column="1"
+                           Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Visibility="{x:Bind GetSyncSelectorInfoBadgeVisibility(SyncErrors, Drive.Account.User.AppModel.SelectedSync), Mode=OneWay, FallbackValue=Collapsed}" />
+            </Grid>
         </DataTemplate>
 
         <!-- Template for advanced sync entry -->
         <DataTemplate x:Key="AdvancedSyncTemplate"
                       x:DataType="viewmodel:Sync">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <ToolTipService.ToolTip> <!-- TODO: Validate the tooltip with UI/UX team -->
-                    <TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <ToolTipService.ToolTip>
+                        <!-- TODO: Validate the tooltip with UI/UX team -->
+                        <TextBlock>
                         <Run Text="{Binding LocalPath}" />
                         <Run Text=" -> " />
                         <Run Text="{Binding RemotePath}" />
-                    </TextBlock>
-                </ToolTipService.ToolTip>
-                <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
-                                   Height="16"
-                                   Width="16" />
-                <StackPanel Spacing="0">
-                    <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-                    <TextBlock Text="{Binding Drive.Name}"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </TextBlock>
+                    </ToolTipService.ToolTip>
+                    <controls:SyncIcon Sync="{x:Bind Mode=OneWay}"
+                                       Height="16"
+                                       Width="16" />
+                    <StackPanel Spacing="0">
+                        <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                        <TextBlock Text="{Binding Drive.Name}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
+                <InfoBadge Grid.Column="1"
+                           Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Visibility="{x:Bind GetSyncSelectorInfoBadgeVisibility(SyncErrors, Drive.Account.User.AppModel.SelectedSync), Mode=OneWay, FallbackValue=Collapsed}" />
+            </Grid>
         </DataTemplate>
 
         <local:SyncTemplateSelector x:Key="ComboBoxItemTemplateSelector"

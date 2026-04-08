@@ -56,6 +56,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                     NodeIdsSet &remainingNodesIds); // Restrict change detection to a node type.
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
+        ExitInfo fixDestinationPathIfNeeded(SyncPath &destinationPath, const SyncPath &dbPath,
+                                            const std::shared_ptr<ConstSnapshot> snapshot, const NodeId &nodeId,
+                                            const ReplicaSide side, const SyncName &snapshotName);
 
         // Detect changes based on the snapshot records: create operations
         ExitCode exploreSnapshotTree(ReplicaSide side, const NodeSet &idsSet);
