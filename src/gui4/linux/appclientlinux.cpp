@@ -24,6 +24,7 @@
 
 #include <Poco/Dynamic/Struct.h>
 
+#include <QDir>
 #include <QGuiApplication>
 #include <QLocale>
 #include <QScreen>
@@ -31,6 +32,7 @@
 
 #include <cstdlib>
 #include <thread>
+#include <unistd.h>
 
 namespace KDC {
 
@@ -72,6 +74,14 @@ void AppClientLinux::setupLogging() {
     qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag();
     qCInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
     qCInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
+    qCInfo(lcAppClientLinux) << "executable path:" << QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+    qCInfo(lcAppClientLinux) << "application dir:" << QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+    qCInfo(lcAppClientLinux) << "working directory:" << QDir::toNativeSeparators(QDir::currentPath());
+    qCInfo(lcAppClientLinux) << "pid:" << QCoreApplication::applicationPid();
+    qCInfo(lcAppClientLinux) << "user:" << qEnvironmentVariable("USER");
+    qCInfo(lcAppClientLinux) << "logname:" << qEnvironmentVariable("LOGNAME");
+    qCInfo(lcAppClientLinux) << "uid:" << getuid() << "euid:" << geteuid();
+    qCInfo(lcAppClientLinux) << "home directory:" << QDir::toNativeSeparators(QDir::homePath());
     qCInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
     qCInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion();
     qCInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
@@ -86,7 +96,7 @@ void AppClientLinux::setupLogging() {
     qCInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
 
     qCInfo(lcAppClientLinux) << "Qt version:" << qVersion();
-    qCInfo(lcAppClientLinux) << "Qt platform:" << qEnvironmentVariable("QT_QPA_PLATFORM");
+    qCInfo(lcAppClientLinux) << "Qt platform:" << this->platformName();
     if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
         qCInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
     if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR"))
