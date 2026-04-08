@@ -90,7 +90,7 @@ bool CommClient::connectToServer(quint16 commPort) {
     qCDebug(lcCommClient()) << "Connection to server port" << commPort;
     _tcpConnection->connectToHost(QHostAddress::LocalHost, commPort);
 
-    timer.start(COMM_AVERAGE_TIMEOUT);
+    timer.start(commAverageTimeout);
     if (!waitLoop.exec()) {
         return false;
     }
@@ -110,10 +110,10 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     }
 
     QJsonObject requestObj;
-    requestObj[MSG_TYPE] = toInt(MsgType::REQUEST);
-    requestObj[MSG_REQUEST_ID] = id;
-    requestObj[MSG_REQUEST_NUM] = toInt(num);
-    requestObj[MSG_REQUEST_PARAMS] = QString(params.toBase64());
+    requestObj[msgType] = toInt(MsgType::REQUEST);
+    requestObj[msgRequestId] = id;
+    requestObj[msgRequestNum] = toInt(num);
+    requestObj[msgRequestParams] = QString(params.toBase64());
 
     QJsonDocument requestDoc(requestObj);
     QByteArray request(requestDoc.toJson(QJsonDocument::Compact));
@@ -176,16 +176,16 @@ void CommClient::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::REPLY)) {
-                const int id(msgObj[MSG_REPLY_ID].toInt());
-                const QByteArray result(QByteArray::fromBase64(msgObj[MSG_REPLY_RESULT].toString().toUtf8()));
+            if (msgObj[msgType].toInt() == toInt(MsgType::REPLY)) {
+                const int id(msgObj[msgReplyId].toInt());
+                const QByteArray result(QByteArray::fromBase64(msgObj[msgReplyResult].toString().toUtf8()));
 
                 // Add reply to worker queue
                 _requestWorker->addReply(id, result);
-            } else if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::SIGNAL)) {
-                const int id(msgObj[MSG_SIGNAL_ID].toInt());
-                const SignalNum num(static_cast<SignalNum>(msgObj[MSG_SIGNAL_NUM].toInt()));
-                const QByteArray params(QByteArray::fromBase64(msgObj[MSG_SIGNAL_PARAMS].toString().toUtf8()));
+            } else if (msgObj[msgType].toInt() == toInt(MsgType::SIGNAL)) {
+                const int id(msgObj[msgSignalId].toInt());
+                const SignalNum num(static_cast<SignalNum>(msgObj[msgSignalNum].toInt()));
+                const QByteArray params(QByteArray::fromBase64(msgObj[msgSignalParams].toString().toUtf8()));
 
                 // Add signal to worker queue
                 _requestWorker->addSignal(id, num, params);
@@ -235,7 +235,7 @@ CommClient::~CommClient() {
 }
 
 bool CommClient::execute(const RequestNum num, const QByteArray &params, QByteArray &results,
-                         const int timeout /*= COMM_SHORT_TIMEOUT*/) {
+                         const int timeout /*= commShortTimeout*/) {
     if (!_tcpConnection) {
         return false;
     }
