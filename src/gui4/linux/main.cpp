@@ -20,7 +20,7 @@
 
 int main(int argc, char *argv[]) {
     KDC::AppClientLinux app(argc, argv);
-    const int exitCode = app.exec();
+    const int32_t exitCode = app.exec();
     qCInfo(KDC::lcAppClientLinux) << "Qt event loop exited with code" << exitCode;
     return exitCode;
 }
