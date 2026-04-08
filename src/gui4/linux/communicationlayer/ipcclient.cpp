@@ -173,8 +173,6 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
     if (callback) {
         _pendingCallbacks[id] = std::move(callback);
     }
-
-    return id;
 }
 
 /** Forwards the socket connected() signal and notifies upper layers. */
