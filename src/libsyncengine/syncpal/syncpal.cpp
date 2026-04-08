@@ -735,11 +735,12 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
 
-    const auto progressPercentCallback = [job, this](UniqueId,
-                                                     int progress // %
-                                         ) {
-        if (!setProgress(job->affectedFilePath(), progress)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+    const auto progressPercentCallback = [jobWeak = std::weak_ptr<DownloadJob>(job), this](UniqueId, int progress) {
+        if (auto job = jobWeak.lock()) {
+            if (!setProgress(job->affectedFilePath(), progress)) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+            }
         }
     };
 
