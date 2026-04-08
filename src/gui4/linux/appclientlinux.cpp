@@ -45,8 +45,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
-    (void) connect(this, &QCoreApplication::aboutToQuit, this,
-                   [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
+    (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
 
     qCDebug(lcAppClientLinux) << "IPC signal wiring initialized";
 
