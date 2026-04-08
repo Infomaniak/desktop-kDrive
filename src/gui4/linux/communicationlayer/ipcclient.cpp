@@ -147,11 +147,11 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
     const int32_t id = _nextId++;
 
     Poco::DynamicStruct ipcMessage;
-    ipcMessage[MSG_TYPE] = toInt(GuiJobType::Query);
-    ipcMessage[MSG_REQUEST_ID] = id;
-    ipcMessage[MSG_REQUEST_NUM] = toInt(num);
+    ipcMessage[msgType] = toInt(GuiJobType::Query);
+    ipcMessage[msgRequestId] = id;
+    ipcMessage[msgRequestNum] = toInt(num);
 
-    if (const bool insertResult = ipcMessage.insert(MSG_REQUEST_PARAMS, params).second; !insertResult) {
+    if (const bool insertResult = ipcMessage.insert(msgRequestParams, params).second; !insertResult) {
         qCCritical(lcIpcClient) << "Failed to insert request parameters into message";
         exit(EXIT_FAILURE);
     }
@@ -262,25 +262,25 @@ void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
  * @param id         Request identifier used to correlate the response.
  */
 void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
-    if (!ipcMessage.contains(MSG_RESPONSE_CODE) || !ipcMessage.contains(MSG_RESPONSE_CAUSE)) {
+    if (!ipcMessage.contains(msgResponseCode) || !ipcMessage.contains(msgResponseCause)) {
         qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
         exit(EXIT_FAILURE);
     }
 
     auto requestNum = RequestNum::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, requestNum);
+    CommonUtility::readValueFromStruct(ipcMessage, msgRequestNum, requestNum);
 
-    if (!ipcMessage[MSG_REQUEST_PARAMS].isStruct()) {
+    if (!ipcMessage[msgRequestParams].isStruct()) {
         qCCritical(lcIpcClient) << "params field is not a JSON object for id:" << id;
         exit(EXIT_FAILURE);
     }
-    const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
+    const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
     auto exitCode = ExitCode::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CODE, exitCode);
+    CommonUtility::readValueFromStruct(ipcMessage, msgResponseCode, exitCode);
 
     auto exitCause = ExitCause::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_RESPONSE_CAUSE, exitCause);
+    CommonUtility::readValueFromStruct(ipcMessage, msgResponseCause, exitCause);
     const ExitInfo exitInfo(exitCode, exitCause);
 
     qCDebug(lcIpcClient) << "Response received | RequestNum:" << requestNum << "/ id:" << id << "/ ExitInfo:" << exitInfo;
@@ -313,13 +313,13 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
  */
 void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     auto num = SignalNum::Unknown;
-    CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_NUM, num);
+    CommonUtility::readValueFromStruct(ipcMessage, msgRequestNum, num);
 
-    if (!ipcMessage[MSG_REQUEST_PARAMS].isStruct()) {
+    if (!ipcMessage[msgRequestParams].isStruct()) {
         qCCritical(lcIpcClient) << "params field is not a JSON object for signal id:" << id;
         exit(EXIT_FAILURE);
     }
-    const Poco::DynamicStruct params = ipcMessage[MSG_REQUEST_PARAMS].extract<Poco::DynamicStruct>();
+    const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
     qCDebug(lcIpcClient) << "Signal emitted | SignalNum:" << num << "/ id:" << id;
     emit serverSignalReceived(num, params);
@@ -340,17 +340,17 @@ void IpcClient::processBuffer() {
         try {
             const Poco::DynamicStruct ipcMessage = CommJson::parseObject(raw);
 
-            if (!ipcMessage.contains(MSG_TYPE) || !ipcMessage.contains(MSG_REQUEST_ID) || !ipcMessage.contains(MSG_REQUEST_NUM) ||
-                !ipcMessage.contains(MSG_REQUEST_PARAMS)) {
+            if (!ipcMessage.contains(msgType) || !ipcMessage.contains(msgRequestId) || !ipcMessage.contains(msgRequestNum) ||
+                !ipcMessage.contains(msgRequestParams)) {
                 qCCritical(lcIpcClient) << "Received malformed message, missing required fields";
                 exit(EXIT_FAILURE);
             }
 
             auto type = GuiJobType::Unknown;
-            CommonUtility::readValueFromStruct(ipcMessage, MSG_TYPE, type);
+            CommonUtility::readValueFromStruct(ipcMessage, msgType, type);
 
             int32_t id = 0;
-            CommonUtility::readValueFromStruct(ipcMessage, MSG_REQUEST_ID, id);
+            CommonUtility::readValueFromStruct(ipcMessage, msgRequestId, id);
 
             switch (type) {
                 case GuiJobType::Query: {
