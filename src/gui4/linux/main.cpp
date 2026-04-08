@@ -17,8 +17,18 @@
  */
 
 #include "appclientlinux.h"
+#include "libcommon/utility/utility.h"
+
+#include <QLockFile>
+#include <QString>
 
 int main(int argc, char *argv[]) {
+    if (QLockFile lockFile(QString::fromStdString((KDC::CommonUtility::getAppSupportDir() / "kdrive-client.lock").string()));
+        !lockFile.tryLock()) {
+        qWarning("kDrive client is already running.");
+        return EXIT_FAILURE;
+    }
+
     // see https://doc.qt.io/qt-6/qapplication.html#details
     const QScopedPointer app(new KDC::AppClientLinux(argc, argv));
     const int32_t exitCode = app->exec();
