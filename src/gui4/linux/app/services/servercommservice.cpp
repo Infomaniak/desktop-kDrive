@@ -178,12 +178,6 @@ void ServerCommService::registerUpdaterHandlers(SignalDispatcher &dispatcher) {
         CommonUtility::readValueFromStruct(params, MSG_PARAM_UPDATE_STATE, state);
         emit updateStateChanged(state);
     });
-
-    dispatcher.registerHandler(SignalNum::UPDATER_SHOW_DIALOG, [this](const Poco::DynamicStruct &params) {
-        VersionInfo info;
-        info.fromDynamicStruct(params[MSG_PARAM_VERSION_INFO].extract<Poco::DynamicStruct>());
-        emit showUpdateDialog(info);
-    });
 }
 
 // -- Utility -------------------------------------------------------------------
@@ -749,18 +743,6 @@ void ServerCommService::requestUpdaterVersionInfo(const VersionChannel channel, 
                                }
                                callback(exitInfo, info);
                            });
-}
-
-void ServerCommService::requestUpdaterSkipVersion(const QString &skippedVersion, const VoidCallback &callback) const {
-    Poco::DynamicStruct params;
-    params[MSG_PARAM_SKIPPED_VERSION] = CommonUtility::qStr2CommString(skippedVersion);
-    _ipcClient.sendRequest(RequestNum::UPDATER_SKIP_VERSION, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
-}
-
-void ServerCommService::requestUpdaterStartInstaller(const VoidCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::UPDATER_START_INSTALLER, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
 // -- Utility ------------------------------------------------------------
