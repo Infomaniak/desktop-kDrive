@@ -208,8 +208,6 @@ class ServerCommService : public QObject {
         // --- Updater ---
         void requestUpdaterState(const UpdateStateCallback &callback) const;
         void requestUpdaterVersionInfo(VersionChannel channel, const VersionInfoCallback &callback) const;
-        void requestUpdaterSkipVersion(const QString &skippedVersion, const VoidCallback &callback) const;
-        void requestUpdaterStartInstaller(const VoidCallback &callback) const;
 
         // --- Utility ---
         void requestCheckCommStatus(const VoidCallback &callback) const;
@@ -255,7 +253,6 @@ class ServerCommService : public QObject {
 
         // --- Updater ---
         void updateStateChanged(UpdateState state);
-        void showUpdateDialog(const VersionInfo &info);
 
         // --- Utility ---
         void showNotification(const QString &title, const QString &message);
