@@ -40,12 +40,19 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QGuiApplication(argc, argv) {
     setupLogging();
 
+    qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
+
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+    (void) connect(this, &QCoreApplication::aboutToQuit, this,
+                   [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
+
+    qCDebug(lcAppClientLinux) << "IPC signal wiring initialized";
 
 
 #ifdef QT_DEBUG
+    qCInfo(lcAppClientLinux) << "Starting initial IPC connection";
     _ipcClient.connectToServer();
 #else
     qCCritical(lcAppClientLinux) << "Release mode not already supported.";
@@ -62,6 +69,10 @@ void AppClientLinux::setupLogging() {
     // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
     qInfo(lcAppClientLinux) << "***** Application & System Informations *****";
+    qInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion().c_str();
+    qInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag().c_str();
+    qInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
+    qInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
     qInfo(lcAppClientLinux) << "os:" << CommonUtility::platformName();
     qInfo(lcAppClientLinux) << "os version:" << CommonUtility::osVersion().c_str();
     qInfo(lcAppClientLinux) << "kernel version:" << QSysInfo::kernelVersion();
