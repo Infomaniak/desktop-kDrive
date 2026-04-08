@@ -74,7 +74,7 @@ Key info classes:
 Defines every request/signal between GUI and server:
 - `RequestNum` — ~70 RPC calls, grouped by domain (`LOGIN_*`, `DRIVE_*`, `SYNC_*`, `NODE_*`, …)
 - `SignalNum` — ~30 async server→client notifications
-- Timeout constants: `COMM_SHORT_TIMEOUT` (1s), `COMM_AVERAGE_TIMEOUT` (10s), `COMM_LONG_TIMEOUT` (60s)
+- Timeout constants: `commShortTimeout` (1s), `commAverageTimeout` (10s), `commLongTimeout` (60s)
 - `commjson.h` — small shared helper for parsing raw IPC JSON strings into `Poco::DynamicStruct`
 
 **Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.

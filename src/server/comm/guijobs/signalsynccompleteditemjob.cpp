@@ -32,8 +32,8 @@ SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncF
 }
 
 ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_SYNC_DB_ID, _syncDbId);
-    writeParamValue(MSG_PARAM_ITEM_INFO, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
+    writeParamValue(msgParamSyncDbId, _syncDbId);
+    writeParamValue(msgParamItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
     return ExitCode::Ok;
 }
 
