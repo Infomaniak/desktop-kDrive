@@ -20,6 +20,7 @@
 
 #include "syncenginelib.h"
 #include "db/syncdb.h"
+#include "io/cachedirectory.h"
 #include "progress/progressinfo.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"

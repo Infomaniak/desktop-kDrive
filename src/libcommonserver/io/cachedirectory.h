@@ -1,8 +1,7 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
+ ** This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -23,17 +22,22 @@ namespace KDC {
 class CacheDirectory {
     public:
         explicit CacheDirectory(const SyncPath &localSyncPath);
-        ~CacheDirectory() { deleteDirectory(); }
+        ~CacheDirectory();
 
-        const SyncPath &directoryPath() noexcept;
+        const SyncPath &path() noexcept;
+        void deleteDirectory() const noexcept;
+
+        void setDeleteFolderUponDestruction(const bool deleteFolderUponDestruction) {
+            _deleteFolderUponDestruction = deleteFolderUponDestruction;
+        }
 
     private:
-        void initDirectory() noexcept;
-        void deleteDirectory() const noexcept;
+        void initDirectory(const SyncPath &localSyncPath) noexcept;
         void resetDirectoryPath() noexcept;
 
         mutable std::mutex _mutex;
         SyncPath _cacheDirectoryPath;
+        bool _deleteFolderUponDestruction{false};
 };
 
 } // namespace KDC

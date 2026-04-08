@@ -104,12 +104,6 @@ void TestIo::testTempDirectoryPath() {
     }
 }
 
-void TestIo::testCacheDirectoryPath() {
-    SyncPath cachePath;
-    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath));
-    CPPUNIT_ASSERT(!cachePath.empty());
-}
-
 void TestIo::testLogDirectoryPath() {
     {
         SyncPath logDirPath;
