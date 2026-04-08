@@ -42,7 +42,7 @@ static const auto inParamsLiteSync = "liteSync";
 static const auto inParamsBlackList = "blackList";
 
 // serializeOutputParms() writes: {
-//   MSG_PARAM_SYNC_INFO ("syncInfo"):  SyncInfo
+//   msgParamSyncInfo ("syncInfo"):  SyncInfo
 // }
 
 namespace KDC {
@@ -73,7 +73,7 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
 }
 
 ExitInfo AbstractSyncAddJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_SYNC_INFO, _syncInfo, info2DynamicVar<SyncInfo>);
+    writeParamValue(msgParamSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
 
     return ExitCode::Ok;
 }
