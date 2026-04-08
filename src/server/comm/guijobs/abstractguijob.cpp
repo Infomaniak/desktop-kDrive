@@ -23,17 +23,17 @@
 #include <Poco/Exception.h>
 
 // Input parameters keys
-static constexpr auto inRequestId = MSG_REQUEST_ID;
-static constexpr auto inRequestNum = MSG_REQUEST_NUM;
-static constexpr auto inRequestParams = MSG_REQUEST_PARAMS;
+static constexpr auto inRequestId = msgRequestId;
+static constexpr auto inRequestNum = msgRequestNum;
+static constexpr auto inRequestParams = msgRequestParams;
 
 // Output parameters keys
-static constexpr auto outRequestType = MSG_TYPE;
-static constexpr auto outRequestId = MSG_REQUEST_ID;
-static constexpr auto outRequestNum = MSG_REQUEST_NUM;
-static constexpr auto outRequestCode = MSG_RESPONSE_CODE;
-static constexpr auto outRequestCause = MSG_RESPONSE_CAUSE;
-static constexpr auto outRequestParams = MSG_REQUEST_PARAMS;
+static constexpr auto outRequestType = msgType;
+static constexpr auto outRequestId = msgRequestId;
+static constexpr auto outRequestNum = msgRequestNum;
+static constexpr auto outRequestCode = msgResponseCode;
+static constexpr auto outRequestCause = msgResponseCause;
+static constexpr auto outRequestParams = msgRequestParams;
 
 namespace KDC {
 
