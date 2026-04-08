@@ -705,7 +705,7 @@ void ServerCommService::requestExclTemplSetList(const std::vector<ExclusionTempl
     for (const auto &tmpl: templateList) {
         Poco::DynamicStruct s;
         tmpl.toDynamicStruct(s);
-        arr.push_back(s);
+        arr.emplace_back(s);
     }
     params[MSG_PARAM_EXCLUSION_TEMPLATE_LIST] = arr;
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_SETUSERLIST, params,
