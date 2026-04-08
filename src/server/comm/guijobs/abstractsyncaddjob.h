@@ -33,7 +33,7 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override { return ExitCode::Ok; }
 
-        ExitInfo process(SyncInfo &syncInfo);
+        ExitInfo process(const SyncInfo &syncInfo);
 
         auto localFolderPath() const { return _localFolderPath; }
         auto serverFolderPath() const { return _serverFolderPath; }

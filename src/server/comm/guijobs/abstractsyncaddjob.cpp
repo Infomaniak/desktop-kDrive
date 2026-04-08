@@ -71,7 +71,7 @@ ExitInfo AbstractSyncAddJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
+ExitInfo AbstractSyncAddJob::process(const SyncInfo &syncInfo) {
     // Check if sync is valid
     Sync sync;
     ServerRequests::syncInfoToSync(syncInfo, sync);
