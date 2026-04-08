@@ -142,6 +142,7 @@ set(syncengine_SRCS
     syncpal/excludelistpropagator.h syncpal/excludelistpropagator.cpp
     syncpal/tmpblacklistmanager.h syncpal/tmpblacklistmanager.cpp
     syncpal/conflictingfilescorrector.h syncpal/conflictingfilescorrector.cpp
+    syncpal/cachedirectory.h syncpal/cachedirectory.cpp
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h

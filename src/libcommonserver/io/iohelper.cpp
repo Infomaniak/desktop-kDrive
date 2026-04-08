@@ -699,17 +699,18 @@ class CacheDirectoryHandler {
         }
 
         void initDirectoryPath() noexcept {
-            static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
-            if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
+            static const SyncName cacheDirName =
+                    SyncName("." + Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
+            // if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
 
-#if defined(KD_LINUX)
-            if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
-            if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
-#endif
-            IoError ioError = IoError::Success;
-            if (!IoHelper::deviceTempDirectoryPath(_directoryPath, ioError)) {
-                return;
-            }
+            // #if defined(KD_LINUX)
+            //             if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
+            //             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
+            // #endif
+            // IoError ioError = IoError::Success;
+            // if (!IoHelper::deviceTempDirectoryPath(_directoryPath, ioError)) {
+            //     return;
+            // }
             _directoryPath /= cacheDirName;
             return;
         }
