@@ -46,7 +46,7 @@ class IpcClient : public QObject {
 #else
         void connectToServer(quint16 port);
 #endif
-        int32_t sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
+        void sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
 
     signals:
         void connected();
