@@ -32,8 +32,8 @@ SignalUtilityShowNotificationJob::SignalUtilityShowNotificationJob(CommString ti
 }
 
 ExitInfo SignalUtilityShowNotificationJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_TITLE, _title);
-    writeParamValue(MSG_PARAM_MESSAGE, _message);
+    writeParamValue(msgParamTitle, _title);
+    writeParamValue(msgParamMessage, _message);
 
     return ExitCode::Ok;
 }
