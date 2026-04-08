@@ -283,15 +283,14 @@ void ServerCommService::requestDeleteUser(const UserDbId userDbId, const VoidCal
 // -- Account -------------------------------------------------------------
 
 void ServerCommService::requestAccountInfoList(const AccountInfoListCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::ACCOUNT_INFOLIST, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<AccountInfo> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
-                                   CommonUtility::readValuesFromStruct(result, msgParamAccountInfoList, list,
-                                                                       dynamicVar2Struct<AccountInfo>);
-                               }
-                               callback(exitInfo, list);
-                           });
+    _ipcClient.sendRequest(
+            RequestNum::ACCOUNT_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                std::vector<AccountInfo> list;
+                if (exitInfo.code() == ExitCode::Ok) {
+                    CommonUtility::readValuesFromStruct(result, msgParamAccountInfoList, list, dynamicVar2Struct<AccountInfo>);
+                }
+                callback(exitInfo, list);
+            });
 }
 
 // -- Drive ---------------------------------------------------------------
@@ -571,15 +570,14 @@ void ServerCommService::requestNodeSubfolders(const DriveDbId driveDbId, const N
     params[msgParamDriveDbId] = driveDbId;
     params[msgParamNodeId] = nodeId;
     params[msgParamWithPath] = withPath;
-    _ipcClient.sendRequest(RequestNum::NODE_SUBFOLDERS, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<NodeInfo> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
-                                   CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list,
-                                                                       dynamicVar2Struct<NodeInfo>);
-                               }
-                               callback(exitInfo, list);
-                           });
+    _ipcClient.sendRequest(
+            RequestNum::NODE_SUBFOLDERS, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                std::vector<NodeInfo> list;
+                if (exitInfo.code() == ExitCode::Ok) {
+                    CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list, dynamicVar2Struct<NodeInfo>);
+                }
+                callback(exitInfo, list);
+            });
 }
 
 void ServerCommService::requestNodeSubfolders2(const DriveDbId driveDbId, const NodeId &nodeId, const bool withPath,
@@ -588,15 +586,14 @@ void ServerCommService::requestNodeSubfolders2(const DriveDbId driveDbId, const 
     params[msgParamDriveDbId] = driveDbId;
     params[msgParamNodeId] = nodeId;
     params[msgParamWithPath] = withPath;
-    _ipcClient.sendRequest(RequestNum::NODE_SUBFOLDERS2, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<NodeInfo> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
-                                   CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list,
-                                                                       dynamicVar2Struct<NodeInfo>);
-                               }
-                               callback(exitInfo, list);
-                           });
+    _ipcClient.sendRequest(
+            RequestNum::NODE_SUBFOLDERS2, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                std::vector<NodeInfo> list;
+                if (exitInfo.code() == ExitCode::Ok) {
+                    CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list, dynamicVar2Struct<NodeInfo>);
+                }
+                callback(exitInfo, list);
+            });
 }
 
 void ServerCommService::requestNodeFolderSize(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
