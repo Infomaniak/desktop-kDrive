@@ -30,7 +30,7 @@ SignalErrorRemovedJob::SignalErrorRemovedJob(const int &errorDbId) :
 }
 
 ExitInfo SignalErrorRemovedJob::serializeOutputParms() {
-    writeParamValue(MSG_PARAM_ERROR_DB_ID, _errorDbId);
+    writeParamValue(msgParamErrorDbId, _errorDbId);
     return ExitCode::Ok;
 }
 
