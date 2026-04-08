@@ -80,8 +80,6 @@ struct SyncAdd2Request {
 
 struct DriveSearchResult {
         std::vector<SearchInfo> searchInfoList{};
-        // NOTE: hasMore is always false. DriveSearchJob on the server side never populates _hasMore
-        // in its process() implementation. Do not rely on this field until the server is fixed.
         bool hasMore{false};
 };
 
