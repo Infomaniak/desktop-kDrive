@@ -19,8 +19,10 @@
 #include "appclientlinux.h"
 
 int main(int argc, char *argv[]) {
-    KDC::AppClientLinux app(argc, argv);
-    const int32_t exitCode = app.exec();
+    // see https://doc.qt.io/qt-6/qapplication.html#details
+    const QScopedPointer app(new KDC::AppClientLinux(argc, argv));
+    const int32_t exitCode = app->exec();
+
     qCInfo(KDC::lcAppClientLinux) << "Qt event loop exited with code" << exitCode;
     return exitCode;
 }
