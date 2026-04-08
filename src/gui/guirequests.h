@@ -43,7 +43,7 @@ struct GuiRequests {
         static bool isConnnected();
 
         // C/S requests (access to DB)
-        // Use COMM_SHORT_TIMEOUT
+        // Use commShortTimeout
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserList(QList<User> &list);
         static ExitCode getAccountList(QList<Account> &list);
@@ -77,7 +77,7 @@ struct GuiRequests {
         static ExitInfo acknowledgeManyDelete(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
 
         // C/S requests (access to network)
-        // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        // !!! Use commAverageTimeout !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserDbId &userDbId, QString &error,
                                      QString &errorDescr);
         static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailable> &list);
@@ -99,15 +99,15 @@ struct GuiRequests {
         static ExitCode getFolderSize(UserDbId userDbId, DriveId driveId, const QString &nodeId);
 
         // C/S requests (others)
-        static ExitCode syncStart(SyncDbId syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode syncStop(SyncDbId syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStart(SyncDbId syncDbId); // !!! Use commAverageTimeout !!!
+        static ExitCode syncStop(SyncDbId syncDbId); // !!! Use commAverageTimeout !!!
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode searchItemInDrive(DriveDbId driveDbId, const QString &searchString, QList<SearchInfo> &list,
                                           bool &hasMore,
-                                          QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
+                                          QString &cursor); // !!! Use commLongTimeout !!!
         static ExitCode deleteSync(SyncDbId syncDbId); // Asynchronous because it can be time consuming
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
