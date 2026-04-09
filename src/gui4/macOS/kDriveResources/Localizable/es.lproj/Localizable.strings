@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 31 Mar 2026 09:25:22 +0200
+ * Exported at: Thu, 02 Apr 2026 10:01:25 +0200
  */
 
 
@@ -200,6 +200,13 @@
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copiando enlace…";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Gestión de datos";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Registros de depuración";
+
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Desconectarás %@ de la aplicación.\n\nLa carpeta de sincronización permanecerá en su ordenador, pero ya no se sincronizará con kDrive.\n\nTodos sus datos seguirán siendo accesibles en línea en kDrive.";
@@ -407,6 +414,9 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "¿Necesita ayuda?";
 
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Network";
+
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "No sincronizado";
 
@@ -590,6 +600,9 @@
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronización";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Reglas de sincronización";
 
 /* loco:69cb7b4436165087ff055e92 */
 "syncShortStatusError" = "Se ha producido un error";

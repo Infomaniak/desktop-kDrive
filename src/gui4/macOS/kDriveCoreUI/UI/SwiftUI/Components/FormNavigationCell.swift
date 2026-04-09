@@ -16,12 +16,32 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
 import SwiftUI
 
-class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+public struct FormNavigationCell: View {
+    let label: String
+    let navigate: () -> Void
+
+    public init(label: String, navigate: @escaping () -> Void) {
+        self.label = label
+        self.navigate = navigate
     }
+
+    public var body: some View {
+        Button(action: navigate) {
+            HStack {
+                Text(label)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "chevron.forward")
+                    .foregroundStyle(.secondary)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+#Preview {
+    FormNavigationCell(label: "Hello, World!") {}
 }

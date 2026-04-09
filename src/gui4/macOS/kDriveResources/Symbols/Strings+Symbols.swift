@@ -142,6 +142,10 @@ public enum KDriveLocalizable {
   public static let changeFolder = KDriveLocalizable.tr("Localizable", "changeFolder", fallback: "Change the folder")
   /// loco:698b244d7e73966ce3096b02
   public static let copyingLink = KDriveLocalizable.tr("Localizable", "copyingLink", fallback: "Copying Link…")
+  /// loco:698b15ec9e0aad20280f8c02
+  public static let dataManagementSettings = KDriveLocalizable.tr("Localizable", "dataManagementSettings", fallback: "Data management")
+  /// loco:698b35a408fd1ee25f08ab35
+  public static let debugLogsSettings = KDriveLocalizable.tr("Localizable", "debugLogsSettings", fallback: "Debug logs")
   /// loco:698c6bbd94b70c0d3d09cde4
   public static func dialogRemoveAccountContent(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "dialogRemoveAccountContent", String(describing: p1), fallback: "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.")
@@ -288,6 +292,8 @@ public enum KDriveLocalizable {
   public static let moveDeletedFilesToRecycleBinWarning = KDriveLocalizable.tr("Localizable", "moveDeletedFilesToRecycleBinWarning", fallback: "Some items cannot be moved.")
   /// loco:6992e9f20953b626df05ffc2
   public static let needHelpSetting = KDriveLocalizable.tr("Localizable", "needHelpSetting", fallback: "Need help?")
+  /// loco:69ce15f8ac7c0ee6d7099c02
+  public static let networkSettings = KDriveLocalizable.tr("Localizable", "networkSettings", fallback: "Network")
   /// loco:698b10ad0c20e31c9c00a5c2
   public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92
@@ -442,6 +448,8 @@ public enum KDriveLocalizable {
   public static let synchroUpToDate = KDriveLocalizable.tr("Localizable", "synchroUpToDate", fallback: "your files are up to date")
   /// loco:698a085329fb169f6605ac62
   public static let syncInProgressTooltip = KDriveLocalizable.tr("Localizable", "syncInProgressTooltip", fallback: "Syncing")
+  /// loco:698b1593acd7caac53091c62
+  public static let syncRules = KDriveLocalizable.tr("Localizable", "syncRules", fallback: "Sync rules")
   /// loco:69cb7b4436165087ff055e92
   public static let syncShortStatusError = KDriveLocalizable.tr("Localizable", "syncShortStatusError", fallback: "An error occurred")
   /// loco:69ca840f10c2c8213703f4f2

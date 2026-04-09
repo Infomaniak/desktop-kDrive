@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 31 Mar 2026 09:25:22 +0200
+ * Exported at: Thu, 02 Apr 2026 10:01:25 +0200
  */
 
 
@@ -207,6 +207,13 @@
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Gestione dei dati";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Log di debug";
+
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Si disconnette %@ dall'applicazione.\n\nLa cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.\n\nTutti i dati rimarranno accessibili online su kDrive.";
@@ -415,6 +422,9 @@
 
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Avete bisogno di aiuto?";
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Network";
+
 
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "Non sincronizzato";
