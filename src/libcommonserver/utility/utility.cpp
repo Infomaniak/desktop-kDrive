@@ -580,14 +580,15 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 }
 
 static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
-IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
+IoError Utility::tryCreateTmpDir(const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                 const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
-    SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
-        return ioError;
+    if (!cacheDirectory) {
+        LOG_WARN(_logger, "Cache directory not provided!");
+        return IoError::NoSuchFileOrDirectory;
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
+    SyncPath tmpPath = cacheDirectory->path() / name;
     std::error_code ec;
     uint64_t retries = 0;
     bool directoryCreated = false;
@@ -599,7 +600,7 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
             }
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            tmpPath = cacheDirectory->path() / (name + CommonUtility::generateRandomStringAlphaNum());
         }
     } while ((!directoryCreated || ec.value()) && retries < maxNbCreationTmpFolderRetries);
 
@@ -614,13 +615,14 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #endif
 }
 
-IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
-    SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
-        return ioError;
+IoError Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                  const SyncName &name /*= Str("testFile")*/) {
+    if (!cacheDirectory) {
+        LOG_WARN(_logger, "Cache directory not provided!");
+        return IoError::NoSuchFileOrDirectory;
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
+    SyncPath tmpPath = cacheDirectory->path() / name;
     uint64_t retries = 0;
     bool ok = false;
     do {
@@ -634,7 +636,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         if (exists) {
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            tmpPath = cacheDirectory->path() / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
 
@@ -643,7 +645,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
             bool read = false;
             bool write = false;
             bool exec = false;
-            if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+            if (!IoHelper::getRights(cacheDirectory->path(), read, write, exec, ioError)) {
                 return ioError;
             }
             if (!read || !write) {
@@ -652,7 +654,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
 
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            tmpPath = cacheDirectory->path() / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
         output.close();
@@ -665,7 +667,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         if (!exists) {
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            tmpPath = cacheDirectory->path() / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
         ok = true;

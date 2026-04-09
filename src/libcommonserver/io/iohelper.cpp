@@ -638,18 +638,6 @@ bool IoHelper::deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError
     return ioError == IoError::Success;
 }
 
-bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    SyncPath tmpDirPath;
-    if (const auto res = !deviceTempDirectoryPath(tmpDirPath, ioError)) return res;
-
-    static const SyncName kDriveTmpDirName = Str("kDrive-tmp");
-    directoryPath = tmpDirPath / kDriveTmpDirName;
-    std::error_code ec;
-    (void) std::filesystem::create_directory(directoryPath, ec);
-    ioError = stdError2ioError(ec);
-    return ioError == IoError::Success;
-}
-
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     if (Log::instance()) {
         SyncPath filePath = Log::instance()->getLogFilePath();
