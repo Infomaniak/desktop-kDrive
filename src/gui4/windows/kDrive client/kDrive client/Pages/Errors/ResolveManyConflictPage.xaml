@@ -11,7 +11,9 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
-      mc:Ignorable="d">
+      mc:Ignorable="d"
+      Unloaded="Page_Unloaded"
+      >
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />

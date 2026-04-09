@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -36,11 +37,7 @@ namespace Infomaniak.kDrive.Pages
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
-            if (ViewModel.SelectedSync is not null)
-            {
-                ViewModel.SelectedSync.PropertyChanged -= ViewModel_SelectedSync_PropertyChanged;
-            }
+            DetachEventHandlers();
         }
 
         private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
@@ -54,6 +51,21 @@ namespace Infomaniak.kDrive.Pages
                 e.NewValue.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
             }
             UpdateTitleTemplate();
+        }
+
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
+            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
+            if (ViewModel.SelectedSync is not null)
+            {
+                ViewModel.SelectedSync.PropertyChanged -= ViewModel_SelectedSync_PropertyChanged;
+            }
         }
 
         private void ViewModel_SelectedSync_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

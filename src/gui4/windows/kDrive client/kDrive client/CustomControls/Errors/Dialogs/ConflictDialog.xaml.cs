@@ -1,6 +1,7 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -45,7 +46,14 @@ public partial class ConflictDialog : Page
     {
         _dialog.IsPrimaryButtonEnabled = false;
         _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+        _dialog.Closed += Dialog_Closed;
         RefreshPrimaryButtonText();
+    }
+
+    private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+    {
+        _dialog.PrimaryButtonClick -= Dialog_PrimaryButtonClick;
+        _dialog.Closed -= Dialog_Closed;
     }
 
     private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -55,8 +63,6 @@ public partial class ConflictDialog : Page
 
         if (!ViewModel.HasMultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
         {
-
-
             // The user has validated the last conflict, we can now apply all their choices on the server
             _dialog.IsEnabled = false;
             if (!await ViewModel.ApplyUserChoices())

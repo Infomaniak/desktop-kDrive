@@ -40,6 +40,11 @@ namespace Infomaniak.kDrive
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
         }
 
+        ~MainWindow()
+        {
+            Logger.Log(Logger.Level.Info, "MainWindow destructor called, performing cleanup.");
+        }
+
         private void AppTitleBar_BackRequested(TitleBar sender, object args)
         {
             if (AppNavView?.Frame?.CanGoBack is null)

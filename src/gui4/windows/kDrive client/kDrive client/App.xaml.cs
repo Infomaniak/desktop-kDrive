@@ -17,6 +17,7 @@
  */
 
 using DynamicData;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
@@ -31,6 +32,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.VoiceCommands;
 using Windows.Foundation;
 
 namespace Infomaniak.kDrive
@@ -43,11 +45,7 @@ namespace Infomaniak.kDrive
         public Window? CurrentWindow
         {
             get => _currentWindow;
-            private set
-            {
-                _currentWindow = value;
-                ServiceProvider.GetRequiredService<TrayIconManager>().ConfigureWindowEventHandler();
-            }
+            private set => _currentWindow = value;
         }
 
         private readonly IServiceCollection _services = new ServiceCollection();
@@ -123,14 +121,16 @@ namespace Infomaniak.kDrive
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
-            CurrentWindow = new MainWindow();
-            var currentWindowContent = CurrentWindow.Content;
+            CreateMainWindow(false);
+            var currentWindowContent = CurrentWindow?.Content;
 
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
             // Display splash screen
-            CurrentWindow.Content = new CustomControls.SplashScreen();
+            if (CurrentWindow is not null)
+                CurrentWindow.Content = new CustomControls.SplashScreen();
+
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
@@ -166,6 +166,35 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
+        }
+
+        public void CreateMainWindow(bool foreground)
+        {
+            if (CurrentWindow is null)
+            {
+                CurrentWindow = new MainWindow();
+                CurrentWindow.Closed += CurrentWindow_Closed;
+            }
+
+            if (foreground)
+                Utility.BringCurrentWindowToFront();
+        }
+
+        public void CurrentWindow_Closed(object sender, WindowEventArgs e)
+        {
+            if (sender is MainWindow window)
+            {
+                window.Closed -= CurrentWindow_Closed;
+                CurrentWindow = null; // Clear the reference to the closed window, allowing it to be garbage collected and freeing up resources
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            else
+            {
+                e.Handled = true;
+                CurrentWindow?.Hide(); // Hide the window instead of closing it, allow to keep the app running in the background and preserve the state of the window when reopened (usefull for the onboarding window for example)
+            }
         }
 
         async void OnProcessExit(object? sender, EventArgs e)
@@ -208,7 +237,7 @@ namespace Infomaniak.kDrive
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
 
                 ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
-                CurrentWindow.Activate();
+                Utility.BringCurrentWindowToFront();
             });
         }
 
@@ -218,9 +247,8 @@ namespace Infomaniak.kDrive
 
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
             onboardingWindow.Closed -= OnOnboardingClosed;
-
-            CurrentWindow = new MainWindow();
-            CurrentWindow.Activate();
+            CurrentWindow = null;
+            CreateMainWindow(true);
         }
 
         public void StartOnboardingIfNeeded()

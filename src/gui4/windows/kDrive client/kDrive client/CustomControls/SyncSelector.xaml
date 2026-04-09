@@ -83,9 +83,9 @@
 
     </UserControl.Resources>
 
-    <ComboBox x:Name="SyncCombo"
+   <!-- <ComboBox x:Name="SyncCombo"
               HorizontalAlignment="Stretch"
               ItemsSource="{x:Bind ViewModel.AllSyncs, Mode=OneWay}"
               SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
-              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" />
+              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" />-->
 </UserControl>

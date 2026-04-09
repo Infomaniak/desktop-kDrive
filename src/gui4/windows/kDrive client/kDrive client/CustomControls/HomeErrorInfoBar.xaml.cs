@@ -1,6 +1,7 @@
 using DynamicData.Binding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,13 @@ namespace Infomaniak.kDrive.CustomControls
 
         public HomeErrorInfoBar()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            Unloaded += OnUnloaded;
+        }
 
-            this.Unloaded += (s, e) => ControlViewModel.Dispose();
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ControlViewModel.Dispose();
         }
 
         private async void kDriveFullInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)

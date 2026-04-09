@@ -45,6 +45,16 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
             RemoteLocationSelector.Loaded -= RemoteLocationSelector_Loaded;
 
             if (AdvancedSyncSetupContentDialogVM is null)

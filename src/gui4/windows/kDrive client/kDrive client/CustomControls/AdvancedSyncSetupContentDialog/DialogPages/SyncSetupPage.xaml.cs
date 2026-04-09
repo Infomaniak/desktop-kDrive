@@ -46,6 +46,16 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
@@ -56,7 +66,6 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
             AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged -= AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
         }
-
         private void AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(NewSync.LocalPath) || e.PropertyName == nameof(NewSync.RemotePath) || e.PropertyName == nameof(NewSync.RemoteNodeId))

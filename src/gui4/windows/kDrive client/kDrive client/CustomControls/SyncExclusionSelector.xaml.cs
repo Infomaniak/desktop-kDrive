@@ -739,6 +739,8 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 child.Dispose();
             }
+            Children.CollectionChanged -= OnChildrenCollectionChanged;
+
             Children.Clear();
 
             _disposables?.Dispose();

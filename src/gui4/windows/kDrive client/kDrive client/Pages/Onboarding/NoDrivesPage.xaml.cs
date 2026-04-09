@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.OnBoarding;
+using Infomaniak.kDrive.Pages.Errors;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -6,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -42,6 +44,17 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         }
 
         protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            await DetachEventHandlers();
+        }
+
+
+        private async void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            await DetachEventHandlers();
+        }
+
+        private async Task DetachEventHandlers()
         {
             if (_onboardingViewModel is not null)
             {

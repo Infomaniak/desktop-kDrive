@@ -48,6 +48,10 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+        private void DetachEventHandlers()
+        {
             if (DriveSetupContentDialogVM is not null)
             {
                 DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
@@ -83,6 +87,11 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
 
             Frame.Navigate(typeof(SyncSetupPage), DriveSetupContentDialogVM);
+        }
+
+        private void Page_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            DetachEventHandlers();
         }
     }
 }

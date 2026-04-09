@@ -43,10 +43,16 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            DriveSetupContentDialogVM!.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
-            DriveSetupContentDialogVM!.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+            DetachEventHandlers();
         }
-
+        private void DetachEventHandlers()
+        {
+            if (DriveSetupContentDialogVM is not null)
+            {
+                DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
+                DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+            }
+        }
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)
@@ -169,6 +175,11 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             newSync.LocalPath = newSync.DefaultPath;
             await newSync.SelectBestVfsMode();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
         }
     }
 }

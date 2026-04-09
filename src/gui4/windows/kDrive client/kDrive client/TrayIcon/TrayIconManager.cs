@@ -38,7 +38,6 @@ namespace Infomaniak.kDrive.TrayIcon
     public partial class TrayIconManager : IDisposable
     {
         private TaskbarIcon? _trayIcon;
-        private bool _handleClosedEvents = true;
         private string _currentIcon = "taskbar-ico";
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
@@ -83,7 +82,8 @@ namespace Infomaniak.kDrive.TrayIcon
                 (Application.Current as App)?.CurrentWindow?.Show();
             }
 
-            ConfigureWindowEventHandler();
+            _uiSettings = new UISettings();
+            _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
         }
 
         public TrayIconManager(AppModel appModel)
@@ -122,24 +122,6 @@ namespace Infomaniak.kDrive.TrayIcon
             SetIconOk();
         }
 
-        public void ConfigureWindowEventHandler()
-        {
-            if (Application.Current is App app && app.CurrentWindow is not null)
-            {
-                _uiSettings = new UISettings();
-                _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
-
-                app.CurrentWindow.Closed += (sender, args) =>
-                {
-                    if (_handleClosedEvents)
-                    {
-                        args.Handled = true;
-                        app.CurrentWindow.Hide();
-                    }
-                };
-            }
-        }
-
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
         {
             Logger.Log(Logger.Level.Extended, "System theme or color changed, updating tray icon.");
@@ -175,14 +157,16 @@ namespace Infomaniak.kDrive.TrayIcon
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
-            Utility.BringCurrentWindowToFront();
+            if (Application.Current is App app)
+            {
+                app.CreateMainWindow(true);
+            }
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
-            _handleClosedEvents = false;
             _trayIcon?.Dispose();
             App.ExitApplicationAndShutdownServer();
         }

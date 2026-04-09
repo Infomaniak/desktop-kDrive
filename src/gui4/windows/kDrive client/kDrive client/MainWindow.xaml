@@ -50,8 +50,7 @@
                               Grid.Row="0"
                               HorizontalContentAlignment="Stretch"
                               IsBackButtonEnabled="{x:Bind AppNavView.Frame.CanGoBack, Mode=OneWay}"
-                              IsPaneToggleButtonVisible="False"
-                              BackRequested="AppTitleBar_BackRequested" />
+                              IsPaneToggleButtonVisible="False" />
 
         <!-- NavigationView -->
         <controls:AppNavigationView x:Name="NavView"

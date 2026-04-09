@@ -55,6 +55,16 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
             if (DriveSetupContentDialogVM is not null)
             {
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
