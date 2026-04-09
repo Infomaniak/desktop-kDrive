@@ -29,6 +29,7 @@ using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
@@ -121,15 +122,8 @@ namespace Infomaniak.kDrive
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
-            CreateMainWindow(false);
-            var currentWindowContent = CurrentWindow?.Content;
-
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
-
-            // Display splash screen
-            if (CurrentWindow is not null)
-                CurrentWindow.Content = new CustomControls.SplashScreen();
 
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
@@ -142,15 +136,11 @@ namespace Infomaniak.kDrive
                 // Force the initialization of singleton services
                 ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
             }
+
             ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
             {
-                Logger.Log(Logger.Level.Fatal, "Connection to server lost, attempting to restart application.");
+                Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
                 SentrySdk.Flush(new TimeSpan(0, 0, 5));
-                AppRestartFailureReason restartError = AppInstance.Restart(LegacyCommPort.ToString());
-                if (restartError != AppRestartFailureReason.Other)
-                {
-                    Logger.Log(Logger.Level.Error, $"Failed to restart application after connection lost: {restartError}");
-                }
             };
 
             if (!await appModel.InitializeAsync())
@@ -159,14 +149,7 @@ namespace Infomaniak.kDrive
                 ExitApplication();
                 return;
             }
-            if (CurrentWindow is not null && CurrentWindow.Visible)
-                CurrentWindow.Content = currentWindowContent;
-            else
-            {
-                CurrentWindow?.Close();
-                CurrentWindow = null;
-                currentWindowContent = null;
-            }
+
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
@@ -194,6 +177,8 @@ namespace Infomaniak.kDrive
                 window.Closed -= CurrentWindow_Closed;
                 CurrentWindow = null; // Clear the reference to the closed window, allowing it to be garbage collected and freeing up resources
 
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
                 GC.Collect();
             }
             else

@@ -26,6 +26,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             ControlViewModel.Dispose();
+            Bindings.StopTracking();
         }
 
         private async void kDriveFullInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
