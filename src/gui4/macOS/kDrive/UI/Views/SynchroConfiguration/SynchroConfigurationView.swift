@@ -24,6 +24,8 @@ import UniformTypeIdentifiers
 struct SynchroConfigurationView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
+    @State private var isLoading = false
+
     let configuration: SynchroConfiguration
 
     var body: some View {
@@ -52,7 +54,7 @@ struct SynchroConfigurationView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                LoadingButton(action: viewModel.saveConfiguration) {
+                LoadingButton(isLoading: $isLoading, action: viewModel.saveConfiguration) {
                     Text(KDriveLocalizable.buttonValidate)
                 }
                 .keyboardShortcut(.defaultAction)
@@ -63,6 +65,7 @@ struct SynchroConfigurationView: View {
                     viewModel.cancelConfiguration()
                 }
                 .keyboardShortcut(.cancelAction)
+                .disabled(isLoading)
             }
         }
     }
