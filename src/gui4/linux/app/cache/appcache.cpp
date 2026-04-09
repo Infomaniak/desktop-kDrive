@@ -93,6 +93,12 @@ void AppCache::setSelectedSyncDbId(const qint64 syncDbId) {
 
 void AppCache::clearAll() {
     // Connection state is intentionally preserved: cache content and transport connectivity are orthogonal.
+    const bool usersListChanged = !_users.empty();
+    const bool accountsListChanged = !_accounts.empty();
+    const bool drivesListChanged = !_drives.empty();
+    const bool availableDrivesListChanged = !_availableDrives.empty();
+    const bool syncsListChanged = !_syncs.empty();
+    const bool errorsListChanged = !_errors.empty();
     const bool userSelectionChanged = _selectedUserDbId != 0;
     const bool driveSelectionChanged = _selectedDriveDbId != 0;
     const bool syncSelectionChanged = _selectedSyncDbId != 0;
@@ -107,12 +113,24 @@ void AppCache::clearAll() {
     _selectedDriveDbId = 0;
     _selectedSyncDbId = 0;
 
-    emit usersChanged();
-    emit accountsChanged();
-    emit drivesChanged();
-    emit availableDrivesChanged();
-    emit syncsChanged();
-    emit errorsChanged();
+    if (usersListChanged) {
+        emit usersChanged();
+    }
+    if (accountsListChanged) {
+        emit accountsChanged();
+    }
+    if (drivesListChanged) {
+        emit drivesChanged();
+    }
+    if (availableDrivesListChanged) {
+        emit availableDrivesChanged();
+    }
+    if (syncsListChanged) {
+        emit syncsChanged();
+    }
+    if (errorsListChanged) {
+        emit errorsChanged();
+    }
     if (userSelectionChanged) {
         emit selectedUserDbIdChanged();
     }
@@ -163,11 +181,14 @@ void AppCache::removeUser(const UserDbId userDbId) {
     if (!removeById(_users, userDbId, [](const UserInfo &user) { return user.dbId(); })) {
         return;
     }
-    if (_selectedUserDbId == userDbId) {
+    const bool selectionChanged = _selectedUserDbId == userDbId;
+    if (selectionChanged) {
         _selectedUserDbId = 0;
-        emit selectedUserDbIdChanged();
     }
     emit usersChanged();
+    if (selectionChanged) {
+        emit selectedUserDbIdChanged();
+    }
 }
 
 void AppCache::upsertAccount(const AccountInfo &info) {
@@ -191,11 +212,14 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
     if (!removeById(_drives, driveDbId, [](const DriveInfo &drive) { return drive.dbId(); })) {
         return;
     }
-    if (_selectedDriveDbId == driveDbId) {
+    const bool selectionChanged = _selectedDriveDbId == driveDbId;
+    if (selectionChanged) {
         _selectedDriveDbId = 0;
-        emit selectedDriveDbIdChanged();
     }
     emit drivesChanged();
+    if (selectionChanged) {
+        emit selectedDriveDbIdChanged();
+    }
 }
 
 void AppCache::upsertSync(const SyncInfo &info) {
@@ -207,11 +231,14 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
     if (!removeById(_syncs, syncDbId, [](const SyncInfo &sync) { return sync.dbId(); })) {
         return;
     }
-    if (_selectedSyncDbId == syncDbId) {
+    const bool selectionChanged = _selectedSyncDbId == syncDbId;
+    if (selectionChanged) {
         _selectedSyncDbId = 0;
-        emit selectedSyncDbIdChanged();
     }
     emit syncsChanged();
+    if (selectionChanged) {
+        emit selectedSyncDbIdChanged();
+    }
 }
 
 void AppCache::upsertError(const ErrorInfo &info) {

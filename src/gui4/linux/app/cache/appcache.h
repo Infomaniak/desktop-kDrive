@@ -42,9 +42,9 @@ namespace KDC {
 class AppCache : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool connected READ connected WRITE setConnected NOTIFY connectedChanged)
-        Q_PROPERTY(qint64 selectedUserDbId READ selectedUserDbId WRITE setSelectedUserDbId NOTIFY selectedUserDbIdChanged)
-        Q_PROPERTY(qint64 selectedDriveDbId READ selectedDriveDbId WRITE setSelectedDriveDbId NOTIFY selectedDriveDbIdChanged)
-        Q_PROPERTY(qint64 selectedSyncDbId READ selectedSyncDbId WRITE setSelectedSyncDbId NOTIFY selectedSyncDbIdChanged)
+        Q_PROPERTY(qint64 selectedUserDbId READ selectedUserDbId NOTIFY selectedUserDbIdChanged)
+        Q_PROPERTY(qint64 selectedDriveDbId READ selectedDriveDbId NOTIFY selectedDriveDbIdChanged)
+        Q_PROPERTY(qint64 selectedSyncDbId READ selectedSyncDbId NOTIFY selectedSyncDbIdChanged)
 
     public:
         explicit AppCache(QObject *parent = nullptr);
