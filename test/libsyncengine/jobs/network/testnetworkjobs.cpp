@@ -514,40 +514,21 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
-        // TODO : put it back!!!
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
 
-        // // Not Enough disk space (tmp dir)
-        // {
-        //     // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-        //     // NotEnoughDiskSpace.
-        //     const SyncPath localDestFilePath = temporaryDirectory.path() / "9Mo.txt";
-        //     DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
-        //
-        //     IoHelperTestUtilities::setCacheDirectoryPath(smallPartitionPath);
-        //
-        //     downloadJob.runSynchronously();
-        //     CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-        //     IoHelperTestUtilities::resetFunctions();
-        //     CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-        //                                              std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-        //                                  ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
-        //                                  downloadJob.exitInfo());
-        // }
-        //
-        // // Not Enough disk space (destination dir)
-        // {
-        //     // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-        //     // NotEnoughDiskSpace.
-        //     const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
-        //     DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
-        //
-        //     downloadJob.runSynchronously();
-        //     CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-        //     CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-        //                                              std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-        //                                  ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
-        //                                  downloadJob.exitInfo());
-        // }
+        // Not Enough disk space (destination dir)
+        {
+            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+            // NotEnoughDiskSpace.
+            const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+            DownloadJob downloadJob(nullptr, cacheDirectory, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
+
+            (void) downloadJob.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
+                                                     std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
+                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
+        }
     }
 
     // Empty file
