@@ -39,7 +39,7 @@ namespace KDC {
 Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
-    QGuiApplication(argc, argv) {
+    QApplication(argc, argv) {
     setupLogging();
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
