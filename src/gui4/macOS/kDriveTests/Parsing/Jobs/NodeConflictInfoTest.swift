@@ -48,7 +48,7 @@ struct NodeConflictInfoTest {
 
         // THEN
         #expect(response.body.nodeConflictInfo.authorName == "Test Author")
-        #expect(response.body.nodeConflictInfo.fileSize == 12345678)
-        #expect(response.body.nodeConflictInfo.lastModificationDate == 1704067200)
+        #expect(response.body.nodeConflictInfo.fileSize == 12_345_678)
+        #expect(response.body.nodeConflictInfo.lastModificationDate == 1_704_067_200)
     }
 }
