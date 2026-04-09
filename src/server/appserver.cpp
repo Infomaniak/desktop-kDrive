@@ -476,14 +476,9 @@ void AppServer::init() {
     if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
 #endif
 
-    // Check if temp directory is accessible.
-    if (Utility::tryCreateTmpFile() == IoError::Success) {
-        // Start syncs
-        LOG_DEBUG(_logger, "Start syncs");
-        QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
-    } else {
-        addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
-    }
+    // Start syncs
+    LOG_DEBUG(_logger, "Start syncs");
+    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
@@ -583,13 +578,6 @@ void AppServer::cleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
-
-    // Clean up tmp directory
-    SyncPath tmpDirPath;
-    auto dummyIoError = IoError::Unknown;
-    if (IoHelper::appTempDirectoryPath(tmpDirPath, dummyIoError)) {
-        (void) IoHelper::deleteItem(tmpDirPath, dummyIoError);
-    }
 }
 
 void AppServer::reset() {
@@ -616,8 +604,8 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId) {
 
     {
         const std::scoped_lock lock(vfsMapMutex);
-        LOG_IF_FAIL(!vfsMap[syncDbId] ||
-                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+        // LOG_IF_FAIL(!vfsMap[syncDbId] ||
+        //             vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
 }
