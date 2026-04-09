@@ -56,7 +56,8 @@ class SyncService : public QObject {
         void loadingChanged();
         void lastErrorChanged();
         void syncStatusReceived(qint64 syncDbId, int32_t status);
-        void suggestedPathReceived(const QString &goodPath, const QString &errorMessage);
+        // The second argument can carry a non-blocking warning message from the backend.
+        void suggestedPathReceived(const QString &goodPath, const QString &warningMessage);
         void pathValidationReceived(bool isValid);
         void syncAddCompleted(qint64 syncDbId);
 
