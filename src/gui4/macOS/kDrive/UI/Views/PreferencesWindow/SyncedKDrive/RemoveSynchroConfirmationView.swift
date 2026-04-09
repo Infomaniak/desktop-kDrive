@@ -48,7 +48,7 @@ struct RemoveSynchroConfirmationView: View {
                 }
                 .keyboardShortcut(.defaultAction)
             }
-            
+
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     dismiss()
