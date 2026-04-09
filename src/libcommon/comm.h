@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,6 +114,14 @@ inline constexpr char MSG_PARAM_REPLICA_SIDE[] = "replicaSide";
 inline constexpr char MSG_PARAM_PARENT_NODE_ID[] = "parentNodeId";
 inline constexpr char MSG_PARAM_WITH_PATH[] = "withPath";
 inline constexpr char MSG_PARAM_RELATIVE_PATH[] = "relativePath";
+inline constexpr char MSG_PARAM_SEARCH_STRING[] = "searchString";
+inline constexpr char MSG_PARAM_SEARCH_INFO_LIST[] = "searchInfoList";
+inline constexpr char MSG_PARAM_HAS_MORE[] = "hasMore";
+inline constexpr char MSG_PARAM_NODE_CONFLICT_INFO[] = "nodeConflictInfo";
+inline constexpr char MSG_PARAM_KEEP_LOCAL_ERROR_DB_ID_LIST[] = "keepLocalErrorDbIdList";
+inline constexpr char MSG_PARAM_KEEP_REMOTE_ERROR_DB_ID_LIST[] = "keepRemoteErrorDbIdList";
+inline constexpr char MSG_PARAM_ERROR_DB_ID_LIST[] = "errorDbIdList";
+inline constexpr char MSG_PARAM_STRATEGY[] = "strategy";
 
 inline constexpr char EXECUTE_ERROR_MSG[] = "C/S function call timeout or error!";
 
