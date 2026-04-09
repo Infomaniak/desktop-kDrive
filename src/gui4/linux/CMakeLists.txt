@@ -24,6 +24,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/commservice.h
         app/services/serviceutils.cpp
         app/services/serviceutils.h
+        app/services/userservice.cpp
+        app/services/userservice.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
