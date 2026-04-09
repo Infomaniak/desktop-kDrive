@@ -147,7 +147,11 @@ ExitInfo SyncLocalDeleteJob::canRun() {
 
     // Check if the item we want to delete locally has a remote counterpart.
     ItemsExistJob existsJob(_syncPal->syncInfo().driveDbId, {_remoteNodeId});
-    existsJob.runSynchronously();
+    if (ExitInfo exitInfo = existsJob.runSynchronously(); !exitInfo) {
+        LOG_WARN(_logger, "Error in ItemsExistJob: " << exitInfo);
+        return exitInfo;
+    }
+
     if (!existsJob.exists(_remoteNodeId, ioError) && ioError == IoError::NoSuchFileOrDirectory)
         return ExitCode::Ok; // Safe deletion.
 

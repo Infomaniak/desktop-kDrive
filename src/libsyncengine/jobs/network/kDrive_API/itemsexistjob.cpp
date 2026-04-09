@@ -86,11 +86,13 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
             LOG_WARN(_logger, "Missing object:" << idKey);
+            _nodeExistenceMap.erase(nodeId);
             continue;
         }
         bool exists = false;
         if (!JsonParserUtility::extractValue(obj, resultKey, exists)) {
             LOG_WARN(_logger, "Missing object:" << resultKey);
+            _nodeExistenceMap.erase(nodeId);
             continue;
         }
         if (!_nodeExistenceMap.contains(nodeId)) {
