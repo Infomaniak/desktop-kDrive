@@ -166,15 +166,14 @@ void ServerCommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED, [this](const Poco::DynamicStruct &params) {
         ErrorInfo info;
         info.fromDynamicStruct(params[msgParamErrorInfo].extract<Poco::DynamicStruct>());
-        qCWarning(lcServerCommService) << "Server error added | errorDbId:" << info.dbId() << "/ syncDbId:" << info.syncDbId()
-                                       << "/ ExitCode:" << info.exitCode() << "/ ExitCause:" << info.exitCause();
+        qCWarning(lcServerCommService) << "Error added | errorDbId:" << info.dbId() << "/ level:" << info.level();
         emit errorAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_REMOVED, [this](const Poco::DynamicStruct &params) {
         ErrorDbId errorDbId = 0;
         CommonUtility::readValueFromStruct(params, msgParamErrorDbId, errorDbId);
-        qCInfo(lcServerCommService) << "Server error removed | errorDbId:" << errorDbId;
+        qCInfo(lcServerCommService) << "Error removed | errorDbId:" << errorDbId;
         emit errorRemoved(errorDbId);
     });
 }
