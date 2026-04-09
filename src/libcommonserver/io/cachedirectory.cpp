@@ -45,6 +45,10 @@ const SyncPath &CacheDirectory::path() noexcept {
     if (!exists) {
         resetDirectoryPath();
     }
+
+    // Hide cache directory
+    IoHelper::setFileHidden(_cacheDirectoryPath, true);
+
     return _cacheDirectoryPath;
 }
 
