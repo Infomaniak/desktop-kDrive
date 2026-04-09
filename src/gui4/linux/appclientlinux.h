@@ -22,7 +22,7 @@
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QLoggingCategory>
 
 namespace KDC {
@@ -35,7 +35,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * Owns the IPC client and the signal dispatcher. On construction, sets up logging,
  * wires IPC signals to the dispatcher, and initiates the connection to the server.
  */
-class AppClientLinux : public QGuiApplication {
+class AppClientLinux : public QApplication {
         Q_OBJECT
 
     public:
