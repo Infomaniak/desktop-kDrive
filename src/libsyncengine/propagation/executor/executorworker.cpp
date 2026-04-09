@@ -579,7 +579,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                     return ExitCode::Ok;
                 } else {
                     try {
-                        job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->localPath(), _syncPal->driveDbId(),
+                        job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->cacheDirectory(), _syncPal->driveDbId(),
                                                             syncOp->affectedNode()->id().value_or(""), absoluteLocalFilePath,
                                                             syncOp->affectedNode()->size(),
                                                             syncOp->affectedNode()->createdAt().value_or(0),
@@ -825,7 +825,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
         try {
-            job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->localPath(), _syncPal->driveDbId(),
+            job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->cacheDirectory(), _syncPal->driveDbId(),
                                                 syncOp->affectedNode()->id().value_or(""), absoluteLocalFilePath,
                                                 syncOp->affectedNode()->size(), syncOp->affectedNode()->createdAt().value_or(0),
                                                 syncOp->affectedNode()->modificationTime().value_or(0), false);

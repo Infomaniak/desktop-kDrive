@@ -19,17 +19,17 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+
 #include "libcommonserver/vfs/vfs.h"
+#include "libcommonserver/io/cachedirectory.h"
 
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
-        DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, DriveDbId driveDbId,
-                    const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize, SyncTime creationTime,
-                    SyncTime modificationTime, bool isCreate);
-        DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, DriveDbId driveDbId,
-                    const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize);
+        DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory, DriveDbId driveDbId,
+                    const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize, SyncTime creationTime = 0,
+                    SyncTime modificationTime = 0, bool isCreate = false);
         ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _remoteFileId; }
@@ -93,7 +93,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
 
         const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
-        const SyncPath _localSyncFolder;
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         friend class TestNetworkJobs;
 };

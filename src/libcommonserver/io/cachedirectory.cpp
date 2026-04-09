@@ -27,7 +27,7 @@ CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) {
 }
 
 CacheDirectory::~CacheDirectory() {
-    if (_deleteFolderUponDestruction) deleteDirectory();
+    deleteDirectory();
 }
 
 const SyncPath &CacheDirectory::path() noexcept {
@@ -46,14 +46,8 @@ const SyncPath &CacheDirectory::path() noexcept {
     return _cacheDirectoryPath;
 }
 
-void CacheDirectory::deleteDirectory() const noexcept {
-    // It is the best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
-    auto ioError = IoError::Success;
-    (void) IoHelper::deleteItem(_cacheDirectoryPath, ioError);
-}
-
 void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
-    static const auto cacheDirName = std::format(".{}-cache", APPLICATION_NAME);
+    const auto cacheDirName = std::format(".{}-cache", APPLICATION_NAME);
     _cacheDirectoryPath = localSyncPath / cacheDirName;
 
     if (auto ioError = IoError::Success;
@@ -64,6 +58,12 @@ void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
     }
 
     return;
+}
+
+void CacheDirectory::deleteDirectory() const noexcept {
+    // It is the best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(_cacheDirectoryPath, ioError);
 }
 
 void CacheDirectory::resetDirectoryPath() noexcept {

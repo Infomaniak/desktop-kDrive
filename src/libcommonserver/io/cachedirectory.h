@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
+
 namespace KDC {
 
 class CacheDirectory {
@@ -25,19 +27,15 @@ class CacheDirectory {
         ~CacheDirectory();
 
         const SyncPath &path() noexcept;
-        void deleteDirectory() const noexcept;
 
-        void setDeleteFolderUponDestruction(const bool deleteFolderUponDestruction) {
-            _deleteFolderUponDestruction = deleteFolderUponDestruction;
-        }
 
     private:
         void initDirectory(const SyncPath &localSyncPath) noexcept;
+        void deleteDirectory() const noexcept;
         void resetDirectoryPath() noexcept;
 
-        mutable std::mutex _mutex;
+        mutable std::recursive_mutex _mutex;
         SyncPath _cacheDirectoryPath;
-        bool _deleteFolderUponDestruction{false};
 };
 
 } // namespace KDC
