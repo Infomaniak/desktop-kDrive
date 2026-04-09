@@ -29,8 +29,6 @@
 #include <unistd.h>
 #endif
 
-#include "../../../../libcommonserver/io/cachedirectory.h"
-
 #include "utility/timerutility.h"
 
 #include <fstream>
@@ -47,9 +45,10 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, const DriveDbId driveDbId,
-                         const NodeId &remoteFileId, const SyncPath &localpath, const int64_t expectedSize,
-                         const SyncTime creationTime, const SyncTime modificationTime, const bool isCreate) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const std::shared_ptr<CacheDirectory> cacheDirectory,
+                         const DriveDbId driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                         const int64_t expectedSize, const SyncTime creationTime /*= 0*/, const SyncTime modificationTime /*= 0*/,
+                         const bool isCreate /*= false*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
     _remoteFileId(remoteFileId),
     _localpath(localpath),
@@ -58,24 +57,15 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSy
     _modificationTimeIn(modificationTime),
     _isCreate(isCreate),
     _vfs(vfs),
-    _localSyncFolder(localSyncFolder) {
+    _cacheDirectory(cacheDirectory) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
-}
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const SyncPath &localSyncFolder, const DriveDbId driveDbId,
-                         const NodeId &remoteFileId, const SyncPath &localpath, const int64_t expectedSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-    _remoteFileId(remoteFileId),
-    _localpath(localpath),
-    _expectedSize(expectedSize),
-    _ignoreDateTime(true),
-    _vfs(vfs),
-    _localSyncFolder(localSyncFolder) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _customTimeout = 60;
-    _trials = TRIALS;
+    if (!_cacheDirectory) {
+        // If no cache directory have been provided, fallback to creating a temporary cache directory into parent folder.
+        _cacheDirectory = std::make_shared<CacheDirectory>(localpath.parent_path());
+    }
 }
 
 DownloadJob::~DownloadJob() {
@@ -573,11 +563,10 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     fetchFinished = false;
     fetchError = false;
 
-    CacheDirectory cacheDirectory(_localSyncFolder);
     std::ofstream output;
     do {
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-        _tmpPath = cacheDirectory.path() / tmpFileName;
+        _tmpPath = _cacheDirectory->path() / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {
