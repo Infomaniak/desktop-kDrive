@@ -423,6 +423,16 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(value == litesync_attrs::statusOffline);
         }
 #endif
+
+        // Download again (EDIT propagation) but cache directory has been deleted
+        {
+            (void) IoHelper::deleteItem(_cacheDirectory->path());
+
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
+                            modificationTimeIn.count(), false);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+        }
     }
 
     // Cross Device Link
