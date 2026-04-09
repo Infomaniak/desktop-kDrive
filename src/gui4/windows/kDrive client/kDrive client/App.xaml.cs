@@ -178,13 +178,6 @@ namespace Infomaniak.kDrive
             {
                 mainWindow.Closed -= CurrentWindow_Closed;
                 CurrentWindow = null;
-                Task.Run(() =>
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
-                }
-                );
             }
             else if (sender is Window window && window == CurrentWindow)
             {
