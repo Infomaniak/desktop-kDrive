@@ -24,6 +24,8 @@ import SwiftUI
 struct RemoveSynchroConfirmationView: View {
     @Environment(\.dismiss) private var dismiss
 
+    @State private var isLoading = false
+
     let synchroDbId: Int
     let completion: (Error?) -> Void
 
@@ -41,30 +43,32 @@ struct RemoveSynchroConfirmationView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonRemove) {
-                    Task {
-                        do {
-                            try await removeSynchro()
-
-                            dismiss()
-                            completion(nil)
-                        } catch {
-                            dismiss()
-                            completion(error)
-                        }
-                    }
+                LoadingButton(isLoading: $isLoading, action: removeSynchro) {
+                    Text(KDriveLocalizable.buttonRemove)
                 }
+                .keyboardShortcut(.defaultAction)
             }
+            
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     dismiss()
                 }
+                .keyboardShortcut(.cancelAction)
+                .disabled(isLoading)
             }
         }
     }
 
-    private func removeSynchro() async throws {
-        try await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
+    private func removeSynchro() async {
+        do {
+            try await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
+
+            dismiss()
+            completion(nil)
+        } catch {
+            dismiss()
+            completion(error)
+        }
     }
 }
 
