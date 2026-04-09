@@ -198,8 +198,8 @@ void ServerCommService::registerUtilityHandlers(SignalDispatcher &dispatcher) {
         CommString message;
         CommonUtility::readValueFromStruct(params, msgParamTitle, title);
         CommonUtility::readValueFromStruct(params, msgParamMessage, message);
-        const QString qTitle = CommonUtility::commString2QStr(title);
-        const QString qMessage = CommonUtility::commString2QStr(message);
+        const auto qTitle = CommonUtility::commString2QStr(title);
+        const auto qMessage = CommonUtility::commString2QStr(message);
         qCInfo(lcServerCommService) << "Show notification requested | title:" << qTitle << "/ hasMessage:" << !qMessage.isEmpty();
         emit showNotification(qTitle, qMessage);
     });
