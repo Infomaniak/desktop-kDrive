@@ -94,7 +94,10 @@ public struct NodeJobs: Sendable {
                                               relativePath: relativePath)
         let request = await RequestMessage<CreateMissingFoldersQuery>(num: RequestNum.NODE_CREATEMISSINGFOLDERS, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<CreateMissingFoldersResponse>.self)
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<CreateMissingFoldersResponse>.self
+        )
 
         return decodedMessage.body.nodeId
     }
