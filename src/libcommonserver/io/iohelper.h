@@ -117,14 +117,6 @@ struct IoHelper {
          */
         static bool deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
-        //! Returns the location of the kDrive temporary subdirectory.
-        /*!
-         \param directoryPath is the path to the kDrive temporary directory. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
         //! Returns the log directory path of the application.
         /*!
          \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
