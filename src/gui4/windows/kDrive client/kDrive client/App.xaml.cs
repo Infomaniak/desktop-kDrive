@@ -32,6 +32,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.Foundation;
@@ -141,6 +142,7 @@ namespace Infomaniak.kDrive
             {
                 Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
                 SentrySdk.Flush(new TimeSpan(0, 0, 5));
+                ExitApplication();
             };
 
             if (!await appModel.InitializeAsync())
@@ -170,21 +172,24 @@ namespace Infomaniak.kDrive
                 Utility.BringCurrentWindowToFront();
         }
 
-        public void CurrentWindow_Closed(object sender, WindowEventArgs e)
+        private void CurrentWindow_Closed(object sender, WindowEventArgs e)
         {
-            if (sender is MainWindow window)
+            if (sender is MainWindow mainWindow)
             {
-                window.Closed -= CurrentWindow_Closed;
-                CurrentWindow = null; // Clear the reference to the closed window, allowing it to be garbage collected and freeing up resources
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                mainWindow.Closed -= CurrentWindow_Closed;
+                CurrentWindow = null;
+                Task.Run(() =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
+                );
             }
-            else
+            else if (sender is Window window && window == CurrentWindow)
             {
                 e.Handled = true;
-                CurrentWindow?.Hide(); // Hide the window instead of closing it, allow to keep the app running in the background and preserve the state of the window when reopened (usefull for the onboarding window for example)
+                window.Hide();
             }
         }
 
