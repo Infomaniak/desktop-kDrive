@@ -32,12 +32,11 @@ final class SynchronizationViewModel: ObservableObject {
         self.flowCoordinator = flowCoordinator
     }
 
-    func startSynchronizations() {
+    func createSynchronizations() {
         Task {
             let syncCandidates = flowCoordinator.synchronizations
             try? await syncCandidates.asyncForEach { syncCandidate in
-                let syncInfo = try await self.syncCreator.create(from: syncCandidate)
-                try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+                try await self.syncCreator.create(from: syncCandidate)
             }
 
             await flowCoordinator.navigateToNextStepOrFinish()

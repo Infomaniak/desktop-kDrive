@@ -70,6 +70,7 @@ public final class SyncCreationService: SyncCreator {
         self.useLightSyncIfPossible = useLightSyncIfPossible
     }
 
+    @discardableResult
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
         let identifier = getIdentifier(from: sync.origin)
 
