@@ -48,7 +48,8 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            DetachEventHandlers();
+            DetachEventHandlers(); 
+            Bindings.StopTracking();
         }
         private void DetachEventHandlers()
         {

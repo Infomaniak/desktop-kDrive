@@ -22,6 +22,7 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
             UpdateTitleTemplate();
         }
+ 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (ViewModel.SelectedSync is null)
@@ -56,6 +57,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
         {
+            Bindings.StopTracking();
             DetachEventHandlers();
         }
 

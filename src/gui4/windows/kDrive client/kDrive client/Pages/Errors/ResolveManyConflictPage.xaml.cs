@@ -39,7 +39,8 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
         {
-            DetachEventHandlers();
+            DetachEventHandlers(); 
+            Bindings.StopTracking();
         }
 
         private void DetachEventHandlers()

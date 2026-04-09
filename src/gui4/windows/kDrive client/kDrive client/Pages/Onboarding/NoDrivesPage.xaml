@@ -11,8 +11,7 @@
       xmlns:types="using:Infomaniak.kDrive.Types"
       xmlns:kDrive="using:Infomaniak.kDrive"
       mc:Ignorable="d"
-      Unloaded="Page_Unloaded"
-      >
+      Unloaded="Page_Unloaded">
 
     <Grid HorizontalAlignment="Center"
           VerticalAlignment="Center"

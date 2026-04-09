@@ -45,9 +45,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         protected override async void OnNavigatedFrom(NavigationEventArgs e)
         {
-            await DetachEventHandlers();
+            await DetachEventHandlers();  
+            Bindings.StopTracking();
         }
-
 
         private async void Page_Unloaded(object sender, RoutedEventArgs e)
         {

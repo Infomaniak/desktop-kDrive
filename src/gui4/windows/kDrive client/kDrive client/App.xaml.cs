@@ -159,7 +159,14 @@ namespace Infomaniak.kDrive
                 ExitApplication();
                 return;
             }
-            CurrentWindow.Content = currentWindowContent;
+            if (CurrentWindow is not null && CurrentWindow.Visible)
+                CurrentWindow.Content = currentWindowContent;
+            else
+            {
+                CurrentWindow?.Close();
+                CurrentWindow = null;
+                currentWindowContent = null;
+            }
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
@@ -186,8 +193,7 @@ namespace Infomaniak.kDrive
             {
                 window.Closed -= CurrentWindow_Closed;
                 CurrentWindow = null; // Clear the reference to the closed window, allowing it to be garbage collected and freeing up resources
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+
                 GC.Collect();
             }
             else

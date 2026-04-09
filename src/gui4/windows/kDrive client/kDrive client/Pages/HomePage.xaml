@@ -30,6 +30,7 @@
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->

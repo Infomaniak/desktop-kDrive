@@ -4,7 +4,8 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
-             xmlns:controls="using:Infomaniak.kDrive.CustomControls">
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -83,9 +84,9 @@
 
     </UserControl.Resources>
 
-   <!-- <ComboBox x:Name="SyncCombo"
+    <ComboBox x:Name="SyncCombo"
               HorizontalAlignment="Stretch"
               ItemsSource="{x:Bind ViewModel.AllSyncs, Mode=OneWay}"
               SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
-              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" />-->
+              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" />
 </UserControl>

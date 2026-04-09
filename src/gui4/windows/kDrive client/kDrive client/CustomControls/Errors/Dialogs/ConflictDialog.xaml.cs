@@ -54,6 +54,7 @@ public partial class ConflictDialog : Page
     {
         _dialog.PrimaryButtonClick -= Dialog_PrimaryButtonClick;
         _dialog.Closed -= Dialog_Closed;
+        Bindings.StopTracking();
     }
 
     private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)

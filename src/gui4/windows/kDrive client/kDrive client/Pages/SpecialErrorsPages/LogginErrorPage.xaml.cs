@@ -34,7 +34,10 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
         }
-
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
             try

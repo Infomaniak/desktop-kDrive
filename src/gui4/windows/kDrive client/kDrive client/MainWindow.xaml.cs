@@ -21,6 +21,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
 namespace Infomaniak.kDrive
 {
@@ -44,6 +45,8 @@ namespace Infomaniak.kDrive
         {
             Logger.Log(Logger.Level.Info, "MainWindow destructor called, performing cleanup.");
         }
+
+
 
         private void AppTitleBar_BackRequested(TitleBar sender, object args)
         {

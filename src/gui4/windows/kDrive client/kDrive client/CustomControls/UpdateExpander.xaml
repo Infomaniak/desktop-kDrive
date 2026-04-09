@@ -10,7 +10,7 @@
                           xmlns:converters="using:Infomaniak.kDrive.Converters"
                           xmlns:kDrive="using:Infomaniak.kDrive"
                           Loaded="UpdateExpander_Loaded"
-                          Unloaded="UpdateExpander_Unloaded"
+                          Unloaded="UserControl_Unloaded"
                           mc:Ignorable="d">
     <toolKit:SettingsExpander.Resources>
         <!-- Converters -->

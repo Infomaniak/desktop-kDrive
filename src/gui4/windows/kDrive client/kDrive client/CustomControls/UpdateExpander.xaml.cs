@@ -19,15 +19,15 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
 
         }
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {            
+            UnregisterPropertyChangedHandlers();
+            Bindings.StopTracking();
+        }
         private void UpdateExpander_Loaded(object sender, RoutedEventArgs e)
         {
             RegisterPropertyChangedHandlers();
             UpdateInternalChannelComboBoxVisibility();
-        }
-
-        private void UpdateExpander_Unloaded(object sender, RoutedEventArgs e)
-        {
-            UnregisterPropertyChangedHandlers();
         }
 
         private bool IsStaffUserConnected()

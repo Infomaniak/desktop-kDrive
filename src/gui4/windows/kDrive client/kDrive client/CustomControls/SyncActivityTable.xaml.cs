@@ -37,11 +37,11 @@ namespace Infomaniak.kDrive.CustomControls
             }
             RefreshFilteredActivities();
         }
-
-        private void SyncActivityTable_Unloaded(object sender, RoutedEventArgs e)
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             _activitySubscription?.Dispose();
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            Bindings.StopTracking();
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

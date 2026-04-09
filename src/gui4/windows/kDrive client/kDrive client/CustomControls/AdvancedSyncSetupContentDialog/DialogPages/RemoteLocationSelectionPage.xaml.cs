@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.RemoteLocationSelectionPage components initialized");
         }
-
+       
         // Navigation method
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -50,6 +50,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
         {
+            Bindings.StopTracking();
             DetachEventHandlers();
         }
 

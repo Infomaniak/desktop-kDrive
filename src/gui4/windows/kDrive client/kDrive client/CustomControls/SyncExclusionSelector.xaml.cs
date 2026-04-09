@@ -74,8 +74,9 @@ namespace Infomaniak.kDrive.CustomControls
             await ReloadAsync();
         }
 
-        private void SyncExclusionSelector_Unloaded(object sender, RoutedEventArgs e)
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            Bindings.StopTracking();
             ClearAllTreeItems();
         }
         #endregion

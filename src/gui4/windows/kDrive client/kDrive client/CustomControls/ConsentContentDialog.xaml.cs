@@ -37,6 +37,11 @@ namespace Infomaniak.kDrive.CustomControls
             this.InitializeComponent();
         }
 
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
+
         // Dependency properties
         public string LogoUriStr
         {
