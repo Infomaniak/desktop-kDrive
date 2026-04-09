@@ -2890,6 +2890,19 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     </message>
 </context>
 <context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <source>System Tray not available</source>
+        <translation>Systemablage nicht verfügbar</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 benötigt eine funktionierende Taskleiste. Wenn Sie XFCE verwenden, befolgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diese Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine Taskleisten-Anwendung wie „trayer“ und versuchen Sie es erneut.</translation>
+    </message>
+</context>
+<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>

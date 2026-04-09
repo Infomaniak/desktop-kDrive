@@ -2888,6 +2888,19 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     </message>
 </context>
 <context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <source>System Tray not available</source>
+        <translation>La bandeja del sistema no está disponible</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 requiere una bandeja del sistema que funcione correctamente. Si utilizas XFCE, sigue &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;estas instrucciones&lt;/a&gt;. De lo contrario, instala una aplicación de bandeja del sistema, como «trayer», y vuelve a intentarlo.</translation>
+    </message>
+</context>
+<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
