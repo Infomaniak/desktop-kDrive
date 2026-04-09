@@ -58,6 +58,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ExitCause getExitCause() const;
         DriveDbId driveDbId() const { return _driveDbId; };
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
@@ -76,7 +77,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 const std::string &replyBody) override; // TODO : this method should be private and called for every job.
 
         [[nodiscard]] UserId userId() const { return _userId; }
-        [[nodiscard]] DriveId driveId() const { return _driveId; }
         [[nodiscard]] ApiType getApiType() const { return _apiType; }
 
     private:
