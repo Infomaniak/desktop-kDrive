@@ -604,8 +604,8 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId) {
 
     {
         const std::scoped_lock lock(vfsMapMutex);
-        // LOG_IF_FAIL(!vfsMap[syncDbId] ||
-        //             vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+        LOG_IF_FAIL(!vfsMap[syncDbId] ||
+                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
 }
