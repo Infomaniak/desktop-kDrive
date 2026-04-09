@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "io/cachedirectory.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
 #include "libcommonserver/log/log.h"
@@ -190,13 +191,13 @@ struct COMMONSERVER_EXPORT Utility {
          * @param name the name of the directory to create.
          * @return IoError
          */
-        static IoError tryCreateTmpDir(const SyncName &name = Str("testDir"));
+        static IoError tryCreateTmpDir(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testDir"));
         /**
          * @brief Check if a file can be created in the temp directory.
          * @param name the name of the file to create.
          * @return IoError
          */
-        static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
+        static IoError tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
 
         static void msleep(int64_t msec);
 
