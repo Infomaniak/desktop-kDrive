@@ -485,16 +485,16 @@ void TestUtility::testUserName() {
 }
 
 void TestUtility::testTryCreateTmpDir() {
-    SyncPath tmpDirPath;
-    IoError ioError = IoError::Unknown;
-    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+    const LocalTemporaryDirectory tmpDir;
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(tmpDir.path());
 
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory, Str("test name")));
 
     // Make sure the item are correctly removed from the tmp dir
     IoHelper::DirectoryIterator dir;
-    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectory->path(), true, ioError, dir));
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -506,49 +506,38 @@ void TestUtility::testTryCreateTmpDir() {
 
     // Try to create a tmp dir but a directory already exist with the same name
     SyncName testDirName = Str("testDir");
-    CPPUNIT_ASSERT(IoHelper::createDirectory(tmpDirPath / testDirName, false, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(testDirName));
+    CPPUNIT_ASSERT(IoHelper::createDirectory(cacheDirectory->path() / testDirName, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory, testDirName));
 
     // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectory->path(), ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
 
 #if defined(KD_MACOS)
     {
-        // Saves the current value of "KDRIVE_TMP_PATH".
-        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
-
-        // Change the tmp directory used by the app.
-        const LocalTemporaryDirectory temporaryDirectory;
-        const auto newTmpPath = SyncPath(temporaryDirectory.path());
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
-
         // Remove access rights.
-        auto ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpDir());
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpDir(cacheDirectory));
 
         // Add back access rights.
-        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
-
-        // Restores previous value for "KDRIVE_TMP_PATH".
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
     }
 #endif
 }
 
 void TestUtility::testTryCreateTmpFile() {
-    SyncPath tmpDirPath;
-    IoError ioError = IoError::Unknown;
-    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+    const LocalTemporaryDirectory tmpDir;
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(tmpDir.path());
 
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory, Str("test name")));
 
     // Make sure the item are correctly removed from the tmp dir
     IoHelper::DirectoryIterator dir;
-    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectory->path(), true, ioError, dir));
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -559,33 +548,22 @@ void TestUtility::testTryCreateTmpFile() {
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp file but a file already exist with the same name but different capitalization.
-    testhelpers::generateTestFile(tmpDirPath / Str("TestFile"));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("testFile")));
+    testhelpers::generateTestFile(cacheDirectory->path() / Str("TestFile"));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory, Str("testFile")));
 
     // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectory->path(), ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
 
     {
-        // Saves the current value of "KDRIVE_TMP_PATH".
-        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
-
-        // Change the tmp directory used by the app.
-        const LocalTemporaryDirectory temporaryDirectory;
-        const auto newTmpPath = SyncPath(temporaryDirectory.path());
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
-
         // Remove access rights.
-        auto ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpFile());
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpFile(cacheDirectory));
 
         // Add back access rights.
-        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
-
-        // Restores previous value for "KDRIVE_TMP_PATH".
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
     }
 }
 
