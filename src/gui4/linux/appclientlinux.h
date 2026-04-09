@@ -55,7 +55,7 @@ class AppClientLinux : public QApplication {
         void ipcDisconnected();
 
     private:
-        void setupLogging() const;
+        static void setupLogging();
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
