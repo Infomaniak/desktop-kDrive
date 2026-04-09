@@ -95,7 +95,7 @@ struct DriveSearchResult {
  * This is an internal C++ boundary. QML must not call this class directly;
  * it should interact with higher-level services instead.
  */
-class ServerCommService : public QObject {
+class CommService : public QObject {
         Q_OBJECT
 
     public:
@@ -128,7 +128,7 @@ class ServerCommService : public QObject {
         using DriveSearchCallback = std::function<void(const ExitInfo &, const DriveSearchResult &)>;
         using NodeConflictInfoCallback = std::function<void(const ExitInfo &, const NodeConflictInfo &)>;
 
-        explicit ServerCommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
+        explicit CommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent = nullptr);
 
         // --- Request methods ---
         //
@@ -174,8 +174,8 @@ class ServerCommService : public QObject {
         void requestErrorDelete(ErrorDbId errorDbId, const VoidCallback &callback) const;
         void requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
                                           const std::vector<ErrorDbId> &keepRemoteList, const VoidCallback &callback) const;
-        void requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList,
-                                               ConflictResolutionStrategy strategy, const VoidCallback &callback) const;
+        void requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList, ConflictResolutionStrategy strategy,
+                                               const VoidCallback &callback) const;
 
         // --- Node ---
         void requestNodeInfo(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, bool withPath,
@@ -183,10 +183,12 @@ class ServerCommService : public QObject {
         void requestNodeConflictInfo(SyncDbId syncDbId, const SyncPath &relativePath, ReplicaSide replicaSide,
                                      const NodeConflictInfoCallback &callback) const;
         void requestNodePath(SyncDbId syncDbId, const NodeId &nodeId, const StringCallback &callback) const;
-        void requestNodeSubfolders(DriveDbId driveDbId, const NodeId &nodeId, bool withPath, const NodeInfoListCallback &callback) const;
+        void requestNodeSubfolders(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
+                                   const NodeInfoListCallback &callback) const;
         void requestNodeSubfolders2(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
                                     const NodeInfoListCallback &callback) const;
-        void requestNodeFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, const FolderSizeCallback &callback) const;
+        void requestNodeFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId,
+                                   const FolderSizeCallback &callback) const;
         void requestNodeCreateMissingFolders(DriveDbId driveDbId, const NodeId &parentNodeId, const SyncPath &relativePath,
                                              const NodeIdCallback &callback) const;
 
@@ -196,7 +198,8 @@ class ServerCommService : public QObject {
 
         // --- Blacklist ---
         void requestBlacklistedNodeList(SyncDbId syncDbId, const NodeIdListCallback &callback) const;
-        void requestBlacklistedNodeSetList(SyncDbId syncDbId, const std::vector<NodeId> &nodeIdList, const VoidCallback &callback) const;
+        void requestBlacklistedNodeSetList(SyncDbId syncDbId, const std::vector<NodeId> &nodeIdList,
+                                           const VoidCallback &callback) const;
 
         // --- Exclusion templates ---
         void requestExclTemplGetList(bool defaultTemplates, const ExclusionTemplateListCallback &callback) const;
@@ -210,7 +213,8 @@ class ServerCommService : public QObject {
         // --- Utility ---
         void requestCheckCommStatus(const VoidCallback &callback) const;
         void requestFindGoodPathForNewSync(const SyncPath &basePath, const GoodPathCallback &callback) const;
-        void requestIsPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfiguration, const BoolCallback &callback) const;
+        void requestIsPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfiguration,
+                                          const BoolCallback &callback) const;
         void requestGetAppState(AppStateKey key, const AppStateCallback &callback) const;
         void requestSetAppState(AppStateKey key, const QString &value, const VoidCallback &callback) const;
         void requestHasSystemLaunchOnStartup(const BoolCallback &callback) const;
