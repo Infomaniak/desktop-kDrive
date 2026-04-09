@@ -114,8 +114,7 @@ struct AccountDriveCellView: View {
             blackList: configuration.blackList
         )
 
-        let syncInfo = try await SyncCreationService().create(from: syncCandidate)
-        try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+        try await SyncCreationService().create(from: syncCandidate)
     }
 }
 
