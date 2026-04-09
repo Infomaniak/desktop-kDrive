@@ -19,6 +19,7 @@
 #include "driveservice.h"
 #include "serviceutils.h"
 
+#include <QDebug>
 #include <QPointer>
 
 namespace KDC {
@@ -99,6 +100,7 @@ void DriveService::beginRequest() {
 
 void DriveService::endRequest() {
     if (_pendingRequestCount <= 0) {
+        qWarning() << "DriveService::endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;

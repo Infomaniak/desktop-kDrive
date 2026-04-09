@@ -21,6 +21,7 @@
 
 #include "libcommon/utility/types.h"
 
+#include <QDebug>
 #include <QPointer>
 
 namespace KDC {
@@ -82,7 +83,6 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
             return;
         }
 
-        self->_appCache.upsertSync(syncInfo);
         emit self->syncAddCompleted(static_cast<qint64>(syncInfo.dbId()));
     });
 }
@@ -140,7 +140,6 @@ void SyncService::deleteSync(const qint64 syncDbId) {
 }
 
 void SyncService::querySyncStatus(const qint64 syncDbId) {
-    beginRequest();
     setLastError(QString());
 
     const QPointer<SyncService> self(this);
@@ -150,7 +149,6 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
                                            return;
                                        }
 
-                                       self->endRequest();
                                        if (exitInfo.code() != ExitCode::Ok) {
                                            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
                                            return;
@@ -185,6 +183,7 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
     setLastError(QString());
     if (!isValidSyncConfigurationValue(syncConfiguration)) {
         setLastError(QStringLiteral("Invalid sync configuration value: %1").arg(syncConfiguration));
+        emit pathValidationReceived(false);
         return;
     }
 
@@ -200,6 +199,7 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
                                                   self->endRequest();
                                                   if (exitInfo.code() != ExitCode::Ok) {
                                                       self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                                      emit self->pathValidationReceived(false);
                                                       return;
                                                   }
 
@@ -214,6 +214,7 @@ void SyncService::beginRequest() {
 
 void SyncService::endRequest() {
     if (_pendingRequestCount <= 0) {
+        qWarning() << "SyncService::endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;
