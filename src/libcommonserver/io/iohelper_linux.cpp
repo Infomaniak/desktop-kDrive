@@ -191,4 +191,9 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     isMounted = true;
     return true;
 }
+
+void IoHelper::setFileHidden(const SyncPath &, bool) noexcept {
+    // Items whose names begin with a period are hidden on Linux.
+}
+
 } // namespace KDC

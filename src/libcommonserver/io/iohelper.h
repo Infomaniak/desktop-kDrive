@@ -185,7 +185,6 @@ struct IoHelper {
 
         static bool isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept;
 
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -193,7 +192,6 @@ struct IoHelper {
          terminal when using a sheer `ls` command).
          */
         static void setFileHidden(const SyncPath &path, bool hidden) noexcept;
-#endif
 
         //! Checks if the item indicated by the specified path exists.
         /*!
