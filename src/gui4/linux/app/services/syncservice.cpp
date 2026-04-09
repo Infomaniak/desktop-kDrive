@@ -1,0 +1,249 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "syncservice.h"
+#include "serviceutils.h"
+
+#include "libcommon/utility/types.h"
+
+#include <QPointer>
+
+namespace KDC {
+
+SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *parent) :
+    QObject(parent),
+    _commService(commService),
+    _appCache(appCache) {
+    (void) connect(&_commService, &CommService::syncAdded, &_appCache, &AppCache::upsertSync);
+    (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync);
+    (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync);
+    (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertError);
+    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeError);
+}
+
+void SyncService::loadSyncs() {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    _commService.requestSyncInfoList([self](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
+        if (!self) {
+            return;
+        }
+
+        self->endRequest();
+        if (exitInfo.code() != ExitCode::Ok) {
+            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            return;
+        }
+
+        self->_appCache.replaceSyncs(list);
+    });
+}
+
+void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const qint64 driveId, const QString &localFolderPath,
+                          const QString &serverFolderPath, const QString &serverFolderNodeId, const bool liteSync) {
+    beginRequest();
+    setLastError(QString());
+
+    SyncAddRequest request;
+    request.userDbId = static_cast<UserDbId>(userDbId);
+    request.accountId = static_cast<AccountId>(accountId);
+    request.driveId = static_cast<DriveId>(driveId);
+    request.localFolderPath = QStr2Path(localFolderPath);
+    request.serverFolderPath = QStr2Path(serverFolderPath);
+    request.serverFolderNodeId = QStr2Str(serverFolderNodeId);
+    request.liteSync = liteSync;
+
+    const QPointer<SyncService> self(this);
+    _commService.requestSyncAdd(request, [self](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+        if (!self) {
+            return;
+        }
+
+        self->endRequest();
+        if (exitInfo.code() != ExitCode::Ok) {
+            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            return;
+        }
+
+        self->_appCache.upsertSync(syncInfo);
+        emit self->syncAddCompleted(static_cast<qint64>(syncInfo.dbId()));
+    });
+}
+
+void SyncService::startSync(const qint64 syncDbId) {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
+        if (!self) {
+            return;
+        }
+
+        self->endRequest();
+        if (exitInfo.code() != ExitCode::Ok) {
+            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+        }
+    });
+}
+
+void SyncService::stopSync(const qint64 syncDbId) {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
+        if (!self) {
+            return;
+        }
+
+        self->endRequest();
+        if (exitInfo.code() != ExitCode::Ok) {
+            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+        }
+    });
+}
+
+void SyncService::deleteSync(const qint64 syncDbId) {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
+    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
+        if (!self) {
+            return;
+        }
+
+        self->endRequest();
+        if (exitInfo.code() != ExitCode::Ok) {
+            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+        }
+    });
+}
+
+void SyncService::querySyncStatus(const qint64 syncDbId) {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    _commService.requestSyncStatus(static_cast<SyncDbId>(syncDbId),
+                                   [self, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
+                                       if (!self) {
+                                           return;
+                                       }
+
+                                       self->endRequest();
+                                       if (exitInfo.code() != ExitCode::Ok) {
+                                           self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                           return;
+                                       }
+
+                                       emit self->syncStatusReceived(syncDbId, static_cast<int32_t>(status));
+                                   });
+}
+
+void SyncService::findGoodPathForNewSync(const QString &basePath) {
+    beginRequest();
+    setLastError(QString());
+
+    const QPointer<SyncService> self(this);
+    _commService.requestFindGoodPathForNewSync(
+            QStr2Path(basePath), [self](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                if (!self) {
+                    return;
+                }
+
+                self->endRequest();
+                if (exitInfo.code() != ExitCode::Ok) {
+                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                    return;
+                }
+
+                emit self->suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
+            });
+}
+
+void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncConfiguration) {
+    setLastError(QString());
+    if (!isValidSyncConfigurationValue(syncConfiguration)) {
+        setLastError(QStringLiteral("Invalid sync configuration value: %1").arg(syncConfiguration));
+        return;
+    }
+
+    beginRequest();
+
+    const QPointer<SyncService> self(this);
+    _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
+                                              [self](const ExitInfo &exitInfo, const bool isValid) {
+                                                  if (!self) {
+                                                      return;
+                                                  }
+
+                                                  self->endRequest();
+                                                  if (exitInfo.code() != ExitCode::Ok) {
+                                                      self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                                      return;
+                                                  }
+
+                                                  emit self->pathValidationReceived(isValid);
+                                              });
+}
+
+void SyncService::beginRequest() {
+    ++_pendingRequestCount;
+    setLoading(true);
+}
+
+void SyncService::endRequest() {
+    if (_pendingRequestCount <= 0) {
+        _pendingRequestCount = 0;
+        setLoading(false);
+        return;
+    }
+
+    --_pendingRequestCount;
+    if (_pendingRequestCount == 0) {
+        setLoading(false);
+    }
+}
+
+bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
+    return syncConfiguration >= static_cast<int32_t>(SyncConfiguration::Classic) &&
+           syncConfiguration < static_cast<int32_t>(SyncConfiguration::EnumEnd);
+}
+
+void SyncService::setLoading(const bool loading) {
+    if (_loading == loading) {
+        return;
+    }
+    _loading = loading;
+    emit loadingChanged();
+}
+
+void SyncService::setLastError(const QString &error) {
+    if (_lastError == error) {
+        return;
+    }
+    _lastError = error;
+    emit lastErrorChanged();
+}
+
+} // namespace KDC
