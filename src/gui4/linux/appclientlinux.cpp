@@ -94,7 +94,7 @@ void AppClientLinux::setupLogging() const {
     qCInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
 
     qCInfo(lcAppClientLinux) << "Qt version:" << qVersion();
-    qCInfo(lcAppClientLinux) << "Qt platform:" << this->platformName();
+    qCInfo(lcAppClientLinux) << "Qt platform:" << platformName();
     if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
         qCInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
     if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR"))
