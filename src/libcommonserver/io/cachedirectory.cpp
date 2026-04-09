@@ -20,6 +20,8 @@
 
 #include "config.h" // APPLICATION
 
+#include <format>
+
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) {
