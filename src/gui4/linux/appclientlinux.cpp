@@ -61,7 +61,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 #endif
 }
 
-void AppClientLinux::setupLogging() const {
+void AppClientLinux::setupLogging() {
     auto *const logger = Logger::instance();
     logger->setIsClientLog(true);
     logger->setLogDebug(true);
