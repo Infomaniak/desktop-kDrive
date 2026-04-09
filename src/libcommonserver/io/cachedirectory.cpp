@@ -20,8 +20,6 @@
 
 #include "config.h" // APPLICATION
 
-#include <format>
-
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) {
@@ -53,7 +51,7 @@ const SyncPath &CacheDirectory::path() noexcept {
 }
 
 void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
-    const auto cacheDirName = std::format(".{}-cache", APPLICATION_NAME);
+    const auto cacheDirName = Poco::format(".%s-cache", std::string(APPLICATION_NAME));
     _cacheDirectoryPath = localSyncPath / cacheDirName;
 
     if (auto ioError = IoError::Success;
