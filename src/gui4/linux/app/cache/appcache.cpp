@@ -113,33 +113,15 @@ void AppCache::clearAll() {
     _selectedDriveDbId = 0;
     _selectedSyncDbId = 0;
 
-    if (usersListChanged) {
-        emit usersChanged();
-    }
-    if (accountsListChanged) {
-        emit accountsChanged();
-    }
-    if (drivesListChanged) {
-        emit drivesChanged();
-    }
-    if (availableDrivesListChanged) {
-        emit availableDrivesChanged();
-    }
-    if (syncsListChanged) {
-        emit syncsChanged();
-    }
-    if (errorsListChanged) {
-        emit errorsChanged();
-    }
-    if (userSelectionChanged) {
-        emit selectedUserDbIdChanged();
-    }
-    if (driveSelectionChanged) {
-        emit selectedDriveDbIdChanged();
-    }
-    if (syncSelectionChanged) {
-        emit selectedSyncDbIdChanged();
-    }
+    if (usersListChanged) emit usersChanged();
+    if (accountsListChanged) emit accountsChanged();
+    if (drivesListChanged) emit drivesChanged();
+    if (availableDrivesListChanged) emit availableDrivesChanged();
+    if (syncsListChanged) emit syncsChanged();
+    if (errorsListChanged) emit errorsChanged();
+    if (userSelectionChanged) emit selectedUserDbIdChanged();
+    if (driveSelectionChanged) emit selectedDriveDbIdChanged();
+    if (syncSelectionChanged) emit selectedSyncDbIdChanged();
 }
 
 void AppCache::replaceUsers(const std::vector<UserInfo> &users) {
