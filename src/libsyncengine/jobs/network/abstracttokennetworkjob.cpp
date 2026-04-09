@@ -410,6 +410,34 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
     return account;
 }
 
+void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
+    assert(_driveDbId > 0 && "Invalid drive DB ID.");
+
+    {
+        const std::scoped_lock lock(_cacheMutex);
+
+        if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
+            _userDbId = it->second.userDbId;
+            _driveId = it->second.driveId;
+
+            return;
+        }
+    }
+
+    // Get drive
+    const Drive &drive = getDrive(_driveDbId);
+    _driveId = drive.driveId();
+
+    // Get account
+    const Account &account = getAccount(drive);
+    _userDbId = account.userDbId();
+
+    loadUserInfoFromUserDbId();
+
+    const std::scoped_lock lock(_cacheMutex);
+    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
+}
+
 ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     assert(_userDbId > 0 && "Invalid user DB ID.");
 
@@ -423,32 +451,6 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
         _userId = it->second.userId;
         return it->second.login->apiToken();
     }
-}
-
-void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
-    assert(_driveId > 0 && "Invalid drive ID.");
-
-    Drive drive;
-    bool found = false;
-    if (!ParmsDb::instance()->selectDriveByDriveId(_driveId, drive, found)) {
-        assert(false);
-        constexpr auto err{"Error in ParmsDb::selectDriveById"};
-        LOG_WARN(_logger, err);
-        throw DbError(err);
-    }
-
-    if (!found) {
-        assert(false);
-        const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
-        LOG_WARN(_logger, err);
-        throw DataError(err);
-    }
-
-    _driveDbId = drive.dbId();
-
-    const std::scoped_lock lock(_cacheMutex);
-
-    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
 }
 
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
