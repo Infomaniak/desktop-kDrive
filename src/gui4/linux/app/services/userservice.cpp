@@ -19,6 +19,7 @@
 #include "userservice.h"
 #include "serviceutils.h"
 
+#include <QDebug>
 #include <QPointer>
 
 namespace KDC {
@@ -102,9 +103,13 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
         }
 
         self->endRequest();
+        if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
+            emit self->loginTokenFailed(result.error, result.errorDescription);
+            return;
+        }
+
         if (exitInfo.code() != ExitCode::Ok) {
             self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
-            emit self->loginTokenFailed(result.error, result.errorDescription);
             return;
         }
 
@@ -119,6 +124,7 @@ void UserService::beginRequest() {
 
 void UserService::endRequest() {
     if (_pendingRequestCount <= 0) {
+        qWarning() << "UserService::endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;
