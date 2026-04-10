@@ -21,15 +21,15 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
 
 #include <Poco/JSON/Object.h>
+#include <Poco/URI.h>
 
 #include <regex>
 #include <sys/stat.h>
-#include <utime.h>
+
 
 namespace KDC::testhelpers {
 namespace {
@@ -70,7 +70,10 @@ std::string getOriginalPath(const SyncPath &infoFile) {
     static const std::string pathKey = "Path=";
     while (std::getline(file, line)) {
         if (line.rfind(pathKey, 0) != 0) continue;
-        return Poco::URI::decode(line.substr(pathKey.size()));
+        std::string pathValue;
+        Poco::URI::decode(line.substr(pathKey.size()), pathValue);
+
+        return pathValue;
     }
 
     return "";
