@@ -18,6 +18,9 @@
 
 #include "driveuploadsession.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "io/filestat.h"
 #include "jobs/network/kDrive_API/upload/uploadhelpers.h"
 #include "utility/utility.h"
@@ -26,20 +29,25 @@ namespace KDC {
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                                       const NodeId &remoteParentDirId, const SyncTime creationTime,
+                                       const RemoteNodeId &remoteParentDirId, const SyncTime creationTime,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
-    _remoteParentDirId(remoteParentDirId),
+    _remoteParentDirId(std::move(remoteParentDirId)),
     _vfs(vfs) {
     _uploadSessionType = UploadSessionType::Drive;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(_driveDbId, _remoteParentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in DriveUploadSession::DriveUploadSession.");
+    }
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
-                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
+                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const RemoteNodeId &fileId,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread,
                                        const int64_t remoteSize /*= -1*/) :
     DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
@@ -98,7 +106,7 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   chunkContent, chunkNb, actualChunkSize, jobId());
+                                                   getSessionUrl(), chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {

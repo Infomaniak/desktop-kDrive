@@ -37,7 +37,7 @@ class FileListJob : public SyncJob {
 
         // The return value of this accessor is only meaningful when all the responses of the
         // underlying file list requests have been handled.
-        [[nodiscard]] ExitInfo nodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
+        [[nodiscard]] ExitInfo remoteNodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
             return v2RemoteNodeInfoList(nodeInfoList);
         };
 
