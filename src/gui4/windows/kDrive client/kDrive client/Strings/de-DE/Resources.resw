@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 31 Mar 2026 11:35:43 +0200 
+  Exported at: Fri, 10 Apr 2026 16:43:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -236,6 +236,12 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</value>
   <data name="buttonDisconnectAccount" xml:space="preserve"> 
     <value>Dieses Konto trennen</value> 
   </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Download läuft…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Manuell herunterladen</value> 
+  </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Aktivieren</value> 
   </data> 
@@ -399,6 +405,9 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</value>
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Aktualisieren</value> 
   </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Jetzt aktualisieren</value> 
+  </data> 
   <data name="buttonUpdateSubscription" xml:space="preserve"> 
     <value>Abonnement aktualisieren</value> 
   </data> 
@@ -540,6 +549,9 @@ Schliessen Sie die Anwendung während des Vorgangs nicht.</value>
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
     <value>Nicht beitreten</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/de/anwendungen/kdrive-herunterladen</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
     <value>Sie haben keine Berechtigung, auf dieses kDrive zuzugreifen.
@@ -1620,6 +1632,13 @@ Wenn das Problem weiterhin besteht, wenden Sie sich bitte an den Support.</value
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ verfügbar</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>Eine neue Version von kDrive ist erforderlich, um fortzufahren.
+Bitte aktualisieren Sie die Anwendung, um auf Ihre Dateien zuzugreifen und die Synchronisierung fortzusetzen.</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Aktualisierung erforderlich</value> 
   </data> 
   <data name="updateSettings" xml:space="preserve"> 
     <value>Aktualisierung</value> 

@@ -33,7 +33,7 @@
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
-              Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+              Visibility="{x:Bind TitleBarContentVisibility(ViewModel.SelectedSync, ViewModel.UpdateRequired), Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
 

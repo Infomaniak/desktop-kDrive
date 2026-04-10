@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 31 Mar 2026 11:35:43 +0200 
+  Exported at: Fri, 10 Apr 2026 16:43:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -236,6 +236,12 @@ Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</value>
   <data name="buttonDisconnectAccount" xml:space="preserve"> 
     <value>Desconectar esta cuenta</value> 
   </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Descargando…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Descargar manualmente</value> 
+  </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Activar</value> 
   </data> 
@@ -399,6 +405,9 @@ Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</value>
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Actualizar</value> 
   </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Actualizar ahora</value> 
+  </data> 
   <data name="buttonUpdateSubscription" xml:space="preserve"> 
     <value>Actualizar suscripción</value> 
   </data> 
@@ -540,6 +549,9 @@ No cierre la aplicación durante el proceso.</value>
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
     <value>No unirse</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/es/aplicaciones/descargar-kdrive</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
     <value>No tiene permiso para acceder a este kDrive.
@@ -836,7 +848,7 @@ La sincronización se reanudará automáticamente una vez que se restablezca la 
     <value>Error al crear un enlace compartido</value> 
   </data> 
   <data name="faqUrl" xml:space="preserve"> 
-    <value>https://www.infomaniak.com/es/asistencia/faq/admin2/kdrive</value> 
+    <value>https://www.infomaniak.com/es/support/faq/admin2/kdrive</value> 
   </data> 
   <data name="feedbackSetting" xml:space="preserve"> 
     <value>Ayúdenos a mejorar kDrive</value> 
@@ -1621,6 +1633,13 @@ Si el problema persiste, contacte con el soporte.</value>
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ disponible</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>A new version of kDrive is required to continue.
+Please update the application to access your files and resume synchronization</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Actualización requerida</value> 
   </data> 
   <data name="updateSettings" xml:space="preserve"> 
     <value>Actualización</value> 

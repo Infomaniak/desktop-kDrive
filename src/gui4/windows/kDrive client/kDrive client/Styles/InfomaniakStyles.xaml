@@ -100,6 +100,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.S">0,0,0,12</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.M">0,0,0,16</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.L">0,0,0,24</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.XL">0,0,0,32</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XXS">4,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XS">8,0,0,0</Thickness>
@@ -117,6 +118,8 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.XXXL">0,0,48,0</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.TextBadge">4,2</Thickness>
+    
+    <Thickness x:Key="Infomaniak.Style.Thickness.FullScreenCard">16,0,16,16</Thickness>
 
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XS">2</CornerRadius>

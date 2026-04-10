@@ -38,9 +38,45 @@ ExitInfo UtilityActivateLoadInfoJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityActivateLoadInfoJob::process() {
+    if (ExitInfo exitInfo = CheckUpdateIfNeeded(); !exitInfo) {
+        return exitInfo;
+    }
+
     _commManager->appServer().triggerSyncProgressUpdate();
     _commManager->appServer().loadUsersInfo();
-    return ExitCode::Ok;
+}
+
+ExitInfo UtilityActivateLoadInfoJob::CheckUpdateIfNeeded() {
+    std::vector<Error> errs;
+    if (!ParmsDb::instance()->selectAllErrors(INT_MAX, errs)) {
+        LOG_WARN(_logger, "Failed to get errors from database to check if the app is locked");
+        return ExitCode::Ok; // Not critical, we can skip the updater state refresh in this case
+    }
+
+    bool isUpdateRequired = false;
+    for (const auto &err: errs) {
+        if (err.exitCode() == ExitCode::UpdateRequired) {
+            isUpdateRequired = true;
+            break;
+        }
+    }
+
+    if (!isUpdateRequired) {
+        return ExitCode::Ok;
+    }
+
+    auto updaterState = _commManager->appServer().getUpdateState();
+
+    if (updaterState != UpdateState::Checking && updaterState != UpdateState::Available &&
+        updaterState != UpdateState::Downloading && updaterState != UpdateState::Ready &&
+        updaterState != UpdateState::ManualUpdateAvailable) {
+        LOG_INFO(_logger,
+                 "An update is required, but the app is not currently checking for updates or downloading an update. Forcing "
+                 "update state refresh.");
+        _commManager->appServer().refreshUpdateState();
+    }
+
+    return ExitCode::UpdateRequired;
 }
 
 } // namespace KDC

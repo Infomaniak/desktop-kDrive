@@ -279,7 +279,7 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    if (!await serverCommService.RefreshUpdaterVersionInfo(cts.Token))
+                    if (!await serverCommService.RefreshUpdaterVersionInfo(null, cts.Token))
                     {
                         Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
                         // This is not critical, we can continue without this info
@@ -322,8 +322,9 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task AddErrorAsync(Error error)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
-            if (error.ErrorLevel == Types.ErrorLevel.Server)
+            if (error.ErrorLevel == Types.ErrorLevel.Server || error.ExitCode == ExitCode.UpdateRequired) // Treat any UpdateRequired error as a Server level error
             {
+                error.ErrorLevel = ErrorLevel.Server;
                 await Utility.RunOnUIThread(() => AppErrors.Add(error));
                 RefreshErrorState();
                 return;

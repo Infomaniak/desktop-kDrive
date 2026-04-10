@@ -34,28 +34,31 @@
         <!-- <MicaBackdrop Kind="BaseAlt"/> -->
         <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
-    <Grid>
-        <controls:SplashScreen x:Name="SplashScreen" />
-        <Grid x:Name="MainContentGrid">
-            <Grid.Resources>
-                <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            </Grid.Resources>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <!-- Title bar -->
-                <RowDefinition Height="*" />
-                <!-- Remaining space for NavigationView -->
-            </Grid.RowDefinitions>
-
+    <Grid x:Name="MainContentGrid">
+        <Grid.Resources>
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <!-- Title bar -->
-            <controls:AppTitleBar x:Name="AppTitleBar"
-                                  Grid.Row="0"
-                                  HorizontalContentAlignment="Stretch"
-                                  IsPaneToggleButtonVisible="False" />
+            <RowDefinition Height="*" />
+            <!-- Remaining space for NavigationView -->
+        </Grid.RowDefinitions>
 
-            <!-- NavigationView -->
-            <controls:AppNavigationView x:Name="NavView"
+        <!-- Title bar -->
+        <controls:AppTitleBar x:Name="AppTitleBar"
+                              Grid.Row="0"
+                              HorizontalContentAlignment="Stretch"
+                              IsPaneToggleButtonVisible="False" />
+
+        <controls:SplashScreen x:Name="SplashScreen"
+                               Grid.Row="1" />
+
+        <controls:UpdateRequiredControl x:Name="UpdateRequiredControl"
                                         Grid.Row="1" />
-        </Grid>
+
+        <!-- NavigationView -->
+        <controls:AppNavigationView x:Name="NavView"
+                                    Grid.Row="1" />
     </Grid>
 </Window>

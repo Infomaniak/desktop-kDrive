@@ -180,6 +180,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
         UpdateState getUpdateState() const;
+        void refreshUpdateState();
         void startInstaller();
         [[nodiscard]] ExitInfo getNodePath(SyncDbId syncDbId, const NodeId &nodeId, CommString &path);
 
