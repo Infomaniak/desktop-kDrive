@@ -225,7 +225,6 @@ namespace Infomaniak.kDrive
             command.SetValue("", $"\"{exe}\" \"%1\"");
         }
 
-
         public void StartOnboarding()
         {
             AppModel.UIThreadDispatcher.TryEnqueue(() =>

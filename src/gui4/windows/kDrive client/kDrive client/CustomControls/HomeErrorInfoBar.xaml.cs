@@ -20,10 +20,9 @@ namespace Infomaniak.kDrive.CustomControls
         public HomeErrorInfoBar()
         {
             InitializeComponent();
-            Unloaded += OnUnloaded;
         }
 
-        private void OnUnloaded(object sender, RoutedEventArgs e)
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             ControlViewModel.Dispose();
             Bindings.StopTracking();

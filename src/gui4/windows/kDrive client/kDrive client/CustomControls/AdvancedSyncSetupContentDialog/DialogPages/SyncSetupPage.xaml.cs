@@ -67,6 +67,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
             AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged -= AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
         }
+
         private void AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(NewSync.LocalPath) || e.PropertyName == nameof(NewSync.RemotePath) || e.PropertyName == nameof(NewSync.RemoteNodeId))

@@ -41,11 +41,12 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
-            Bindings.StopTracking();
         }
+
         private void DetachEventHandlers()
         {
             if (DriveSetupContentDialogVM is not null)
@@ -54,6 +55,13 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
             }
         }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+            Bindings.StopTracking();
+        }
+
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)
@@ -176,11 +184,6 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             newSync.LocalPath = newSync.DefaultPath;
             await newSync.SelectBestVfsMode();
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DetachEventHandlers();
         }
     }
 }
