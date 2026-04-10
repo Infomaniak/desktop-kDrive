@@ -96,11 +96,11 @@ void TestApiTranslator::testGetDriveDbId() {
 
 void TestApiTranslator::testTranslateV2ToV3() {
     RemoteNodeId remoteNodeId = ApiTranslator::v2RootFolderRemoteId();
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveId, remoteNodeId));
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 
     remoteNodeId = ApiTranslator::v2RootFolderRemoteId() + "666";
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveDbId, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV2ToV3(_driveId, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId() + "666", remoteNodeId);
 }
 
