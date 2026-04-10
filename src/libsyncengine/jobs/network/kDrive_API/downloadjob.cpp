@@ -144,7 +144,7 @@ ExitInfo DownloadJob::runJob() noexcept {
     if (!_fileDownloadInfo.isCreate && _vfs) {
         // Get hydration status
         VfsStatus vfsStatus;
-        _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
         _isHydrated = vfsStatus.isHydrated;
 
         // Update size on file system
@@ -465,7 +465,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 
             // Move file
             IoError ioError = IoError::Success;
-            IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
+            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
