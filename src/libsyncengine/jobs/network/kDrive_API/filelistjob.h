@@ -41,7 +41,7 @@ class FileListJob : public SyncJob {
             return v2RemoteNodeInfoList(nodeInfoList);
         };
 
-        // The node info list as returned by the backend API v3
+        // The node info list as returned by the backend API v3.
         // The return value is only meaningful when all the responses of the
         // underlying file list requests have been handled.
         [[nodiscard]] const RemoteNodeInfoList &v3RemoteNodeInfoList() const { return _remoteNodeInfoList; };
