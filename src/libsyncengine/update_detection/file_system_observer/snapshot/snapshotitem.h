@@ -111,8 +111,8 @@ class RemoteSnapshotItem : public SnapshotItem {
         RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name, SyncTime createdAt,
                            SyncTime lastModified, NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
         RemoteSnapshotItem(const RemoteSnapshotItem &other);
-        [[nodiscard]] ExitInfo setId(DriveDbId driveDbId, const NodeId &id);
-        [[nodiscard]] ExitInfo setParentId(DriveDbId driveDbId, const NodeId &newParentId);
+        [[nodiscard]] ExitInfo setId(UserDbId userDbId, DriveId driveId, const NodeId &id);
+        [[nodiscard]] ExitInfo setParentId(UserDbId userDbId, DriveId driveId, const NodeId &newParentId);
 };
 
 } // namespace KDC

@@ -36,10 +36,10 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
     AbstractListingJob(driveDbId, blacklist),
     _remoteDirId(std::move(remoteDirId)),
     _zip(zip),
-    _snapshotItemHandler(driveDbId, _logger) {
+    _snapshotItemHandler(userDbId(), driveId(), _logger) {
     _customTimeout = apiTimout + 15;
 
-    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveId(), _remoteDirId); !exitInfo) {
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
     }

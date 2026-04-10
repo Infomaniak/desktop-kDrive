@@ -78,7 +78,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
-    User user(1, userId, keychainKey);
+    User user(_userDbId, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
@@ -86,8 +86,8 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    const int driveId(atoi(testVariables.driveId.c_str()));
-    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    _driveId = atoi(testVariables.driveId.c_str());
+    Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
@@ -158,8 +158,9 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     const RemoteNodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
 
     RemoteNodeId userPrivateFolderId;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
-                                                         _driveDbId, ApiTranslator::SpecialFolder::Private, userPrivateFolderId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, ApiTranslator::SpecialFolder::Private,
+                                                                 userPrivateFolderId));
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
