@@ -58,12 +58,10 @@ void AbstractTokenNetworkJob::checkParametersValidity() {
     }
 }
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
-                                                 const DriveDbId driveDbId, const DriveId driveId,
-                                                 const bool returnJson /*= true*/) :
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const DriveDbId driveDbId,
+                                                 const DriveId driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
-    _userId(userId),
     _driveDbId(driveDbId),
     _driveId(driveId),
     _returnJson(returnJson) {
@@ -80,7 +78,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bool returnJson /*= true*/) :
-    AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
+    AbstractTokenNetworkJob(apiType, 0, 0, 0, returnJson) {}
 
 ExitCause AbstractTokenNetworkJob::getExitCause() const {
     if (exitInfo().cause() == ExitCause::Unknown) {
@@ -402,7 +400,6 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
             LOG_WARN(_logger, err);
             throw TokenError(err);
         }
-        _userToApiKeyMap[_userDbId] = {login, user.userId()};
 #ifndef NDEBUG
     } else {
         ApiToken apiToken;
@@ -410,12 +407,14 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         auto login = std::make_shared<Login>();
         login->setApiToken(apiToken);
         LOG_INFO(_logger, "Using API token from environment variable KDRIVE_DEBUG_API_TOKEN for userDbId=" << _userDbId);
-        _userToApiKeyMap[_userDbId] = {login, user.userId()};
     }
 #endif
+
+    _userId = user.userId();
+    _userToApiKeyMap[_userDbId] = {login, _userId};
 }
 
-Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) {
+Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
     assert(driveDbId > 0 && "Invalid drive DB ID.");
 
     Drive drive;
@@ -539,7 +538,10 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::Drive:
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
-            if (_driveDbId) loadUserInfoFromDriveDbId();
+            if (_driveDbId)
+                loadUserInfoFromDriveDbId();
+            else
+                loadUserInfoFromUserDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
         }
