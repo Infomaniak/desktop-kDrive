@@ -176,15 +176,19 @@
                             <DataTemplate x:Key="SynchronizingTemplate">
                                 <Grid kDrive:AncestorSource.AncestorType="ContentControl">
                                     <ToolTipService.ToolTip>
-                                        <TextBlock>
+                                        <Grid>
+                                            <TextBlock Visibility="{Binding DataContext.HasIndeterminateProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
                                             <Run Text="{Binding DataContext.ProgressPercent, Mode=OneWay}" />
                                             <Run Text="%" />
-                                        </TextBlock>
+                                            </TextBlock>
+                                            <TextBlock Visibility="{Binding DataContext.HasIndeterminateProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                                       Text="{Binding Converter={StaticResource BindingLocalizerHelper}, ConverterParameter='key=syncInProgressTooltip'}" />
+                                        </Grid>
                                     </ToolTipService.ToolTip>
                                     <ProgressRing Height="16"
                                                   Width="16"
                                                   Background="{ThemeResource ButtonBackgroundThemeBrush}"
-                                                  IsIndeterminate="False"
+                                                  IsIndeterminate="{Binding DataContext.HasIndeterminateProgress, Mode=OneWay}"
                                                   kDrive:AncestorSource.AncestorType="ContentControl"
                                                   Value="{Binding DataContext.ProgressPercent, Mode=OneWay}">
 
