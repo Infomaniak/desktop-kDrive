@@ -117,7 +117,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ApiToken retrieveApiTokenFromUserCache();
         Account getAccount(const Drive &drive) const;
         Drive getDrive(DriveDbId driveDbId) const;
-        void setDriveDbIdFromDriveId();
 
         /// @throw InvalidArgumentError
         void checkParametersValidity();

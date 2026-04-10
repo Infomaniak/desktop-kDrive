@@ -453,32 +453,6 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     }
 }
 
-void AbstractTokenNetworkJob::setDriveDbIdFromDriveId() {
-    assert(_driveId > 0 && "Invalid drive ID.");
-
-    Drive drive;
-    bool found = false;
-    if (!ParmsDb::instance()->selectDriveByDriveId(_driveId, drive, found)) {
-        assert(false);
-        constexpr auto err{"Error in ParmsDb::selectDriveById"};
-        LOG_WARN(_logger, err);
-        throw DbError(err);
-    }
-
-    if (!found) {
-        assert(false);
-        const std::string err = "Drive not found for driveId=" + std::to_string(_driveId);
-        LOG_WARN(_logger, err);
-        throw DataError(err);
-    }
-
-    _driveDbId = drive.dbId();
-
-    const std::scoped_lock lock(_cacheMutex);
-
-    _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
-}
-
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
     if (_apiType == ApiType::Desktop) {
@@ -507,7 +481,6 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::NotifyDrive: {
             if (_driveDbId) loadUserInfoFromDriveDbId();
             apiToken = retrieveApiTokenFromUserCache();
-            if (!_driveDbId) setDriveDbIdFromDriveId();
             break;
         }
         case ApiType::Profile:
