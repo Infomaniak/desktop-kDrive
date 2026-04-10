@@ -18,6 +18,9 @@
 
 #include "movejob.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "libcommonserver/io/iohelper.h"
 
 #include "libcommonserver/utility/utility.h"
@@ -34,6 +37,11 @@ MoveJob::MoveJob(const DriveDbId driveDbId, const SyncPath &destFilepath, const 
     _destDirId(destDirId),
     _name(name){
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _destDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in MoveJob::MoveJob.");
+    }
 }
 
 ExitInfo MoveJob::canRun() {
