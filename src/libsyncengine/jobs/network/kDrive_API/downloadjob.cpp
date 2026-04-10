@@ -48,9 +48,10 @@ std::function<int64_t(const SyncPath &)> DownloadJob::_getFreeDiskSpaceFn = [](c
     return Utility::getFreeDiskSpace(path);
 };
 
+
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                          const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, fileDownloadInfo.driveDbId, 0, false),
     _vfs(vfs),
     _cacheDirectory(cacheDirectory),
     _fileDownloadInfo(fileDownloadInfo),
@@ -58,6 +59,7 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDi
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
+
 
     if (!_cacheDirectory) {
         // If no cache directory have been provided, fallback to creating a temporary cache directory into parent folder.

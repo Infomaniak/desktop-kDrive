@@ -25,7 +25,7 @@
 namespace KDC {
 
 ItemsExistJob::ItemsExistJob(const DriveDbId driveDbId, const NodeSet &ids) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     for (const auto &id: ids) {
         (void) _nodeExistenceMap.try_emplace(id, false);
