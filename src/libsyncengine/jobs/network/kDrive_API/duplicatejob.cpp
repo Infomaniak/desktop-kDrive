@@ -31,6 +31,7 @@ DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const DriveDbId drive
     _absoluteFinalPath(absoluteFinalPath),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
 }
 
 ExitInfo DuplicateJob::handleResponse(std::istream &is) {
