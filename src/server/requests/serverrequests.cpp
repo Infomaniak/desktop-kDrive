@@ -25,8 +25,9 @@
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/jobexceptions.h"
-#include "jobs/network/kDrive_API/getrootfilelistjob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/filelistjob.h"
+#include "jobs/network/kDrive_API/getfilesinrootdirjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/postfilelinkjob.h"
 #include "jobs/network/kDrive_API/getfilelinkjob.h"
@@ -838,136 +839,58 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const QString &local
                    syncInfo);
 }
 
-ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const QString &nodeId,
-                                       QList<NodeInfo> &list, const bool withPath /*= false*/) {
-    std::vector<NodeInfo> stdVector;
-    const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath);
-    if (!exitInfo) {
+namespace {
+
+std::string getFileListConstructorErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId,
+                                           const std::exception &e) {
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                                                   : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " error=" << e.what();
+
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId, const ExitInfo &exitInfo) {
+    const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                   : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for userDbId=" << userDbId << " driveId=" << driveId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
+} // namespace
+
+
+ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &nodeId,
+                                       RemoteNodeInfoList &list, const bool withPath /*= false*/) {
+    list.clear();
+
+    std::shared_ptr<FileListJob> job = nullptr;
+    try {
+        if (nodeId.empty()) {
+            job = std::make_shared<GetFilesInRootDirJob>(userDbId, driveId);
+        } else {
+            job = std::make_shared<GetAllFilesInDirectoryJob>(userDbId, driveId, nodeId, TranslationMode::V2ToV3);
+        }
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), getFileListConstructorErrorMsg(job.get(), userDbId, driveId, e));
+        return exception2ExitCode(e);
+    }
+
+    job->setListingConf({.withPath = withPath, .dirOnly = true});
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), getFileListExecErrorMsg(job.get(), userDbId, driveId, exitInfo));
         return exitInfo;
     }
-    list.clear();
-    for (const NodeInfo &nodeInfo: stdVector) {
-        list.push_back(nodeInfo);
-    }
-    return ExitCode::Ok;
-}
 
-
-ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
-                                       std::vector<NodeInfo> &list, const bool withPath /*= false*/) {
-    list.clear();
-    uint64_t totalPages = 0;
-    uint64_t page = 1;
-    do {
-        const FileListJobConfig listingConf{.page = page, .dirOnly = true};
-        std::shared_ptr<GetRootFileListJob> job = nullptr;
-        if (nodeId.empty()) {
-            try {
-                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, listingConf);
-            } catch (const std::exception &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId << " error=" << e.what());
-                return exception2ExitCode(e);
-            }
-        } else {
-            try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, listingConf);
-            } catch (const std::exception &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
-                                                               << " error=" << e.what());
-                return exception2ExitCode(e);
-            }
-        }
-
-        job->setWithPath(withPath);
-        if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in GetFileListJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                               << " nodeId=" << nodeId << " error=" << exitInfo);
-            return exitInfo;
-        }
-
-        Poco::JSON::Object::Ptr resObj = job->jsonRes();
-        if (!resObj) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: no valid JSON message retrieved.");
-            return ExitCode::BackError;
-        }
-
-        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-        if (!dataArray) {
-            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: missing `data` array in retrieved JSON message.");
-            return ExitCode::BackError;
-        }
-
-        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-            Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-            SyncTime modTime;
-            if (!JsonParserUtility::extractValue(dirObj, lastModifiedAtKey, modTime)) {
-                return ExitCode::BackError;
-            }
-
-            NodeId nodeId2;
-            if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName tmp;
-            if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName name;
-            if (!Utility::normalizedSyncName(tmp, name)) {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-                // Ignore the folder
-                continue;
-            }
-
-            std::string parentId;
-            if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
-                return ExitCode::BackError;
-            }
-
-            SyncName path;
-            if (withPath) {
-                if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
-                    return ExitCode::BackError;
-                }
-                if (!Utility::normalizedSyncName(tmp, path)) {
-                    LOGW_DEBUG(Log::instance()->getLogger(),
-                               L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-                    // Ignore the folder
-                    continue;
-                }
-            }
-
-            Poco::JSON::Object::Ptr capabilitiesObj = dirObj->getObject(capabilitiesKey);
-            bool accessDenied = false;
-            if (capabilitiesObj) {
-                bool canShow = true;
-                if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow)) {
-                    return ExitCode::BackError;
-                }
-                accessDenied = !canShow;
-            }
-
-            NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
-                              -1, // Size is not set here as it can be very long to evaluate
-                              parentId.c_str(), modTime, SyncName2QStr(path));
-            nodeInfo.setAccessDenied(accessDenied);
-            list.push_back(nodeInfo);
-        }
-
-        page++;
-        totalPages = job->totalPages();
-    } while (page <= totalPages);
+    if (const auto exitInfo = job->remoteNodeInfoList(list); !exitInfo) return exitInfo;
 
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const RemoteNodeId &nodeId, RemoteNodeInfoList &list,
                                        const bool withPath) {
     Drive drive;
     bool found = false;
@@ -1005,6 +928,18 @@ ExitInfo ServerRequests::getSubFolders(const DriveDbId driveDbId, const QString 
     for (NodeInfo &nodeInfo: stdVector) {
         list.push_back(std::move(nodeInfo));
     }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const QString &nodeId,
+                                       QList<NodeInfo> &list, const bool withPath /*= false*/) {
+    list.clear();
+    std::vector<NodeInfo> stdVector;
+    if (const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath); !exitInfo)
+        return exitInfo;
+
+    for (const NodeInfo &nodeInfo: stdVector) list.push_back(nodeInfo);
 
     return ExitCode::Ok;
 }

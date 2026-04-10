@@ -224,9 +224,14 @@ ExitInfo AbstractUploadSession::startSession() {
         return ExitCode::DataError;
     }
 
-    if (const auto dataObj = startJob->jsonRes()->getObject(dataKey);
-        !dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
+    const auto dataObj = startJob->jsonRes()->getObject(dataKey);
+    if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
         LOG_WARN(_logger, "Failed to extract upload session token");
+        return ExitCode::DataError;
+    }
+
+    if (!dataObj || !JsonParserUtility::extractValue(dataObj, uploadUrlKey, _sessionUrl)) {
+        LOG_WARN(_logger, "Failed to extract upload session url");
         return ExitCode::DataError;
     }
 
