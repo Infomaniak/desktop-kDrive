@@ -385,9 +385,10 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         uint64_t counter = 0;
         const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
         for (auto i = 0; i < 20; i++) {
-            const auto job = std::make_shared<DownloadJob>(nullptr, cacheDirectory, driveDbId, testBigFileRemoteId,
-                                                           localTmpDir.path(), 110 * 1024 * 1024, testhelpers::defaultFileSize,
-                                                           testhelpers::defaultFileSize, false);
+            const auto job = std::make_shared<DownloadJob>(
+                    nullptr, cacheDirectory,
+                    DownloadJob::FileDownloadInfo{driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
+                                                  testhelpers::defaultFileSize, testhelpers::defaultFileSize, false});
             if (!SyncJobManagerSingleton::instance()->canRunJob(job)) {
                 noMoreRun = true;
                 break;
