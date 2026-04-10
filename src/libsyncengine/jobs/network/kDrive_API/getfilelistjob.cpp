@@ -20,14 +20,13 @@
 
 namespace KDC {
 
-GetFileListJob::GetFileListJob(const UserDbId userDbId, const DriveId driveId, const NodeId &fileId, const uint64_t page /*= 1*/,
-                               const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
-    GetRootFileListJob(userDbId, driveId, page, dirOnly, nbItemsPerPage),
+GetFileListJob::GetFileListJob(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &fileId,
+                               const FileListJobConfig &config) :
+    GetRootFileListJob(userDbId, driveId, config),
     _fileId(fileId) {}
 
-GetFileListJob::GetFileListJob(const DriveDbId driveDbId, const NodeId &fileId, const uint64_t page /*= 1*/,
-                               const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
-    GetRootFileListJob(driveDbId, page, dirOnly, nbItemsPerPage),
+GetFileListJob::GetFileListJob(const DriveDbId driveDbId, const RemoteNodeId &fileId, const FileListJobConfig &config) :
+    GetRootFileListJob(driveDbId, config),
     _fileId(fileId) {}
 
 std::string GetFileListJob::getSpecificUrl() {

@@ -26,7 +26,7 @@ namespace KDC {
 
 DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
                            const SyncPath &absoluteFinalPath) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _remoteFileId(remoteFileId),
     _absoluteFinalPath(absoluteFinalPath),
     _vfs(vfs) {

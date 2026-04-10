@@ -27,6 +27,7 @@
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getrootfilelistjob.h"
 #include "jobs/network/infomaniak_API/getinfouserjob.h"
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
@@ -960,7 +961,7 @@ void TestNetworkJobs::testGetFileList() {
         }
 
         for (uint16_t page = 1; page <= 2; page++) {
-            GetFileListJob job(_driveDbId, tmpRemoteDir.id(), page, true, 10);
+            GetFileListJob job(_driveDbId, tmpRemoteDir.id(), FileListJobConfig{page, true, 10});
             (void) job.runSynchronously();
             Poco::JSON::Object::Ptr resObj = job.jsonRes();
             CPPUNIT_ASSERT(resObj);
@@ -1069,7 +1070,7 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     {
-        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, CsvFullFileListWithCursorJob::Zip::Off);
+        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"1"}, {}, CsvFullFileListWithCursorJob::Zip::Off);
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
@@ -1093,7 +1094,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     {
-        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, CsvFullFileListWithCursorJob::Zip::On);
+        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"1"}, {}, CsvFullFileListWithCursorJob::Zip::On);
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
