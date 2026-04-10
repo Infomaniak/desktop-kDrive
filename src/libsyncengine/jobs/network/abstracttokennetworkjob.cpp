@@ -365,7 +365,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     _userToApiKeyMap[_userDbId] = {login, _userId};
 }
 
-Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) {
+Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
     assert(driveDbId > 0 && "Invalid drive DB ID.");
 
     Drive drive;

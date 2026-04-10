@@ -853,9 +853,10 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
     uint64_t totalPages = 0;
     do {
         std::shared_ptr<GetRootFileListJob> job = nullptr;
+        const FileListJobConfig config{.page = page, .dirOnly = true};
         if (nodeId.empty()) {
             try {
-                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
+                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, config);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " error=" << e.what());
@@ -863,7 +864,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
             }
         } else {
             try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, config);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
