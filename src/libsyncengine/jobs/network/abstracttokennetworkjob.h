@@ -55,7 +55,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
-        DriveDbId driveDbId() const { return _driveDbId; };
+        [[nodiscard]] DriveDbId driveDbId() const { return _driveDbId; };
+        [[nodiscard]] UserDbId userDbId() const { return _userDbId; }
         [[nodiscard]] DriveId driveId() const { return _driveId; }
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
