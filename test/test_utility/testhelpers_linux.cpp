@@ -61,28 +61,6 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     return SyncPath{ss.str()};
 }
 
-enum class TrashSubDirectory {
-    Info,
-    Files
-};
-
-// Get the user trash subdirectory
-SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
-    switch (trashSubDir) {
-        case TrashSubDirectory::Info:
-            return SyncPath{Utility::getTrashPath()}.parent_path().parent_path() / "info";
-            break;
-        case TrashSubDirectory::Files:
-            return Utility::getTrashPath();
-            break;
-        default:
-            throw std::invalid_argument("Unrecognized trash subdirectory type.");
-    }
-
-    return {};
-}
-
-
 // Parse the mandatory `Path` entry from a .trashinfo file
 std::string getOriginalPath(const SyncPath &infoFile) {
     std::ifstream file(infoFile);
@@ -99,6 +77,22 @@ std::string getOriginalPath(const SyncPath &infoFile) {
 }
 
 } // namespace
+
+// Get the user trash subdirectory
+SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
+    switch (trashSubDir) {
+        case TrashSubDirectory::Info:
+            return SyncPath{Utility::getTrashPath()}.parent_path().parent_path() / "info";
+            break;
+        case TrashSubDirectory::Files:
+            return Utility::getTrashPath();
+            break;
+        default:
+            throw std::invalid_argument("Unrecognized trash subdirectory type.");
+    }
+
+    return {};
+}
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
     const auto trashPath = Utility::getTrashPath();
