@@ -68,6 +68,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
+        [[nodiscard]] DriveId getDriveId(const DriveDbId driveDbId);
+
     protected:
         std::string getSpecificUrl() override;
         std::string contentType() override;
@@ -123,7 +125,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ApiToken retrieveApiTokenFromUserCache();
         Account getAccount(const Drive &drive) const;
-        Drive getDrive(DriveDbId driveDbId) const;
+        [[nodiscard]] Drive getDrive(DriveDbId driveDbId) const;
 
         /// @throw InvalidArgumentError
         void checkParametersValidity();

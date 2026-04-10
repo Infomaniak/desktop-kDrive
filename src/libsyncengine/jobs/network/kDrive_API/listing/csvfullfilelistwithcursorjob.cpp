@@ -39,7 +39,7 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
     _snapshotItemHandler(driveDbId, _logger) {
     _customTimeout = apiTimout + 15;
 
-    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _remoteDirId); !exitInfo) {
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveId(), _remoteDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
     }
