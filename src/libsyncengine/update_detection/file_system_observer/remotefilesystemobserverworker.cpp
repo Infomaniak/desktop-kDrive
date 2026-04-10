@@ -296,7 +296,9 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
     remoteSnapshotItem.setName(folderName);
     remoteSnapshotItem.setCreatedAt(now);
     remoteSnapshotItem.setLastModified(now);
-    if (const auto exitInfo = remoteSnapshotItem.setParentId(_driveDbId, ApiTranslator::v2RootFolderRemoteId()); !exitInfo)
+    if (const auto exitInfo =
+                remoteSnapshotItem.setParentId(_syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::v2RootFolderRemoteId());
+        !exitInfo)
         return exitInfo;
     if (found) {
         assert(dbNode.type() == NodeType::Directory && "Invalid node type.");
@@ -685,12 +687,17 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    if (const auto exitInfo = actionInfo.snapshotItem.setId(_driveDbId, std::to_string(tmpInt)); !exitInfo) return exitInfo;
+    if (const auto exitInfo = actionInfo.snapshotItem.setId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
+        !exitInfo)
+        return exitInfo;
 
     if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
         return ExitCode::BackError;
     }
-    if (const auto exitInfo = actionInfo.snapshotItem.setParentId(_driveDbId, std::to_string(tmpInt)); !exitInfo) return exitInfo;
+    if (const auto exitInfo =
+                actionInfo.snapshotItem.setParentId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
+        !exitInfo)
+        return exitInfo;
 
     SyncName tmpDestPathStr;
     if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpDestPathStr, false)) {
@@ -1010,20 +1017,21 @@ ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector
     mainDirectoriesRemoteIds.clear();
 
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private,
-                                                                      userPrivateFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
+                _syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::SpecialFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     RemoteNodeId commonDocumentsFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments,
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::CommonDocuments,
                                                                       commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     RemoteNodeId sharedFolderRemoteId;
-    if (const auto exitInfo =
-                ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -1035,15 +1043,16 @@ ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector
 
 ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp &timestamp) {
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private,
-                                                                      userPrivateFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
+                _syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::SpecialFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == userPrivateFolderRemoteId) return _syncPal->userPrivateFolderCursor(cursor, timestamp);
 
     RemoteNodeId commonDocumentsFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments,
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::CommonDocuments,
                                                                       commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
@@ -1051,8 +1060,8 @@ ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId
     if (remoteDirId == commonDocumentsFolderRemoteId) return _syncPal->commonDocumentsFolderCursor(cursor, timestamp);
 
     RemoteNodeId sharedFolderRemoteId;
-    if (const auto exitInfo =
-                ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -1064,15 +1073,16 @@ ExitInfo RemoteFileSystemObserverWorker::listingCursor(const NodeId &remoteDirId
 ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor,
                                                            const Timestamp timestamp) {
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private,
-                                                                      userPrivateFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
+                _syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::SpecialFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == userPrivateFolderRemoteId) return _syncPal->setUserPrivateFolderCursor(cursor, timestamp);
 
     RemoteNodeId commonDocumentsFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments,
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::CommonDocuments,
                                                                       commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
@@ -1080,8 +1090,8 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const NodeId &remoteD
     if (remoteDirId == commonDocumentsFolderRemoteId) return _syncPal->setCommonDocumentsFolderCursor(cursor, timestamp);
 
     RemoteNodeId sharedFolderRemoteId;
-    if (const auto exitInfo =
-                ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -1095,8 +1105,8 @@ ExitInfo RemoteFileSystemObserverWorker::getV3RemoteFolderName(const RemoteNodeI
     folderName = "";
 
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Private,
-                                                                      userPrivateFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
+                _syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::SpecialFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -1106,20 +1116,20 @@ ExitInfo RemoteFileSystemObserverWorker::getV3RemoteFolderName(const RemoteNodeI
     }
 
     RemoteNodeId commonDocumentsFolderRemoteId;
-    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::CommonDocuments,
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::CommonDocuments,
                                                                       commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == commonDocumentsFolderRemoteId) {
         folderName = ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments);
-        ;
         return ExitCode::Ok;
     }
 
     RemoteNodeId sharedFolderRemoteId;
-    if (const auto exitInfo =
-                ApiTranslator::getSpecialFolderRemoteId(_driveDbId, ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      ApiTranslator::SpecialFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
