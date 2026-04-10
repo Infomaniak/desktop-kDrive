@@ -50,8 +50,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw DbError
         /// @throw DataError
         /// @throw InvalidArgumentError
-        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
-                                bool returnJson = true);
+        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, DriveDbId driveDbId, DriveId driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
@@ -69,7 +68,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
-        [[nodiscard]] DriveId getDriveId(const DriveDbId driveDbId);
+        [[nodiscard]] DriveId getDriveId(const DriveDId driveId);
 
     protected:
         std::string getSpecificUrl() override;
