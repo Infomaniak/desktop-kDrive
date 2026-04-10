@@ -29,7 +29,7 @@ namespace KDC {
 
 void GetFilesInDirectoryJob::translateRemoteIdFromV2ToV3(const TranslationMode translationMode) {
     if (translationMode != TranslationMode::V2ToV3) return;
-    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveId(), _fileId); !exitInfo) {
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _fileId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in GetFilesInDirectoryJob::GetFilesInDirectoryJob.");
     }
@@ -146,7 +146,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
 ExitInfo GetFilesInDirectoryJob::v2RemoteNodeInfoList(RemoteNodeInfoList &remoteNodeInfoList) const {
     // Data is already deserialized by handleResponse().
     remoteNodeInfoList = _remoteNodeInfoList;
-    return ApiTranslator::translateV3ToV2(driveDbId(), remoteNodeInfoList);
+    return ApiTranslator::translateV3ToV2(userDbId(), driveDbId(), remoteNodeInfoList);
 }
 
 
