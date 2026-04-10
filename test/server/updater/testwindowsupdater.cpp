@@ -137,10 +137,11 @@ void TestWindowsUpdater::testIsSignatureValid() {
     CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath(testPath)).isSignatureValid());
     // Path to an existing signed file.
     {
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(tmpDir.path());
         const testhelpers::TestVariables testVariables;
         static const NodeId signedFileId = "5304421";
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
-        DownloadJob job(nullptr, _driveDbId, signedFileId, signedFilePath, 0);
+        DownloadJob job(nullptr, cacheDirectory, _driveDbId, signedFileId, signedFilePath, 0);
         (void) job.runSynchronously();
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
     }
