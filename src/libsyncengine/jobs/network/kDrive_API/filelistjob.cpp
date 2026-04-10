@@ -63,7 +63,7 @@ std::string FileListJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &ex
 
 ExitInfo FileListJob::v2RemoteNodeInfoList(RemoteNodeInfoList &remoteNodeInfoList) const {
     remoteNodeInfoList = _remoteNodeInfoList;
-    return ApiTranslator::translateV3ToV2(_driveId, remoteNodeInfoList);
+    return ApiTranslator::translateV3ToV2(_userDbId, _driveId, remoteNodeInfoList);
 }
 
 } // namespace KDC
