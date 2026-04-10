@@ -326,6 +326,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+
         return ExitCode::Ok;
     }
 
@@ -833,13 +834,14 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
 ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                        std::vector<NodeInfo> &list, const bool withPath /*= false*/) {
     list.clear();
-    uint64_t page = 1;
     uint64_t totalPages = 0;
+    uint64_t page = 1;
     do {
+        const FileListJobConfig listingConf{.page = page, .dirOnly = true};
         std::shared_ptr<GetRootFileListJob> job = nullptr;
         if (nodeId.empty()) {
             try {
-                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
+                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, listingConf);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " error=" << e.what());
@@ -847,7 +849,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
             }
         } else {
             try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, listingConf);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
