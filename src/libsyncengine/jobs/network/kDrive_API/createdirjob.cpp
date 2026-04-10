@@ -26,7 +26,7 @@ namespace KDC {
 
 CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const SyncPath &filepath,
                            const NodeId &parentId, const SyncName &name, const std::string &color /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _filePath(filepath),
     _parentDirId(parentId),
     _name(name),
@@ -40,7 +40,7 @@ CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const NodeId &parentId,
 
 CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, const NodeId &parentId,
                            const SyncName &name) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _parentDirId(parentId),
     _name(name) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
