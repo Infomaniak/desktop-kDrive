@@ -1096,7 +1096,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
     // Send a request that violates validation rules and make sure the reply is correctly decompressed.
     {
-        CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
+        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"invalid"},
                                          /*blacklist*/ {}, CsvFullFileListWithCursorJob::Zip::On);
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT(!exitInfo);
@@ -1108,7 +1108,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, CsvFullFileListWithCursorJob::Zip::On);
+    CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"1"}, {pictureDirRemoteId}, CsvFullFileListWithCursorJob::Zip::On);
     const ExitInfo exitInfo = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
