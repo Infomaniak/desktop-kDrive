@@ -32,7 +32,7 @@ static constexpr auto sharedFolder = Str("/Shared/");
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
                      const std::string &cursorInput /*= {}*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _searchString(searchString),
     _cursorInput(cursorInput) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
@@ -60,7 +60,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
 }
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _searchString(searchString),
     _cursorInput(cursorInput) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
