@@ -135,11 +135,6 @@ void eraseFromTrash(const SyncPath &relativePath);
 bool isInTrash(const SyncPath &path);
 
 #if defined(KD_LINUX)
-enum class TrashSubDirectory {
-    Info,
-    Files
-};
-SyncPath getTrashSubDir(TrashSubDirectory trashSubDir);
 bool hasTrashInfo();
 void showTrashInfo();
 #endif

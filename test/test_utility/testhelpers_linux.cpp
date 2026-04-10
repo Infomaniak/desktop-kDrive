@@ -76,6 +76,11 @@ std::string getOriginalPath(const SyncPath &infoFile) {
     return "";
 }
 
+enum class TrashSubDirectory {
+    Info,
+    Files
+};
+
 } // namespace
 
 // Get the user trash subdirectory
