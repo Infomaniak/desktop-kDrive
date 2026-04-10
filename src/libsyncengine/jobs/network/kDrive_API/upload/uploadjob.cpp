@@ -33,7 +33,7 @@ namespace KDC {
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                      const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _absoluteFilePath(absoluteFilePath),
     _filename(filename),
     _remoteParentDirId(remoteParentDirId),
