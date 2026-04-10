@@ -154,5 +154,21 @@ bool isInTrash(const SyncPath &absoluteFilePath) {
     return false;
 }
 
+void showTrashInfo() {
+    try {
+        const SyncPath trashInfoDir = getTrashSubDir(TrashSubDirectory::Info);
+        std::cout << "Showing trash info from " << trashInfoDir << " ..." << std::endl;
+        for (const auto &entry: std::filesystem::directory_iterator(trashInfoDir)) {
+            if (entry.path().extension() != ".trashinfo") continue;
+
+            std::cerr << "Trash Info Entry: " << entry.path() << std::endl;
+
+            const std::string originalPathStr = getOriginalPath(entry.path());
+            std::cout << "OriginalPath: " << originalPathStr << std::endl;
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        std::cerr << "File system exception caught in `isInTrash`: " << e.what() << std::endl;
+    }
+}
 
 } // namespace KDC::testhelpers

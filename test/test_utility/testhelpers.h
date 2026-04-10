@@ -89,11 +89,11 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1) {};
+            execute(rights & 1){};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute) {};
+            execute(execute){};
         bool read;
         bool write;
         bool execute;
@@ -133,6 +133,10 @@ void eraseFromTrash(const SyncPath &relativePath);
  * @return true if `path` indicated an existing item of the trash, false otherwise.
  */
 bool isInTrash(const SyncPath &path);
+
+#if defined(KD_LINUX)
+void showTrashInfo();
+#endif
 
 // Create two symbolic links that refer to each other:
 // filepath1 -> filepath2,
