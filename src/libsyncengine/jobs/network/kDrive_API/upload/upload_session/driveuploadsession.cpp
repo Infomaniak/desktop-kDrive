@@ -18,6 +18,9 @@
 
 #include "driveuploadsession.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "io/filestat.h"
 #include "utility/utility.h"
 
@@ -25,7 +28,7 @@ namespace KDC {
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                                       const NodeId &remoteParentDirId, const SyncTime creationTime,
+                                       RemoteNodeId remoteParentDirId, const SyncTime creationTime,
                                        const SyncTime modificationTime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
@@ -33,17 +36,22 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     _syncDb(syncDb),
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
-    _remoteParentDirId(remoteParentDirId),
+    _remoteParentDirId(std::move(remoteParentDirId)),
     _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(_driveDbId, _remoteParentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in DriveUploadSession::DriveUploadSession.");
+    }
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
-                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
+                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const RemoteNodeId &fileId,
                                        const SyncTime modificationTime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName{}, fileId, 0, modificationTime, liteSyncActivated,
                        nbParallelThread) {
     _fileId = fileId;
 
@@ -82,7 +90,7 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   chunkContent, chunkNb, actualChunkSize, jobId());
+                                                   getSessionUrl(), chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
