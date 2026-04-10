@@ -20,6 +20,7 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.VisualBasic.Devices;
@@ -323,7 +324,8 @@ namespace Infomaniak.kDrive.ViewModels
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
             if (error.ErrorLevel == Types.ErrorLevel.Server)
             {
-                AppErrors.Add(error);
+                await Utility.RunOnUIThread(() => AppErrors.Add(error));
+                RefreshErrorState();
                 return;
             }
 
@@ -341,7 +343,8 @@ namespace Infomaniak.kDrive.ViewModels
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError is not null)
             {
-                await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
+                await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
+                RefreshErrorState();
                 return;
             }
 
@@ -370,6 +373,11 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 await sync.ClearAllErrorsAsync();
             }
+        }
+
+        public void RefreshErrorState()
+        {
+            UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired);
         }
     }
 }
