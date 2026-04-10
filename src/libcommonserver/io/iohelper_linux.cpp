@@ -192,7 +192,7 @@ bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoErro
     return true;
 }
 
-void IoHelper::setFileHidden(const SyncPath &, bool) noexcept {
+void IoHelper::setFileHidden(const SyncPath &, const bool) noexcept {
     // Items whose names begin with a period are hidden on Linux.
 }
 
