@@ -575,11 +575,12 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                     return ExitCode::Ok;
                 } else {
                     try {
-                        job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->cacheDirectory(), _syncPal->driveDbId(),
-                                                            syncOp->affectedNode()->id().value_or(""), absoluteLocalFilePath,
-                                                            syncOp->affectedNode()->size(),
-                                                            syncOp->affectedNode()->createdAt().value_or(0),
-                                                            syncOp->affectedNode()->modificationTime().value_or(0), true);
+                        job = std::make_shared<DownloadJob>(
+                                _syncPal->vfs(), _syncPal->cacheDirectory(),
+                                DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
+                                                              absoluteLocalFilePath, syncOp->affectedNode()->size(),
+                                                              syncOp->affectedNode()->createdAt().value_or(0),
+                                                              syncOp->affectedNode()->modificationTime().value_or(0), true});
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
                                                            << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
@@ -821,10 +822,12 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
         try {
-            job = std::make_shared<DownloadJob>(_syncPal->vfs(), _syncPal->cacheDirectory(), _syncPal->driveDbId(),
-                                                syncOp->affectedNode()->id().value_or(""), absoluteLocalFilePath,
-                                                syncOp->affectedNode()->size(), syncOp->affectedNode()->createdAt().value_or(0),
-                                                syncOp->affectedNode()->modificationTime().value_or(0), false);
+            job = std::make_shared<DownloadJob>(
+                    _syncPal->vfs(), _syncPal->cacheDirectory(),
+                    DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
+                                                  absoluteLocalFilePath, syncOp->affectedNode()->size(),
+                                                  syncOp->affectedNode()->createdAt().value_or(0),
+                                                  syncOp->affectedNode()->modificationTime().value_or(0), false});
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));
