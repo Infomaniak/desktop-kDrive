@@ -25,10 +25,8 @@ namespace KDC {
 
 class GetFileListJob : public GetRootFileListJob {
     public:
-        GetFileListJob(UserDbId userDbId, DriveId driveId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
-        GetFileListJob(DriveDbId driveDbId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
+        GetFileListJob(UserDbId userDbId, DriveId driveId, const NodeId &fileId, const FileListJobConfig &config = {});
+        GetFileListJob(DriveDbId driveDbId, const NodeId &fileId, const FileListJobConfig &config = {});
 
     private:
         std::string getSpecificUrl() override;

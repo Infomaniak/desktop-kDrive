@@ -45,15 +45,18 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
+
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                          const FileDownloadInfo &fileDownloadInfo) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, fileDownloadInfo.driveDbId, 0, false),
     _vfs(vfs),
     _cacheDirectory(cacheDirectory),
     _fileDownloadInfo(fileDownloadInfo) {
+
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
+
 
     if (!_cacheDirectory) {
         // If no cache directory have been provided, fallback to creating a temporary cache directory into parent folder.

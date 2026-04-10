@@ -65,7 +65,7 @@ void TestApiTranslator::setUp() {
 
     _driveDbId = 1;
     _driveId = atoi(testVariables.driveId.c_str());
-    Drive drive(static_cast<int>(_driveDbId), static_cast<int>(_driveId), account.dbId(), std::string(), 0, std::string());
+    Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
     // Setup proxy
