@@ -23,11 +23,11 @@
 
 namespace KDC {
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
                                                      const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     FileListJob(userDbId, driveId, std::move(fileId), translationMode) {}
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, NodeId fileId,
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId,
                                                      const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     FileListJob(driveDbId, std::move(fileId), translationMode) {}
 
