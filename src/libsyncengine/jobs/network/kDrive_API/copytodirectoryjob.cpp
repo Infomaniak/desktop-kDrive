@@ -17,6 +17,10 @@
  */
 
 #include "copytodirectoryjob.h"
+
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
@@ -30,6 +34,11 @@ CopyToDirectoryJob::CopyToDirectoryJob(const DriveDbId driveDbId, const NodeId &
     _remoteDestId(remoteDestId),
     _newName(newName) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _remoteDestId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in UploadJob::UploadJob.");
+    }
 }
 
 ExitInfo CopyToDirectoryJob::handleResponse(std::istream &is) {
