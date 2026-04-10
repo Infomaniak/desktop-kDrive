@@ -30,7 +30,7 @@ AbstractListingJob::AbstractListingJob(const DriveDbId driveDbId, const NodeSet 
 
 AbstractListingJob::AbstractListingJob(const ApiType apiType, const DriveDbId driveDbId,
                                        const RemoteNodeIdSet &blacklist /*= {}*/) :
-    AbstractTokenNetworkJob(apiType, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(apiType, 0, driveDbId, 0),
     _blacklist(blacklist) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;

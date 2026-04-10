@@ -24,21 +24,19 @@
 
 namespace KDC {
 
-GetRootFileListJob::GetRootFileListJob(const UserDbId userDbId, const DriveId driveId, const uint64_t page /*= 1*/,
-                                       const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
-    _page(page),
-    _dirOnly(dirOnly),
-    _nbItemsPerPage(nbItemsPerPage) {
+GetRootFileListJob::GetRootFileListJob(const UserDbId userDbId, const DriveId driveId, const FileListJobConfig &config) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
+    _page(config.page),
+    _dirOnly(config.dirOnly),
+    _nbItemsPerPage(config.nbItemsPerPage) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetRootFileListJob::GetRootFileListJob(const DriveDbId driveDbId, const uint64_t page /*= 1*/, const bool dirOnly /*= false*/,
-                                       uint64_t nbItemsPerPage /*= 1000*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _page(page),
-    _dirOnly(dirOnly),
-    _nbItemsPerPage(nbItemsPerPage) {
+GetRootFileListJob::GetRootFileListJob(const DriveDbId driveDbId, const FileListJobConfig &config) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _page(config.page),
+    _dirOnly(config.dirOnly),
+    _nbItemsPerPage(config.nbItemsPerPage) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
