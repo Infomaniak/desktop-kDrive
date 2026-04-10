@@ -24,7 +24,7 @@ namespace KDC {
 
 class RemoteSnapshotItemHandler {
     public:
-        explicit RemoteSnapshotItemHandler(DriveDbId driveDbId, const log4cplus::Logger &logger);
+        explicit RemoteSnapshotItemHandler(UserDbId userDbId, DriveId driveId, const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,
@@ -64,7 +64,8 @@ class RemoteSnapshotItemHandler {
 
     private:
         bool _ignoreFirstLine = true;
-        DriveDbId _driveDbId;
+        UserDbId _userDbId;
+        DriveId _driveId;
         log4cplus::Logger _logger;
         void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                       const std::exception &exc);

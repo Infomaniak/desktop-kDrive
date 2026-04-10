@@ -177,17 +177,17 @@ RemoteSnapshotItem::RemoteSnapshotItem(const RemoteSnapshotItem &other) {
     *this = other;
 }
 
-ExitInfo RemoteSnapshotItem::setId(const DriveDbId driveDbId, const NodeId &id) {
+ExitInfo RemoteSnapshotItem::setId(const UserDbId userDbId, const DriveId driveId, const NodeId &id) {
     _id = id;
-    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _id); !exitInfo) return exitInfo;
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, _id); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteSnapshotItem::setParentId(DriveDbId driveDbId, const NodeId &newParentId) {
+ExitInfo RemoteSnapshotItem::setParentId(const UserDbId userDbId, const DriveDbId driveId, const NodeId &newParentId) {
     _parentId = newParentId;
-    if (const auto exitInfo = ApiTranslator::translateV3ToV2(driveDbId, _parentId); !exitInfo) return exitInfo;
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, _parentId); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 
     return ExitCode::Ok;

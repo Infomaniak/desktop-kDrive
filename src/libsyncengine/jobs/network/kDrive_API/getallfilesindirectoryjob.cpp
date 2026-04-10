@@ -62,6 +62,7 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         }
 
         _driveId = fileListJob->driveId();
+        _userDbId = fileListJob->userDbId();
         fileListJob->setListingConf(_listingConf);
 
         if (const auto exitInfo = fileListJob->runSynchronously(); !exitInfo) {
