@@ -32,6 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Windows.UI.ViewManagement;
+using static Infomaniak.kDrive.App;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -159,7 +160,7 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
             if (Application.Current is App app)
             {
-                app.CreateMainWindow(true);
+                app.CreateWindow(CreateWindowOptions.Foreground);
             }
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
         }

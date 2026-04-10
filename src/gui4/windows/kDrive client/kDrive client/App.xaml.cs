@@ -160,15 +160,28 @@ namespace Infomaniak.kDrive
             });
         }
 
-        public void CreateMainWindow(bool foreground)
+        public enum CreateWindowOptions
+        {
+            Foreground = 1,
+            CancelOnboarding = 2
+        }
+        public void CreateWindow(CreateWindowOptions options)
         {
             if (CurrentWindow is null)
             {
-                CurrentWindow = new MainWindow();
-                CurrentWindow.Closed += CurrentWindow_Closed;
+                var appModel = ServiceProvider.GetRequiredService<AppModel>();
+                if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                {
+                    CurrentWindow = new MainWindow();
+                    CurrentWindow.Closed += CurrentWindow_Closed;
+                }
+                else
+                {
+                    options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                }
             }
 
-            if (foreground)
+            if (options.HasFlag(CreateWindowOptions.Foreground))
                 Utility.BringCurrentWindowToFront();
         }
 
@@ -237,16 +250,20 @@ namespace Infomaniak.kDrive
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
             onboardingWindow.Closed -= OnOnboardingClosed;
             CurrentWindow = null;
-            CreateMainWindow(true);
+            CreateWindow(CreateWindowOptions.CancelOnboarding | CreateWindowOptions.Foreground);
         }
 
-        public void StartOnboardingIfNeeded()
+        public bool StartOnboardingIfNeeded()
         {
-            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            var appModel = ServiceProvider.GetRequiredService<AppModel>();
+
+            if (appModel.IsInitialized && !appModel.AllSyncs.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
             {
                 Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
+                return true;
             }
+            return false;
         }
 
         public static void ExitApplication()
