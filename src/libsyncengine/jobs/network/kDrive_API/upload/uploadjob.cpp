@@ -16,6 +16,9 @@
 
 #include "uploadjob.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
 
@@ -31,7 +34,7 @@
 namespace KDC {
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
+                     const SyncName &filename, const RemoteNodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _absoluteFilePath(absoluteFilePath),
@@ -43,6 +46,12 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
+    _apiVersion = 3;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _remoteParentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in UploadJob::UploadJob.");
+    }
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,

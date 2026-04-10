@@ -34,6 +34,7 @@ std::string GetFileListJob::getSpecificUrl() {
     str += "/files/";
     str += _fileId;
     str += "/files";
+
     return str;
 }
 
