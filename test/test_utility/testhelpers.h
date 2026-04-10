@@ -140,9 +140,7 @@ enum class TrashSubDirectory {
     Files
 };
 SyncPath getTrashSubDir(TrashSubDirectory trashSubDir);
-inline bool hasTrashInfo() {
-    return !getTrashSubDir(TrashSubDirectory::Info).empty();
-}
+bool hasTrashInfo();
 void showTrashInfo();
 #endif
 
