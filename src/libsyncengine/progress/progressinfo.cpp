@@ -137,7 +137,8 @@ bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
         return true;
     }
 
-    it->second.front().progress().setCompleted(std::max(int64_t(0), progress * it->second.front().progress().total() / 100));
+    it->second.front().progress().setCompleted(
+            std::max(static_cast<int64_t>(0), progress * it->second.front().progress().total() / 100));
     recomputeCompletedSize();
     return true;
 }
