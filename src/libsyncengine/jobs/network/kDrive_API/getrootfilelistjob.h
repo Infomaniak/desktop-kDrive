@@ -22,11 +22,16 @@
 
 namespace KDC {
 
+struct FileListJobConfig {
+        uint64_t page{1};
+        bool dirOnly{false};
+        uint64_t nbItemsPerPage{1000};
+};
+
 class GetRootFileListJob : public AbstractTokenNetworkJob {
     public:
-        GetRootFileListJob(UserDbId userDbId, DriveId driveId, uint64_t page = 1, bool dirOnly = false,
-                           uint64_t nbItemsPerPage = 1000);
-        explicit GetRootFileListJob(DriveDbId driveDbId, uint64_t page = 1, bool dirOnly = false, uint64_t nbItemsPerPage = 1000);
+        GetRootFileListJob(UserDbId userDbId, DriveId driveId, const FileListJobConfig &config = {});
+        explicit GetRootFileListJob(DriveDbId driveDbId, const FileListJobConfig &config = {});
 
         void setWithPath(const bool val) { _withPath = val; }
 

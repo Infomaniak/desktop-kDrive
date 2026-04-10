@@ -25,7 +25,7 @@
 namespace KDC {
 
 GetFileInfoJobV3::GetFileInfoJobV3(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
@@ -33,7 +33,7 @@ GetFileInfoJobV3::GetFileInfoJobV3(const UserDbId userDbId, const DriveId driveI
 }
 
 GetFileInfoJobV3::GetFileInfoJobV3(const DriveDbId driveDbId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
