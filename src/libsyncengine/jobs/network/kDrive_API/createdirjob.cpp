@@ -17,6 +17,10 @@
  */
 
 #include "createdirjob.h"
+
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
@@ -32,6 +36,10 @@ CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const SyncPath &filepath,
     _name(name),
     _color(color) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(driveDbId, _parentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in CreateDirJob::CreateDirJob.");
+    }
 }
 
 CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const NodeId &parentId,
