@@ -27,29 +27,30 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, NodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, NodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
-        static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
-        static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, RemoteNodeInfoList &v3RemoteNodeInfoList);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
+                                                      RemoteNodeInfoList &v3RemoteNodeInfoList);
 
-        static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId, SpecialFolder specialFolder,
+        [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId, SpecialFolder specialFolder,
                                                  RemoteNodeId &folderRemoteId);
-
-        static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
-
-        static RemoteNodeId v2RootFolderRemoteId();
+        [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
+        [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
-        static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
+        [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
+        [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
+
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
 
-        static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
+        [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };
