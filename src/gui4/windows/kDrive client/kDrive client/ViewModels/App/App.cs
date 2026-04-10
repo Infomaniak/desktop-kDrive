@@ -78,6 +78,7 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly Task? _networkWatcher;
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
+        private bool _updateRequired = false;
 
         public class SelectedSyncChangedEventArgs : EventArgs
         {
@@ -216,6 +217,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _networkAvailable;
             set => SetPropertyInUIThread(ref _networkAvailable, value);
+        }
+
+        public bool UpdateRequired
+        {
+            get => _updateRequired;
+            set => SetPropertyInUIThread(ref _updateRequired, value);
         }
 
         /** Initialize the model by loading data from the server.
