@@ -53,7 +53,7 @@ public struct LoadingButton<Content: View>: View {
 }
 
 #Preview {
-    LoadingButton(isLoading: .constant(true), action: {}) {
+    LoadingButton(isLoading: .constant(true)) {} label: {
         Text("Hello, World!")
     }
 }
