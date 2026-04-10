@@ -38,6 +38,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, c
     _modificationTimeIn(modificationTime),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
 }
 
 UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadType, const SyncPath &absoluteFilePath,
