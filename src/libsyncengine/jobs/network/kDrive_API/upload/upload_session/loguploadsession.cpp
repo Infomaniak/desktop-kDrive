@@ -39,8 +39,8 @@ std::shared_ptr<UploadSessionStartJob> LogUploadSession::createStartJob() {
 
 std::shared_ptr<UploadSessionChunkJob> LogUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                         std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), chunkContent,
-                                                   chunkNb, actualChunkSize, jobId());
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), getSessionUrl(),
+                                                   chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
