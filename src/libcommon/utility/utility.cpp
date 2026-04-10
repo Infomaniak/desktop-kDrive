@@ -250,7 +250,7 @@ bool CommonUtility::isFAT(const SyncPath &targetPath) {
     return contains(getRootFsType(targetPath), fat);
 }
 
-bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)
     // Tested OK: APFS, HFS+, exFAT
     // Tested KO: FAT32
@@ -264,7 +264,7 @@ bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
 #endif
 }
 
-bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isLiteSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
     // Only File Systems supporting sparse files are compatible
 #if defined(KD_MACOS)
     return CommonUtility::isAPFS(targetPath);

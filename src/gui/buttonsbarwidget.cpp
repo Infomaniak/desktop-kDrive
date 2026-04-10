@@ -31,16 +31,13 @@ static const int vMargin = 20;
 Q_LOGGING_CATEGORY(lcButtonsBarWidget, "gui.buttonsbarwidget", QtInfoMsg)
 
 ButtonsBarWidget::ButtonsBarWidget(QWidget *parent) :
-    QWidget(parent),
-    _position(0),
-    _backgroundColor(QColor()),
-    _hboxLayout(nullptr) {
+    QWidget(parent) {
     _hboxLayout = new QHBoxLayout();
     _hboxLayout->setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setLayout(_hboxLayout);
 }
 
-void ButtonsBarWidget::insertButton(int position, CustomTogglePushButton *button) {
+void ButtonsBarWidget::insertButton(const int position, CustomTogglePushButton *button) {
     if (button) {
         _hboxLayout->insertWidget(position, button);
         connect(button, &CustomTogglePushButton::toggled, this, &ButtonsBarWidget::onToggle);
@@ -51,9 +48,9 @@ void ButtonsBarWidget::insertButton(int position, CustomTogglePushButton *button
     }
 }
 
-void ButtonsBarWidget::selectButton(int position) {
+void ButtonsBarWidget::selectButton(const int position) {
     int i = 0;
-    for (auto btn: qAsConst(buttonsList)) {
+    for (auto btn: std::as_const(buttonsList)) {
         if (i == position) {
             btn->setChecked(true);
             emit buttonToggled(position);
@@ -72,10 +69,10 @@ void ButtonsBarWidget::paintEvent(QPaintEvent *event) {
     painter.fillRect(rect(), backgroundColor());
 }
 
-void ButtonsBarWidget::onToggle(bool checked) {
+void ButtonsBarWidget::onToggle(const bool checked) {
     if (checked) {
         int position = 0;
-        for (auto btn: qAsConst(buttonsList)) {
+        for (auto btn: std::as_const(buttonsList)) {
             if (btn == sender()) {
                 _position = position;
                 emit buttonToggled(position);

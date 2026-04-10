@@ -55,7 +55,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
     QString osType;
     QString flavor;
 
-    if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS) {
+    if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersionBase::OSType::MacOS) {
         osType = "mac";
     } else {
         osType = "windows";
@@ -63,7 +63,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
 
     if (sysTray) {
         if (_mono) {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
+            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersionBase::OSType::MacOS &&
                 QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
                 flavor = QString("black");
             } else {

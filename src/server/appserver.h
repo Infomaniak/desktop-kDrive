@@ -221,7 +221,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
         }
 
-        static bool useCommManager(bool checkIfInitialized = true) {
+        static bool useCommManager([[maybe_unused]] bool checkIfInitialized = true) {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
             if (checkIfInitialized)
                 return _commManager != nullptr;
