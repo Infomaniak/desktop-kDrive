@@ -26,6 +26,7 @@
                            xmlns:controls="using:Infomaniak.kDrive.CustomControls"
                            xmlns:converters="using:Infomaniak.kDrive.Converters"
                            xmlns:kDrive="using:Infomaniak.kDrive"
+                           Unloaded="Page_Unloaded"
                            mc:Ignorable="d">
     <local:SpecialErroBasePage.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />

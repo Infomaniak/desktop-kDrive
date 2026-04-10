@@ -65,7 +65,10 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput ||

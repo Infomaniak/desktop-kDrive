@@ -35,26 +35,27 @@
         <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
     <Grid>
-        <Grid.Resources>
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+        <controls:SplashScreen x:Name="SplashScreen" />
+        <Grid x:Name="MainContentGrid">
+            <Grid.Resources>
+                <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!-- Title bar -->
+                <RowDefinition Height="*" />
+                <!-- Remaining space for NavigationView -->
+            </Grid.RowDefinitions>
+
             <!-- Title bar -->
-            <RowDefinition Height="*" />
-            <!-- Remaining space for NavigationView -->
-        </Grid.RowDefinitions>
+            <controls:AppTitleBar x:Name="AppTitleBar"
+                                  Grid.Row="0"
+                                  HorizontalContentAlignment="Stretch"
+                                  IsPaneToggleButtonVisible="False" />
 
-        <!-- Title bar -->
-        <controls:AppTitleBar x:Name="AppTitleBar"
-                              Grid.Row="0"
-                              HorizontalContentAlignment="Stretch"
-                              IsBackButtonEnabled="{x:Bind AppNavView.Frame.CanGoBack, Mode=OneWay}"
-                              IsPaneToggleButtonVisible="False"
-                              BackRequested="AppTitleBar_BackRequested" />
-
-        <!-- NavigationView -->
-        <controls:AppNavigationView x:Name="NavView"
-                                    Grid.Row="1" />
+            <!-- NavigationView -->
+            <controls:AppNavigationView x:Name="NavView"
+                                        Grid.Row="1" />
+        </Grid>
     </Grid>
 </Window>

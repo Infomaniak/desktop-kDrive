@@ -1,5 +1,6 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -15,6 +16,10 @@ namespace Infomaniak.kDrive.Pages.Popup
             Logger.Log(Logger.Level.Info, "Navigated to LogUploadPopup - Initializing LogUploadPopup components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "LogUploadPopup components initialized");
+        }
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
         }
     }
 }

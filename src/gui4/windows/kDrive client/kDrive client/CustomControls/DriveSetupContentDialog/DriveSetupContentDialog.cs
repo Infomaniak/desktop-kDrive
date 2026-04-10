@@ -35,6 +35,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void DriveSetupContentDialogVM_SetupFinished(object? sender, DriveSetupResult e)
         {
+            _driveSetupContentDialogVM.SetupFinished -= DriveSetupContentDialogVM_SetupFinished;
             Result = e;
             base.Hide();
         }

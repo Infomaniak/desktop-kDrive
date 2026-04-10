@@ -17,6 +17,7 @@
  */
 
 using DynamicData;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
@@ -28,9 +29,12 @@ using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.VoiceCommands;
 using Windows.Foundation;
 
 namespace Infomaniak.kDrive
@@ -43,11 +47,7 @@ namespace Infomaniak.kDrive
         public Window? CurrentWindow
         {
             get => _currentWindow;
-            private set
-            {
-                _currentWindow = value;
-                ServiceProvider.GetRequiredService<TrayIconManager>().ConfigureWindowEventHandler();
-            }
+            private set => _currentWindow = value;
         }
 
         private readonly IServiceCollection _services = new ServiceCollection();
@@ -123,14 +123,9 @@ namespace Infomaniak.kDrive
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
-            CurrentWindow = new MainWindow();
-            var currentWindowContent = CurrentWindow.Content;
-
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
-            // Display splash screen
-            CurrentWindow.Content = new CustomControls.SplashScreen();
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
@@ -142,15 +137,12 @@ namespace Infomaniak.kDrive
                 // Force the initialization of singleton services
                 ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
             }
+
             ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
             {
-                Logger.Log(Logger.Level.Fatal, "Connection to server lost, attempting to restart application.");
+                Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
                 SentrySdk.Flush(new TimeSpan(0, 0, 5));
-                AppRestartFailureReason restartError = AppInstance.Restart(LegacyCommPort.ToString());
-                if (restartError != AppRestartFailureReason.Other)
-                {
-                    Logger.Log(Logger.Level.Error, $"Failed to restart application after connection lost: {restartError}");
-                }
+                ExitApplication();
             };
 
             if (!await appModel.InitializeAsync())
@@ -159,13 +151,52 @@ namespace Infomaniak.kDrive
                 ExitApplication();
                 return;
             }
-            CurrentWindow.Content = currentWindowContent;
+
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
             {
                 StartOnboardingIfNeeded();
             });
+        }
+
+        public enum CreateWindowOptions
+        {
+            Foreground = 1,
+            CancelOnboarding = 2
+        }
+        public void CreateWindow(CreateWindowOptions options)
+        {
+            if (CurrentWindow is null)
+            {
+                var appModel = ServiceProvider.GetRequiredService<AppModel>();
+                if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                {
+                    CurrentWindow = new MainWindow();
+                    CurrentWindow.Closed += CurrentWindow_Closed;
+                }
+                else
+                {
+                    options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                }
+            }
+
+            if (options.HasFlag(CreateWindowOptions.Foreground))
+                Utility.BringCurrentWindowToFront();
+        }
+
+        private void CurrentWindow_Closed(object sender, WindowEventArgs e)
+        {
+            if (sender is MainWindow mainWindow)
+            {
+                mainWindow.Closed -= CurrentWindow_Closed;
+                CurrentWindow = null;
+            }
+            else if (sender is Window window && window == CurrentWindow)
+            {
+                e.Handled = true;
+                window.Hide();
+            }
         }
 
         async void OnProcessExit(object? sender, EventArgs e)
@@ -194,7 +225,6 @@ namespace Infomaniak.kDrive
             command.SetValue("", $"\"{exe}\" \"%1\"");
         }
 
-
         public void StartOnboarding()
         {
             AppModel.UIThreadDispatcher.TryEnqueue(() =>
@@ -208,7 +238,7 @@ namespace Infomaniak.kDrive
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
 
                 ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
-                CurrentWindow.Activate();
+                Utility.BringCurrentWindowToFront();
             });
         }
 
@@ -218,18 +248,21 @@ namespace Infomaniak.kDrive
 
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
             onboardingWindow.Closed -= OnOnboardingClosed;
-
-            CurrentWindow = new MainWindow();
-            CurrentWindow.Activate();
+            CurrentWindow = null;
+            CreateWindow(CreateWindowOptions.CancelOnboarding | CreateWindowOptions.Foreground);
         }
 
-        public void StartOnboardingIfNeeded()
+        public bool StartOnboardingIfNeeded()
         {
-            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            var appModel = ServiceProvider.GetRequiredService<AppModel>();
+
+            if (appModel.IsInitialized && !appModel.AllSyncs.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
             {
                 Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
+                return true;
             }
+            return false;
         }
 
         public static void ExitApplication()

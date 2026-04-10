@@ -11,6 +11,7 @@
       xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:types="using:Infomaniak.kDrive.Types"
       xmlns:kDrive="using:Infomaniak.kDrive"
+      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
 
     <Page.Resources>

@@ -320,23 +320,23 @@ namespace Infomaniak.kDrive
             _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
             _autoCloseTimer.Interval = maxDuration ?? TimeSpan.FromSeconds(5);
             _autoCloseTimer.IsRepeating = false;
-            _autoCloseTimer.Tick += (_, _) =>
-            {
-                if (_currentTeachingTip?.IsOpen == true)
-                {
-                    _currentTeachingTip.IsOpen = false;
-                }
-
-                _autoCloseTimer?.Stop();
-                _autoCloseTimer = null;
-            };
+            _autoCloseTimer.Tick += TeachingTipAutoCloseTimer_Tick;
             _autoCloseTimer.Start();
+        }
+
+        private static void TeachingTipAutoCloseTimer_Tick(DispatcherQueueTimer sender, object args)
+        {
+            CloseCurrentTeachingTip();
         }
 
         private static void CloseCurrentTeachingTip()
         {
-            _autoCloseTimer?.Stop();
-            _autoCloseTimer = null;
+            if (_autoCloseTimer is not null)
+            {
+                _autoCloseTimer.Stop();
+                _autoCloseTimer.Tick -= TeachingTipAutoCloseTimer_Tick;
+                _autoCloseTimer = null;
+            }
 
             if (_currentTeachingTip is null)
                 return;

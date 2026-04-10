@@ -43,7 +43,10 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "StoragePage components initialized");
         }
-
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null)

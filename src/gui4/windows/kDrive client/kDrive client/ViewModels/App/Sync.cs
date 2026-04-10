@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -89,24 +90,27 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             });
 
-            SyncActivities.CollectionChanged += (s, args) =>
-            {
-                if (!SyncActivities.Any())
-                {
-                    LastActivity = null;
-                    return;
-                }
-                try
-                {
-                    LastActivity = SyncActivities[0];
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    LastActivity = null;
-                }
-            };
+            SyncActivities.CollectionChanged += SyncActivities_CollectionChanged;
 
             RefreshHasExcludedFolder();
+        }
+
+        private void SyncActivities_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+
+            if (!SyncActivities.Any())
+            {
+                LastActivity = null;
+                return;
+            }
+            try
+            {
+                LastActivity = SyncActivities[0];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                LastActivity = null;
+            }
         }
 
         public DbId DbId

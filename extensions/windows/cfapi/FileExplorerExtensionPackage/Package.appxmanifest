@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3" xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" IgnorableNamespaces="uap mp rescap desktop3 desktop4">
-  <Identity Name="Infomaniak.kDrive.Extension" Publisher="CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=GenÃ¨ve, C=CH" Version="3.7.7.3" />
+  <Identity Name="Infomaniak.kDrive.Extension" Publisher="CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=GenÃ¨ve, C=CH" Version="4.0.0.2" />
   <Properties>
     <DisplayName>kDrive Windows Explorer Extension Package</DisplayName>
     <PublisherDisplayName>Infomaniak Network SA</PublisherDisplayName>
