@@ -24,7 +24,8 @@ AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType,
     AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0) {}
 
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId,
-                                                   const SyncPath &absoluteFilePath, const std::string &sessionToken) :
+                                                   const SyncPath &absoluteFilePath, const std::string &sessionToken,
+                                                   const std::string &sessionUrl) :
     AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0),
 
     _sessionToken(sessionToken),
