@@ -25,16 +25,20 @@ namespace KDC {
 class UploadSessionChunkJob : public AbstractUploadSessionJob {
     public:
         UploadSessionChunkJob(UploadSessionType uploadType, DriveDbId driveDbId, const SyncPath &filepath,
-                              const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
-                              uint64_t chunkSize, UniqueId sessionJobId);
+                              const std::string &sessionToken, const std::string &sessionUrl, const std::string &chunkContent,
+                              uint64_t chunkNb, uint64_t chunkSize, UniqueId sessionJobId);
 
         UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath, const std::string &sessionToken,
-                              const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize, UniqueId sessionJobId);
+                              const std::string &sessionUrl, const std::string &chunkContent, uint64_t chunkNb,
+                              uint64_t chunkSize, UniqueId sessionJobId);
         ~UploadSessionChunkJob() override;
 
         const std::string &chunkHash() const { return _chunkHash; }
         UniqueId sessionJobId() const { return _sessionJobId; }
         uint64_t chunkSize() const { return _chunkSize; }
+
+    protected:
+        std::string getUrl() override;
 
     private:
         std::string getSpecificUrl() override;

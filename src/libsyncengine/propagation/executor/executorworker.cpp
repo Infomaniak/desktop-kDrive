@@ -25,12 +25,14 @@
 
 #include "jobs/network/jobexceptions.h"
 
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/movejob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilesinrootdirjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
@@ -53,7 +55,6 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-#define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
@@ -425,58 +426,64 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
-    bool alreadyExist = false;
+namespace {
+std::string getFileListConstructorErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                           const std::exception &e) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
+                                        ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
+                                        : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " error=" << e.what();
 
-    // List all items in parent dir
-    std::shared_ptr<GetFileListJob> job = nullptr;
+    return ss.str();
+}
+
+std::string getFileListExecErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                    const ExitInfo &exitInfo) {
+    const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
+                                                                          : " GetAllFilesInDirectoryJob::runSynchronously";
+    std::stringstream ss;
+    ss << "Error in " << coreMsg << " for driveDbId=" << driveDbId << " nodeId=" << nodeId << " ExitInfo:" << exitInfo;
+
+    return ss.str();
+}
+
+} // namespace
+
+
+ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
+    constexpr auto maxNumberOfItemsParRequest = 1000;
+    std::shared_ptr<FileListJob> job = nullptr;
+
     try {
-        job = std::make_shared<GetFileListJob>(_syncPal->driveDbId(), parentId);
+        if (parentId == ApiTranslator::v2RootFolderRemoteId())
+            job = std::make_shared<GetFilesInRootDirJob>(_syncPal->driveDbId());
+        else {
+            job = std::make_shared<GetAllFilesInDirectoryJob>(_syncPal->driveDbId(), parentId, TranslationMode::V2ToV3);
+        }
+    } catch (const JobException &jobException) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         getFileListConstructorErrorMsg(job.get(), _syncPal->driveDbId(), parentId, jobException));
+        return exception2ExitCode(jobException);
     } catch (const std::exception &e) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
-                                                               << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
-                                                               << " error=" << e.what());
         return exception2ExitCode(e);
     }
 
+    job->setListingConf({.limit = maxNumberOfItemsParRequest});
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                          << _syncPal->driveDbId() << " nodeId=" << parentId << " : " << job->exitInfo());
+        LOG_SYNCPAL_WARN(_logger, getFileListExecErrorMsg(job.get(), _syncPal->driveDbId(), parentId, job->exitInfo()));
         return exitInfo;
     }
 
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
-    if (!resObj) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-        return {ExitCode::BackError, ExitCause::ApiErr};
-    }
+    RemoteNodeInfoList remoteNodeInfoList;
+    if (const auto exitInfo = job->remoteNodeInfoList(remoteNodeInfoList); !exitInfo) return exitInfo;
 
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-        return {ExitCode::BackError, ExitCause::ApiErr};
-    }
+    const auto it = std::find_if(
+            remoteNodeInfoList.cbegin(), remoteNodeInfoList.cend(),
+            [&absolutePath](const NodeInfo &nodeInfo) { return QStr2SyncName(nodeInfo.name()) == absolutePath.filename(); });
 
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-        SyncName name;
-        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
-            return {ExitCode::BackError, ExitCause::ApiErr};
-        }
+    if (it == remoteNodeInfoList.cend()) return ExitCode::Ok;
 
-        if (name == absolutePath.filename()) {
-            alreadyExist = true;
-            break;
-        }
-    }
-
-    if (!alreadyExist) {
-        return ExitCode::Ok;
-    }
     return {ExitCode::DataError, ExitCause::FileExists};
 }
 
