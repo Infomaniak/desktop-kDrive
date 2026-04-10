@@ -63,14 +63,15 @@ class AbstractUploadSession : public SyncJob {
         virtual ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> finishJob) = 0;
         virtual ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob);
 
-        SyncPath getFilePath() const { return _filePath; }
-        log4cplus::Logger &getLogger() { return _logger; }
-        uint64_t getTotalChunks() const { return _totalChunks; }
-        std::string getTotalChunkHash() const { return _totalChunkHash; }
-        uint64_t getFileSize() const { return _filesize; }
-        SyncName getFileName() const { return _filename; }
-        std::string getSessionToken() const { return _sessionToken; }
-        bool isCancelled() const noexcept { return _sessionCancelled; }
+        [[nodiscard]] SyncPath getFilePath() const { return _filePath; }
+        [[nodiscard]] log4cplus::Logger &getLogger() { return _logger; }
+        [[nodiscard]] uint64_t getTotalChunks() const { return _totalChunks; }
+        [[nodiscard]] std::string getTotalChunkHash() const { return _totalChunkHash; }
+        [[nodiscard]] uint64_t getFileSize() const { return _filesize; }
+        [[nodiscard]] SyncName getFileName() const { return _filename; }
+        [[nodiscard]] std::string getSessionToken() const { return _sessionToken; }
+        [[nodiscard]] std::string getSessionUrl() const { return _sessionUrl; }
+        [[nodiscard]] bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
         ExitInfo canRun() override;
@@ -97,6 +98,7 @@ class AbstractUploadSession : public SyncJob {
         ExitInfo _chunkJobExitInfo;
 
         std::string _sessionToken;
+        std::string _sessionUrl;
 
         uint64_t _chunkSize = 0;
         uint64_t _totalChunks = 0;
