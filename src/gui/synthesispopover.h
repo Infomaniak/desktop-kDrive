@@ -114,6 +114,7 @@ class SynthesisPopover : public QDialog {
         QLabel *_lockedAppupdateAppLabel;
         QPushButton *_lockedAppUpdateButton{nullptr};
         QLabel *_lockedAppLabel{nullptr};
+        QLabel *_linkToStorePage{nullptr};
 #ifdef Q_OS_LINUX
         QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
