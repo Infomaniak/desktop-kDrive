@@ -62,7 +62,7 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // of the JSON result's `data` field.
         ExitInfo deserializeDataArray();
         /// @throw JobException
-        void translateDriveDbIdFromV2ToV3(const TranslationMode translationMode);
+        void translateRemoteIdFromV2ToV3(const TranslationMode translationMode);
 
         // The remote identifier of the folder whose file list is queried.
         RemoteNodeId _fileId;
