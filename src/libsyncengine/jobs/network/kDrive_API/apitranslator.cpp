@@ -65,6 +65,52 @@ ExitInfo ApiTranslator::getDriveDbId(const DriveId driveId, DriveDbId &driveDbId
     return ExitCode::Ok;
 }
 
+
+ExitInfo getDrive(const DriveDbId driveDbId, Drive &drive) {
+    assert(driveDbId > 0 && "Invalid drive DB ID.");
+
+    drive = {};
+    bool found = false;
+    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+        assert(false);
+        constexpr auto err{"Error in ParmsDb::selectDrive"};
+        LOG_WARN(Log::instance()->getLogger(), err);
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+
+    if (!found) {
+        assert(false);
+        const std::string err{"Drive not found for driveDbId=" + std::to_string(driveDbId)};
+        LOG_WARN(Log::instance()->getLogger(), err);
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo getAccount(const Drive &drive, Account &account) {
+    assert(drive.dbId() > 0 && "Invalid drive DB ID.");
+
+    account = {};
+    bool found = false;
+    if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAccount"};
+        LOG_WARN(Log::instance()->getLogger(), err);
+        return {ExitCode::DataError, ExitCause::DbAccessError};
+    }
+
+    if (!found) {
+        assert(false);
+        const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
+        LOG_WARN(Log::instance()->getLogger(), err);
+        return {ExitCode::DbError, ExitCause::DbEntryNotFound};
+    }
+
+    return ExitCode::Ok;
+}
+
+
 ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId driveId) {
     constexpr auto maxNumberOfItems = 1000;
 
@@ -132,6 +178,18 @@ ExitInfo ApiTranslator::translateV2ToV3(const UserDbId userDbId, const DriveId d
     remoteDirectoryId = userPrivateFolderRemoteId;
 
     return ExitCode::Ok;
+}
+
+ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId) {
+    if (remoteDirectoryId != v2RootFolderRemoteId()) return ExitCode::Ok;
+
+    Drive drive;
+    if (const auto exitInfo = getDrive(driveDbId, drive); !exitInfo) return exitInfo;
+
+    Account account;
+    if (const auto exitInfo = getAccount(drive, account); !exitInfo) return exitInfo;
+
+    return translateV2ToV3(drive.driveId(), account.userDbId(), remoteDirectoryId);
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
