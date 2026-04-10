@@ -24,8 +24,10 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-RemoteSnapshotItemHandler::RemoteSnapshotItemHandler(const DriveDbId driveDbId, const log4cplus::Logger &logger) :
-    _driveDbId(driveDbId),
+RemoteSnapshotItemHandler::RemoteSnapshotItemHandler(const UserDbId userDbId, const DriveId driveId,
+                                                     const log4cplus::Logger &logger) :
+    _userDbId(userDbId),
+    _driveId(driveId),
     _logger(logger) {}
 
 void RemoteSnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
@@ -42,14 +44,14 @@ void RemoteSnapshotItemHandler::logError(const std::wstring &methodName, const s
 bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str, const CsvIndex index, RemoteSnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
-            if (const auto exitInfo = item.setId(_driveDbId, str); !exitInfo) {
+            if (const auto exitInfo = item.setId(_userDbId, _driveId, str); !exitInfo) {
                 LOG_WARN(_logger, "Error in SnapshotItem::setId");
                 return false;
             }
             break;
         }
         case CsvIndexParentId: {
-            if (const auto exitInfo = item.setParentId(_driveDbId, str); !exitInfo) {
+            if (const auto exitInfo = item.setParentId(_userDbId, _driveId, str); !exitInfo) {
                 LOG_WARN(_logger, "Error in SnapshotItem::setParentId");
                 return false;
             };

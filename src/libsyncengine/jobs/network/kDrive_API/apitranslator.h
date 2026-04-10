@@ -27,17 +27,18 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        static ExitInfo translateV2ToV3(DriveId driveId, NodeId &remoteDirectoryId);
+        static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, NodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
-        static ExitInfo translateV3ToV2(DriveId driveId, NodeId &remoteNodeId);
-        static ExitInfo translateV3ToV2(DriveId driveId, RemoteNodeInfoList &v3RemoteNodeInfoList);
+        static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
+        static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, RemoteNodeInfoList &v3RemoteNodeInfoList);
 
         enum class SpecialFolder {
             CommonDocuments = 0,
             Private = 1,
             Shared = 2
         };
-        static ExitInfo getSpecialFolderRemoteId(DriveId driveId, SpecialFolder specialFolder, RemoteNodeId &folderRemoteId);
+        static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId, SpecialFolder specialFolder,
+                                                 RemoteNodeId &folderRemoteId);
 
         static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
 
@@ -48,7 +49,7 @@ class ApiTranslator {
 
     private:
         static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static ExitInfo updateCache(DriveDbId driveDbId);
+        static ExitInfo updateCache(UserDbId userDbId, DriveDbId driveDbId);
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
