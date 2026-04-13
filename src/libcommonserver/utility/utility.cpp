@@ -676,8 +676,8 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     return ioError;
 }
 
-void Utility::msleep(int msec) {
-    std::chrono::milliseconds dura(msec);
+void Utility::msleep(const int64_t msec) {
+    const std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);
 }
 
