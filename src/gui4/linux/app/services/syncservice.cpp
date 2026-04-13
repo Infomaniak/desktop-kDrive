@@ -21,10 +21,12 @@
 
 #include "libcommon/utility/types.h"
 
-#include <QDebug>
+#include <QLoggingCategory>
 #include <QPointer>
 
 namespace KDC {
+
+Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 
 SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *parent) :
     QObject(parent),
@@ -214,7 +216,7 @@ void SyncService::beginRequest() {
 
 void SyncService::endRequest() {
     if (_pendingRequestCount <= 0) {
-        qWarning() << "SyncService::endRequest called with non-positive pending count:" << _pendingRequestCount;
+        qCWarning(lcSyncService) << "endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;

@@ -19,10 +19,12 @@
 #include "driveservice.h"
 #include "serviceutils.h"
 
-#include <QDebug>
+#include <QLoggingCategory>
 #include <QPointer>
 
 namespace KDC {
+
+Q_LOGGING_CATEGORY(lcDriveService, "gui.v4.driveservice", QtInfoMsg)
 
 DriveService::DriveService(CommService &commService, AppCache &appCache, QObject *parent) :
     QObject(parent),
@@ -100,7 +102,7 @@ void DriveService::beginRequest() {
 
 void DriveService::endRequest() {
     if (_pendingRequestCount <= 0) {
-        qWarning() << "DriveService::endRequest called with non-positive pending count:" << _pendingRequestCount;
+        qCWarning(lcDriveService) << "endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;

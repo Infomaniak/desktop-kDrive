@@ -19,10 +19,12 @@
 #include "userservice.h"
 #include "serviceutils.h"
 
-#include <QDebug>
+#include <QLoggingCategory>
 #include <QPointer>
 
 namespace KDC {
+
+Q_LOGGING_CATEGORY(lcUserService, "gui.v4.userservice", QtInfoMsg)
 
 UserService::UserService(CommService &commService, AppCache &appCache, QObject *parent) :
     QObject(parent),
@@ -124,7 +126,7 @@ void UserService::beginRequest() {
 
 void UserService::endRequest() {
     if (_pendingRequestCount <= 0) {
-        qWarning() << "UserService::endRequest called with non-positive pending count:" << _pendingRequestCount;
+        qCWarning(lcUserService) << "endRequest called with non-positive pending count:" << _pendingRequestCount;
         _pendingRequestCount = 0;
         setLoading(false);
         return;
