@@ -19,6 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
+#include "libsyncengine/testbasewithparmsdb.h"
 
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
