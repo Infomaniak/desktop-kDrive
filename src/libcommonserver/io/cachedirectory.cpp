@@ -44,9 +44,6 @@ const SyncPath &CacheDirectory::path() noexcept {
         resetDirectoryPath();
     }
 
-    // Hide cache directory
-    IoHelper::setFileHidden(_cacheDirectoryPath, true);
-
     return _cacheDirectoryPath;
 }
 
@@ -60,6 +57,9 @@ void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
         return;
     }
+
+    // Hide cache directory
+    IoHelper::setFileHidden(_cacheDirectoryPath, true);
 
     return;
 }
