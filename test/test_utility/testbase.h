@@ -36,16 +36,3 @@ class TestBase {
     private:
         std::chrono::steady_clock::time_point _start;
 };
-
-namespace KDC {
-class TestBaseWithParmsDb : public TestBase {
-    public:
-        void initParmsDb();
-
-    protected:
-        DriveId _driveId = 0;
-        DriveDbId _driveDbId = 0;
-        UserDbId _userDbId = 0;
-        LocalTemporaryDirectory _localParmsDbTempDir{"testBaseWithParmsDb"};
-};
-} // namespace KDC
