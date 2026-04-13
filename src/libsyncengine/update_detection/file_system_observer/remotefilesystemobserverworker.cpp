@@ -620,6 +620,9 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
 ExitInfo RemoteFileSystemObserverWorker::fillActionsFilesInfo(const Poco::JSON::Array::Ptr actionFilesArray,
                                                               ActionInfoList &actionInfoList) {
     assert(actionFilesArray && "Expected 'actions_files' array. Got nullptr.");
+    LOG_IF_FAIL(actionFilesArray)
+
+    if (!actionFilesArray) return ExitCode::LogicError;
 
     for (auto it = actionFilesArray->begin(); it != actionFilesArray->end(); ++it) {
         if (stopAsked()) return ExitCode::Ok;
