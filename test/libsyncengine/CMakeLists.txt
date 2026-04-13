@@ -13,10 +13,11 @@ set(testsyncengine_SRCS
         # Utility
         ../test.cpp
         test.cpp
+        testbasewithparmsdb.h testbasewithparmsdb.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp ../test_utility/testhelpers_requests.h ../test_utility/testhelpers_requests.cpp
         ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
         ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
-        ../test_utility/testbase.h ../test_utility/testbase.cpp
+        ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
         ../test_utility/dataextractor.h ../test_utility/dataextractor.cpp
