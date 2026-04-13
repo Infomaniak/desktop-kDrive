@@ -19,15 +19,13 @@
 #pragma once
 
 #include "testincludes.h"
-#include "keychainmanager/apitoken.h"
-#include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 using namespace CppUnit;
 
 namespace KDC {
-class TestApiTranslator : public CppUnit::TestFixture, public TestBase {
+class TestApiTranslator : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestApiTranslator);
         CPPUNIT_TEST(testGetDriveDbId);
@@ -48,12 +46,6 @@ class TestApiTranslator : public CppUnit::TestFixture, public TestBase {
         void translateRemoteNodeInfoListFromV3ToV2();
         void testGetSpecialFolders();
 
-        DriveId _driveId = 0;
-        DriveDbId _driveDbId = 0;
-        UserDbId _userDbId = 0;
         RemoteNodeId _remoteDirId;
-        ApiToken _apiToken;
-
-        LocalTemporaryDirectory _localParmsDbTempDir{"testApiTranslator"};
 };
 } // namespace KDC
