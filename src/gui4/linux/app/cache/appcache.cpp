@@ -21,6 +21,16 @@
 #include <algorithm>
 
 namespace {
+/**
+ * Inserts @p value into @p list if no element matches @p id, or replaces the matching element.
+ * @tparam T       Element type stored in the list.
+ * @tparam IdType  Type of the identifier used for lookup.
+ * @tparam Getter  Callable of signature `IdType(const T &)` that extracts the id from an element.
+ * @param list     The vector to update.
+ * @param value    The new element to insert or use as replacement.
+ * @param id       The identifier to look up.
+ * @param getter   Callable that returns the id of a given element.
+ */
 template<typename T, typename IdType, typename Getter>
 void upsertById(std::vector<T> &list, const T &value, IdType id, Getter getter) {
     const auto it = std::find_if(list.begin(), list.end(), [id, getter](const T &existing) { return getter(existing) == id; });
@@ -31,6 +41,16 @@ void upsertById(std::vector<T> &list, const T &value, IdType id, Getter getter) 
     *it = value;
 }
 
+/**
+ * Removes from @p list all elements whose id matches @p id.
+ * @tparam T       Element type stored in the list.
+ * @tparam IdType  Type of the identifier used for lookup.
+ * @tparam Getter  Callable of signature `IdType(const T &)` that extracts the id from an element.
+ * @param list     The vector to update.
+ * @param id       The identifier of the element to remove.
+ * @param getter   Callable that returns the id of a given element.
+ * @return         `true` if at least one element was removed, `false` otherwise.
+ */
 template<typename T, typename IdType, typename Getter>
 bool removeById(std::vector<T> &list, IdType id, Getter getter) {
     const auto initialSize = list.size();
