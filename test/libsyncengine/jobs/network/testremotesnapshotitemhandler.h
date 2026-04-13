@@ -20,6 +20,7 @@
 
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "libsyncengine/testbasewithparmsdb.h"
 
 #include "keychainmanager/apitoken.h"
 #include "utility/types.h"
