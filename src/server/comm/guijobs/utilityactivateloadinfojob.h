@@ -32,7 +32,7 @@ class UtilityActivateLoadInfoJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo CheckUpdateIfNeeded();
+        ExitInfo checkUpdateIfNeeded();
         friend class TestGuiCommChannel;
 };
 

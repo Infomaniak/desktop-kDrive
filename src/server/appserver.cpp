@@ -989,7 +989,7 @@ void AppServer::refreshUpdateState() {
 
     assert(_updateManager && "The update manager is not set.");
 
-    return _updateManager->ForceRefresh();
+    return _updateManager->forceRefresh();
 }
 
 void AppServer::startInstaller() {

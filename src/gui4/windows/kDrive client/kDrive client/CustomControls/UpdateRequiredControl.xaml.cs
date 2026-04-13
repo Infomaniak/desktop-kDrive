@@ -52,7 +52,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             if (button is not null)
-                button.IsEnabled = false;
+                button.IsEnabled = true;
         }
 
         private async void ManualUpdateButton_Click(object sender, RoutedEventArgs e)

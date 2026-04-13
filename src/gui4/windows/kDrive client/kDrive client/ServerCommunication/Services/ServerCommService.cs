@@ -1074,10 +1074,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
-            if (_viewModel.Settings.AppVersion.IsSameVersion(versionInfo))
-                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-            else
+            if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
                 _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+            else
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
 
             return true;
         }

@@ -378,7 +378,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public void RefreshErrorState()
         {
-            UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired);
+            await Utility.RunOnUIThread(() => UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired));
         }
     }
 }

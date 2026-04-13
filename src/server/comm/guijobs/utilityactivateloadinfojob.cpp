@@ -19,6 +19,7 @@
 #include "utilityactivateloadinfojob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
+#include "libcommon/db/parmsdb.h"
 
 namespace KDC {
 
@@ -38,15 +39,16 @@ ExitInfo UtilityActivateLoadInfoJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityActivateLoadInfoJob::process() {
-    if (ExitInfo exitInfo = CheckUpdateIfNeeded(); !exitInfo) {
+    if (ExitInfo exitInfo = checkUpdateIfNeeded(); !exitInfo) {
         return exitInfo;
     }
 
     _commManager->appServer().triggerSyncProgressUpdate();
     _commManager->appServer().loadUsersInfo();
+    return ExitCode::Ok;
 }
 
-ExitInfo UtilityActivateLoadInfoJob::CheckUpdateIfNeeded() {
+ExitInfo UtilityActivateLoadInfoJob::checkUpdateIfNeeded() {
     std::vector<Error> errs;
     if (!ParmsDb::instance()->selectAllErrors(INT_MAX, errs)) {
         LOG_WARN(_logger, "Failed to get errors from database to check if the app is locked");

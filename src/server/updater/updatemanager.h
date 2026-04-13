@@ -51,7 +51,7 @@ class UpdateManager final : public QObject {
         }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
-        void ForceRefresh() const { slotTimerFired(); } 
+        void forceRefresh() const { slotTimerFired(); } 
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
