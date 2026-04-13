@@ -145,16 +145,21 @@ void AbstractNetworkJob::logReplyInfo() {
 int64_t AbstractNetworkJob::extractWaitingTime() {
     int64_t waitingTime = -1;
     if (httpResponse().has(rateLimitHeaderDelay)) {
-        waitingTime = std::stoll(httpResponse().get(rateLimitHeaderDelay));
-    } else if (httpResponse().has(rateLimitHeaderReset)) {
-        int64_t timestamp = 0;
         try {
+            waitingTime = std::stoll(httpResponse().get(rateLimitHeaderDelay));
+        } catch (std::exception const &e) {
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderDelay << " : " << e.what());
+        }
+    } else if (httpResponse().has(rateLimitHeaderReset)) {
+        try {
+            int64_t timestamp = 0;
             timestamp = std::stoll(httpResponse().get(rateLimitHeaderReset));
+            const auto now =
+                    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+            waitingTime = timestamp - now.count();
         } catch (std::exception const &e) {
             LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderReset << " : " << e.what());
         }
-        const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        waitingTime = static_cast<int64_t>(timestamp - now.count());
     }
 
     if (waitingTime > 0) {
