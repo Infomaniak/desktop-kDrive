@@ -535,6 +535,9 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             if (const auto newWaitTime = extractWaitingTime(); newWaitTime > 0) {
                 _sleepDuration = newWaitTime;
                 LOG_INFO(_logger, "New waiting time: " << _sleepDuration);
+            } else {
+                // If no specific header is provided, wait for the longest acceptable duration
+                _sleepDuration = sleepDurationThreshold - 1;
             }
             return ExitCode::RateLimited;
         }
