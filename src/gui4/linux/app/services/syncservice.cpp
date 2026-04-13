@@ -156,7 +156,7 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
                                            return;
                                        }
 
-                                       emit self->syncStatusReceived(syncDbId, static_cast<int32_t>(status));
+                                       emit self->syncStatusReceived(syncDbId, toInt(status));
                                    });
 }
 
@@ -229,8 +229,8 @@ void SyncService::endRequest() {
 }
 
 bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
-    return syncConfiguration >= static_cast<int32_t>(SyncConfiguration::Classic) &&
-           syncConfiguration < static_cast<int32_t>(SyncConfiguration::EnumEnd);
+    return syncConfiguration >= toInt(SyncConfiguration::Classic) &&
+           syncConfiguration < toInt(SyncConfiguration::EnumEnd);
 }
 
 void SyncService::setLoading(const bool loading) {
