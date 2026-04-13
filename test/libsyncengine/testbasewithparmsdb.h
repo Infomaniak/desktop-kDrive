@@ -19,20 +19,22 @@
 #pragma once
 
 #include "utility/types.h"
+#include "test_utility/testbase.h"
 
 #include "test_utility/localtemporarydirectory.h"
 
 #include <chrono>
 
-class TestBase {
-    public:
-        virtual void start(void) { _start = std::chrono::steady_clock::now(); }
-        virtual void stop(void) {
-            const auto duration =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start);
-            if (duration.count() > 50) std::cout << " (" << duration.count() << " ms)";
-        }
 
-    private:
-        std::chrono::steady_clock::time_point _start;
+namespace KDC {
+class TestBaseWithParmsDb : public TestBase {
+    public:
+        void initParmsDb();
+
+    protected:
+        DriveId _driveId = 0;
+        DriveDbId _driveDbId = 0;
+        UserDbId _userDbId = 0;
+        LocalTemporaryDirectory _localParmsDbTempDir{"testBaseWithParmsDb"};
 };
+} // namespace KDC
