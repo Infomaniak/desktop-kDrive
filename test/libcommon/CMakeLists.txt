@@ -14,7 +14,7 @@ set(testcommon_SRCS
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
-        ../test_utility/testbase.h ../test_utility/testbase.cpp
+        ../test_utility/testbase.h
         ../test.cpp
 
         test.cpp
