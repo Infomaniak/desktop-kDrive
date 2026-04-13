@@ -392,10 +392,10 @@ void AppServer::init() {
         connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
     }
 
-    // Update users/accounts/drives info
+    // Update users,accounts and drives info.
     if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
         exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later
+        // The user will be asked to enter its credentials later.
     } else if (!exitInfo) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
