@@ -29,12 +29,13 @@ class CacheDirectory {
         explicit CacheDirectory(const SyncPath &localSyncPath);
         ~CacheDirectory();
 
-        const SyncPath &path() noexcept;
+        ExitInfo path(SyncPath &cacheDirectory) noexcept;
 
     private:
-        void initDirectory(const SyncPath &localSyncPath) noexcept;
-        void deleteDirectory() const noexcept;
-        void resetDirectoryPath() noexcept;
+        ExitInfo initDirectory() noexcept;
+        void cleanUp();
+
+        const SyncPath _syncDirectoryPath;
 
         mutable std::mutex _mutex;
         SyncPath _cacheDirectoryPath;
