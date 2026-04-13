@@ -488,13 +488,16 @@ void TestUtility::testTryCreateTmpDir() {
     const LocalTemporaryDirectory tmpDir;
     const auto cacheDirectory = std::make_shared<CacheDirectory>(tmpDir.path());
 
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory, Str("test name")));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory, Str("test name")));
 
     // Make sure the item are correctly removed from the tmp dir
     IoHelper::DirectoryIterator dir;
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectory->path(), true, ioError, dir));
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
+
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectoryPath, true, ioError, dir));
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -505,24 +508,25 @@ void TestUtility::testTryCreateTmpDir() {
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp dir but a directory already exist with the same name
-    SyncName testDirName = Str("testDir");
-    CPPUNIT_ASSERT(IoHelper::createDirectory(cacheDirectory->path() / testDirName, false, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory, testDirName));
+    const SyncName testDirName = Str("testDir");
+    CPPUNIT_ASSERT(IoHelper::createDirectory(cacheDirectoryPath / testDirName, false, ioError));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory, testDirName));
 
     // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectory->path(), ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory));
 
 #if defined(KD_MACOS)
     {
         // Remove access rights.
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), false, false, false, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpDir(cacheDirectory));
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectoryPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::TmpDirAccessError),
+                             Utility::tryCreateTmpDir(cacheDirectory));
 
         // Add back access rights.
-        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), true, true, true, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(cacheDirectory));
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectoryPath, true, true, true, ioError));
+        CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory));
     }
 #endif
 }
@@ -531,13 +535,15 @@ void TestUtility::testTryCreateTmpFile() {
     const LocalTemporaryDirectory tmpDir;
     const auto cacheDirectory = std::make_shared<CacheDirectory>(tmpDir.path());
 
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory, Str("test name")));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory, Str("test name")));
 
     // Make sure the item are correctly removed from the tmp dir
     IoHelper::DirectoryIterator dir;
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectory->path(), true, ioError, dir));
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(cacheDirectoryPath, true, ioError, dir));
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -548,22 +554,23 @@ void TestUtility::testTryCreateTmpFile() {
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp file but a file already exist with the same name but different capitalization.
-    testhelpers::generateTestFile(cacheDirectory->path() / Str("TestFile"));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory, Str("testFile")));
+    testhelpers::generateTestFile(cacheDirectoryPath / Str("TestFile"));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory, Str("testFile")));
 
     // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectory->path(), ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
 
     {
         // Remove access rights.
         ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), false, false, false, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpFile(cacheDirectory));
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectoryPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::TmpDirAccessError),
+                             Utility::tryCreateTmpFile(cacheDirectory));
 
         // Add back access rights.
-        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectory->path(), true, true, true, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(cacheDirectory));
+        CPPUNIT_ASSERT(IoHelper::setRights(cacheDirectoryPath, true, true, true, ioError));
+        CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
     }
 }
 

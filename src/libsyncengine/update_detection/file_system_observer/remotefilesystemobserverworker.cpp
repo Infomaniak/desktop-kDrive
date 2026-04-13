@@ -802,18 +802,16 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const Syn
     ExitInfo exitInfo = ExitCode::Ok;
 #if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
-    auto ioError = IoError::Unknown;
     if (type == NodeType::File) {
-        ioError = Utility::tryCreateTmpFile(_syncPal->cacheDirectory(), name);
+        exitInfo = Utility::tryCreateTmpFile(_syncPal->cacheDirectory(), name);
     } else if (type == NodeType::Directory) {
-        ioError = Utility::tryCreateTmpDir(_syncPal->cacheDirectory(), name);
+        exitInfo = Utility::tryCreateTmpDir(_syncPal->cacheDirectory(), name);
     }
 
-    if (ioError == IoError::AccessDenied) {
+    if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
         LOGW_SYNCPAL_ERROR(_logger, L"Can't access tmp directory.");
-        exitInfo = {ExitCode::SystemError, ExitCause::TmpDirAccessError};
         _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    } else if (ioError != IoError::Success) {
+    } else if (!exitInfo) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                             << SyncName2WStr(name) << L". Item is ignored.");
         _syncPal->addError(

@@ -22,15 +22,14 @@
 
 namespace KDC {
 
-CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) {
-    initDirectory(localSyncPath);
-}
+CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) :
+    _syncDirectoryPath(localSyncPath) {}
 
 CacheDirectory::~CacheDirectory() {
-    deleteDirectory();
+    cleanUp();
 }
 
-const SyncPath &CacheDirectory::path() noexcept {
+ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
     const std::scoped_lock lock(_mutex);
 
     bool exists = false;
@@ -39,40 +38,37 @@ const SyncPath &CacheDirectory::path() noexcept {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
     }
-
     if (!exists) {
-        resetDirectoryPath();
+        return initDirectory();
     }
 
-    return _cacheDirectoryPath;
+    cacheDirectory = _cacheDirectoryPath;
+    return ExitCode::Ok;
 }
 
-void CacheDirectory::initDirectory(const SyncPath &localSyncPath) noexcept {
+ExitInfo CacheDirectory::initDirectory() noexcept {
+    if (_syncDirectoryPath.empty()) {
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+    }
+
     const auto cacheDirName = Poco::format(".%s-cache", std::string(APPLICATION_NAME));
-    _cacheDirectoryPath = localSyncPath / cacheDirName;
+    _cacheDirectoryPath = _syncDirectoryPath / cacheDirName;
 
     if (auto ioError = IoError::Success;
         !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
-        return;
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
 
     // Hide cache directory
     IoHelper::setFileHidden(_cacheDirectoryPath, true);
 
-    return;
+    return ExitCode::Ok;
 }
 
-void CacheDirectory::deleteDirectory() const noexcept {
-    // It is the best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
-    auto ioError = IoError::Success;
-    (void) IoHelper::deleteItem(_cacheDirectoryPath, ioError);
-}
-
-void CacheDirectory::resetDirectoryPath() noexcept {
-    deleteDirectory();
-    initDirectory(_cacheDirectoryPath.parent_path());
+void CacheDirectory::cleanUp() {
+    // TODO
 }
 
 } // namespace KDC
