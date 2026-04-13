@@ -199,6 +199,7 @@ class SyncOperationList : public SharedObject {
 
         friend class TestOperationSorterWorker;
         friend class TestOperationGeneratorWorker;
+        friend class TestSyncOperation;
 };
 
 } // namespace KDC
