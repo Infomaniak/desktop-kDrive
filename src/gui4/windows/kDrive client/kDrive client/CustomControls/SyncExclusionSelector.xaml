@@ -10,7 +10,8 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d"
              HorizontalAlignment="Stretch"
-             Loaded="SyncExclusionSelector_Loaded">
+             Loaded="SyncExclusionSelector_Loaded"
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

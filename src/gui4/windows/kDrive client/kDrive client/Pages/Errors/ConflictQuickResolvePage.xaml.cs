@@ -22,6 +22,11 @@ namespace Infomaniak.kDrive.Pages.Errors
             Logger.Log(Logger.Level.Debug, "ConflictQuickResolvePage components initialized");
         }
 
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();

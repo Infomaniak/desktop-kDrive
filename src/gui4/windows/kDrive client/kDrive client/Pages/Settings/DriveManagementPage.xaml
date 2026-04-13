@@ -10,6 +10,7 @@
       xmlns:settings="using:Infomaniak.kDrive.Pages.Settings"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
       xmlns:kDrive="using:Infomaniak.kDrive"
+      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
 
     <Page.Resources>

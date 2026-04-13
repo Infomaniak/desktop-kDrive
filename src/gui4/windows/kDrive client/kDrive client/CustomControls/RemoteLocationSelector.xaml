@@ -11,7 +11,7 @@
              mc:Ignorable="d"
              HorizontalAlignment="Stretch"
              Loaded="RemoteLocationSelector_Loaded"
-             Unloaded="RemoteLocationSelector_Unloaded">
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

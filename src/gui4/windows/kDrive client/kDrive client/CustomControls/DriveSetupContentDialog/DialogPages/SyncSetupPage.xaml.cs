@@ -41,10 +41,25 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            DriveSetupContentDialogVM!.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
-            DriveSetupContentDialogVM!.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
+            if (DriveSetupContentDialogVM is not null)
+            {
+                DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
+                DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+            }
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+            Bindings.StopTracking();
         }
 
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)

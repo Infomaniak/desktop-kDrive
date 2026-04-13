@@ -34,7 +34,10 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "OAuthLoadingPage components initialized");
         }
-
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

@@ -31,7 +31,10 @@ namespace Infomaniak.kDrive.CustomControls
         {
             this.InitializeComponent();
         }
-
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         private static void OnSyncChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as SyncIcon;

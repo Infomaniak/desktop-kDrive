@@ -6,6 +6,15 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class MultiValueProgressBar : UserControl
     {
+        public MultiValueProgressBar()
+        {
+            InitializeComponent();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
 
         private static readonly DependencyProperty Color1Property =
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
@@ -62,9 +71,5 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(Value3Property, value); }
         }
 
-        public MultiValueProgressBar()
-        {
-            InitializeComponent();
-        }
     }
 }

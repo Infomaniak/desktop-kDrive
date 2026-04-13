@@ -21,6 +21,8 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.ComponentModel;
 
 namespace Infomaniak.kDrive
 {
@@ -38,7 +40,37 @@ namespace Infomaniak.kDrive
             Utility.SetWindowCurrentSize(this, 1025, 683); // Set to the minimum size keeping the nav bar panel open by default
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            Closed += MainWindow_Closed;
+            UpdateSplashScreenVisibility();
         }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            Closed -= MainWindow_Closed;
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppModel.IsInitialized))
+                UpdateSplashScreenVisibility();
+        }
+
+        private void UpdateSplashScreenVisibility()
+        {
+            if (ViewModel.IsInitialized)
+            {
+                SplashScreen.Visibility = Visibility.Collapsed;
+                MainContentGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SplashScreen.Visibility = Visibility.Visible;
+                MainContentGrid.Visibility = Visibility.Collapsed;
+            }
+        }
+
 
         private void AppTitleBar_BackRequested(TitleBar sender, object args)
         {

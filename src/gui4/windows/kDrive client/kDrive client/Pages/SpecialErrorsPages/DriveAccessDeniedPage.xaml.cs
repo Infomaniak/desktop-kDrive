@@ -29,7 +29,10 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "DriveAccessDeniedPage components initialized");
         }
-
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Retry button clicked - Restarting sync");
