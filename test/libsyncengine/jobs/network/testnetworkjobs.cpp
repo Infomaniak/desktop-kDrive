@@ -1049,7 +1049,7 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     {
-        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"1"}, {}, CsvFullFileListWithCursorJob::Zip::Off);
+        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"3"}, {}, CsvFullFileListWithCursorJob::Zip::Off);
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
@@ -1073,7 +1073,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     {
-        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"1"}, {}, CsvFullFileListWithCursorJob::Zip::On);
+        CsvFullFileListWithCursorJob job(_driveDbId, RemoteNodeId{"3"}, {}, CsvFullFileListWithCursorJob::Zip::On);
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
