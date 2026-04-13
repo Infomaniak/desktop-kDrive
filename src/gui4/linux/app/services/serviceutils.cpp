@@ -17,15 +17,16 @@
  */
 
 #include "serviceutils.h"
-
-#include <cstdint>
+#include "libcommon/utility/types.h"
 
 namespace KDC::ServiceUtils {
 
 QString formatExitInfo(const ExitInfo &exitInfo) {
-    return QStringLiteral("IPC request failed (code=%1, cause=%2)")
-            .arg(static_cast<int32_t>(exitInfo.code()))
-            .arg(static_cast<int32_t>(exitInfo.cause()));
+    return QStringLiteral("IPC request failed (code=%1[%2], cause=%3[%4])")
+            .arg(QString::fromStdString(toString(exitInfo.code())))
+            .arg(toInt(exitInfo.code()))
+            .arg(QString::fromStdString(toString(exitInfo.cause())))
+            .arg(toInt(exitInfo.cause()));
 }
 
 } // namespace KDC::ServiceUtils
