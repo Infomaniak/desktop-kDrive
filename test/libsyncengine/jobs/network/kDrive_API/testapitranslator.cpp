@@ -43,11 +43,12 @@ void TestApiTranslator::setUp() {
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
-    _apiToken.setAccessToken(testVariables.apiToken);
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
