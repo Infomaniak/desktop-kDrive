@@ -143,7 +143,7 @@ void SyncOperationList::insertOp(const std::list<UniqueId>::const_iterator pos, 
 void SyncOperationList::deleteOp(const std::list<UniqueId>::const_iterator it) {
     const std::scoped_lock lock(_mutex);
     const auto opId = *it;
-    if (const auto syncOp = getOp(opId); !syncOp) {
+    if (const auto syncOp = getOp(opId); syncOp) {
         const auto type = syncOp->type();
         _opListByType[type].erase(opId);
         if (syncOp->affectedNode()) {
