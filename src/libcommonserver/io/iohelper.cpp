@@ -671,11 +671,11 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 }
 
 
-bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept {
+bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, const PathCheckOption option) noexcept {
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    const auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
@@ -698,7 +698,8 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong) &&
+             (ioError != IoError::AccessDenied);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (exists && option == PathCheckOption::Sensitive) {
@@ -710,7 +711,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,

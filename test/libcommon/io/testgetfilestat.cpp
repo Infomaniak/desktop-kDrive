@@ -567,7 +567,7 @@ void TestIo::testGetFileStat() {
 
         FileStat fileStat;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+        CPPUNIT_ASSERT(!IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);

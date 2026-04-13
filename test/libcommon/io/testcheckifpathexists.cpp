@@ -195,22 +195,65 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A regular file without read/write permission
     {
-        LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        { std::ofstream ofs(path); }
+        { const std::ofstream ofs(path); }
         IoError ioError = IoError::Unknown;
-        const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoError::Success;
-        if (!setRightResults) {
-            IoHelper::setRights(path, true, true, true, ioError);
+        if (const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoError::Success;
+            !setRightResults) {
+            (void) IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
         bool exists = false;
         const bool checkIfPathExistsResult =
                 IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
-        IoHelper::setRights(path, true, true, true, ioError);
+        (void) IoHelper::setRights(path, true, true, true, ioError);
 
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // A non-existing file inside a directory without read/write permission
+    {
+        const LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const SyncPath path = temporaryDirectory.path() / "existing.txt";
+        { const std::ofstream ofs(path); }
+
+        IoError ioError = IoError::Unknown;
+        if (const bool setRightResults =
+                    IoHelper::setRights(temporaryDirectory.path(), false, false, false, ioError) && ioError == IoError::Success;
+            !setRightResults) {
+            (void) IoHelper::setRights(temporaryDirectory.path(), true, true, true, ioError);
+            CPPUNIT_FAIL("Failed to set rights on the file");
+        }
+        bool exists = false;
+        const bool checkIfPathExistsResult =
+                IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
+        (void) IoHelper::setRights(temporaryDirectory.path(), true, true, true, ioError);
+
+        CPPUNIT_ASSERT(!checkIfPathExistsResult);
+        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // An existing file inside a directory without read/write permission
+    {
+        const LocalTemporaryDirectory temporaryDirectory("TestIo");
+        IoError ioError = IoError::Unknown;
+        if (const bool setRightResults =
+                    IoHelper::setRights(temporaryDirectory.path(), false, false, false, ioError) && ioError == IoError::Success;
+            !setRightResults) {
+            (void) IoHelper::setRights(temporaryDirectory.path(), true, true, true, ioError);
+            CPPUNIT_FAIL("Failed to set rights on the file");
+        }
+        bool exists = false;
+        const bool checkIfPathExistsResult = IoHelper::checkIfPathExists(temporaryDirectory.path() / "non_existing.txt", exists,
+                                                                         ioError, IoHelper::PathCheckOption::Insensitive);
+        (void) IoHelper::setRights(temporaryDirectory.path(), true, true, true, ioError);
+
+        CPPUNIT_ASSERT(!checkIfPathExistsResult);
+        CPPUNIT_ASSERT(!exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
