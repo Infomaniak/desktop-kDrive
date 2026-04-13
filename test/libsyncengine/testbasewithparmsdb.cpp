@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testbase.h"
-#include "testhelpers.h"
+#include "testbasewithparmsdb.h"
+#include "test_utility/testhelpers.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "network/proxy.h"
