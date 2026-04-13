@@ -585,7 +585,7 @@ IoError Utility::tryCreateTmpDir(const std::shared_ptr<CacheDirectory> cacheDire
 #if defined(KD_MACOS)
     if (!cacheDirectory) {
         LOG_WARN(_logger, "Cache directory not provided!");
-        return IoError::NoSuchFileOrDirectory;
+        return IoError::InvalidArgument;
     }
 
     SyncPath tmpPath = cacheDirectory->path() / name;
@@ -619,7 +619,7 @@ IoError Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDir
                                   const SyncName &name /*= Str("testFile")*/) {
     if (!cacheDirectory) {
         LOG_WARN(_logger, "Cache directory not provided!");
-        return IoError::NoSuchFileOrDirectory;
+        return IoError::InvalidArgument;
     }
 
     SyncPath tmpPath = cacheDirectory->path() / name;
