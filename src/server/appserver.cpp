@@ -392,9 +392,10 @@ void AppServer::init() {
         connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
     }
 
-    // Update users/accounts/drives info
-    if (const auto exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later
+    // Update users,accounts and drives info.
+    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+        exitInfo.code() == ExitCode::InvalidToken) {
+        // The user will be asked to enter its credentials later.
     } else if (!exitInfo) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
@@ -2785,11 +2786,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3828,7 +3829,7 @@ bool AppServer::startClient() {
     return true;
 }
 
-ExitInfo AppServer::updateAllUsersInfo() {
+ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
     std::vector<User> users;
     if (!ParmsDb::instance()->selectAllUsers(users)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
@@ -3841,7 +3842,7 @@ ExitInfo AppServer::updateAllUsersInfo() {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
             return ExitCode::DbError;
         }
-        if (accounts.empty()) {
+        if (action == UpdateFollowUpAction::CleanUserDbEntry && accounts.empty()) {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
             ServerRequests::deleteUser(user.dbId());
@@ -4745,10 +4746,9 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) const {
 }
 
 void AppServer::onLoadInfo() {
-    ExitCode exitCode = updateAllUsersInfo();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::None); !exitInfo) {
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     }
 }
 

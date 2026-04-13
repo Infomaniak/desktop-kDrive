@@ -286,7 +286,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitInfo updateAllUsersInfo();
+        enum class UpdateFollowUpAction {
+            None,
+            CleanUserDbEntry
+        };
+        ExitInfo updateAllUsersInfo(UpdateFollowUpAction action = UpdateFollowUpAction::None);
         ExitInfo updateUserInfo(User &user);
         ExitInfo updateUser(User &user);
         ExitInfo createAccount(Account &newAccount);
