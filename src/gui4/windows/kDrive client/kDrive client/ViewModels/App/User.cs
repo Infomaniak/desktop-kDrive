@@ -40,6 +40,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _dbId = -1;
         private UserId _userId = -1;
         private string _name = "";
+        private string _firstName = "";
         private string _email = "";
         private byte[]? _avatar;
         private bool _isConnected = false;
@@ -86,7 +87,11 @@ namespace Infomaniak.kDrive.ViewModels
             get => _name;
             set => SetPropertyInUIThread(ref _name, value);
         }
-
+        public string FirstName
+        {
+            get => _firstName;
+            set => SetPropertyInUIThread(ref _firstName, value);
+        }
         public string Email
         {
             get => _email;

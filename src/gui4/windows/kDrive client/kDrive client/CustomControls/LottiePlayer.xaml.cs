@@ -43,12 +43,18 @@ namespace Infomaniak.kDrive.CustomControls
             typeof(LottiePlayer),
             new PropertyMetadata(0));
 
-        private static void OnUriSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static async void OnUriSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is LottiePlayer lottiePlayer && e.NewValue is Uri)
             {
-                // Fire-and-forget the async method
-                lottiePlayer.UpdateLottieAsync();
+                try
+                {
+                    await lottiePlayer.UpdateLottieAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to load Lottie animation: {ex.Message}");
+                }
             }
         }
 

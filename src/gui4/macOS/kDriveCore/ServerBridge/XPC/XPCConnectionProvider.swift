@@ -27,6 +27,8 @@ public enum XPCConnectionState {
 
 public protocol XPCConnectionProvider: Sendable {
     var guiConnection: XPCGuiProtocol { get async throws }
+
+    var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
 }
 

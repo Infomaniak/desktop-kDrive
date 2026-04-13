@@ -19,12 +19,13 @@
 import SwiftUI
 
 public struct LoadingButton<Content: View>: View {
-    @State private var isLoading = false
+    @Binding var isLoading: Bool
 
     let action: () async -> Void
     let label: Content
 
-    public init(action: @escaping () async -> Void, @ViewBuilder label: () -> Content) {
+    public init(isLoading: Binding<Bool>, action: @escaping () async -> Void, @ViewBuilder label: () -> Content) {
+        _isLoading = isLoading
         self.action = action
         self.label = label()
     }
@@ -47,5 +48,12 @@ public struct LoadingButton<Content: View>: View {
                     .opacity(isLoading ? 0 : 1)
             }
         }
+        .disabled(isLoading)
+    }
+}
+
+#Preview {
+    LoadingButton(isLoading: .constant(true)) {} label: {
+        Text("Hello, World!")
     }
 }

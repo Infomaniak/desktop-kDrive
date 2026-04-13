@@ -49,7 +49,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
             ManagedDrive = drive;
         }
-        else if (_viewModel.AllDrives.FirstOrDefault(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId, null) is not null)
+        else if (_viewModel.AllDrives.Any(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId))
         {
             // Can happen if a user uses the back button after setting up a new drive.
             Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");

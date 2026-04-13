@@ -35,10 +35,15 @@ namespace Infomaniak.kDrive.ViewModels
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
-        private IDrive? drive;
+        private bool _supportsLiteSync = false;
+        private IDrive _drive;
         private ObservableCollection<NodeId> _excludedNodeIds = [];
 
-        public NewSync() { }
+        public NewSync(IDrive drive)
+        {
+            _drive = drive;
+        }
+
         public NewSync(NewSync other)
         {
             DefaultPath = other.DefaultPath;
@@ -46,7 +51,7 @@ namespace Infomaniak.kDrive.ViewModels
             RemotePath = other.RemotePath;
             RemoteNodeId = other.RemoteNodeId;
             SyncType = other.SyncType;
-            Drive = other.Drive;
+            _drive = other.Drive;
             ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
         }
 
@@ -82,16 +87,22 @@ namespace Infomaniak.kDrive.ViewModels
             get => _remoteNodeId;
             set => SetPropertyInUIThread(ref _remoteNodeId, value);
         }
-        public IDrive? Drive
+        public IDrive Drive
         {
-            get => drive;
-            init => SetPropertyInUIThread(ref drive, value);
+            get => _drive;
+            init => SetPropertyInUIThread(ref _drive, value);
         }
 
         public SyncType SyncType
         {
             get => _syncType;
             set => SetPropertyInUIThread(ref _syncType, value);
+        }
+
+        public bool SupportsLiteSync
+        {
+            get => _supportsLiteSync;
+            set => SetPropertyInUIThread(ref _supportsLiteSync, value);
         }
 
         public ObservableCollection<NodeId> ExcludedNodeIds
@@ -103,17 +114,15 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task SelectBestVfsMode()
         {
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
-            if (CanSupportOnlineMode is null)
+            bool? canSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
+            if (canSupportOnlineMode is null)
                 Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
 
-            SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
+            SupportsLiteSync = canSupportOnlineMode ?? false;
+            SyncType = SupportsLiteSync ? SyncType.Online : SyncType.Offline;
         }
 
-        public Task<List<NodeId>?> GetExcludedNodeIds()
-        {
-            return Task.FromResult(new List<NodeId>(ExcludedNodeIds));
-        }
+        public Task<List<NodeId>?> GetExcludedNodeIds() => Task.FromResult<List<NodeId>?>(new List<NodeId>(ExcludedNodeIds));
 
     }
 }

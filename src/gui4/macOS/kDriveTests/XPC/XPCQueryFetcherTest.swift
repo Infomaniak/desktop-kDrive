@@ -59,6 +59,8 @@ class MCKXPCGuiProtocolWithData: XPCGuiProtocol {
 }
 
 struct MCKXPCConnectionProvider: XPCConnectionProvider {
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     let payloadFileName: String
@@ -71,6 +73,8 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 }
 
 struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     let responseData: Data
@@ -112,7 +116,7 @@ struct XPCQueryFetcherTests {
         CallbackMessage<NodeInfoResponse>.self,
         CallbackMessage<NodeSubfoldersResponse>.self,
         CallbackMessage<NodeSizeResponse>.self,
-        CallbackMessage<MissingFolderResponse>.self
+        CallbackMessage<CreateMissingFoldersResponse>.self
     ]
 
     @Test func decodingNoErrorResponse() async throws {

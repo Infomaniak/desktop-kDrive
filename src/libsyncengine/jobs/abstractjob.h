@@ -27,8 +27,8 @@
 
 namespace KDC {
 
-constexpr int64_t expectedFinishProgressNotSetValue = -2;
-constexpr int64_t expectedFinishProgressNotSetValueWarningLogged = -1;
+constexpr int64_t expectedFinishProgressNotSetValue = -1;
+constexpr int64_t expectedFinishProgressNotSetValueWarningLogged = -2;
 
 class AbstractJob : public Poco::Runnable {
     public:

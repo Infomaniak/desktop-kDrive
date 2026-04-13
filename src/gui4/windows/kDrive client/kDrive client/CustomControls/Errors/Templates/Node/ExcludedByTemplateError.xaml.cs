@@ -21,7 +21,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
-            var frame = ((App.Current as App)?.CurrentWindow as MainWindow).AppNavView.Frame;
+            var frame = ((Application.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
             if (frame is null)
             {
                 Logger.Log(Logger.Level.Warning, "Unable to fetch main frame");

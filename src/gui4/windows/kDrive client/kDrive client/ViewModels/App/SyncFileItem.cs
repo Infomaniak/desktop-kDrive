@@ -122,8 +122,14 @@ namespace Infomaniak.kDrive.ViewModels
         public int ProgressPercent
         {
             get => _progressPercent;
-            set => SetPropertyInUIThread(ref _progressPercent, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _progressPercent, value))
+                    OnPropertyChanged(nameof(HasIndeterminateProgress));
+            }
         }
+
+        public bool HasIndeterminateProgress => _progressPercent < 0;
 
         public ConflictType Conflict
         {

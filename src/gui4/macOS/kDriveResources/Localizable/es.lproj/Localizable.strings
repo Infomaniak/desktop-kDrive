@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 23 Mar 2026 10:24:41 +0100
+ * Exported at: Thu, 02 Apr 2026 10:01:25 +0200
  */
 
 
@@ -200,6 +200,13 @@
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copiando enlace…";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Gestión de datos";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Registros de depuración";
+
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Desconectarás %@ de la aplicación.\n\nLa carpeta de sincronización permanecerá en su ordenador, pero ya no se sincronizará con kDrive.\n\nTodos sus datos seguirán siendo accesibles en línea en kDrive.";
@@ -407,6 +414,9 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "¿Necesita ayuda?";
 
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Network";
+
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "No sincronizado";
 
@@ -534,6 +544,15 @@
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "Carpeta kDrive";
 
+/* loco:69ccceaed2b63271de0326d3 */
+"statusBarOpenApp" = "Abrir kDrive";
+
+/* loco:69ccce749ecf25eb9005e002 */
+"statusBarQuitApp" = "Deja";
+
+/* loco:69ccce9808d1b71a410eab92 */
+"statusBarSettings" = "Ajustes";
+
 /* loco:697b37c632d0fb5b5d0b4db6 */
 "storageDeviceNameMac" = "Macintosh";
 
@@ -548,6 +567,12 @@
 
 /* loco:697a07436d99d0c2c00449e2 */
 "storageMacUsedByKDrive" = "Archivos kDrive almacenados en tu Mac";
+
+/* loco:69c67d8e7c0702965a003512 */
+"storageMissingDiskMacOSDescription" = "kDrive no puede acceder al volumen\nAsegúrese de que está conectado\ndesbloqueado y accesible desde su ordenador.";
+
+/* loco:69c67d717e089c303405cee2 */
+"storageMissingDiskMacOSTitle" = "No se puede acceder al volumen";
 
 /* loco:697a2640c1c052cea305d2d6 */
 "storageSyncBlockMacDescription" = "Gestiona las carpetas sincronizadas para liberar espacio en tu Mac.";
@@ -575,6 +600,21 @@
 
 /* loco:698a085329fb169f6605ac62 */
 "syncInProgressTooltip" = "Sincronización";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Reglas de sincronización";
+
+/* loco:69cb7b4436165087ff055e92 */
+"syncShortStatusError" = "Se ha producido un error";
+
+/* loco:69ca840f10c2c8213703f4f2 */
+"syncShortStatusIdle" = "La última sincronización se ha realizado correctamente";
+
+/* loco:69ca84317f5583d81f03c7f2 */
+"syncShortStatusPaused" = "Sincronización en pausa";
+
+/* loco:69ca84494136086fe60cebf2 */
+"syncShortStatusRunning" = "Sync está en marcha";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizado";

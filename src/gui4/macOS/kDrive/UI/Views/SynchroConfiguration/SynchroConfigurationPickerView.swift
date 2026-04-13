@@ -24,6 +24,8 @@ import SwiftUI
 struct SynchroConfigurationPickerView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
+    @State private var isLoading = false
+
     var body: some View {
         Form {
             Section {} header: {
@@ -45,7 +47,7 @@ struct SynchroConfigurationPickerView: View {
         .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                LoadingButton {
+                LoadingButton(isLoading: $isLoading) {
                     await viewModel.onConfirm?(Array(viewModel.configurations.values))
                 } label: {
                     Text(KDriveLocalizable.buttonValidate)
@@ -58,6 +60,7 @@ struct SynchroConfigurationPickerView: View {
                     viewModel.onCancel?()
                 }
                 .keyboardShortcut(.cancelAction)
+                .disabled(isLoading)
             }
         }
     }

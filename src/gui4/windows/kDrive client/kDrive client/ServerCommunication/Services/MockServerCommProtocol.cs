@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     public class MockServerCommProtocol : Interfaces.IServerCommProtocol
     {
-        protected MockServerData _mockData = new MockServerData();
+        protected MockServerData _mockData = new();
 
         private long _requestIdCounter = 0;
         private long NextId
@@ -43,7 +43,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public event EventHandler<SignalEventArgs>? SignalReceived;
+
+#pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
         public event EventHandler? ConnectionLost;
+#pragma warning restore CS0067 
+
         protected Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
@@ -54,46 +58,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
-            switch (requestNum)
+            return requestNum switch
             {
-                case RequestNum.LOGIN_REQUESTTOKEN:
-                    return await LoginRequestToken(parameters);
-                case RequestNum.USER_DBIDLIST:
-                    return await UserDbIdsRequest(parameters);
-                case RequestNum.USER_INFOLIST:
-                    return await UserInfoListRequest(parameters);
-                case RequestNum.ACCOUNT_INFOLIST:
-                    return await AccountInfoListRequest(parameters);
-                case RequestNum.DRIVE_INFOLIST:
-                    return await DriveInfoListRequest(parameters);
-                case RequestNum.SYNC_INFOLIST:
-                    return await SyncInfoListRequest(parameters);
-                case RequestNum.UPDATER_START_INSTALLER:
-                    return await UpdateStartInstaller(parameters);
-                case RequestNum.UPDATER_VERSION_INFO:
-                    return await UpdaterVersionInfo(parameters);
-                case RequestNum.UPDATER_CHANGE_CHANNEL:
-                    return await UpdaterChangeChannel(parameters);
-                case RequestNum.PARAMETERS_INFO:
-                    return await ParametersInfo(parameters);
-                case RequestNum.PARAMETERS_UPDATE:
-                    return await ParametersUpdate(parameters);
-                case RequestNum.ERROR_DELETE:
-                    return await ErrorDelete(parameters);
-                default:
-                    throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
-            }
+                RequestNum.LOGIN_REQUESTTOKEN => await LoginRequestToken(parameters),
+                RequestNum.USER_DBIDLIST => await UserDbIdsRequest(parameters),
+                RequestNum.USER_INFOLIST => await UserInfoListRequest(parameters),
+                RequestNum.ACCOUNT_INFOLIST => await AccountInfoListRequest(parameters),
+                RequestNum.DRIVE_INFOLIST => await DriveInfoListRequest(parameters),
+                RequestNum.SYNC_INFOLIST => await SyncInfoListRequest(parameters),
+                RequestNum.UPDATER_START_INSTALLER => await UpdateStartInstaller(parameters),
+                RequestNum.UPDATER_VERSION_INFO => await UpdaterVersionInfo(parameters),
+                RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
+                RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
+                RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
+                RequestNum.ERROR_DELETE =>await ErrorDelete(parameters),
+                _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.")
+            };
         }
 
         private Task<CommData> LoginRequestToken(JsonObject parameters)
         {
             var random = new Random();
             var randomUserIndex = random.Next(0, _mockData.Users.Count);
-            var user = _mockData.Users.ElementAtOrDefault(randomUserIndex);
-            if (user == null)
-            {
-                throw new InvalidOperationException("No users available in mock data.");
-            }
+            var user = _mockData.Users.ElementAtOrDefault(randomUserIndex) ?? throw new InvalidOperationException("No users available in mock data.");
 
             // Simulate UserAdded signal
             var userData = new JsonObject
@@ -124,7 +111,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> UserDbIdsRequest(JsonObject parameters)
         {
-            List<DbId> userDbIds = _mockData.Users.Select(u => u.DbId).ToList();
+            List<DbId> userDbIds = [.. _mockData.Users.Select(u => u.DbId)];
             return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
@@ -440,7 +427,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     public struct MockServerData
     {
         // Save the structure to a JSON file
-        public void save(string path)
+        public void Save(string path)
         {
             var options = new JsonSerializerOptions
             {
@@ -551,7 +538,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             drives[4].Syncs.Add(syncs[17]);
 
             // Create mock ParmsInfo
-            ParmsInfo parmsInfo = new ParmsInfo()
+            ParmsInfo parmsInfo = new()
             {
                 Language = Language.SystemDefault,
                 AutoStart = true,

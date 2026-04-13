@@ -18,21 +18,21 @@
 
 import Cocoa
 import InfomaniakDI
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
-    @LazyInjectService private var windowRouter: MainWindowRouter
+    private let flowCoordinator: OnboardingFlowCoordinator
 
-    override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        self.flowCoordinator = flowCoordinator
+        super.init(nibName: nil, bundle: nil)
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupUI()
+        fatalError("init(coder:) has not been implemented")
     }
 
     private func setupUI() {
@@ -47,7 +47,8 @@ final class AppReadyViewController: OnboardingStepViewController {
     }
 
     @objc private func didTapOpenApp() {
-        windowRouter.navigate(to: .mainWindow())
-        UserDefaults.standard.shouldPresentOnboarding = false
+        Task {
+            await flowCoordinator.navigateToNextStepOrFinish()
+        }
     }
 }

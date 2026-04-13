@@ -24,6 +24,7 @@ struct KDriveApp {
     static func main() {
         let delegate = AppDelegate()
         NSApplication.shared.delegate = delegate
+        NSApplication.shared.setActivationPolicy(.accessory)
 
         let mainMenu = MainMenu()
         mainMenu.setAsAppMainMenu()

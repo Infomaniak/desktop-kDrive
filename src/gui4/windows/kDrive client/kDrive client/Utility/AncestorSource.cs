@@ -43,10 +43,10 @@ namespace Infomaniak.kDrive
                 target.DataContext = FindParent(target, ancestorType);
         }
 
-        private static object FindParent(DependencyObject dependencyObject, Type ancestorType)
+        private static object? FindParent(DependencyObject dependencyObject, Type ancestorType)
         {
             DependencyObject parent = VisualTreeHelper.GetParent(dependencyObject);
-            if (parent == null)
+            if (parent is null)
                 return null;
 
             if (ancestorType.IsAssignableFrom(parent.GetType()))

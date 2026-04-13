@@ -45,29 +45,48 @@ namespace KDC {
 //
 // Aliases
 //
-using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
-using UserDbId = int64_t;
+
 using AccountDbId = int64_t;
+using AccountId = int64_t;
 using DriveDbId = int64_t;
+using DriveId = int64_t;
+using ErrorDbId = int64_t;
 using SyncDbId = int64_t;
+using UserId = int64_t;
+using UserDbId = int64_t;
+using GenericId = int64_t;
+
+using Count = int64_t;
+using SyncTime = int64_t;
+
 using SyncDbRevision = uint64_t;
 using SnapshotRevision = uint64_t;
-using UserId = int64_t;
-using AccountId = int64_t;
-using DriveId = int64_t;
+
 using NodeId = std::string;
-using ErrorDbId = int64_t;
-using GenericId = int64_t;
+using RemoteNodeId = NodeId;
+
 using SyncPath = std::filesystem::path;
 using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
+
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
-using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
-using Count = int64_t;
 
+using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
+
+using Cursor = std::string;
+using Timestamp = int64_t;
+struct CursorData {
+        Cursor cursor;
+        Timestamp timestamp{0};
+};
+struct CursorStore {
+        CursorData userPrivateFolderCursor;
+        CursorData commonDocumentsFolderCursor;
+        CursorData sharedFolderCursor;
+};
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
@@ -186,6 +205,9 @@ using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
 using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
 using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to<>>;
 using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
+using DriveDbIdMap = std::unordered_map<DriveId, DriveDbId>;
+
+using RemoteNodeIdSet = std::unordered_set<RemoteNodeId, StringHashFunction, std::equal_to<>>;
 
 //
 // Enums
@@ -345,6 +367,12 @@ enum class UploadSessionType {
 enum class UnicodeNormalization {
     NFC,
     NFD
+};
+
+enum class TranslationMode {
+    None,
+    V2ToV3,
+    V3ToV2
 };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
@@ -653,5 +681,6 @@ struct NodeIds {
             return dbNodeId == other.dbNodeId && localNodeId == other.localNodeId && remoteNodeId == other.remoteNodeId;
         }
 };
+
 
 } // namespace KDC

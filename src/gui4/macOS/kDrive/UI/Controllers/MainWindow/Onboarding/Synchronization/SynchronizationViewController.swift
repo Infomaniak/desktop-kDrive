@@ -40,7 +40,7 @@ final class SynchronizationViewController: OnboardingStepViewController {
 
     override func viewWillAppear() {
         super.viewWillAppear()
-        viewModel.startSynchronizations()
+        viewModel.createSynchronizations()
     }
 
     private func setupUI() {

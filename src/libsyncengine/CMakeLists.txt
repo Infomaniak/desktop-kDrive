@@ -22,11 +22,12 @@ set(syncengine_SRCS
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
     jobs/syncjobmanager.h jobs/syncjobmanager.cpp
-    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
+    jobs/network/jobexceptions.h jobs/network/jobexceptions.cpp
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
@@ -39,9 +40,15 @@ set(syncengine_SRCS
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
     jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
+    ### API translator
+    jobs/network/kDrive_API/apitranslator.h jobs/network/kDrive_API/apitranslator.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
+    jobs/network/kDrive_API/listingconf.h
+    jobs/network/kDrive_API/getfilesindirectoryjob.h jobs/network/kDrive_API/getfilesindirectoryjob.cpp
+    jobs/network/kDrive_API/getallfilesindirectoryjob.h jobs/network/kDrive_API/getallfilesindirectoryjob.cpp
+    jobs/network/kDrive_API/filelistjob.h jobs/network/kDrive_API/filelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp

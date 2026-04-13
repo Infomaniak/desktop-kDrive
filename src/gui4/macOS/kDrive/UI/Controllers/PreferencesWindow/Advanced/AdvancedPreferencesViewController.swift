@@ -20,8 +20,8 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-class AdvancedPreferencesViewController: TitledViewController<Text> {
+class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: Text("Not Available Yet."))
+        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
     }
 }

@@ -343,7 +343,6 @@ namespace Infomaniak.kDrive.ViewModels
                 var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
                 if (syncError != null)
                 {
-                    // TODO: Check special errors and update related viewmodels if needed
                     await sync.RemoveErrorAsync(syncError);
                     return;
                 }

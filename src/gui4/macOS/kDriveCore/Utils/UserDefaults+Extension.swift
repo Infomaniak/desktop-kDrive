@@ -27,30 +27,6 @@ public extension UserDefaults {
 }
 
 public extension UserDefaults {
-    var isFirstLaunch: Bool {
-        get {
-            guard let isFirstLaunch = object(forKey: Key.isFirstLaunch) as? Bool else {
-                return false
-            }
-            return isFirstLaunch
-        }
-        set {
-            set(newValue, forKey: Key.isFirstLaunch)
-        }
-    }
-
-    var shouldPresentOnboarding: Bool {
-        get {
-            guard let shouldPresentOnboarding = object(forKey: Key.shouldPresentOnboarding) as? Bool else {
-                return true
-            }
-            return shouldPresentOnboarding
-        }
-        set {
-            set(newValue, forKey: Key.shouldPresentOnboarding)
-        }
-    }
-
     var selectedSynchroDbId: Int {
         get {
             integer(forKey: Key.selectedSynchroDbId)

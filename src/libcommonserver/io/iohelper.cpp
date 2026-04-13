@@ -415,11 +415,9 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     if (isAlias) {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
-        IoError aliasReadError = IoError::Success;
-        if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
+        if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
             LOGW_WARN(logger(),
                       L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
-            itemType.ioError = aliasReadError;
 
             return false;
         }

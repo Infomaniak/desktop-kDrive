@@ -42,10 +42,10 @@ struct StorageItem: Sendable, Identifiable {
     }
 }
 
-enum MacStorageItems {
-    case usedByKDrive
-    case usedByComputer
+enum VolumeStorageItems {
     case freeSpace
+    case usedSpace
+    case usedByKDrive
 }
 
 struct StorageView: View {
@@ -53,22 +53,21 @@ struct StorageView: View {
 
     @InjectService private var storageDataProviding: StorageDataProviding
 
-    @State private var macStorageItems: OrderedDictionary<MacStorageItems, StorageItem> = [
+    @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
+    @State private var volumeStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
         .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
-        .usedByComputer: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
+        .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
     ]
 
+    @State private var isShowingVolumeNotFound = false
+
     @ObservedObject var mainViewModel: MainViewModel
 
-    private var deviceName: String {
-        return Host().localizedName ?? KDriveLocalizable.storageDeviceNameMac
-    }
-
     private var macStorageData: StorageSectionView.StorageData {
-        guard let usedByKDrive = macStorageItems[.usedByKDrive]?.usedBytes,
-              let usedByComputer = macStorageItems[.usedByComputer]?.usedBytes,
-              let freeSpace = macStorageItems[.freeSpace]?.usedBytes else {
+        guard let usedByKDrive = volumeStorageItems[.usedByKDrive]?.usedBytes,
+              let usedByComputer = volumeStorageItems[.usedSpace]?.usedBytes,
+              let freeSpace = volumeStorageItems[.freeSpace]?.usedBytes else {
             return .loading
         }
 
@@ -77,18 +76,33 @@ struct StorageView: View {
     }
 
     var body: some View {
-        Form {
-            StorageSectionView(title: deviceName, storageData: macStorageData, items: Array(macStorageItems.values))
-
-            Section {
-                InformationBlockContentView(
-                    title: KDriveLocalizable.storageSyncBlockTitle,
-                    subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
-                    button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
+        ZStack {
+            if isShowingVolumeNotFound {
+                IKContentUnavailableView(
+                    image: KDriveResources.volumeStrokeDots.swiftUIImage,
+                    title: KDriveLocalizable.storageMissingDiskMacOSTitle,
+                    subtitle: KDriveLocalizable.storageMissingDiskMacOSDescription,
+                    action: .init(title: KDriveLocalizable.buttonRetry) {
+                        Task {
+                            await fetchStorageData()
+                        }
+                    }
                 )
+            } else {
+                Form {
+                    StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(volumeStorageItems.values))
+
+                    Section {
+                        InformationBlockContentView(
+                            title: KDriveLocalizable.storageSyncBlockTitle,
+                            subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
+                            button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
+                        )
+                    }
+                }
+                .groupedFormatStyle()
             }
         }
-        .groupedFormatStyle()
         .onReceive(
             storageDataProviding.storageDataPublisher.removeDuplicates(),
             perform: handleUpdatedStorageData
@@ -97,16 +111,20 @@ struct StorageView: View {
             getCachedStorageData()
         }
         .task(id: mainViewModel.currentSynchro?.dbId) {
-            guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
-                return
-            }
-
-            try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
+            await fetchStorageData()
         }
     }
 
     private func didTapFreeUpSpace() {
         // TODO: Redirect to Settings/Synchro
+    }
+
+    private func fetchStorageData() async {
+        guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
+            return
+        }
+
+        try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
     }
 
     private func getCachedStorageData() {
@@ -121,13 +139,25 @@ struct StorageView: View {
 
     private func updateMacStorage(from indexedStorageData: IndexedStorageData) {
         guard let synchroDbId = mainViewModel.currentSynchro?.dbId,
-              let storageData = indexedStorageData[Int32(synchroDbId)] else {
+              let storageDataResult = indexedStorageData[Int32(synchroDbId)] else {
             return
         }
 
-        macStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
-        macStorageItems[.usedByComputer]?.usedBytes = storageData.usedByComputer
-        macStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
+        switch storageDataResult {
+        case .success(let storageData):
+            isShowingVolumeNotFound = false
+
+            volumeName = storageData.name
+
+            volumeStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
+            volumeStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
+            volumeStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
+        case .failure(let error):
+            guard error == .cannotGetVolumeInfo else {
+                return
+            }
+            isShowingVolumeNotFound = true
+        }
     }
 }
 

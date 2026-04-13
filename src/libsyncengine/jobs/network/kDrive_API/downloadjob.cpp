@@ -628,6 +628,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
                     break;
                 } else {
                     std::streamsize readSize = istr->get().gcount();
+
                     addProgress(readSize);
 
                     if (readSize > 0) {
