@@ -109,8 +109,8 @@ podman run --rm -it \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-	--arch ${architecture} \
-	ghcr.io/infomaniak/kdrive-desktop-linux:${architecture} /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
+	--platform "linux/${architecture}" \
+	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
