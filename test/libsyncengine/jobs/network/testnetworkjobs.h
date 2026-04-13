@@ -26,6 +26,8 @@
 
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
+#include "network/proxy.h"
+
 
 using namespace CppUnit;
 
