@@ -44,7 +44,8 @@ void TestApiTranslator::setUp() {
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
-    _apiToken.setAccessToken(testVariables.apiToken);
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());

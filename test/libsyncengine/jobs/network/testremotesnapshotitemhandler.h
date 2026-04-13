@@ -19,13 +19,16 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
+#include "keychainmanager/apitoken.h"
 #include "utility/types.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
+class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestRemoteSnapshotItemHandler);
         CPPUNIT_TEST(testUpdateItem);
@@ -34,7 +37,7 @@ class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBa
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp() override { TestBase::start(); }
+        void setUp() override;
         void tearDown() override { TestBase::stop(); }
 
     protected:
