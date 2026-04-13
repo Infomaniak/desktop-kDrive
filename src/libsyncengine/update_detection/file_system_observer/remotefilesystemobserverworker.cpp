@@ -632,6 +632,22 @@ ExitInfo RemoteFileSystemObserverWorker::fillActionsFilesInfo(const Poco::JSON::
     return ExitCode::Ok;
 }
 
+namespace {
+bool shouldBeIgnored(const ActionCode actionCode) {
+    switch (actionCode) {
+        case ActionCode::ActionCodeAccess:
+        case ActionCode::ActionCodeDelete:
+        case ActionCode::ActionCodeRestoreFileShareCreate:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+        case ActionCode::ActionCodeRestoreShareLinkCreate:
+        case ActionCode::ActionCodeRestoreShareLinkDelete:
+            return true;
+        default:
+            return false;
+    }
+}
+} // namespace
+
 ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
                                                         const Poco::JSON::Array::Ptr actionsFilesArray) {
     if (!actionArray) return ExitCode::Ok;
@@ -640,12 +656,16 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoList); !exitInfo) return exitInfo;
 
-    // Filter out items whose names contain unsupported characters.
+    // Filter out items
+    // - whose actions should be ignored, or
+    // - whose names contain unsupported characters.
     for (auto it = actionInfoList.begin(); it != actionInfoList.end();) {
         const auto &actionInfo = *it;
-        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
-                                                                actionInfo.snapshotItem.type());
-            !exitInfo) {
+        if (shouldBeIgnored(actionInfo.actionCode)) {
+            it = actionInfoList.erase(it);
+        } else if (const auto exitInfo = checkForUnsupportedCharacters(
+                           actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type());
+                   !exitInfo) {
             if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
             it = actionInfoList.erase(it);
         } else
@@ -779,6 +799,11 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
 }
 
 ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, MoveItemMap &movedItems) {
+    if (shouldBeIgnored(actionInfo.actionCode)) {
+        LOG_IF_FAIL(false);
+        return ExitCode::LogicError;
+    }
+
     _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
 
     // Process action
@@ -860,17 +885,6 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
         case ActionCode::ActionCodeTrash:
             if (const auto exitInfo = removeItemFromSnapshot(actionInfo.snapshotItem.id()); !exitInfo) return exitInfo;
             break;
-
-        // Ignored actions
-        case ActionCode::ActionCodeAccess:
-        case ActionCode::ActionCodeDelete:
-        case ActionCode::ActionCodeRestoreFileShareCreate:
-        case ActionCode::ActionCodeRestoreFileShareDelete:
-        case ActionCode::ActionCodeRestoreShareLinkCreate:
-        case ActionCode::ActionCodeRestoreShareLinkDelete:
-            // Ignore these actions
-            break;
-
         default:
             LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item with "
                                                 << Utility::formatSyncName(actionInfo.snapshotItem.name()) << L" ("
