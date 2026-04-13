@@ -12,6 +12,7 @@ from conan.tools.system import package_manager
 
 required_conan_version = ">=2"
 
+
 class SentryNativeConan(ConanFile):
     name = "sentry"
     description = (
@@ -47,25 +48,42 @@ class SentryNativeConan(ConanFile):
             )
 
     def system_requirements(self):
-        """Install system packages required for Sentry on Linux."""
-        # On Linux, we use system packages for c-ares and libcurl to avoid m4 compilation issues with too recent gcc versions
-        if self.settings.os == "Linux":
-            managers = [
-                (package_manager.Apt,    ["libc-ares-dev", "libcurl4-openssl-dev"]),    # Debian/Ubuntu/Mint/Raspbian
-                (package_manager.Yum,    ["c-ares-devel", "libcurl-devel"]),            # RHEL/CentOS/Amazon Linux
-                (package_manager.Dnf,    ["c-ares-devel", "libcurl-devel"]),            # Fedora/RHEL 8+/CentOS 8+
-                (package_manager.PacMan, ["c-ares", "curl"]),                           # Arch/Manjaro
-                (package_manager.Zypper, ["libcares2-devel", "libcurl-devel"]),         # openSUSE/SLES
-                (package_manager.Apk,    ["c-ares-dev", "curl-dev"]),                   # Alpine
-            ]
-            for manager_class, packages in managers:
-                manager = manager_class(self)
-                missing = manager.check(packages)
-                if missing:
-                    self.output.warning(
-                        f"Missing system packages: {', '.join(missing)}. "
-                        "Please install them manually."
-                    )
+        """Validate required Linux system packages for Sentry and fail if they are missing."""
+        # On Linux, we rely on system packages for c-ares and libcurl to avoid m4 compilation issues with recent GCC versions.
+        if self.settings.os != "Linux":
+            return
+
+        managers = [
+            (package_manager.Apt, ["libc-ares-dev", "libcurl4-openssl-dev"]),  # Debian/Ubuntu/Mint/Raspbian
+            (package_manager.Yum, ["c-ares-devel", "libcurl-devel"]),  # RHEL/CentOS/Amazon Linux
+            (package_manager.Dnf, ["c-ares-devel", "libcurl-devel"]),  # Fedora/RHEL 8+/CentOS 8+
+            (package_manager.PacMan, ["c-ares", "curl"]),  # Arch/Manjaro
+            (package_manager.Zypper, ["libcares2-devel", "libcurl-devel"]),  # openSUSE/SLES
+            (package_manager.Apk, ["c-ares-dev", "curl-dev"]),  # Alpine
+        ]
+
+        for manager_class, packages in managers:
+            manager = manager_class(self)
+            missing = manager.check(packages)
+            if missing is None:
+                # This manager is not active on the current system.
+                continue
+
+            if missing:
+                missing_list = ", ".join(missing)
+                self.output.warning(f"Missing system packages for Sentry: {missing_list}.")
+                raise ConanInvalidConfiguration(
+                    f"Missing Linux system packages required by Sentry recipe: {missing_list}. "
+                    "Install them manually and retry."
+                )
+
+            self.output.info(f"All required Linux system packages for Sentry are installed: {', '.join(packages)}.")
+            return
+
+        self.output.warning(
+            "Unable to detect a supported package manager for Linux system package checks. "
+            "Continuing without strict validation."
+        )
 
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
@@ -78,7 +96,8 @@ class SentryNativeConan(ConanFile):
 
     def source(self):
         git = Git(self)
-        git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", str(self.version), "--recurse-submodules"])
+        git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False,
+                  args=["-b", str(self.version), "--recurse-submodules"])
 
     def _cache_variables(self):
         qt = self.dependencies["qt"]
@@ -153,7 +172,8 @@ endif()
         self.cpp_info.set_property("cmake_file_name", "sentry")
         self.cpp_info.set_property("cmake_find_mode", "both")
 
-        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry-crashpad-handler.cmake")])
+        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry",
+                                                                 "sentry-crashpad-handler.cmake")])
 
         comp_sentry = self.cpp_info.components["sentry"]
         comp_sentry.set_property("cmake_target_name", "sentry::sentry")
@@ -173,10 +193,10 @@ endif()
             comp_sentry.requires = []
 
         if self.settings.os == "Windows":
-            comp_sentry.system_libs = [ "dbghelp", "shlwapi", "version", "winhttp" ]
+            comp_sentry.system_libs = ["dbghelp", "shlwapi", "version", "winhttp"]
 
         if self.settings.os == "Macos":
-            comp_sentry.frameworks = [ "CoreGraphics", "CoreText" ]
+            comp_sentry.frameworks = ["CoreGraphics", "CoreText"]
 
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
