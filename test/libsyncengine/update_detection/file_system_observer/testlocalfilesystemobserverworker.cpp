@@ -314,7 +314,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
     {
         /// Create dir
         LOGW_DEBUG(_logger, L"***** test create dir *****");
-        testhelpers::generateOrEditTestFile(testAbsolutePath);
+        CPPUNIT_ASSERT(testhelpers::generateTestFolder(testAbsolutePath));
 
         Utility::msleep(1000); // Wait 1sec
 
