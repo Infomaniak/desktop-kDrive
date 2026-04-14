@@ -102,6 +102,7 @@ struct RightsSet {
 void generateTestFile(const SyncPath &path, const uint64_t size = 0);
 void generateOrEditTestFile(const SyncPath &path);
 void setTestFileSize(const SyncPath &path, uint64_t size);
+bool generateTestFolder(const SyncPath &path);
 
 /**
  * @brief Generate test files.
