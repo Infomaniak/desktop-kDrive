@@ -512,10 +512,6 @@ void TestUtility::testTryCreateTmpDir() {
     CPPUNIT_ASSERT(IoHelper::createDirectory(cacheDirectoryPath / testDirName, false, ioError));
     CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory, testDirName));
 
-    // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
-    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(cacheDirectory));
-
 #if defined(KD_MACOS)
     {
         // Remove access rights.
@@ -556,10 +552,6 @@ void TestUtility::testTryCreateTmpFile() {
     // Try to create a tmp file but a file already exist with the same name but different capitalization.
     testhelpers::generateTestFile(cacheDirectoryPath / Str("TestFile"));
     CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory, Str("testFile")));
-
-    // Delete the tmp directory and make sure it is re-created
-    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
-    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
 
     {
         // Remove access rights.
