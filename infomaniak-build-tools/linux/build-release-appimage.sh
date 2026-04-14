@@ -131,7 +131,29 @@ function build_client_via_cmake() {
   objcopy --strip-debug ./bin/kDrive_client
   objcopy --add-gnu-debuglink=../kDrive_client.dbg ./bin/kDrive_client
 
+  bundle_sources_for_sentry ../kDrive.dbg
+  bundle_sources_for_sentry ../kDrive_client.dbg
+
   make DESTDIR=/app install
+}
+
+function bundle_sources_for_sentry() {
+  local debug_file="$1"
+  local source_bundle="${debug_file%.dbg}.src.zip"
+
+  if ! command -v sentry-cli >/dev/null 2>&1; then
+    echo "WARNING: sentry-cli not found, skipping source bundle generation for '${debug_file}'." >&2
+    return
+  fi
+
+  echo "Bundling sources for $(basename "$debug_file")..."
+  rm -f "$source_bundle"
+  sentry-cli debug-files bundle-sources "$debug_file"
+
+  if [ ! -f "$source_bundle" ]; then
+    echo "ERROR: Source bundle '${source_bundle}' was not created for '${debug_file}'." >&2
+    exit 1
+  fi
 }
 
 function move_dependencies() {

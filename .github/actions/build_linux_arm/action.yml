@@ -1,6 +1,12 @@
 name: Build ARM64 Linux
 description: 'Build ARM64 Version of the Linux app'
 
+inputs:
+  release_build:
+    description: 'If true, create release-only artifacts'
+    required: false
+    default: 'false'
+
 runs:
     using: "composite"
     steps:
@@ -22,30 +28,20 @@ runs:
           retention-days: 1
         if: steps.build.outcome == 'success'
 
-
-      - name: Download sentry-cli for macOS (ARM64)
+      - name: Setup sentry server artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
-          curl -L https://github.com/getsentry/sentry-cli/releases/download/2.50.2/sentry-cli-Darwin-arm64 -o sentry-cli \
-          && chmod +x ./sentry-cli
-        shell: bash
-
-      - name: Create sentry server artifacts
-        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
-        run: |
+          mkdir -p "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
           DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive.dbg"
-          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
-          mkdir "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
           mv "${{ github.workspace }}/build-linux-arm64/kDrive.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
         shell: bash
 
-      - name: Create sentry client artifacts
+      - name: Setup sentry client artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
+          mkdir -p "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
           DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive_client.dbg"
-          ./sentry-cli debug-files bundle-sources "$DBG_FILE"
-          mkdir "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
           mv "${{ github.workspace }}/build-linux-arm64/kDrive_client.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
         shell: bash
