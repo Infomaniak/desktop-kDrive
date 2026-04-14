@@ -133,10 +133,12 @@ void TestExclusionTemplateCache::testIsExcluded() {
 void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
     LocalTemporaryDirectory tmpLocalFolder("testCacheFolderIsExcluded");
     CacheDirectory cacheDirectory(tmpLocalFolder.path());
-    CPPUNIT_ASSERT(!cacheDirectory.path().empty());
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory.path(cacheDirectoryPath));
+    CPPUNIT_ASSERT(!cacheDirectoryPath.empty());
     bool isWarning = false;
-    CPPUNIT_ASSERT_MESSAGE(cacheDirectory.path().filename().string() + " is not excluded",
-                           ExclusionTemplateCache::instance()->isExcluded(cacheDirectory.path().filename(), isWarning));
+    CPPUNIT_ASSERT_MESSAGE(cacheDirectoryPath.filename().string() + " is not excluded",
+                           ExclusionTemplateCache::instance()->isExcluded(cacheDirectoryPath.filename(), isWarning));
     CPPUNIT_ASSERT(!isWarning);
 }
 

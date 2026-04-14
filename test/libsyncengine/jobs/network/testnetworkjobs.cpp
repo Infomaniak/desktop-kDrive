@@ -429,7 +429,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download again (EDIT propagation) but cache directory has been deleted
         {
-            (void) IoHelper::deleteItem(_cacheDirectory->path());
+            SyncPath cacheDirectoryPath;
+            CPPUNIT_ASSERT(_cacheDirectory->path(cacheDirectoryPath));
+            (void) IoHelper::deleteItem(cacheDirectoryPath);
 
             modificationTimeIn += std::chrono::minutes(1);
             DownloadJob job(nullptr, _cacheDirectory,
