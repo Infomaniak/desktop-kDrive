@@ -260,7 +260,7 @@ You can create a copy of the previously defined profile, but this profile **must
 powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -275,7 +275,7 @@ C:\Program Files (x86)\libzip\bin
 C:\Program Files (x86)\cppunit\bin
 ```
 
-> **:warning: Since some dependencies are now managed by Conan, you may also need to run the `conanrun.bat` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.**
+> **:warning: Since some dependencies are now managed by Conan, you may also need to run the generated `conanrun.ps1` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.**
 
 ## Using CLion
 

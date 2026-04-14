@@ -164,18 +164,17 @@ Conan version 2.x.x
     os=Linux
    ```
 
-3. **Linux ARM only**: The Sentry Conan recipe automatically installs required system packages on Linux ARM to avoid building `c-ares` and `libcurl` from source (which would require `m4`, a package that fails to compile with GCC 14+).
+3. **Linux only**: The Sentry Conan recipe validates that the required system packages are already installed in order to avoid building `c-ares` and `libcurl` from source (which would require `m4`, a package that fails to compile with GCC 14+ on recent toolchains).
 
-    The following packages will be automatically installed via `apt` when running `conan install`:
+    On Debian/Ubuntu-based systems, the recipe checks for:
     - `libc-ares-dev` (c-ares development library)
     - `libcurl4-openssl-dev` (libcurl with OpenSSL support)
 
-    **Manual installation (optional):** If you prefer to install these packages beforehand:
+    Install them manually before running `conan install`:
     ```bash
     sudo apt update && sudo apt install -y libc-ares-dev libcurl4-openssl-dev
     ```
-
-    No additional configuration is required - the Sentry recipe handles everything automatically.
+    If these packages are missing, the Conan recipe fails with an explicit error and asks you to install them manually.
 
 
 ---
@@ -201,7 +200,7 @@ The project requires additional CMake variables for a correct build. To inject t
 To **build a release version** using the script `./infomaniak-build-tools/linux/build-release-amd64.sh`, you must create a profile named `infomaniak_release`.
 This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entry and must have the `build_type` set to `Release` or `RelWithDebInfo`.
 
-> :information_source: This step is only required for the `build-release-amd64.sh` script, as the correct profile is already configured in the containers used by the `build-release-<arch>-via-podman.sh` scripts.
+> :information_source: This step is only required for the `build-release-amd64.sh` script, as the correct profile is already configured in the container used by `build-release-via-podman.sh`.
 ---
 
 ### 6. Install Project Dependencies
@@ -294,18 +293,17 @@ Currently, the release appImage file is generated in a podman container.
 ## Podman image
 
 You will need Podman installed for this step, as currently our building script runs through a podman container.
-For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.
 
 To pull the podman image from our github, run :
 ```bash
-podman pull ghcr.io/infomaniak/kdrive-desktop-linux:[arch]
+podman pull ghcr.io/infomaniak/kdrive-desktop-linux:latest
 ```
 
 ## Building
 
-You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release.sh`  
-The script will start a podman machine with from the image pulled using the command above, and run the `build-release-appimage.sh` script. 
-The architecture (Arm64 or Amd64) used for building is the host architecture.
+You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release-via-podman.sh`.
+The script starts a Podman machine from the image pulled using the command above, then runs `build-release-appimage.sh` inside the container.
+The architecture (`amd64` or `arm64`) used for building is the host architecture, and the script passes it to Podman with `--platform linux/<arch>`.
 If you do not want to build through podman, use the `build-release-appimage.sh` script directly.
 
-The generated AppImage file will be located in the `build-linux-[arch]/client/install` directory.
+The generated AppImage file will be located in the `build-linux-[arch]/install` directory.
