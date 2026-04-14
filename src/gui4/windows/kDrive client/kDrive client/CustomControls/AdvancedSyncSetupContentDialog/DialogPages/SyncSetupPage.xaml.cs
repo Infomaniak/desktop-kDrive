@@ -46,6 +46,17 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");

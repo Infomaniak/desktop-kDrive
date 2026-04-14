@@ -19,7 +19,10 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         InitializeComponent();
         InitTextBlocks();
     }
-
+    private void Page_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Bindings.StopTracking();
+    }
     public void InitTextBlocks()
     {
         // Access Modified

@@ -11,7 +11,7 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              xmlns:types="using:Infomaniak.kDrive.Types"
              mc:Ignorable="d"
-             Unloaded="SyncActivityTable_Unloaded">
+             Unloaded="UserControl_Unloaded">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />

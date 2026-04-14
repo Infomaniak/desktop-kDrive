@@ -4,7 +4,8 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
-             xmlns:controls="using:Infomaniak.kDrive.CustomControls">
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />

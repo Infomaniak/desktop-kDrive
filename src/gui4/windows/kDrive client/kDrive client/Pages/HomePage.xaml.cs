@@ -38,7 +38,12 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+            DetachHandlers();
 
+        }
         private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
             if (e.OldValue is not null)

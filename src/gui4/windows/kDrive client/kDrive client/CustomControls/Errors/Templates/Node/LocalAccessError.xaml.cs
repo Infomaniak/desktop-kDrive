@@ -24,6 +24,10 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             this.InitializeComponent();
             Error = error;
         }
+        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {

@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.OnBoarding;
+using Infomaniak.kDrive.Pages.Errors;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -6,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -23,7 +25,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Logger.Log(Logger.Level.Debug, "NoDrivesPage components initialized");
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding onboardingVm)
             {
@@ -41,12 +43,23 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        protected override  void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DetachEventHandlers();  
+            Bindings.StopTracking();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
         {
             if (_onboardingViewModel is not null)
             {
                 _onboardingViewModel.DrivesAvailable -= OnDrivesAvailable;
-                await _onboardingViewModel.StopDriveAvailabilityWatcherAsync();
+                _ = _onboardingViewModel.StopDriveAvailabilityWatcherAsync();
             }
         }
 

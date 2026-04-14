@@ -20,7 +20,10 @@ public sealed partial class SyncStartPauseButton : UserControl
     {
         InitializeComponent();
     }
-
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        Bindings.StopTracking();
+    }
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))

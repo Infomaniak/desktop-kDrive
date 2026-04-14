@@ -22,7 +22,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
-             xmlns:kDrive="using:Infomaniak.kDrive">
+             xmlns:kDrive="using:Infomaniak.kDrive"
+             Unloaded="UserControl_Unloaded">
     <ContentDialog x:Name="Dialog"
                    PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonSave')}"
                    CloseButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
@@ -32,7 +33,7 @@
             <DataTemplate>
                 <local:SvgIcon UriString="{Binding ElementName=Root,Path=LogoUriStr}"
                                Height="{StaticResource Infomaniak.Style.Spacing.L}"
-                               HorizontalAlignment="Left"/>
+                               HorizontalAlignment="Left" />
             </DataTemplate>
         </ContentDialog.TitleTemplate>
 

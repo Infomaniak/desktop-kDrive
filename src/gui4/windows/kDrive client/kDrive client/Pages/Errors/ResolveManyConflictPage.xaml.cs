@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -32,6 +33,17 @@ namespace Infomaniak.kDrive.Pages.Errors
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+           DetachEventHandlers();
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetachEventHandlers(); 
+            Bindings.StopTracking();
+        }
+
+        private void DetachEventHandlers()
         {
             if (_errorPageVM is not null)
             {

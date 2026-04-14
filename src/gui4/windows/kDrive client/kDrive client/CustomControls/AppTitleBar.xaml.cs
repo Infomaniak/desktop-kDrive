@@ -12,6 +12,12 @@ namespace Infomaniak.kDrive.CustomControls
         public AppTitleBar()
         {
             InitializeComponent();
-        }       
+            Unloaded += AppTitleBar_Unloaded;
+        }
+
+        private void AppTitleBar_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Bindings.StopTracking();
+        }
     }
 }

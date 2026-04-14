@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>3.8.4.1</AssemblyVersion>
+    <AssemblyVersion>4.0.0.2</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -325,11 +325,6 @@
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
     <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="CustomControls\AppTitleBarLogo.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\SyncActivityTable.xaml">

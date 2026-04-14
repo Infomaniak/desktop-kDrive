@@ -535,6 +535,7 @@ function Prepare-Archive {
     }
 
     Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "newGui is set to : $newGui"
 
     if ($newGui) {
         # Copy client files
