@@ -92,6 +92,10 @@ final class PreferencesSplitViewController: IKSplitViewController {
             contentViewController = AdvancedPreferencesViewController()
         case .syncedKDrive(let drive):
             contentViewController = SyncedKDrivePreferencesViewController(drive: drive)
+        case .dataManagement:
+            contentViewController = DataManagementPreferencesViewController()
+        case .dataManagementDetail(let dataManagementItem):
+            contentViewController = DataManagementPreferencesDetailViewController(dataManagementItem: dataManagementItem, repository: repository)
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository)
         }

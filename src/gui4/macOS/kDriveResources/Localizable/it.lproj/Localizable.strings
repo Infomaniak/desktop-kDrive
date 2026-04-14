@@ -3,8 +3,8 @@
  * Project: kDrive Desktop
  * Locale: it, Italian
  * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Thu, 02 Apr 2026 10:01:25 +0200
+ * Exported by: Killian Mathias
+ * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
  */
 
 
@@ -208,9 +208,14 @@
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Copia del link…";
 
+/* loco:698b169cf72c91b1760a7002 */
+"dataManagementDescription" = "Puoi personalizzare i dati di utilizzo e operativi raccolti da Infomaniak per correggere bug e migliorare l’applicazione. Entrambi gli strumenti utilizzati sono ospitati e gestiti esclusivamente da noi.\n\n\nIl codice sorgente di questa applicazione è verificabile, le informazioni raccolte sono anonime e i tuoi dati personali rimangono strettamente riservati e non vengono mai condivisi con terze parti.";
+
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Gestione dei dati";
 
+/* loco:698b164a5f781b3d5203de12 */
+"dataManagementSubtitle" = "Infomaniak rispetta la tua privacy";
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Log di debug";
 
@@ -364,6 +369,9 @@
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Riavviare l’applicazione, se necessario";
 
+/* loco:6989c851ba57b190ff0ebbf2 */
+"labelAllowTracking" = "Consenti tracciamento";
+
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Cartella";
 
@@ -414,6 +422,8 @@
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link copiato negli appunti";
 
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.\n\nL’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.";
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Spostare i file eliminati nel cestino del computer";
 
@@ -537,6 +547,8 @@
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interno";
 
+/* loco:698b2df25c57be025b0ecfd2 */
+"sentryDescription" = "Sentry è uno strumento ospitato e gestito esclusivamente da Infomaniak per monitorare la stabilità dell’applicazione in tempo reale e segnalare automaticamente eventuali errori tecnici ai nostri sviluppatori.\n\nQuesti dati consentono al nostro team di correggere e ottimizzare rapidamente l’applicazione, garantendoti un’esperienza utente migliore.";
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Conti";
 
@@ -699,3 +711,5 @@
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Aggiornamento";
 
+/* loco:698b1713c1e8210103081e12 */
+"viewSourceCode" = "Visualizza codice sorgente";

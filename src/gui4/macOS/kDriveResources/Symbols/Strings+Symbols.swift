@@ -142,8 +142,12 @@ public enum KDriveLocalizable {
   public static let changeFolder = KDriveLocalizable.tr("Localizable", "changeFolder", fallback: "Change the folder")
   /// loco:698b244d7e73966ce3096b02
   public static let copyingLink = KDriveLocalizable.tr("Localizable", "copyingLink", fallback: "Copying Link…")
+  /// loco:698b169cf72c91b1760a7002
+  public static let dataManagementDescription = KDriveLocalizable.tr("Localizable", "dataManagementDescription", fallback: "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.")
   /// loco:698b15ec9e0aad20280f8c02
   public static let dataManagementSettings = KDriveLocalizable.tr("Localizable", "dataManagementSettings", fallback: "Data management")
+  /// loco:698b164a5f781b3d5203de12
+  public static let dataManagementSubtitle = KDriveLocalizable.tr("Localizable", "dataManagementSubtitle", fallback: "Infomaniak respects your privacy")
   /// loco:698b35a408fd1ee25f08ab35
   public static let debugLogsSettings = KDriveLocalizable.tr("Localizable", "debugLogsSettings", fallback: "Debug logs")
   /// loco:698c6bbd94b70c0d3d09cde4
@@ -256,6 +260,8 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
   /// loco:69314d1a739c205c410aa087
   public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
+  /// loco:6989c851ba57b190ff0ebbf2
+  public static let labelAllowTracking = KDriveLocalizable.tr("Localizable", "labelAllowTracking", fallback: "Allow tracking")
   /// loco:6989ff5b78003eb4e20e2652
   public static let labelFolder = KDriveLocalizable.tr("Localizable", "labelFolder", fallback: "Folder")
   /// loco:698c656e3e4e4bbf4f02bde2
@@ -286,6 +292,8 @@ public enum KDriveLocalizable {
   public static let languageSetting = KDriveLocalizable.tr("Localizable", "languageSetting", fallback: "Language")
   /// loco:698a1276e1c66ed33b03bf32
   public static let linkCopiedToClipboardTitle = KDriveLocalizable.tr("Localizable", "linkCopiedToClipboardTitle", fallback: "Link copied to clipboard")
+  /// loco:698b2e50ea6bcf51bf026fc2
+  public static let matomoDescription = KDriveLocalizable.tr("Localizable", "matomoDescription", fallback: "Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.\n\nAnalyzing this data allows our team to continuously improve the application’s interface.")
   /// loco:698b11f969e305d1ce01e062
   public static let moveDeletedFilesToRecycleBinSetting = KDriveLocalizable.tr("Localizable", "moveDeletedFilesToRecycleBinSetting", fallback: "Move deleted files to the computer’s recycle bin")
   /// loco:698b1273e77c157c0d065892
@@ -372,6 +380,8 @@ public enum KDriveLocalizable {
   public static let releaseChannelBeta = KDriveLocalizable.tr("Localizable", "releaseChannelBeta", fallback: "Beta")
   /// loco:698af24c3d21055870072b12
   public static let releaseChannelInternal = KDriveLocalizable.tr("Localizable", "releaseChannelInternal", fallback: "Internal")
+  /// loco:698b2df25c57be025b0ecfd2
+  public static let sentryDescription = KDriveLocalizable.tr("Localizable", "sentryDescription", fallback: "Sentry is a tool hosted and managed exclusively by Infomaniak to monitor the stability of the application in real time and automatically report any technical errors to our developers.\n\nThis data allows our team to quickly fix and optimize the application, resulting in a better user experience for you.")
   /// loco:68cd386502633dee14000352
   public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Accounts")
   /// loco:68cd389fcc36238762040074
@@ -482,6 +492,8 @@ public enum KDriveLocalizable {
   }
   /// loco:698aec0b7bde6b6260001c02
   public static let updateSettings = KDriveLocalizable.tr("Localizable", "updateSettings", fallback: "Update")
+  /// loco:698b1713c1e8210103081e12
+  public static let viewSourceCode = KDriveLocalizable.tr("Localizable", "viewSourceCode", fallback: "View source code")
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

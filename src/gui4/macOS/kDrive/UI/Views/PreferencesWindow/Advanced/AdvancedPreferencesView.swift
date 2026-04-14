@@ -49,7 +49,12 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
     }
 
     var preferencesViewDetail: PreferencesViewDetail {
-        fatalError("Not yet implemented")
+        switch self {
+        case .dataManagement:
+            return .dataManagement
+        default:
+            fatalError("Not yet implemented")
+        }
     }
 }
 
@@ -60,7 +65,6 @@ struct AdvancedPreferencesView: View {
                 FormNavigationCell(label: item.label) {
                     navigate(to: item)
                 }
-                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()
