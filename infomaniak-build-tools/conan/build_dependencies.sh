@@ -198,13 +198,6 @@ echo
 
 # Create the conan package for xxHash.
 conan_recipes_folder="$conan_remote_base_folder/recipes"
-log "Creating package xxHash..."
-conan create "$conan_recipes_folder/xxhash/all/" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name
-
-if [ "$platform" = "darwin" ]; then
-  log "Creating openssl package..."
-  conan create "$conan_recipes_folder/openssl-universal/3.2.4/" --build=missing -s:a=build_type="$build_type" --profile:all="$conan_profile" -r="$local_recipe_remote_name" -r=conancenter
-fi
 
 log "Installing dependencies..."
 # Install this packet in the build folder.

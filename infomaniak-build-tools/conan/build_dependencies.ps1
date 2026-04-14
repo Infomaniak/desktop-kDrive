@@ -203,12 +203,6 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
-Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
-if ($LASTEXITCODE -ne 0) {
-    Err "Failed to create xxHash Conan package."
-}
-
 Log "Installing Conan dependencies..."
 & $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
 if ($LASTEXITCODE -ne 0) {
