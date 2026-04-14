@@ -33,7 +33,7 @@ class CacheDirectory {
 
     private:
         ExitInfo initDirectory() noexcept;
-        void cleanUp();
+        void cleanUp() const;
 
         const SyncPath _syncDirectoryPath;
 

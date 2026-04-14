@@ -20,6 +20,8 @@
 
 #include "config.h" // APPLICATION
 
+#include <regex>
+
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) :
@@ -67,8 +69,16 @@ ExitInfo CacheDirectory::initDirectory() noexcept {
     return ExitCode::Ok;
 }
 
-void CacheDirectory::cleanUp() {
-    // TODO
+void CacheDirectory::cleanUp() const {
+    auto ioError = IoError::Unknown;
+    IoHelper::DirectoryIterator dirIt(_cacheDirectoryPath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (std::regex_match(SyncName2Str(entry.path().filename().native()), std::regex(R"(kdrive_.{10})"))) {
+            (void) IoHelper::deleteItem(entry.path());
+        }
+    }
 }
 
 } // namespace KDC
