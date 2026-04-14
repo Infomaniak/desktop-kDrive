@@ -131,7 +131,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #endif
 }
 void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
-    LocalTemporaryDirectory tmpLocalFolder("testCacheFolderIsExcluded");
+    const LocalTemporaryDirectory tmpLocalFolder("testCacheFolderIsExcluded");
     CacheDirectory cacheDirectory(tmpLocalFolder.path());
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT(cacheDirectory.path(cacheDirectoryPath));

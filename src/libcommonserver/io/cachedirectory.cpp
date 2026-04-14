@@ -39,7 +39,7 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
     }
     if (!exists) {
-        return initDirectory();
+        if (const auto exitInfo = initDirectory(); !exitInfo) return exitInfo;
     }
 
     cacheDirectory = _cacheDirectoryPath;
