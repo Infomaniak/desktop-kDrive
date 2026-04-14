@@ -92,6 +92,7 @@ runs:
                       $_.Name -ne "Vfs.dll"
               } |
               Copy-Item -Destination ./dependencies/
+          Copy-Item "${{ github.workspace }}/build-windows/install/bin/crashpad_handler.exe" ./dependencies/ -ErrorAction SilentlyContinue
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
         if: steps.build.outcome == 'success'
@@ -115,6 +116,7 @@ runs:
               "log4cplus*.dll",
               "libssl*.dll",
               "libcrypto*.dll",
+              "crashpad_handler.exe",
               "Qt6Widgets.dll",
               "Qt6Gui.dll",
               "Qt6Network.dll",
@@ -285,4 +287,3 @@ runs:
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
         shell: powershell
-        
