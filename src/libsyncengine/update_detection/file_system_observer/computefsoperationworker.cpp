@@ -204,9 +204,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (!isInDeletedFolder) {
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
-            if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
+            if (const auto exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
                 // Can happen only on local side
-                return ExitCode::SystemError;
+                return exitInfo;
             }
 
             if (isExcluded) return ExitCode::Ok; // Never generate operation on excluded file
