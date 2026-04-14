@@ -184,4 +184,9 @@ SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const Syn
     return {};
 }
 
+bool generateTestFolder(const SyncPath &path) {
+    std::error_code ec;
+    return std::filesystem::create_directory(path, ec) && !ec.value();
+}
+
 } // namespace KDC::testhelpers
