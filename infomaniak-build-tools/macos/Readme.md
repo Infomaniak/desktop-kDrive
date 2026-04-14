@@ -273,7 +273,6 @@ CMake options:
 -DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
 -DTEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DCMAKE_TOOLCHAIN_FILE=/Users/<user_name>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
