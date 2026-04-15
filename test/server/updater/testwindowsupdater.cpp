@@ -148,4 +148,9 @@ void TestWindowsUpdater::testIsSignatureValid() {
     }
 }
 
+void TestWindowsUpdater::testIsChecksumValid() {
+    // file have wrong checksum
+    CPPUNIT_ASSERT(false);
+}
+
 } // namespace KDC

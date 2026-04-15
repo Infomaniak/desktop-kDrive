@@ -26,6 +26,7 @@ class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestWindowsUpdater);
         CPPUNIT_TEST(testOnUpdateFound);
         CPPUNIT_TEST(testIsSignatureValid);
+        CPPUNIT_TEST(testIsChecksumValid);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,6 +36,7 @@ class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
     private:
         void testOnUpdateFound();
         void testIsSignatureValid();
+        void testIsChecksumValid();
 
         int _driveDbId{0};
 };
