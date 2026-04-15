@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.2</AssemblyVersion>
-    <OutputType>WinExe</OutputType>
+	<AssemblyVersion>4.0.0.2</AssemblyVersion>
+	<OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <TargetFramework>net9.0-windows10.0.19041</TargetFramework>
@@ -251,6 +251,9 @@
     <Page Update="CustomControls\HomeErrorInfoBar.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\UpdateRequiredControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\SyncIcon.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -361,7 +364,7 @@
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
+      <RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <RemoveDir Directories="@(RemovingFolders)" />
   </Target>

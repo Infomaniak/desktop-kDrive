@@ -984,6 +984,14 @@ UpdateState AppServer::getUpdateState() const {
     return _updateManager->state();
 }
 
+void AppServer::refreshUpdateState() {
+    if (_noUpdate) return;
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->forceRefresh();
+}
+
 void AppServer::startInstaller() {
     LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
     if (_updateManager) _updateManager->startInstaller();

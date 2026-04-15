@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 31 Mar 2026 11:35:43 +0200 
+  Exported at: Mon, 13 Apr 2026 15:02:06 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -236,6 +236,12 @@ You can open them at any time, even without an internet connection.</value>
   <data name="buttonDisconnectAccount" xml:space="preserve"> 
     <value>Disconnect this account</value> 
   </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Downloading…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Download manually</value> 
+  </data> 
   <data name="buttonEnable" xml:space="preserve"> 
     <value>Enable</value> 
   </data> 
@@ -399,6 +405,9 @@ You can open them at any time, even without an internet connection.</value>
   <data name="buttonUpdate" xml:space="preserve"> 
     <value>Update</value> 
   </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Update now</value> 
+  </data> 
   <data name="buttonUpdateSubscription" xml:space="preserve"> 
     <value>Update subscription</value> 
   </data> 
@@ -540,6 +549,9 @@ Do not close the application during the process.</value>
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
     <value>Don’t join</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/apps/download-kdrive</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
     <value>You do not have permission to access this kDrive.
@@ -842,7 +854,7 @@ Sync will resume automatically once the connection is restored.</value>
     <value>Help us improve kDrive</value> 
   </data> 
   <data name="feedbackURL" xml:space="preserve"> 
-    <value>https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-9157fdb3d2d7</value> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
   </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>File already exists</value> 
@@ -1621,6 +1633,13 @@ If the problem persists, please contact support.</value>
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ available</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>A new version of kDrive is required to continue.
+Please update the application to access your files and resume synchronization</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Update required</value> 
   </data> 
   <data name="updateSettings" xml:space="preserve"> 
     <value>Update</value> 

@@ -20,6 +20,7 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.VisualBasic.Devices;
@@ -78,6 +79,7 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly Task? _networkWatcher;
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
+        private bool _updateRequired = false;
 
         public class SelectedSyncChangedEventArgs : EventArgs
         {
@@ -218,6 +220,12 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _networkAvailable, value);
         }
 
+        public bool UpdateRequired
+        {
+            get => _updateRequired;
+            set => SetPropertyInUIThread(ref _updateRequired, value);
+        }
+
         /** Initialize the model by loading data from the server.
          *  This method is asynchronous and should be awaited.
          *  It loads the list of users and their properties/drives from the server.
@@ -271,7 +279,7 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    if (!await serverCommService.RefreshUpdaterVersionInfo(cts.Token))
+                    if (!await serverCommService.RefreshUpdaterVersionInfo(null, cts.Token))
                     {
                         Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
                         // This is not critical, we can continue without this info
@@ -314,9 +322,11 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task AddErrorAsync(Error error)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
-            if (error.ErrorLevel == Types.ErrorLevel.Server)
+            if (error.ErrorLevel == Types.ErrorLevel.Server || error.ExitCode == ExitCode.UpdateRequired) // Treat any UpdateRequired error as a Server level error
             {
-                AppErrors.Add(error);
+                error.ErrorLevel = ErrorLevel.Server;
+                await Utility.RunOnUIThread(() => AppErrors.Add(error));
+                await RefreshErrorState();
                 return;
             }
 
@@ -334,7 +344,8 @@ namespace Infomaniak.kDrive.ViewModels
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError is not null)
             {
-                await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
+                await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
+                await RefreshErrorState();
                 return;
             }
 
@@ -363,6 +374,11 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 await sync.ClearAllErrorsAsync();
             }
+        }
+
+        public async Task RefreshErrorState()
+        {
+            await Utility.RunOnUIThread(() => UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired));
         }
     }
 }

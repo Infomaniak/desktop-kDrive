@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Closed += MainWindow_Closed;
-            UpdateSplashScreenVisibility();
+            UpdateControlsVisibility();
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -53,21 +53,32 @@ namespace Infomaniak.kDrive
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(AppModel.IsInitialized))
-                UpdateSplashScreenVisibility();
+            if (e.PropertyName == nameof(AppModel.IsInitialized) || e.PropertyName == nameof(AppModel.UpdateRequired))
+                UpdateControlsVisibility();
         }
 
-        private void UpdateSplashScreenVisibility()
+        private void UpdateControlsVisibility()
         {
-            if (ViewModel.IsInitialized)
+            if (!ViewModel.IsInitialized)
             {
+                SplashScreen.Visibility = Visibility.Visible;
+
+                NavView.Visibility = Visibility.Collapsed;
+                UpdateRequiredControl.Visibility = Visibility.Collapsed;
+            }
+            else if (ViewModel.UpdateRequired)
+            {
+                UpdateRequiredControl.Visibility = Visibility.Visible;
+
                 SplashScreen.Visibility = Visibility.Collapsed;
-                MainContentGrid.Visibility = Visibility.Visible;
+                NavView.Visibility = Visibility.Collapsed;
             }
             else
             {
-                SplashScreen.Visibility = Visibility.Visible;
-                MainContentGrid.Visibility = Visibility.Collapsed;
+                NavView.Visibility = Visibility.Visible;
+
+                SplashScreen.Visibility = Visibility.Collapsed;
+                UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
         }
 

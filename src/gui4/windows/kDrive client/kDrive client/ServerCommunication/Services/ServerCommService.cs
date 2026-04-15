@@ -7,6 +7,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -990,22 +991,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data);
         }
 
-        public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
+        public async Task<bool> RefreshUpdaterVersionInfo(UpdateState? updateState, CancellationToken cancellationToken)
         {
             // First check the update state
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
-            if (!CheckJobResultAndLogIfError(data))
-                return false;
-
-            if (!HasRequiredParam(data, JsonKeys.UpdateState))
-                return false;
-
-            UpdateState? updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
             if (updateState is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
-                return false;
+                CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
+                if (!CheckJobResultAndLogIfError(data))
+                    return false;
+
+                if (!HasRequiredParam(data, JsonKeys.UpdateState))
+                    return false;
+
+                updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
+
+                if (updateState is null)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                    return false;
+                }
             }
+
 
             // UpdateState.NoUpdate means that the current setup does not allow for updates at all, so we should disable update functionality in the UI and clear any available update info.
             if (updateState == UpdateState.NoUpdate)
@@ -1015,6 +1021,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             }
             _viewModel.Settings.UpdateManager.UpdateEnabled = true;
+
+            if (updateState == UpdateState.Checking || updateState == UpdateState.Downloading)
+            {
+                _viewModel.Settings.UpdateManager.FetchingUpdate = true;
+                if (updateState == UpdateState.Checking)
+                    return true;
+            }
+            else
+            {
+                _viewModel.Settings.UpdateManager.FetchingUpdate = false;
+            }
 
             List<UpdateState> notReadyStates =
             [
@@ -1029,11 +1046,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (notReadyStates.Contains(updateState.Value))
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-                return true;
-            }
-
-            if (updateState == UpdateState.Checking)
-            {
                 return true;
             }
 
@@ -1063,9 +1075,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
-            {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
-            }
             else
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
 
@@ -1706,7 +1716,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
         {
-            await RefreshUpdaterVersionInfo(new CancellationToken());
+            await RefreshUpdaterVersionInfo((UpdateState?)args?.SignalData[JsonKeys.UpdateState]?.GetValue<int>(), CancellationToken.None);
         }
 
         public async Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)

@@ -12,6 +12,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _autoUpdateEnabled = false;
         private VersionChannel _currentChannel = VersionChannel.Beta;
         private AppVersion? _availableUpdate;
+        private bool _fetchingUpdate = false;
 
         public bool UpdateEnabled
         {
@@ -34,6 +35,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _availableUpdate;
             set => SetPropertyInUIThread(ref _availableUpdate, value);
+        }
+
+        public bool FetchingUpdate
+        {
+            get => _fetchingUpdate;
+            set => SetPropertyInUIThread(ref _fetchingUpdate, value);
         }
 
         public static async Task<bool> StartUpdate()
