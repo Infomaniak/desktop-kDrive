@@ -1429,6 +1429,10 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
 
+    LOG_IF_FAIL(_localFSObserverWorker)
+    LOG_IF_FAIL(_remoteFSObserverWorker)
+    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
+
     NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
 
@@ -1437,9 +1441,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                 ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
-    LOG_IF_FAIL(_localFSObserverWorker)
-    LOG_IF_FAIL(_remoteFSObserverWorker)
-    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
+    
 
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
