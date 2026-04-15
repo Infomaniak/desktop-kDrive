@@ -224,6 +224,12 @@ $newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.con
 [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
 Log "previous conan path entries removed."
 
+if ($CleanCache) {
+    Log "Cleaning Conan cache to save disk space..."
+    & $ConanExe cache clean --source --build --temp "*"
+    Log "Conan cache cleaned."
+}
+
 # Update user environment variables if requested (programs will need to be restarted to see the changes)
 if ($UpdateEnvironment) {
     Log "Adding new conan path to user Path environment variable..."
@@ -252,12 +258,6 @@ if ($UpdateEnvironment) {
    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
    Log "New user Path set to: $newUserPath"
    Log "User Path environment variable updated. Please restart your programs to apply the changes."
-}
-
-if ($CleanCache) {
-    Log "Cleaning Conan cache to save disk space..."
-    & $ConanExe cache clean --source --build --temp "*"
-    Log "Conan cache cleaned."
 }
 
 if ($CI)  {
