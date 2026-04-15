@@ -11,10 +11,6 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
 
         private static readonly DependencyProperty Color1Property =
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));

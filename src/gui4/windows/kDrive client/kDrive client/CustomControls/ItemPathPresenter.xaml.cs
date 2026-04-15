@@ -13,10 +13,6 @@ namespace Infomaniak.kDrive.CustomControls
             this.InitializeComponent();
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         // DependencyProperty
 
         // The relative path of the item to display. The control shows the path with a copy-to-clipboard button.

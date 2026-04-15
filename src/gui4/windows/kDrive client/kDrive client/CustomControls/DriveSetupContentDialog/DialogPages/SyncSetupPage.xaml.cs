@@ -56,12 +56,6 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DetachEventHandlers();
-            Bindings.StopTracking();
-        }
-
         private void DriveSetupContentDialogVM_CurrentStepConfirmed(object? sender, EventArgs e)
         {
             if (DriveSetupContentDialogVM is null)

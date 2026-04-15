@@ -22,7 +22,6 @@
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       xmlns:types="using:Infomaniak.kDrive.Types"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->

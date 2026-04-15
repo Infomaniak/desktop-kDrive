@@ -42,10 +42,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await RefreshAvailableDrivesForAllUsers();

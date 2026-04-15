@@ -11,10 +11,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
         {
             InitializeComponent();
         }
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         public string Title
         {
             get { return (string)GetValue(TitleProperty); }

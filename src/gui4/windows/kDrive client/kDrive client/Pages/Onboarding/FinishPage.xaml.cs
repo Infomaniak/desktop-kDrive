@@ -18,10 +18,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "FinishPage components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)

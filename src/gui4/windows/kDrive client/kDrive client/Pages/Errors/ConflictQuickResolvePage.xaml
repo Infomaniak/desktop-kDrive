@@ -11,7 +11,6 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

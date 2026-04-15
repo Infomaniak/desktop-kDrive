@@ -22,7 +22,6 @@ namespace Infomaniak.kDrive.CustomControls
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {            
             UnregisterPropertyChangedHandlers();
-            Bindings.StopTracking();
         }
         private void UpdateExpander_Loaded(object sender, RoutedEventArgs e)
         {

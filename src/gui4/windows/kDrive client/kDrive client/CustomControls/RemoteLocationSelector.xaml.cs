@@ -37,7 +37,6 @@ namespace Infomaniak.kDrive.CustomControls
  
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {         
-            Bindings.StopTracking();
             ClearAllTreeItems();
         }
         #endregion

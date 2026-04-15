@@ -43,17 +43,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        protected override  void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            DetachEventHandlers();  
-            Bindings.StopTracking();
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DetachEventHandlers();
-        }
-
         private void DetachEventHandlers()
         {
             if (_onboardingViewModel is not null)

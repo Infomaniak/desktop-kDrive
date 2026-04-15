@@ -10,7 +10,6 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

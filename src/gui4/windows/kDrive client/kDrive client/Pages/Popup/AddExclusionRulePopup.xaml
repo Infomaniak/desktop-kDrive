@@ -2,8 +2,7 @@
 <Page x:Class="Infomaniak.kDrive.Pages.Popup.AddExclusionRulePopup"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded">
+      xmlns:kDrive="using:Infomaniak.kDrive">
 
     <StackPanel VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"

@@ -8,7 +8,6 @@
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive"
-             Unloaded="UserControl_Unloaded"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
