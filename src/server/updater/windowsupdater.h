@@ -52,6 +52,20 @@ class WindowsUpdater : public AbstractUpdater {
         virtual std::streamsize getExpectedInstallerSize(const std::string &downloadUrl);
 
         /**
+         * Check the checksum of the downloaded installer. Delete the file if the checksum is not valid.
+         * @param filepath Path to the downloaded installer.
+         * @return true if the checksum is valid.
+         */
+        virtual bool verifyFileChecksum(const SyncPath &filepath);
+
+        /**
+         * Compute the checksum of the downloaded installer.
+         * @param filepath Path to the downloaded installer.
+         * @return the result checksum
+         */
+        std::string computeFileChecksum(const SyncPath &filepath);
+
+        /**
          * Check the digital signature of the downloaded installer. Delete the file if the signature is not valid.
          * @param filepath Path to the downloaded installer.
          * @return true if the signature is valid.

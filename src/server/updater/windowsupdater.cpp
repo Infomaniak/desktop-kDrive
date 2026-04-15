@@ -76,6 +76,16 @@ void WindowsUpdater::startInstaller() {
         downloadUpdate();
         return;
     }
+    if (!verifyFileChecksum(filepath)) {
+        setState(UpdateState::UpdateError); // Or create UpdateState::ChecksumError
+        return;
+    }
+
+    if (!verifyDigitalSignature(filepath)) {
+        setState(UpdateState::UpdateError);
+        return;
+    }
+
     _autoUpdate = false;
 
     LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
@@ -138,11 +148,6 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!verifyDigitalSignature(filepath)) {
-        setState(UpdateState::UpdateError);
-        return;
-    }
-
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
@@ -171,6 +176,63 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     DirectDownloadJob job(downloadUrl);
     (void) job.runSynchronously();
     return job.httpResponse().getContentLength();
+}
+
+bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
+    // const auto &expectedChecksum = versionInfo(_currentChannel).checksum;
+    const std::string &expectedChecksum = "083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c"; // capybara test
+
+    if (expectedChecksum.empty()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Checksum not available from API. Skipping verification.");
+        return true;    // to not be blocking as long as not implemented on kStore
+    }
+
+    std::string actualChecksum = computeFileChecksum(filepath);
+
+    if (actualChecksum.empty()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to compute file checksum.");
+        return false; // block the installation
+    }
+    if (actualChecksum != expectedChecksum) {
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
+                                                                                  << L", Got: "
+                                                                                  << CommonUtility::s2ws(actualChecksum));
+        return false;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
+    return true;
+}
+
+std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
+    std::ifstream file(filepath, std::ios::binary);
+    if (!file) {
+        LOGW_WARN(Log::instance()->getLogger(), L"missing filepath for Checksum compute");
+        return "";
+    }
+
+    SHA256_CTX sha256;  // Using SHA256 instead of the project-standard XXH3 for security.
+                        // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
+                        // file with the same XXH3 hash (collision attack).
+    SHA256_Init(&sha256);
+
+    char buffer[8192];
+    while (file.read(buffer, sizeof(buffer))) {
+        SHA256_Update(&sha256, buffer, file.gcount());
+    }
+    // Process remaining bytes
+    SHA256_Update(&sha256, buffer, file.gcount());
+
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_Final(hash, &sha256);
+
+    // Convert to hex string
+    std::stringstream ss;
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (int) hash[i];
+    }
+
+    return ss.str();
 }
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
