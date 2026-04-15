@@ -210,7 +210,7 @@ New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Installing Conan dependencies..."
 $qt_login_type = if ($CI) { "envvars" } else { "ini" }
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s:a=build_type="$BuildType" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
+& $ConanExe install . --update --output-folder="$OutputDir" --build=missing -s:a=build_type="$BuildType" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }
