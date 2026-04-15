@@ -88,6 +88,23 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
     }
 }
 
+void TmpBlacklistManager::clear(bool &found) {
+    found = false;
+    for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+        auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
+        auto errorIt = errors.begin();
+        while (errorIt != errors.end()) {
+            logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
+            errorIt = errors.erase(errorIt);
+            ++errorIt;
+            found = true;
+        }
+        NodeSet emptyNodeSet;
+        const auto blacklistType_ = blackListType(side);
+        SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, emptyNodeSet);
+    }
+}
+
 void TmpBlacklistManager::refreshBlacklist() {
     using namespace std::chrono;
     const auto now = steady_clock::now();
