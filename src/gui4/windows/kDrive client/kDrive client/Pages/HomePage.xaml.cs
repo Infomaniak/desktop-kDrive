@@ -74,19 +74,19 @@ namespace Infomaniak.kDrive.Pages
                     // No error, stay on the HomePage
                     break;
                 case SyncErrorStates.AccessDenied:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
                 case SyncErrorStates.LoggingError:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LogginErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(LogginErrorPage)));
                     break;
                 case SyncErrorStates.NotRenew:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(NotRenewErrorPage)));
                     break;
                 case SyncErrorStates.Maintenance:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(MaintenanceErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(MaintenanceErrorPage)));
                     break;
                 case SyncErrorStates.Asleep:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(AsleepErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(AsleepErrorPage)));
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
