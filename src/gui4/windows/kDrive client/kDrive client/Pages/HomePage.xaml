@@ -300,7 +300,9 @@
             <!-- State widget -->
             <Border Grid.Column="0"
                     Grid.Row="1"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     Padding="24">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"

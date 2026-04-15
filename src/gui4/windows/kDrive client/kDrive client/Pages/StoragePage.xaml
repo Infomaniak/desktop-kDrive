@@ -82,7 +82,9 @@
         <Grid Grid.Row="1"
               VerticalAlignment="Top"
               Background="{ThemeResource LayerFillColorDefaultBrush}"
-              CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              CornerRadius="{StaticResource OverlayCornerRadius}"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">

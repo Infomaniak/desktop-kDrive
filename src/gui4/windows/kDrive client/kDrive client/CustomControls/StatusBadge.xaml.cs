@@ -24,6 +24,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         public static readonly DependencyProperty IconUriProperty = DependencyProperty.Register(nameof(IconUri), typeof(string), typeof(StatusBadge), new PropertyMetadata(null));
 
-        private double GetIconSize(double size) => size * 0.55;
+        private double GetIconSize(double size) => size * 0.5;
     }
 }

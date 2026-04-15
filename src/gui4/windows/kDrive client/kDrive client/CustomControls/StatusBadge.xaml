@@ -10,7 +10,7 @@
              mc:Ignorable="d">
 
     <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
-            BorderThickness="1"
+            BorderThickness="1.2"
             BorderBrush="{x:Bind Foreground, Mode=OneWay}">
         <Grid>
             <Ellipse Fill="{x:Bind Background, Mode=OneWay}" />
