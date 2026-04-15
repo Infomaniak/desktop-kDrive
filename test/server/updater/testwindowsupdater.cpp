@@ -154,14 +154,32 @@ void TestWindowsUpdater::testIsSignatureValid() {
 }
 
 void TestWindowsUpdater::testIsChecksumValid() {
+    struct TestCase {
+            std::string checksumValue;
+            std::string fileName;
+            bool expectedValid;
+    };
+
     static const std::string noChecksumValue("");
-    static const std::string fakeChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c"); // capybara
+    static const std::string fakeChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
     static const std::string trueChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
-    {
+
+    const std::vector<TestCase> testCases = {
+            {noChecksumValue, "picture-1.jpg", true}, // kstore is missing checksum
+            {fakeChecksumValue, "picture-1111.jpg", false}, // can't calculate checksum (file doesn't exist)
+            {fakeChecksumValue, "picture-1.jpg", false}, // checksum is invalid
+            {trueChecksumValue, "picture-1.jpg", true}, // checksum is valid
+    };
+
+    for (const auto &testCase: testCases) {
         LocalTemporaryDirectory tmpDir;
-        auto path = tmpDir.path();
         IoError ioError = IoError::Success;
-        IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+
+        // Only copy file if it's expected to exist
+        if (testCase.fileName == "picture-1.jpg") {
+            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                          ioError);
+        }
 
         WindowsUpdater updater;
         AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
@@ -170,68 +188,12 @@ void TestWindowsUpdater::testIsChecksumValid() {
         TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
         std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
 
-        testUpdateChecker.get()->setAllVersionInfo(versionInfo);
-        testUpdateChecker.get()->setVersionReceived(true);
-        testUpdateChecker.get()->setChecksumForAllChannels(noChecksumValue);
+        testUpdateChecker->setAllVersionInfo(versionInfo);
+        testUpdateChecker->setVersionReceived(true);
+        testUpdateChecker->setChecksumForAllChannels(testCase.checksumValue);
         up._updateChecker = testUpdateChecker;
-        CPPUNIT_ASSERT(updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg")); // kstore is missing checksum
-    }
-    {
-        LocalTemporaryDirectory tmpDir;
-        auto path = tmpDir.path();
-        IoError ioError = IoError::Success;
-        IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
 
-        WindowsUpdater updater;
-        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
-
-        AllVersionsInfo versionInfo;
-        TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
-        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
-
-        testUpdateChecker.get()->setAllVersionInfo(versionInfo);
-        testUpdateChecker.get()->setVersionReceived(true);
-        testUpdateChecker.get()->setChecksumForAllChannels(fakeChecksumValue);
-        up._updateChecker = testUpdateChecker;
-        CPPUNIT_ASSERT(!updater.verifyFileChecksum(tmpDir.path() / "picture-1111.jpg")); // can't calculate checksum
-    }
-    {
-        LocalTemporaryDirectory tmpDir;
-        auto path = tmpDir.path();
-        IoError ioError = IoError::Success;
-        IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
-
-        WindowsUpdater updater;
-        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
-
-        AllVersionsInfo versionInfo;
-        TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
-        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
-
-        testUpdateChecker.get()->setAllVersionInfo(versionInfo);
-        testUpdateChecker.get()->setVersionReceived(true);
-        testUpdateChecker.get()->setChecksumForAllChannels(fakeChecksumValue);
-        up._updateChecker = testUpdateChecker;
-        CPPUNIT_ASSERT(!updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg")); // checksum is invalid
-    }
-    {
-        LocalTemporaryDirectory tmpDir;
-        auto path = tmpDir.path();
-        IoError ioError = IoError::Success;
-        IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
-
-        WindowsUpdater updater;
-        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
-
-        AllVersionsInfo versionInfo;
-        TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
-        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
-
-        testUpdateChecker.get()->setAllVersionInfo(versionInfo);
-        testUpdateChecker.get()->setVersionReceived(true);
-        testUpdateChecker.get()->setChecksumForAllChannels(trueChecksumValue);
-        up._updateChecker = testUpdateChecker;
-        CPPUNIT_ASSERT(updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg")); // checksum is valid
+        CPPUNIT_ASSERT_EQUAL(testCase.expectedValid, updater.verifyFileChecksum(tmpDir.path() / testCase.fileName));
     }
 }
 
