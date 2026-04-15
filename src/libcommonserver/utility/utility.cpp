@@ -627,7 +627,10 @@ ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
     bool write = false;
     bool exec = false;
     if (auto ioError = IoError::Unknown; !IoHelper::getRights(path, read, write, exec, ioError)) {
-        return {ExitCode::SystemError, !read || !write ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
+        return {ExitCode::SystemError};
+    }
+    if (!read || !write) {
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
     return ExitCode::Ok;
 }
@@ -648,19 +651,6 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
     bool ok = false;
     do {
         bool exists = false;
-        // Check if item already exist (it should not exist at this point)
-        if (auto ioError = IoError::Unknown;
-            !IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
-            return {ExitCode::SystemError, ioError == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
-        }
-        if (exists) {
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
-        }
-
         auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
         if (!output) {
             if (const auto exitInfo = checkTmpDirectoryRights(cacheDirectoryPath); !exitInfo) return exitInfo;
@@ -672,7 +662,7 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
         }
         output.close();
 
-        // Check again if item already exist (it should exist at this point)
+        // Check if item already exist (it should exist at this point)
         if (auto ioError = IoError::Unknown;
             !IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
