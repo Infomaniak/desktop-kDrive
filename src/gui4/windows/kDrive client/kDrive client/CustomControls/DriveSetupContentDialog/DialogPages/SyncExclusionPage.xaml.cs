@@ -66,6 +66,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             {
                 DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
+                DriveSetupContentDialogVM.SetupFinished -= DriveSetupContentDialogVM_SetupFinished;
             }
         }
 
