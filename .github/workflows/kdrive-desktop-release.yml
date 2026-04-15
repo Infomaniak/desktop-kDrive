@@ -58,7 +58,10 @@ jobs:
              cd translations\updateTool
              $result = .\Windows.ps1
              echo $result
-             # Ensure that result contains FOUR TIMES the string "0 new"
+             # Count the number of .ts files in translations folder
+             $tsFileCount = (Get-ChildItem -Path "..\..\translations" -Filter "*.ts" -File).Count
+             Write-Host "Found $tsFileCount .ts translation files"
+             # Ensure that result contains the string "0 new" for each translation file
              $counter = 0
              foreach ($str in $result) {
                  if ($str -match "0 new") {
@@ -66,7 +69,7 @@ jobs:
                  }
              }
 
-             if ($counter -ne 4) {
+             if ($counter -ne $tsFileCount) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
                  "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
                  exit 1
