@@ -128,6 +128,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllErrors(ErrorLevel level, SyncDbId syncDbId, int limit, std::vector<Error> &errs);
         bool selectAllErrors(int limit, std::vector<Error> &errs);
         bool selectError(ErrorDbId dbId, Error &error, bool &found);
+        bool selectErrorByNodeInfo(SyncDbId syncDbId, const std::optional<NodeId> &localNodeId,
+                                   const std::optional<NodeId> &remoteNodeId, const std::optional<SyncPath> &path,
+                                   const std::optional<SyncPath> &destinationPath, std::vector<Error> &errs, bool &found);
+
         bool selectConflicts(const SyncDbId syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
         bool deleteError(ErrorDbId dbId, bool &found);

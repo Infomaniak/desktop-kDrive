@@ -1428,16 +1428,19 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
-    Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
-                relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
-                cause);
+
+    NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
+    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
+
+    Error error(syncDbId(), localNodeId, remoteNodeId,
+                relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativeLocalPath,
+                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
     LOG_IF_FAIL(_localFSObserverWorker)
     LOG_IF_FAIL(_remoteFSObserverWorker)
     if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
 
-    NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
@@ -1460,7 +1463,6 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                                          << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");

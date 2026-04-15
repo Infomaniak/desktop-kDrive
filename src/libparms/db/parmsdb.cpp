@@ -497,6 +497,21 @@
     "error "                                                                                                           \
     "WHERE dbId=?1;"
 
+
+#define SELECT_ERRORS_BY_NODE_INFOS_ID "select_errors_by_node_infos"
+
+#define SELECT_ERRORS_BY_NODE_INFOS_REQUEST                                                                    \
+    "SELECT dbId, time, "                                                                                      \
+    "functionName, workerName, exitCode, exitCause, "                                                          \
+    "localNodeId, remoteNodeId, nodeType, path, conflictType, inconsistencyType, cancelType, destinationPath " \
+    "FROM error "                                                                                              \
+    "WHERE syncDbId=?1 AND level=?2 AND ("                                                                     \
+    "(?3 IS NOT NULL AND ?3 != '' AND localNodeId=?3) OR "                                                     \
+    "(?4 IS NOT NULL AND ?4 != '' AND remoteNodeId=?4) OR "                                                    \
+    "(?5 IS NOT NULL AND ?5 != '' AND path=?5) OR "                                                            \
+    "(?6 IS NOT NULL AND ?6 != '' AND destinationPath=?6)"                                                     \
+    ");"
+
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \
     "SELECT dbId, time, "                                                                                                   \
@@ -1062,6 +1077,7 @@ bool ParmsDb::prepare() {
         return false;
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_ID, SELECT_ALL_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ERROR_ID, SELECT_ERROR_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ERRORS_BY_NODE_INFOS_ID, SELECT_ERRORS_BY_NODE_INFOS_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
@@ -3108,6 +3124,72 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
 }
 
 
+bool ParmsDb::selectErrorByNodeInfo(SyncDbId syncDbId, const std::optional<NodeId> &localNodeId,
+                                    const std::optional<NodeId> &remoteNodeId, const std::optional<SyncPath> &path,
+                                    const std::optional<SyncPath> &destinationPath, std::vector<Error> &errs, bool &found) {
+    const std::scoped_lock lock(_mutex);
+    found = false;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERRORS_BY_NODE_INFOS_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 1, syncDbId));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 2, toInt(ErrorLevel::Node)));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 3, localNodeId.value_or("")));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 4, remoteNodeId.value_or("")));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 5, path.value_or("")));
+    LOG_IF_FAIL(queryBindValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 6, destinationPath.value_or("")));
+    for (;;) {
+        bool queryNextFound = false;
+        if (!queryNext(SELECT_ERRORS_BY_NODE_INFOS_ID, queryNextFound)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ERRORS_BY_NODE_INFOS_ID);
+            return false;
+        }
+        if (!queryNextFound) {
+            break;
+        }
+        found = true;
+
+        int64_t dbId;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ERRORS_BY_NODE_INFOS_ID, 0, dbId));
+        int64_t time;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ERRORS_BY_NODE_INFOS_ID, 1, time));
+        std::string functionName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 2, functionName));
+        std::string workerName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 3, workerName));
+        int exitCode;
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 4, exitCode));
+        int exitCause;
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 5, exitCause));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 6, localNodeId));
+        std::string remoteNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 7, remoteNodeId));
+        int nodeType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 8, nodeType));
+        SyncName path;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 9, path));
+        int status{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 10, status));
+        int conflictType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 11, conflictType));
+        int inconsistencyType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 12, inconsistencyType));
+        int cancelType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 13, cancelType));
+        SyncName destinationPath;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 14, destinationPath));
+
+        errs.push_back(Error(dbId, time, ErrorLevel::Node, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+                             static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
+                             static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
+                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ERRORS_BY_NODE_INFOS_ID));
+
+    return true;
+}
+
 bool ParmsDb::selectAllErrors(const ErrorLevel level, const SyncDbId syncDbId, const int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
@@ -3145,16 +3227,14 @@ bool ParmsDb::selectAllErrors(const ErrorLevel level, const SyncDbId syncDbId, c
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 8, nodeType));
         SyncName path;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 9, path));
-        int status{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 10, status));
         int conflictType{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 11, conflictType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 10, conflictType));
         int inconsistencyType{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 12, inconsistencyType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 11, inconsistencyType));
         int cancelType{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 13, cancelType));
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 12, cancelType));
         SyncName destinationPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 13, destinationPath));
 
         errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
                              static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
