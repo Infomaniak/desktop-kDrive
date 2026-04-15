@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using Windows.Storage.Pickers;
+using static Infomaniak.kDrive.CustomControls.AdvancedSyncSetupContentDialog;
 
 namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 {
@@ -34,6 +35,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
                 AdvancedSyncSetupContentDialogVM = viewModel;
                 AdvancedSyncSetupContentDialogVM.CurrentStepCancelled += AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
                 AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed += AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+                AdvancedSyncSetupContentDialogVM.SetupFinished += AdvancedSyncSetupContentDialogVM_SetupFinished;
                 AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged += AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
                 UpdateCanGoNext();
             }
@@ -49,10 +51,10 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             DetachEventHandlers();
         }
 
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        private void AdvancedSyncSetupContentDialogVM_SetupFinished(object? sender, AdvancedSyncSetupResult e)
         {
-            Bindings.StopTracking();
             DetachEventHandlers();
+            Bindings.StopTracking();
         }
 
         private void DetachEventHandlers()
@@ -65,6 +67,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
             AdvancedSyncSetupContentDialogVM.CurrentStepCancelled -= AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
             AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+            AdvancedSyncSetupContentDialogVM.SetupFinished -= AdvancedSyncSetupContentDialogVM_SetupFinished;
             AdvancedSyncSetupContentDialogVM.NewSync.PropertyChanged -= AdvancedSyncSetupContentDialogVMNewSync_PropertyChanged;
         }
 

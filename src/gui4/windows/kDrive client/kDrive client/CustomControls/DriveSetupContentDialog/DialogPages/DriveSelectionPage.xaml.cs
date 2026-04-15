@@ -45,6 +45,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
                 DriveSetupContentDialogVM.CurrentStepConfirmed += DriveSetupContentDialogVM_CurrentStepConfirmed;
                 DriveSetupContentDialogVM.CurrentStepCancelled += DriveSetupContentDialogVM_CurrentStepCancelled;
+                DriveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
             }
             else
             {
@@ -53,15 +54,15 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            DetachEventHandlers(); 
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        private void DriveSetupContentDialogVM_SetupFinished(object? sender, CustomControls.DriveSetupContentDialog.DriveSetupResult e)
         {
             DetachEventHandlers();
             Bindings.StopTracking();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DetachEventHandlers(); 
         }
 
         private void DetachEventHandlers()
@@ -70,6 +71,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             {
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
                 DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
+                DriveSetupContentDialogVM.SetupFinished -= DriveSetupContentDialogVM_SetupFinished;
             }
         }
 

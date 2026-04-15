@@ -10,7 +10,6 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Transitions>
         <TransitionCollection>
@@ -21,7 +20,7 @@
         <Grid.RowDefinitions>
             <!-- Title -->
             <RowDefinition Height="Auto" />
-            
+
             <!-- Remote folder selection -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -30,7 +29,7 @@
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('addAdvancedSyncRemoteFolderPageTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
-        
+
         <!-- Remote folder exclusion -->
         <controls:RemoteLocationSelector x:Name="RemoteLocationSelector"
                                          Drive="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.Drive}"

@@ -39,6 +39,8 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 Sync = DriveSetupContentDialogVM.CurrentSync;
                 DriveSetupContentDialogVM.CurrentStepCancelled += DriveSetupContentDialogVM_CurrentStepCancelled;
                 DriveSetupContentDialogVM.CurrentStepConfirmed += DriveSetupContentDialogVM_CurrentStepConfirmed;
+                DriveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
+
             }
             else if (Sync is null)
             {
@@ -46,6 +48,13 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncExclusionPage");
             }
         }
+
+        private void DriveSetupContentDialogVM_SetupFinished(object? sender, CustomControls.DriveSetupContentDialog.DriveSetupResult e)
+        {
+            DetachEventHandlers();
+            Bindings.StopTracking();
+        }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
@@ -58,12 +67,6 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 DriveSetupContentDialogVM.CurrentStepCancelled -= DriveSetupContentDialogVM_CurrentStepCancelled;
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
             }
-        }
-
-        private void Page_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            DetachEventHandlers();
-            Bindings.StopTracking();
         }
 
         // Public methods

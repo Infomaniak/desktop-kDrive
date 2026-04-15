@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading;
+using static Infomaniak.kDrive.CustomControls.AdvancedSyncSetupContentDialog;
 
 namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 {
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
                 AdvancedSyncSetupContentDialogVM = viewModel;
                 AdvancedSyncSetupContentDialogVM.CurrentStepCancelled += AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
                 AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed += AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+                AdvancedSyncSetupContentDialogVM.SetupFinished += AdvancedSyncSetupContentDialogVM_SetupFinished;
                 AdvancedSyncSetupContentDialogVM.CanGoNext = false;
                 RemoteLocationSelector.Loaded += RemoteLocationSelector_Loaded;
             }
@@ -48,10 +50,10 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             DetachEventHandlers();
         }
 
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        private void AdvancedSyncSetupContentDialogVM_SetupFinished(object? sender, AdvancedSyncSetupResult e)
         {
-            Bindings.StopTracking();
             DetachEventHandlers();
+            Bindings.StopTracking();
         }
 
         private void DetachEventHandlers()
@@ -66,6 +68,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
             AdvancedSyncSetupContentDialogVM.CurrentStepCancelled -= AdvancedSyncSetupContentDialogVM_CurrentStepCancelled;
             AdvancedSyncSetupContentDialogVM.CurrentStepConfirmed -= AdvancedSyncSetupContentDialogVM_CurrentStepConfirmed;
+            AdvancedSyncSetupContentDialogVM.SetupFinished -= AdvancedSyncSetupContentDialogVM_SetupFinished;
             RemoteLocationSelector.UnregisterPropertyChangedCallback(RemoteLocationSelector.HasSelectedNodeProperty, RemoteLocationSelectorHasSelectedNodePropertyToken);
         }
 
