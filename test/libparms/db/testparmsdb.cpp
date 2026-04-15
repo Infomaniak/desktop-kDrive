@@ -22,6 +22,8 @@
 
 #include "mocks/libcommonserver/db/mockdb.h"
 
+#include <algorithm>
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -707,10 +709,13 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::Node, sync1.dbId(), 20, selectedErrors));
         CPPUNIT_ASSERT_EQUAL(size_t(4), selectedErrors.size());
-        CPPUNIT_ASSERT_EQUAL(ConflictType::MoveDelete, selectedErrors.at(1).conflictType());
-        CPPUNIT_ASSERT_EQUAL(InconsistencyType::Case, selectedErrors.at(1).inconsistencyType());
-        CPPUNIT_ASSERT_EQUAL(CancelType::Move, selectedErrors.at(1).cancelType());
-        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file2_dest"), selectedErrors.at(1).destinationPath());
+        const auto iterator = std::find_if(selectedErrors.cbegin(), selectedErrors.cend(),
+                                           [](const auto &error) { return error.remoteNodeId() == "remoteNode-1"; });
+        CPPUNIT_ASSERT(iterator != selectedErrors.cend());
+        CPPUNIT_ASSERT_EQUAL(ConflictType::MoveDelete, iterator->conflictType());
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::Case, iterator->inconsistencyType());
+        CPPUNIT_ASSERT_EQUAL(CancelType::Move, iterator->cancelType());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file2_dest"), iterator->destinationPath());
     }
 }
 
