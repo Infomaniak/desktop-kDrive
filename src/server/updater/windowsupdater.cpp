@@ -179,25 +179,43 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 }
 
 bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    // const auto &expectedChecksum = versionInfo(_currentChannel).checksum;
-    const std::string &expectedChecksum = "083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c"; // capybara test
+    const std::string &expectedChecksum = versionInfo(_currentChannel).checksum;
 
+    auto cleanupAndFail = [&](const std::string &reason) {
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        if (ioError == IoError::Success) {
+            LOGW_INFO(Log::instance()->getLogger(), L"corrupted file at " << Utility::formatSyncPath(filepath) << L" deleted");
+        } else {
+            LOGW_WARN(Log::instance()->getLogger(), L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath));
+        }
+
+        // Send to Sentry
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error,
+                                             "Updater::verifyChecksum::" + reason,
+                                             "Checksum verification failed: " + reason);
+        return false;
+    };
+
+    // Skip if API doesn't provide checksum (development)
     if (expectedChecksum.empty()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Checksum not available from API. Skipping verification.");
-        return true;    // to not be blocking as long as not implemented on kStore
+        return true;
     }
 
+    // Compute actual checksum
     std::string actualChecksum = computeFileChecksum(filepath);
-
     if (actualChecksum.empty()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to compute file checksum.");
-        return false; // block the installation
+        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
+        return cleanupAndFail("computeFailed");
     }
+
+    // Verify match
     if (actualChecksum != expectedChecksum) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
                                                                                   << L", Got: "
                                                                                   << CommonUtility::s2ws(actualChecksum));
-        return false;
+        return cleanupAndFail("mismatch");
     }
 
     LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
