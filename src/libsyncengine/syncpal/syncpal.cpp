@@ -1441,8 +1441,6 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                 ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
-    
-
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
