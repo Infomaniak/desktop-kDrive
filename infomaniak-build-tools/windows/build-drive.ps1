@@ -157,7 +157,7 @@ function Get-Thumbprint {
          Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
     }
     Write-Host "Using thumbprint: $thumbprint"
 
@@ -231,7 +231,7 @@ function Build-Extension {
     if($upload) {
         $publisher = "CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
     }else{
-        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
+        $publisher = "CN=Windows11CI-1"
     }
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
