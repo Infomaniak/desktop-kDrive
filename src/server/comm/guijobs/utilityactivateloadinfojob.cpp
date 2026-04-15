@@ -19,7 +19,7 @@
 #include "utilityactivateloadinfojob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
-#include "libcommon/db/parmsdb.h"
+#include "libparms/db/parmsdb.h"
 
 namespace KDC {
 

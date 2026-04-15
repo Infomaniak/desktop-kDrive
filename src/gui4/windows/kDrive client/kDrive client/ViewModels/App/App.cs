@@ -326,7 +326,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 error.ErrorLevel = ErrorLevel.Server;
                 await Utility.RunOnUIThread(() => AppErrors.Add(error));
-                RefreshErrorState();
+                await RefreshErrorState();
                 return;
             }
 
@@ -345,7 +345,7 @@ namespace Infomaniak.kDrive.ViewModels
             if (appError is not null)
             {
                 await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
-                RefreshErrorState();
+                await RefreshErrorState();
                 return;
             }
 
@@ -376,7 +376,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public void RefreshErrorState()
+        public async Task RefreshErrorState()
         {
             await Utility.RunOnUIThread(() => UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired));
         }
