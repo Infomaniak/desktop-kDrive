@@ -55,6 +55,8 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
 
     var preferencesViewDetail: PreferencesViewDetail {
         switch self {
+        case .debugLogs:
+            return .debug
         case .dataManagement:
             return .dataManagement
         default:
@@ -70,7 +72,6 @@ struct AdvancedPreferencesView: View {
                 FormNavigationCell(label: item.label) {
                     navigate(to: item)
                 }
-                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()

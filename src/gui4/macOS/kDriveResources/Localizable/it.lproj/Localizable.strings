@@ -50,6 +50,12 @@
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’applicazione è aggiornata";
 
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Elimina i log più vecchi di 7 giorni per risparmiare spazio su disco.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Pulizia automatica";
+
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Aggiornamenti automatici";
 
@@ -134,6 +140,9 @@
 
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Gestire";
+/* loco:698b3ab789def0ffdd073952 */
+"buttonOpenDebugFolder" = "Apri cartella debug";
+
 
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Aprire nel browser";
@@ -174,6 +183,11 @@
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Selezionare le cartelle";
+/* loco:6989f2b84f80e68db204aa55 */
+"buttonSend" = "Invia";
+
+/* loco:6989e1e13690f28b9e0c8b92 */
+"buttonSendLog" = "Invia cartella debug";
 
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Aprire le impostazioni";
@@ -216,6 +230,15 @@
 
 /* loco:698b164a5f781b3d5203de12 */
 "dataManagementSubtitle" = "Infomaniak rispetta la tua privacy";
+/* loco:698b3a87553e334c1009a7e4 */
+"debugLevelDescription" = "Seleziona la quantità di informazioni da registrare.";
+
+/* loco:698b3a4d553e334c1009a7e2 */
+"debugLevelSetting" = "Livello di debug";
+
+/* loco:698b35cccaddc9598c08a6c2 */
+"debugLogsDescription" = "Consente al supporto Infomaniak di identificare la causa di un incidente.";
+
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Log di debug";
 
@@ -270,6 +293,12 @@
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Risveglio del kDrive in corso";
+/* loco:698b3654af04fbae590cbf82 */
+"enableDebugLogDescription" = "Registra informazioni diagnostiche sul mio computer.";
+
+/* loco:698b361c54ac23ef050755a2 */
+"enableDebugLogsSetting" = "Abilita log di debug";
+
 
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Sembra che non riusciamo a caricare l'applicazione…";
@@ -281,6 +310,15 @@
 
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Errore durante la modifica della modalità di sincronizzazione";
+
+/* loco:698b37a3ff1c8782250e1a74 */
+"extendedLogDescription" = "Abilita la raccolta di informazioni aggiuntive utili per il supporto.";
+
+/* loco:698b3778571c7248480ed4c2 */
+"extendedLogSetting" = "Log dettagliato esteso";
+
+/* loco:698b37efff1c8782250e1a76 */
+"extendedLogWarning" = "Quando questa opzione è abilitata, kDrive funziona più lentamente.";
 
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Aiutaci a migliorare kDrive";
@@ -317,6 +355,9 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %@";
+
+/* loco:6989e175cdee4aba850e89b2 */
+"infomaniakSupport" = "Supporto Infomaniak";
 
 /* loco:696a481cf54b5acbc60209c2 */
 "informationBlockKDriveFullSubtitle" = "Liberate spazio o aggiornate il vostro piano per continuare a sincronizzare i vostri file.";
@@ -419,8 +460,33 @@
 /* loco:698b0dd551a7a263e6030a72 */
 "languageSetting" = "Lingua";
 
+/* loco:698b02fbc4b83479960bbf92 */
+"largeFolderRecommendation" = "La cartella completa è grande.\nPer velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessione kDrive.";
+
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link copiato negli appunti";
+
+/* loco:698b392cacfe189ede0cf082 */
+"logLevelDebug" = "Debug";
+
+/* loco:698b3972f0be39d922008ec3 */
+"logLevelError" = "Errore";
+
+/* loco:698b391e693b9b942d0006a2
+ * Extended log level option in the debug level dropdown in advanced settings. */
+"logLevelExtended" = "Esteso";
+
+/* loco:698b3982f6e48fd003019f52 */
+"logLevelFatal" = "Fatale";
+
+/* loco:698b393d2a881def5c0fe142 */
+"logLevelInfo" = "Info";
+
+/* loco:698b394a2a881def5c0fe144 */
+"logLevelWarning" = "Avviso";
+
+/* loco:6989f263fe556601b70fe7a2 */
+"logUploadPopupTitle" = "Invia cartella debug al supporto Infomaniak";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.\n\nL’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.";
@@ -549,6 +615,9 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interno";
+
+/* loco:698b02a302385f4ff103bd62 */
+"sendLastSessionOnly" = "Invia solo l’ultima sessione";
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry è uno strumento ospitato e gestito esclusivamente da Infomaniak per monitorare la stabilità dell’applicazione in tempo reale e segnalare automaticamente eventuali errori tecnici ai nostri sviluppatori.\n\nQuesti dati consentono al nostro team di correggere e ottimizzare rapidamente l’applicazione, garantendoti un’esperienza utente migliore.";
