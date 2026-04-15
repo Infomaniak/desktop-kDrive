@@ -637,6 +637,80 @@ void TestParmsDb::testError() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, error.exitCode());
         CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, error.exitCause());
     }
+
+    auto data = createSyncs();
+    auto &sync1 = data.syncs.at(0);
+    auto &sync2 = data.syncs.at(1);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
+
+    Error nodeErrorByLocalId(sync1.dbId(), "localNode-1", "remoteNode-A", NodeType::File, "/dir1/file1", ConflictType::EditEdit,
+                             InconsistencyType::ForbiddenChar, CancelType::None, "/dir1/file1_dest");
+    Error nodeErrorByRemoteId(sync1.dbId(), "localNode-B", "remoteNode-1", NodeType::File, "/dir1/file2",
+                              ConflictType::MoveDelete, InconsistencyType::Case, CancelType::Move, "/dir1/file2_dest");
+    Error nodeErrorByPathAndDestination(sync1.dbId(), "", "", NodeType::File, "/dir1/file3", ConflictType::MoveCreate,
+                                        InconsistencyType::None, CancelType::Edit, "/dir1/file3_dest");
+    Error nodeErrorWithSamePathOnly(sync1.dbId(), "", "", NodeType::File, "/dir1/file3", ConflictType::CreateCreate,
+                                    InconsistencyType::None, CancelType::Create, "/dir1/other_dest");
+    Error nodeErrorOtherSync(sync2.dbId(), "localNode-1", "remoteNode-1", NodeType::File, "/dir2/file1", ConflictType::EditDelete,
+                             InconsistencyType::ReservedName, CancelType::Delete, "/dir2/file1_dest");
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(nodeErrorByLocalId));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(nodeErrorByRemoteId));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(nodeErrorByPathAndDestination));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(nodeErrorWithSamePathOnly));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(nodeErrorOtherSync));
+
+    {
+        std::vector<Error> selectedErrors;
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), NodeId("localNode-1"), std::nullopt, std::nullopt,
+                                                                  std::nullopt, selectedErrors, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(NodeId("localNode-1"), selectedErrors.at(0).localNodeId());
+    }
+
+    {
+        std::vector<Error> selectedErrors;
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, NodeId("remoteNode-1"),
+                                                                  std::nullopt, std::nullopt, selectedErrors, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(NodeId("remoteNode-1"), selectedErrors.at(0).remoteNodeId());
+    }
+
+    {
+        std::vector<Error> selectedErrors;
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
+                                                                  SyncPath("/dir1/file3"), SyncPath("/dir1/file3_dest"),
+                                                                  selectedErrors, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3_dest"), selectedErrors.at(0).destinationPath());
+    }
+
+    {
+        std::vector<Error> selectedErrors;
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
+                                                                  SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(selectedErrors.empty());
+    }
+
+    {
+        std::vector<Error> selectedErrors;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::Node, sync1.dbId(), 20, selectedErrors));
+        CPPUNIT_ASSERT_EQUAL(size_t(4), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(ConflictType::MoveDelete, selectedErrors.at(1).conflictType());
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::Case, selectedErrors.at(1).inconsistencyType());
+        CPPUNIT_ASSERT_EQUAL(CancelType::Move, selectedErrors.at(1).cancelType());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file2_dest"), selectedErrors.at(1).destinationPath());
+    }
 }
 
 #if defined(KD_WINDOWS)

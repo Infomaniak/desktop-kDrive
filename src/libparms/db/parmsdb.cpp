@@ -508,8 +508,8 @@
     "WHERE syncDbId=?1 AND level=?2 AND ("                                                                     \
     "(?3 IS NOT NULL AND ?3 != '' AND localNodeId=?3) OR "                                                     \
     "(?4 IS NOT NULL AND ?4 != '' AND remoteNodeId=?4) OR "                                                    \
-    "(?5 IS NOT NULL AND ?5 != '' AND path=?5) OR "                                                            \
-    "(?6 IS NOT NULL AND ?6 != '' AND destinationPath=?6)"                                                     \
+    "((?3 IS NULL OR ?3 = '') AND (?4 IS NULL OR ?4 = '') AND "                                                \
+    "?5 IS NOT NULL AND ?5 != '' AND ?6 IS NOT NULL AND ?6 != '' AND path=?5 AND destinationPath=?6)"          \
     ");"
 
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
@@ -3226,8 +3226,7 @@ bool ParmsDb::selectAllErrors(const ErrorLevel level, const SyncDbId syncDbId, c
         SyncName path;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 9, path));
         int status{0};
-        LOG_IF_FAIL(queryIntValue(SELECT_ERRORS_BY_NODE_INFOS_ID, 10, status));
-        int conflictType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 10, status));
         int conflictType{0};
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 11, conflictType));
         int inconsistencyType{0};
