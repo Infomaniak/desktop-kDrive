@@ -56,7 +56,7 @@ runs:
 
       - name: Execute tests
         run : |
-            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            export LD_LIBRARY_PATH=${{ github.workspace }}/build-linux/test/:$LD_LIBRARY_PATH
             ./infomaniak-build-tools/run-test.sh ./build-linux/test/ ${{ inputs.test_name }}
         shell: bash
 

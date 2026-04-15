@@ -21,13 +21,16 @@
 # It will use conan to install the dependencies.
 
 
-
 # Default values
 build_type="Debug"
 output_dir=""
+clean_conan_cache=false
 use_release_profile=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
+
+log(){ echo "[INFO] $*"; }
+error(){ echo "[ERROR] $*" >&2; exit 1; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -39,12 +42,17 @@ while [[ $# -gt 0 ]]; do
       use_release_profile=true
       shift
       ;;
+    --clean-cache)
+      clean_conan_cache=true
+      shift
+      ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help]
+Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
+  --clean-cache        Clean the Conan cache (packages sources, build folders, ...) after installation to save disk space.
 
 There are three ways to set the output directory (in descending order of priority):
     1. By passing the --output-dir=<dir> parameter.
@@ -65,22 +73,52 @@ EOF
 done
 
 
-log(){ echo "[INFO] $*"; }
-error(){ echo "[ERROR] $*" >&2; exit 1; }
+
+set -euo pipefail
 
 function get_platform {
-    platform="$(uname | tr '[:upper:]' '[:lower:]')"
-    echo "$platform"
+  platform="$(uname | tr '[:upper:]' '[:lower:]')"
+  echo "$platform"
 }
 
-function get_architecture {
-    platform=$1
-    architecture="" # Left empty for Linux systems.
-    if [[ "$platform" = "darwin" ]]; then
-       architecture="-s:a=arch=armv8|x86_64" # Making universal binary. See https://docs.conan.io/2/reference/tools/cmake/cmaketoolchain.html#conan-tools-cmaketoolchain-universal-binaries
-    fi
 
-    echo $architecture
+# Get the target cpu architecture (Conan format) based on the platform and build type
+# On macOS and the build_type is Release, we build a universal binary (arm64 and x86_64).
+# Otherwise, we build for the current architecture (arm64 or x86_64).
+# Possible values: 'armv8', 'x86_64', and 'armv8|x86_64' (universal binary).
+function get_target_architecture {
+  local platform="$1"
+  local target="$2"
+  local architecture
+
+  function get_real_architecture {
+    local real_architecture
+    real_architecture="$(uname -m)"
+    case "$real_architecture" in
+      arm64|aarch64) echo "armv8" ;;
+      x86_64) echo "x86_64" ;;
+      *) error "Unsupported architecture: $real_architecture. Supported architectures: armv8, x86_64." ;;
+    esac
+  }
+
+  case "$platform" in
+    darwin)
+      if [[ "$build_type" = "Debug" && "$target" = "build" ]]; then
+        architecture="$(get_real_architecture)"
+      else
+        architecture="armv8|x86_64" # Universal binary
+      fi
+      ;;
+    linux)
+      architecture="$(get_real_architecture)"
+      ;;
+    *)
+      error "Unsupported platform: $platform. Supported platforms: darwin, linux."
+      ;;
+  esac
+
+  log "target: $target, platform: $platform, build_type: $build_type => architecture: $architecture" >&2
+  echo "$architecture"
 }
 
 function get_arg_value {
@@ -112,22 +150,30 @@ function get_default_output_dir {
 }
 
 output_dir="$(get_arg_value '--output-dir')"
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
-  log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '$KDRIVE_OUTPUT_DIR'" >&2
-fi
-if [[ -z "$output_dir" ]]; then
-  output_dir="$(get_default_output_dir)"
+if [[ -z "${output_dir}" ]]; then
+  env_output_dir="$(get_env_var_value 'KDRIVE_OUTPUT_DIR')"
+  if [[ -n "${env_output_dir}" ]]; then
+    output_dir="${env_output_dir}"
+    log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '${output_dir}'" >&2
+  else
+    output_dir="$(get_default_output_dir)"
+    log "No output directory specified. Using default output directory: '$output_dir'" >&2
+  fi
 fi
 
 
 # check if we launched this in the right folder.
 if [ ! -d "infomaniak-build-tools/conan" ]; then
-    error "Please run this script from the root of the repository."
+  error "Please run this script from the root of the repository."
 fi
 
 if ! command -v conan >/dev/null 2>&1; then
-    error "Conan is not installed. Please install it first."
+  log "PATH: $PATH"
+  error "Conan is not installed. Please install it first."
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  error "The json utility 'jq' is not available and is needed."
 fi
 
 # Check if a conan profile exists
@@ -142,34 +188,49 @@ if [[ $use_release_profile == true ]]; then
     if ! grep -qE 'build_type=(Release|RelWithDebInfo)' "$profile_path"; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
-    if grep -q 'tools.cmake.cmaketoolchain:user_toolchain' "$profile_path"; then
-      error "Profile '$release_profile' must not set tools.cmake.cmaketoolchain:user_toolchain"
-    fi
-    if grep -q 'os=Macos' "$profile_path" && ! grep -q 'arch=armv8|x86_64' "$profile_path"; then
-      error "Profile '$release_profile' must set arch=armv8|x86_64 for MacOS"
+
+    if [[ "$build_type" == "Debug" ]]; then
+      error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
     fi
     if grep -q 'os=Macos' "$profile_path" && ! grep -q 'os.version=10.15' "$profile_path"; then
       error "Profile '$release_profile' must set os.version=10.15 for MacOS"
     fi
 
-    log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
   else
     error "Profile '$release_profile' does not exist. Please create it."
   fi
 else
-  log "Using default 'default' profile for Conan."
   conan_profile="default"
 fi
+log "Using '$conan_profile' profile for Conan."
 
-set -euox pipefail
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
-if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
-    log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
-    conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
+
+conan_remote_list_json="$(conan remote list --format=json)"
+
+if [ -n "$(
+  jq -e \
+    --arg name "$local_recipe_remote_name" \
+    --arg url "$conan_remote_base_folder" \
+    '.[] | select(.name == $name and .url == $url and .enabled == true)' \
+    <<< "$conan_remote_list_json"
+)" ]; then
+  # Here, we check that the remote with the name '$local_recipe_remote_name' has the correct path and is enabled.
+  log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
 else
-    log "Conan remote '$local_recipe_remote_name' already exists and is enabled."
+  if [ -n "$(
+    jq -e \
+      --arg name "$local_recipe_remote_name" \
+      '.[] | select(.name == $name)' \
+      <<< "$conan_remote_list_json"
+  )" ]; then
+    # Here, there is a remote with the same name but different url or disabled, so we remove it first to avoid conflicts and add the correct one.
+    conan remote remove "$local_recipe_remote_name"
+  fi
+  log "Adding Conan remote '$local_recipe_remote_name' at '$conan_remote_base_folder'. "
+  conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 fi
 
 # Build conan recipe for the platforms x86_64 & arm64
@@ -183,7 +244,7 @@ if [[ "$platform" == "darwin" ]]; then
     log "Building universal binary for macOS."
 fi
 
-architecture=$(get_architecture "$platform")
+architecture="-s:b=arch=$(get_target_architecture "$platform" "build") -s:h=arch=$(get_target_architecture "$platform" "host")"
 
 mkdir -p "$output_dir"
 
@@ -196,14 +257,17 @@ log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
 echo
 
-# Create the conan package for xxHash.
-conan_recipes_folder="$conan_remote_base_folder/recipes"
-
 log "Installing dependencies..."
-# Install this packet in the build folder.
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+conan install . --update --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter -vv
+
 
 if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
 fi
 log "Conan dependencies installed successfully for platform $platform ($build_type) in '$output_dir'."
+
+if [ "$clean_conan_cache" = true ]; then
+  log "Cleaning Conan cache to save disk space..."
+  conan cache clean --source --build --temp "*"
+  log "Conan cache cleaned."
+fi

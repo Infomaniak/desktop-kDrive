@@ -1,7 +1,7 @@
 # kDrive Desktop — Root AGENTS.md
 
 ## Project Snapshot
-C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. Ships two processes: a background **server** daemon (`src/server/`) and a **Qt Widgets GUI** (`src/gui/`). All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
+C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
 All code is in the `KDC` namespace.
 
@@ -49,6 +49,8 @@ clang-format -i <file>
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
+- In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
+- For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 <!-- Add project-specific user corrections here -->
 
 ## JIT Index
@@ -59,8 +61,9 @@ clang-format -i <file>
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
 - GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
-- GUI (macOS Swift redesign for v4): `src/front/macOS/` → [see AGENTS.md](src/front/macOS/AGENTS.md)
-- GUI (Windows WinUI3 redesign for v4): `src/gui4/` → [see AGENTS.md](src/gui4/AGENTS.md)
+- GUI (Linux Qt/QML redesign for v4): `src/gui4/linux/` → [see AGENTS.md](src/gui4/linux/AGENTS.md)
+- GUI (macOS Swift redesign for v4): `src/gui4/macOS/` → [see AGENTS.md](src/gui4/macOS/AGENTS.md)
+- GUI (Windows WinUI3 redesign for v4): `src/gui4/windows/` → [see AGENTS.md](src/gui4/windows/AGENTS.md)
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
@@ -69,6 +72,7 @@ clang-format -i <file>
 
 ### Infrastructure
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
+- Conan dependencies & recipes: `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
 
 ### Legal & Licensing
 - Third-party licenses and attributions: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)

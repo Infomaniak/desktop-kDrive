@@ -37,13 +37,21 @@ endif()
 
 # utf8proc
 if(UNIX)
+    set(UTF8PROC_INSTALL OFF CACHE BOOL "Disable installation of utf8proc" FORCE) # Disable installation of the libutf8proc.a static library
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
+if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
+    target_compile_options(keychain PRIVATE -Wno-uninitialized)
+endif()
 
 #####
+
+# Create an alias for the Qt6::Core target, used by the sentry recipe
+find_package(Qt6 COMPONENTS Core)
+add_library(qt::qt ALIAS Qt6::Core)
 
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -71,8 +79,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 IF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "C:/Program Files (x86)/Poco"
-        "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/libzip"
     )
 ENDIF ()
@@ -245,13 +251,12 @@ if(BUILD_UNIT_TESTS)
 endif()
 
 message(STATUS "Configure files")
-message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
-message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 set(QTDIR $ENV{QTDIR})
 
+find_package(sentry REQUIRED) # Used here to find the sentry_crashpad::crashpad_handler target
 if(BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
@@ -266,7 +271,10 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     install(FILES ${KDRIVE_THEME_DIR}/Assets.car DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
     # Crashpad_handler
-    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    get_target_property(CRASHPAD_HANDLER_PROGRAM
+            sentry_crashpad::crashpad_handler
+            IMPORTED_LOCATION_RELEASE
+    )
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
@@ -287,12 +295,20 @@ elseif(BUILD_CLIENT)
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
-        find_library(SENTRY_SHARED_LIBRARY NAMES sentry PATH_SUFFIXES "bin" NO_CACHE)
+        find_library(SENTRY_SHARED_LIBRARY
+                NAMES sentry
+                PATHS ${CONAN_RUNTIME_LIB_DIRS}
+                NO_DEFAULT_PATH NO_CACHE
+        )
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
-        find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+        find_program(CRASHPAD_HANDLER_PROGRAM
+                NAMES crashpad_handler
+                PATHS ${CONAN_RUNTIME_LIB_DIRS}
+                NO_DEFAULT_PATH NO_CACHE
+        )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
@@ -305,24 +321,24 @@ elseif(BUILD_CLIENT)
             file(COPY sync-exclude-linux.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
             file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-linux.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         else()
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
+            install(FILES sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
         endif()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
 
         # Crashpad_handler
-        message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-            find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+        if(TARGET sentry_crashpad::crashpad_handler)
+            get_target_property(CRASHPAD_HANDLER_PROGRAM sentry_crashpad::crashpad_handler IMPORTED_LOCATION)
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
             if(CMAKE_BUILD_TYPE STREQUAL "Debug")
                 file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
             else()
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
             endif()
+        else()
+            message(WARNING "crashpad_handler target not found (sentry_crashpad::crashpad_handler)")
         endif()
     endif()
 endif()
@@ -330,24 +346,61 @@ endif()
 if(UNIX AND NOT APPLE)
     if (DEFINED CONAN_DEP_DIR)
         # Copy .so files to the conan dependency directory
-        include(ConanGetLibDirs)
-        get_library_dirs("log4cplus" "log4cplus")
-        get_library_dirs("OpenSSL" "openssl")
-        get_library_dirs("xxHash" "xxhash")
+        find_package(log4cplus 2.1.2 REQUIRED)
+        find_package(xxHash 0.8.2 REQUIRED)
+        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+        find_package(Poco 1.13.3 REQUIRED)
+        find_package(sentry REQUIRED)
+
+        # Normalize Conan variables to be build-type agnostic
+        # Determine the correct path for ConanNormalizeVars.cmake
+        if(DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+            get_filename_component(CONAN_GEN_DIR "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)
+        else()
+            set(CONAN_GEN_DIR "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
+        endif()
+        if(EXISTS "${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
+            set(_CONAN_PACKAGES log4cplus xxhash sentry poco openssl)
+            include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
+        endif()
+
+        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
         file(COPY
             # log4cplus
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${_log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS}/liblog4cplus.so"
+            "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
             # xxHash
-            "${_xxHash_LIB_DIRS}/libxxhash.so"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0"
-            "${_xxHash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS}/libxxhash.so"
+            "${xxhash_LIB_DIRS}/libxxhash.so.0"
+            "${xxhash_LIB_DIRS}/libxxhash.so.0.8.2"
             # OpenSSL
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so"
-            "${_OpenSSL_LIB_DIRS}/libcrypto.so.3"
-            "${_OpenSSL_LIB_DIRS}/libssl.so"
-            "${_OpenSSL_LIB_DIRS}/libssl.so.3"
+            "${openssl_LIB_DIRS}/libcrypto.so"
+            "${openssl_LIB_DIRS}/libcrypto.so.3"
+            "${openssl_LIB_DIRS}/libssl.so"
+            "${openssl_LIB_DIRS}/libssl.so.3"
+            # sentry
+            "${sentry_LIB_DIRS}/libsentry.so"
+            # Poco
+            "${poco_LIB_DIRS}/libPocoCrypto.so"
+            "${poco_LIB_DIRS}/libPocoCrypto.so.103"
+            "${poco_LIB_DIRS}/libPocoFoundation.so"
+            "${poco_LIB_DIRS}/libPocoFoundation.so.103"
+            "${poco_LIB_DIRS}/libPocoJSON.so"
+            "${poco_LIB_DIRS}/libPocoJSON.so.103"
+            "${poco_LIB_DIRS}/libPocoNet.so"
+            "${poco_LIB_DIRS}/libPocoNet.so.103"
+            "${poco_LIB_DIRS}/libPocoNetSSL.so"
+            "${poco_LIB_DIRS}/libPocoNetSSL.so.103"
+            "${poco_LIB_DIRS}/libPocoUtil.so"
+            "${poco_LIB_DIRS}/libPocoUtil.so.103"
+            "${poco_LIB_DIRS}/libPocoXML.so"
+            "${poco_LIB_DIRS}/libPocoXML.so.103"
             DESTINATION "${CONAN_DEP_DIR}"
-            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+        )
+        message(STATUS "Copied libraries to ${CONAN_DEP_DIR}")
     endif()
 endif()
+
+message("prefix: ${CMAKE_FIND_LIBRARY_PREFIXES}")
+message("suffix: ${CMAKE_FIND_LIBRARY_SUFFIXES}")

@@ -2887,7 +2887,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Area di notifica non disponibile</translation>
     </message>

@@ -61,9 +61,9 @@ build_dir="$PWD/build-linux"
 client_dir="$build_dir/client"
 install_dir="$build_dir/install"
 
-conan_base_folder="$HOME/.conan2_linux"
-conan_cache_folder="$conan_base_folder/p"
-local_recipes_index="$conan_base_folder/.local_recipes_index"
+conan_persistent_folder="$HOME/.conan2_linux"
+conan_cache_folder="$conan_persistent_folder/p"
+local_recipes_index="$conan_persistent_folder/.local_recipes_index"
 
 rm -Rf "$build_dir"
 mkdir -p "$build_dir"
@@ -71,6 +71,7 @@ mkdir -p "$client_dir"
 mkdir -p "$install_dir"
 mkdir -p "$conan_cache_folder"
 mkdir -p "$local_recipes_index"
+mkdir -p "$conan_persistent_folder/.local/share/Qt" # Folder containing the Qt online installer login JWT.
 
 if [ ! -d "$git_dir" ]; then
     echo "Git directory does not exist: '$git_dir'"
@@ -104,11 +105,12 @@ podman run --rm -it \
 	--volume "$install_dir:/install" \
 	--volume "$conan_cache_folder:/root/.conan2/p" \
 	--volume "$local_recipes_index:/root/.conan2/.local_recipes_index/" \
+	--volume "$conan_persistent_folder/.local/share/Qt:/root/.local/share/Qt" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-	--arch ${architecture} \
-	ghcr.io/infomaniak/kdrive-desktop-linux:${architecture} /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
+	--platform "linux/${architecture}" \
+	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')

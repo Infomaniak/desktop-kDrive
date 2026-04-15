@@ -86,7 +86,10 @@ build_dir="$src_dir/build-linux"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
+export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
+
 conan_dependencies_folder="$build_dir/conan/dependencies"
+source "$src_dir/infomaniak-build-tools/conan/common-utils.sh"
 
 echo
 echo "Build type: $build_type"
@@ -102,13 +105,6 @@ extract_debug () {
 }
 
 build_release() {
-  export QT_BASE_DIR="$HOME/Qt/6.2.3"
-  export QTDIR="$QT_BASE_DIR/gcc_64"
-  export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
-  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-
   mkdir -p "$app_dir"
   mkdir -p "$build_dir"
 
@@ -123,7 +119,12 @@ build_release() {
     exit 1
   fi
 
-
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
   source "$conan_generator_folder/conanbuild.sh"
 
@@ -155,19 +156,19 @@ build_release() {
 } 
 
 package_release() {
-  export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
-  export QTDIR="$QT_BASE_DIR"
-  export QMAKE="$QT_BASE_DIR/bin/qmake"
-  export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-  export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
   mkdir -p "$app_dir/usr/plugins"
   cd "$app_dir"
 
   cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
   cp -P -r "$QTDIR/libexec" "$app_dir/usr"
-  cp -P -r "$QTDIR/resources" "$app_dir/usr"
+  cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
   cp -P "$conan_dependencies_folder/"* "$app_dir/usr/lib"
@@ -177,15 +178,13 @@ package_release() {
   cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
   cp -P "$QTDIR/lib/libQt6WaylandEglClientHwIntegration.so"* "$app_dir/usr/lib"
 
-  mkdir -p "$app_dir/usr/qml"
-
+  rm "$app_dir/usr/lib/libkeychain.a"
   rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
   rm -rf "$app_dir/usr/include/"
 
-  cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
-  cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
+  cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
   "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 

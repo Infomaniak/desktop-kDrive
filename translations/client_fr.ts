@@ -2886,7 +2886,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Zone de notification indisponible</translation>
     </message>

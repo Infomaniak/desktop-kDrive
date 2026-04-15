@@ -2885,7 +2885,7 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Bandeja del sistema no disponible</translation>
     </message>

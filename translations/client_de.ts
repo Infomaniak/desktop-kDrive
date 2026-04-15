@@ -2887,7 +2887,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
         <translation>Systemleiste nicht verfügbar</translation>
     </message>

@@ -1,10 +1,7 @@
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
-    - [Qt 6.2.3](#qt-623)
-    - [Poco](#poco)
     - [CPPUnit](#cppunit)
-    - [Sentry](#sentry)
     - [libzip](#libzip)
     - [Conan](#conan)
 - [Build in Debug](#build-in-debug)
@@ -66,40 +63,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## Qt 6.2.3
-
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In QT 6.2.3, select :
-- Desktop gcc 64-bits
-- Qt 5 Compatibility Module
-
-In Qt 6.2.3 Additional Libraries, select :
-- Qt Positioning
-- Qt WebChannel
-
-If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
-```bash
-sudo apt install libxcb-cursor0
-```
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
->
-> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
-
-```bash
-cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir cmake-build
-cd cmake-build
-cmake ..
-sudo cmake --build . --target install
-```
 
 ## CPPUnit
 
@@ -119,27 +82,6 @@ sudo make install
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
 You can also download cppunit version 1.15.1 using the ["Wayback Machine"](https://web.archive.org/) here: https://web.archive.org/web/20231118010938/http://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz
-
-## Sentry
-
-You will need to install the dev libcurl package to build sentry-native
-
-```bash
-sudo apt install -y libcurl4-openssl-dev
-cd ~/Projects
-git clone https://github.com/getsentry/sentry-native.git
-cd sentry-native
-git checkout tags/0.7.9
-git submodule init
-git submodule update --recursive
-cd external/crashpad
-git submodule init
-git submodule update --recursive
-cd ../..
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
-cmake --build build --parallel
-sudo cmake --install build
-```
 
 ## libzip
 
@@ -222,6 +164,19 @@ Conan version 2.x.x
     os=Linux
    ```
 
+3. **Linux only**: The Sentry Conan recipe validates that the required system packages are already installed in order to avoid building `c-ares` and `libcurl` from source (which would require `m4`, a package that fails to compile with GCC 14+ on recent toolchains).
+
+    On Debian/Ubuntu-based systems, the recipe checks for:
+    - `libc-ares-dev` (c-ares development library)
+    - `libcurl4-openssl-dev` (libcurl with OpenSSL support)
+
+    Install them manually before running `conan install`:
+    ```bash
+    sudo apt update && sudo apt install -y libc-ares-dev libcurl4-openssl-dev
+    ```
+    If these packages are missing, the Conan recipe fails with an explicit error and asks you to install them manually.
+
+
 ---
 
 ### 4. Configure CMake Toolchain Injection
@@ -232,7 +187,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
    ```
 
@@ -246,7 +200,7 @@ The project requires additional CMake variables for a correct build. To inject t
 To **build a release version** using the script `./infomaniak-build-tools/linux/build-release-amd64.sh`, you must create a profile named `infomaniak_release`.
 This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entry and must have the `build_type` set to `Release` or `RelWithDebInfo`.
 
-> :information_source: This step is only required for the `build-release-amd64.sh` script, as the correct profile is already configured in the containers used by the `build-release-<arch>-via-podman.sh` scripts.
+> :information_source: This step is only required for the `build-release-amd64.sh` script, as the correct profile is already configured in the container used by `build-release-via-podman.sh`.
 ---
 
 ### 6. Install Project Dependencies
@@ -256,7 +210,7 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **zlib** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -304,7 +258,6 @@ CMake options:
 -DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/CLion-build-debug/bin
 -DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
 -DQT_DEBUG_FIND_PACKAGE=ON
 -DCMAKE_TOOLCHAIN_FILE=/home/<user>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
@@ -320,8 +273,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -GUnix Makefiles
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DCMAKE_PROJECT_INCLUDE_BEFORE:PATH=%{IDE:ResourcePath}/package-manager/auto-setup.cmake
--DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}
--DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
@@ -342,18 +293,17 @@ Currently, the release appImage file is generated in a podman container.
 ## Podman image
 
 You will need Podman installed for this step, as currently our building script runs through a podman container.
-For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.
 
 To pull the podman image from our github, run :
 ```bash
-podman pull --arch [arch] ghcr.io/infomaniak/kdrive-desktop-linux:latest
+podman pull ghcr.io/infomaniak/kdrive-desktop-linux:latest
 ```
 
 ## Building
 
-You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release.sh`  
-The script will start a podman machine with from the image pulled using the command above, and run the `build-release-appimage.sh` script. 
-The architecture (Arm64 or Amd64) used for building is the host architecture.
+You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release-via-podman.sh`.
+The script starts a Podman machine from the image pulled using the command above, then runs `build-release-appimage.sh` inside the container.
+The architecture (`amd64` or `arm64`) used for building is the host architecture, and the script passes it to Podman with `--platform linux/<arch>`.
 If you do not want to build through podman, use the `build-release-appimage.sh` script directly.
 
-The generated AppImage file will be located in the `build-linux-[arch]/client/install` directory.
+The generated AppImage file will be located in the `build-linux-[arch]/install` directory.

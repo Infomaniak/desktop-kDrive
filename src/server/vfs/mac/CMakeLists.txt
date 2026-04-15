@@ -1,4 +1,15 @@
 find_package(Qt6)
+find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+
+# List of packages to normalize
+set(_CONAN_PACKAGES openssl-macos)
+
+# Normalize Conan variables to be build-type agnostic
+if(EXISTS "${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+    include("${CMAKE_BINARY_DIR}/generators/ConanNormalizeVars.cmake")
+endif()
+
+set(_OpenSSL_LIB_DIRS "${openssl_LIB_DIRS}")
 
 # Target
 add_library("${APPLICATION_EXECUTABLE}_vfs_mac" SHARED
@@ -36,12 +47,10 @@ install(TARGETS "${APPLICATION_EXECUTABLE}_vfs_mac"
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEST_DIR $ENV{DESTDIR})
 
-    include(ConanGetLibDirs)
-    get_library_dirs("OpenSSL" "openssl-universal")
     install(CODE "
         message(STATUS \"Fixing library paths for kDrive_vfs_mac...\")
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libssl.3.dylib @rpath/libssl.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
+        execute_process(COMMAND \"install_name_tool\" -change ${openssl-macos_LIB_DIRS}/libssl.3.dylib @rpath/libssl.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
+        execute_process(COMMAND \"install_name_tool\" -change ${openssl-macos_LIB_DIRS}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
         message(STATUS \"Fixed library paths for kDrive_vfs_mac\")
         execute_process(COMMAND otool \"-L\" ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)

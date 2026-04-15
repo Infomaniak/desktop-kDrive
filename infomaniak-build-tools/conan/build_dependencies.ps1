@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -61,10 +61,13 @@ param(
     [switch]$MakeRelease,
 
     [Parameter(Mandatory = $false, HelpMessage = "Update environment variables after installation.")]
-    [switch]$UpdateEnvironment
+    [switch]$UpdateEnvironment,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Clean the Conan cache after installation to save disk space.")]
+    [switch]$CleanCache
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -74,7 +77,7 @@ function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
 
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path
-$DefaultOutputDir = Join-Path $CurrentDir "build-windows\build"
+$DefaultOutputDir = Join-Path $CurrentDir "build-windows"
 
 # If a custom output directory is provided, use it
 if ($OutputDir) {
@@ -140,8 +143,10 @@ if ($CI) {
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
     # Call vcvarsall.bat to set up the environment for MSVC
-    & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     Log "CI mode enabled."
+    $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Because of the CI User on Windows, we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
+    Log "SSL_CERT_FILE set to $($env:SSL_CERT_FILE)"
 }
 
 # Locate Conan executable
@@ -204,7 +209,8 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
+$qt_login_type = if ($CI) { "envvars" } else { "ini" }
+& $ConanExe install . --update --output-folder="$OutputDir" --build=missing -s:a=build_type="$BuildType" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }
@@ -217,6 +223,12 @@ $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
 $newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.conan2\*" }) -join ';'
 [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
 Log "previous conan path entries removed."
+
+if ($CleanCache) {
+    Log "Cleaning Conan cache to save disk space..."
+    & $ConanExe cache clean --source --build --temp "*"
+    Log "Conan cache cleaned."
+}
 
 # Update user environment variables if requested (programs will need to be restarted to see the changes)
 if ($UpdateEnvironment) {
