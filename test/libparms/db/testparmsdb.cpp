@@ -696,6 +696,7 @@ void TestParmsDb::testError() {
     {
         std::vector<Error> selectedErrors;
         bool found = false;
+        // Path-based matching is only allowed when both path and destinationPath are provided.
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
                                                                   SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
         CPPUNIT_ASSERT(!found);
