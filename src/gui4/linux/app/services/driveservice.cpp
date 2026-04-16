@@ -26,7 +26,7 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcDriveService, "gui.v4.driveservice", QtInfoMsg)
 
-DriveService::DriveService(CommService &commService, AppCache &appCache, QObject *parent) :
+DriveService::DriveService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {
