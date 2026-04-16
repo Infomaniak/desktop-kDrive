@@ -39,6 +39,7 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
         !IoHelper::checkIfPathExists(_cacheDirectoryPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
     if (!exists) {
         if (const auto exitInfo = initDirectory(); !exitInfo) return exitInfo;
