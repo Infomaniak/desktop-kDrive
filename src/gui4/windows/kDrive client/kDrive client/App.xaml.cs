@@ -187,12 +187,7 @@ namespace Infomaniak.kDrive
 
         private void CurrentWindow_Closed(object sender, WindowEventArgs e)
         {
-            if (sender is MainWindow mainWindow)
-            {
-                mainWindow.Closed -= CurrentWindow_Closed;
-                CurrentWindow = null;
-            }
-            else if (sender is Window window && window == CurrentWindow)
+            if (sender is Window window && window == CurrentWindow)
             {
                 e.Handled = true;
                 window.Hide();
