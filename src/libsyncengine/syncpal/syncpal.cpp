@@ -1238,6 +1238,13 @@ std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
     return std::chrono::steady_clock::now();
 }
 
+int64_t SyncPal::pauseDuration() const {
+    if (_syncPalWorker) {
+        return _syncPalWorker->pauseDuration();
+    }
+    return defaultPauseDuration; // Default: 1 min
+}
+
 void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {

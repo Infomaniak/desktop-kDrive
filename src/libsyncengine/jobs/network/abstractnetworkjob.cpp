@@ -46,6 +46,10 @@
 
 namespace KDC {
 
+const std::string rateLimitHeaderReset = "X-RateLimit-Reset"; // Timestamp (in seconds since epoch)
+const std::string rateLimitHeaderDelay = "Retry-After"; // Delay (in seconds)
+const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
+
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
@@ -138,6 +142,32 @@ void AbstractNetworkJob::logReplyInfo() {
     }
 }
 
+int64_t AbstractNetworkJob::extractWaitingTime() {
+    int64_t waitingTime = -1;
+    if (httpResponse().has(rateLimitHeaderDelay)) {
+        try {
+            waitingTime = std::stoll(httpResponse().get(rateLimitHeaderDelay));
+        } catch (std::exception const &e) {
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderDelay << " : " << e.what());
+        }
+    } else if (httpResponse().has(rateLimitHeaderReset)) {
+        try {
+            int64_t timestamp = 0;
+            timestamp = std::stoll(httpResponse().get(rateLimitHeaderReset));
+            const auto now =
+                    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+            waitingTime = timestamp - now.count();
+        } catch (std::exception const &e) {
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderReset << " : " << e.what());
+        }
+    }
+
+    if (waitingTime > 0) {
+        return (waitingTime + CommonUtility::generateRandomNumber(1, 15)) * 1000; // Add a random delay between 1 and 15sec
+    }
+    return -1;
+}
+
 ExitInfo AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url.empty()) {
@@ -153,7 +183,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            Utility::msleep(500); // Sleep for 0.5s
+            Utility::msleep(_sleepDuration);
         }
 
         uri = Poco::URI(url);
@@ -223,6 +253,15 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
                 break;
             }
 
+            if (outputExitInfo.code() == ExitCode::RateLimited) {
+                if (_sleepDuration < sleepDurationThreshold) {
+                    // The waiting time is short enough, wait and retry to send the request
+                    continue;
+                }
+                // Waiting time is too long, pause the sync
+                break;
+            }
+
             // Attempt to detect network timeout
             auto errChrono = std::chrono::steady_clock::now();
             std::chrono::duration<double> requestDuration = errChrono - sendChrono;
@@ -243,7 +282,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
             break;
         }
 
-        if (outputExitInfo.code() == ExitCode::TokenRefreshed || outputExitInfo.code() == ExitCode::RateLimited) {
+        if (outputExitInfo.code() == ExitCode::TokenRefreshed) {
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(outputExitInfo)) {
@@ -491,6 +530,15 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
+
+            // Update time to wait
+            if (const auto newWaitTime = extractWaitingTime(); newWaitTime > 0) {
+                _sleepDuration = newWaitTime;
+                LOG_INFO(_logger, "New waiting time: " << _sleepDuration);
+            } else {
+                // If no specific header is provided, wait for the longest acceptable duration
+                _sleepDuration = sleepDurationThreshold - 1;
+            }
             return ExitCode::RateLimited;
         }
         default: {

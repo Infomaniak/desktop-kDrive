@@ -138,6 +138,11 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     return generateRandomString(charArray, distrib, length);
 }
 
+int64_t CommonUtility::generateRandomNumber(const int64_t minValue, const int64_t maxValue) {
+    std::uniform_int_distribution<int64_t> distrib(minValue, maxValue);
+    return distrib(gen);
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 std::string CommonUtility::generateUUID() {
     uuid_t uuid = {0};

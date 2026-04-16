@@ -198,7 +198,7 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
 
-        static void msleep(int msec);
+        static void msleep(int64_t msec);
 
         static bool getLinuxDesktopType(std::string &currentDesktop);
         static SyncPath getTrashPath();

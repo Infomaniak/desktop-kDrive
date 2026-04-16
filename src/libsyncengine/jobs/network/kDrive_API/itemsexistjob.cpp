@@ -86,12 +86,12 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
             LOG_WARN(_logger, "Missing object:" << idKey);
-            continue;
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         bool exists = false;
         if (!JsonParserUtility::extractValue(obj, resultKey, exists)) {
             LOG_WARN(_logger, "Missing object:" << resultKey);
-            continue;
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         if (!_nodeExistenceMap.contains(nodeId)) {
             LOG_WARN(_logger, "ID " << nodeId << " is not watched.");
