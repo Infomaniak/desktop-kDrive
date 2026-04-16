@@ -1,31 +1,31 @@
-# Chemin par défaut vers lupdate.exe
+# Default path to lupdate.exe
 $lupdatePath = "C:\Qt\Tools\QtDesignStudio\qt6_design_studio_reduced_version\bin\lupdate.exe"
 
-# Vérifier de nouveau le chemin fourni par l'utilisateur
+# Verify again the path provided by the user
 while (-Not (Test-Path $lupdatePath)) {
-    Write-Host "Le chemin fourni n'existe pas."
-    $lupdatePath = Read-Host "Veuillez fournir le chemin correct vers lupdate.exe"
+    Write-Host "The provided path does not exist."
+    $lupdatePath = Read-Host "Please provide the correct path to lupdate.exe"
 }
 
-# Trouver tous les fichiers .ts dans le dossier transalations
+# Find all .ts files in the translations folder
 $tsFiles = Get-ChildItem -Path ../ -Filter "*.ts" -Recurse
 
-# Chemin vers le dossier src
+# Path to the src folder
 $srcPath = "..\..\src"
 
-# Compteur de fichiers mis à jour
+# Counter for updated files
 $updatedCount = 0
 
-# Exécuter lupdate.exe pour chaque fichier .ts
+# Run lupdate.exe for each .ts file
 foreach ($file in $tsFiles) {
     & $lupdatePath $srcPath -ts $file.FullName -noobsolete
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'exécution de lupdate.exe pour $($file.FullName)"
+        Write-Host "Error while running lupdate.exe for $($file.FullName)"
     } else {
-        Write-Host "Mis a jour reussi pour $($file.FullName)"
+        Write-Host "Update successful for $($file.FullName)"
         $updatedCount++
     }
 }
 
-# Afficher le nombre de fichiers mis à jour
-Write-Host "Nombre total de fichiers mis a jour : $updatedCount"
+# Display the number of updated files
+Write-Host "Total number of files updated: $updatedCount"
