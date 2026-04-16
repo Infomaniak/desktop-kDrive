@@ -155,7 +155,10 @@ struct SynchroFolderSelectionSection: View {
             }
 
             // TODO: Set correct syncConfiguration setting in next PR
-            let isPathValid = try? await UtilityJobs().isPathValidFor(path: selectedURL.path, syncConfiguration: .Classic)
+            let isPathValid = try? await UtilityJobs().isPathValidFor(
+                path: selectedURL.path,
+                syncConfiguration: KDC.SyncConfiguration.Classic
+            )
             guard isPathValid == true else {
                 isShowingSynchroLocationError = true
                 return
