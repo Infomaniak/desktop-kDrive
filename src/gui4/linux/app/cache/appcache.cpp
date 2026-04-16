@@ -33,7 +33,7 @@ namespace {
  */
 template<typename T, typename IdType, typename Getter>
 void upsertById(std::vector<T> &list, const T &value, IdType id, Getter getter) {
-    const auto it = std::find_if(list.begin(), list.end(), [id, getter](const T &existing) { return getter(existing) == id; });
+    const auto it = std::ranges::find_if(list, [id, getter](const T &existing) { return getter(existing) == id; });
     if (it == list.end()) {
         list.push_back(value);
         return;
@@ -53,15 +53,14 @@ void upsertById(std::vector<T> &list, const T &value, IdType id, Getter getter) 
  */
 template<typename T, typename IdType, typename Getter>
 bool removeById(std::vector<T> &list, IdType id, Getter getter) {
-    const auto initialSize = list.size();
-    std::erase_if(list, [id, getter](const T &value) { return getter(value) == id; });
-    return list.size() != initialSize;
+    const auto erasedCount = std::erase_if(list, [id, getter](const T &value) { return getter(value) == id; });
+    return erasedCount > 0;
 }
 } // namespace
 
 namespace KDC {
 
-AppCache::AppCache(QObject *parent) :
+AppCache::AppCache(QObject *const parent) :
     QObject(parent) {}
 
 qint64 AppCache::selectedUserDbId() const {
