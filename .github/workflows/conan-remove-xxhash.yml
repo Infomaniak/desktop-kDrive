@@ -25,7 +25,7 @@ jobs:
 
 
       - name: Ensure conan is available
-        shell: zsh
+        shell: bash
         run: |
           set -euo pipefail
           if command -v conan >/dev/null 2>&1; then
@@ -37,7 +37,7 @@ jobs:
 
       - name: Conan dry-run (preview)
         id: dryrun
-        shell: zsh
+        shell: bash
         run: |
           set -euo pipefail
           echo "--- Dry-run: conan remove 'xxhash' -c --dry-run ---"
@@ -45,7 +45,7 @@ jobs:
           conan remove 'xxhash' -c --dry-run || true
 
       - name: Validate confirmation
-        shell: zsh
+        shell: bash
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
             echo "Confirmation not 'yes' — aborting. To proceed, re-run the workflow and set confirm to 'yes'."
@@ -54,14 +54,14 @@ jobs:
 
       - name: Execute conan remove
         if: ${{ github.event.inputs.confirm == 'yes' }}
-        shell: zsh
+        shell: bash
         run: |
           set -euo pipefail
           echo "Executing: conan remove 'xxhash' -c"
           conan remove 'xxhash' -c
 
       - name: Finish
-        shell: zsh
+        shell: bash
         run: |
           echo "Workflow completed. Check the logs above for details."
 
