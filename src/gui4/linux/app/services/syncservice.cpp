@@ -28,7 +28,7 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 
-SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *parent) :
+SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {
