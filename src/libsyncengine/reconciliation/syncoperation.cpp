@@ -132,6 +132,15 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
     return *this;
 }
 
+int64_t SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) {
+    int64_t count = 0;
+    for (const auto &opId: _opSortedList) {
+        const auto syncOp = getOp(opId);
+        if (syncOp && syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType) count++;
+    }
+    return count;
+}
+
 void SyncOperationList::getOpIdToIndexMap(std::unordered_map<UniqueId, int32_t> &map,
                                           const OperationType typeFilter /*= OperationType::None*/) {
     int32_t index = 0;

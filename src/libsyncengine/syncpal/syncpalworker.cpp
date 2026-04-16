@@ -104,6 +104,27 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
+void SyncPalWorker::checkForMassDestructions() const {
+    const uint64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local)->nbItems();
+
+    // Set destruction threshold based on local snapshot size.
+    uint16_t destructionThreshold = 0;
+    if (localSnapshotSize >= 100 && localSnapshotSize < 20000) {
+        destructionThreshold = 1000;
+    } else if (localSnapshotSize >= 20000) {
+        destructionThreshold = 10000;
+    }
+
+    if (destructionThreshold) {
+        const int64_t localDeleteCount = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+        if (localDeleteCount >= destructionThreshold) {
+            LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << localDeleteCount);
+            sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDestructions",
+                                            "Mass destruction detected: " + std::to_string(localDeleteCount));
+        }
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -513,6 +534,7 @@ SyncStep SyncPalWorker::nextStep() const {
             return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
+            checkForMassDestructions();
             return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;

@@ -154,6 +154,8 @@ class SyncOperationList : public SharedObject {
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
+        int64_t countOps(ReplicaSide affectedSide, OperationType operationType);
+
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;
         std::list<UniqueId> _opSortedList;

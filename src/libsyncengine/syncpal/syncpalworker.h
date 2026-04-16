@@ -90,6 +90,8 @@ class SyncPalWorker : public ISyncWorker {
 
         bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
 
+        void checkForMassDestructions() const;
+
         friend class TestSyncPalWorker;
 };
 } // namespace KDC
