@@ -64,6 +64,15 @@ enum DataManagementItem: String, Identifiable, CaseIterable {
             return KDriveResources.sentryLogo.swiftUIImage
         }
     }
+    
+    var keyPath: WritableKeyPath<UIParametersInfo, Bool>{
+        switch self{
+        case .matomo:
+            return \.isMatomoEnabled
+        case .sentry:
+            return \.isSentryEnabled
+        }
+    }
 }
 
 struct DataManagementPreferencesView: View {

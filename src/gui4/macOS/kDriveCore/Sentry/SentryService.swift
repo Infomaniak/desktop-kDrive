@@ -32,12 +32,16 @@ public struct SentryService {
                 options.enableMetricKit = true
             }
 
+            var isSentryAuthorized = true
+            // TODO: Implement sentryEnabled in ParametersInfos
+
             options.beforeSend = { event in
+                
                 // if the application is in debug mode discard the events
                 #if DEBUG || TEST
                 return nil
                 #else
-                if UserDefaults.shared.isSentryAuthorized {
+                if isSentryAuthorized {
                     return event
                 } else {
                     return nil

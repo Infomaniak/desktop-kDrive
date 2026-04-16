@@ -41,12 +41,7 @@ struct DataManagementPreferencesDetailView: View {
         }
         .groupedFormatStyle()
         .onChange(of: allowTracking, perform: { newValue in
-            switch item {
-            case .matomo:
-                updateValue(\.$allowTracking, \.isMatomoEnabled, newValue: newValue)
-            case .sentry:
-                updateValue(\.$allowTracking, \.isSentryEnabled, newValue: newValue)
-            }
+            updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
 
         })
         .onAppear {
@@ -55,14 +50,7 @@ struct DataManagementPreferencesDetailView: View {
     }
 
     func getTracking() -> Bool {
-        var value = false
-        switch item {
-        case .matomo:
-            value = repository.parametersInfo.isMatomoEnabled
-        case .sentry:
-            value = repository.parametersInfo.isSentryEnabled
-        }
-        return value
+        return repository.parametersInfo[keyPath: item.keyPath]
     }
 
     private func updateValue<T: Equatable>(
