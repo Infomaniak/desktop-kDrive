@@ -14,6 +14,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         main.cpp
         appclientlinux.cpp
         appclientlinux.h
+        app/cache/appcache.cpp
+        app/cache/appcache.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/signaldispatcher.cpp
