@@ -15,11 +15,7 @@ concurrency:
 jobs:
   remove_xxhash:
     name: Remove xxhash on self-hosted desktop-kdrive macOS runners
-    # This assumes your self-hosted runners expose the labels 'self-hosted', 'desktop-kdrive' and 'macOS'.
-    # Edit these labels to match your runner labels if needed.
     runs-on: [self-hosted, desktop-kdrive, macOS]
-    # Optionally attach an environment that requires approval in repository settings:
-    environment: self-hosted-cleanup
 
     steps:
 
