@@ -19,6 +19,8 @@
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
+- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
+  default. `linux-v4/main` is the Linux v4 integration branch regularly rebased on `develop`.
 
 ## Scope
 
