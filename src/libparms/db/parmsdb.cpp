@@ -3123,7 +3123,6 @@ bool ParmsDb::selectError(const ErrorDbId dbId, Error &error, bool &found) {
     return true;
 }
 
-
 bool ParmsDb::selectErrorByNodeInfo(SyncDbId syncDbId, const std::optional<NodeId> &localNodeId,
                                     const std::optional<NodeId> &remoteNodeId, const std::optional<SyncPath> &path,
                                     const std::optional<SyncPath> &destinationPath, std::vector<Error> &errs, bool &found) {
