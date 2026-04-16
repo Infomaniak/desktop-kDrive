@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Infomaniak/ios-dependency-injection.git",
       "state" : {
-        "branch" : "feat/dynamic-library",
-        "revision" : "06331350d2d7585a3f9f39d5e757b2b5328bcbd7"
+        "revision" : "46250e9cccf918c2a03bcd6cff6b16cdc2adb9ee",
+        "version" : "2.0.6"
       }
     },
     {
