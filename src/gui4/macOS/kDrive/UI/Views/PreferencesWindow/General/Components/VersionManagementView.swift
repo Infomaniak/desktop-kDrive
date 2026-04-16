@@ -36,6 +36,10 @@ struct VersionManagementView: View {
 
     @ObservedObject var repository: PreferencesRepository
 
+    private var updateStatePublisher: UpdateStatePublisher {
+        updaterCacheObservable.updateStatePublisher
+    }
+
     enum DomainError: LocalizedError {
         case cannotStartInstall
 
@@ -70,12 +74,12 @@ struct VersionManagementView: View {
             }
         }
         .task(id: repository.parametersInfo.distributionChannel) {
-            guard let currentUpdateState = try? await UpdaterJobs().updaterState() else {
+            guard let currentUpdateState: KDC.UpdateState = try? await UpdaterJobs().updaterState() else {
                 return
             }
             handleUpdateState(UIUpdateState(updateState: currentUpdateState))
         }
-        .onReceive(updaterCacheObservable.updateStatePublisher
+        .onReceive(updateStatePublisher
             .map { UIUpdateState(updateState: $0) }
             .receive(on: RunLoop.main)) { @MainActor in
                 handleUpdateState($0)
@@ -101,7 +105,7 @@ struct VersionManagementView: View {
 
         versionTask?.cancel()
         versionTask = Task { @MainActor in
-            let channel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
+            let channel: KDC.VersionChannel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
             guard let newVersion = try? await UpdaterJobs().versionInfo(channel: channel) else {
                 return
             }
