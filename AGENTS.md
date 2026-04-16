@@ -24,9 +24,6 @@ conan install . --build=missing -s build_type=Debug
 cmake -B build-macos -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON
 cmake --build build-macos --parallel
 
-# macOS redesign GUI is built/tested separately from the CMake flow
-(cd src/gui4/macOS && xcodebuild -scheme kDrive -destination "platform=macOS,arch=arm64" build-for-testing)
-
 # Run a test binary
 ./build-macos/bin/kDrive_test_syncengine
 

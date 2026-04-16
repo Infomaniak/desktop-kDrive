@@ -8,16 +8,19 @@ Communicates with the C++ server daemon exclusively over **XPC** — no sync log
 ## Setup & Run
 ```bash
 # Open project in Xcode
-open src/front/macOS/kDrive.xcodeproj
+open src/gui4/macOS/kDrive.xcodeproj
+
+# Build for testing (separate from the generic CMake flow)
+cd src/gui4/macOS && xcodebuild -scheme kDrive -destination "platform=macOS,arch=arm64" build-for-testing
 
 # Run tests (all)
-xcodebuild test -project src/front/macOS/kDrive.xcodeproj -scheme kDriveTests
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests
 
 # Run SwiftLint
-cd src/front/macOS && swiftlint lint
+cd src/gui4/macOS && swiftlint lint
 
 # Run SwiftLint auto-correct
-cd src/front/macOS && swiftlint --fix
+cd src/gui4/macOS && swiftlint --fix
 ```
 
 ## Architecture (3 targets)
@@ -143,25 +146,25 @@ NSLocalizedString("key", bundle: .kDriveResources, comment: "")
 ## JIT Index Hints
 ```bash
 # Find a Job function
-rg -n "func " src/front/macOS/kDriveCore/ServerBridge/Jobs/
+rg -n "func " src/gui4/macOS/kDriveCore/ServerBridge/Jobs/
 
 # Find a signal handler
-rg -n "class .*SignalHandler" src/front/macOS/kDriveCore/
+rg -n "class .*SignalHandler" src/gui4/macOS/kDriveCore/
 
 # Find DI service registration
-rg -n "SimpleResolver\|register(" src/front/macOS/kDrive/
+rg -n "SimpleResolver\|register(" src/gui4/macOS/kDrive/
 
 # Find all ObservedXxx property wrappers
-rg -n "@propertyWrapper" src/front/macOS/kDriveCore/ServerBridge/Cache/Observation/
+rg -n "@propertyWrapper" src/gui4/macOS/kDriveCore/ServerBridge/Cache/Observation/
 
 # Find SwiftUI views
-rg -n "struct .*View.*: View" src/front/macOS/kDrive/UI/Views/
+rg -n "struct .*View.*: View" src/gui4/macOS/kDrive/UI/Views/
 
 # Find all RequestNum usages
-rg -n "RequestNum\." src/front/macOS/kDriveCore/
+rg -n "RequestNum\." src/gui4/macOS/kDriveCore/
 
 # Find localization key usages
-rg -n "NSLocalizedString" src/front/macOS/kDrive/
+rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 ```
 
 ## Common Gotchas
@@ -175,8 +178,8 @@ rg -n "NSLocalizedString" src/front/macOS/kDrive/
 ## Pre-PR Checks
 ```bash
 # Lint
-cd src/front/macOS && swiftlint lint
+cd src/gui4/macOS && swiftlint lint
 
 # Build + test
-xcodebuild test -project src/front/macOS/kDrive.xcodeproj -scheme kDriveTests -destination 'platform=macOS'
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests -destination 'platform=macOS'
 ```
