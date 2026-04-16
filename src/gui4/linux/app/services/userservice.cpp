@@ -26,7 +26,7 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcUserService, "gui.v4.userservice", QtInfoMsg)
 
-UserService::UserService(CommService &commService, AppCache &appCache, QObject *parent) :
+UserService::UserService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {
