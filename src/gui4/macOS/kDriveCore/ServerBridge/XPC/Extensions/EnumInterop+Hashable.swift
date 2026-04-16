@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 
 extension MsgType: Hashable {}
@@ -41,5 +42,3 @@ extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
 extension SignalNum: Hashable {}
 extension RequestNum: Hashable {}
-
-

@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
+
 public struct VersionInfo: Codable, Sendable {
     public init(channel: KDC.VersionChannel, tag: String, buildVersion: UInt64, buildMinOsVersion: String, downloadUrl: String) {
         self.channel = channel
