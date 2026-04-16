@@ -1,9 +1,9 @@
 # kDrive Desktop — Root AGENTS.md
 
 ## Project Snapshot
-C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
+C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. Ships a background **server** daemon (`src/server/`) plus multiple frontends: the legacy **Qt Widgets GUI** (`src/gui/`), the macOS Swift redesign (`src/gui4/macOS/`), and the Windows WinUI3 redesign (`src/gui4/windows/`). All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
-All code is in the `KDC` namespace.
+All C++ code is in the `KDC` namespace.
 
 ## How to Use These Files
 At the start of every session:
@@ -14,6 +14,9 @@ Nearest file wins: the sub-AGENTS.md closest to the file you're editing takes pr
 
 ## Setup & Build
 ```bash
+# Initialize submodules used by the build
+git submodule update --init --recursive
+
 # Install Conan 2 dependencies (run from repo root)
 conan install . --build=missing -s build_type=Debug
 
@@ -29,7 +32,7 @@ clang-format -i <file>
 ```
 
 ## Universal Conventions
-- **Language:** C++20. `#pragma once` for header guards. All code in `KDC` namespace.
+- **Language:** C++20. `#pragma once` for header guards. All C++ code in `KDC` namespace.
 - **Style:** Google-based clang-format, 4-space indent, 130-char line limit. Enforced by `.githooks/pre-commit`.
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
@@ -57,13 +60,15 @@ clang-format -i <file>
 
 ### Source Libraries
 - Common types/utilities: `src/libcommon/` → [see AGENTS.md](src/libcommon/AGENTS.md)
+- Common GUI support (Qt network/logging/Matomo helpers): `src/libcommongui/` → no local `AGENTS.md`; use this root file
 - Server utilities + platform I/O: `src/libcommonserver/` → [see AGENTS.md](src/libcommonserver/AGENTS.md)
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
 - GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
-- GUI (Linux Qt/QML redesign for v4): `src/gui4/linux/` → [see AGENTS.md](src/gui4/linux/AGENTS.md)
 - GUI (macOS Swift redesign for v4): `src/gui4/macOS/` → [see AGENTS.md](src/gui4/macOS/AGENTS.md)
+  - Built/tested separately from `src/gui4/macOS/kDrive.xcodeproj`; do not assume coverage from the generic CMake macOS build.
 - GUI (Windows WinUI3 redesign for v4): `src/gui4/windows/` → [see AGENTS.md](src/gui4/windows/AGENTS.md)
+  - Wired into the Windows CMake build through `src/gui4/CMakeLists.txt` (`if(WIN32)` custom `dotnet` build target).
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
@@ -102,4 +107,4 @@ rg -rn "TestClassName" test/
 - New logic has a corresponding test in `test/`.
 - No hardcoded credentials or platform-specific paths in shared code.
 - New dependencies licenses are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
-- CI passes: `kdrive-desktop-ci.yml`.
+- Relevant CI passes: `kdrive-desktop-ci.yml` and any touched platform-specific workflow (for example `macos-redesign.yml` when editing `src/gui4/macOS/`).
