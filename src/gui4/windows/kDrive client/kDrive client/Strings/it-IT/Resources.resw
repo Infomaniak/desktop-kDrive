@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 13 Apr 2026 15:02:06 +0200 
+  Exported at: Thu, 16 Apr 2026 16:32:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -920,6 +920,9 @@ Si aprirà nel tuo browser.</value>
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Diritti di accesso modificati</value> 
   </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Attivato</value> 
+  </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>%@ fa</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
@@ -982,6 +985,9 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Data</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Disattivato</value> 
   </data> 
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
@@ -1510,7 +1516,7 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>Si è verificato un errore</value> 
   </data> 
   <data name="syncShortStatusIdle" xml:space="preserve"> 
-    <value>L'ultima sincronizzazione è avvenuta con successo</value> 
+    <value>L’ultima sincronizzazione è avvenuta con successo</value> 
   </data> 
   <data name="syncShortStatusPaused" xml:space="preserve"> 
     <value>La sincronizzazione è in pausa</value> 

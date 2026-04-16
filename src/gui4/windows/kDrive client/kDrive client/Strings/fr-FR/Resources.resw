@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 13 Apr 2026 15:02:06 +0200 
+  Exported at: Thu, 16 Apr 2026 16:32:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -920,6 +920,9 @@ Il s’ouvrira dans votre navigateur.</value>
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Droits d’accès modifiés</value> 
   </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Activé</value> 
+  </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>il y a %@</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
@@ -982,6 +985,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Date</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Desactivé</value> 
   </data> 
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
@@ -1507,7 +1513,7 @@ Connexion internet requise pour y accéder.</value>
     <value>Règles de synchronisation</value> 
   </data> 
   <data name="syncShortStatusError" xml:space="preserve"> 
-    <value>Une erreur s'est produite</value> 
+    <value>Une erreur s’est produite</value> 
   </data> 
   <data name="syncShortStatusIdle" xml:space="preserve"> 
     <value>La dernière synchronisation a réussi</value> 

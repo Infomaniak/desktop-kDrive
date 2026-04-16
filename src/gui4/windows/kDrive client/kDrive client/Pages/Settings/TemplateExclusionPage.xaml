@@ -163,6 +163,8 @@
                                                           Click="TemplateCheckBox_Click" />
 
                                                 <ToggleSwitch Grid.Column="2"
+                                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                                                               IsOn="{x:Bind Warning, Mode=OneWay}"
                                                               Toggled="WarningToggleSwitch_Toggled"
                                                               HorizontalAlignment="Right">

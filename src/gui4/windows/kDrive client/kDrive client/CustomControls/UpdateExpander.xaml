@@ -49,7 +49,9 @@
                                Height="32"
                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             </toolKit:SettingsCard.HeaderIcon>
-            <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
+            <ToggleSwitch OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                          OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
+                          IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
                           Tapped="AutoUpdateToggleSwitch_Tapped"
                           IsEnabled="False" />
         </toolKit:SettingsCard>
