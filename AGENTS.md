@@ -13,7 +13,8 @@ All C++ code is in the `KDC` namespace.
 At the start of every session:
 
 1. **Read this file** — universal conventions, security rules, and the component index below.
-2. **Read the sub-AGENTS.md for each component you'll touch** — e.g. editing `src/libsyncengine/` → read [`src/libsyncengine/AGENTS.md`](src/libsyncengine/AGENTS.md) before writing any code.
+2. **Read the sub-AGENTS.md for each component you'll touch** — e.g. editing `src/libsyncengine/` → read [
+   `src/libsyncengine/AGENTS.md`](src/libsyncengine/AGENTS.md) before writing any code.
 
 Nearest file wins: the sub-AGENTS.md closest to the file you're editing takes precedence over this root file.
 
@@ -45,7 +46,8 @@ clang-format -i <file>
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
 - **Logging:** `LOG_INFO`, `LOG_DEBUG`, `LOG_WARN`, `LOG_ERROR` from log4cplus. Never `std::cout`.
-- **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by `.githooks/commit-msg`.
+- **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by
+  `.githooks/commit-msg`.
 - **Branch naming:** No enforced convention currently.
 
 ## Security & Secrets
@@ -68,6 +70,11 @@ clang-format -i <file>
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 <!-- Add project-specific user corrections here -->
+
+- In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
+- For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct
+  `cmake --build`.
+- In AGENTS documentation, do not add links to `.md` files that are not versioned in git.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 - Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` files (it can break formatting/structure unexpectedly in this project).
@@ -93,12 +100,15 @@ clang-format -i <file>
 - Background server process: `src/server/` → [see AGENTS.md](src/server/AGENTS.md)
 
 ### Tests
+
 - Test infrastructure overview: `test/` → [see AGENTS.md](test/AGENTS.md)
 - Sync engine tests: `test/libsyncengine/` → [see AGENTS.md](test/libsyncengine/AGENTS.md)
 
 ### Infrastructure
+
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
-- Conan dependencies & recipes: `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
+- Conan dependencies & recipes:
+  `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
 
 ### Legal & Licensing
 
