@@ -61,6 +61,8 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
             return .debug
         case .dataManagement:
             return .dataManagement
+        case .network:
+            return .network
         default:
             fatalError("Not yet implemented")
         }
@@ -74,7 +76,6 @@ struct AdvancedPreferencesView: View {
                 FormNavigationCell(label: item.label) {
                     navigate(to: item)
                 }
-                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()
