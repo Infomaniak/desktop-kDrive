@@ -2712,7 +2712,9 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
     sendSyncCompletedItem(syncDbId, itemInfo);
 
-    resolveItemErrors(syncDbId, item);
+    if (item.status() == SyncFileStatus::Success) {
+        resolveItemErrors(syncDbId, item);
+    }
 
     if (notify) {
         // Store notification
@@ -4476,8 +4478,6 @@ void AppServer::addError(const Error &error) const {
 }
 
 void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &item) const {
-    if (item.status() != SyncFileStatus::Success) return;
-
     std::vector<Error> errorList;
 
     bool found = false;
