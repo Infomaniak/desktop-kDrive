@@ -3,8 +3,8 @@ name: kDrive desktop CI
 on:
   pull_request:
     branches-ignore:
-        - 'release/**'
-    types: [synchronize, opened]
+      - 'release/**'
+    types: [ synchronize, opened ]
 
 concurrency:
   group: kDrive-desktop-ci-${{ github.head_ref }}
@@ -27,7 +27,7 @@ env:
 
 jobs:
 
-# Build apps
+  # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
@@ -37,10 +37,10 @@ jobs:
           submodules: recursive
       - name: Build Windows
         uses: ./.github/actions/build_windows
-        with:  
+        with:
           virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
-    
+
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -60,17 +60,17 @@ jobs:
           submodules: recursive
       - name: Build macOS
         uses: ./.github/actions/build_macos
-        with:  
+        with:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
-    
 
-# Tests Windows
+
+  # Tests Windows
   Test-Windows:
     needs: build-Windows
     strategy:
       fail-fast: false
       matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+        test_name: [ "kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     runs-on: [ self-hosted, Windows, windows-test ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
@@ -83,17 +83,17 @@ jobs:
 
        - name: Run test
          uses: ./.github/actions/test_windows
-         with:  
+         with:
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: qt_v2026.5 # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
-# Tests Linux
+  # Tests Linux
   Test-Linux:
     needs: build-Linux
     strategy:
       fail-fast: false
       matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+        test_name: [ "kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
@@ -110,13 +110,13 @@ jobs:
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: linux_v4 # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
-# Tests macOS
+  # Tests macOS
   Test-macOS:
     needs: build-MacOS
     strategy:
       fail-fast: false
       matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+        test_name: [ "kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms" ]
     runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
@@ -131,13 +131,13 @@ jobs:
          uses: ./.github/actions/test_macos
          with:  
             test_name: ${{ matrix.test_name }}
-            test_dependencies_version: qt_v2026.5 # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
-    runs-on: [self-hosted, Windows]
-    needs: [Test-Windows, Test-Linux, Test-macOS]
+    runs-on: [ self-hosted, Windows ]
+    needs: [ Test-Windows, Test-Linux, Test-macOS ]
     steps:
-     - name: Check if all tests passed
-       shell: powershell
-       run: exit 0
+      - name: Check if all tests passed
+        shell: powershell
+        run: exit 0
     
