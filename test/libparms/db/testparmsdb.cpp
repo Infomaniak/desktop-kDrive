@@ -690,9 +690,11 @@ void TestParmsDb::testError() {
                                                                   SyncPath("/dir1/file3"), std::nullopt,
                                                                   selectedErrors, found));
         CPPUNIT_ASSERT(found);
-        CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(size_t(2), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3_dest"), selectedErrors.at(0).destinationPath());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(1).path());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/other_dest"), selectedErrors.at(1).destinationPath());
     }
 
     {
