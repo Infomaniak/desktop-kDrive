@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -64,9 +63,9 @@ enum DataManagementItem: String, Identifiable, CaseIterable {
             return KDriveResources.sentryLogo.swiftUIImage
         }
     }
-    
-    var keyPath: WritableKeyPath<UIParametersInfo, Bool>{
-        switch self{
+
+    var keyPath: WritableKeyPath<UIParametersInfo, Bool> {
+        switch self {
         case .matomo:
             return \.isMatomoEnabled
         case .sentry:
