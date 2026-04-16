@@ -16,8 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI

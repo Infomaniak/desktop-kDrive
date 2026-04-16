@@ -82,7 +82,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
                     labelDescription: KDriveLocalizable.debugLevelDescription
                 )
                 Picker("", selection: $debugLevel) {
-                    ForEach(UILogLevel.allCases, id: \.self.id) { level in
+                    ForEach(UILogLevel.allCases, id: \.id) { level in
                         Text(level.label).tag(level)
                     }
                 }
