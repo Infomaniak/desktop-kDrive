@@ -22,6 +22,7 @@
 #include "comm/guijobs/errorinfolistjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
+#include "comm/guijobs/errorsyncrefreshjob.h"
 
 namespace KDC {
 
