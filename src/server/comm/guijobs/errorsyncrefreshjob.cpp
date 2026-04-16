@@ -62,13 +62,13 @@ ExitInfo ErrorSyncRefreshJob::process() {
         return exitInfo;
     }
 
-    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-    const auto it = _commManager->appServer().syncPalMap.find(_syncDbId);
-    if (it == _commManager->appServer().syncPalMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "SyncPal not found for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
+    std::shared_ptr<SyncPal> syncpalPtr;
+
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncpalPtr); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getSyncPal: " << exitInfo);
+        return exitInfo;
     }
-    const auto syncpalPtr = it->second;
+
     if (!syncpalPtr) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found for syncDbId=" << _syncDbId);
         return ExitCode::DataError;
