@@ -26,6 +26,7 @@ struct SendDebugFolderView: View {
 
     @Binding var errorPresented: Bool
     @State private var sendOnlyLastSession = false
+    @State private var isSending = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -44,9 +45,11 @@ struct SendDebugFolderView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonSend) {
+                LoadingButton(isLoading: $isSending) {
                     sendFolder()
                     dismiss()
+                }label: {
+                    Text(KDriveLocalizable.buttonSend)
                 }
             }
             ToolbarItem(placement: .cancellationAction) {
