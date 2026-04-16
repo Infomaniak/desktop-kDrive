@@ -967,7 +967,7 @@ void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
 }
 
 VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
-    if (_noUpdate || !_updateManager) {
+    if (_noUpdate) {
         return VersionInfo::current();
     }
 
