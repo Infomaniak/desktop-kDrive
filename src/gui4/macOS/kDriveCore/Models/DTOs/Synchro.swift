@@ -17,6 +17,7 @@
  */
 
 import Collections
+import CppInterop
 import Foundation
 import OrderedCollections
 

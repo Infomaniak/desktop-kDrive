@@ -17,6 +17,7 @@
  */
 
 import Combine
+import CppInterop
 import Foundation
 
 public extension AnyPublisher where Output == KDC.UpdateState, Failure == Never {
