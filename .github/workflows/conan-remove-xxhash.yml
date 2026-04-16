@@ -1,0 +1,65 @@
+name: "Manual: Remove xxhash from conan cache"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'yes' to confirm executing the destructive remove"
+        required: true
+        default: ''
+
+concurrency:
+  group: remove-xxhash-global
+  cancel-in-progress: false
+
+jobs:
+  remove_xxhash:
+    name: Remove xxhash on self-hosted desktop-kdrive macOS runners
+    runs-on: [self-hosted, desktop-kdrive, macOS]
+
+    steps:
+
+
+      - name: Ensure conan is available
+        shell: zsh
+        run: |
+          set -euo pipefail
+          if command -v conan >/dev/null 2>&1; then
+            echo "conan found: $(conan --version)"
+          else
+            echo "Error: conan command not found. Ensure conan is installed and in the PATH."
+            exit 1
+          fi
+
+      - name: Conan dry-run (preview)
+        id: dryrun
+        shell: zsh
+        run: |
+          set -euo pipefail
+          echo "--- Dry-run: conan remove 'xxhash' -c --dry-run ---"
+          # Allow dry-run to fail without failing the job; we only want to preview
+          conan remove 'xxhash' -c --dry-run || true
+
+      - name: Validate confirmation
+        shell: zsh
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
+            echo "Confirmation not 'yes' — aborting. To proceed, re-run the workflow and set confirm to 'yes'."
+            exit 1
+          fi
+
+      - name: Execute conan remove
+        if: ${{ github.event.inputs.confirm == 'yes' }}
+        shell: zsh
+        run: |
+          set -euo pipefail
+          echo "Executing: conan remove 'xxhash' -c"
+          conan remove 'xxhash' -c
+
+      - name: Finish
+        shell: zsh
+        run: |
+          echo "Workflow completed. Check the logs above for details."
+
+
+
