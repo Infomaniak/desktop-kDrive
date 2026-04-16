@@ -9,7 +9,7 @@ on:
         default: ''
 
 concurrency:
-  group: remove-xxhash-${{ github.ref }}
+  group: remove-xxhash-global
   cancel-in-progress: false
 
 jobs:
