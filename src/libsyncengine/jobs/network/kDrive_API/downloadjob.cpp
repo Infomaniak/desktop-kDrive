@@ -585,7 +585,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
     std::ofstream output;
     do {
-        const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
+        const std::string tmpFileName = CacheDirectory::createTmpFileName();
         _tmpPath = cacheDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);

@@ -20,8 +20,6 @@
 
 #include "config.h" // APPLICATION
 
-#include <regex>
-
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) :
@@ -29,6 +27,15 @@ CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) :
 
 CacheDirectory::~CacheDirectory() {
     cleanUp();
+}
+
+std::string CacheDirectory::createTmpFileName() {
+    return std::string(tmpFilePrefix) + CommonUtility::generateRandomStringAlphaNum(tmpFileRandomPartLength);
+}
+
+bool CacheDirectory::isTmpFileName(std::string_view fileName) noexcept {
+    const auto expectedSize = tmpFilePrefix.size() + static_cast<size_t>(tmpFileRandomPartLength);
+    return fileName.size() == expectedSize && fileName.starts_with(tmpFilePrefix);
 }
 
 ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
@@ -81,7 +88,7 @@ void CacheDirectory::cleanUp() const {
     bool endOfDir = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-        if (std::regex_match(SyncName2Str(entry.path().filename().native()), std::regex(R"(kdrive_.{10})"))) {
+        if (isTmpFileName(SyncName2Str(entry.path().filename().native()))) {
             (void) IoHelper::deleteItem(entry.path());
         }
     }

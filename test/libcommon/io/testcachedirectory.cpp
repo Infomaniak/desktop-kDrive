@@ -23,8 +23,6 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 
-#include <regex>
-
 namespace KDC {
 
 void TestCacheDirectory::testCacheDir() {
@@ -74,7 +72,7 @@ void TestCacheDirectory::testCleanUpCacheDir() {
     DirectoryEntry entry;
     auto count = 0;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-        if (std::regex_match(SyncName2Str(entry.path().filename().native()), std::regex(R"(kdrive_.{10})"))) {
+        if (CacheDirectory::isTmpFileName(SyncName2Str(entry.path().filename().native()))) {
             CPPUNIT_ASSERT(false);
         }
         count++;

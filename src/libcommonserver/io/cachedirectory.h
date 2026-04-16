@@ -21,6 +21,7 @@
 #include "libcommon/utility/types.h"
 
 #include <mutex>
+#include <string_view>
 
 namespace KDC {
 
@@ -31,7 +32,14 @@ class CacheDirectory {
 
         ExitInfo path(SyncPath &cacheDirectory) noexcept;
 
+        // Shared naming contract used by creators and cleanup logic.
+        static std::string createTmpFileName();
+        static bool isTmpFileName(std::string_view fileName) noexcept;
+
     private:
+        static constexpr std::string_view tmpFilePrefix = "kdrive_";
+        static constexpr int tmpFileRandomPartLength = 10;
+
         ExitInfo initDirectory() noexcept;
         void cleanUp() const;
 
