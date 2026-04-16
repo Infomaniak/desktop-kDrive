@@ -6,10 +6,6 @@ C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built w
 contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends
 under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
-C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository
-contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends
-under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
-
 All C++ code is in the `KDC` namespace.
 
 ## How to Use These Files
