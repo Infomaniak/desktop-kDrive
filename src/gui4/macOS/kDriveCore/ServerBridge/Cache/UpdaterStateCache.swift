@@ -17,10 +17,13 @@
  */
 
 import Combine
+import CppInterop
 import Foundation
 
+public typealias UpdateStatePublisher = AnyPublisher<KDC.UpdateState, Never>
+
 public protocol UpdaterCacheObservable: Sendable {
-    var updateStatePublisher: AnyPublisher<KDC.UpdateState, Never> { get }
+    var updateStatePublisher: UpdateStatePublisher { get }
 }
 
 public protocol UpdaterCache {
@@ -33,7 +36,7 @@ public actor UpdaterStateCache: UpdaterCache, UpdaterCacheObservable {
 
     private nonisolated let updateStateSubject = PassthroughSubject<KDC.UpdateState, Never>()
 
-    public nonisolated var updateStatePublisher: AnyPublisher<KDC.UpdateState, Never> {
+    public nonisolated var updateStatePublisher: UpdateStatePublisher {
         updateStateSubject
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .eraseToAnyPublisher()
