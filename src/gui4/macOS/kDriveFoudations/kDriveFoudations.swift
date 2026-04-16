@@ -17,4 +17,8 @@
  */
 
 import Foundation
+import CppInterop  // Exposes types from cstypes.h and comm.h
 
+func a() {
+    print("KDC.GuiJobType.Query: \(KDC.GuiJobType.Query)")
+}
