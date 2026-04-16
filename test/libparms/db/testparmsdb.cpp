@@ -687,7 +687,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3"), SyncPath("/dir1/file3_dest"),
+                                                                  SyncPath("/dir1/file3"), std::nullopt,
                                                                   selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
@@ -698,24 +698,13 @@ void TestParmsDb::testError() {
     {
         std::vector<Error> selectedErrors;
         bool found = false;
-        // Path-based matching is only allowed when both path and destinationPath are provided.
-        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
-        CPPUNIT_ASSERT(!found);
-        CPPUNIT_ASSERT(selectedErrors.empty());
-    }
-
-    {
-        std::vector<Error> selectedErrors;
-        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::Node, sync1.dbId(), 20, selectedErrors));
-        CPPUNIT_ASSERT_EQUAL(size_t(4), selectedErrors.size());
-        const auto iterator = std::find_if(selectedErrors.cbegin(), selectedErrors.cend(),
-                                           [](const auto &error) { return error.remoteNodeId() == "remoteNode-1"; });
-        CPPUNIT_ASSERT(iterator != selectedErrors.cend());
-        CPPUNIT_ASSERT_EQUAL(ConflictType::MoveDelete, iterator->conflictType());
-        CPPUNIT_ASSERT_EQUAL(InconsistencyType::Case, iterator->inconsistencyType());
-        CPPUNIT_ASSERT_EQUAL(CancelType::Move, iterator->cancelType());
-        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file2_dest"), iterator->destinationPath());
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt, std::nullopt,
+                                                                  SyncPath("/dir1/file3_dest"),
+                                                                  selectedErrors, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3_dest"), selectedErrors.at(0).destinationPath());
     }
 }
 
