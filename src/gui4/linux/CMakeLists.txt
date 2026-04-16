@@ -28,6 +28,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceeventbus.h
         app/services/userservice.cpp
         app/services/userservice.h
+        app/services/driveservice.cpp
+        app/services/driveservice.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
