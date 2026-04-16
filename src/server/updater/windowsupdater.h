@@ -56,7 +56,7 @@ class WindowsUpdater : public AbstractUpdater {
          * @param filepath Path to the downloaded installer.
          * @return true if the checksum is valid.
          */
-        virtual bool verifyFileChecksum(const SyncPath &filepath);
+        bool verifyFileChecksum(const SyncPath &filepath);
 
         /**
          * Compute the checksum of the downloaded installer.
@@ -73,6 +73,8 @@ class WindowsUpdater : public AbstractUpdater {
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
 
         bool _autoUpdate{false};
+
+        friend class TestWindowsUpdater;
 };
 
 } // namespace KDC

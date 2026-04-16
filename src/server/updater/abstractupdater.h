@@ -79,6 +79,7 @@ class AbstractUpdater {
         bool _appShouldBeBlocked{false};
 
         friend class TestAbstractUpdater;
+        friend class TestWindowsUpdater;
         friend class MockUpdater;
 };
 

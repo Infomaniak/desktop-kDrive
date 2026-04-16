@@ -28,6 +28,8 @@
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
 #include "utility/digitalsignaturechecker_win.h"
+#include "mockupdatechecker.h"
+#include "jobs/syncjobmanager.h"
 
 namespace KDC {
 
@@ -71,6 +73,8 @@ void TestWindowsUpdater::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 
@@ -149,8 +153,50 @@ void TestWindowsUpdater::testIsSignatureValid() {
 }
 
 void TestWindowsUpdater::testIsChecksumValid() {
-    // file have wrong checksum
-    CPPUNIT_ASSERT(false);
+    // App version is NOT blocked
+    static const std::string noChecksumValue("");
+    static const std::string fakeChecksumValue("ddd");
+    static const std::string trueChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
+    LocalTemporaryDirectory tmpDir;
+    auto path = tmpDir.path();
+    IoError ioError = IoError::Success;
+    IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+    {
+        WindowsUpdater updater;
+        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
+        AbstractUpdater &up = static_cast<AbstractUpdater&>(updater);
+        testUpdateChecker.get()->setVersionReceived(true);
+        testUpdateChecker.get()->setChecksumForAllChannels(noChecksumValue);
+        up._updateChecker = testUpdateChecker;
+        UniqueId jobId = 0;
+        (void) testUpdateChecker.get()->checkUpdateAvailability(&jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg"));
+    }
+    {
+        WindowsUpdater updater;
+        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
+        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
+        testUpdateChecker.get()->setVersionReceived(true);
+        testUpdateChecker.get()->setChecksumForAllChannels(fakeChecksumValue);
+        up._updateChecker = testUpdateChecker;
+        UniqueId jobId = 0;
+        (void) testUpdateChecker.get()->checkUpdateAvailability(&jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg"));
+    }
+    {
+        WindowsUpdater updater;
+        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
+        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
+        testUpdateChecker.get()->setVersionReceived(true);
+        testUpdateChecker.get()->setChecksumForAllChannels(trueChecksumValue);
+        up._updateChecker = testUpdateChecker;
+        UniqueId jobId = 0;
+        (void) testUpdateChecker.get()->checkUpdateAvailability(&jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(updater.verifyFileChecksum(tmpDir.path() / "picture-1.jpg"));
+    }
 }
 
 } // namespace KDC
