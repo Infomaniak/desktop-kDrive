@@ -578,14 +578,14 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     fetchFinished = false;
     fetchError = false;
 
+    SyncPath cacheDirectoryPath;
+    if (const auto exitInfo = _cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        return exitInfo;
+    }
+
     std::ofstream output;
     do {
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-
-        SyncPath cacheDirectoryPath;
-        if (const auto exitInfo = _cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
-            return exitInfo;
-        }
         _tmpPath = cacheDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
