@@ -1312,8 +1312,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/ios-dependency-injection.git";
 			requirement = {
-				branch = "feat/dynamic-library";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.6;
 			};
 		};
 		F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */ = {
