@@ -6,6 +6,10 @@ C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built w
 contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends
 under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
+C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository
+contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends
+under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
+
 All C++ code is in the `KDC` namespace.
 
 ## How to Use These Files
@@ -71,8 +75,6 @@ clang-format -i <file>
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 - Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` files (it can break formatting/structure unexpectedly in this project).
-- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
-  default. `linux-v4/main` is the feature-integration branch regularly rebased on `develop`.
 
 ## JIT Index
 
