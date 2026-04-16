@@ -122,6 +122,8 @@ public enum KDriveLocalizable {
   public static let buttonRetry = KDriveLocalizable.tr("Localizable", "buttonRetry", fallback: "Retry")
   /// loco:69c106a55fd64fd95c00ef42
   public static let buttonReturnToDefaultFolder = KDriveLocalizable.tr("Localizable", "buttonReturnToDefaultFolder", fallback: "Return to the default folder")
+  /// loco:6989c90fad75adcb2e05c302
+  public static let buttonSave = KDriveLocalizable.tr("Localizable", "buttonSave", fallback: "Save")
   /// loco:69a7f03b5fa9c90f560c1192
   public static let buttonSearch = KDriveLocalizable.tr("Localizable", "buttonSearch", fallback: "Search")
   /// loco:6964e1dfed4b6acb0107409a
@@ -425,6 +427,27 @@ public enum KDriveLocalizable {
   public static let onboardingWindowTitle = KDriveLocalizable.tr("Localizable", "onboardingWindowTitle", fallback: "Welcome to kDrive")
   /// loco:698b0ee1587496f4f5035cd2
   public static let openKDriveAtStartupSetting = KDriveLocalizable.tr("Localizable", "openKDriveAtStartupSetting", fallback: "Open kDrive at computer startup")
+  /// loco:698b2ef3d4aa9d35260e3484
+  public static let proxyConnectionDescription = KDriveLocalizable.tr("Localizable", "proxyConnectionDescription", fallback: "Define how kDrive connects to the internet.")
+  /// loco:698b3452210436b0e501a3a2
+  public static let proxyHost = KDriveLocalizable.tr("Localizable", "proxyHost", fallback: "Server")
+  /// loco:698b347b1d024ca9f20d69a2
+  public static let proxyNeedAuth = KDriveLocalizable.tr("Localizable", "proxyNeedAuth", fallback: "Authentication required")
+  /// loco:698b349f7ad01ee67e0d5f92
+  public static let proxyPassword = KDriveLocalizable.tr("Localizable", "proxyPassword", fallback: "Password")
+  /// loco:698b345c116156e70a073a42
+  public static let proxyPort = KDriveLocalizable.tr("Localizable", "proxyPort", fallback: "Port")
+  /// loco:698b2e7edcb5f5b87b0d29e2
+  ///  * Title of the proxy settings section in advanced settings.
+  public static let proxySettings = KDriveLocalizable.tr("Localizable", "proxySettings", fallback: "Proxy settings")
+  /// loco:698b2ff2aa06201dc403c422
+  public static let proxyType = KDriveLocalizable.tr("Localizable", "proxyType", fallback: "Proxy type")
+  /// loco:698b2f2e89df53c9e4039b02
+  public static let proxyTypeHTTP = KDriveLocalizable.tr("Localizable", "proxyTypeHTTP", fallback: "Manual configuration")
+  /// loco:698b2f80dac62f80330a2412
+  public static let proxyTypeNone = KDriveLocalizable.tr("Localizable", "proxyTypeNone", fallback: "None")
+  /// loco:698b34ab7ad01ee67e0d5f94
+  public static let proxyUser = KDriveLocalizable.tr("Localizable", "proxyUser", fallback: "Username")
   /// loco:698af22fb4f7b3f2640d1493
   public static let releaseChannelBeta = KDriveLocalizable.tr("Localizable", "releaseChannelBeta", fallback: "Beta")
   /// loco:698af24c3d21055870072b12
