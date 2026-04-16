@@ -23,6 +23,7 @@ public extension UserDefaults {
         public static let isFirstLaunch = "isFirstLaunch"
         public static let shouldPresentOnboarding = "shouldPresentOnboarding"
         public static let selectedSynchroDbId = "selectedSynchroDbId"
+        public static let sentryAuthorized = "sentryAuthorized"
     }
 }
 
@@ -35,4 +36,20 @@ public extension UserDefaults {
             set(newValue, forKey: Key.selectedSynchroDbId)
         }
     }
+
+    var isSentryAuthorized: Bool {
+        get {
+            if object(forKey: Key.sentryAuthorized) == nil {
+                set(DefaultPreferences.sentryAuthorized, forKey: Key.sentryAuthorized)
+            }
+            return bool(forKey: Key.sentryAuthorized)
+        }
+        set {
+            set(newValue, forKey: Key.sentryAuthorized)
+        }
+    }
+}
+
+public enum DefaultPreferences {
+    public static let sentryAuthorized = true
 }
