@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -238,6 +239,13 @@ namespace Infomaniak.kDrive.ViewModels
             if (!result)
                 SyncType = previousType;
             SyncTypeMigrationInProgress = false;
+            return result;
+        }
+
+        public async Task<bool> RefreshErrors()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool result = await commService.RefreshSyncErrors(DbId, CancellationToken.None);
             return result;
         }
 

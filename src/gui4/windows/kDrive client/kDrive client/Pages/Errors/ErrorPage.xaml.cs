@@ -63,5 +63,20 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             frame.Navigate(typeof(Pages.ActivityPage));
         }
+
+        private async void RefreshButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (_errorPageVM is not null)
+            {
+                Control? control = sender as Control;
+                if (control is not null)
+                    control.IsEnabled = false;
+
+                await _errorPageVM.RefreshErrors();
+
+                if (control is not null)
+                    control.IsEnabled = true;
+            }
+        }
     }
 }

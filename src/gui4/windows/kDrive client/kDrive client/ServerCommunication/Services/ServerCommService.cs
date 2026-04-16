@@ -1281,6 +1281,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_SYNC_REFRESH, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
