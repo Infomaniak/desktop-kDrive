@@ -96,7 +96,6 @@ void TmpBlacklistManager::clear(bool &found) {
         while (errorIt != errors.end()) {
             logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
             errorIt = errors.erase(errorIt);
-            ++errorIt;
             found = true;
         }
         NodeSet emptyNodeSet;

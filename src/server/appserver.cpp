@@ -963,7 +963,7 @@ void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
 }
 
 VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
-    if (_noUpdate) {
+    if (_noUpdate || !_updateManager) {
         VersionInfo versionInfo;
         versionInfo.tag = CommonUtility::versionTag();
         versionInfo.buildVersion = CommonUtility::versionBuild();
@@ -980,7 +980,7 @@ UpdateState AppServer::getUpdateState() const {
     if (_noUpdate) return UpdateState::NoUpdate;
 
     assert(_updateManager && "The update manager is not set.");
-
+    if (!_updateManager) return UpdateState::Unknown; 
     return _updateManager->state();
 }
 
