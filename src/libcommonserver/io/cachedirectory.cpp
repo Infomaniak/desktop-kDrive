@@ -71,8 +71,13 @@ ExitInfo CacheDirectory::initDirectory() noexcept {
 }
 
 void CacheDirectory::cleanUp() const {
+    if (_cacheDirectoryPath.empty()) return;
+
     auto ioError = IoError::Unknown;
     IoHelper::DirectoryIterator dirIt(_cacheDirectoryPath, false, ioError);
+    if (ioError != IoError::Success) {
+        return;
+    }
     bool endOfDir = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
