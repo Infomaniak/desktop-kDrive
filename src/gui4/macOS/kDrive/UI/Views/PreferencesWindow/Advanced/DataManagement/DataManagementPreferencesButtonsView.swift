@@ -18,7 +18,6 @@
 
 import InfomaniakDI
 import kDriveCoreUI
-import kDriveResources
 import SwiftUI
 
 struct DataManagementPreferencesButtonsView: View {

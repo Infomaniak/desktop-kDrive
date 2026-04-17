@@ -18,10 +18,12 @@
 
 import Sentry
 
-public class SentryService {
+public final class SentryService {
     private var isSentryAuthorized = true
 
-    public init() {}
+    public init() {
+        fetchAuthorization()
+    }
 
     public func initSentry() {
         SentrySDK.start { options in
@@ -46,7 +48,7 @@ public class SentryService {
         }
     }
 
-    public func fetchAuthorization() {
+    private func fetchAuthorization() {
         Task {
             if let isEnabled = try? await ParametersJobs().parametersInfo().sentryEnabled {
                 isSentryAuthorized = isEnabled

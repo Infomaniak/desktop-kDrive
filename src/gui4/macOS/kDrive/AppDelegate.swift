@@ -28,7 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var statusBarManager: StatusBarManager?
 
     // periphery:ignore - We keep a strong reference on the SentryService
-    private(set) var sentryService = SentryService()
+    private(set) var sentryService: SentryService?
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -43,8 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        sentryService.fetchAuthorization()
-        sentryService.initSentry()
+        sentryService = SentryService()
+        sentryService?.initSentry()
 
         statusBarManager = StatusBarManager()
 
