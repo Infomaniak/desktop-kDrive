@@ -43,7 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        sentryService.fetchAuthorization()
         sentryService.initSentry()
+
         statusBarManager = StatusBarManager()
 
         openMainWindow()
