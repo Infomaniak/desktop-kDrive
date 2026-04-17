@@ -60,20 +60,25 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
     setLastError(QString());
 
     const QPointer<UserService> self(this);
-    _commService.requestUserAvailableDrives(static_cast<UserDbId>(userDbId),
-                                            [self](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
-                                                if (!self) {
-                                                    return;
-                                                }
+    const auto requestedUserDbId = static_cast<UserDbId>(userDbId);
+    _commService.requestUserAvailableDrives(
+            requestedUserDbId, [self, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+                if (!self) {
+                    return;
+                }
 
-                                                self->endRequest();
-                                                if (exitInfo.code() != ExitCode::Ok) {
-                                                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
-                                                    return;
-                                                }
+                self->endRequest();
+                if (exitInfo.code() != ExitCode::Ok) {
+                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                    return;
+                }
 
-                                                self->_appCache.replaceAvailableDrives(list);
-                                            });
+                if (self->_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
+                    return;
+                }
+
+                self->_appCache.replaceAvailableDrives(list);
+            });
 }
 
 void UserService::deleteUser(const qint64 userDbId) {
@@ -111,7 +116,9 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
         }
 
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            const QString errorDescription = ServiceUtils::formatExitInfo(exitInfo);
+            self->setLastError(errorDescription);
+            emit self->loginTokenFailed(QString(), errorDescription);
             return;
         }
 
