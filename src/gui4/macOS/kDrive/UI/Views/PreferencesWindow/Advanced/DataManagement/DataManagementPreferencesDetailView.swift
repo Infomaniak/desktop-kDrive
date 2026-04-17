@@ -21,35 +21,34 @@ import kDriveResources
 import SwiftUI
 
 struct DataManagementPreferencesDetailView: View {
+    @State private var allowTracking = false
+
     let item: DataManagementItem
     let repository: PreferencesRepository
-
-    @State private var allowTracking = false
 
     var body: some View {
         Form {
             VStack(alignment: .leading, spacing: AppPadding.padding8) {
                 item.image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 24)
                     .padding(.vertical, AppPadding.padding4)
-                    .frame(width: 104, height: 32, alignment: .leading)
+
                 Text(item.description)
-                    .font(.Tokens.body)
+                    .font(.Tokens.callout)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
+
             Toggle(KDriveLocalizable.labelAllowTracking, isOn: $allowTracking)
         }
         .groupedFormatStyle()
-        .onChange(of: allowTracking, perform: { newValue in
-            updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
-
-        })
         .onAppear {
-            allowTracking = getTracking()
+            allowTracking = repository.parametersInfo[keyPath: item.keyPath]
         }
-    }
-
-    func getTracking() -> Bool {
-        return repository.parametersInfo[keyPath: item.keyPath]
+        .onChange(of: allowTracking) { newValue in
+            updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
+        }
     }
 
     private func updateValue<T: Equatable>(

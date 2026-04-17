@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-class DataManagementPreferencesViewController: TitledViewController<DataManagementPreferencesView> {
+final class DataManagementPreferencesViewController: TitledViewController<DataManagementPreferencesView> {
     convenience init() {
         @InjectService var router: PreferencesViewRouter
         self.init(

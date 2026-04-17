@@ -27,7 +27,7 @@ struct DataManagementPreferencesButtonsView: View {
             ForEach(DataManagementItem.allCases) { item in
                 FormNavigationCell(label: item.label) {
                     @InjectService var router: PreferencesViewRouter
-                    router.append(item.preferencesView)
+                    router.append(item.preferencesViewDetail)
                 }
             }
         }

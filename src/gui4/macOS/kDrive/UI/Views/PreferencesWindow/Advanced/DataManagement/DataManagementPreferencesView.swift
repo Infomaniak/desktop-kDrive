@@ -20,7 +20,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-enum DataManagementItem: String, Identifiable, CaseIterable {
+enum DataManagementItem: String, Sendable, Identifiable, CaseIterable {
     var id: String {
         return rawValue
     }
@@ -28,7 +28,7 @@ enum DataManagementItem: String, Identifiable, CaseIterable {
     case matomo
     case sentry
 
-    var preferencesView: PreferencesViewDetail {
+    var preferencesViewDetail: PreferencesViewDetail {
         switch self {
         case .matomo:
             return .dataManagementDetail(.matomo)

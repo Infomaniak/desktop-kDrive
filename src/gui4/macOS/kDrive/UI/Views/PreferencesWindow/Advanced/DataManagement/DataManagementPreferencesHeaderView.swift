@@ -24,9 +24,9 @@ struct DataManagementPreferencesHeaderView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding8) {
             Text(KDriveLocalizable.dataManagementSubtitle)
-                .font(.Tokens.title3Emphasized)
+                .font(.Tokens.bodyEmphasized)
             Text(KDriveLocalizable.dataManagementDescription)
-                .font(.Tokens.body)
+                .font(.Tokens.callout)
                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
             Link(KDriveLocalizable.viewSourceCode, destination: DataManagementPreferencesView.githubURL)

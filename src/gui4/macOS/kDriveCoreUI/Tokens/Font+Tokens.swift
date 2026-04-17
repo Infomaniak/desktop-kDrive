@@ -38,6 +38,8 @@ public extension Font {
         public static let body: Font = .body
         public static let bodyEmphasized: Font = .Tokens.body.weight(.emphasized)
 
+        public static let callout: Font = .callout
+
         public static let subheadline: Font = .subheadline
         public static let subheadlineEmphasized: Font = .Tokens.subheadline.weight(.semibold)
     }

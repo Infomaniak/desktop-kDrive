@@ -95,7 +95,10 @@ final class PreferencesSplitViewController: IKSplitViewController {
         case .dataManagement:
             contentViewController = DataManagementPreferencesViewController()
         case .dataManagementDetail(let dataManagementItem):
-            contentViewController = DataManagementPreferencesDetailViewController(dataManagementItem: dataManagementItem, repository: repository)
+            contentViewController = DataManagementPreferencesDetailViewController(
+                dataManagementItem: dataManagementItem,
+                repository: repository
+            )
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository)
         }
