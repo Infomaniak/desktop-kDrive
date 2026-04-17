@@ -36,6 +36,9 @@
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
 - `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
+- `app/cache/appcache.*`: central observable cache (`AppCache` QObject) — typed snapshots and incremental
+  `upsert*`/`remove*` slots for users, accounts, drives, available drives, syncs, and errors; QML models and
+  services read from it instead of parsing transport payloads directly.
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
