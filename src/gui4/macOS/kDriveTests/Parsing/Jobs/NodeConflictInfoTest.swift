@@ -38,17 +38,17 @@ struct NodeConflictInfoTest {
 
     // MARK: - Parsing Test
 
-//    @Test("Successfully parses a valid NODE_CONFLICT_INFO.json")
-//    func parseValidJobCallback() throws {
-//        // GIVEN
-//        let callbackData = validJobCallbackData
-//
-//        // WHEN
-//        let response = try decoder.decode(CallbackMessage<NodeConflictInfoResponse>.self, from: callbackData)
-//
-//        // THEN
-//        #expect(response.body.nodeConflictInfo.authorName == "Test Author")
-//        #expect(response.body.nodeConflictInfo.fileSize == 12_345_678)
-//        #expect(response.body.nodeConflictInfo.lastModificationDate == 1_704_067_200)
-//    }
+    @Test("Successfully parses a valid NODE_CONFLICT_INFO.json")
+    func parseValidJobCallback() throws {
+        // GIVEN
+        let callbackData = validJobCallbackData
+
+        // WHEN
+        let response = try decoder.decode(CallbackMessage<NodeConflictInfoResponse>.self, from: callbackData)
+
+        // THEN
+        #expect(response.body.nodeConflictInfo.authorName == "Test Author")
+        #expect(response.body.nodeConflictInfo.fileSize == 12_345_678)
+        #expect(response.body.nodeConflictInfo.lastModificationDate == 1_704_067_200)
+    }
 }

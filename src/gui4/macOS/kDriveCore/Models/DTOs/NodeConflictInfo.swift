@@ -21,17 +21,17 @@ import Foundation
 public struct NodeConflictInfo: Sendable {
     public let authorName: String
     public let fileSize: Int64
-    public let lastModificationDate: Int64
+    public let lastModificationDate: TimeInterval
 
     init(nodeConflictInfoMetadata: NodeConflictInfoMetadata) {
         authorName = nodeConflictInfoMetadata.authorName
         fileSize = nodeConflictInfoMetadata.fileSize
-        lastModificationDate = nodeConflictInfoMetadata.lastModificationDate
+        lastModificationDate = TimeInterval(nodeConflictInfoMetadata.lastModificationDate)
     }
 
     init(authorName: String, fileSize: Int64, lastModificationDate: Int64) {
         self.authorName = authorName
         self.fileSize = fileSize
-        self.lastModificationDate = lastModificationDate
+        self.lastModificationDate = TimeInterval(lastModificationDate)
     }
 }
