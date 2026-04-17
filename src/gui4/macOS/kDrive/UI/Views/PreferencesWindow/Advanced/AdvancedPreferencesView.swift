@@ -46,6 +46,10 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
 
     var isDisabled: Bool {
         switch self {
+        case .debugLogs:
+            return true
+        default:
+            return false
         case .dataManagement:
             return false
         default:
@@ -72,6 +76,7 @@ struct AdvancedPreferencesView: View {
                 FormNavigationCell(label: item.label) {
                     navigate(to: item)
                 }
+                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()

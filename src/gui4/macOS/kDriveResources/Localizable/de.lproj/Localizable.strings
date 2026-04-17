@@ -20,6 +20,9 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Wählen Sie den Vertriebskanal";
 
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Weitere Informationen anzeigen";
+
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Wählen Sie einen Synchronisationsmodus";
 

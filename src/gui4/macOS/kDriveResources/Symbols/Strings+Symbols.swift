@@ -18,6 +18,8 @@ public enum KDriveLocalizable {
   public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
   /// loco:69a6d9dd08a75d40410b53f6
   public static let accessibilityBetaProgramPicker = KDriveLocalizable.tr("Localizable", "accessibilityBetaProgramPicker", fallback: "Choosing a distribution channel")
+  /// loco:69e1dcc78d162264ae0f2f52
+  public static let accessibilityMoreInformation = KDriveLocalizable.tr("Localizable", "accessibilityMoreInformation", fallback: "Show more information")
   /// loco:69b275fb3440db13f0011c03
   public static let accessibilitySelectSynchroMode = KDriveLocalizable.tr("Localizable", "accessibilitySelectSynchroMode", fallback: "Select a synchronization mode")
   /// loco:6981cb92c70239c9ed0d45a3

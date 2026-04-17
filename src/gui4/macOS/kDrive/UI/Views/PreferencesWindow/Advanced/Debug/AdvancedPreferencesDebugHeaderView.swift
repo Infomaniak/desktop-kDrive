@@ -26,7 +26,7 @@ struct AdvancedPreferencesDebugHeaderView: View {
             Text(KDriveLocalizable.debugLogsSettings)
                 .padding(.vertical, AppPadding.padding8)
             Text(KDriveLocalizable.debugLogsDescription)
-                .font(.Tokens.subheadline)
+                .font(.Tokens.callout)
                 .foregroundStyle(.secondary)
         }
     }

@@ -25,6 +25,7 @@ struct SendDebugFolderView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Binding var errorPresented: Bool
+
     @State private var sendOnlyLastSession = false
     @State private var isSending = false
 
@@ -46,9 +47,9 @@ struct SendDebugFolderView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isSending) {
-                    sendFolder()
+                    await sendFolder()
                     dismiss()
-                }label: {
+                } label: {
                     Text(KDriveLocalizable.buttonSend)
                 }
             }
@@ -60,23 +61,22 @@ struct SendDebugFolderView: View {
         }
     }
 
-    func sendFolder() {
-        Task {
-            let utilityJobs = UtilityJobs()
-            do {
-                try await utilityJobs.sendLogToSupport(includeArchivedLogs: !sendOnlyLastSession)
-            } catch {
-                errorPresented = true
-            }
+    func sendFolder() async {
+        let utilityJobs = UtilityJobs()
+        do {
+            try await utilityJobs.sendLogToSupport(includeArchivedLogs: !sendOnlyLastSession)
+        } catch {
+            errorPresented = true
         }
     }
 }
 
 struct AdvancedPreferencesDebugSendView: View {
+    @Environment(\.dismiss) private var dismiss
+
     @State private var isShowingSheet = false
     @State private var errorPresented = false
 
-    @Environment(\.dismiss) private var dismiss
     var body: some View {
         Section {
             HStack {

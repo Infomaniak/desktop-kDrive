@@ -23,8 +23,10 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesDebugEnableView: View {
-    let repository: PreferencesRepository
     @State private var enableDebugLogs = false
+
+    let repository: PreferencesRepository
+
     var body: some View {
         Section {
             ToggleView(
@@ -38,10 +40,12 @@ struct AdvancedPreferencesDebugEnableView: View {
         } footer: {
             Button(KDriveLocalizable.buttonOpenDebugFolder, action: openDebugFolder)
         }
-        .onAppear(perform: getEnableDebugLogs)
-        .onChange(of: enableDebugLogs, perform: { newValue in
+        .onAppear {
+            enableDebugLogs = repository.parametersInfo.shouldUseLog
+        }
+        .onChange(of: enableDebugLogs) { newValue in
             updateValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue)
-        })
+        }
     }
 
     private func openDebugFolder() {
@@ -54,10 +58,6 @@ struct AdvancedPreferencesDebugEnableView: View {
             print(directory)
             NSWorkspace.shared.open(directory)
         }
-    }
-
-    func getEnableDebugLogs() {
-        enableDebugLogs = repository.parametersInfo.shouldUseLog
     }
 
     private func updateValue<T: Equatable>(

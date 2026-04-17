@@ -44,7 +44,8 @@ struct ToggleView: View {
     var body: some View {
         HStack(alignment: .center) {
             LabelContainerView(labelTitle: labelTitle, labelDescription: labelDescription)
-            Toggle("", isOn: $isOn).labelsHidden()
+            Toggle(labelTitle, isOn: $isOn)
+                .labelsHidden()
                 .padding(.trailing, AppPadding.padding8)
             if let helperText {
                 Image(systemName: "info.circle")
@@ -52,16 +53,19 @@ struct ToggleView: View {
                     .frame(width: 16, height: 16)
                     .foregroundStyle(.secondary)
                     .help(helperText)
+                    .accessibilityLabel(KDriveLocalizable.accessibilityMoreInformation)
             }
         }
     }
 }
 
 struct AdvancedPreferencesDebugOptionsView: View {
-    let repository: PreferencesRepository
     @State private var automaticCleaning = false
     @State private var extendedLog = false
     @State private var debugLevel: UILogLevel = .debug
+
+    let repository: PreferencesRepository
+
     var body: some View {
         Section {
             ToggleView(
@@ -81,7 +85,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
                     labelTitle: KDriveLocalizable.debugLevelSetting,
                     labelDescription: KDriveLocalizable.debugLevelDescription
                 )
-                Picker("", selection: $debugLevel) {
+                Picker(KDriveLocalizable.debugLevelSetting, selection: $debugLevel) {
                     ForEach(UILogLevel.allCases, id: \.id) { level in
                         Text(level.label).tag(level)
                     }
@@ -92,15 +96,15 @@ struct AdvancedPreferencesDebugOptionsView: View {
             }
         }
         .onAppear(perform: getAllValues)
-        .onChange(of: automaticCleaning, perform: { newValue in
+        .onChange(of: automaticCleaning) { newValue in
             updateValue(\.$automaticCleaning, \.shouldPurgeOldLogs, newValue: newValue)
-        })
-        .onChange(of: extendedLog, perform: { newValue in
+        }
+        .onChange(of: extendedLog) { newValue in
             updateValue(\.$extendedLog, \.isExtendedLogEnabled, newValue: newValue)
-        })
-        .onChange(of: debugLevel, perform: { newValue in
+        }
+        .onChange(of: debugLevel) { newValue in
             updateValue(\.$debugLevel, \.logLevel, newValue: newValue)
-        })
+        }
     }
 
     func getAllValues() {
