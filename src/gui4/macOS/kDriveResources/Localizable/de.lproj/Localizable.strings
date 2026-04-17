@@ -209,7 +209,7 @@
 "copyingLink" = "Kopieren von Link…";
 
 /* loco:698b169cf72c91b1760a7002 */
-"dataManagementDescription" = "Sie können die von Infomaniak erfassten Nutzungs- und Betriebsdaten anpassen, um Fehler zu beheben und die Anwendung zu verbessern. Beide verwendeten Tools werden ausschliesslich von uns gehostet und verwaltet.\n\n\nDer Quellcode dieser Anwendung kann überprüft werden, die gesammelten Informationen sind anonym und Ihre persönlichen Daten bleiben streng vertraulich und werden niemals an Dritte weitergegeben.";
+"dataManagementDescription" = "Sie können die von Infomaniak erfassten Nutzungs- und Betriebsdaten anpassen, um Fehler zu beheben und die Anwendung zu verbessern. Beide verwendeten Tools werden ausschliesslich von uns gehostet und verwaltet.\n\nDer Quellcode dieser Anwendung kann überprüft werden, die gesammelten Informationen sind anonym und Ihre persönlichen Daten bleiben streng vertraulich und werden niemals an Dritte weitergegeben.";
 
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Datenverwaltung";

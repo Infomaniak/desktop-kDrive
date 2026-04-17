@@ -209,7 +209,7 @@
 "copyingLink" = "Copying Link…";
 
 /* loco:698b169cf72c91b1760a7002 */
-"dataManagementDescription" = "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.";
+"dataManagementDescription" = "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.";
 
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Data management";
