@@ -25,10 +25,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         InitializeComponent();
         SetupNavBar("");
     }
-    private void Page_Unloaded(object sender, RoutedEventArgs e)
-    {
-        Bindings.StopTracking();
-    }
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         _baseDrive = e.Parameter as IDrive;

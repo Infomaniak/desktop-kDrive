@@ -31,10 +31,6 @@ namespace Infomaniak.kDrive.Pages
             UpdateContent();
             Logger.Log(Logger.Level.Debug, "NotRenewErrorPage components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         private void UpdateContent()
         {
             TitleTextBlock.Text = Localizer.Instance.GetString("driveLockedErrorTitle");

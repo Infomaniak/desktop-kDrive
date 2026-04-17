@@ -11,7 +11,6 @@
                       xmlns:converters="using:Infomaniak.kDrive.Converters"
                       xmlns:types="using:Infomaniak.kDrive.Types"
                       xmlns:kDrive="using:Infomaniak.kDrive"
-                      Unloaded="UserControl_Unloaded"
                       mc:Ignorable="d">
     <toolKit:SettingsCard.Resources>
         <!-- Converters -->

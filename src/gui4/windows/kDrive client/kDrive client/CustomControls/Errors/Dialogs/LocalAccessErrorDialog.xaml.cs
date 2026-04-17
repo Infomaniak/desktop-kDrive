@@ -14,8 +14,4 @@ public partial class LocalAccessErrorDialog : Page
         Error = error;
         InitializeComponent();
     }
-    private void Page_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        Bindings.StopTracking();
-    }
 }

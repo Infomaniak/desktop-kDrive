@@ -29,10 +29,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             UpdateCard();
             Logger.Log(Logger.Level.Error, $"DefaultError displayed: {Error?.ToString() ?? "null"}");
         }
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         private void UpdateCard()
         {
             Properties.Clear();

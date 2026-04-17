@@ -10,8 +10,7 @@
       xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:types="using:Infomaniak.kDrive.Types"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      mc:Ignorable="d"
-      Unloaded="Page_Unloaded">
+      mc:Ignorable="d">
 
     <Grid HorizontalAlignment="Center"
           VerticalAlignment="Center"

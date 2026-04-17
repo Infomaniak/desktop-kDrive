@@ -12,10 +12,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
         }
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         public LogUploadManager? LogUploadManager
         {
             get { return (LogUploadManager?)GetValue(LogUploadManagerProperty); }

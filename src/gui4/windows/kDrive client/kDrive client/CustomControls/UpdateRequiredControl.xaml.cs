@@ -13,13 +13,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             this.InitializeComponent();
         }
-
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
-
-        private Visibility UpdateButtonVisibility(bool fetchingUpdate, AppVersion? availableUpdate)
+                private Visibility UpdateButtonVisibility(bool fetchingUpdate, AppVersion? availableUpdate)
         {
             if (fetchingUpdate)
                 return Visibility.Visible;

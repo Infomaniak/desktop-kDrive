@@ -15,10 +15,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
         }
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
 
         private async void TrashButton_Click(object sender, RoutedEventArgs e)
         {

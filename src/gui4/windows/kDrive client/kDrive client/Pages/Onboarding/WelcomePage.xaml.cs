@@ -20,10 +20,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "WelcomePage components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding obvm)

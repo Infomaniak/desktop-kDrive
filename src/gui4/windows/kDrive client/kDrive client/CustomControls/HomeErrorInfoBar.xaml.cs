@@ -22,12 +22,6 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            ControlViewModel.Dispose();
-            Bindings.StopTracking();
-        }
-
         private async void kDriveFullInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
         {
             if (!await ControlViewModel.ResolveDriveFullError())

@@ -9,7 +9,6 @@
             xmlns:converters="using:Infomaniak.kDrive.Converters"
             xmlns:kDrive="using:Infomaniak.kDrive"
             Orientation="Horizontal"
-            Unloaded="UserControl_Unloaded"
             mc:Ignorable="d">
 
     <TextBlock x:Name="ExpandedTextBox" VerticalAlignment="Center"/>

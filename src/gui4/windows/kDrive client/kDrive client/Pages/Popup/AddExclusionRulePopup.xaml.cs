@@ -13,9 +13,5 @@ namespace Infomaniak.kDrive.Pages.Popup
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "AddExclusionRulePopup components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
     }
 }

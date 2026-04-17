@@ -29,10 +29,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             SetupNavBar("");
             Logger.Log(Logger.Level.Debug, "DriveManagementPage components initialized");
         }
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BaseDrive = e.Parameter as IDrive;

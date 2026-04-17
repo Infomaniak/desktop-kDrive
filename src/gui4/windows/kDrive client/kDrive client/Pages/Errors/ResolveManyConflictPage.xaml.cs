@@ -34,15 +34,8 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-           DetachEventHandlers();
+            DetachEventHandlers();
         }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DetachEventHandlers(); 
-            Bindings.StopTracking();
-        }
-
         private void DetachEventHandlers()
         {
             if (_errorPageVM is not null)
@@ -110,7 +103,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
 
-            _ = await dialog.ShowAsync(); 
+            _ = await dialog.ShowAsync();
         }
 
         private async void ResolveOneConflictButton_Click(object sender, RoutedEventArgs e)
