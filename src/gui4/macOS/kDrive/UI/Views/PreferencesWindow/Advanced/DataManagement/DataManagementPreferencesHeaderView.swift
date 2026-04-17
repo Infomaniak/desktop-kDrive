@@ -29,8 +29,8 @@ struct DataManagementPreferencesHeaderView: View {
                 .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-            Link(KDriveLocalizable.viewSourceCode, destination: DataManagementPreferencesView.githubUrl)
-                .buttonStyle(.borderedProminent)
+            Link(KDriveLocalizable.viewSourceCode, destination: DataManagementPreferencesView.githubURL)
+                .buttonStyle(.bordered)
                 .foregroundStyle(ColorToken.Accent.primary.asColor)
         }
     }

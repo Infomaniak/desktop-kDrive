@@ -75,7 +75,8 @@ enum DataManagementItem: String, Identifiable, CaseIterable {
 }
 
 struct DataManagementPreferencesView: View {
-    static let githubUrl = URL(string: "https://github.com/Infomaniak/desktop-kDrive")!
+    static let githubURL = URL(string: "https://github.com/Infomaniak/desktop-kDrive")!
+
     var body: some View {
         Form {
             Section {} header: {
