@@ -21,8 +21,6 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesNetworkDetailView: View {
-    let repository: PreferencesRepository
-
     @Binding var proxyType: UIProxyType?
     @Binding var hostName: String
     @Binding var port: Int
@@ -30,6 +28,8 @@ struct AdvancedPreferencesNetworkDetailView: View {
     @Binding var username: String
     @Binding var password: String
     @Binding var authRequired: Bool
+
+    let repository: PreferencesRepository
 
     var body: some View {
         Picker(KDriveLocalizable.proxyType, selection: $proxyType) {
@@ -39,6 +39,7 @@ struct AdvancedPreferencesNetworkDetailView: View {
 
         TextField(KDriveLocalizable.proxyHost, text: $hostName)
             .textFieldStyle(.roundedBorder)
+
         TextField(KDriveLocalizable.proxyPort, value: $port, formatter: NumberFormatter())
             .textFieldStyle(.roundedBorder)
 
@@ -48,6 +49,7 @@ struct AdvancedPreferencesNetworkDetailView: View {
             TextField(KDriveLocalizable.proxyUser, text: $username)
                 .textFieldStyle(.roundedBorder)
                 .frame(alignment: .leading)
+
             TextField(KDriveLocalizable.proxyPassword, text: $password)
                 .textFieldStyle(.roundedBorder)
                 .onAppear(perform: getAuthRequired)
@@ -67,13 +69,13 @@ struct AdvancedPreferencesNetworkDetailView: View {
 
 #Preview {
     AdvancedPreferencesNetworkDetailView(
-        repository: PreferencesRepository(),
         proxyType: .constant(.http),
         hostName: .constant(""),
         port: .constant(0),
         authType: .constant(.noAuth),
         username: .constant(""),
         password: .constant(""),
-        authRequired: .constant(false)
+        authRequired: .constant(false),
+        repository: PreferencesRepository()
     )
 }
