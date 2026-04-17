@@ -34,6 +34,8 @@ class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
         void setUp() override;
         void tearDown() override;
 
+        static void generateValidAllVersionsInfo(AllVersionsInfo &versionsInfo);
+
     protected:
         void testSkipUnskipVersion();
         void testIsVersionSkipped();
