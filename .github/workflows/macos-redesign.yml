@@ -86,4 +86,30 @@ jobs:
           working_directory: src/gui4/macOS      
       - name: Periphery
         run: periphery scan --retain-codable-properties --format github-actions --format json --relative-results --strict
- 
+
+  required-checks:
+    name: Required checks
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [swiftformat, periphery]
+    permissions: {}
+
+    steps:
+      - name: Verify SwiftFormat and Periphery passed when XPC label is applied
+        env:
+          HAS_XPC_LABEL: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+          SWIFTFORMAT_RESULT: ${{ needs.swiftformat.result }}
+          PERIPHERY_RESULT: ${{ needs.periphery.result }}
+        run: |
+          if [[ "$HAS_XPC_LABEL" == "true" ]]; then
+            if [[ "$SWIFTFORMAT_RESULT" != "success" ]]; then
+              echo "SwiftFormat did not succeed (result: $SWIFTFORMAT_RESULT) but the XPC label is applied."
+              exit 1
+            fi
+            if [[ "$PERIPHERY_RESULT" != "success" ]]; then
+              echo "Periphery did not succeed (result: $PERIPHERY_RESULT) but the XPC label is applied."
+              exit 1
+            fi
+          fi
+          echo "All required checks passed."
+
