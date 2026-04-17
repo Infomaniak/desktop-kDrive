@@ -29,7 +29,7 @@ public struct NodeConflictInfo: Sendable {
         lastModificationDate = TimeInterval(nodeConflictInfoMetadata.lastModificationDate)
     }
 
-    init(authorName: String, fileSize: Int64, lastModificationDate: Int64) {
+    public init(authorName: String, fileSize: Int64, lastModificationDate: Int64) {
         self.authorName = authorName
         self.fileSize = fileSize
         self.lastModificationDate = TimeInterval(lastModificationDate)
