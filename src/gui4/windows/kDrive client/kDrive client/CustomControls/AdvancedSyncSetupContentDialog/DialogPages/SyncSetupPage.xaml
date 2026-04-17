@@ -247,6 +247,8 @@
                 </Grid>
 
                 <ToggleSwitch Grid.Row="1"
+                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                               IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportsLiteSync , Mode=OneWay}"
                               IsOn="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}" />
 

@@ -107,6 +107,8 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}"
+                                      OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                      OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                       Toggled="AutoStartToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
                     <!-- General - Notifications -->
@@ -158,6 +160,8 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <ToggleSwitch x:Name="MoveToTrashToggleSwitch"
+                                      OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                      OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                       IsOn="{x:Bind ViewModel.Settings.MoveToTrash, Mode=OneWay}"
                                       Toggled="MoveToTrashToggleSwitch_Toggled" />
                         <toolKit:SettingsCard.Description>
@@ -407,6 +411,8 @@
                             <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('proxyNeedAuth'), Mode=OneWay}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <ToggleSwitch x:Name="ProxyNeedsAuthToggleSwitch"
+                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                               IsOn="{x:Bind ViewModel.Settings.ProxyConfig.NeedsAuth, Mode=OneWay}"
                                               Toggled="ProxyConfig_Changed" />
                             </toolKit:SettingsCard>
@@ -460,6 +466,8 @@
                                                   Description="{x:Bind kDrive:Localizer.Instance.GetString('enableDebugLogDescription'), Mode=OneWay}"
                                                   Background="{ThemeResource LayerFillColorDefault}">
                                 <ToggleSwitch x:Name="EnableDebugLogsToggleSwitch"
+                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                               IsOn="{x:Bind ViewModel.Settings.LogEnabled, Mode=OneWay}"
                                               Toggled="EnableDebugLogsToggleSwitch_Toggled" />
                             </toolKit:SettingsCard>
@@ -468,6 +476,8 @@
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <ToggleSwitch Toggled="PurgeOldLogsToggleSwitch_Toggled"
+                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                               IsOn="{x:Bind ViewModel.Settings.PurgeOldLogs, Mode=OneWay}" />
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('extendedLogSetting'), Mode=OneWay}"
@@ -478,6 +488,8 @@
                                     <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('extendedLogWarning'), Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
                                 <ToggleSwitch x:Name="ExtendedLogToggleSwitch"
+                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated'), Mode=OneWay}"
+                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated'), Mode=OneWay}"
                                               Toggled="ExtendedLogToggleSwitch_Toggled"
                                               IsOn="{x:Bind ViewModel.Settings.ExtendedLogEnbaled, Mode=OneWay}" />
                             </toolKit:SettingsCard>
