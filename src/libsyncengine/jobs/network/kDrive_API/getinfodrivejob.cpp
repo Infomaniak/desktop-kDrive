@@ -99,11 +99,12 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         uint64_t packId = 0;
         (void) JsonParserUtility::extractValue(packObj, idKey, packId, false);
         _packInfo.setId(packId);
-        std::string name;
-        (void) JsonParserUtility::extractValue(packObj, nameKey, name, false);
-        _packInfo.setName(name);
-        (void) JsonParserUtility::extractValue(packObj, packDisplayNameKey, name, false);
-        _packInfo.setDisplayName(name);
+        std::string packName;
+        (void) JsonParserUtility::extractValue(packObj, nameKey, packName, false);
+        _packInfo.setName(packName);
+        std::string packDisplayName;
+        (void) JsonParserUtility::extractValue(packObj, packDisplayNameKey, packDisplayName, false);
+        _packInfo.setDisplayName(packDisplayName);
         bool isFree = false;
         (void) JsonParserUtility::extractValue(packObj, packIsFreeKey, isFree, false);
         _packInfo.setIsFree(isFree);

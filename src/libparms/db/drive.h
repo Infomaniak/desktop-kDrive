@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "info/packinfo.h"
+#include "libcommon/info/packinfo.h"
 #include "libparms/parmslib.h"
 #include "utility/types.h"
 
