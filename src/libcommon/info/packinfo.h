@@ -32,9 +32,9 @@ class PackInfo {
         [[nodiscard]] uint64_t id() const { return _id; }
         void setId(const uint64_t id) { _id = id; }
         [[nodiscard]] const std::string &name() const { return _name; }
-        void setName(const std::string &name) { _name = name; }
+        void setName(const std::string_view name) { _name = name; }
         [[nodiscard]] const std::string &displayName() const { return _displayName; }
-        void setDisplayName(const std::string &displayName) { _displayName = displayName; }
+        void setDisplayName(const std::string_view displayName) { _displayName = displayName; }
         [[nodiscard]] bool isFree() const { return _isFree; }
         void setIsFree(const bool isFree) { _isFree = isFree; }
 

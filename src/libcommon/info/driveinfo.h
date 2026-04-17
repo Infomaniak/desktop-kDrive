@@ -59,7 +59,7 @@ class DriveInfo {
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
-        void setPackInfo(const PackInfo packInfo) { _packInfo = packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
