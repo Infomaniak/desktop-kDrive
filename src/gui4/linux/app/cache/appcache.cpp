@@ -89,7 +89,14 @@ void AppCache::setSelectedUserDbId(const qint64 userDbId) {
         return;
     }
     _selectedUserDbId = typedUserDbId;
+
+    const bool hadAvailableDrives = !_availableDrives.empty();
+    _availableDrives.clear();
+
     emit selectedUserDbIdChanged();
+    if (hadAvailableDrives) {
+        emit availableDrivesChanged();
+    }
 }
 
 void AppCache::setSelectedDriveDbId(const qint64 driveDbId) {
@@ -216,10 +223,12 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
     const bool selectionChanged = _selectedDriveDbId == driveDbId;
     if (selectionChanged) {
         _selectedDriveDbId = 0;
+        _selectedSyncDbId = 0;
     }
     emit drivesChanged();
     if (selectionChanged) {
         emit selectedDriveDbIdChanged();
+        emit selectedSyncDbIdChanged();
     }
 }
 
