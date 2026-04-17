@@ -89,6 +89,7 @@ set(server_SRCS
 
     comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
     comm/guijobs/errordeletejob.h comm/guijobs/errordeletejob.cpp
+    comm/guijobs/errorsyncrefreshjob.h comm/guijobs/errorsyncrefreshjob.cpp
     comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsjob.h comm/guijobs/errorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsquickjob.h comm/guijobs/errorresolveconflictsquickjob.cpp

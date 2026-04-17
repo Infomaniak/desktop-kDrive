@@ -273,6 +273,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                         ExitInfo exitInfo = ExitInfo());
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
+        virtual void clearTmpBlacklist(bool &found);
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);

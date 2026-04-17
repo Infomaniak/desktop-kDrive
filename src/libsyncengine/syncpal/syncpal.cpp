@@ -1411,6 +1411,10 @@ bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, const ReplicaSide s
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }
 
+void SyncPal::clearTmpBlacklist(bool& found) {
+    _tmpBlacklistManager->clear(found);
+}
+
 void SyncPal::refreshTmpBlacklist() {
     _tmpBlacklistManager->refreshBlacklist();
 }

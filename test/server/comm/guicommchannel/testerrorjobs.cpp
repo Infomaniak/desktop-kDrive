@@ -22,6 +22,7 @@
 #include "comm/guijobs/errorinfolistjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
+#include "comm/guijobs/errorsyncrefreshjob.h"
 
 namespace KDC {
 
@@ -198,6 +199,37 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
 #else
     const auto cbkAnswerStr2 = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr2, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorSyncRefreshJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_SYNC_REFRESH));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 7);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_SYNC_REFRESH);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto refreshJob = std::dynamic_pointer_cast<ErrorSyncRefreshJob>(job);
+        CPPUNIT_ASSERT(refreshJob);
+        CPPUNIT_ASSERT_EQUAL(SyncDbId{7}, refreshJob->_syncDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 

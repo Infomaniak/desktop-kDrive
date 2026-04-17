@@ -957,21 +957,24 @@ bool AppServer::areMacVfsAuthsOk() const {
 
 void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
     if (_noUpdate) return;
-    assert(_updateManager && "The update manager is not set.");
+
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
 
     _updateManager->setDistributionChannel(versionChannel);
 }
 
 VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
     if (_noUpdate) {
-        VersionInfo versionInfo;
-        versionInfo.tag = CommonUtility::versionTag();
-        versionInfo.buildVersion = CommonUtility::versionBuild();
-
-        return versionInfo;
+        return VersionInfo::current();
     }
 
-    assert(_updateManager && "The update manager is not set.");
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return VersionInfo::current();
+    }
 
     return _updateManager->versionInfo(versionChannel);
 }
@@ -979,22 +982,29 @@ VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const
 UpdateState AppServer::getUpdateState() const {
     if (_noUpdate) return UpdateState::NoUpdate;
 
-    assert(_updateManager && "The update manager is not set.");
-
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return UpdateState::Unknown;
+    }
     return _updateManager->state();
 }
 
 void AppServer::refreshUpdateState() {
     if (_noUpdate) return;
 
-    assert(_updateManager && "The update manager is not set.");
-
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
     return _updateManager->forceRefresh();
 }
 
 void AppServer::startInstaller() {
-    LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
-    if (_updateManager) _updateManager->startInstaller();
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
+    _updateManager->startInstaller();
 }
 
 void AppServer::crash() const {
