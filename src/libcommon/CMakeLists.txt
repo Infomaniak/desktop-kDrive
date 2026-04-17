@@ -44,6 +44,7 @@ set(libcommon_SRCS
     info/exclusionappinfo.h info/exclusionappinfo.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
+    info/packinfo.h info/packinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h

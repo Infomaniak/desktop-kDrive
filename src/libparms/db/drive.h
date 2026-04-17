@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "info/packinfo.h"
 #include "libparms/parmslib.h"
 #include "utility/types.h"
 
@@ -36,13 +37,6 @@ class PARMS_EXPORT Drive {
                 bool _asleep{false};
                 bool _wakingUp{false};
                 int64_t _maintenanceFrom{0};
-        };
-
-        struct PackInfo {
-                uint64_t id{0};
-                std::string name;
-                std::string displayName;
-                bool isFree{false}; // False by default in order not to offer to upgrade when this value is not yet up to date.
         };
 
         Drive();

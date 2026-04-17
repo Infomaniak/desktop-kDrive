@@ -1925,10 +1925,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         quotaUpdated = true;
     }
 
-    drive.setPackInfo({.id = job->packInfo().id,
-                       .name = job->packInfo().name,
-                       .displayName = job->packInfo().displayName,
-                       .isFree = job->packInfo().isFree});
+    drive.setPackInfo(job->packInfo());
 
     return ExitCode::Ok;
 }

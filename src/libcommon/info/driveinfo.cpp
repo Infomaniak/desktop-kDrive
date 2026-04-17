@@ -31,7 +31,7 @@ static const auto driveInfoMaintenance = "maintenance";
 static const auto driveInfoLocked = "locked";
 static const auto driveInfoUsedSize = "usedSize";
 static const auto driveInfoAccessDenied = "accessDenied";
-static const auto driveInfoPackIsFree = "isFree";
+static const auto driveInfoPackInfo = "packInfo";
 
 namespace KDC {
 
@@ -48,7 +48,7 @@ void DriveInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::writeValueToStruct(dstruct, driveInfoUsedSize, _usedSize);
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, _accessDenied);
-    CommonUtility::writeValueToStruct(dstruct, driveInfoPackIsFree, _packIsFree);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoPackInfo, _packInfo, info2DynamicVar<PackInfo>);
 }
 
 void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -72,7 +72,7 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::readValueFromStruct(dstruct, driveInfoUsedSize, _usedSize);
     CommonUtility::readValueFromStruct(dstruct, driveInfoAccessDenied, _accessDenied);
-    CommonUtility::readValueFromStruct(dstruct, driveInfoPackIsFree, _packIsFree);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoPackInfo, _packInfo, dynamicVar2Struct<PackInfo>);
 }
 
 void operator>>(QDataStream &in, DriveInfo &info) {
@@ -86,10 +86,8 @@ void operator>>(QDataStream &in, DriveInfo &info) {
     bool maintenance{false};
     bool locked{false};
     bool accessDenied{false};
-    bool packIsFree{false};
 
-    in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied >>
-            packIsFree;
+    in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
 
     info.setDbId(static_cast<DriveDbId>(dbId));
     info.setId(static_cast<DriveId>(id));
@@ -101,13 +99,12 @@ void operator>>(QDataStream &in, DriveInfo &info) {
     info.setMaintenance(maintenance);
     info.setLocked(locked);
     info.setAccessDenied(accessDenied);
-    info.setPackIsFree(packIsFree);
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
     out << static_cast<qint64>(info.dbId()) << static_cast<qint64>(info.id()) << static_cast<qint64>(info.accountDbId())
         << info.name() << info.color() << info.notifications() << info.admin() << info.maintenance() << info.locked()
-        << info.accessDenied() << info.packIsFree();
+        << info.accessDenied();
     return out;
 }
 
