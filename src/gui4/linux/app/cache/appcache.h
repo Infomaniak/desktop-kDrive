@@ -63,6 +63,7 @@ class AppCache : public QObject {
         const std::vector<ErrorInfo> &errors() const { return _errors; }
 
         void setConnected(bool connected);
+        // C++-only setters — not exposed via Q_PROPERTY WRITE; QML observes these as read-only properties.
         void setSelectedUserDbId(qint64 userDbId);
         void setSelectedDriveDbId(qint64 driveDbId);
         void setSelectedSyncDbId(qint64 syncDbId);
