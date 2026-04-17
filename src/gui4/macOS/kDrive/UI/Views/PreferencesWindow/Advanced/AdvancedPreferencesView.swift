@@ -45,11 +45,21 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
     }
 
     var isDisabled: Bool {
-        return true
+        switch self {
+        case .dataManagement:
+            return false
+        default:
+            return true
+        }
     }
 
     var preferencesViewDetail: PreferencesViewDetail {
-        fatalError("Not yet implemented")
+        switch self {
+        case .dataManagement:
+            return .dataManagement
+        default:
+            fatalError("Not yet implemented")
+        }
     }
 }
 

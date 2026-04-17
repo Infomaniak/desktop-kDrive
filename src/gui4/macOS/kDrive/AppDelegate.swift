@@ -27,6 +27,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
 
+    // periphery:ignore - We keep a strong reference on the SentryService
+    private(set) var sentryService: SentryService?
+
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
@@ -40,7 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        SentryService().initSentry()
+        sentryService = SentryService()
+        sentryService?.initSentry()
+
         statusBarManager = StatusBarManager()
 
         openMainWindow()
