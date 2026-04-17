@@ -26,6 +26,7 @@ struct LabelContainerView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(labelTitle)
+
             Text(labelDescription)
                 .font(.Tokens.subheadline)
                 .foregroundStyle(.secondary)

@@ -53,6 +53,7 @@ struct SendDebugFolderView: View {
                     Text(KDriveLocalizable.buttonSend)
                 }
             }
+
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     dismiss()

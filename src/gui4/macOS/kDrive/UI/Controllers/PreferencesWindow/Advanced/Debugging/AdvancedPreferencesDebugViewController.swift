@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-class AdvancedPreferencesDebugViewController: TitledViewController<AdvancedPreferencesDebugView> {
+final class AdvancedPreferencesDebugViewController: TitledViewController<AdvancedPreferencesDebugView> {
     convenience init(repository: PreferencesRepository) {
         @InjectService var router: PreferencesViewRouter
         self.init(

@@ -25,6 +25,7 @@ struct AdvancedPreferencesDebugHeaderView: View {
         VStack(alignment: .leading) {
             Text(KDriveLocalizable.debugLogsSettings)
                 .padding(.vertical, AppPadding.padding8)
+
             Text(KDriveLocalizable.debugLogsDescription)
                 .font(.Tokens.callout)
                 .foregroundStyle(.secondary)
