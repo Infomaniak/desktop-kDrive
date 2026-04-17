@@ -95,19 +95,19 @@ jobs:
     permissions: {}
 
     steps:
-      - name: Verify SwiftFormat and Periphery passed when XPC label is applied
+      - name: Verify SwiftFormat and Periphery passed when XPC or macOS UI label is applied
         env:
-          HAS_XPC_LABEL: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
+          HAS_REQUIRED_LABEL: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') || contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') }}
           SWIFTFORMAT_RESULT: ${{ needs.swiftformat.result }}
           PERIPHERY_RESULT: ${{ needs.periphery.result }}
         run: |
-          if [[ "$HAS_XPC_LABEL" == "true" ]]; then
+          if [[ "$HAS_REQUIRED_LABEL" == "true" ]]; then
             if [[ "$SWIFTFORMAT_RESULT" != "success" ]]; then
-              echo "SwiftFormat did not succeed (result: $SWIFTFORMAT_RESULT) but the XPC label is applied."
+              echo "SwiftFormat did not succeed (result: $SWIFTFORMAT_RESULT) but the XPC or macOS UI label is applied."
               exit 1
             fi
             if [[ "$PERIPHERY_RESULT" != "success" ]]; then
-              echo "Periphery did not succeed (result: $PERIPHERY_RESULT) but the XPC label is applied."
+              echo "Periphery did not succeed (result: $PERIPHERY_RESULT) but the XPC or macOS UI label is applied."
               exit 1
             fi
           fi
