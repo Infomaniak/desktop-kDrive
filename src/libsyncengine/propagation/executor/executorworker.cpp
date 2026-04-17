@@ -1307,6 +1307,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             cancelAllOngoingJobs();
             return exitInfo;
         }
+        Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     return ExitCode::Ok;
 }
