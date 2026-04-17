@@ -69,7 +69,7 @@ class DriveInfo {
                    lhs.name() == rhs.name() && lhs.size() == rhs.size() && lhs.color() == rhs.color() &&
                    lhs.notifications() == rhs.notifications() && lhs.admin() == rhs.admin() &&
                    lhs.maintenance() == rhs.maintenance() && lhs.locked() == rhs.locked() && lhs.usedSize() == rhs.usedSize() &&
-                   lhs.accessDenied() == rhs.accessDenied();
+                   lhs.accessDenied() == rhs.accessDenied() && lhs.packInfo() == rhs.packInfo();
         }
 
     private:
