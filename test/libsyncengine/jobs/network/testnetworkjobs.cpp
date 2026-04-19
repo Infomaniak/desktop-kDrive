@@ -834,7 +834,12 @@ void TestNetworkJobs::testGetDriveList() {
 
 void TestNetworkJobs::testGetDriveUserInfo() {
     const testhelpers::TestVariables testVariables;
-    const UserId userId = static_cast<UserId>(std::stoi(testVariables.userId));
+    UserId userId = 0;
+    try {
+        userId = static_cast<UserId>(std::stoul(testVariables.userId));
+    } catch (const std::exception &e) {
+        CPPUNIT_FAIL(std::string("Invalid KDRIVE_TEST_CI_USER_ID value: ") + e.what());
+    }
 
     GetDriveUserInfoJob job(_driveDbId, userId);
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
