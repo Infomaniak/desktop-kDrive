@@ -76,7 +76,7 @@ uint64_t TestNetworkJobs::_nbParallelThreads = 10;
 namespace {
 static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
-static const NodeId rootDirRemoteId = "1";
+static const NodeId rootDirRemoteId = "1"; // Root directory id in kDrive API.
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
 static const NodeId testFileSymlinkRemoteId = "4284808"; // test_ci/test_networkjobs/test_sl.log
