@@ -76,6 +76,7 @@ uint64_t TestNetworkJobs::_nbParallelThreads = 10;
 namespace {
 static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
+static const NodeId rootDirRemoteId = "1";
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
 static const NodeId testFileSymlinkRemoteId = "4284808"; // test_ci/test_networkjobs/test_sl.log
@@ -838,7 +839,7 @@ void TestNetworkJobs::testGetDriveUserInfo() {
     try {
         userId = static_cast<UserId>(std::stoul(testVariables.userId));
     } catch (const std::exception &e) {
-        CPPUNIT_FAIL(std::string("Invalid KDRIVE_TEST_CI_USER_ID value: ") + e.what());
+        CPPUNIT_FAIL(std::string("Invalid KDRIVE_TEST_CI_USER_ID value '") + testVariables.userId + "': " + e.what());
     }
 
     GetDriveUserInfoJob job(_driveDbId, userId);
@@ -927,7 +928,7 @@ void TestNetworkJobs::testGetRootFileList() {
 }
 
 void TestNetworkJobs::testGetFilesInDirectory() {
-    GetFilesInDirectoryJob job(_driveDbId, "1");
+    GetFilesInDirectoryJob job(_driveDbId, rootDirRemoteId);
     job.setListingConf({.withPath = true, .dirOnly = false, .limit = 20});
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
