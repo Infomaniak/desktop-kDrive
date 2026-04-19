@@ -839,7 +839,8 @@ void TestNetworkJobs::testGetDriveUserInfo() {
     try {
         userId = static_cast<UserId>(std::stoul(testVariables.userId));
     } catch (const std::exception &e) {
-        CPPUNIT_FAIL(std::string("Invalid KDRIVE_TEST_CI_USER_ID value '") + testVariables.userId + "': " + e.what());
+        CPPUNIT_FAIL(std::string("Failed to parse KDRIVE_TEST_CI_USER_ID as unsigned integer: '") + testVariables.userId +
+                     "' (" + e.what() + ")");
     }
 
     GetDriveUserInfoJob job(_driveDbId, userId);
@@ -946,15 +947,15 @@ void TestNetworkJobs::testGetAndPostFileLink() {
     {
         PostFileLinkJob postJob(_driveDbId, testFileRemoteId);
         const ExitInfo postExitInfo = postJob.runSynchronously();
-        if (!postExitInfo) {
-            const bool linkAlreadyExists = postExitInfo.code() == ExitCode::BackError &&
-                                           postExitInfo.cause() == ExitCause::ShareLinkAlreadyExists;
-            CPPUNIT_ASSERT(linkAlreadyExists);
-        } else {
+        if (postExitInfo) {
             CPPUNIT_ASSERT(postJob.jsonRes());
             Poco::JSON::Object::Ptr dataObj = postJob.jsonRes()->getObject(dataKey);
             CPPUNIT_ASSERT(dataObj);
             CPPUNIT_ASSERT(JsonParserUtility::extractValue(dataObj, urlKey, publicUrl));
+        } else {
+            const bool linkAlreadyExists = postExitInfo.code() == ExitCode::BackError &&
+                                           postExitInfo.cause() == ExitCause::ShareLinkAlreadyExists;
+            CPPUNIT_ASSERT(linkAlreadyExists);
         }
     }
 
