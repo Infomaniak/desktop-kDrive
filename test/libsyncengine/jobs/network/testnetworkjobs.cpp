@@ -834,7 +834,7 @@ void TestNetworkJobs::testGetDriveList() {
 
 void TestNetworkJobs::testGetDriveUserInfo() {
     const testhelpers::TestVariables testVariables;
-    const UserId userId = atoi(testVariables.userId.c_str());
+    const UserId userId = static_cast<UserId>(std::stoi(testVariables.userId));
 
     GetDriveUserInfoJob job(_driveDbId, userId);
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
