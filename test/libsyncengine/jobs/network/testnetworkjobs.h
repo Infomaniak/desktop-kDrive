@@ -37,9 +37,13 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDownloadAborted);
         CPPUNIT_TEST(testGetAvatar);
         CPPUNIT_TEST(testGetDriveList);
+        CPPUNIT_TEST(testGetDriveUserInfo);
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
+        CPPUNIT_TEST(testGetRootFileList);
+        CPPUNIT_TEST(testGetFilesInDirectory);
         CPPUNIT_TEST(testGetFileListWithCursor);
+        CPPUNIT_TEST(testGetAndPostFileLink);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
         CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
@@ -65,6 +69,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST(testExists);
+        CPPUNIT_TEST(testGetSize);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST_SUITE_END();
 
@@ -80,9 +85,13 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDownloadAborted();
         void testGetAvatar();
         void testGetDriveList();
+        void testGetDriveUserInfo();
         void testGetFileInfo();
         void testGetFileList();
+        void testGetRootFileList();
+        void testGetFilesInDirectory();
         void testGetFileListWithCursor();
+        void testGetAndPostFileLink();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
         void testFullFileListWithCursorCsvBlacklist();
@@ -108,6 +117,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testSearch();
         void testGetInfoUserTrialsOn401Error();
         void testExists();
+        void testGetSize();
         void testGetAllFilesInDirectory();
 
     private:

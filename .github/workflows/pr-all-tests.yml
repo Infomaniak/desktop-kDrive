@@ -1,0 +1,57 @@
+name: PR all tests
+
+on:
+  pull_request:
+    branches-ignore:
+      - "release/**"
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-all-tests-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+  KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
+  KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
+  KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
+  KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
+  KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  build-linux:
+    runs-on: [self-hosted, Linux, X64, desktop-kdrive]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Build Linux
+        uses: ./.github/actions/build_linux_amd
+
+  test-linux:
+    needs: build-linux
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
+      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Run test
+        uses: ./.github/actions/test_linux
+        with:
+          test_name: ${{ matrix.test_name }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}

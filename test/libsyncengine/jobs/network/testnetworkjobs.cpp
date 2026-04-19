@@ -24,12 +24,17 @@
 #include "jobs/network/getavatarjob.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
+#include "jobs/network/kDrive_API/getdriveuserinfojob.h"
+#include "jobs/network/kDrive_API/getfilelinkjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 #include "jobs/network/infomaniak_API/getinfouserjob.h"
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
+#include "jobs/network/kDrive_API/getrootfilelistjob.h"
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/kDrive_API/movejob.h"
+#include "jobs/network/kDrive_API/postfilelinkjob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
@@ -827,6 +832,18 @@ void TestNetworkJobs::testGetDriveList() {
     CPPUNIT_ASSERT(found);
 }
 
+void TestNetworkJobs::testGetDriveUserInfo() {
+    const testhelpers::TestVariables testVariables;
+    const UserId userId = atoi(testVariables.userId.c_str());
+
+    GetDriveUserInfoJob job(_driveDbId, userId);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+    CPPUNIT_ASSERT(job.jsonRes());
+    CPPUNIT_ASSERT(!job.name().empty());
+    CPPUNIT_ASSERT(!job.email().empty());
+    CPPUNIT_ASSERT(!job.avatarUrl().empty());
+}
+
 void TestNetworkJobs::testGetFileInfo() {
     {
         GetFileInfoJob job(_driveDbId, testFileRemoteId);
@@ -889,6 +906,62 @@ void TestNetworkJobs::testGetFileList() {
             }
         }
     }
+}
+
+void TestNetworkJobs::testGetRootFileList() {
+    GetRootFileListJob job(_driveDbId, 1, false, 10);
+    job.setWithPath(true);
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+    CPPUNIT_ASSERT(job.jsonRes());
+    CPPUNIT_ASSERT(job.totalPages() > 0);
+
+    const Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
+    CPPUNIT_ASSERT(dataArray);
+    CPPUNIT_ASSERT(!dataArray->empty());
+}
+
+void TestNetworkJobs::testGetFilesInDirectory() {
+    GetFilesInDirectoryJob job(_driveDbId, "1");
+    job.setListingConf({.withPath = true, .dirOnly = false, .limit = 20});
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+    CPPUNIT_ASSERT(job.jsonRes());
+    CPPUNIT_ASSERT(!job.v3RemoteNodeInfoList().empty());
+
+    const NodeInfo &firstNodeInfo = job.v3RemoteNodeInfoList().at(0);
+    CPPUNIT_ASSERT(!firstNodeInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!firstNodeInfo.name().isEmpty());
+    CPPUNIT_ASSERT(!firstNodeInfo.path().isEmpty());
+}
+
+void TestNetworkJobs::testGetAndPostFileLink() {
+    std::string publicUrl;
+    {
+        PostFileLinkJob postJob(_driveDbId, testFileRemoteId);
+        const ExitInfo postExitInfo = postJob.runSynchronously();
+        if (!postExitInfo) {
+            const bool linkAlreadyExists = postExitInfo.code() == ExitCode::BackError &&
+                                           postExitInfo.cause() == ExitCause::ShareLinkAlreadyExists;
+            CPPUNIT_ASSERT(linkAlreadyExists);
+        } else {
+            CPPUNIT_ASSERT(postJob.jsonRes());
+            Poco::JSON::Object::Ptr dataObj = postJob.jsonRes()->getObject(dataKey);
+            CPPUNIT_ASSERT(dataObj);
+            CPPUNIT_ASSERT(JsonParserUtility::extractValue(dataObj, urlKey, publicUrl));
+        }
+    }
+
+    if (publicUrl.empty()) {
+        GetFileLinkJob getJob(_driveDbId, testFileRemoteId);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, getJob.runSynchronously().code());
+        CPPUNIT_ASSERT(getJob.jsonRes());
+        Poco::JSON::Object::Ptr dataObj = getJob.jsonRes()->getObject(dataKey);
+        CPPUNIT_ASSERT(dataObj);
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(dataObj, urlKey, publicUrl));
+    }
+
+    CPPUNIT_ASSERT(!publicUrl.empty());
 }
 
 void TestNetworkJobs::testGetFileListWithCursor() {
@@ -1608,6 +1681,13 @@ void TestNetworkJobs::testExists() {
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+}
+
+void TestNetworkJobs::testGetSize() {
+    GetSizeJob job(_driveDbId, pictureDirRemoteId);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+    CPPUNIT_ASSERT(job.jsonRes());
+    CPPUNIT_ASSERT(job.size() > 0);
 }
 
 void TestNetworkJobs::testGetAllFilesInDirectory() {
