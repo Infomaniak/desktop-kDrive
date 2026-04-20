@@ -193,26 +193,70 @@ fi
 # Manifest
 # ---------------------------------------------------------------------------
 
+# Resolve one dylib basename from a glob pattern in a directory.
+# If several files match, pick the first one in lexical order for deterministic output.
+resolve_required_dylib() {
+    local lib_dir="$1" pattern="$2" label="$3"
+    local matches=()
+    local unique=()
+    local path
+
+    shopt -s nullglob
+    for path in "$lib_dir"/$pattern; do
+        [[ -e "$path" ]] || continue
+        matches+=("$(basename "$path")")
+    done
+    shopt -u nullglob
+
+    if [[ ${#matches[@]} -eq 0 ]]; then
+        echo "ERROR: Could not find ${label} in $lib_dir (pattern: $pattern)" >&2
+        exit 1
+    fi
+
+    # Deduplicate + stable order to avoid nondeterministic picks.
+    while IFS= read -r path; do
+        [[ -n "$path" ]] && unique+=("$path")
+    done < <(printf '%s\n' "${matches[@]}" | sort -u)
+
+    # Prefer the shortest basename (typically SONAME-style, e.g. libssl.3.dylib)
+    # then lexical order for tie-breaking.
+    local selected="${unique[0]}"
+    for path in "${unique[@]}"; do
+        if [[ ${#path} -lt ${#selected} ]]; then
+            selected="$path"
+        fi
+    done
+
+    if [[ ${#unique[@]} -gt 1 ]]; then
+        echo "  [deploy] WARNING: Multiple matches for ${label} in $lib_dir (pattern: $pattern), using $selected" >&2
+    fi
+
+    printf '%s\n' "$selected"
+}
+
 # Qt frameworks required by the kDrive executable (includes transitive deps of the above)
 QT_FRAMEWORKS=(QtCore QtDBus QtGui QtWidgets QtNetwork QtSvg QtSql)
 
-# Poco versioned dylibs
+# Poco dylibs (version auto-detected)
 POCO_DYLIBS=(
-    libPocoFoundation.103.dylib
-    libPocoCrypto.103.dylib
-    libPocoNet.103.dylib
-    libPocoNetSSL.103.dylib
-    libPocoUtil.103.dylib
-    libPocoXML.103.dylib
-    libPocoJSON.103.dylib
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoFoundation.[0-9]*.dylib" "libPocoFoundation")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoCrypto.[0-9]*.dylib" "libPocoCrypto")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoNet.[0-9]*.dylib" "libPocoNet")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoNetSSL.[0-9]*.dylib" "libPocoNetSSL")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoUtil.[0-9]*.dylib" "libPocoUtil")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoXML.[0-9]*.dylib" "libPocoXML")"
+    "$(resolve_required_dylib "$POCO_LIB_DIR" "libPocoJSON.[0-9]*.dylib" "libPocoJSON")"
 )
 
-# Other Conan dylibs
-OPENSSL_DYLIBS=(libssl.3.dylib libcrypto.3.dylib)
-ZLIB_DYLIBS=(libz.1.dylib)
-LOG4CPLUS_DYLIBS=(liblog4cplus.9.dylib)
-XXHASH_DYLIBS=(libxxhash.0.dylib)
-SENTRY_DYLIBS=(libsentry.dylib)
+# Other Conan dylibs (version auto-detected)
+OPENSSL_DYLIBS=(
+    "$(resolve_required_dylib "$OPENSSL_LIB_DIR" "libssl.[0-9]*.dylib" "libssl")"
+    "$(resolve_required_dylib "$OPENSSL_LIB_DIR" "libcrypto.[0-9]*.dylib" "libcrypto")"
+)
+ZLIB_DYLIBS=("$(resolve_required_dylib "$ZLIB_LIB_DIR" "libz.[0-9]*.dylib" "libz")")
+LOG4CPLUS_DYLIBS=("$(resolve_required_dylib "$LOG4CPLUS_LIB_DIR" "liblog4cplus.[0-9]*.dylib" "liblog4cplus")")
+XXHASH_DYLIBS=("$(resolve_required_dylib "$XXHASH_LIB_DIR" "libxxhash.[0-9]*.dylib" "libxxhash")")
+SENTRY_DYLIBS=("$(resolve_required_dylib "$SENTRY_LIB_DIR" "libsentry*.dylib" "libsentry")")
 
 # Qt plugins: "subdir/plugin.dylib" — add more as needed
 QT_PLUGINS=(
