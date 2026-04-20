@@ -25,28 +25,28 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
     _commService(commService),
     _appCache(appCache) {
     // --- User ---
-    (void) connect(&_commService, &CommService::userAdded, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser);
+    (void) connect(&_commService, &CommService::userAdded, &_appCache, &AppCache::upsertUser, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser, Qt::UniqueConnection);
 
     // --- Account ---
-    (void) connect(&_commService, &CommService::accountAdded, &_appCache, &AppCache::upsertAccount);
-    (void) connect(&_commService, &CommService::accountUpdated, &_appCache, &AppCache::upsertAccount);
-    (void) connect(&_commService, &CommService::accountRemoved, &_appCache, &AppCache::removeAccount);
+    (void) connect(&_commService, &CommService::accountAdded, &_appCache, &AppCache::upsertAccount, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::accountUpdated, &_appCache, &AppCache::upsertAccount, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::accountRemoved, &_appCache, &AppCache::removeAccount, Qt::UniqueConnection);
 
     // --- Drive ---
-    (void) connect(&_commService, &CommService::driveAdded, &_appCache, &AppCache::upsertDrive);
-    (void) connect(&_commService, &CommService::driveUpdated, &_appCache, &AppCache::upsertDrive);
-    (void) connect(&_commService, &CommService::driveRemoved, &_appCache, &AppCache::removeDrive);
+    (void) connect(&_commService, &CommService::driveAdded, &_appCache, &AppCache::upsertDrive, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::driveUpdated, &_appCache, &AppCache::upsertDrive, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::driveRemoved, &_appCache, &AppCache::removeDrive, Qt::UniqueConnection);
 
     // --- Sync ---
-    (void) connect(&_commService, &CommService::syncAdded, &_appCache, &AppCache::upsertSync);
-    (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync);
-    (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync);
+    (void) connect(&_commService, &CommService::syncAdded, &_appCache, &AppCache::upsertSync, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync, Qt::UniqueConnection);
 
     // --- Error ---
-    (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertError);
-    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeError);
+    (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertError, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeError, Qt::UniqueConnection);
 }
 
 } // namespace KDC
