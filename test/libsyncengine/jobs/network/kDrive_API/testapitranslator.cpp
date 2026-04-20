@@ -40,34 +40,7 @@ void TestApiTranslator::setUp() {
     TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
-    const testhelpers::TestVariables testVariables;
-
-    // Insert api token into keystore
-    ApiToken apiToken;
-    apiToken.setAccessToken(testVariables.apiToken);
-
-    const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
-
-    // Create parmsDb
-    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
-
-    // Insert user, account & drive
-    const int userId(atoi(testVariables.userId.c_str()));
-    User user(1, userId, keychainKey);
-    (void) ParmsDb::instance()->insertUser(user);
-    _userDbId = user.dbId();
-
-    const int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId(), "account1");
-    (void) ParmsDb::instance()->insertAccount(account);
-
-    _driveDbId = 1;
-    _driveId = atoi(testVariables.driveId.c_str());
-    Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
-    (void) ParmsDb::instance()->insertDrive(drive);
+    initParmsDb();
 
     // Setup proxy
     Parameters parameters;
