@@ -53,7 +53,7 @@ class AbstractJob : public Poco::Runnable {
 
         UniqueId jobId() const { return _jobId; }
 
-        bool isExtendedLog() const { return _isExtendedLog || CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1"; }
+        bool isExtendedLog() const { return _isExtendedLog; }
         bool isRunning() const { return _isRunning; }
 
         virtual void abort();
