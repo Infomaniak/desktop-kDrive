@@ -267,6 +267,20 @@ SyncSetupData createSyncs() {
 
     sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
+    CursorStore cursorStore1;
+    cursorStore1.userPrivateFolderCursor = CursorData{"xxx", 1};
+    cursorStore1.commonDocumentsFolderCursor = CursorData{"yyy", 2};
+    cursorStore1.sharedFolderCursor = CursorData{"zzz", 3};
+
+    sync1.setCursorStore(cursorStore1);
+
+    CursorStore cursorStore2;
+    cursorStore1.userPrivateFolderCursor = CursorData{"aaa", 10};
+    cursorStore1.commonDocumentsFolderCursor = CursorData{"bbb", 20};
+    cursorStore1.sharedFolderCursor = CursorData{"ccc", 30};
+
+    sync1.setCursorStore(cursorStore1);
+
     SyncSetupData data;
     data.syncs = {sync1, sync2};
     data.drives = {drive1, drive2};
@@ -285,6 +299,17 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
         CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
     }
+    // Find sync by DB ID
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync1.dbId(), sync, syncIsFound) && syncIsFound);
+
+        CPPUNIT_ASSERT(sync.localPath() == sync1.localPath());
+        CPPUNIT_ASSERT(sync.paused() == sync1.paused());
+        CPPUNIT_ASSERT(sync.notificationsDisabled() == sync1.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.getCursorStore() == sync1.getCursorStore());
+    }
     // Update sync
     {
         sync2.setLocalPath("/Users/xxxxxx/Movies");
@@ -293,7 +318,7 @@ void TestParmsDb::testSync() {
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
-    // Find sync by DB ID
+    // Find updated sync by DB ID
     {
         Sync sync;
         bool syncIsFound = false;
@@ -302,6 +327,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.getCursorStore() == sync2.getCursorStore());
     }
     // Find sync by DB path
     {
@@ -321,6 +347,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
         CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+        CPPUNIT_ASSERT(syncList[0].getCursorStore() == sync1.getCursorStore());
     }
     // Delete sync
     {
@@ -396,53 +423,50 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(dbDefaults == fileDefaults);
 }
 
+bool TestParmsDb::deleteColumn(std::string tableName, const std::string &columnName) {
+    int errId = -1;
+    std::string error;
+
+    auto parmsDb = ParmsDb::instance();
+
+    const auto deleteRequestName = std::string("delete_") + columnName + "_from_" + tableName;
+    const auto sqlRequestBody = std::string("ALTER TABLE ") + tableName + " DROP " + columnName + ";";
+    if (!parmsDb->createAndPrepareRequest(deleteRequestName.c_str(), sqlRequestBody.c_str())) return false;
+
+    if (!parmsDb->queryExec(deleteRequestName, errId, error)) {
+        parmsDb->queryFree(deleteRequestName);
+        return parmsDb->sqlFail(deleteRequestName, error);
+    }
+    parmsDb->queryFree(deleteRequestName);
+
+    return true;
+}
+
 // We simulate the absence of mandatory columns in a previous version of the database
 // by deleting them.
 bool TestParmsDb::deleteColumns() {
-    int errId;
-    std::string error;
-
-    auto db = ParmsDb::instance();
-
     // Sync table
-
-    if (!db->createAndPrepareRequest("delete_sync_local_node_id", "ALTER TABLE sync DROP localNodeId;")) return false;
-    if (!db->queryExec("delete_sync_local_node_id", errId, error)) {
-        db->queryFree("delete_sync_local_node_id");
-        return db->sqlFail("delete_sync_local_node_id", error);
-    }
-    db->queryFree("delete_sync_local_node_id");
-
+    if (!deleteColumn("sync", "localNodeId")) return false;
+    if (!deleteColumn("sync", "userPrivateFolderCursor")) return false;
+    if (!deleteColumn("sync", "userPrivateFolderTimestamp")) return false;
+    if (!deleteColumn("sync", "commonDocumentsFolderCursor")) return false;
+    if (!deleteColumn("sync", "commonDocumentsFolderTimestamp")) return false;
+    if (!deleteColumn("sync", "sharedFolderCursor")) return false;
+    if (!deleteColumn("sync", "sharedFolderTimestamp")) return false;
 
     // Parameters table
+    if (!deleteColumn("parameters", "maxAllowedCpu")) return false;
+    if (!deleteColumn("parameters", "uploadSessionParallelJobs")) return false;
+    if (!deleteColumn("parameters", "jobPoolCapacityFactor")) return false;
+    if (!deleteColumn("parameters", "distributionChannel")) return false;
+    if (!deleteColumn("parameters", "sentryEnabled")) return false;
+    if (!deleteColumn("parameters", "matomoEnabled")) return false;
 
-    if (!db->createAndPrepareRequest("delete_parameters_max_allowed_cpu", "ALTER TABLE parameters DROP maxAllowedCpu;"))
-        return false;
-    if (!db->queryExec("delete_parameters_max_allowed_cpu", errId, error)) {
-        db->queryFree("delete_parameters_max_allowed_cpu");
-        return db->sqlFail("delete_parameters_max_allowed_cpu", error);
-    }
-    db->queryFree("delete_parameters_upload_session_parallel_jobs");
+    // Account table
+    if (!deleteColumn("account", "name")) return false;
 
-    if (!db->createAndPrepareRequest("delete_parameters_upload_session_parallel_jobs",
-                                     "ALTER TABLE parameters DROP uploadSessionParallelJobs;"))
-        return false;
-    if (!db->queryExec("delete_parameters_upload_session_parallel_jobs", errId, error)) {
-        db->queryFree("delete_parameters_upload_session_parallel_jobs");
-        return db->sqlFail("delete_parameters_upload_session_parallel_jobs", error);
-    }
-    db->queryFree("delete_parameters_upload_session_parallel_jobs");
-
-
-    if (!db->createAndPrepareRequest("delete_parameters_job_pool_capacity_factor",
-                                     "ALTER TABLE parameters DROP jobPoolCapacityFactor;"))
-        return false;
-    if (!db->queryExec("delete_parameters_job_pool_capacity_factor", errId, error)) {
-        db->queryFree("delete_parameters_job_pool_capacity_factor");
-        return db->sqlFail("delete_parameters_job_pool_capacity_factor", error);
-    }
-    db->queryFree("delete_parameters_job_pool_capacity_factor");
-
+    // User table
+    if (!deleteColumn("user", "firstName")) return false;
 
     return true;
 }
@@ -521,7 +545,7 @@ void TestParmsDb::testUpgrade() {
     CPPUNIT_ASSERT(dbUserExclusionTemplates.at(4).templ() == "o");
 }
 
-void TestParmsDb::testAppState(void) {
+void TestParmsDb::testAppState() {
     bool found = true;
     // Empty string values are not allowed (must use APP_STATE_DEFAULT_IS_EMPTY)
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, std::string{}));
@@ -564,7 +588,7 @@ void TestParmsDb::testAppState(void) {
 
     int i = 0;
     while (true) {
-        AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
+        const auto key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
             CPPUNIT_ASSERT_EQUAL(AppStateKey::EnumEnd, fromInt<AppStateKey>(i + 1));
             break;
@@ -764,5 +788,32 @@ void TestParmsDb::testUpgradeOfShortPathNames() {
     }
 }
 #endif
+
+void TestParmsDb::testAddMissingColumnsDuringUpgrade() {
+    CPPUNIT_ASSERT(deleteColumns());
+
+    auto parmsDb = ParmsDb::instance();
+    CPPUNIT_ASSERT(ParmsDb::instance()->upgradeTables());
+
+    bool exists = false;
+
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "maxAllowedCpu", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "uploadSessionParallelJobs", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "jobPoolCapacityFactor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "distributionChannel", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "sentryEnabled", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "matomoEnabled", exists) && exists);
+
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "localNodeId", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderTimestamp", exists) && exists);
+
+    CPPUNIT_ASSERT(parmsDb->columnExists("account", "name", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("user", "firstName", exists) && exists);
+}
 
 } // namespace KDC
