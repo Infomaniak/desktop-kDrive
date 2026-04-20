@@ -97,7 +97,7 @@ GENERATORS_DIR="$BUILD_DIR/generators"
 conan_pkg_folder() {
     local pattern="$1" varname="$2"
     local file
-    file=$(ls "$GENERATORS_DIR"/$pattern 2>/dev/null | head -1)
+    file=$(find "$GENERATORS_DIR" -maxdepth 1 -name "$pattern" -print -quit 2>/dev/null || true)
     if [[ -z "$file" ]]; then
         echo ""
         return
