@@ -48,6 +48,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
 #endif
+        CPPUNIT_TEST(testAddMissingColumnsDuringUpgrade);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -74,11 +75,14 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_WINDOWS)
         void testUpgradeOfShortPathNames();
 #endif
+        void testAddMissingColumnsDuringUpgrade();
 
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
         bool deleteColumns();
         bool deleteAppState(AppStateKey key);
+        bool deleteColumn(std::string tableName, const std::string &columnName);
+
 };
 
 } // namespace KDC
