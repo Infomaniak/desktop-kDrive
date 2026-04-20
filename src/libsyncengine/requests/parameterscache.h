@@ -21,7 +21,6 @@
 #include "syncenginelib.h"
 #include "libparms/db/parameters.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
 
 #include <memory>
 
@@ -33,12 +32,7 @@ class SYNCENGINE_EXPORT ParametersCache {
 
         static void reset();
 
-        // If _instance is not initialized, use extended log by default
-        static bool isExtendedLogEnabled() noexcept {
-            static bool forceExtendedLog = CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1";
-            if (forceExtendedLog) return true;
-            return instance() ? instance()->_parameters.extendedLog() : true;
-        }
+        static bool isExtendedLogEnabled() noexcept;
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
@@ -51,7 +45,10 @@ class SYNCENGINE_EXPORT ParametersCache {
 
     private:
         static std::shared_ptr<ParametersCache> _instance;
+        static bool _forceExtendedLog;
+        static bool _forceExtendedLogInitialized;
         Parameters _parameters;
+        static bool forceExtendedLogEnabled() noexcept;
 
         ParametersCache(bool isTest = false);
 };

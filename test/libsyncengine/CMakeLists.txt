@@ -29,6 +29,7 @@ set(testsyncengine_SRCS
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs
+        jobs/testabstractjob.h jobs/testabstractjob.cpp
         jobs/testsyncjobmanagersingleton.h jobs/testsyncjobmanagersingleton.cpp
         ## Network jobs
         jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp

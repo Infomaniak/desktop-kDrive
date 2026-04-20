@@ -17,6 +17,7 @@
  */
 
 #include "parameterscache.h"
+#include "libcommon/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libcommonserver/log/log.h"
 
@@ -25,6 +26,8 @@
 namespace KDC {
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
+bool ParametersCache::_forceExtendedLog = false;
+bool ParametersCache::_forceExtendedLogInitialized = false;
 
 std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*= false*/) {
     if (_instance == nullptr) {
@@ -42,6 +45,24 @@ void ParametersCache::reset() {
     if (_instance) {
         _instance = nullptr;
     }
+    _forceExtendedLogInitialized = false;
+    _forceExtendedLog = false;
+}
+
+bool ParametersCache::forceExtendedLogEnabled() noexcept {
+    if (!_forceExtendedLogInitialized) {
+        _forceExtendedLog = CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1";
+        _forceExtendedLogInitialized = true;
+    }
+    return _forceExtendedLog;
+}
+
+bool ParametersCache::isExtendedLogEnabled() noexcept {
+    if (forceExtendedLogEnabled()) {
+        return true;
+    }
+    // If _instance is not initialized, use extended log by default
+    return instance() ? instance()->_parameters.extendedLog() : true;
 }
 
 ParametersCache::ParametersCache(bool isTest /*= false*/) {
