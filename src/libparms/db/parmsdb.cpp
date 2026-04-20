@@ -1124,7 +1124,8 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgradeParametersTables() {
-    std::string tableName = "parameters";
+    const std::string tableName = "parameters";
+
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
         return false;
@@ -1175,36 +1176,6 @@ bool ParmsDb::upgradeParametersTables() {
         return false;
     }
 
-    columnName = "userPrivateFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName, &updateParameters)) {
-        return false;
-    }
-
-    columnName = "userPrivateFolderTimestamp";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "commonDocumentsFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "commonDocumentsFolderTimestamp";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "sharedFolderCursor";
-    if (!addTextColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "sharedFolderTimestamp";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
     return true;
 }
 
@@ -1215,30 +1186,28 @@ bool ParmsDb::upgradeTables() {
     std::string tableName = "app_state";
     bool exist = false;
     if (!tableExists(tableName, exist)) return false;
-    if (!exist) {
-        if (!createAppState()) {
-            LOG_WARN(_logger, "Error in createAppState");
-            return false;
-        }
+    if (!exist && !createAppState()) {
+        LOG_WARN(_logger, "Error in createAppState");
+        return false;
     }
 
     // Sync table
     tableName = "sync";
-    if (!addTextColumnIfMissing(tableName, "localNodeId")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "localNodeId")) return false;
+    if (!addTextColumnIfMissing(tableName, "userPrivateFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "commonDocumentsFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "sharedFolderTimestamp")) return false;
 
     // Account table
     tableName = "account";
-    if (!addTextColumnIfMissing(tableName, "name")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "name")) return false;
 
     // User table
     tableName = "user";
-    if (!addTextColumnIfMissing(tableName, "firstName")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "firstName")) return false;
 
     LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
 
@@ -2277,8 +2246,6 @@ bool ParmsDb::getNewDriveDbId(DriveDbId &dbId) {
 bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, const FieldFilter filter) {
     const std::scoped_lock lock(_mutex);
 
-    const auto &cursorStore = sync.getCursorStore();
-
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     uint16_t fieldIndex = 1;
@@ -2301,6 +2268,8 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.hasFullyCompleted())));
 
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.navigationPaneClsid()));
+
+    const auto &cursorStore = sync.getCursorStore();
 
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timestamp));
@@ -2340,7 +2309,7 @@ bool ParmsDb::bindMutatingQueryToSyncValues(const Sync &sync, const char *reques
 
 
 bool ParmsDb::insertSync(const Sync &sync) {
-    const char *requestId = INSERT_SYNC_REQUEST_ID;
+    const char *const requestId = INSERT_SYNC_REQUEST_ID;
 
     return bindQueryToSyncValues(sync, requestId);
 }
@@ -2539,7 +2508,7 @@ bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
 }
 
 bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
-    const char *requestId = SELECT_ALL_SYNCS_REQUEST_ID;
+    const char *const requestId = SELECT_ALL_SYNCS_REQUEST_ID;
 
     const std::scoped_lock lock(_mutex);
 

@@ -961,4 +961,13 @@ void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
 }
 
+bool operator==(const CursorData &lhs, const CursorData &rhs) {
+    return lhs.cursor == rhs.cursor && lhs.timestamp == rhs.timestamp;
+}
+
+bool operator==(const CursorStore &lhs, const CursorStore &rhs) {
+    return lhs.userPrivateFolderCursor == rhs.userPrivateFolderCursor &&
+           lhs.commonDocumentsFolderCursor == rhs.commonDocumentsFolderCursor && lhs.sharedFolderCursor == rhs.sharedFolderCursor;
+}
+
 } // namespace KDC

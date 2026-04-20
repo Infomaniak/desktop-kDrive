@@ -82,11 +82,15 @@ struct CursorData {
         Cursor cursor;
         Timestamp timestamp{0};
 };
+bool operator==(const CursorData &lhs, const CursorData &rhs);
+
 struct CursorStore {
         CursorData userPrivateFolderCursor;
         CursorData commonDocumentsFolderCursor;
         CursorData sharedFolderCursor;
 };
+bool operator==(const CursorStore &lhs, const CursorStore &rhs);
+
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
