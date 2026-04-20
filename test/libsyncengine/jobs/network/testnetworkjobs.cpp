@@ -138,44 +138,13 @@ void TestNetworkJobs::setUp() {
     TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
+    initParmsDb();
+
+    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
+
     const testhelpers::TestVariables testVariables;
-
-    // Insert api token into keystore
-    _apiToken.setAccessToken(testVariables.apiToken);
-
-    const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
-    // Create parmsDb
-    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
-
-    // Insert user, account & drive
-    const UserId userId(atoi(testVariables.userId.c_str()));
-    User user(1, userId, keychainKey);
-    (void) ParmsDb::instance()->insertUser(user);
-    _userDbId = user.dbId();
-
-    const AccountId accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId(), "account1");
-    (void) ParmsDb::instance()->insertAccount(account);
-
-    _driveDbId = 1;
-    const DriveId driveId = atoi(testVariables.driveId.c_str());
-    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    (void) ParmsDb::instance()->insertDrive(drive);
-
     _remoteDirId = testVariables.remoteDirId;
 
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
-
-    // Setup cache directory
-    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
 }
 
 void TestNetworkJobs::tearDown() {

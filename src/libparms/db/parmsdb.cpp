@@ -2325,7 +2325,7 @@ bool ParmsDb::insertSync(const Sync &sync) {
 }
 
 bool ParmsDb::updateSync(const Sync &sync, bool &found) {
-    const char *requestId = UPDATE_SYNC_REQUEST_ID;
+    const char *const requestId = UPDATE_SYNC_REQUEST_ID;
 
     return bindMutatingQueryToSyncValues(sync, requestId, found);
 }
