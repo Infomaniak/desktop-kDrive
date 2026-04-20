@@ -65,6 +65,7 @@ runs:
     - name: Deactivate BullseyeCoverage
       run: |
         & "cov01.exe" "-0" # coverage off
+      shell: powershell
 
     - name: Build kDrive desktop
       id: build
