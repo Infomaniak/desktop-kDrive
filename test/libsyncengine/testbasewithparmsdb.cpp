@@ -33,12 +33,11 @@ void TestBaseWithParmsDb::initParmsDb() {
     const testhelpers::TestVariables testVariables;
 
     // Insert API token into keystore.
-    ApiToken apiToken;
-    apiToken.setAccessToken(testVariables.apiToken);
+    _apiToken.setAccessToken(testVariables.apiToken);
 
     (void) KeyChainManager::instance(true);
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
 
     // Create ParmsDb.
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -50,7 +49,7 @@ void TestBaseWithParmsDb::initParmsDb() {
     User user(_userDbId, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const int accountId(atoi(testVariables.accountId.c_str()));
+    const AccountId accountId(atoi(testVariables.accountId.c_str()));
     Account account(AccountDbId{1}, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
