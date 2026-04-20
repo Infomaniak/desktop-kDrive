@@ -17,7 +17,6 @@
  */
 
 import CppInterop
-import Foundation
 
 extension KDC.ExitCode: CustomStringConvertible {
     public var description: String {
