@@ -81,15 +81,23 @@ using Timestamp = int64_t;
 struct CursorData {
         Cursor cursor;
         Timestamp timestamp{0};
+
+        friend bool operator==(const CursorData &lhs, const CursorData &rhs) {
+            return lhs.cursor == rhs.cursor && lhs.timestamp == rhs.timestamp;
+        }
 };
-bool operator==(const CursorData &lhs, const CursorData &rhs);
 
 struct CursorStore {
         CursorData userPrivateFolderCursor;
         CursorData commonDocumentsFolderCursor;
         CursorData sharedFolderCursor;
+
+        friend bool operator==(const CursorStore &lhs, const CursorStore &rhs) {
+            return lhs.userPrivateFolderCursor == rhs.userPrivateFolderCursor &&
+                   lhs.commonDocumentsFolderCursor == rhs.commonDocumentsFolderCursor &&
+                   lhs.sharedFolderCursor == rhs.sharedFolderCursor;
+        }
 };
-bool operator==(const CursorStore &lhs, const CursorStore &rhs);
 
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
