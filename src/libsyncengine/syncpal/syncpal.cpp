@@ -922,7 +922,7 @@ ExitInfo SyncPal::updateSync(const Sync &sync) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
@@ -931,7 +931,7 @@ ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, Timest
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::setCommonDocumentsFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+ExitInfo SyncPal::setCommonDocumentsFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
@@ -940,7 +940,7 @@ ExitInfo SyncPal::setCommonDocumentsFolderCursor(const Cursor &listingCursor, Ti
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::setSharedFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+ExitInfo SyncPal::setSharedFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
