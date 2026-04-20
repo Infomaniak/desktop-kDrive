@@ -26,7 +26,7 @@ public struct RequestMessage<Body: Codable>: Codable {
     public let body: Body
 
     public init(num: RequestNum, body: Body) async {
-        // This mimic the server using an auto-increment ids to debug async comms.
+        // This mimics the server using an auto-increment IDs to debug async comms.
         @InjectService var requestIDGenerator: AutoIncrementIDGenerator
         id = await requestIDGenerator.nextID
         self.num = num
