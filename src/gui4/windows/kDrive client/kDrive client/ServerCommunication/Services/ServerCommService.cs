@@ -1358,10 +1358,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await HandleUtilityShowNotification(sender, args);
                     break;
                 case SignalNum.UTILITY_SHOW_SYNTHESIS:
-                    HandleUtilityShowSynthesis(sender, args);
+                    await HandleUtilityShowSynthesis(sender, args);
                     break;
                 case SignalNum.UTILITY_SHOW_SETTINGS:
-                    HandleUtilityShowSettings(sender, args);
+                    await HandleUtilityShowSettings(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
