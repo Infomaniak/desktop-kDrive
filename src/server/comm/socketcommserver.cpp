@@ -19,11 +19,11 @@
 #include "socketcommserver.h"
 
 #include "libcommon/utility/utility.h"
-#include "utility/utility.h"
-
-constexpr char host[] = "127.0.0.1";
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
+
+constexpr char host[] = "127.0.0.1";
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
