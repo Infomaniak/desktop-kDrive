@@ -42,13 +42,6 @@ void TestApiTranslator::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
     initParmsDb();
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 }
 
 void TestApiTranslator::tearDown() {
