@@ -17,7 +17,6 @@
  */
 
 import CppInterop
-import Foundation
 
 extension KDC.ExitCause: Hashable {}
 extension KDC.ExitCode: Hashable {}

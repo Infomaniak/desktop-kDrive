@@ -17,7 +17,6 @@
  */
 
 import CppInterop
-import Foundation
 
 extension KDC.ExitCause: Codable {}
 extension KDC.ExitCode: Codable {}
