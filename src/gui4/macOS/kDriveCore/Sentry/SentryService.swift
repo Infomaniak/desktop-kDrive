@@ -38,12 +38,12 @@ public final class SentryService {
 
             options.beforeSend = { [weak self] event in
                 guard let self else { return nil }
-                self.fetchAuthorization()
+                fetchAuthorization()
 
                 #if DEBUG || TEST
                 return nil
                 #else
-                return self.isSentryAuthorized ? event : nil
+                return isSentryAuthorized ? event : nil
                 #endif
             }
         }
