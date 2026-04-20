@@ -158,7 +158,10 @@ class ExtensionJob : public AbstractJob {
                                          const CommString &text);
 
         bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
+        ExitInfo getPinState(const FileData &fileData, PinState &pinState);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
+        ExitInfo cancelHydrate(const FileData &fileData, PinState pinState);
+        ExitInfo cancelDehydrate(const FileData &fileData, PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
 
