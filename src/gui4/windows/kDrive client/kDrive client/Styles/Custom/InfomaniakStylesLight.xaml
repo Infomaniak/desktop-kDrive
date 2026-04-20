@@ -36,4 +36,9 @@
     <x:String x:Key="Infomaniak.Custom.Animations.pause">ms-appx:///Assets/Custom/Animations/pause-light.json</x:String>
     <x:String x:Key="Infomaniak.Custom.Animations.sync">ms-appx:///Assets/Custom/Animations/sync-light.json</x:String>
     <x:String x:Key="Infomaniak.Custom.Animations.synchro-file">ms-appx:///Assets/Custom/Animations/synchro-file-light.json</x:String>
+
+    <!--  colors  -->
+    <Color x:Key="Infomaniak.Custom.colors.storage.other">#BA68C8</Color>
+    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush" Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
+
 </ResourceDictionary>
