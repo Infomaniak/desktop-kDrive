@@ -77,23 +77,30 @@ const std::unordered_set<UniqueId> &SyncOperationList::opListIdByType(const Oper
 std::list<UniqueId> SyncOperationList::getOpIdsFromSourceNodeId(const NodeId &nodeId, const ReplicaSide side) {
     const std::scoped_lock lock(_mutex);
     std::list<UniqueId> opList;
-    for (const auto opId: _nodeIdSource2ops[nodeId]) {
-        const auto op = _allOps[opId];
-        // Keep the op only if its source side is the same as `side`.
-        if (op && otherSide(op->targetSide()) == side) opList.push_back(opId);
+    const auto it = _nodeIdSource2ops.find(nodeId);
+    if (it != _nodeIdSource2ops.end()) {
+        for (const auto opId: it->second) {
+            const auto opPtr = _allOps[opId];
+            // Keep the op only if its source side is the same as `side`.
+            if (opPtr && otherSide(opPtr->targetSide()) == side) opList.push_back(opId);
+        }
     }
+
     return opList;
 }
 
 SyncOpPtr SyncOperationList::getOpFromTargetNodeId(const NodeId &nodeId, ReplicaSide side, OperationType type,
                                                    const SyncPath &relativePath) {
     const std::scoped_lock lock(_mutex);
-    for (const auto opId: _nodeIdTarget2ops[nodeId]) {
-        const auto opPtr = _allOps[opId];
-        // Filter by side, type and path
-        if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
-            opPtr->correspondingNode()->getPath() == relativePath)
-            return opPtr;
+    const auto it = _nodeIdTarget2ops.find(nodeId);
+    if (it != _nodeIdTarget2ops.end()) {
+        for (const auto opId: it->second) {
+            const auto opPtr = _allOps[opId];
+            // Filter by side, type and path
+            if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
+                opPtr->correspondingNode()->getPath() == relativePath)
+                return opPtr;
+        }
     }
     return nullptr;
 }
@@ -199,7 +206,7 @@ bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const Sync
                                                   SyncTime lastModified, int64_t size) {
     const std::scoped_lock lock(_mutex);
     const auto opPtr = getOpFromTargetNodeId(nodeId, ReplicaSide::Local, OperationType::Edit, relativePath);
-    if (opPtr) {
+    if (opPtr && opPtr->affectedNode()) {
         // Check modification time & size
         const SyncTime lastModifiedLocalRemote =
                 opPtr->affectedNode()->modificationTime().has_value() ? *opPtr->affectedNode()->modificationTime() : 0;
