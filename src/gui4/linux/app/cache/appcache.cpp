@@ -19,6 +19,7 @@
 #include "appcache.h"
 
 #include <algorithm>
+#include <unordered_set>
 
 namespace {
 /**
@@ -186,16 +187,36 @@ void AppCache::upsertUser(const UserInfo &info) {
 }
 
 void AppCache::removeUser(const UserDbId userDbId) {
+    std::vector<AccountDbId> accountDbIds;
+    accountDbIds.reserve(_accounts.size());
+    for (const auto &account: _accounts) {
+        if (account.userDbId() == userDbId) {
+            accountDbIds.push_back(account.dbId());
+        }
+    }
+
     if (!removeById(_users, userDbId, [](const UserInfo &user) { return user.dbId(); })) {
         return;
     }
+
+    const bool availableDrivesListChanged = std::erase_if(
+                                                    _availableDrives, [userDbId](const DriveAvailableInfo &drive) {
+                                                        return drive.userDbId() == userDbId;
+                                                    }) > 0;
     const bool selectionChanged = _selectedUserDbId == userDbId;
     if (selectionChanged) {
         _selectedUserDbId = 0;
     }
     emit usersChanged();
+    if (availableDrivesListChanged) {
+        emit availableDrivesChanged();
+    }
     if (selectionChanged) {
         emit selectedUserDbIdChanged();
+    }
+
+    for (const auto accountDbId: accountDbIds) {
+        removeAccount(accountDbId);
     }
 }
 
@@ -205,10 +226,36 @@ void AppCache::upsertAccount(const AccountInfo &info) {
 }
 
 void AppCache::removeAccount(const AccountDbId accountDbId) {
-    if (!removeById(_accounts, accountDbId, [](const AccountInfo &account) { return account.dbId(); })) {
+    const auto accountIt = std::ranges::find_if(_accounts, [accountDbId](const AccountInfo &account) {
+        return account.dbId() == accountDbId;
+    });
+    if (accountIt == _accounts.end()) {
         return;
     }
+
+    const AccountId accountId = accountIt->id();
+    std::vector<DriveDbId> driveDbIds;
+    driveDbIds.reserve(_drives.size());
+    for (const auto &drive: _drives) {
+        if (drive.accountDbId() == accountDbId) {
+            driveDbIds.push_back(drive.dbId());
+        }
+    }
+
+    (void) removeById(_accounts, accountDbId, [](const AccountInfo &account) { return account.dbId(); });
+
+    const bool availableDrivesListChanged = std::erase_if(
+                                                    _availableDrives, [accountId](const DriveAvailableInfo &drive) {
+                                                        return drive.accountId() == accountId;
+                                                    }) > 0;
     emit accountsChanged();
+    if (availableDrivesListChanged) {
+        emit availableDrivesChanged();
+    }
+
+    for (const auto driveDbId: driveDbIds) {
+        removeDrive(driveDbId);
+    }
 }
 
 void AppCache::upsertDrive(const DriveInfo &info) {
@@ -217,17 +264,63 @@ void AppCache::upsertDrive(const DriveInfo &info) {
 }
 
 void AppCache::removeDrive(const DriveDbId driveDbId) {
-    if (!removeById(_drives, driveDbId, [](const DriveInfo &drive) { return drive.dbId(); })) {
+    const auto driveIt = std::ranges::find_if(_drives, [driveDbId](const DriveInfo &drive) {
+        return drive.dbId() == driveDbId;
+    });
+    if (driveIt == _drives.end()) {
         return;
     }
-    const bool selectionChanged = _selectedDriveDbId == driveDbId;
-    if (selectionChanged) {
+
+    const DriveId driveId = driveIt->id();
+    (void) removeById(_drives, driveDbId, [](const DriveInfo &drive) { return drive.dbId(); });
+
+    std::unordered_set<SyncDbId> removedSyncDbIds;
+    const auto removedSyncCount = std::erase_if(_syncs, [&removedSyncDbIds, driveDbId](const SyncInfo &sync) {
+        if (sync.driveDbId() != driveDbId) {
+            return false;
+        }
+        (void) removedSyncDbIds.insert(sync.dbId());
+        return true;
+    });
+    const bool syncsListChanged = removedSyncCount > 0;
+
+    const bool availableDrivesListChanged = std::erase_if(
+                                                    _availableDrives, [driveId](const DriveAvailableInfo &availableDrive) {
+                                                        return availableDrive.driveId() == driveId;
+                                                    }) > 0;
+
+    const bool errorsListChanged =
+            !removedSyncDbIds.empty() &&
+            std::erase_if(_errors, [&removedSyncDbIds](const ErrorInfo &error) {
+                return removedSyncDbIds.contains(error.syncDbId());
+            }) > 0;
+
+    const DriveDbId previousSelectedDriveDbId = _selectedDriveDbId;
+    const SyncDbId previousSelectedSyncDbId = _selectedSyncDbId;
+    if (_selectedDriveDbId == driveDbId) {
         _selectedDriveDbId = 0;
         _selectedSyncDbId = 0;
+    } else if (removedSyncDbIds.contains(_selectedSyncDbId)) {
+        _selectedSyncDbId = 0;
     }
+
+    const bool driveSelectionChanged = _selectedDriveDbId != previousSelectedDriveDbId;
+    const bool syncSelectionChanged = _selectedSyncDbId != previousSelectedSyncDbId;
+
     emit drivesChanged();
-    if (selectionChanged) {
+    if (syncsListChanged) {
+        emit syncsChanged();
+    }
+    if (errorsListChanged) {
+        emit errorsChanged();
+    }
+    if (availableDrivesListChanged) {
+        emit availableDrivesChanged();
+    }
+    if (driveSelectionChanged) {
         emit selectedDriveDbIdChanged();
+    }
+    if (syncSelectionChanged) {
         emit selectedSyncDbIdChanged();
     }
 }
@@ -241,11 +334,19 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
     if (!removeById(_syncs, syncDbId, [](const SyncInfo &sync) { return sync.dbId(); })) {
         return;
     }
+
+    const bool errorsListChanged = std::erase_if(_errors, [syncDbId](const ErrorInfo &error) {
+        return error.syncDbId() == syncDbId;
+    }) > 0;
+
     const bool selectionChanged = _selectedSyncDbId == syncDbId;
     if (selectionChanged) {
         _selectedSyncDbId = 0;
     }
     emit syncsChanged();
+    if (errorsListChanged) {
+        emit errorsChanged();
+    }
     if (selectionChanged) {
         emit selectedSyncDbIdChanged();
     }

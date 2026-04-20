@@ -68,8 +68,12 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - Server-push events must be registered in `CommService::register*Handlers` and re-emitted as typed Qt signals.
 - Connections from `CommService` signals to `AppCache` slots must live in `CachePipeline` only
   (no duplicated service-level wiring).
-- App bootstrap should inject C++ facades (`appCache`, `userService`, `driveService`, `syncService`) at the
-  QML engine boundary (`QQmlApplicationEngine::rootContext()`).
+- Cache removals must preserve graph coherence in flat snapshots (for example account/drive removal should cascade
+  dependent drives/syncs/errors entries).
+- App bootstrap should inject C++ facades (`appCache`, `userService`, `driveService`, `syncService`,
+  `driveListModel`, `syncListModel`) at the QML engine boundary (`QQmlApplicationEngine::rootContext()`).
+- QML list views should consume `QAbstractListModel` adapters from `app/models/` rather than reading transport DTOs
+  directly.
 - When object lifetime is uncertain in async callbacks, guard with `QPointer<T>`.
 
 ## IPC And Error Handling
