@@ -62,7 +62,9 @@ fi
 # ---------------------------------------------------------------------------
 # Target bundle
 # ---------------------------------------------------------------------------
-DEFAULT_APP_BUNDLE="/Users/$(whoami)/Projects/desktop-kDrive/build-macos/client/build/Debug/install/kDrive.app"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+DEFAULT_APP_BUNDLE="$REPO_ROOT/build-macos/client/build/Debug/install/kDrive.app"
 INPUT_PATH="${1:-}"
 
 if [[ -z "$INPUT_PATH" ]]; then
