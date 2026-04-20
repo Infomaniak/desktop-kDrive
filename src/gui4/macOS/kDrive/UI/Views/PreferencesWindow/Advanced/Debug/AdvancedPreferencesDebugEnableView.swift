@@ -50,14 +50,11 @@ struct AdvancedPreferencesDebugEnableView: View {
 
     private func openDebugFolder() {
         @InjectService var nodeURLGenerator: NodeURLGenerator
-
-        if let directory = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first?.appendingPathComponent(
-            "test",
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "/kdrive-logdir",
             isDirectory: true
-        ) {
-            print(directory)
-            NSWorkspace.shared.open(directory)
-        }
+        )
+        NSWorkspace.shared.open(directory)
     }
 
     private func updateValue<T: Equatable>(
