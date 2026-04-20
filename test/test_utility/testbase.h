@@ -22,12 +22,13 @@
 
 #include "test_utility/localtemporarydirectory.h"
 
+#include <iostream>
 #include <chrono>
 
 class TestBase {
     public:
-        virtual void start(void) { _start = std::chrono::steady_clock::now(); }
-        virtual void stop(void) {
+        virtual void start() { _start = std::chrono::steady_clock::now(); }
+        virtual void stop() {
             const auto duration =
                     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start);
             if (duration.count() > 50) std::cout << " (" << duration.count() << " ms)";
