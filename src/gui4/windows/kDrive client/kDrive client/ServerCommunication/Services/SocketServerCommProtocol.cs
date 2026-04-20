@@ -95,7 +95,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Info, $"Attempting to connect to localhost:{port}");
                         _client?.Dispose();
                         _client = new TcpClient();
-                        await _client.ConnectAsync("localhost", port).ConfigureAwait(false);
+                        await _client.ConnectAsync("127.0.0.1", port).ConfigureAwait(false);
                         Logger.Log(Logger.Level.Info, "Connected to server.");
                     }
                     catch (SocketException ex)

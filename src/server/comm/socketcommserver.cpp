@@ -19,6 +19,9 @@
 #include "socketcommserver.h"
 
 #include "libcommon/utility/utility.h"
+#include "utility/utility.h"
+
+constexpr char host[] = "127.0.0.1";
 
 namespace KDC {
 
@@ -139,7 +142,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return static_cast<uint64_t>((std::max)(0, _socket.available()));
+        return static_cast<uint64_t>((std::max) (0, _socket.available()));
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);
@@ -175,7 +178,7 @@ void SocketCommServer::close() {
         if (!_serverSocket.isNull()) {
             Poco::Net::StreamSocket socket;
             try {
-                socket.connect(Poco::Net::SocketAddress("localhost", getPort())); // Connect to unblock accept
+                socket.connect(Poco::Net::SocketAddress(host, getPort())); // Connect to unblock accept
             } catch (Poco::Exception &ex) {
                 LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.displayText());
             }
@@ -234,12 +237,21 @@ void saveCommPort(unsigned short port) {
 }
 
 void SocketCommServer::execute() {
-    try {
-        _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
-    } catch (Poco::Exception &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
-        return;
-    }
+    int retries = 0;
+    do {
+        try {
+            _serverSocket.bind(Poco::Net::SocketAddress(host, "0"), true, true);
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
+            Utility::msleep(500);
+            ++retries;
+            if (retries == 10) {
+                sentry::Handler::captureMessage(
+                        sentry::Level::Error, "SocketCommServer bind error",
+                        "Failed to bind server socket after 10 retries: " + std::string(ex.displayText()));
+            }
+        }
+    } while (_serverSocket.address().port() == 0); // Loop until a port is successfully assigned
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());
