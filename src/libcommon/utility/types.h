@@ -82,9 +82,7 @@ struct CursorData {
         Cursor cursor;
         Timestamp timestamp{0};
 
-        friend bool operator==(const CursorData &lhs, const CursorData &rhs) {
-            return lhs.cursor == rhs.cursor && lhs.timestamp == rhs.timestamp;
-        }
+        friend bool operator==(const CursorData &lhs, const CursorData &rhs) = default;
 };
 
 struct CursorStore {
@@ -92,11 +90,7 @@ struct CursorStore {
         CursorData commonDocumentsFolderCursor;
         CursorData sharedFolderCursor;
 
-        friend bool operator==(const CursorStore &lhs, const CursorStore &rhs) {
-            return lhs.userPrivateFolderCursor == rhs.userPrivateFolderCursor &&
-                   lhs.commonDocumentsFolderCursor == rhs.commonDocumentsFolderCursor &&
-                   lhs.sharedFolderCursor == rhs.sharedFolderCursor;
-        }
+        friend bool operator==(const CursorStore &lhs, const CursorStore &rhs) = default;
 };
 
 #if defined(KD_WINDOWS)
