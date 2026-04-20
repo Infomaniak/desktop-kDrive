@@ -33,7 +33,7 @@ std::string CacheDirectory::createTmpFileName() {
     return std::string(tmpFilePrefix) + CommonUtility::generateRandomStringAlphaNum(tmpFileRandomPartLength);
 }
 
-bool CacheDirectory::isTmpFileName(std::string_view fileName) noexcept {
+bool CacheDirectory::isTmpFileName(const std::string_view fileName) noexcept {
     const auto expectedSize = tmpFilePrefix.size() + static_cast<size_t>(tmpFileRandomPartLength);
     return fileName.size() == expectedSize && fileName.starts_with(tmpFilePrefix);
 }

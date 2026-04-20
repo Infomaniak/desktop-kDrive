@@ -38,7 +38,7 @@ class CacheDirectory {
 
     private:
         static constexpr std::string_view tmpFilePrefix = "kdrive_";
-        static constexpr int tmpFileRandomPartLength = 10;
+        static constexpr uint32_t tmpFileRandomPartLength = 10;
 
         ExitInfo initDirectory() noexcept;
         void cleanUp() const;
