@@ -49,11 +49,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
     (void) connect(this, &AppClientLinux::ipcConnected, &_appCache, [this] { _appCache.setConnected(true); });
-    (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
-        _appCache.setConnected(false);
-        _appCache.clearAll();
-    });
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] {
+        // Initial snapshot load. Post-connect disconnects are fatal in IpcClient.
         _userService.loadUsers();
         _driveService.loadDrives();
         _syncService.loadSyncs();
