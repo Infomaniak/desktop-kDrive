@@ -27,14 +27,6 @@ namespace KDC {
 
 void TestSyncOperation::setUp() {
     TestBase::start();
-}
-
-void TestSyncOperation::tearDown() {
-    TestBase::stop();
-}
-
-void TestSyncOperation::testAll() {
-    SyncOperationList syncOperationList;
 
     const auto localRootNode =
             std::make_shared<Node>(ReplicaSide::Local, Str(""), NodeType::Directory, OperationType::None, "1", 0, 0, 0, nullptr);
@@ -48,77 +40,96 @@ void TestSyncOperation::testAll() {
     const auto remoteNodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::Directory, OperationType::None,
                                                     "100000", 0, 0, 0, remoteRootNode);
 
-    const auto localNodeAA = std::make_shared<Node>(ReplicaSide::Local, Str("aa"), NodeType::Directory, OperationType::None,
-                                                    "200", 0, 0, 0, localNodeA);
+    _localNodeAA = std::make_shared<Node>(ReplicaSide::Local, Str("aa"), NodeType::Directory, OperationType::None, "200", 0, 0, 0,
+                                          localNodeA);
 
-    const auto remoteNodeAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aa"), NodeType::Directory, OperationType::None,
-                                                     "200000", 0, 0, 0, remoteNodeA);
+    _remoteNodeAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aa"), NodeType::Directory, OperationType::None, "200000", 0,
+                                           0, 0, remoteNodeA);
 
-    const auto localNodeAAA = std::make_shared<Node>(ReplicaSide::Local, Str("aaa"), NodeType::File, OperationType::None, "300",
-                                                     0, 0, 0, localNodeAA);
+    _localNodeAAA = std::make_shared<Node>(ReplicaSide::Local, Str("aaa"), NodeType::File, OperationType::None, "300", 0, 0, 0,
+                                           _localNodeAA);
 
-    const auto remoteNodeAAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aaa"), NodeType::File, OperationType::Edit,
-                                                      "300000", 0, 12345, 999, remoteNodeAA);
+    _remoteNodeAAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aaa"), NodeType::File, OperationType::Edit, "300000", 0,
+                                            12345, 999, _remoteNodeAA);
 
-    const auto localNodeAAB = std::make_shared<Node>(ReplicaSide::Local, Str("aab"), NodeType::File, OperationType::Delete, "301",
-                                                     0, 0, 0, localNodeAA);
+    _localNodeAAB = std::make_shared<Node>(ReplicaSide::Local, Str("aab"), NodeType::File, OperationType::Delete, "301", 0, 0, 0,
+                                           _localNodeAA);
 
-    const auto remoteNodeAAB = std::make_shared<Node>(ReplicaSide::Remote, Str("aab"), NodeType::File, OperationType::None,
-                                                      "300001", 0, 0, 0, remoteNodeAA);
+    _remoteNodeAAB = std::make_shared<Node>(ReplicaSide::Remote, Str("aab"), NodeType::File, OperationType::None, "300001", 0, 0,
+                                            0, _remoteNodeAA);
 
-    const auto op1 = generateSyncOperation(OperationType::Edit, remoteNodeAAA, localNodeAAA);
-    CPPUNIT_ASSERT(syncOperationList.pushOp(op1));
+    _op1 = generateSyncOperation(OperationType::Edit, _remoteNodeAAA, _localNodeAAA);
+    _op2 = generateSyncOperation(OperationType::Delete, _localNodeAAB, _remoteNodeAAB);
+}
 
-    const auto op2 = generateSyncOperation(OperationType::Delete, localNodeAAB, remoteNodeAAB);
-    CPPUNIT_ASSERT(syncOperationList.pushOp(op2));
+void TestSyncOperation::tearDown() {
+    TestBase::stop();
+}
 
-    // getOpFromTargetNodeId
-    auto op = syncOperationList.getOpFromTargetNodeId(*localNodeAAA->id(), ReplicaSide::Local, OperationType::Edit,
-                                                      SyncPath(Str("a/aa/aaa")));
-    CPPUNIT_ASSERT(op == op1);
+void TestSyncOperation::testGetOpIdsFromSourceNodeId() {
+    auto ops = _syncOperationList.getOpIdsFromSourceNodeId(*_remoteNodeAAA->id(), ReplicaSide::Remote);
+    CPPUNIT_ASSERT(ops.size() == 1);
+    CPPUNIT_ASSERT(ops.front() == _op1->id());
 
-    op = syncOperationList.getOpFromTargetNodeId(*remoteNodeAAB->id(), ReplicaSide::Remote, OperationType::Delete,
-                                                 SyncPath(Str("a/aa/aab")));
-    CPPUNIT_ASSERT(op == op2);
+    ops = _syncOperationList.getOpIdsFromSourceNodeId(*_localNodeAAA->id(), ReplicaSide::Local);
+    CPPUNIT_ASSERT(ops.size() == 0);
 
-    op = syncOperationList.getOpFromTargetNodeId(*localNodeAA->id(), ReplicaSide::Local, OperationType::Edit,
-                                                 SyncPath(Str("a/aa")));
+    ops = _syncOperationList.getOpIdsFromSourceNodeId(*_localNodeAAB->id(), ReplicaSide::Local);
+    CPPUNIT_ASSERT(ops.size() == 1);
+    CPPUNIT_ASSERT(ops.front() == _op2->id());
+
+    ops = _syncOperationList.getOpIdsFromSourceNodeId(*_remoteNodeAAB->id(), ReplicaSide::Remote);
+    CPPUNIT_ASSERT(ops.size() == 0);
+}
+
+void TestSyncOperation::testGetOpFromTargetNodeId() {
+    auto op = _syncOperationList.getOpFromTargetNodeId(*_localNodeAAA->id(), ReplicaSide::Local, OperationType::Edit,
+                                                       SyncPath(Str("a/aa/aaa")));
+    CPPUNIT_ASSERT(op == _op1);
+
+    op = _syncOperationList.getOpFromTargetNodeId(*_remoteNodeAAB->id(), ReplicaSide::Remote, OperationType::Delete,
+                                                  SyncPath(Str("a/aa/aab")));
+    CPPUNIT_ASSERT(op == _op2);
+
+    op = _syncOperationList.getOpFromTargetNodeId(*_localNodeAA->id(), ReplicaSide::Local, OperationType::Edit,
+                                                  SyncPath(Str("a/aa")));
     CPPUNIT_ASSERT(op == nullptr);
 
-    op = syncOperationList.getOpFromTargetNodeId(*localNodeAAA->id(), ReplicaSide::Remote, OperationType::Edit,
-                                                 SyncPath(Str("a/aa/aaa")));
+    op = _syncOperationList.getOpFromTargetNodeId(*_localNodeAAA->id(), ReplicaSide::Remote, OperationType::Edit,
+                                                  SyncPath(Str("a/aa/aaa")));
     CPPUNIT_ASSERT(op == nullptr);
 
-    op = syncOperationList.getOpFromTargetNodeId(*localNodeAAA->id(), ReplicaSide::Local, OperationType::Create,
-                                                 SyncPath(Str("a/aa/aaa")));
+    op = _syncOperationList.getOpFromTargetNodeId(*_localNodeAAA->id(), ReplicaSide::Local, OperationType::Create,
+                                                  SyncPath(Str("a/aa/aaa")));
     CPPUNIT_ASSERT(op == nullptr);
+}
 
-    // isLocalEditCausedBySync
-    auto res = syncOperationList.isLocalEditCausedBySync(*localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                         SyncPath(Str("a/aa/aaa")), 12345, 999);
+void TestSyncOperation::testIsLocalEditCausedBySync() {
+    auto res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
+                                                          SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == false);
 
-    op1->setPropagationStatus(SyncOperation::PropagationStatus::InProgress);
-    res = syncOperationList.isLocalEditCausedBySync(*localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                    SyncPath(Str("a/aa/aaa")), 12345, 999);
+    _op1->setPropagationStatus(SyncOperation::PropagationStatus::InProgress);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
+                                                     SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == true);
 
-    op1->setPropagationStatus(SyncOperation::PropagationStatus::Propagated);
-    res = syncOperationList.isLocalEditCausedBySync(*localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                    SyncPath(Str("a/aa/aaa")), 12345, 999);
+    _op1->setPropagationStatus(SyncOperation::PropagationStatus::Propagated);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
+                                                     SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == true);
 
-    res = syncOperationList.isLocalEditCausedBySync(*localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                    SyncPath(Str("a/aa/aaa")), 24680, 999);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
+                                                     SyncPath(Str("a/aa/aaa")), 24680, 999);
     CPPUNIT_ASSERT(res == false);
 
-    res = syncOperationList.isLocalEditCausedBySync(*localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                    SyncPath(Str("a/aa/aaa")), 12345, 555);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
+                                                     SyncPath(Str("a/aa/aaa")), 12345, 555);
     CPPUNIT_ASSERT(res == false);
 }
 
 SyncOpPtr TestSyncOperation::generateSyncOperation(OperationType opType, const std::shared_ptr<Node> affectedNode,
-                                                   const std::shared_ptr<Node> correspondingNode) const {
+                                                   const std::shared_ptr<Node> correspondingNode) {
     const auto op = std::make_shared<SyncOperation>();
     op->setType(opType);
     op->setAffectedNode(affectedNode);
@@ -129,6 +140,7 @@ SyncOpPtr TestSyncOperation::generateSyncOperation(OperationType opType, const s
     op->setNewName(affectedNode->name());
     op->setTargetSide(targetSide);
     op->setNewParentNode(affectedNode->parentNode());
+    (void) _syncOperationList.pushOp(op);
     return op;
 }
 

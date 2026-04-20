@@ -25,18 +25,32 @@ namespace KDC {
 
 class TestSyncOperation : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncOperation);
-        CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testGetOpIdsFromSourceNodeId);
+        CPPUNIT_TEST(testGetOpFromTargetNodeId);
+        CPPUNIT_TEST(testIsLocalEditCausedBySync);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
-        void testAll();
+        void testGetOpIdsFromSourceNodeId();
+        void testGetOpFromTargetNodeId();
+        void testIsLocalEditCausedBySync();
 
     private:
+        std::shared_ptr<Node> _localNodeAA{nullptr};
+        std::shared_ptr<Node> _remoteNodeAA{nullptr};
+        std::shared_ptr<Node> _localNodeAAA{nullptr};
+        std::shared_ptr<Node> _remoteNodeAAA{nullptr};
+        std::shared_ptr<Node> _localNodeAAB{nullptr};
+        std::shared_ptr<Node> _remoteNodeAAB{nullptr};
+        SyncOperationList _syncOperationList;
+        SyncOpPtr _op1{nullptr};
+        SyncOpPtr _op2{nullptr};
+
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> affectedNode,
-                                        const std::shared_ptr<Node> correspondingNode) const;
+                                        const std::shared_ptr<Node> correspondingNode);
 };
 
 } // namespace KDC
