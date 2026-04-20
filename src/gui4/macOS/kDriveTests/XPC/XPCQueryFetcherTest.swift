@@ -129,8 +129,8 @@ struct XPCQueryFetcherTests {
         let decodedMessage = try await queryFetcher.query(query, responseType: CallbackMessage<EmptyResponse>.self)
 
         // THEN
-        #expect(decodedMessage.code == .Ok)
-        #expect(decodedMessage.cause == .Unknown)
+        #expect(decodedMessage.code == KDC.ExitCode.Ok)
+        #expect(decodedMessage.cause == KDC.ExitCause.Unknown)
     }
 
     @Test(arguments: allResponseTypes)

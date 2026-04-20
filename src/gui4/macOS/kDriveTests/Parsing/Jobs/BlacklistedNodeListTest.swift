@@ -48,8 +48,8 @@ struct BlacklistedNodeListTest {
 
         // THEN
         #expect(response.body.nodeIdList.isEmpty)
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 125)
     }
 }
