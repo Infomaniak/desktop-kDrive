@@ -2655,12 +2655,11 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSettings();
     } else if (message == restartClientMsg) {
         _clientManuallyRestarted = true;
-        if (!_clientProcess) {
+        if (!_clientProcess || _clientProcess->state() == QProcess::ProcessState::NotRunning) {
             if (!startClient()) {
                 LOG_ERROR(_logger, "Failed to start the client");
             }
-        }
-        else {
+        } else if (_clientProcess->state() == QProcess::ProcessState::Running) {
             showSynthesis();
         }
     } else {
