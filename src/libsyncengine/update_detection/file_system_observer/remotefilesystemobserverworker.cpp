@@ -196,7 +196,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         try {
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, _listingCursorMap[remoteDirId],
                                                                   _blackList);
-        } catch (const std::exception &e) {
+        } catch (const JobException &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
             exitInfo = exception2ExitCode(e);
@@ -279,9 +279,9 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
         return exitInfo;
     }
 
-    // As long as the local folder hierarchy is reflects the v2 API
+    // As long as the local folder hierarchy reflects the v2 API,
     // we should not create a Private folder at the root of the local synchronization folder.
-    if (folderName == Str("Private")) return ExitCode::Ok;
+    if (folderName == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private)) return ExitCode::Ok;
 
     DbNode dbNode;
     bool found = false;
