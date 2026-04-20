@@ -35,7 +35,8 @@ class SYNCENGINE_EXPORT ParametersCache {
 
         // If _instance is not initialized, use extended log by default
         static bool isExtendedLogEnabled() noexcept {
-            if (CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1") return true;
+            static bool forceExtendedLog = CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1";
+            if (forceExtendedLog) return true;
             return instance() ? instance()->_parameters.extendedLog() : true;
         }
 
