@@ -65,13 +65,13 @@ class PARMS_EXPORT Sync {
         CursorStore getCursorStore() const;
         void setCursorStore(const CursorStore &cursors);
 
-        inline void setUserPrivateFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+        inline void setUserPrivateFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
             _cursorStore.userPrivateFolderCursor = {listingCursor, timestamp};
         }
-        inline void setCommonDocumentsFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+        inline void setCommonDocumentsFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
             _cursorStore.commonDocumentsFolderCursor = {listingCursor, timestamp};
         }
-        inline void setSharedFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+        inline void setSharedFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
             _cursorStore.sharedFolderCursor = {listingCursor, timestamp};
         }
 
