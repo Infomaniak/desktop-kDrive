@@ -25,22 +25,100 @@ Window {
     visible: true
     title: "kDrive"
 
-    // This rectangle is only there to test the dark mode management
-    // and will be removed once the gui implem will start.
+    // Transitional bootstrap view used while the real screens are being built.
     Rectangle {
         anchors.fill: parent
         color: IKColors.accentPrimary
 
         Column {
             anchors {
-                bottom: parent.bottom
-                horizontalCenter: parent.horizontalCenter
-                bottomMargin: 16
+                fill: parent
+                margins: 16
             }
-            spacing: 8
+            spacing: 12
 
             Text {
-                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Bootstrap C2 models"
+                color: IKColors.textPrimary
+            }
+
+            Row {
+                spacing: 16
+                width: parent.width
+                height: parent.height - 120
+
+                Rectangle {
+                    width: (parent.width - 16) / 2
+                    height: parent.height
+                    color: "#22000000"
+                    radius: 8
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+
+                        Text {
+                            text: "Drives (" + driveListView.count + ")"
+                            color: IKColors.textPrimary
+                        }
+
+                        ListView {
+                            id: driveListView
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.topMargin: 28
+                            model: driveListModel
+                            clip: true
+                            delegate: Text {
+                                width: parent ? parent.width : 200
+                                color: IKColors.textPrimary
+                                text: name + (selected ? " (active)" : "")
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: (parent.width - 16) / 2
+                    height: parent.height
+                    color: "#22000000"
+                    radius: 8
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+
+                        Text {
+                            text: "Syncs (" + syncListView.count + ")"
+                            color: IKColors.textPrimary
+                        }
+
+                        ListView {
+                            id: syncListView
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.topMargin: 28
+                            model: syncListModel
+                            clip: true
+                            delegate: Text {
+                                width: parent ? parent.width : 200
+                                color: IKColors.textPrimary
+                                text: localPath + (selected ? " (active)" : "")
+                                elide: Text.ElideMiddle
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text {
                 text: ThemeMode._mode === ThemeMode.System ? "System"
                     : ThemeMode._mode === ThemeMode.Light  ? "Light"
                     : "Dark"
@@ -48,7 +126,6 @@ Window {
             }
 
             Button {
-                anchors.horizontalCenter: parent.horizontalCenter
                 text: "Toggle theme"
                 onClicked: {
                     if (ThemeMode._mode === ThemeMode.System)
