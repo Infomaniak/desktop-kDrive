@@ -23,6 +23,8 @@
 
 #include "test_utility/localtemporarydirectory.h"
 
+#include "keychainmanager/apitoken.h"
+
 #include <chrono>
 
 
@@ -35,6 +37,7 @@ class TestBaseWithParmsDb : public TestBase {
         DriveId _driveId = 0;
         DriveDbId _driveDbId = 0;
         UserDbId _userDbId = 0;
+        ApiToken _apiToken;
         LocalTemporaryDirectory _localParmsDbTempDir{"testBaseWithParmsDb"};
 };
 } // namespace KDC
