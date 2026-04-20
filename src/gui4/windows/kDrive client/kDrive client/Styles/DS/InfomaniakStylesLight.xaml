@@ -26,12 +26,24 @@
     <Color x:Key="Infomaniak.DS.kSuite.Gradient.orange">#FD8C3D</Color>
 
     <!--  status colors  -->
-    <Color x:Key="Infomaniak.DS.colors.status.medium.success">#3EBF4D</Color>
-    <Color x:Key="Infomaniak.DS.colors.status.medium.warning">#FF9D0A</Color>
-    <Color x:Key="Infomaniak.DS.colors.status.medium.error">#F44336</Color>
-    <Color x:Key="Infomaniak.DS.colors.status.medium.information">#1EC6FF</Color>
+    <Color x:Key="colors.status.medium.success">#3EBF4D</Color>
+    <Color x:Key="colors.status.medium.warning">#FF9D0A</Color>
+    <Color x:Key="colors.status.medium.error">#F44336</Color>
+    <Color x:Key="colors.status.medium.information">#1EC6FF</Color>
 
-    <!--  kdrive colors  -->
-    <Color x:Key="Infomaniak.DS.colors.accent.kdrive.default">#446FDD</Color>
-    <SolidColorBrush x:Key="Infomaniak.DS.colors.accent.kdrive.defaultBrush" Color="{StaticResource Infomaniak.DS.colors.accent.kdrive.default}" />
+    <!-- Documents -->
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file">ms-appx:///Assets/DS/Icons/Documents/file.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file3d">ms-appx:///Assets/DS/Icons/Documents/file3d.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-audio">ms-appx:///Assets/DS/Icons/Documents/file-audio.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-chart">ms-appx:///Assets/DS/Icons/Documents/file-chart.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-code">ms-appx:///Assets/DS/Icons/Documents/file-code.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-diagram">ms-appx:///Assets/DS/Icons/Documents/file-diagram.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-font">ms-appx:///Assets/DS/Icons/Documents/file-font.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-grid">ms-appx:///Assets/DS/Icons/Documents/file-grid.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-image">ms-appx:///Assets/DS/Icons/Documents/file-image.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-pdf">ms-appx:///Assets/DS/Icons/Documents/file-pdf.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-text">ms-appx:///Assets/DS/Icons/Documents/file-text.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-video">ms-appx:///Assets/DS/Icons/Documents/file-video.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-zip">ms-appx:///Assets/DS/Icons/Documents/file-zip.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
 </ResourceDictionary>

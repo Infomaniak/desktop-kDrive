@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
     </UserControl.Resources>
     <Border Grid.Row="1"
             Grid.Column="0"
@@ -33,7 +33,7 @@
                          Placement="Mouse" />
             </ToolTipService.ToolTip>
             <controls:SvgIcon Grid.Column="0"
-                              UriString="{x:Bind ItemPath, Converter={StaticResource FilePathToIconConverter}}"
+                              ResourceKey="{x:Bind ItemPath, Converter={StaticResource FilePathToIconResourceKeyConverter}}"
                               Style="{StaticResource Infomaniak.Style.Icon.Size.XXS}"
                               Visibility="{x:Bind IsFileIconVisible}" />
             
