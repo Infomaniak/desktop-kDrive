@@ -35,7 +35,7 @@ std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*=
         } catch (std::exception const &) {
             return nullptr;
         }
-        _forceExtendedLog = CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG") == "1";
+        _forceExtendedLog = CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG") == "1";
     }
 
     return _instance;

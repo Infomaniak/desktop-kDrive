@@ -37,17 +37,17 @@ class TestJob final : public AbstractJob {
 
 void TestAbstractJob::setUp() {
     TestBase::start();
-    _previousExtendedLogEnvVarValue = CommonUtility::envVarValue("KDRIVE_ACTIVATE_EXTENDED_LOG", _isExtendedLogEnvVarSet);
+    _previousExtendedLogEnvVarValue = CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG", _isExtendedLogEnvVarSet);
 }
 
 void TestAbstractJob::tearDown() {
     if (_isExtendedLogEnvVarSet) {
-        (void) CommonUtility::setenv("KDRIVE_ACTIVATE_EXTENDED_LOG", _previousExtendedLogEnvVarValue.c_str(), 1);
+        (void) CommonUtility::setenv("KDRIVE_FORCE_EXTENDED_LOG", _previousExtendedLogEnvVarValue.c_str(), 1);
     } else {
 #if defined(KD_WINDOWS)
-        _putenv_s("KDRIVE_ACTIVATE_EXTENDED_LOG", "");
+        _putenv_s("KDRIVE_FORCE_EXTENDED_LOG", "");
 #else
-        (void) unsetenv("KDRIVE_ACTIVATE_EXTENDED_LOG");
+        (void) unsetenv("KDRIVE_FORCE_EXTENDED_LOG");
 #endif
     }
     ParametersCache::reset();
@@ -55,7 +55,7 @@ void TestAbstractJob::tearDown() {
 }
 
 void TestAbstractJob::testIsExtendedLogEnabledByEnvironmentVariable() {
-    (void) CommonUtility::setenv("KDRIVE_ACTIVATE_EXTENDED_LOG", "1", 1);
+    (void) CommonUtility::setenv("KDRIVE_FORCE_EXTENDED_LOG", "1", 1);
     ParametersCache::reset();
 
     auto parametersCache = ParametersCache::instance(true);
