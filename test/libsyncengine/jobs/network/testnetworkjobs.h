@@ -20,19 +20,21 @@
 
 #include "testincludes.h"
 
-#include "io/cachedirectory.h"
-#include "keychainmanager/apitoken.h"
+#include "libsyncengine/testbasewithparmsdb.h"
 #include "test_utility/localtemporarydirectory.h"
 
+#include "keychainmanager/apitoken.h"
 #include "utility/types.h"
+#include "io/cachedirectory.h"
 #include "libcommonserver/io/iohelper.h"
+
 #include "network/proxy.h"
 
 
 using namespace CppUnit;
 
 namespace KDC {
-class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
+class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
         CPPUNIT_TEST(testCreateDir);
@@ -125,10 +127,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
 
-        DriveDbId _driveDbId = 0;
-        UserDbId _userDbId = 0;
         NodeId _remoteDirId;
-        ApiToken _apiToken;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
@@ -137,7 +136,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
         static uint64_t _nbParallelThreads;
 
-        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
         std::shared_ptr<CacheDirectory> _cacheDirectory;
+
 };
 } // namespace KDC
