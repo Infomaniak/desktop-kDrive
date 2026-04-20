@@ -19,7 +19,6 @@
 import CppInterop
 import Foundation
 
-extension MsgType: Hashable {}
 extension KDC.ExitCause: Hashable {}
 extension KDC.ExitCode: Hashable {}
 extension KDC.NodeType: Hashable {}
@@ -40,5 +39,6 @@ extension KDC.ProxyType: Hashable {}
 extension KDC.VersionChannel: Hashable {}
 extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
-extension SignalNum: Hashable {}
-extension RequestNum: Hashable {}
+extension MsgType: @retroactive Hashable {}
+extension SignalNum: @retroactive Hashable {}
+extension RequestNum: @retroactive Hashable {}
