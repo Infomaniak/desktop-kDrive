@@ -173,9 +173,8 @@ RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeI
     SnapshotItem(id, parentId, name, createdAt, lastModified, type, size, isLink, canWrite, canShare) {}
 
 
-RemoteSnapshotItem::RemoteSnapshotItem(const RemoteSnapshotItem &other) {
-    *this = other;
-}
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteSnapshotItem &other) :
+    SnapshotItem(other) {}
 
 ExitInfo RemoteSnapshotItem::setId(const UserDbId userDbId, const DriveId driveId, const NodeId &id) {
     _id = id;
