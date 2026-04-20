@@ -1436,9 +1436,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
     NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
     NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
 
-    Error error(syncDbId(), localNodeId, remoteNodeId,
-                relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativeLocalPath,
-                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    // File type cannot be fetched for an access denied item, using File as default.
+    Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
+                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
     if (localNodeId.empty()) {
