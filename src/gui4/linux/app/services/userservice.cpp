@@ -28,11 +28,7 @@ Q_LOGGING_CATEGORY(lcUserService, "gui.v4.userservice", QtInfoMsg)
 UserService::UserService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {
-    (void) connect(&_commService, &CommService::userAdded, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser);
-}
+    _appCache(appCache) {}
 
 void UserService::loadUsers() {
     beginRequest();

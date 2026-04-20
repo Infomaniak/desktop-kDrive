@@ -29,9 +29,6 @@ DriveService::DriveService(CommService &commService, AppCache &appCache, QObject
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {
-    (void) connect(&_commService, &CommService::driveAdded, &_appCache, &AppCache::upsertDrive);
-    (void) connect(&_commService, &CommService::driveUpdated, &_appCache, &AppCache::upsertDrive);
-    (void) connect(&_commService, &CommService::driveRemoved, &_appCache, &AppCache::removeDrive);
     (void) connect(&_appCache, &AppCache::selectedDriveDbIdChanged, this, &DriveService::activeDriveDbIdChanged);
 }
 

@@ -31,7 +31,8 @@
 ## Current Structure
 
 - `main.cpp`: process entry point + single-instance lock file.
-- `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service ownership).
+- `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service ownership,
+  QML engine bootstrap, and context-property injection for cache/services).
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
@@ -39,6 +40,8 @@
 - `app/cache/appcache.*`: central observable cache (`AppCache` QObject) — typed snapshots and incremental
   `upsert*`/`remove*` slots for users, accounts, drives, available drives, syncs, and errors; QML models and
   services read from it instead of parsing transport payloads directly.
+- `app/cache/cachepipeline.*`: single wiring point from `CommService` server-push signals to `AppCache`
+  incremental updates (`signal -> cache` pipeline).
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
@@ -63,6 +66,10 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - QML must never call `IpcClient` directly.
 - New backend calls must be added in `CommService`, not in UI files.
 - Server-push events must be registered in `CommService::register*Handlers` and re-emitted as typed Qt signals.
+- Connections from `CommService` signals to `AppCache` slots must live in `CachePipeline` only
+  (no duplicated service-level wiring).
+- App bootstrap should inject C++ facades (`appCache`, `userService`, `driveService`, `syncService`) at the
+  QML engine boundary (`QQmlApplicationEngine::rootContext()`).
 - When object lifetime is uncertain in async callbacks, guard with `QPointer<T>`.
 
 ## IPC And Error Handling

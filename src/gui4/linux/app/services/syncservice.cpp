@@ -30,13 +30,7 @@ Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {
-    (void) connect(&_commService, &CommService::syncAdded, &_appCache, &AppCache::upsertSync);
-    (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync);
-    (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync);
-    (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertError);
-    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeError);
-}
+    _appCache(appCache) {}
 
 void SyncService::loadSyncs() {
     beginRequest();

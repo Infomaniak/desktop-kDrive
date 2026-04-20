@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QLocale>
+#include <QQmlContext>
 #include <QScreen>
 #include <QSysInfo>
 
@@ -47,9 +48,29 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+    (void) connect(this, &AppClientLinux::ipcConnected, &_appCache, [this] { _appCache.setConnected(true); });
+    (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
+        _appCache.setConnected(false);
+        _appCache.clearAll();
+    });
+    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] {
+        _userService.loadUsers();
+        _driveService.loadDrives();
+        _syncService.loadSyncs();
+    });
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
 
-    qCDebug(lcAppClientLinux) << "IPC signal wiring initialized";
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("userService"), &_userService);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("driveService"), &_driveService);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
+    _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
+    if (_qmlEngine.rootObjects().isEmpty()) {
+        qCCritical(lcAppClientLinux) << "QML root object creation failed";
+        std::exit(EXIT_FAILURE);
+    }
+
+    qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
 
 
 #ifdef QT_DEBUG
