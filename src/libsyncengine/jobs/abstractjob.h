@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "utility/types.h"
 
 #include <Poco/Runnable.h>

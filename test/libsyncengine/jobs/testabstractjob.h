@@ -30,6 +30,7 @@ class TestAbstractJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsExtendedLogEnabledByEnvironmentVariable);
         CPPUNIT_TEST_SUITE_END();
 
+    public:
         void setUp() override;
         void tearDown() override;
 
