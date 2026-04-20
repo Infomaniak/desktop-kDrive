@@ -47,7 +47,7 @@ class RemoteSnapshotItemHandler {
                 bool prevCharDoubleQuotes{false};
                 bool readNextLine{true}; // If true, read the next line, stop item parsing otherwise.
                 std::string tmp;
-                int doubleQuoteCount{0};
+                Count doubleQuoteCount{0};
         };
 
         bool updateRemoteSnapshotItem(const std::string &str, CsvIndex index, RemoteSnapshotItem &item);
