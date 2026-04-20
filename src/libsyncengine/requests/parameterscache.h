@@ -46,8 +46,7 @@ class SYNCENGINE_EXPORT ParametersCache {
     private:
         static std::shared_ptr<ParametersCache> _instance;
         Parameters _parameters;
-
-        static bool forceExtendedLogEnabled() noexcept;
+        static bool _forceExtendedLog;
 
         ParametersCache(bool isTest = false);
 };
