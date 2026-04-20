@@ -1861,14 +1861,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
         }
 
-        public async void HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)
+        public async Task HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SYNTHESIS signal - bringing main window to foreground");
             if (Application.Current is App app)
                 await Utility.RunOnUIThread(() => app.CreateWindow(App.CreateWindowOptions.Foreground));
         }
 
-        public async void HandleUtilityShowSettings(object? sender, SignalEventArgs args)
+        public async Task HandleUtilityShowSettings(object? sender, SignalEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SETTINGS signal - bringing main window to foreground and navigating to settings");
             if (Application.Current is App app)
