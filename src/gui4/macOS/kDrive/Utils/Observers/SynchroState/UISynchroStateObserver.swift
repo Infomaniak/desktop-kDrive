@@ -33,9 +33,11 @@ public struct UISynchroState: Sendable, Equatable {
     }
 
     public init(fromSynchro synchro: Synchro?) {
+        let synchroProgress: SynchroProgressInfo? = synchro?.progress
+        let syncStatus: KDC.SyncStatus = synchroProgress?.syncStatus ?? KDC.SyncStatus.Idle
         self.init(
             errorCount: synchro?.errors.count ?? 0,
-            status: UISynchroStatus(syncStatus: synchro?.progress?.syncStatus ?? .Idle) ?? .idle
+            status: UISynchroStatus(syncStatus: syncStatus) ?? UISynchroStatus.idle
         )
     }
 }

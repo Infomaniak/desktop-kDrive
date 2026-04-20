@@ -44,7 +44,7 @@ struct UtilityActivateLoadInfoTest {
 
         // THEN
         #expect(response.id == 4)
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
     }
 }

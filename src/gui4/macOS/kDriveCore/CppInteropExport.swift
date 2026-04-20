@@ -16,12 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import Foundation
-
-public extension AnyPublisher where Output == KDC.UpdateState, Failure == Never {
-    func observableUpdaterPublisher() -> AnyPublisher<KDC.UpdateState, Never> {
-        removeDuplicates()
-            .eraseToAnyPublisher()
-    }
-}
+// Re-export CppInterop so consumers of kDriveCore get the C++ types
+// without needing to import CppInterop directly.
+// This ensures type identity across module boundaries.
+@_exported import CppInterop

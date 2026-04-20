@@ -31,8 +31,10 @@ final class ObservedUpdater: ObservableObject {
         let updaterObservable =
             updaterObservable ?? InjectService<UpdaterCacheObservable>().wrappedValue
 
-        cancellable = updaterObservable.updateStatePublisher
-            .observableUpdaterPublisher()
+        let updateStatePublisher: UpdateStatePublisher = updaterObservable.updateStatePublisher
+        cancellable = updateStatePublisher
+            .removeDuplicates()
+            .eraseToAnyPublisher()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updateState in
                 self?.wrappedValue = updateState

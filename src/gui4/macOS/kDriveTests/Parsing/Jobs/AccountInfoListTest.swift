@@ -47,8 +47,8 @@ struct AccountInfoListTest {
         let response = try decoder.decode(CallbackMessage<AccountListResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 3)
         #expect(response.body.accountInfoList.count == 1)
 

@@ -16,9 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import CppInterop
 
-extension MsgType: Codable {}
 extension KDC.ExitCause: Codable {}
 extension KDC.ExitCode: Codable {}
 extension KDC.NodeType: Codable {}
@@ -40,5 +39,6 @@ extension KDC.VersionChannel: Codable {}
 extension KDC.UpdateState: Codable {}
 extension KDC.ReplicaSide: Codable {}
 extension KDC.SyncConfiguration: Codable {}
-extension SignalNum: Codable {}
-extension RequestNum: Codable {}
+extension MsgType: @retroactive Codable {}
+extension SignalNum: @retroactive Codable {}
+extension RequestNum: @retroactive Codable {}

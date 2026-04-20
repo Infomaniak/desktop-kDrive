@@ -48,7 +48,7 @@ struct UtilityCheckCommStatusTest {
 
         // THEN
         #expect(response.id == 1)
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
     }
 }
