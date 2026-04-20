@@ -34,6 +34,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/syncservice.h
         app/models/drivelistmodel.cpp
         app/models/drivelistmodel.h
+        app/models/synclistmodel.cpp
+        app/models/synclistmodel.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)

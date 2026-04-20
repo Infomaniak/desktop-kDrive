@@ -21,6 +21,7 @@
 #include "app/cache/appcache.h"
 #include "app/cache/cachepipeline.h"
 #include "app/models/drivelistmodel.h"
+#include "app/models/synclistmodel.h"
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
 #include "app/services/syncservice.h"
@@ -75,6 +76,7 @@ class AppClientLinux : public QApplication {
         DriveService _driveService{_serverCommService, _appCache, this};
         SyncService _syncService{_serverCommService, _appCache, this};
         DriveListModel _driveListModel{_appCache, this};
+        SyncListModel _syncListModel{_appCache, this};
         QQmlApplicationEngine _qmlEngine;
 };
 

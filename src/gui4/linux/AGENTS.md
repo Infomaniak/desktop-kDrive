@@ -42,6 +42,8 @@
   services read from it instead of parsing transport payloads directly.
 - `app/cache/cachepipeline.*`: single wiring point from `CommService` server-push signals to `AppCache`
   incremental updates (`signal -> cache` pipeline).
+- `app/models/*listmodel.*`: QML-facing `QAbstractListModel` adapters fed from `AppCache` (`rowCount/data/roleNames`
+  contract for views).
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
