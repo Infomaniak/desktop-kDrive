@@ -142,6 +142,7 @@ void SyncService::deleteSync(const qint64 syncDbId) {
 }
 
 void SyncService::querySyncStatus(const qint64 syncDbId) {
+    beginRequest();
     setLastError(QString());
 
     const QPointer<SyncService> self(this);
@@ -151,6 +152,7 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
                                            return;
                                        }
 
+                                       self->endRequest();
                                        if (exitInfo.code() != ExitCode::Ok) {
                                            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
                                            return;
