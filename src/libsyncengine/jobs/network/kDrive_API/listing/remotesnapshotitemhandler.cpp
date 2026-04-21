@@ -190,7 +190,7 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
     ignore = false;
 
     std::string line;
-    std::getline(ss, line);
+    (void) std::getline(ss, line);
     if (line.empty()) {
         return false;
     }
@@ -200,7 +200,7 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
         // "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link"
         _ignoreFirstLine = false;
         line.clear();
-        std::getline(ss, line);
+        (void) std::getline(ss, line);
         if (line.empty()) {
             return false;
         }
@@ -236,7 +236,7 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
 
             state.tmp.push_back('\n');
             state.readNextLine = true;
-            std::getline(ss, line);
+            (void) std::getline(ss, line);
         }
     }
 

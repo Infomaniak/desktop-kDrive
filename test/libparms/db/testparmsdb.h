@@ -76,7 +76,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
         bool deleteColumns();
-        bool deleteColumn(std::string tableName, const std::string &columnName);
+        bool deleteColumn(const std::string &tableName, const std::string &columnName);
 };
 
 } // namespace KDC
