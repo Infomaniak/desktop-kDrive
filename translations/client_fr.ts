@@ -2521,7 +2521,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/fr/applications/telecharger-kdrive&quot;&gt;Cliquez ici pour télécharger manuellement&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/fr/applications/telecharger-kdrive&quot;&gt;Cliquez ici pour télécharger manuellement&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1193"/>

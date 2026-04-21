@@ -2522,7 +2522,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/de/anwendungen/kdrive-herunterladen&quot;&gt;Klicken Sie hier, um manuell herunterzuladen&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/de/anwendungen/kdrive-herunterladen&quot;&gt;Klicken Sie hier, um manuell herunterzuladen&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1193"/>

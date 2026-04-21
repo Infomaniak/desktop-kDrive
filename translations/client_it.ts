@@ -2521,7 +2521,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/it/applicazioni/scarica-kdrive&quot;&gt;Clicca qui per scaricare manualmente&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/it/applicazioni/scarica-kdrive&quot;&gt;Clicca qui per scaricare manualmente&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1193"/>

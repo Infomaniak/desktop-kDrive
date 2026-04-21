@@ -2520,7 +2520,7 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/es/aplicaciones/descargar-kdrive&quot;&gt;Haga clic aquí para descargar manualmente&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/es/aplicaciones/descargar-kdrive&quot;&gt;Haga clic aquí para descargar manualmente&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1193"/>
