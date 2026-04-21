@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -41,6 +41,10 @@
 
 .PARAMETER MakeRelease
     Use the 'infomaniak_release' Conan profile.
+
+.PARAMETER Update
+    Ask Conan to check remotes for newer versions/revisions.
+    Disabled by default to keep CI deterministic and avoid local recipe revision/timestamp conflicts.
 #>
 
 param(
@@ -64,10 +68,13 @@ param(
     [switch]$UpdateEnvironment,
 
     [Parameter(Mandatory = $false, HelpMessage = "Clean the Conan cache after installation to save disk space.")]
-    [switch]$CleanCache
+    [switch]$CleanCache,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Ask Conan to check remotes for newer versions/revisions.")]
+    [switch]$Update
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]" ; exit 0 }
+function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]" ; exit 0 }
 if ($Help) { Show-Help }
 
 $ErrorActionPreference = "Stop"
@@ -194,23 +201,81 @@ if ($MakeRelease) {
 }
 
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
-$remotes = & $ConanExe remote list
-if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
+$NormalizeRemoteUrl = {
+    param([string]$Url)
+    if ([string]::IsNullOrWhiteSpace($Url)) {
+        return ""
+    }
+    return ($Url -replace '\\', '/').TrimEnd('/')
+}
+
+$ExpectedRemoteUrl = try {
+    (Resolve-Path -Path $ConanRemoteBaseFolder).Path
+} catch {
+    $ConanRemoteBaseFolder
+}
+$ExpectedRemoteUrlNormalized = & $NormalizeRemoteUrl $ExpectedRemoteUrl
+
+$remotesJson = & $ConanExe remote list --format=json
+if ($LASTEXITCODE -ne 0) {
+    Err "Failed to list Conan remotes."
+}
+
+try {
+    $remotes = $remotesJson | ConvertFrom-Json
+} catch {
+    Err "Failed to parse Conan remotes JSON output."
+}
+
+$matchingRemote = $remotes | Where-Object {
+    $_.name -eq $LocalRemoteName -and
+    $_.enabled -eq $true -and
+    (& $NormalizeRemoteUrl $_.url) -eq $ExpectedRemoteUrlNormalized
+} | Select-Object -First 1
+
+if ($matchingRemote) {
+    Log "Conan remote '$LocalRemoteName' already exists, has the expected URL and is enabled."
+} else {
+    $remoteWithSameName = $remotes | Where-Object { $_.name -eq $LocalRemoteName } | Select-Object -First 1
+    if ($remoteWithSameName) {
+        Log "Removing Conan remote '$LocalRemoteName' because URL/enabled state does not match the expected configuration."
+        & $ConanExe remote remove $LocalRemoteName
+        if ($LASTEXITCODE -ne 0) {
+            Err "Failed to remove existing Conan remote '$LocalRemoteName'."
+        }
+    }
+
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
     & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
     if ($LASTEXITCODE -ne 0) {
         Err "Failed to add local Conan remote."
     }
-} else {
-    Log "Conan remote '$LocalRemoteName' already exists and is enabled."
 }
 
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
 Log "Installing Conan dependencies..."
-$qt_login_type = if ($CI) { "envvars" } else { "ini" }
-& $ConanExe install . --update --output-folder="$OutputDir" --build=missing -s:a=build_type="$BuildType" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
+$conanInstallArgs = @(
+    "install", ".",
+    "--output-folder=$OutputDir",
+    "--build=missing",
+    "-s:a=build_type=$BuildType",
+    "--profile:all=$ConanProfile",
+    "-r", $LocalRemoteName,
+    "-r", "conancenter",
+    "-c", "tools.cmake.cmaketoolchain:generator=Ninja",
+    "-c", "tools.env.virtualenv:powershell=powershell",
+    "-o", "qt/*:qt_login_type=$qt_login_type"
+)
+if ($CI) {
+    $conanInstallArgs += "-o"
+    $conanInstallArgs += "qt/*:qt_login_type=envvars"
+}
+if ($Update) {
+    $conanInstallArgs += "--update"
+}
+& $ConanExe @conanInstallArgs
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }
