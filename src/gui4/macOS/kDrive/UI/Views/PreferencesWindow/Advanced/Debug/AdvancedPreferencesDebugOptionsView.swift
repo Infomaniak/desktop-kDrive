@@ -98,13 +98,13 @@ struct AdvancedPreferencesDebugOptionsView: View {
         }
         .onAppear(perform: getAllValues)
         .onChange(of: automaticCleaning) { newValue in
-            updateValue(\.$automaticCleaning, \.shouldPurgeOldLogs, newValue: newValue)
+            updateRepositoryValue(\.$automaticCleaning, \.shouldPurgeOldLogs, newValue: newValue, repository: repository)
         }
         .onChange(of: extendedLog) { newValue in
-            updateValue(\.$extendedLog, \.isExtendedLogEnabled, newValue: newValue)
+            updateRepositoryValue(\.$extendedLog, \.isExtendedLogEnabled, newValue: newValue, repository: repository)
         }
         .onChange(of: debugLevel) { newValue in
-            updateValue(\.$debugLevel, \.logLevel, newValue: newValue)
+            updateRepositoryValue(\.$debugLevel, \.logLevel, newValue: newValue, repository: repository)
         }
     }
 
@@ -112,22 +112,6 @@ struct AdvancedPreferencesDebugOptionsView: View {
         automaticCleaning = repository.parametersInfo.shouldPurgeOldLogs
         extendedLog = repository.parametersInfo.isExtendedLogEnabled
         debugLevel = repository.parametersInfo.logLevel
-    }
-
-    private func updateValue<T: Equatable>(
-        _ stateKeyPath: KeyPath<Self, Binding<T>>,
-        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
-        newValue: T
-    ) {
-        Task {
-            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
-
-            do {
-                try await repository.update(repositoryKeyPath, value: newValue)
-            } catch {
-                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
-            }
-        }
     }
 }
 

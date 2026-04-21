@@ -44,7 +44,7 @@ struct AdvancedPreferencesDebugEnableView: View {
             enableDebugLogs = repository.parametersInfo.shouldUseLog
         }
         .onChange(of: enableDebugLogs) { newValue in
-            updateValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue)
+            updateRepositoryValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue, repository: repository)
         }
     }
 
@@ -55,22 +55,6 @@ struct AdvancedPreferencesDebugEnableView: View {
             isDirectory: true
         )
         NSWorkspace.shared.open(directory)
-    }
-
-    private func updateValue<T: Equatable>(
-        _ stateKeyPath: KeyPath<Self, Binding<T>>,
-        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
-        newValue: T
-    ) {
-        Task {
-            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
-
-            do {
-                try await repository.update(repositoryKeyPath, value: newValue)
-            } catch {
-                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
-            }
-        }
     }
 }
 
